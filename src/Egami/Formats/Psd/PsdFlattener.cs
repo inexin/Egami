@@ -80,15 +80,17 @@ internal sealed partial class PsdFlattener
 
     /// <summary>
     /// Gets the bytes of canvases the flattening needs at the most, for <see cref="RasterInfo.WorkingBytes"/>: one per open group
-    /// level and two for clipping, at 16 bytes a pixel (20 for CMYK), a coverage plane, and one more for a feathered mask.
+    /// level and two for clipping, at 16 bytes a pixel (20 for CMYK), a coverage plane, one more for a feathered mask, and for
+    /// layer effects one more canvas and six planes.
     /// </summary>
     public static long WorkingBytes(PsdFile file)
     {
         int depth = 0, deepest = 0;
-        bool feather = false;
+        bool feather = false, effects = false;
         foreach (PsdLayerRecord record in file.Records)
         {
             feather |= record.UserMaskFeather > 0;
+            effects |= PsdEffects.Has(record);
             if (record.Info.Kind == PsdLayerKind.GroupEnd)
             {
                 deepest = Math.Max(deepest, ++depth);
@@ -100,7 +102,9 @@ internal sealed partial class PsdFlattener
         }
 
         long pixel = file.Mode == PsdColorMode.Cmyk ? 20 : 16;
-        return (long)file.Width * file.Height * ((pixel * (deepest + 3)) + (feather ? 8 : 4));
+        // Effects: the backdrop kept for the layer's opacity, the clip of a clipped layer, the masks that hide effects, and the
+        // shape, distance and two coverage planes they are drawn with (each the size of the effect area, the canvas at most).
+        return (long)file.Width * file.Height * ((pixel * (deepest + 3)) + (feather ? 8 : 4) + (effects ? pixel + 24 : 0));
     }
 
     /// <summary>Adds the record at <paramref name="index"/>, in file order, with its pixels (its ink for CMYK) and mask when it has them.</summary>
@@ -157,17 +161,32 @@ internal sealed partial class PsdFlattener
             return;
         }
 
-        Note(info, record);
+        PsdEffects? effects = EffectsOf(info, record);
         float[] buffer = clipped ? Scratch() : Allocate((long)_stride * _width * _height);
-        float[]? clip = clipped ? null : Allocate((long)_width * _height);
-        Rect area = Render(info, record, pixels, ink, mask, buffer, clip);
+        float[]? clip = clipped && effects is null ? null : Allocate((long)_width * _height);
+        float[]? hide = effects is null ? null : HidePlane(record, mask, effects);
+        Rect area = Render(info, record, pixels, ink, mask, buffer, clip, effects);
         if (clipped)
         {
             // The clipped layer blends onto the base's content within the base's coverage, which stays the clipping group's.
             Pending b = basis!;
-            Rect within = Intersect(area, b.Area);
-            BlendDown(buffer, within, info, record.BlendRanges, b.Buffer!, b.Clip);
-            Clear(buffer, area);
+            if (effects is not null)
+            {
+                DrawEffects(new EffectPending(buffer, clip, area, info, record, effects, hide), b.Buffer!, b.Clip);
+                Release(clip!);
+                if (hide is not null)
+                {
+                    Release(hide);
+                }
+
+                Clear(buffer, new Rect(0, 0, _width, _height));
+            }
+            else
+            {
+                BlendDown(buffer, Intersect(area, b.Area), info, record.BlendRanges, b.Buffer!, b.Clip);
+                Clear(buffer, area);
+            }
+
             if (!record.BlendClippedAsGroup || !b.Record.BlendClippedAsGroup)
             {
                 Skip("Psd.ClippingBlendSkipped", info.Name);
@@ -176,7 +195,7 @@ internal sealed partial class PsdFlattener
             return;
         }
 
-        frame.Pending = new Pending(buffer, clip, area, info, record, Hidden: false);
+        frame.Pending = effects is null ? new Pending(buffer, clip, area, info, record, Hidden: false) : new EffectPending(buffer, clip, area, info, record, effects, hide);
     }
 
     /// <summary>Flattens what is left and returns the canvas in the document's type, with alpha only when some pixel is not opaque.</summary>
@@ -243,7 +262,7 @@ internal sealed partial class PsdFlattener
         string list = string.Join(", ", names.Take(10).Select(n => $"\"{n}\"")) + (names.Count > 10 ? $" and {names.Count - 10} more" : "");
         return id switch
         {
-            "Psd.EffectsSkipped" => $"Layer effects were not drawn, on {list}.",
+            "Psd.EffectsSkipped" => $"Layer effects Egami cannot draw (noise gradients, missing patterns, effects on knockout layers, damaged settings) were left out, on {list}.",
             "Psd.AdjustmentSkipped" => $"Adjustment layers of a kind Egami does not apply were left out: {list}.",
             "Psd.FillSkipped" => $"Fill layers Egami cannot draw (noise gradients, patterns the document does not hold) were left out: {list}.",
             "Psd.BlendModeUnknown" => $"Layers with a blend mode Egami does not know were blended Normal: {list}.",
@@ -265,30 +284,6 @@ internal sealed partial class PsdFlattener
         }
     }
 
-    /// <summary>Notes what a visible layer has that the flattening leaves out.</summary>
-    private void Note(PsdLayer info, PsdLayerRecord record)
-    {
-        if (EffectsOn(record))
-        {
-            Skip("Psd.EffectsSkipped", info.Name);
-        }
-    }
-
-    /// <summary>Returns whether the layer has effects turned on: the lfx2 or lmfx descriptor's master switch, or an old lrFX block.</summary>
-    private static bool EffectsOn(PsdLayerRecord record)
-    {
-        foreach (string key in (string[])["lfx2", "lmfx"])
-        {
-            if (record.Blocks.TryGetValue(key, out byte[]? data))
-            {
-                PsdDescriptor? effects = PsdDescriptor.ReadVersioned(data, 4);
-                return effects?.Flag("masterFXSwitch") ?? true;
-            }
-        }
-
-        return record.Has("lrFX");
-    }
-
     private void Open(int index, Frame parent)
     {
         int group = _groupOf.TryGetValue(index, out int g) ? g : -1;
@@ -300,7 +295,9 @@ internal sealed partial class PsdFlattener
         }
 
         bool hidden = parent.Hidden || (info is not null && !info.IsVisible) || (clipped && parent.Pending!.Hidden);
-        bool passThrough = info is not null && info.BlendMode is null && info.BlendModeKey == "pass" && !clipped && !IsClipBase(group);
+        // A pass-through group with effects is isolated, as Photoshop draws it: the effects need its contents as one layer.
+        bool passThrough = info is not null && info.BlendMode is null && info.BlendModeKey == "pass" && !clipped && !IsClipBase(group)
+            && !(_options.ApplyEffects && PsdEffects.Of(_file.Records[group], _file) is not null);
         float[] canvas;
         if (hidden)
         {
@@ -363,7 +360,6 @@ internal sealed partial class PsdFlattener
 
         PsdLayerRecord record = _file.Records[frame.GroupIndex];
         PsdLayer info = frame.Info;
-        Note(info, record);
         Rect all = new(0, 0, _width, _height);
         if (frame.PassThrough)
         {
@@ -392,6 +388,8 @@ internal sealed partial class PsdFlattener
         }
 
         // An isolated group is a layer whose pixels are its contents flattened.
+        PsdEffects? effects = EffectsOf(info, record);
+        float fill = effects is { InteriorAsGroup: true } ? 1 : info.FillOpacity;
         float[] buffer = frame.Canvas;
         float[] clip = Allocate((long)_width * _height);
         for (int y = 0; y < _height; y++)
@@ -404,7 +402,7 @@ internal sealed partial class PsdFlattener
                 int at = _stride * (row + x);
                 float s = shape[x];
                 clip[row + x] = buffer[at + _channels] * s;
-                float content = s * info.FillOpacity;
+                float content = s * fill;
                 for (int c = 0; c < _stride; c++)
                 {
                     buffer[at + c] *= content;
@@ -414,13 +412,21 @@ internal sealed partial class PsdFlattener
 
         if (info.IsClipped && parent.Pending is { Hidden: false } basis)
         {
-            BlendDown(buffer, Intersect(all, basis.Area), info, record.BlendRanges, basis.Buffer!, basis.Clip);
+            if (effects is not null)
+            {
+                DrawEffects(new EffectPending(buffer, clip, all, info, record, effects, null), basis.Buffer!, basis.Clip);
+            }
+            else
+            {
+                BlendDown(buffer, Intersect(all, basis.Area), info, record.BlendRanges, basis.Buffer!, basis.Clip);
+            }
+
             Release(buffer);
             Release(clip);
             return;
         }
 
-        parent.Pending = new Pending(buffer, clip, all, info, record, Hidden: false);
+        parent.Pending = effects is null ? new Pending(buffer, clip, all, info, record, Hidden: false) : new EffectPending(buffer, clip, all, info, record, effects, null);
     }
 
     /// <summary>Blends a frame's waiting layer (and what is clipped to it) onto the frame's canvas.</summary>
@@ -430,11 +436,25 @@ internal sealed partial class PsdFlattener
         {
             if (pending.Record.Knockout is 1 or 2)
             {
+                if (pending is EffectPending)
+                {
+                    Skip("Psd.EffectsSkipped", pending.Info.Name);
+                }
+
                 Knock(frame, pending);
+            }
+            else if (pending is EffectPending effects)
+            {
+                DrawEffects(effects, frame.Canvas, null);
             }
             else
             {
                 BlendDown(pending.Buffer, pending.Area, pending.Info, pending.Record.BlendRanges, frame.Canvas);
+            }
+
+            if (pending is EffectPending { Hide: float[] hide })
+            {
+                Release(hide);
             }
 
             KeepBackground(frame, pending);
@@ -485,26 +505,7 @@ internal sealed partial class PsdFlattener
                     BlendIf(blendRanges, s, d, _file.ColorChannels);
                 }
 
-                if (special)
-                {
-                    Special(mode, s, d, opacity, fill);
-                }
-                else if (_channels == 4)
-                {
-                    InkRow(mode, s, d, opacity, area.X, y);
-                }
-                else if (_lab && IsLabNonSeparable(mode))
-                {
-                    LabRow(mode, s, d, opacity);
-                }
-                else if (mode == BlendMode.SoftLight)
-                {
-                    SoftLight(s, d, opacity);
-                }
-                else
-                {
-                    BlendKernels.BlendFloat(mode, s, d, default, opacity, area.X, y);
-                }
+                BlendRow(mode, special, s, d, opacity, fill, area.X, y);
 
                 if (clip is not null)
                 {
@@ -515,6 +516,35 @@ internal sealed partial class PsdFlattener
         finally
         {
             ArrayPool<float>.Shared.Return(row);
+        }
+    }
+
+    /// <summary>
+    /// Blends a row of premultiplied <paramref name="s"/> onto <paramref name="d"/> with <paramref name="mode"/> and
+    /// <paramref name="opacity"/>: Photoshop's special-mode math when <paramref name="special"/>, ink math for CMYK, Lab's own
+    /// for its non-separable modes, Photoshop's Soft Light, and core Egami's kernels for the rest.
+    /// </summary>
+    private void BlendRow(BlendMode mode, bool special, Span<float> s, Span<float> d, float opacity, float fill, int x, int y)
+    {
+        if (special)
+        {
+            Special(mode, s, d, opacity, fill);
+        }
+        else if (_channels == 4)
+        {
+            InkRow(mode, s, d, opacity, x, y);
+        }
+        else if (_lab && IsLabNonSeparable(mode))
+        {
+            LabRow(mode, s, d, opacity);
+        }
+        else if (mode == BlendMode.SoftLight)
+        {
+            SoftLight(s, d, opacity);
+        }
+        else
+        {
+            BlendKernels.BlendFloat(mode, s, d, default, opacity, x, y);
         }
     }
 
@@ -771,5 +801,5 @@ internal sealed partial class PsdFlattener
     }
 
     /// <summary>A layer rendered and waiting to blend down: its premultiplied content, its coverage (the clip of what is clipped to it) and its area.</summary>
-    private sealed record Pending(float[]? Buffer, float[]? Clip, Rect Area, PsdLayer Info, PsdLayerRecord Record, bool Hidden);
+    private record Pending(float[]? Buffer, float[]? Clip, Rect Area, PsdLayer Info, PsdLayerRecord Record, bool Hidden);
 }

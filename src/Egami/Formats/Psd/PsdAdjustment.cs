@@ -53,6 +53,9 @@ internal abstract partial class PsdAdjustment
     /// <summary>Adjusts one straight color in place.</summary>
     public abstract void Apply(ref float r, ref float g, ref float b);
 
+    /// <summary>Tabulates the natural cubic spline through points (input, output on 0..255) at 1024 inputs, outputs 0 to 1, as curves do.</summary>
+    internal static float[] Spline(List<(double In, double Out)> points) => Curves.Table(points);
+
     private static int Short(ReadOnlySpan<byte> data, int at) => BinaryPrimitives.ReadInt16BigEndian(data[at..]);
 
     private sealed class Invert : PsdAdjustment
@@ -201,7 +204,7 @@ internal abstract partial class PsdAdjustment
         }
 
         /// <summary>Tabulates the natural cubic spline through the points at 1024 inputs from 0 to 255.</summary>
-        private static float[] Table(List<(double In, double Out)> points)
+        internal static float[] Table(List<(double In, double Out)> points)
         {
             points = [.. points.OrderBy(p => p.In).DistinctBy(p => p.In)];
             float[] table = new float[1024];

@@ -82,10 +82,11 @@ place, the value outside it, and whether it is disabled. The channels are read i
 of Photoshop's blend modes (Soft Light with Photoshop's own formula), pixel masks (density, the default color outside them,
 disabled ones), vector masks (filled with the non-zero rule and antialiased), the feather of both, clipping (the clipped layers
 blend onto their base and keep its coverage), pass-through and isolated groups, shallow and deep knockout, blending ranges
-("blend if"), fill layers (solid color, gradient and pattern) and adjustment layers. Layer effects, noise gradients and patterns
-the document does not hold are left out with one warning a kind naming the layers. 8 and 16-bit documents blend their stored values and 32-bit ones linear light, as Photoshop does. The result
-has the type Load gives the file, with alpha only when some pixel is not opaque. `PsdFlattenOptions.ApplyAdjustments` turns
-adjustment layers off. Bitmap, indexed and multichannel documents are not flattened.
+("blend if"), fill layers (solid color, gradient and pattern), adjustment layers and layer effects. Noise gradients and
+patterns the document does not hold are left out with one warning a kind naming the layers. 8 and 16-bit documents blend
+their stored values and 32-bit ones linear light, as Photoshop does. The result has the type Load gives the file, with alpha
+only when some pixel is not opaque. `PsdFlattenOptions.ApplyAdjustments` turns adjustment layers off and
+`PsdFlattenOptions.ApplyEffects` layer effects. Bitmap, indexed and multichannel documents are not flattened.
 
 - **Fill opacity** in Photoshop's eight special modes (Color Burn, Linear Burn, Color Dodge, Linear Dodge, Vivid Light,
   Linear Light, Hard Mix, Difference) goes into the formula, as in Photoshop: it pulls the layer's color toward the mode's
@@ -125,6 +126,35 @@ These fill settings are not checked against Photoshop either: the Linear, Percep
 starts the tiles elsewhere).
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-flatten)]
+
+### Layer effects
+
+The ten layer effects are drawn from a layer's effects (the lfx2 and lmfx blocks, a group's lfxs, and the old lrFX block
+when a layer has none of those), with several of a kind in the newer files, the first on top:
+
+- **Drop shadow** and **outer glow** go under the layer, **strokes** outside its shape too; the content then goes over them,
+  in its own mode. A drop shadow is knocked out by the layer (Layer Knocks Out Drop Shadow) unless that is off.
+- **Color, gradient and pattern overlays**, **satin**, **inner glow**, **inner shadow**, **bevel and emboss** and the part of
+  a stroke inside the shape go over the content, within its shape, in that order from the bottom.
+- The shape is the layer's coverage after its masks; for fill and shape layers, the vector mask's. The flags Photoshop keeps
+  with a layer apply: Blend Interior Effects as Group, Transparency Shapes Layer, Layer Mask Hides Effects and Vector Mask
+  Hides Effects. Fill opacity takes the content and leaves the effects; opacity takes both.
+- Shadows and glows blur by a Gaussian of σ 0.4 (shadows, satin) and 0.3 (glows, grown by a fifth first) times the size,
+  fitted to Photoshop's; the precise glow technique, strokes and bevels measure the distance to the shape's edge exactly
+  (Felzenszwalb and Huttenlocher's transform), a shape that runs past the canvas included. Contours, the range, choke and
+  spread, global light, noise and jitter (from a fixed seed, so a file flattens the same each time) apply. Scale Effects is
+  only what the dialog shows: the sizes are stored already scaled.
+
+Against the composites Photoshop stored, the drop shadow files reach 40 to 55 dB PSNR, the glows 38 dB, and the stroke
+files 39 dB and over (several exactly). Bevel and emboss is close but not exact (about 30 to 34 dB), below the 38 dB the
+other effects are held to: Photoshop's height profile is fitted, not known, so bevel results are recorded, not gated. These effect settings are not checked against a Photoshop-saved file: radial and other
+non-linear gradient overlays (one file fits only with a smaller radius than the gradient fill's), pattern overlays and
+pattern strokes linked to the layer, gradient strokes other than linear, the chisel techniques, emboss and pillow emboss,
+stroke emboss, bevel textures and contours, satin, inner glow from the center, effects in CMYK, Lab and 32-bit documents, and
+the old lrFX block's glows and bevels. Effects on knockout layers are left out with `Psd.EffectsSkipped`, as are effects
+whose settings cannot be read.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-flatten-effects)]
 
 ## Streaming and speed
 

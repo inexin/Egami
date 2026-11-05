@@ -233,6 +233,13 @@ public sealed record PsdFlattenOptions
     /// invert) change the layers under them. On by default; off leaves every adjustment layer out, without a warning.
     /// </summary>
     public bool ApplyAdjustments { get; init; } = true;
+
+    /// <summary>
+    /// Gets a value indicating whether layer effects (layer styles: drop and inner shadows, outer and inner glows, bevel and
+    /// emboss, satin, color, gradient and pattern overlays, and strokes) are drawn around and over their layers. On by default;
+    /// off leaves every effect out, without a warning, and draws the layers as they are.
+    /// </summary>
+    public bool ApplyEffects { get; init; } = true;
 }
 
 /// <summary>One layer or group of a <see cref="PsdDocument"/>, with its pixels and mask.</summary>

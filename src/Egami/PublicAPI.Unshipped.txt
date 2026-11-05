@@ -40,3 +40,5 @@ static Egami.Formats.SampleImage.Load(System.ReadOnlyMemory<byte> data, Egami.Eg
 static Egami.Formats.SampleImage.Load(System.ReadOnlyMemory<byte> data, Egami.Formats.FormatInfo! format, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.SampleImage!
 ~override Egami.Formats.SampleComponent.Equals(object obj) -> bool
 ~override Egami.Formats.SampleComponent.ToString() -> string
+Egami.Formats.Psd.PsdFlattenOptions.ApplyEffects.get -> bool
+Egami.Formats.Psd.PsdFlattenOptions.ApplyEffects.init -> void

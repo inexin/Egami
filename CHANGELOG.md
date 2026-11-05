@@ -90,6 +90,19 @@ PSD flattening extras, stage B (roadmap 2.3.13). No API changes.
   exposure file from 32.6 dB to 45.7 dB, and a thinned gradient fill from 8.2 dB to 55.3 dB. psd.md lists the settings no
   public Photoshop-saved file checks.
 
+PSD flattening extras, stage C (roadmap 2.3.13).
+
+- Layer effects are drawn: drop and inner shadow, outer and inner glow, bevel and emboss, satin, color, gradient and pattern
+  overlays and strokes (outside, inside or centered; color, gradient or pattern), from the lfx2, lmfx and lfxs descriptors
+  and the old lrFX block, with several of a kind, global light, contours, Blend Interior Effects as Group, Transparency
+  Shapes Layer and the masks that hide effects. A pass-through group with effects is drawn isolated, as Photoshop does.
+  `Psd.EffectsSkipped` is now only for noise gradients, missing patterns, effects on knockout layers and damaged settings.
+- New API: `PsdFlattenOptions.ApplyEffects` (on by default) leaves every effect out.
+- Against the composites Photoshop stored, the stroke files go from 9 to 30 dB PSNR (two from 10 and 11 dB to exact), the
+  group drop shadow file from 18.5 to 55.5 dB, the layer effects file from 6.9 to 28 dB and the multiple strokes file from
+  12 to 28.5 dB. psd.md lists the settings no public Photoshop-saved file checks. Files without effects flatten as fast as
+  before and allocate no more.
+
 DICOM dataset reading, a preview (DICOM Build Plan stage D, first part). Additive; every new type is `[Experimental]`
 (`EGAMIX001`).
 

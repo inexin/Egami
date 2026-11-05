@@ -113,11 +113,6 @@ internal sealed partial class PsdFlattener
     /// <summary>Makes the painter of a gradient fill's settings: the gradient laid over the layer's box (its vector mask's bounds when aligned with the layer, else the canvas).</summary>
     private GradientPainter? GradientPainterOf(PsdDescriptor settings, PsdLayerRecord record)
     {
-        if (PsdGradient.Read(settings.Get<PsdDescriptor>("Grad"), settings) is not { IsNoise: false } gradient)
-        {
-            return null;
-        }
-
         (double left, double top, double right, double bottom) box = (0, 0, _width, _height);
         if ((settings.Flag("Algn") ?? true)
             && (record.Blocks.TryGetValue("vmsk", out byte[]? path) || record.Blocks.TryGetValue("vsms", out path))
@@ -125,6 +120,17 @@ internal sealed partial class PsdFlattener
             && bounds.Right > bounds.Left && bounds.Bottom > bounds.Top)
         {
             box = bounds;
+        }
+
+        return GradientPainterIn(settings, box);
+    }
+
+    /// <summary>Makes the painter of a gradient's settings (Grad, Type, Angl, Scl, Rvrs, Ofst and the method) over <paramref name="box"/>.</summary>
+    private GradientPainter? GradientPainterIn(PsdDescriptor settings, (double Left, double Top, double Right, double Bottom) box)
+    {
+        if (PsdGradient.Read(settings.Get<PsdDescriptor>("Grad"), settings) is not { IsNoise: false } gradient)
+        {
+            return null;
         }
 
         float[] table = new float[(PsdGradient.Steps + 1) * _stride];
