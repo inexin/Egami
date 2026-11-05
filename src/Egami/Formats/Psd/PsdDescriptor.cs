@@ -36,6 +36,18 @@ internal sealed class PsdDescriptor
         }
     }
 
+    /// <summary>Makes a descriptor of <paramref name="classId"/> holding <paramref name="items"/>, as a color read from binary data.</summary>
+    public static PsdDescriptor Of(string classId, params (string Key, object Value)[] items)
+    {
+        PsdDescriptor descriptor = new() { ClassId = classId };
+        foreach ((string key, object value) in items)
+        {
+            descriptor.Items[key] = value;
+        }
+
+        return descriptor;
+    }
+
     public T? Get<T>(string key)
         where T : class => Items.TryGetValue(key, out object? value) ? value as T : null;
 

@@ -29,6 +29,19 @@ PSD flattening extras, stage A (roadmap 2.3.13). No API changes.
   mean error of 30 levels to 0.2, the feathered-mask file from 31 to 0.75, and the knockout file from 12 dB PSNR to 59 dB.
 - A Load of the stored composite allocates the same for any height; it allocated about 113 bytes a row (150 for PackBits).
 
+PSD flattening extras, stage B (roadmap 2.3.13). No API changes.
+
+- Gradient fill layers are drawn: linear, radial, angle, reflected and diamond, with angle, scale, offset, reverse and
+  alignment with the layer, color and transparency stops with midpoints, smoothness, and Photoshop 2022's Classic,
+  Perceptual, Linear, Smooth and Stripes methods. Pattern fill layers tile the document's patterns (the Patt, Pat2 and Pat3
+  tables) with their phase, scale and angle. `Psd.FillSkipped` is now only for noise gradients and missing patterns.
+- Adjustment layers: exposure, vibrance, posterize, threshold, photo filter, channel mixer, color balance, black and white,
+  selective color, gradient map and color lookup (CUBE tables) apply. `Psd.AdjustmentSkipped` is now only for noise
+  gradient maps, color lookups in other forms and version 3 photo filters.
+- Against the composites Photoshop stored, the file of 16 stacked adjustment layers goes from 20.6 dB PSNR to 58.5 dB, the
+  exposure file from 32.6 dB to 45.7 dB, and a thinned gradient fill from 8.2 dB to 55.3 dB. psd.md lists the settings no
+  public Photoshop-saved file checks.
+
 Canon sRAW and Panasonic levels as Adobe's (RAW follow-up). No API changes.
 
 - Canon sRAW and mRAW files take the baseline exposure Adobe DNG Converter gives them, which the camera table now records

@@ -95,7 +95,7 @@ internal sealed partial class PsdFlattener
             return;
         }
 
-        if (PsdAdjustment.Of(record, IsGray(_file)) is not PsdAdjustment adjustment)
+        if (PsdAdjustment.Of(record, IsGray(_file), _context) is not PsdAdjustment adjustment)
         {
             Skip("Psd.AdjustmentSkipped", info.Name);
             return;

@@ -104,6 +104,34 @@ internal static class PsdVectorMask
         return mask;
     }
 
+    /// <summary>
+    /// Returns the bounds of the mask's path in canvas pixels (left, top, right, bottom: the hull of its knots and control
+    /// points), or <see langword="null"/> when it has no knots or its data is unreadable.
+    /// </summary>
+    public static (double Left, double Top, double Right, double Bottom)? Bounds(ReadOnlySpan<byte> data, int width, int height)
+    {
+        if (data.Length < 8 || BinaryPrimitives.ReadUInt32BigEndian(data) != 3)
+        {
+            return null;
+        }
+
+        double left = double.MaxValue, top = double.MaxValue, right = double.MinValue, bottom = double.MinValue;
+        for (int at = 8; at + 26 <= data.Length; at += 26)
+        {
+            ReadOnlySpan<byte> record = data.Slice(at, 26);
+            if (BinaryPrimitives.ReadUInt16BigEndian(record) is 1 or 2 or 4 or 5)
+            {
+                for (int p = 2; p < 26; p += 8)
+                {
+                    (double x, double y) = Point(record[p..], width, height);
+                    (left, top, right, bottom) = (Math.Min(left, x), Math.Min(top, y), Math.Max(right, x), Math.Max(bottom, y));
+                }
+            }
+        }
+
+        return right >= left && bottom >= top ? (left, top, right, bottom) : null;
+    }
+
     private static (double X, double Y) Point(ReadOnlySpan<byte> bytes, int width, int height)
     {
         double y = BinaryPrimitives.ReadInt32BigEndian(bytes) / 16777216.0 * height;

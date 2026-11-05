@@ -82,8 +82,8 @@ place, the value outside it, and whether it is disabled. The channels are read i
 of Photoshop's blend modes (Soft Light with Photoshop's own formula), pixel masks (density, the default color outside them,
 disabled ones), vector masks (filled with the non-zero rule and antialiased), the feather of both, clipping (the clipped layers
 blend onto their base and keep its coverage), pass-through and isolated groups, shallow and deep knockout, blending ranges
-("blend if") and solid color fill layers. Layer effects and gradient and pattern fills are left out with one warning a kind
-naming the layers. 8 and 16-bit documents blend their stored values and 32-bit ones linear light, as Photoshop does. The result
+("blend if"), fill layers (solid color, gradient and pattern) and adjustment layers. Layer effects, noise gradients and patterns
+the document does not hold are left out with one warning a kind naming the layers. 8 and 16-bit documents blend their stored values and 32-bit ones linear light, as Photoshop does. The result
 has the type Load gives the file, with alpha only when some pixel is not opaque. `PsdFlattenOptions.ApplyAdjustments` turns
 adjustment layers off. Bitmap, indexed and multichannel documents are not flattened.
 
@@ -96,6 +96,13 @@ adjustment layers off. Bitmap, indexed and multichannel documents are not flatte
   average.
 - **Knockout** shows, through the layers of a group set to knock out, the group's backdrop (shallow: what is under the group,
   or nothing in an isolated group) or the Background layer (deep, and shallow at the top level).
+- **Gradient fills** are drawn afresh in all five styles (linear, radial, angle, reflected, diamond) with their angle,
+  scale, offset, reverse and alignment: aligned with the layer, a gradient spans its vector mask's bounds, else the canvas.
+  Color and transparency stops have midpoints (owned by the stop on the right) and the smoothness bends each segment. Of
+  Photoshop 2022's methods, Classic, Smooth and Stripes mix in the document's space; Linear mixes in linear light and
+  Perceptual in Oklab, in RGB documents only (as Classic in the others). Photoshop's dither is not copied.
+- **Pattern fills** tile the pattern from the document's pattern table (gray, indexed, RGB, CMYK or Lab, 8 or 16-bit) from
+  the canvas's origin moved by the phase, scaled and turned by the angle, sampled between pixels when scaled or turned.
 - **Lab** documents blend their L\*, a\* and b\* values as stored, the separable modes as for RGB and Hue, Saturation, Color,
   Luminosity, Darker Color and Lighter Color on lightness, chroma and hue, then become sRGB as Load converts Lab. Adjustments
   work through sRGB, as CMYK's work through RGB.
@@ -103,9 +110,19 @@ adjustment layers off. Bitmap, indexed and multichannel documents are not flatte
 Hard Mix at a fill opacity under 100 %, deep knockout, Lab's non-separable modes and Lab adjustments are written from the
 specification and Photoshop's documentation but no Photoshop-saved file checks them yet.
 
-Levels, curves and invert follow Photoshop's documented formulas. Hue/saturation and the current (not legacy)
-brightness/contrast are close approximations that have not been checked against Photoshop yet, so expect small color
-differences there.
+The adjustment layers applied are levels, curves, invert, hue/saturation (and colorize), brightness/contrast, exposure,
+vibrance, posterize, threshold, photo filter, channel mixer, color balance, black and white, selective color, gradient map and
+color lookup (a CUBE table, through `Lut3D`). Gradient maps with a noise gradient, color lookups in another table format or
+the abstract-profile form, and version 3 photo filters are left out with a warning. Levels, curves, invert, posterize,
+threshold, channel mixer and gradient map follow Photoshop's documented formulas, and exposure matches a Photoshop-saved file
+within PSNR 45 dB. The others are Egami's own formulas from Photoshop's documentation: hue/saturation, the current (not
+legacy) brightness/contrast, vibrance, photo filter, color balance, black and white, selective color and color lookup have not
+been checked against a Photoshop-saved file, since no public file has them over pixels it shows, so expect color differences
+there.
+
+These fill settings are not checked against Photoshop either: the Linear, Perceptual, Smooth and Stripes methods, gradients in
+32-bit documents (fill colors there are not made linear), and a pattern fill linked to a layer that was moved (Photoshop then
+starts the tiles elsewhere).
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Psd.cs#psd-flatten)]
 

@@ -60,6 +60,9 @@ internal sealed class PsdFile
 
     public bool Big => Version == 2;
 
+    /// <summary>The prefix of the block keys the pattern tables are kept under, with the first pattern fill layer's blocks.</summary>
+    public const string PatternKeyPrefix = "pattern table ";
+
     /// <summary>Gets whether the file is read for its layers: every record is kept, with the blocks the flattener reads.</summary>
     private bool _layered;
 
@@ -373,6 +376,16 @@ internal sealed class PsdFile
                     {
                         ReadLayerInfo(input, blockEnd, options);
                     }
+                }
+                else if (_layered && Records.Find(r => r.Has("PtFl")) is PsdLayerRecord user
+                    && (head[4..].SequenceEqual("Patt"u8) || head[4..].SequenceEqual("Pat2"u8) || head[4..].SequenceEqual("Pat3"u8)))
+                {
+                    // The pattern tables (the layer section's global data) are kept with the first pattern fill layer's blocks,
+                    // under PatternKeyPrefix and their key, where the flattener finds them.
+                    input.CheckMetadataBytes(user.Blocks.Where(b => b.Key.StartsWith(PatternKeyPrefix, StringComparison.Ordinal)).Sum(b => (long)b.Value.Length) + blockLength);
+                    byte[] patterns = new byte[blockLength];
+                    input.ReadExactly(patterns);
+                    user.Blocks[$"{PatternKeyPrefix}{user.Blocks.Count}"] = patterns;
                 }
 
                 input.Skip(blockEnd - input.Position);
