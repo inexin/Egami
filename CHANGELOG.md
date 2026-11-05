@@ -5,6 +5,18 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+DICOM fixes found by the pydicom and GDCM gates (DICOM Build Plan task 20).
+
+- A file whose 128-byte preamble holds a TIFF header (PS3.10 allows it; pydicom's MR_small.dcm has one) loaded as TIFF and
+  failed: `WithDicom()` now puts DICOM ahead of the other formats.
+- 8-bit and 1-bit samples in OW pixel data of Explicit VR Big Endian files read with each byte pair swapped; OW is 16-bit
+  words in the file's byte order, so they are now swapped back.
+- Unsigned 32-bit values of 2^31 and up were clamped to 2^31 − 1, so a lossless transcode changed them and 32-bit colour
+  showed wrong: they keep their 32 bits, and colour wider than 16 bits shows by its top 16.
+- Monochrome JPEG-LS and JPEG 2000 frames, and JPEG frames coded deeper than Bits Stored (GDCM codes 12-bit data as 16-bit
+  lossless JPEG), now load through the in-place path JPEG frames of Bits Stored already took, and a frame whose display is
+  its decoded values is not mapped at all: a load is within 5 % of the bare codec's.
+
 DICOM writing, a preview (DICOM Build Plan stage E, tasks 21 and 22). Additive; every new type is `[Experimental]`
 (`EGAMIX001`).
 

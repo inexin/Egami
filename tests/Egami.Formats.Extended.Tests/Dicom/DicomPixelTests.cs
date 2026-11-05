@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 
 using Egami.Formats;
@@ -293,6 +294,60 @@ public class DicomPixelTests
     }
 
     [Theory]
+    [InlineData("OW")]
+    [InlineData("OB")]
+    public void ReadsEightBitSamplesOfBigEndianFilesByTheirVR(string vr)
+    {
+        // OW is 16-bit words in the file's byte order, so a big-endian file stores 8-bit samples in OW with each pair swapped
+        // (pydicom and GDCM read pydicom's SC_rgb_small_odd_big_endian.dcm so); OB is plain bytes. Three RGB pixels, padded to 10.
+        byte[] samples = [166, 141, 52, 63, 87, 176, 1, 2, 3];
+        byte[] stored = [.. samples, 0];
+        if (vr == "OW")
+        {
+            for (int i = 0; i < stored.Length; i += 2)
+            {
+                (stored[i], stored[i + 1]) = (stored[i + 1], stored[i]);
+            }
+        }
+
+        DicomImageBuilder image = new DicomImageBuilder(1, 3, 8, samples: 3, photometric: "RGB").Native(stored, vr);
+        using Raster raster = Raster.Load(image.File(BigEndian), Context, Stored);
+        Assert.Equal(samples, Bytes(raster));
+    }
+
+    [Fact]
+    public void ShowsThirtyTwoBitValuesAsUnsigned()
+    {
+        // Unsigned 32-bit stored values above 2^31 - 1 read as themselves, and 32-bit colour keeps its top 16 bits.
+        uint[] gray = [0, 0x80000000, 0xFFFFFFFF, 16];
+        byte[] grayData = [.. gray.SelectMany(BitConverter.GetBytes)];
+        using (Raster stored = Raster.Load(new DicomImageBuilder(2, 2, 32).Native(grayData, "OW").File(Explicit), Context, Stored))
+        {
+            Assert.Equal([.. gray.Select(v => (float)v)], FloatValues(stored));
+        }
+
+        uint[] rgb = [0xFFFFFFFF, 0x00010000, 0x80000000, 0, 0x0001FFFF, 0xFFFF0000];
+        byte[] rgbData = [.. rgb.SelectMany(BitConverter.GetBytes)];
+        using Raster colour = Raster.Load(new DicomImageBuilder(1, 2, 32, samples: 3, photometric: "RGB").Native(rgbData, "OW").File(Explicit), Context);
+        Assert.Equal([65535, 1, 32768, 0, 1, 65535], MemoryMarshal.Cast<byte, ushort>(Bytes(colour)).ToArray());
+    }
+
+    [Fact]
+    public void FindsDicomBehindATiffPreamble()
+    {
+        // PS3.10 section 7.1 lets the preamble hold another format's header; pydicom's MR_small.dcm has a TIFF one ("II* "),
+        // which TIFF's signature matched first.
+        ushort[] values = [0, 1, 4095, 2048];
+        byte[] file = new DicomImageBuilder(2, 2, 16, 12).Native16(values).File(Explicit);
+        "II* "u8.CopyTo(file);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(4), 525800);
+        EgamiContext context = EgamiContext.Default.WithDicom();
+        Assert.Equal(DicomFormat.Info, Raster.Probe(file, context).Format);
+        using Raster raster = Raster.Load(file, context, Stored);
+        Assert.Equal([.. values.Select(v => (float)v)], FloatValues(raster));
+    }
+
+    [Theory]
     [InlineData(8, 1)]
     [InlineData(16, 1)]
     [InlineData(8, 3)]
@@ -380,17 +435,21 @@ public class DicomPixelTests
     }
 
     [Theory]
-    [InlineData(12, false, null, "MONOCHROME2")]
-    [InlineData(12, true, null, "MONOCHROME2")]
-    [InlineData(12, true, "40/400", "MONOCHROME1")]
-    [InlineData(16, false, "30000/20000", "MONOCHROME2")]
-    [InlineData(8, false, null, "MONOCHROME2")]
-    public void ShowsGrayJpegFramesAsTheRowByRowPathDoes(int bits, bool isSigned, string? window, string photometric)
+    [InlineData(12, 12, false, null, "MONOCHROME2")]
+    [InlineData(12, 12, true, null, "MONOCHROME2")]
+    [InlineData(12, 12, true, "40/400", "MONOCHROME1")]
+    [InlineData(16, 16, false, "30000/20000", "MONOCHROME2")]
+    [InlineData(8, 8, false, null, "MONOCHROME2")]
+    [InlineData(12, 16, false, null, "MONOCHROME2")]
+    [InlineData(12, 16, true, "40/400", "MONOCHROME2")]
+    [InlineData(12, 14, false, "2000/1000", "MONOCHROME1")]
+    public void ShowsGrayJpegFramesAsTheRowByRowPathDoes(int bits, int precision, bool isSigned, string? window, string photometric)
     {
+        // A codestream may be deeper than Bits Stored: GDCM codes 12-bit data as 16-bit lossless JPEG.
         const int Columns = 37, Rows = 23;
         ushort[] values = [.. Enumerable.Range(0, Columns * Rows).Select(i => (ushort)((i * 2654435761u >> 7) & ((1u << bits) - 1)))];
         using MemoryStream lossless = new();
-        JpegLosslessWriter.Write(lossless, values, 1, Columns, bits, 1);
+        JpegLosslessWriter.Write(lossless, values, 1, Columns, precision, 1);
         DicomImageBuilder image = new DicomImageBuilder(Rows, Columns, bits > 8 ? 16 : 8, bits, signed: isSigned, photometric: photometric)
             .Text(0x0028, 0x1052, "DS", "-1024").Text(0x0028, 0x1053, "DS", "2");
         if (window is not null)
@@ -407,6 +466,46 @@ public class DicomPixelTests
         DicomDetails details = Assert.IsType<DicomDetails>(whole.Metadata.FormatDetails);
         Assert.Equal(window is null, details.UsedMinMax);
         Assert.Equal("DICOM", whole.Metadata.FormatName);
+    }
+
+    [Theory]
+    [InlineData("jls", 12, false, null)]
+    [InlineData("jls", 12, true, "40/400")]
+    [InlineData("jls", 8, false, "100/50")]
+    [InlineData("jpeg2000/gray12-lossless.j2k", 12, false, null)]
+    [InlineData("jpeg2000/gray12-lossless.j2k", 12, true, "40/400")]
+    [InlineData("htj2k/gray12-lossless.j2c", 12, false, "2000/1000")]
+    [InlineData("htj2k/gray16-lossless.jph", 16, false, null)]
+    public void ShowsGrayJpegLsAndJpeg2000FramesAsTheRowByRowPathDoes(string codestream, int bits, bool isSigned, string? window)
+    {
+        byte[] data;
+        int columns, rows;
+        if (codestream == "jls")
+        {
+            columns = 37;
+            rows = 23;
+            ushort[] values = [.. Enumerable.Range(0, columns * rows).Select(i => (ushort)((i * 2654435761u >> 7) & ((1u << bits) - 1)))];
+            data = JpegLsTesting.Encode(values, 1, columns, bits);
+        }
+        else
+        {
+            data = File.ReadAllBytes(Path.Combine(Images, codestream));
+            var probe = Raster.Probe(data, Context);
+            (columns, rows) = (probe.Width, probe.Height);
+        }
+
+        DicomImageBuilder image = new DicomImageBuilder(rows, columns, bits > 8 ? 16 : 8, bits, signed: isSigned);
+        if (window is not null)
+        {
+            string[] parts = window.Split('/');
+            image.Text(0x0028, 0x1050, "DS", parts[0]).Text(0x0028, 0x1051, "DS", parts[1]);
+        }
+
+        byte[] file = image.Encapsulated([], data).File(codestream == "jls" ? JpegLsLossless : Jpeg2000Lossless);
+        using Raster whole = Raster.Load(file, Context);
+        using Raster byRows = DicomFile.Load(file).LoadFrame(0, null, Context);
+        Assert.Equal(byRows.GetType(), whole.GetType());
+        Assert.Equal(Bytes(byRows), Bytes(whole));
     }
 
     [Fact]

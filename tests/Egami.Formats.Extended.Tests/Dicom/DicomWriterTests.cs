@@ -92,6 +92,21 @@ public class DicomWriterTests
     }
 
     [Theory]
+    [InlineData("1.2.840.10008.1.2.5")]
+    [InlineData("1.2.840.10008.1.2")]
+    public void KeepsUnsignedThirtyTwoBitValuesAboveIntMax(string uid)
+    {
+        // Found by the pydicom gate: values of 2^31 and up were clamped to 2^31 - 1, so a lossless transcode changed them.
+        uint[] values = [0, 0x80000000, 0xFFFFFFFF, 7, 0x7FFFFFFF, 0x80000001];
+        byte[] data = [.. values.SelectMany(BitConverter.GetBytes)];
+        DicomFile original = DicomFile.Load(new DicomImageBuilder(2, 3, 32).Native(data, "OW").File(Explicit));
+
+        DicomFile written = Transcode(original, DicomTransferSyntax.FromUid(uid));
+
+        Assert.Equal(values, Samples(written, 0).Select(v => (uint)v));
+    }
+
+    [Theory]
     [InlineData("1.2.840.10008.1.2.1", "YBR_FULL")]
     [InlineData("1.2.840.10008.1.2.4.80", "YBR_FULL")]
     [InlineData("1.2.840.10008.1.2.4.110", null)]
