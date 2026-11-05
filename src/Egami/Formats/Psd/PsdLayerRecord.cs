@@ -13,7 +13,7 @@ internal sealed class PsdLayerRecord
 
     /// <summary>The keys whose data the flattener reads; the data of other blocks is skipped.</summary>
     private static readonly string[] KeptKeys =
-        ["SoCo", "vmsk", "vsms", "levl", "curv", "hue2", "brit", "CgEd", "lfx2", "lmfx"];
+        ["SoCo", "GdFl", "PtFl", "vmsk", "vsms", "levl", "curv", "hue2", "brit", "CgEd", "blnc", "selc", "mixr", "grdm", "thrs", "post", "phfl", "expA", "vibA", "clrL", "blwh", "lfx2", "lmfx"];
 
     public required PsdLayer Info { get; set; }
 

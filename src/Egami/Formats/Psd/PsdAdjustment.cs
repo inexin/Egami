@@ -4,14 +4,14 @@ namespace Egami.Formats.Psd;
 
 /// <summary>
 /// An adjustment layer's color change, read from its block as the Photoshop File Format Specification lays it out: levels
-/// (levl), curves (curv), hue/saturation (hue2), brightness/contrast (brit, with the CgEd descriptor newer files add) and invert
-/// (nvrt). Each maps a straight color, channels 0 to 1, to the adjusted one. Values are on Photoshop's 0 to 255 scale whatever
-/// the document's depth.
+/// (levl), curves (curv), hue/saturation (hue2), brightness/contrast (brit, with the CgEd descriptor newer files add), invert
+/// (nvrt), and the kinds in PsdAdjustment.Tones.cs and PsdAdjustment.Colors.cs. Each maps a straight color, channels 0 to 1, to
+/// the adjusted one. Values are on Photoshop's 0 to 255 scale whatever the document's depth.
 /// </summary>
-internal abstract class PsdAdjustment
+internal abstract partial class PsdAdjustment
 {
     /// <summary>Returns the adjustment of a layer record, or <see langword="null"/> when it has none Egami applies (or its data is damaged).</summary>
-    public static PsdAdjustment? Of(PsdLayerRecord record, bool gray)
+    public static PsdAdjustment? Of(PsdLayerRecord record, bool gray, EgamiContext context)
     {
         try
         {
@@ -39,6 +39,8 @@ internal abstract class PsdAdjustment
             {
                 return BrightnessContrast.Read(modern, record.Blocks.GetValueOrDefault("brit"));
             }
+
+            return OfMore(record, context);
         }
         catch (ArgumentOutOfRangeException)
         {

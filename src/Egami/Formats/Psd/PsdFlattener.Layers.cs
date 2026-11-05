@@ -19,10 +19,10 @@ internal sealed partial class PsdFlattener
     {
         Rect canvas = new(0, 0, _width, _height);
         Rect area;
-        float[]? solid = null;
+        Painter? solid = null;
         // A fill whose vector mask is thinned or feathered shows outside its shape, where Photoshop stored no pixels or only
         // the hard edge: it is drawn afresh.
-        if ((record.VectorMaskDensity < 255 || record.VectorMaskFeather > 0) && FillColor(record) is float[] thinned)
+        if ((record.VectorMaskDensity < 255 || record.VectorMaskFeather > 0) && FillOf(record) is Painter thinned)
         {
             solid = thinned;
             area = canvas;
@@ -35,9 +35,9 @@ internal sealed partial class PsdFlattener
         {
             area = Intersect(new Rect(record.Left, record.Top, ink.Width, ink.Height), canvas);
         }
-        else if (FillColor(record) is float[] color)
+        else if (FillOf(record) is Painter painter)
         {
-            solid = color;
+            solid = painter;
             (int w, int h) = record.Size;
             area = w > 0 && h > 0 ? Intersect(new Rect(record.Left, record.Top, w, h), canvas) : canvas;
         }
@@ -60,10 +60,7 @@ internal sealed partial class PsdFlattener
         {
             if (solid is not null)
             {
-                for (int x = 0; x < area.Width; x++)
-                {
-                    solid.CopyTo(colors.Slice(_stride * x, _stride));
-                }
+                solid.Row(y, area.X, colors);
             }
             else if (ink is not null)
             {
@@ -168,13 +165,14 @@ internal sealed partial class PsdFlattener
     }
 
     /// <summary>Returns a fill layer's color (SoCo) straight in the document's space (RGB, or CMYK tints), alpha 1, or <see langword="null"/>.</summary>
-    private float[]? FillColor(PsdLayerRecord record)
-    {
-        if (!record.Blocks.TryGetValue("SoCo", out byte[]? data) || PsdDescriptor.ReadVersioned(data)?.Get<PsdDescriptor>("Clr ") is not PsdDescriptor color)
-        {
-            return null;
-        }
+    private float[]? FillColor(PsdLayerRecord record) =>
+        record.Blocks.TryGetValue("SoCo", out byte[]? data) && PsdDescriptor.ReadVersioned(data)?.Get<PsdDescriptor>("Clr ") is PsdDescriptor color
+            ? ColorOf(color)
+            : null;
 
+    /// <summary>Returns a color descriptor's color straight in the document's space (RGB, CMYK tints or encoded Lab), alpha 1.</summary>
+    private float[] ColorOf(PsdDescriptor color)
+    {
         if (_channels == 4)
         {
             if (color.ClassId == "CMYC")
@@ -189,13 +187,7 @@ internal sealed partial class PsdFlattener
             return [(float)Math.Clamp(l, 0, 1), (float)Math.Clamp(a, 0, 1), (float)Math.Clamp(bb, 0, 1), 1];
         }
 
-        (double r, double g, double b) = color.ClassId switch
-        {
-            "Grsc" => Gray(1 - ((color.Number("Gry ") ?? 0) / 100)),
-            "CMYC" => Cmyk(color.Number("Cyn ") ?? 0, color.Number("Mgnt") ?? 0, color.Number("Ylw ") ?? 0, color.Number("Blck") ?? 0),
-            "HSBC" => Hsb(color.Number("H   ") ?? 0, color.Number("Strt") ?? 0, color.Number("Brgh") ?? 0),
-            _ => ((color.Number("Rd  ") ?? 0) / 255, (color.Number("Grn ") ?? 0) / 255, (color.Number("Bl  ") ?? color.Number("Bl ") ?? 0) / 255),
-        };
+        (double r, double g, double b) = PsdAdjustment.RgbOf(color);
         if (IsGray(_file))
         {
             double v = color.ClassId == "Grsc" ? r : (0.3 * r) + (0.59 * g) + (0.11 * b);
@@ -217,29 +209,6 @@ internal sealed partial class PsdFlattener
         }
 
         return [(float)Math.Clamp(r, 0, 1), (float)Math.Clamp(g, 0, 1), (float)Math.Clamp(b, 0, 1), 1];
-
-        static (double, double, double) Gray(double v) => (v, v, v);
-
-        static (double, double, double) Cmyk(double c, double m, double y, double k) =>
-            ((1 - (c / 100)) * (1 - (k / 100)), (1 - (m / 100)) * (1 - (k / 100)), (1 - (y / 100)) * (1 - (k / 100)));
-
-        static (double, double, double) Hsb(double h, double s, double v)
-        {
-            s /= 100;
-            v /= 100;
-            double sector = ((h % 360) + 360) % 360 / 60;
-            int i = (int)sector;
-            double f = sector - i, p = v * (1 - s), q = v * (1 - (s * f)), t = v * (1 - (s * (1 - f)));
-            return i switch
-            {
-                0 => (v, t, p),
-                1 => (q, v, p),
-                2 => (p, v, t),
-                3 => (p, q, v),
-                4 => (t, p, v),
-                _ => (v, p, q),
-            };
-        }
     }
 
     private static bool IsGray(PsdFile file) => file.ColorChannels == 1;

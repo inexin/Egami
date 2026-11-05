@@ -245,7 +245,7 @@ internal sealed partial class PsdFlattener
         {
             "Psd.EffectsSkipped" => $"Layer effects were not drawn, on {list}.",
             "Psd.AdjustmentSkipped" => $"Adjustment layers of a kind Egami does not apply were left out: {list}.",
-            "Psd.FillSkipped" => $"Gradient and pattern fill layers were left out: {list}.",
+            "Psd.FillSkipped" => $"Fill layers Egami cannot draw (noise gradients, patterns the document does not hold) were left out: {list}.",
             "Psd.BlendModeUnknown" => $"Layers with a blend mode Egami does not know were blended Normal: {list}.",
             "Psd.ClippingBlendSkipped" => $"Clipped layers that blend with the layers under the base were blended with the base alone: {list}.",
             _ => $"{id}: {list}.",
