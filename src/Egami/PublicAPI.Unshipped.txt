@@ -3,6 +3,40 @@ const Egami.Compression.Zstandard.DefaultLevel = 3 -> int
 const Egami.Compression.Zstandard.MaxLevel = 22 -> int
 const Egami.Compression.Zstandard.MinLevel = 1 -> int
 Egami.Compression.Zstandard
+Egami.Formats.SampleColor
+Egami.Formats.SampleColor.Gray = 1 -> Egami.Formats.SampleColor
+Egami.Formats.SampleColor.Rgb = 2 -> Egami.Formats.SampleColor
+Egami.Formats.SampleColor.Unknown = 0 -> Egami.Formats.SampleColor
+Egami.Formats.SampleColor.YCbCr = 3 -> Egami.Formats.SampleColor
+Egami.Formats.SampleComponent
+Egami.Formats.SampleComponent.Deconstruct(out int Precision, out bool IsSigned) -> void
+Egami.Formats.SampleComponent.Equals(Egami.Formats.SampleComponent other) -> bool
+Egami.Formats.SampleComponent.IsSigned.get -> bool
+Egami.Formats.SampleComponent.IsSigned.init -> void
+Egami.Formats.SampleComponent.Precision.get -> int
+Egami.Formats.SampleComponent.Precision.init -> void
+Egami.Formats.SampleComponent.SampleComponent() -> void
+Egami.Formats.SampleComponent.SampleComponent(int Precision, bool IsSigned) -> void
+Egami.Formats.SampleImage
+Egami.Formats.SampleImage.Color.get -> Egami.Formats.SampleColor
+Egami.Formats.SampleImage.Components.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.SampleComponent>!
+Egami.Formats.SampleImage.Height.get -> int
+Egami.Formats.SampleImage.Metadata.get -> Egami.Metadata.RasterMetadata!
+Egami.Formats.SampleImage.Row(int y) -> System.Span<int>
+Egami.Formats.SampleImage.Samples.get -> System.Memory<int>
+Egami.Formats.SampleImage.Width.get -> int
+override Egami.Formats.SampleComponent.GetHashCode() -> int
 static Egami.Compression.Zstandard.Compress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, int level = 3) -> int
 static Egami.Compression.Zstandard.Decompress(System.ReadOnlySpan<byte> source, System.Span<byte> destination) -> int
 static Egami.Compression.Zstandard.MaxCompressedLength(int length) -> int
+Egami.Formats.Jpeg2000.Jpeg2000Container.Jph = 3 -> Egami.Formats.Jpeg2000.Jpeg2000Container
+Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput.get -> bool
+Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput.set -> void
+static Egami.Formats.SampleComponent.operator !=(Egami.Formats.SampleComponent left, Egami.Formats.SampleComponent right) -> bool
+static Egami.Formats.SampleComponent.operator ==(Egami.Formats.SampleComponent left, Egami.Formats.SampleComponent right) -> bool
+static Egami.Formats.SampleImage.Load(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.SampleImage!
+static Egami.Formats.SampleImage.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.SampleImage!
+static Egami.Formats.SampleImage.Load(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.SampleImage!
+static Egami.Formats.SampleImage.Load(System.ReadOnlyMemory<byte> data, Egami.Formats.FormatInfo! format, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.SampleImage!
+~override Egami.Formats.SampleComponent.Equals(object obj) -> bool
+~override Egami.Formats.SampleComponent.ToString() -> string

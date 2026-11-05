@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <NoWarn>$(NoWarn);EGAMIX001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,7 @@
 
   <ItemGroup>
     <None Include="../images/ktx/*" LinkBase="images/ktx" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/fuzz/dicom-seeds/*" LinkBase="images/dicom" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../reference/ktx/*" LinkBase="reference/ktx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ops/duck.png" LinkBase="images/ops" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

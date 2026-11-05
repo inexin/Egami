@@ -20,7 +20,7 @@ namespace Egami.Formats.Jpeg2000;
 /// block's orientation and the sign coding table share another: few enough live values that the loops stay in registers.
 /// </para>
 /// </remarks>
-internal sealed class J2kTier1
+internal sealed partial class J2kTier1
 {
     // Flag bits per coefficient: the significance of the eight neighbours, the sign of the four direct ones, then its own state.
     private const uint SigNW = 1 << 0;
@@ -96,6 +96,12 @@ internal sealed class J2kTier1
     /// </summary>
     internal void Decode(J2kCodeBlock block, J2kBand band, J2kTileComponent tc, Span<int> integers, Span<float> floats, int offset, int stride)
     {
+        if ((tc.Style.BlockStyle & 0x40) != 0 && block.Kind != J2kBlockKind.Legacy)
+        {
+            DecodeHt(block, band, tc, integers, floats, offset, stride);
+            return;
+        }
+
         int width = block.Width;
         int height = block.Height;
         int planes = band.MagnitudePlanes + tc.RoiShift - block.ZeroPlanes;

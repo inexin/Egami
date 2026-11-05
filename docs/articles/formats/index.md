@@ -5,7 +5,7 @@ map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors
 2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB, layers included. HEIC phone photos load and save through the
 separate, opt-in Egami.Heic package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
 [Egami.Svg](../guides/svg.md) and [Egami.Metafiles](../guides/metafiles.md) packages, and PCX, SGI, Sun raster, XBM, XPM, WBMP
-Farbfeld, JPEG-LS, DDS and KTX textures and camera RAW (DNG and the camera makers' formats, with DNG written) through
+Farbfeld, JPEG-LS, DDS and KTX textures, DPX and Cineon film frames, camera RAW (DNG and the camera makers' formats, with DNG written) and, as a preview, the DICOM dataset through
 [Egami.Formats.Extended](extended.md). The Package column says which package holds each format. Every reader checks sizes against the
 safety limits before it allocates, and every reader has been fuzzed.
 
@@ -48,7 +48,9 @@ through [`Vp8StreamDecoder`](vp8.md) and [`Av1StreamDecoder`](av1.md), VP8 and A
 | [JPEG-LS](jpegls.md) | T.87 lossless and near-lossless, 2 to 16 bits, every interleave mode, restart markers, mapping tables, subsampling and HP colour transforms | Lossless and near-lossless, 2 to 16 bits, 1 to 4 components, HP colour transforms | `Gray8`, `GrayAlpha8`, `Rgb8`, `Rgba8` or their 16-bit forms | Egami.Formats.Extended |
 | [DDS](dds.md) | Legacy and DX10 headers, BC1 to BC7, every DXGI format DirectXTex reads; mips, cube maps, arrays and volumes | Uncompressed formats and BC1 to BC7, with mips, arrays and cube maps | The nearest to the stored format: `Rgba8`, `Gray8`, `Rgb8`, `Rgba16`, `RgbaF16`, `RgbaF32` and others | Egami.Formats.Extended |
 | [KTX](ktx.md) | KTX 1.1 and KTX 2.0, uncompressed or Zstandard and zlib supercompressed; BC1 to BC7 and the uncompressed Vulkan and OpenGL formats; mips, cube maps, arrays and volumes | No | As DDS: `Rgba8`, `Gray8`, `Rgb8`, `Rgba16`, `RgbaF16`, `RgbaF32` and others | Egami.Formats.Extended |
+| [DPX and Cineon](dpx.md) | DPX 1.0 to 3.0 and Cineon 4.5: 1 to 16-bit integer and 32 and 64-bit float samples, every packing and byte order, luma, RGB, RGBA and CbYCr, run-length coding; every image element; log to linear on request | DPX: gray, RGB or RGBA at 8, 10, 12 or 16 bits; Cineon: 10-bit RGB | The stored code values: `Rgb16`, `Rgba16`, `Gray16` or their 8-bit forms; `RgbF32` and others for float or linearized | Egami.Formats.Extended |
 | [Camera RAW](raw.md) | DNG 1.0 to 1.7, Canon CR2, Nikon NEF and NRW, Pentax PEF, Sony ARW and SR2, Olympus ORF, Panasonic RW2 and Fujifilm RAF, developed on load (white balance, demosaicing, noise reduction, opcodes, camera profiles, lens corrections), or their previews or sensor mosaic; CR3 previews and metadata | DNG: any RAW file converted with its sensor data unchanged (`RawFormat.ConvertToDng`), or any raster | `Rgb16` sRGB when developed; `Gray16` for the mosaic | Egami.Formats.Extended |
+| [DICOM](dicom.md) | Preview: the dataset of PS3.10 files (`DicomFile`), every native transfer syntax and deflated, sequences, character sets, compressed pixel data as fragments; probed, but the pixel data is not decoded yet | No | — | Egami.Formats.Extended |
 
 `Raster.Load` returns the natural type; `Raster.Load<TPixel>` decodes straight into the type you ask for, converting row by row.
 
@@ -103,6 +105,21 @@ another format's details.
 Each format is described by a `FormatInfo`: its name, extensions, MIME types, and how to recognize it from its first bytes.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#format-info)]
+
+## Stored samples
+
+A container that keeps its own pixel description, such as DICOM, needs the values a codestream stores rather than pixels.
+`SampleImage.Load` decodes JPEG (baseline, extended 12-bit and lossless at 2 to 16 bits), JPEG 2000 and JPEG XL (integer
+samples up to 16 bits) that way: one `int` a sample, interleaved, at each component's own precision and sign
+(`SampleComponent`), with no color conversion (`SampleColor` says what the components are), no widening and no offset. Other
+formats throw `NotSupportedException`, as do `Region`, `MinimumSize` and `ConvertColorTo`. Chroma at less than full resolution
+is brought to the image's size.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/StoredSamples.cs#sample-image)]
+
+A codestream taken out of a container is read as the format the container names, without detection:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/StoredSamples.cs#sample-image-format)]
 
 ## Recipes
 

@@ -139,6 +139,15 @@ internal sealed class J2kCodestream
 
     internal ushort Profile { get; private set; }
 
+    /// <summary>Gets whether the codestream is an HTJ2K one (T.814): SIZ Rsiz bit 14, or a CAP marker with Part 15 capabilities.</summary>
+    internal bool HighThroughput => (Profile & 0x4000) != 0 || HtCapabilities >= 0;
+
+    /// <summary>Gets Ccap15, the HTJ2K capabilities of the CAP marker (T.814 Table A.2), or -1 when the codestream has none.</summary>
+    internal int HtCapabilities { get; private set; } = -1;
+
+    /// <summary>Gets CPFnum, the profile of the T.800 codestream the HTJ2K one transcodes from (T.814 A.6), or -1 without CPF.</summary>
+    internal long CorrespondingProfile { get; private set; } = -1;
+
     internal int Width { get; private set; }
 
     internal int Height { get; private set; }
@@ -280,8 +289,12 @@ internal sealed class J2kCodestream
                     ReadComment(body);
                     break;
                 case Cap:
-                    throw new NotSupportedException("The codestream uses High-Throughput JPEG 2000 (Part 15, the CAP marker), which Egami does not read yet.");
-                case Tlm or Plm or Crg or Cpf:
+                    ReadCap(body);
+                    break;
+                case Cpf:
+                    ReadCpf(body);
+                    break;
+                case Tlm or Plm or Crg:
                     break;
                 default:
                     if (marker is >= 0xFF70 and <= 0xFF7F)
@@ -334,6 +347,62 @@ internal sealed class J2kCodestream
         return c < Components.Length ? c : throw new InvalidDataException($"A marker names component {c}, which SIZ does not have.");
     }
 
+    /// <summary>
+    /// Reads CAP (T.800 A.5.2, T.814 A.3): Pcap says which parts of JPEG 2000 the codestream needs, then one Ccap per part.
+    /// Part 15 (HTJ2K) is read; Part 2 is not.
+    /// </summary>
+    private void ReadCap(ReadOnlySpan<byte> body)
+    {
+        if (body.Length < 4)
+        {
+            throw new InvalidDataException("CAP is too short.");
+        }
+
+        uint pcap = BinaryPrimitives.ReadUInt32BigEndian(body);
+        if ((pcap & (1u << 30)) != 0)
+        {
+            throw new NotSupportedException("The codestream needs JPEG 2000 Part 2 capabilities (CAP), which Egami does not read.");
+        }
+
+        int at = 4;
+        for (int part = 1; part <= 32; part++)
+        {
+            if ((pcap & (1u << (32 - part))) == 0)
+            {
+                continue;
+            }
+
+            if (at + 2 > body.Length)
+            {
+                throw new InvalidDataException("CAP is too short for the capabilities Pcap lists.");
+            }
+
+            int ccap = BinaryPrimitives.ReadUInt16BigEndian(body[at..]);
+            at += 2;
+            if (part == 15)
+            {
+                HtCapabilities = ccap;
+            }
+        }
+    }
+
+    /// <summary>Reads CPF (T.814 A.6): CPFnum, from 16-bit Pcpf words, least significant first, less one.</summary>
+    private void ReadCpf(ReadOnlySpan<byte> body)
+    {
+        if (body.Length < 2 || (body.Length & 1) != 0)
+        {
+            throw new InvalidDataException("CPF has a malformed length.");
+        }
+
+        long value = 0;
+        for (int i = 0; i < body.Length / 2 && i < 3; i++)
+        {
+            value |= (long)BinaryPrimitives.ReadUInt16BigEndian(body[(2 * i)..]) << (16 * i);
+        }
+
+        CorrespondingProfile = value - 1;
+    }
+
     private void ReadSiz(ReadOnlySpan<byte> body, SafetyLimits limits)
     {
         if (body.Length < 36)
@@ -345,11 +414,6 @@ internal sealed class J2kCodestream
         if ((Profile & 0x8000) != 0)
         {
             throw new NotSupportedException("The codestream uses JPEG 2000 Part 2 extensions (SIZ Rsiz bit 15), which Egami does not read.");
-        }
-
-        if ((Profile & 0x4000) != 0)
-        {
-            throw new NotSupportedException("The codestream uses High-Throughput JPEG 2000 (Part 15, SIZ Rsiz bit 14), which Egami does not read yet.");
         }
 
         uint xsiz = BinaryPrimitives.ReadUInt32BigEndian(body[2..]);
@@ -474,11 +538,6 @@ internal sealed class J2kCodestream
         if (levels > 32 || xcb > 10 || ycb > 10 || xcb + ycb > 12)
         {
             throw new InvalidDataException("COD or COC gives more than 32 decomposition levels or code-blocks over 4,096 samples.");
-        }
-
-        if ((blockStyle & 0x40) != 0)
-        {
-            throw new NotSupportedException("The codestream uses High-Throughput code-blocks (Part 15), which Egami does not read yet.");
         }
 
         if (transform > 1)

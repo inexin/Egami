@@ -1,4 +1,6 @@
 using Egami.Formats.Extended.Dds;
+using Egami.Formats.Extended.Dicom;
+using Egami.Formats.Extended.Dpx;
 using Egami.Formats.Extended.Farbfeld;
 using Egami.Formats.Extended.JpegLs;
 using Egami.Formats.Extended.Ktx;
@@ -23,7 +25,7 @@ public static class ExtendedContextExtensions
 {
     /// <summary>
     /// Returns a copy of <paramref name="context"/> with every stable format of this package registered: PCX, SGI, Sun raster,
-    /// XBM, XPM, WBMP, Farbfeld, DDS, KTX, KTX 2, JPEG-LS and camera RAW. Formats in preview are never included; each has its own method. Call it once, for example
+    /// XBM, XPM, WBMP, Farbfeld, DDS, KTX, KTX 2, JPEG-LS, camera RAW, DPX and Cineon. Formats in preview are never included; each has its own method. Call it once, for example
     /// <c>EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats())</c> at startup.
     /// </summary>
     /// <param name="context">The context to add the formats to.</param>
@@ -35,7 +37,7 @@ public static class ExtendedContextExtensions
     public static EgamiContext WithExtendedFormats(this EgamiContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        return context.WithPcx().WithSgi().WithSunRaster().WithXbm().WithXpm().WithWbmp().WithFarbfeld().WithDds().WithKtx().WithKtx2().WithJpegLs().WithRaw();
+        return context.WithPcx().WithSgi().WithSunRaster().WithXbm().WithXpm().WithWbmp().WithFarbfeld().WithDds().WithKtx().WithKtx2().WithJpegLs().WithRaw().WithDpx().WithCineon();
     }
 
     /// <summary>Returns a copy of <paramref name="context"/> that reads and writes PCX (<see cref="PcxFormat"/>).</summary>
@@ -98,6 +100,18 @@ public static class ExtendedContextExtensions
     /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
     public static EgamiContext WithKtx2(this EgamiContext context) => Add(context, Ktx2Format.Info);
 
+    /// <summary>Returns a copy of <paramref name="context"/> that reads and writes DPX (<see cref="DpxFormat"/>).</summary>
+    /// <param name="context">The context to add the format to.</param>
+    /// <returns>The new context.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+    public static EgamiContext WithDpx(this EgamiContext context) => Add(context, DpxFormat.Info);
+
+    /// <summary>Returns a copy of <paramref name="context"/> that reads and writes Cineon (<see cref="CineonFormat"/>).</summary>
+    /// <param name="context">The context to add the format to.</param>
+    /// <returns>The new context.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+    public static EgamiContext WithCineon(this EgamiContext context) => Add(context, CineonFormat.Info);
+
     /// <summary>
     /// Returns a copy of <paramref name="context"/> that reads and writes JPEG-LS (<see cref="JpegLsFormat"/>). JPEG-LS is
     /// detected ahead of the other formats, since a JPEG-LS file starts as a JPEG file does; without it, a .jls file fails to
@@ -132,6 +146,19 @@ public static class ExtendedContextExtensions
         ArgumentNullException.ThrowIfNull(context);
         return context with { Formats = [format, .. context.Formats.Where(f => !string.Equals(f.Name, format.Name, StringComparison.OrdinalIgnoreCase))] };
     }
+
+    /// <summary>
+    /// Returns a copy of <paramref name="context"/> that detects and probes DICOM (<see cref="DicomFormat"/>). In preview, so
+    /// <see cref="WithExtendedFormats"/> leaves it out; pixel data decoding comes in a later version.
+    /// </summary>
+    /// <param name="context">The context to add the format to.</param>
+    /// <returns>The new context.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Dicom.cs" region="dicom-probe"/>
+    /// </example>
+    [System.Diagnostics.CodeAnalysis.Experimental(DicomFile.DiagnosticId, UrlFormat = DicomFile.DiagnosticUrl)]
+    public static EgamiContext WithDicom(this EgamiContext context) => Add(context, DicomFormat.Info);
 
     private static EgamiContext Add(EgamiContext context, FormatInfo format)
     {

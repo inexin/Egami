@@ -29,6 +29,8 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "jbig2": "tests/images/jbig2/*", "jbig2codec": "tests/images/fuzz/jbig2codec-seeds/*", "ccitt": "tests/images/fuzz/ccitt-seeds/*", "zstd": "tests/images/zstd/*.zst", "zstd-write": "tests/images/fuzz/zstd-write-seeds/*", "xz": "tests/images/xz/*.xz", "xz-write": "tests/images/fuzz/zstd-write-seeds/*",
          "cube": "tests/images/fuzz/cube-seeds/*", "inktiff": "tests/images/fuzz/inktiff-seeds/*",
          "jpeg2000": "tests/images/fuzz/jpeg2000-seeds/*", "jpeg2000codec": "tests/images/fuzz/jpeg2000codec-seeds/*",
+         # HTJ2K (DICOM Build Plan task 23): the jpeg2000 target with the HT corpus as seeds.
+         "htj2k": "tests/images/htj2k/*",
          "font": "tests/images/fuzz/font-seeds/*", "hinting": "tests/images/fuzz/hinting-seeds/*", "cff": "tests/images/fuzz/cff-seeds/*", "fontdata": "tests/images/fuzz/fontdata-seeds/*", "subset": "tests/images/fuzz/font-seeds/*",
          "svgpath": "tests/images/fuzz/svgpath-seeds/*",
          "woff2": "tests/images/fuzz/woff2-seeds/*", "gvar": "tests/images/fuzz/gvar-seeds/*", "cff2": "tests/images/fuzz/cff2-seeds/*",
@@ -48,7 +50,7 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "jxl": "tests/images/fuzz/jxl-seeds/*", "jxlbox": "tests/images/fuzz/jxlbox-seeds/*", "jxlentropy": "tests/images/fuzz/jxlentropy-seeds/*",
          "jxl-write": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-lossy": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-frames": "tests/images/fuzz/jpeg-write-seeds/*", "jxl-partial": "tests/images/fuzz/jxl-seeds/*", "jxl-jpeg": "tests/images/jpeg/duck-q50.jpg tests/images/jpeg/odd-*.jpg tests/images/jpeg/transform/t4*.jpg tests/images/jpeg/transform/tprog.jpg tests/images/jpeg/testorig.jpg",
          "css": "tests/images/fuzz/css-seeds/*", "hocr": "tests/images/ocr/*.hocr", "alto": "tests/images/ocr/*.xml", "paragraph": "tests/images/fuzz/paragraph-seeds/*",
-         "svg": "tests/images/fuzz/svg-seeds/*", "dds": "tests/images/fuzz/dds-seeds/*", "ktx": "tests/images/fuzz/ktx-seeds/*", "ktx2": "tests/images/fuzz/ktx2-seeds/*", "jpegls": "tests/images/fuzz/jpegls-seeds/*", "raw": "tests/images/fuzz/raw-seeds/*",
+         "svg": "tests/images/fuzz/svg-seeds/*", "dds": "tests/images/fuzz/dds-seeds/*", "ktx": "tests/images/fuzz/ktx-seeds/*", "ktx2": "tests/images/fuzz/ktx2-seeds/*", "jpegls": "tests/images/fuzz/jpegls-seeds/*", "dpx": "tests/images/fuzz/dpx-seeds/*", "cineon": "tests/images/fuzz/cineon-seeds/*", "dicom": "tests/images/fuzz/dicom-seeds/*", "raw": "tests/images/fuzz/raw-seeds/*",
          # One RAW format family at a time: the raw target with that family's seeds.
          "raw-dng": "tests/images/fuzz/raw-seeds/*.dng", "raw-canon": "tests/images/fuzz/raw-seeds/*.cr2 tests/images/fuzz/raw-seeds/*.cr3",
          "raw-nikon": "tests/images/fuzz/raw-seeds/*.nef", "raw-fuji": "tests/images/fuzz/raw-seeds/*.raf", "raw-samsung": "tests/images/fuzz/raw-seeds/*.srw",
@@ -105,7 +107,7 @@ def main():
             role = "" if instances == 1 else "-M main" if i == 0 else f"-S secondary{i}"
             subprocess.run(["docker", "rm", "-f", name], capture_output=True)
             script = SCRIPT.format(seeds=" ".join("/src/" + pattern for pattern in SEEDS[target].split()), seconds=int(hours * 3600), target=target, role=role,
-                                   harness="raw" if target.startswith("raw-") else "tiff" if target == "tiff-lossless" else target)
+                                   harness="raw" if target.startswith("raw-") else "tiff" if target == "tiff-lossless" else "jpeg2000" if target == "htj2k" else target)
             # AFL_AUTORESUME carries on from an earlier run's queue in the same findings directory.
             subprocess.run(["docker", "run", "-d", "--name", name, "-e", "AFL_AUTORESUME=1", "-v", f"{repo}:/src:ro", "-v", f"{findings}:/findings",
                             "egami-fuzz", "bash", "-c", script], check=True)

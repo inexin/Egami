@@ -1,4 +1,144 @@
 #nullable enable
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDataset
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDataset.Contains(Egami.Formats.Extended.Dicom.DicomTag tag) -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDataset.Count.get -> int
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDataset.GetEnumerator() -> System.Collections.Generic.IEnumerator<Egami.Formats.Extended.Dicom.DicomElement!>!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDataset.GetNumber(string! keyword) -> double?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDataset.GetString(string! keyword) -> string?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDataset.this[Egami.Formats.Extended.Dicom.DicomTag tag].get -> Egami.Formats.Extended.Dicom.DicomElement?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDataset.this[int index].get -> Egami.Formats.Extended.Dicom.DicomElement!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDataset.this[string! keyword].get -> Egami.Formats.Extended.Dicom.DicomElement?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.Fragments.get -> Egami.Formats.Extended.Dicom.DicomFragments?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetDate() -> System.DateOnly?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetDateTime() -> System.DateTimeOffset?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetIntegers() -> long[]!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetNumbers() -> double[]!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetPersonName() -> Egami.Formats.Extended.Dicom.DicomPersonName?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetString() -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetStrings() -> System.Collections.Generic.IReadOnlyList<string!>!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetTags() -> Egami.Formats.Extended.Dicom.DicomTag[]!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetTime() -> System.TimeOnly?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.IsEmpty.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.Items.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Extended.Dicom.DicomDataset!>!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.Offset.get -> long
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.RawValue.get -> System.ReadOnlyMemory<byte>
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.Tag.get -> Egami.Formats.Extended.Dicom.DicomTag
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.VR.get -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFile
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFile.Dataset.get -> Egami.Formats.Extended.Dicom.DicomDataset!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFile.FileMetaInformation.get -> Egami.Formats.Extended.Dicom.DicomDataset!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFile.HasPreamble.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFile.TransferSyntax.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFile.Warnings.get -> System.Collections.Generic.IReadOnlyList<Egami.EgamiDiagnostic>!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFormat
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFragments
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFragments.BasicOffsetTable.get -> System.Collections.Generic.IReadOnlyList<uint>!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFragments.ExtendedOffsetTable.get -> System.Collections.Generic.IReadOnlyList<ulong>!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFragments.ExtendedOffsetTableLengths.get -> System.Collections.Generic.IReadOnlyList<ulong>!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFragments.Fragments.get -> System.Collections.Generic.IReadOnlyList<System.ReadOnlyMemory<byte>>!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.<Clone>$() -> Egami.Formats.Extended.Dicom.DicomPersonName!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.Alphabetic.get -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.Alphabetic.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.Deconstruct(out string! Alphabetic, out string! Ideographic, out string! Phonetic) -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.DicomPersonName(string! Alphabetic, string! Ideographic, string! Phonetic) -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.Equals(Egami.Formats.Extended.Dicom.DicomPersonName? other) -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.FamilyName.get -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.GivenName.get -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.Ideographic.get -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.Ideographic.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.MiddleName.get -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.NamePrefix.get -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.NameSuffix.get -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.Phonetic.get -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomPersonName.Phonetic.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTag
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTag.CompareTo(Egami.Formats.Extended.Dicom.DicomTag other) -> int
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTag.DicomTag() -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTag.DicomTag(ushort group, ushort element) -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTag.Element.get -> ushort
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTag.Equals(Egami.Formats.Extended.Dicom.DicomTag other) -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTag.Group.get -> ushort
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTag.IsPrivate.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTag.IsRetired.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTag.Keyword.get -> string?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTag.Name.get -> string?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTag.Value.get -> uint
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTransferSyntax
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsBigEndian.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsDeflated.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsEncapsulated.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsExplicitVR.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsKnown.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTransferSyntax.Name.get -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomTransferSyntax.Uid.get -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.AE = 1 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.AS = 2 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.AT = 3 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.CS = 4 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.DA = 5 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.DS = 6 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.DT = 7 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.FD = 8 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.FL = 9 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.IS = 10 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.LO = 11 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.LT = 12 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.OB = 13 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.OD = 14 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.OF = 15 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.OL = 16 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.OV = 17 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.OW = 18 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.PN = 19 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.SH = 20 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.SL = 21 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.SQ = 22 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.SS = 23 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.ST = 24 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.SV = 25 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.TM = 26 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.UC = 27 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.UI = 28 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.UL = 29 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.UN = 0 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.UR = 30 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.US = 31 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.UT = 32 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVR.UV = 33 -> Egami.Formats.Extended.Dicom.DicomVR
+[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomElement.ToString() -> string!
+[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomPersonName.Equals(object? obj) -> bool
+[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomPersonName.GetHashCode() -> int
+[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomPersonName.ToString() -> string!
+[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomTag.GetHashCode() -> int
+[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomTag.ToString() -> string!
+[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomTransferSyntax.ToString() -> string!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomFile.DictionaryEdition.get -> string!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomFile.Load(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.Extended.Dicom.DicomFile!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomFile.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.Extended.Dicom.DicomFile!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomFile.Load(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.Extended.Dicom.DicomFile!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomFormat.Info.get -> Egami.Formats.FormatInfo!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomPersonName.operator !=(Egami.Formats.Extended.Dicom.DicomPersonName? left, Egami.Formats.Extended.Dicom.DicomPersonName? right) -> bool
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomPersonName.operator ==(Egami.Formats.Extended.Dicom.DicomPersonName? left, Egami.Formats.Extended.Dicom.DicomPersonName? right) -> bool
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTag.FromKeyword(string! keyword) -> Egami.Formats.Extended.Dicom.DicomTag
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTag.operator !=(Egami.Formats.Extended.Dicom.DicomTag left, Egami.Formats.Extended.Dicom.DicomTag right) -> bool
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTag.operator <(Egami.Formats.Extended.Dicom.DicomTag left, Egami.Formats.Extended.Dicom.DicomTag right) -> bool
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTag.operator <=(Egami.Formats.Extended.Dicom.DicomTag left, Egami.Formats.Extended.Dicom.DicomTag right) -> bool
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTag.operator ==(Egami.Formats.Extended.Dicom.DicomTag left, Egami.Formats.Extended.Dicom.DicomTag right) -> bool
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTag.operator >(Egami.Formats.Extended.Dicom.DicomTag left, Egami.Formats.Extended.Dicom.DicomTag right) -> bool
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTag.operator >=(Egami.Formats.Extended.Dicom.DicomTag left, Egami.Formats.Extended.Dicom.DicomTag right) -> bool
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTag.PixelData.get -> Egami.Formats.Extended.Dicom.DicomTag
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTag.SpecificCharacterSet.get -> Egami.Formats.Extended.Dicom.DicomTag
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTag.TransferSyntaxUid.get -> Egami.Formats.Extended.Dicom.DicomTag
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTag.TryFromKeyword(string? keyword, out Egami.Formats.Extended.Dicom.DicomTag tag) -> bool
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.DeflatedExplicitVRLittleEndian.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.ExplicitVRBigEndian.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.ExplicitVRLittleEndian.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.FromUid(string! uid) -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.ImplicitVRLittleEndian.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.ExtendedContextExtensions.WithDicom(this Egami.EgamiContext! context) -> Egami.EgamiContext!
 Egami.Formats.Extended.Dds.DdsTextureFormat.D16 = 47 -> Egami.Formats.Extended.Dds.DdsTextureFormat
 Egami.Formats.Extended.Dds.DdsTextureFormat.D24S8 = 48 -> Egami.Formats.Extended.Dds.DdsTextureFormat
 Egami.Formats.Extended.Dds.DdsTextureFormat.D32F = 49 -> Egami.Formats.Extended.Dds.DdsTextureFormat
@@ -26,6 +166,139 @@ Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32SInt = 46 -> Egami.Formats.Ext
 Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba32UInt = 45 -> Egami.Formats.Extended.Dds.DdsTextureFormat
 Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8SInt = 32 -> Egami.Formats.Extended.Dds.DdsTextureFormat
 Egami.Formats.Extended.Dds.DdsTextureFormat.Rgba8UInt = 31 -> Egami.Formats.Extended.Dds.DdsTextureFormat
+Egami.Formats.Extended.Dpx.CineonDetails
+Egami.Formats.Extended.Dpx.CineonDetails.BitsPerSample.get -> int
+Egami.Formats.Extended.Dpx.CineonDetails.BitsPerSample.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.Channels.get -> int
+Egami.Formats.Extended.Dpx.CineonDetails.Channels.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.CineonDetails() -> void
+Egami.Formats.Extended.Dpx.CineonDetails.CreationDate.get -> string!
+Egami.Formats.Extended.Dpx.CineonDetails.CreationDate.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.CreationTime.get -> string!
+Egami.Formats.Extended.Dpx.CineonDetails.CreationTime.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.DeviceModel.get -> string!
+Egami.Formats.Extended.Dpx.CineonDetails.DeviceModel.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.DeviceSerial.get -> string!
+Egami.Formats.Extended.Dpx.CineonDetails.DeviceSerial.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.FileName.get -> string!
+Egami.Formats.Extended.Dpx.CineonDetails.FileName.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.FilmCount.get -> uint?
+Egami.Formats.Extended.Dpx.CineonDetails.FilmCount.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.FilmFormat.get -> string!
+Egami.Formats.Extended.Dpx.CineonDetails.FilmFormat.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.FilmPrefix.get -> uint?
+Egami.Formats.Extended.Dpx.CineonDetails.FilmPrefix.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.FrameId.get -> string!
+Egami.Formats.Extended.Dpx.CineonDetails.FrameId.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.FramePosition.get -> uint?
+Egami.Formats.Extended.Dpx.CineonDetails.FramePosition.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.FrameRate.get -> float?
+Egami.Formats.Extended.Dpx.CineonDetails.FrameRate.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.InputDevice.get -> string!
+Egami.Formats.Extended.Dpx.CineonDetails.InputDevice.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.Label.get -> string!
+Egami.Formats.Extended.Dpx.CineonDetails.Label.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.Orientation.get -> int
+Egami.Formats.Extended.Dpx.CineonDetails.Orientation.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.Packing.get -> int
+Egami.Formats.Extended.Dpx.CineonDetails.Packing.set -> void
+Egami.Formats.Extended.Dpx.CineonDetails.SlateInfo.get -> string!
+Egami.Formats.Extended.Dpx.CineonDetails.SlateInfo.set -> void
+Egami.Formats.Extended.Dpx.CineonFormat
+Egami.Formats.Extended.Dpx.DpxDetails
+Egami.Formats.Extended.Dpx.DpxDetails.BigEndian.get -> bool
+Egami.Formats.Extended.Dpx.DpxDetails.BigEndian.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.BitsPerSample.get -> int
+Egami.Formats.Extended.Dpx.DpxDetails.BitsPerSample.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.Colorimetric.get -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxDetails.Colorimetric.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.Copyright.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.Copyright.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.CreationTime.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.CreationTime.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.Creator.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.Creator.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.Description.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.Description.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.Descriptor.get -> int
+Egami.Formats.Extended.Dpx.DpxDetails.Descriptor.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.DpxDetails() -> void
+Egami.Formats.Extended.Dpx.DpxDetails.Element.get -> int
+Egami.Formats.Extended.Dpx.DpxDetails.Element.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.ElementCount.get -> int
+Egami.Formats.Extended.Dpx.DpxDetails.ElementCount.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.FileName.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.FileName.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.FilmCount.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.FilmCount.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.FilmFormat.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.FilmFormat.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.FilmManufacturer.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.FilmManufacturer.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.FilmOffset.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.FilmOffset.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.FilmPrefix.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.FilmPrefix.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.FilmType.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.FilmType.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.FrameId.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.FrameId.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.FramePosition.get -> uint?
+Egami.Formats.Extended.Dpx.DpxDetails.FramePosition.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.FrameRate.get -> float?
+Egami.Formats.Extended.Dpx.DpxDetails.FrameRate.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.InputDevice.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.InputDevice.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.Orientation.get -> int
+Egami.Formats.Extended.Dpx.DpxDetails.Orientation.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.Packing.get -> int
+Egami.Formats.Extended.Dpx.DpxDetails.Packing.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.Project.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.Project.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.RunLength.get -> bool
+Egami.Formats.Extended.Dpx.DpxDetails.RunLength.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.SequenceLength.get -> uint?
+Egami.Formats.Extended.Dpx.DpxDetails.SequenceLength.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.SlateInfo.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.SlateInfo.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.Timecode.get -> string?
+Egami.Formats.Extended.Dpx.DpxDetails.Timecode.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.Transfer.get -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxDetails.Transfer.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.UserBits.get -> uint?
+Egami.Formats.Extended.Dpx.DpxDetails.UserBits.set -> void
+Egami.Formats.Extended.Dpx.DpxDetails.Version.get -> string!
+Egami.Formats.Extended.Dpx.DpxDetails.Version.set -> void
+Egami.Formats.Extended.Dpx.DpxFormat
+Egami.Formats.Extended.Dpx.DpxReaderOptions
+Egami.Formats.Extended.Dpx.DpxReaderOptions.DpxReaderOptions() -> void
+Egami.Formats.Extended.Dpx.DpxReaderOptions.Element.get -> int?
+Egami.Formats.Extended.Dpx.DpxReaderOptions.Element.init -> void
+Egami.Formats.Extended.Dpx.DpxReaderOptions.Equals(Egami.Formats.Extended.Dpx.DpxReaderOptions? other) -> bool
+Egami.Formats.Extended.Dpx.DpxReaderOptions.Linearize.get -> bool
+Egami.Formats.Extended.Dpx.DpxReaderOptions.Linearize.init -> void
+Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.Linear = 2 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.Logarithmic = 3 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.NtscComposite = 9 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.PalComposite = 10 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.PrintingDensity = 1 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.Rec601Bg = 7 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.Rec601M = 8 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.Rec709 = 6 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.Smpte274M = 5 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.UnspecifiedVideo = 4 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.UserDefined = 0 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.ZHomogeneous = 12 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxTransfer.ZLinear = 11 -> Egami.Formats.Extended.Dpx.DpxTransfer
+Egami.Formats.Extended.Dpx.DpxWriterOptions
+Egami.Formats.Extended.Dpx.DpxWriterOptions.BigEndian.get -> bool
+Egami.Formats.Extended.Dpx.DpxWriterOptions.BigEndian.init -> void
+Egami.Formats.Extended.Dpx.DpxWriterOptions.BitsPerSample.get -> int?
+Egami.Formats.Extended.Dpx.DpxWriterOptions.BitsPerSample.init -> void
+Egami.Formats.Extended.Dpx.DpxWriterOptions.DpxWriterOptions() -> void
+Egami.Formats.Extended.Dpx.DpxWriterOptions.Transfer.get -> Egami.Formats.Extended.Dpx.DpxTransfer?
+Egami.Formats.Extended.Dpx.DpxWriterOptions.Transfer.init -> void
 Egami.Formats.Extended.JpegLs.JpegLsColorTransform
 Egami.Formats.Extended.JpegLs.JpegLsColorTransform.Hp1 = 1 -> Egami.Formats.Extended.JpegLs.JpegLsColorTransform
 Egami.Formats.Extended.JpegLs.JpegLsColorTransform.Hp2 = 2 -> Egami.Formats.Extended.JpegLs.JpegLsColorTransform
@@ -241,13 +514,27 @@ Egami.Formats.Extended.Textures.Texture.Save(System.IO.Stream! output, Egami.For
 Egami.Formats.Extended.Textures.Texture.SetImage(Egami.Raster! image, int mip = 0, int layer = 0, int face = 0, int slice = 0) -> void
 Egami.Formats.Extended.Textures.Texture.TrimMips(int mipLevels) -> void
 Egami.Formats.Extended.Textures.Texture.Width.get -> int
+override Egami.Formats.Extended.Dpx.CineonDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Extended.Dpx.DpxDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Extended.Dpx.DpxReaderOptions.<Clone>$() -> Egami.Formats.Extended.Dpx.DpxReaderOptions!
+override Egami.Formats.Extended.Dpx.DpxReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Extended.Dpx.DpxReaderOptions.GetHashCode() -> int
+override Egami.Formats.Extended.Dpx.DpxReaderOptions.ToString() -> string!
 override Egami.Formats.Extended.JpegLs.JpegLsDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Extended.Ktx.KtxDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Extended.Ktx.KtxReaderOptions.<Clone>$() -> Egami.Formats.Extended.Ktx.KtxReaderOptions!
 override Egami.Formats.Extended.Ktx.KtxReaderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Extended.Ktx.KtxReaderOptions.GetHashCode() -> int
 override Egami.Formats.Extended.Ktx.KtxReaderOptions.ToString() -> string!
+override sealed Egami.Formats.Extended.Dpx.DpxReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 override sealed Egami.Formats.Extended.Ktx.KtxReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+static Egami.Formats.Extended.Dpx.CineonFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Dpx.DpxFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Dpx.DpxReaderOptions.operator !=(Egami.Formats.Extended.Dpx.DpxReaderOptions? left, Egami.Formats.Extended.Dpx.DpxReaderOptions? right) -> bool
+static Egami.Formats.Extended.Dpx.DpxReaderOptions.operator ==(Egami.Formats.Extended.Dpx.DpxReaderOptions? left, Egami.Formats.Extended.Dpx.DpxReaderOptions? right) -> bool
+static Egami.Formats.Extended.Dpx.DpxWriterOptions.Default.get -> Egami.Formats.Extended.Dpx.DpxWriterOptions!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithCineon(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.ExtendedContextExtensions.WithDpx(this Egami.EgamiContext! context) -> Egami.EgamiContext!
 static Egami.Formats.Extended.ExtendedContextExtensions.WithJpegLs(this Egami.EgamiContext! context) -> Egami.EgamiContext!
 static Egami.Formats.Extended.ExtendedContextExtensions.WithKtx(this Egami.EgamiContext! context) -> Egami.EgamiContext!
 static Egami.Formats.Extended.ExtendedContextExtensions.WithKtx2(this Egami.EgamiContext! context) -> Egami.EgamiContext!
@@ -264,3 +551,4 @@ static Egami.Formats.Extended.Textures.Texture.FromSurfaces(System.Collections.G
 static Egami.Formats.Extended.Textures.Texture.Load(string! path, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Textures.Texture!
 static Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Textures.Texture!
 static Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Textures.Texture!
+~[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomTag.Equals(object obj) -> bool

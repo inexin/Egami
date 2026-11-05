@@ -14,6 +14,7 @@ internal static class LocalCorpus
         ["avif"] = "tools/make-avif-references.py",
         ["exr"] = "tools/make-hdr-references.py exr",
         ["heic"] = "tools/make-heic-references.py",
+        ["htj2k"] = "tools/make-htj2k-references.py --local",
         ["jbig2"] = "tools/make-jbig2-references.py --local",
         ["jpeg2000"] = "tools/make-jpeg2000-references.py",
         ["jxl"] = "tools/make-jxl-references.py",

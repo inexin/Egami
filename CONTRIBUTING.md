@@ -56,20 +56,22 @@ checks. Pushes to `main`, a nightly run and manual runs add Linux arm64, Windows
 hardware intrinsics turned off, PNG against libpng and the Native AOT smoke app. If your change touches SIMD or
 platform-specific code, run the tests with the intrinsics turned off before you open the pull request.
 
-The large third-party corpora (conformance suites and test vectors) are fetched into `.cache` by the `tools/make-*-references.py` scripts and never committed. A normal run skips them; set `EGAMI_CORPUS` to the codecs you are working on (`avif`, `exr`, `heic`, `jbig2`, `jpeg2000`, `jxl`, `tiff`, `vp8`, comma-separated, or `all`) to check them too, for example `EGAMI_CORPUS=jxl dotnet test --filter FullyQualifiedName~Jxl`. The same switch takes a folder of `tests/images` (`avif`, `jpeg`, `pngsuite` and so on): the streaming tests that run over every file skip in a normal run and stream the files of the folders it names.
+The large third-party corpora (conformance suites and test vectors) are fetched into `.cache` by the `tools/make-*-references.py` scripts and never committed. A normal run skips them; set `EGAMI_CORPUS` to the codecs you are working on (`avif`, `exr`, `heic`, `htj2k`, `jbig2`, `jpeg2000`, `jxl`, `tiff`, `vp8`, comma-separated, or `all`) to check them too, for example `EGAMI_CORPUS=jxl dotnet test --filter FullyQualifiedName~Jxl`. The same switch takes a folder of `tests/images` (`avif`, `jpeg`, `pngsuite` and so on): the streaming tests that run over every file skip in a normal run and stream the files of the folders it names.
 
 Reference outputs in `tests/reference` come from the `tools/make-*-references.py` scripts, most of which run the reference
 library in Docker. Regenerate them with the script, never by hand.
 
 The allocation-budget tests (managed allocations must not grow with the image, and warm calls allocate nothing) measure bytes
 allocated by the test thread, so other tests running alongside can push them a few bytes over. They skip in a normal run and in
-CI; run them on demand, alone, when you change hot code:
+CI; run them on demand, alone and in Release, when you change hot code:
 
 ```
-EGAMI_ALLOCATION_TESTS=1 dotnet test tests/Egami.Tests --filter Category=Allocation
+EGAMI_ALLOCATION_TESTS=1 dotnet test tests/Egami.Tests -c Release --filter Category=Allocation
 ```
 
-In PowerShell: `$env:EGAMI_ALLOCATION_TESTS=1; dotnet test tests/Egami.Tests --filter Category=Allocation`.
+In PowerShell: `$env:EGAMI_ALLOCATION_TESTS=1; dotnet test tests/Egami.Tests -c Release --filter Category=Allocation`. They fail on a
+Debug build, where the JIT's missing optimizations allocate on their own (a constant `ReadOnlySpan<uint>` table allocates on each
+use, for one).
 
 Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks` (also `Egami.Drawing.Benchmarks` and
 `Egami.Fonts.Benchmarks`).
