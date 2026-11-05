@@ -261,11 +261,12 @@ string format = back.Metadata.FormatName!;               // "PCX"</code></pre>
 
   <h3 id="Egami_Formats_Extended_ExtendedContextExtensions_WithDicom_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.ExtendedContextExtensions.WithDicom(Egami.EgamiContext)">
   WithDicom(EgamiContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L167"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/ExtendedContextExtensions.cs/#L168"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> that detects and probes DICOM (<a class="xref" href="Egami.Formats.Extended.Dicom.DicomFormat.html">DicomFormat</a>). In preview, so
-<a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithExtendedFormats_Egami_EgamiContext_">WithExtendedFormats(EgamiContext)</a> leaves it out; pixel data decoding comes in a later version.</p>
+  <div class="markdown level1 summary"><p>Returns a copy of <code class="paramref">context</code> that reads and writes DICOM (<a class="xref" href="Egami.Formats.Extended.Dicom.DicomFormat.html">DicomFormat</a>). In preview, so
+<a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithExtendedFormats_Egami_EgamiContext_">WithExtendedFormats(EgamiContext)</a> leaves it out. DICOM is detected ahead of the other formats: the 128-byte preamble may
+hold another format's header (PS3.10 section 7.1 allows a TIFF one), which would otherwise be found first.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 

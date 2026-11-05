@@ -278,12 +278,12 @@ float center = hounsfield.Row(2)[2].L;
 </tr>
 <tr>
 <td><code>Stored</code></td>
-<td><code>GrayF32</code> stored values with their sign (exact to 2^24; unsigned 32-bit values above 2^31 − 1 are clamped)</td>
-<td><code>Rgb8</code> or <code>Rgb16</code> as stored, YBR not converted; palette indices as <code>GrayF32</code></td>
+<td><code>GrayF32</code> stored values with their sign (exact to 2^24)</td>
+<td><code>Rgb8</code> or <code>Rgb16</code> as stored (samples wider than 16 bits by their top 16), YBR not converted; palette indices as <code>GrayF32</code></td>
 </tr>
 </tbody>
 </table>
-<p>Colour: RGB is scaled to 8 or 16 bits; YBR_FULL and YBR_FULL_422 convert by the full-range equations of PS3.3 C.7.6.3.1.2,
+<p>Colour: RGB is scaled to 8 or 16 bits (32-bit samples keep their top 16); YBR_FULL and YBR_FULL_422 convert by the full-range equations of PS3.3 C.7.6.3.1.2,
 YBR_PARTIAL_422 and YBR_PARTIAL_420 by the BT.601 studio-range ones; YBR_RCT and YBR_ICT are already RGB once the JPEG 2000
 decoder undoes its component transform, and JPEG XL decodes to RGB. PALETTE COLOR goes through the red, green and blue tables,
 segmented ones included, to <code>Rgb8</code> for 8-bit tables and <code>Rgb16</code> for 16-bit ones.</p>
