@@ -188,12 +188,13 @@ using Raster stored = Raster.Load("layered.psd", EgamiContext.Default, new PsdRe
 
   <h3 id="Egami_Formats_Psd_PsdReaderOptions_Composite" data-uid="Egami.Formats.Psd.PsdReaderOptions.Composite">
   Composite
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Psd/PsdReaderOptions.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Psd/PsdReaderOptions.cs/#L40"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets which image Load, Probe and the row readers give: by default the stored composite, or the layers flattened when the
-file has no real one. Flattening reads the layers one at a time, as they come in the file. Lab, bitmap, indexed and
-multichannel files always give the stored composite; asked to flatten, with the <code>Psd.FlattenUnsupported</code> warning.</p>
+file has no real one. Flattening reads the layers one at a time, as they come in the file; Lab files blend in Lab and
+give sRGB. Bitmap, indexed and multichannel files always give the stored composite; asked to flatten, with the
+<code>Psd.FlattenUnsupported</code> warning.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 

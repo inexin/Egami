@@ -402,7 +402,7 @@ foreach (PsdLayerImage layer in document.Layers)
 
   <h3 id="Egami_Formats_Psd_PsdDocument_Dispose" data-uid="Egami.Formats.Psd.PsdDocument.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Psd/PsdImage.cs/#L210"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Psd/PsdImage.cs/#L212"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Disposes every layer's pixels and mask.</p>
@@ -429,15 +429,16 @@ foreach (PsdLayerImage layer in document.Layers)
 
   <h3 id="Egami_Formats_Psd_PsdDocument_Flatten_Egami_Formats_Psd_PsdFlattenOptions_" data-uid="Egami.Formats.Psd.PsdDocument.Flatten(Egami.Formats.Psd.PsdFlattenOptions)">
   Flatten(PsdFlattenOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Psd/PsdImage.cs/#L155"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Psd/PsdImage.cs/#L156"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Composites the layers as Photoshop does, with each layer's <a class="xref" href="Egami.Formats.Psd.PsdLayerImage.html#Egami_Formats_Psd_PsdLayerImage_Info">Info</a> as it is now, so a changed copy
-(a layer hidden, another opacity or blend mode) flattens differently: visibility, opacity, fill opacity, blend mode (all of
-Photoshop's), pixel and vector masks, clipping, pass-through and isolated groups, blending ranges, solid color fills and
-the levels, curves, hue/saturation, brightness/contrast and invert adjustments. Layer effects, other adjustments,
-gradient and pattern fills and knockout are left out with one warning a kind naming the layers. 8 and 16-bit documents
-blend their stored values, 32-bit ones linear light.</p>
+(a layer hidden, another opacity or blend mode) flattens differently: visibility, opacity, fill opacity (inside the
+formula of Photoshop's eight special modes), blend mode (all of Photoshop's), pixel and vector masks with their density
+and feather, clipping, pass-through and isolated groups, shallow and deep knockout, blending ranges, solid color fills
+and the levels, curves, hue/saturation, brightness/contrast and invert adjustments. Layer effects, other adjustments and
+gradient and pattern fills are left out with one warning a kind naming the layers. 8 and 16-bit documents blend their
+stored values (Lab its L*, a* and b*, turned into sRGB at the end), 32-bit ones linear light.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -484,7 +485,7 @@ flat.Save("without-top.png");</code></pre>
   <h4 class="section">Exceptions</h4>
   <dl class="parameters">
     <dt><a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a></dt>
-    <dd><p>The document is Lab, bitmap, indexed or multichannel, which Egami does not flatten.</p>
+    <dd><p>The document is bitmap, indexed, multichannel or 32-bit Lab, which Egami does not flatten.</p>
 </dd>
     <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
     <dd><p>The canvases the flattening needs break <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
@@ -500,7 +501,7 @@ flat.Save("without-top.png");</code></pre>
 
   <h3 id="Egami_Formats_Psd_PsdDocument_FlattenInk_Egami_Formats_Psd_PsdFlattenOptions_" data-uid="Egami.Formats.Psd.PsdDocument.FlattenInk(Egami.Formats.Psd.PsdFlattenOptions)">
   FlattenInk(PsdFlattenOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Psd/PsdImage.cs/#L179"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Psd/PsdImage.cs/#L180"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Composites a CMYK document's layers onto ink plates, as <a class="xref" href="Egami.Formats.Psd.PsdDocument.html#Egami_Formats_Psd_PsdDocument_Flatten_Egami_Formats_Psd_PsdFlattenOptions_">Flatten(PsdFlattenOptions?)</a> does, with the ink blend math of Egami.Drawing's
