@@ -349,6 +349,14 @@ internal sealed class J2kPixels
     }
 
     /// <summary>
+    /// Returns the row of component <paramref name="c"/>'s decoded samples that grid row <paramref name="y"/> reads. When rows
+    /// stream a row of tiles at a time, a subsampled component's sample under a tile's first grid row can belong to the tile
+    /// above at a reduction (its rows start at a rounded-up boundary); that row then reads the strip's nearest one.
+    /// </summary>
+    private static int StripRow(J2kImage image, J2kGrid grid, int c, int y) =>
+        Math.Clamp(grid.Rows[c][y] - image.RowOffsets[c], 0, Math.Max(image.Heights[c] - 1, 0));
+
+    /// <summary>
     /// Writes row <paramref name="y"/> of the image, at the decode's reduction, into <paramref name="row"/> in the natural
     /// layout, from column <paramref name="x0"/>.
     /// </summary>
@@ -363,7 +371,7 @@ internal sealed class J2kPixels
             {
                 Channel channel = k < _color.Length ? _color[k] : _alpha!.Value;
                 int c = channel.Component;
-                ReadOnlySpan<int> plane = image.Planes[c].AsSpan((grid.Rows[c][y] - image.RowOffsets[c]) * image.Widths[c], image.Widths[c]);
+                ReadOnlySpan<int> plane = image.Planes[c].AsSpan(StripRow(image, grid, c, y) * image.Widths[c], image.Widths[c]);
                 ReadOnlySpan<int> columns = grid.Columns[c].AsSpan(x0, width);
                 if (channel.Column < 0 && !channel.Signed && channel.Precision == _depth && grid.Columns[c][0] == 0 && image.Components[c].Dx == 1)
                 {
@@ -410,7 +418,7 @@ internal sealed class J2kPixels
             {
                 Channel channel = k < _color.Length ? _color[k] : _alpha!.Value;
                 int c = channel.Component;
-                int v = image.Planes[c][((grid.Rows[c][y] - image.RowOffsets[c]) * image.Widths[c]) + grid.Columns[c][x]];
+                int v = image.Planes[c][(StripRow(image, grid, c, y) * image.Widths[c]) + grid.Columns[c][x]];
                 values[k] = Value(channel, v, image.Components[c]);
             }
 

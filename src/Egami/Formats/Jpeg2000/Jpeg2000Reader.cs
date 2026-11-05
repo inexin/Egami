@@ -290,6 +290,7 @@ internal sealed partial class Jpeg2000Reader : IFormatReader
             ColorSpace = ColorSpaceOf(file),
             EnumeratedColorSpace = file.ColorMethod == 1 ? file.EnumeratedColorSpace : -1,
             HasPalette = file.Palette is not null,
+            HighThroughput = stream.HighThroughput || (cod.BlockStyle & 0x40) != 0,
         };
         foreach (J2kComponent component in stream.Components)
         {

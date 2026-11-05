@@ -5,6 +5,20 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+High-Throughput JPEG 2000 (DICOM and science formats, task 23).
+
+- The JPEG 2000 reader decodes HTJ2K (ITU-T T.814 | ISO/IEC 15444-15): the HT block coder's cleanup, SigProp and MagRef
+  passes, placeholder passes, HT and Part 1 code-blocks mixed in one tile-component, and the CAP and CPF markers. JPH files,
+  raw HT codestreams (.jhc) and HT codestreams in JP2 files load like any JPEG 2000 file, with reductions, regions and
+  streaming. The ISO/IEC 15444-4 HTJ2K conformance codestreams decode to the samples of the Part 1 codestreams they were
+  transcoded from, and to OpenJPEG 2.5.4's wherever OpenJPEG decodes them (reversible exactly, irreversible within one
+  level). An HT photo decodes in about 55 % of the time of the same photo as a Part 1 file; Part 1 decoding is unchanged.
+- New API: `Jpeg2000Container.Jph` and `Jpeg2000Details.HighThroughput`. `Jpeg2000Format.Info` adds the jph and jhc
+  extensions and the image/jph and image/jphc MIME types.
+- Fix: a JPEG 2000 file with subsampled components and tiles, read at a reduction, could throw
+  `ArgumentOutOfRangeException` where a component's sample under a tile's first row belongs to the tile above (found by
+  fuzzing).
+
 JPEG-LS in Egami.Formats.Extended (DICOM and science formats, stage A).
 
 - `JpegLsFormat` reads and writes JPEG-LS (ITU-T T.87, .jls): lossless and near-lossless coding of 2 to 16-bit samples in

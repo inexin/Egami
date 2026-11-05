@@ -16,6 +16,14 @@ internal struct J2kSegment
     internal int Length;
 }
 
+/// <summary>Which block coder a code-block uses, in a tile-component that allows HT code-blocks.</summary>
+internal enum J2kBlockKind : byte
+{
+    Unknown,
+    Legacy,
+    Ht,
+}
+
 /// <summary>A code-block (T.800 B.7): its rectangle in its subband, its tier-2 state and the codeword segments tier 2 found.</summary>
 internal sealed class J2kCodeBlock
 {
@@ -44,6 +52,21 @@ internal sealed class J2kCodeBlock
 
     /// <summary>The total number of bytes in <see cref="Chunks"/>.</summary>
     internal int Bytes;
+
+    /// <summary>
+    /// In a tile-component that allows HT code-blocks (T.814): <see cref="J2kBlockKind.Unknown"/> until tier 2 knows, then whether
+    /// the code-block is an HT one or a T.800 one (the two can mix in one tile-component, T.814 A.4).
+    /// </summary>
+    internal J2kBlockKind Kind;
+
+    /// <summary>
+    /// For an HT code-block, the placeholder passes before its first HT cleanup pass (3 P0, T.814 B.1); until that pass is found,
+    /// the empty passes seen so far. A ushort, like <see cref="PlaceholdersKept"/>, so the two fit the object's padding.
+    /// </summary>
+    internal ushort Placeholders;
+
+    /// <summary>The empty passes in the quality layers kept, for a code-block that turns out to be a T.800 one.</summary>
+    internal ushort PlaceholdersKept;
 
     internal int Width => X1 - X0;
 

@@ -6,3 +6,6 @@ Egami.Compression.Zstandard
 static Egami.Compression.Zstandard.Compress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, int level = 3) -> int
 static Egami.Compression.Zstandard.Decompress(System.ReadOnlySpan<byte> source, System.Span<byte> destination) -> int
 static Egami.Compression.Zstandard.MaxCompressedLength(int length) -> int
+Egami.Formats.Jpeg2000.Jpeg2000Container.Jph = 3 -> Egami.Formats.Jpeg2000.Jpeg2000Container
+Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput.get -> bool
+Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput.set -> void

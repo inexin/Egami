@@ -186,10 +186,16 @@ internal sealed class Jp2File
                 continue;
             }
 
-            if (BinaryPrimitives.ReadUInt32BigEndian(body[at..]) == 0x6A707820)
+            uint brand = BinaryPrimitives.ReadUInt32BigEndian(body[at..]);
+            if (brand == 0x6A707820)
             {
                 // 'jpx ' as the brand or among the compatible ones.
                 Container = Jpeg2000Container.Jpx;
+            }
+            else if (brand == 0x6A706820 && at == 0 && Container == Jpeg2000Container.Jp2)
+            {
+                // 'jph ' as the brand: a JPH file (T.814 Annex D).
+                Container = Jpeg2000Container.Jph;
             }
         }
     }

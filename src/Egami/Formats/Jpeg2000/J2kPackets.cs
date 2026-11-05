@@ -590,6 +590,7 @@ internal sealed class J2kTier2
         int start = _packed ? _headerPosition : _position;
         J2kBitReader bits = new(headers, start);
         _pending.Clear();
+        bool ht = (style.BlockStyle & 0x40) != 0;
         if (bits.Bit() != 0)
         {
             foreach (J2kPrecinctBand band in precinct)
@@ -627,12 +628,18 @@ internal sealed class J2kTier2
                         }
                     }
 
+                    if (ht && block.Kind != J2kBlockKind.Legacy)
+                    {
+                        passes = HtFirstPieces(block, passes, ref bits, (style.BlockStyle & 0x80) != 0, l < _keepLayers);
+                    }
+
                     while (passes > 0)
                     {
                         List<J2kSegment> segments = block.Segments;
                         if (segments.Count == 0 || segments[^1].Passes == segments[^1].MaxPasses)
                         {
-                            segments.Add(new J2kSegment { MaxPasses = MaxPasses(style.BlockStyle, segments.Count) });
+                            int max = block.Kind == J2kBlockKind.Ht ? HtMaxPasses(segments.Count) : MaxPasses(style.BlockStyle, segments.Count);
+                            segments.Add(new J2kSegment { MaxPasses = max });
                         }
 
                         J2kSegment segment = segments[^1];
@@ -712,6 +719,81 @@ internal sealed class J2kTier2
             throw new EndOfDataException();
         }
     }
+
+    /// <summary>
+    /// Reads the first pieces of an HT code-block's contribution while its first HT cleanup pass has not come (T.814 B.1 to B.3):
+    /// a contribution of placeholder passes only is one empty codeword segment; the one with the cleanup pass ends its first
+    /// codeword segment there, after the rest of the placeholders. In a tile-component that mixes HT and T.800 code-blocks, the
+    /// first codeword segment with bytes tells them apart (A.4): an HT one's length starts with a 0 bit and Lblock is above 3.
+    /// Returns the passes left for the code-block's later segments.
+    /// </summary>
+    private int HtFirstPieces(J2kCodeBlock block, int passes, ref J2kBitReader bits, bool mixed, bool keep)
+    {
+        if (block.Kind == J2kBlockKind.Ht && block.Segments.Count > 0)
+        {
+            return passes;
+        }
+
+        int lengthBits = block.Lblock + BitOperations.Log2((uint)passes);
+        if (lengthBits > 31)
+        {
+            throw new InvalidDataException("A code-block segment length takes more than 31 bits.");
+        }
+
+        J2kBitReader probe = bits;
+        if (probe.Bits(lengthBits) == 0)
+        {
+            bits = probe;
+            if (block.Placeholders + passes > ushort.MaxValue)
+            {
+                throw new InvalidDataException("An HT code-block has more placeholder passes than it has bit-planes.");
+            }
+
+            block.Placeholders += (ushort)passes;
+            block.PlaceholdersKept += (ushort)(keep ? passes : 0);
+            block.Passes += passes;
+            return 0;
+        }
+
+        if (mixed && block.Kind == J2kBlockKind.Unknown)
+        {
+            probe = bits;
+            if (probe.Bit() != 0 || block.Lblock <= 3)
+            {
+                // A T.800 code-block: its empty passes so far open its one codeword segment (no bypass or termination, A.4).
+                block.Kind = J2kBlockKind.Legacy;
+                if (block.Placeholders > 0)
+                {
+                    block.Segments.Add(new J2kSegment { MaxPasses = int.MaxValue, Passes = block.Placeholders, KeptPasses = block.PlaceholdersKept });
+                }
+
+                return passes;
+            }
+        }
+
+        block.Kind = J2kBlockKind.Ht;
+        int total = block.Placeholders + passes;
+        int placeholders = 3 * ((total - 1) / 3);
+        int before = placeholders - block.Placeholders;
+        if (before < 0 || placeholders > ushort.MaxValue)
+        {
+            throw new InvalidDataException("An HT code-block's placeholder passes do not come in threes.");
+        }
+
+        block.Placeholders = (ushort)placeholders;
+        lengthBits = block.Lblock + BitOperations.Log2((uint)(before + 1));
+        int length = bits.Bits(lengthBits);
+        block.Segments.Add(new J2kSegment { MaxPasses = 1, Passes = 1 });
+        block.Passes += before + 1;
+        _pending.Add((block, 0, 1, length));
+        return passes - before - 1;
+    }
+
+    /// <summary>
+    /// Returns the most coding passes an HT code-block's segment <paramref name="index"/> holds, counting from its first HT
+    /// cleanup segment (T.814 B.2): cleanup segments hold one pass, refinement segments the SigProp and MagRef passes.
+    /// </summary>
+    internal static int HtMaxPasses(int index) => (index & 1) != 0 ? 2 : 1;
 
     /// <summary>Reads a number of coding passes (Table B.4).</summary>
     private static int PassCount(ref J2kBitReader bits)

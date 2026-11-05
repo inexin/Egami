@@ -137,7 +137,7 @@ public class Jpeg2000CorpusTests
     }
 
     /// <summary>Reads a gzipped PGX file.</summary>
-    private static (int Width, int Height, int[] Samples) ReadPgx(string path)
+    internal static (int Width, int Height, int[] Samples) ReadPgx(string path)
     {
         string temp = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".pgx");
         try
