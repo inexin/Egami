@@ -9,7 +9,7 @@ Options:
   -vv, --debug                         Write debugging detail to standard error.
   -q, --quiet                          Write only errors to standard error.
   --limit <name=value,...>             Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
-  --preview-formats                    Also read and write the formats in preview (none in this release); they may change or go in any minor release.
+  --preview-formats                    Also read and write the formats in preview (DICOM in this release); they may change or go in any minor release.
   --raw-output <value>                 What a camera RAW input loads as: developed (default), half-size, preview or mosaic.
   --raw-preview <value>                Which embedded preview --raw-output preview loads, 0 for the largest.
   --raw-white-balance <value>          White balance of a RAW develop: as-shot (default), auto or custom (with --raw-temperature and --raw-tint).

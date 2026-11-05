@@ -26,7 +26,7 @@ internal sealed class GlobalOptions
 
     public Option<bool> PreviewFormats { get; } = new("--preview-formats")
     {
-        Description = "Also read and write the formats in preview (none in this release); they may change or go in any minor release.",
+        Description = "Also read and write the formats in preview (DICOM in this release); they may change or go in any minor release.",
         Recursive = true,
     };
 

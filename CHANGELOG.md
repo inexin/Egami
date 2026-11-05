@@ -5,6 +5,13 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+DICOM and science formats in the `egami` command (DICOM Build Plan task 25).
+
+- `--preview-formats` now adds DICOM: `egami info`, `convert`, `run` and the rest read DICOM files as a viewer shows their first
+  frame, and save rasters as Secondary Capture. Without the option `egami` neither lists nor reads DICOM. JPEG-LS, DPX,
+  Cineon and FITS need no option, as before.
+- The Egami.Formats.Extended README, the extended formats page and the CLI guide list DPX, Cineon, FITS and the DICOM preview.
+
 DICOM fixes found by the pydicom and GDCM gates (DICOM Build Plan task 20).
 
 - A file whose 128-byte preamble holds a TIFF header (PS3.10 allows it; pydicom's MR_small.dcm has one) loaded as TIFF and
