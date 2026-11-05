@@ -59,7 +59,7 @@ internal sealed class PsdPattern
                 at = (end + 3) & ~3;
             }
         }
-        catch (ArgumentOutOfRangeException)
+        catch (Exception e) when (e is ArgumentOutOfRangeException or IndexOutOfRangeException)
         {
             // A pattern runs past its block: the ones read stand.
         }
@@ -78,6 +78,11 @@ internal sealed class PsdPattern
         }
 
         p += 4 + (2 * name);
+        if (p >= data.Length)
+        {
+            return null;
+        }
+
         string id = Encoding.ASCII.GetString(data.Slice(p + 1, data[p]));
         p += 1 + data[p];
         byte[]? palette = null;
@@ -189,7 +194,7 @@ internal sealed class PsdPattern
 
             return true;
         }
-        catch (ArgumentOutOfRangeException)
+        catch (Exception e) when (e is ArgumentOutOfRangeException or IndexOutOfRangeException)
         {
             return false;
         }
@@ -199,6 +204,11 @@ internal sealed class PsdPattern
     private bool Plane(int at, float[] plane)
     {
         ReadOnlySpan<byte> data = _data.AsSpan(at);
+        if (data.Length < 23)
+        {
+            return false;
+        }
+
         int depth = (int)BinaryPrimitives.ReadUInt32BigEndian(data);
         int top = BinaryPrimitives.ReadInt32BigEndian(data[4..]), left = BinaryPrimitives.ReadInt32BigEndian(data[8..]);
         int bottom = BinaryPrimitives.ReadInt32BigEndian(data[12..]), right = BinaryPrimitives.ReadInt32BigEndian(data[16..]);

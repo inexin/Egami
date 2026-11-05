@@ -144,6 +144,29 @@ public class PsdHandBuiltTests
         Assert.Equal(new Rgba8(10, 20, 30, 255), pixels.Row(1)[1]);
     }
 
+    /// <summary>
+    /// A pattern table whose record ends where its id should start (version, mode, size and an empty name, 16 bytes) loads and
+    /// flattens: the pattern fill is left out with its warning.
+    /// </summary>
+    [Fact]
+    public void TruncatedPatternTableLeavesTheFillOut()
+    {
+        byte[] record = [0, 0, 0, 1, 0, 0, 0, 3, 0, 1, 0, 1, 0, 0, 0, 0];
+        byte[] table = new byte[4 + record.Length];
+        BinaryPrimitives.WriteUInt32BigEndian(table, (uint)record.Length);
+        record.CopyTo(table, 4);
+        byte[] settings = PsdDescriptorWriter.Versioned(new("null", ("Ptrn", new PsdDescriptorWriter.Desc("Ptrn", ("Idnt", "pat-1")))));
+        byte[] file = Write(
+            [new("Background", "norm", Color: (10, 20, 30)), new("Pattern", "norm", Blocks: [("PtFl", settings)])],
+            4,
+            [("Patt", table)]);
+
+        using Raster loaded = Raster.Load(file, EgamiContext.Default, new PsdReaderOptions { Composite = PsdComposite.Flatten });
+        Assert.Contains(loaded.Metadata.Warnings, w => w.Id == "Psd.FillSkipped");
+        using Raster<Rgba8> pixels = loaded.As<Rgba8>();
+        Assert.Equal(new Rgba8(10, 20, 30, 255), pixels.Row(1)[1]);
+    }
+
     /// <summary>A gradient fill's settings: black to white, Classic, full smoothness, the given style, angle and reverse flag.</summary>
     private static byte[] GradientFill(string style, double angle, bool reverse)
     {
