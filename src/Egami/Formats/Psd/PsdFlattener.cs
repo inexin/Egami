@@ -34,6 +34,8 @@ internal sealed partial class PsdFlattener
     private readonly int _channels;
     private readonly int _stride;
     private readonly Dictionary<float[], long> _rented = new(ReferenceEqualityComparer.Instance);
+    private readonly bool _knocks;
+    private readonly bool _lab;
     private float[]? _scratch;
     private long _bytes;
 
@@ -55,6 +57,8 @@ internal sealed partial class PsdFlattener
         _channels = file.Mode == PsdColorMode.Cmyk ? 4 : 3;
         _stride = _channels + 1;
         _row = new float[_stride * _width];
+        _knocks = file.Records.Exists(r => r.Knockout is 1 or 2);
+        _lab = file.Mode == PsdColorMode.Lab;
 
         // Each group's hidden start record (its GroupEnd) is matched with the group record that ends it, above its contents.
         Stack<int> open = new();
@@ -74,12 +78,17 @@ internal sealed partial class PsdFlattener
         _frames.Add(new Frame(Allocate((long)_stride * _width * _height), -1, null, false, false));
     }
 
-    /// <summary>Gets the bytes of canvases the flattening needs at the most, for <see cref="RasterInfo.WorkingBytes"/>: one per open group level and two for clipping, at 16 bytes a pixel (20 for CMYK).</summary>
+    /// <summary>
+    /// Gets the bytes of canvases the flattening needs at the most, for <see cref="RasterInfo.WorkingBytes"/>: one per open group
+    /// level and two for clipping, at 16 bytes a pixel (20 for CMYK), a coverage plane, and one more for a feathered mask.
+    /// </summary>
     public static long WorkingBytes(PsdFile file)
     {
         int depth = 0, deepest = 0;
+        bool feather = false;
         foreach (PsdLayerRecord record in file.Records)
         {
+            feather |= record.UserMaskFeather > 0;
             if (record.Info.Kind == PsdLayerKind.GroupEnd)
             {
                 deepest = Math.Max(deepest, ++depth);
@@ -91,7 +100,7 @@ internal sealed partial class PsdFlattener
         }
 
         long pixel = file.Mode == PsdColorMode.Cmyk ? 20 : 16;
-        return (long)file.Width * file.Height * ((pixel * (deepest + 3)) + 4);
+        return (long)file.Width * file.Height * ((pixel * (deepest + 3)) + (feather ? 8 : 4));
     }
 
     /// <summary>Adds the record at <paramref name="index"/>, in file order, with its pixels (its ink for CMYK) and mask when it has them.</summary>
@@ -99,6 +108,7 @@ internal sealed partial class PsdFlattener
     {
         PsdLayerRecord record = _file.Records[index];
         Frame frame = _frames[^1];
+        ReleaseFeather();
         switch (record.Info.Kind)
         {
             case PsdLayerKind.GroupEnd:
@@ -206,6 +216,9 @@ internal sealed partial class PsdFlattener
         _scratch = null;
         _frames.Clear();
         ReleaseVector();
+        _featherFor = null;
+        _featherPlane = null;
+        _background = null;
     }
 
     private float[] Complete()
@@ -233,9 +246,7 @@ internal sealed partial class PsdFlattener
             "Psd.EffectsSkipped" => $"Layer effects were not drawn, on {list}.",
             "Psd.AdjustmentSkipped" => $"Adjustment layers of a kind Egami does not apply were left out: {list}.",
             "Psd.FillSkipped" => $"Gradient and pattern fill layers were left out: {list}.",
-            "Psd.KnockoutSkipped" => $"Knockout was not applied, on {list}.",
             "Psd.BlendModeUnknown" => $"Layers with a blend mode Egami does not know were blended Normal: {list}.",
-            "Psd.MaskFeatherSkipped" => $"Mask feathering was not applied, on {list}.",
             "Psd.ClippingBlendSkipped" => $"Clipped layers that blend with the layers under the base were blended with the base alone: {list}.",
             _ => $"{id}: {list}.",
         };
@@ -257,16 +268,6 @@ internal sealed partial class PsdFlattener
     /// <summary>Notes what a visible layer has that the flattening leaves out.</summary>
     private void Note(PsdLayer info, PsdLayerRecord record)
     {
-        if (record.Knockout != 0)
-        {
-            Skip("Psd.KnockoutSkipped", info.Name);
-        }
-
-        if (record.UserMaskFeather > 0 || record.VectorMaskFeather > 0)
-        {
-            Skip("Psd.MaskFeatherSkipped", info.Name);
-        }
-
         if (EffectsOn(record))
         {
             Skip("Psd.EffectsSkipped", info.Name);
@@ -299,7 +300,7 @@ internal sealed partial class PsdFlattener
         }
 
         bool hidden = parent.Hidden || (info is not null && !info.IsVisible) || (clipped && parent.Pending!.Hidden);
-        bool passThrough = info is not null && info.BlendMode is null && info.BlendModeKey == "pass" && !clipped;
+        bool passThrough = info is not null && info.BlendMode is null && info.BlendModeKey == "pass" && !clipped && !IsClipBase(group);
         float[] canvas;
         if (hidden)
         {
@@ -316,6 +317,30 @@ internal sealed partial class PsdFlattener
         }
 
         _frames.Add(new Frame(canvas, group, info, hidden, passThrough));
+    }
+
+    /// <summary>Returns whether something above the group record at <paramref name="group"/> is clipped to it, which isolates a pass-through group.</summary>
+    private bool IsClipBase(int group)
+    {
+        int above = group + 1;
+        if (above >= _file.Records.Count)
+        {
+            return false;
+        }
+
+        PsdLayerKind kind = _file.Records[above].Info.Kind;
+        if (kind == PsdLayerKind.GroupEnd)
+        {
+            // A sibling group starts above: its group record is the one that can be clipped.
+            above = _groupOf.TryGetValue(above, out int g) ? g : -1;
+        }
+        else if (kind != PsdLayerKind.Layer)
+        {
+            // The group is its parent's top child: the record above is the parent's own, whose clipping is the parent's, not this group's.
+            return false;
+        }
+
+        return above >= 0 && _file.Records[above].Info.Kind != PsdLayerKind.GroupEnd && _infoOf(above).IsClipped;
     }
 
     private void Close(Frame frame, PsdMask? mask)
@@ -403,7 +428,16 @@ internal sealed partial class PsdFlattener
     {
         if (frame.Pending is { Hidden: false, Buffer: not null } pending)
         {
-            BlendDown(pending.Buffer, pending.Area, pending.Info, pending.Record.BlendRanges, frame.Canvas);
+            if (pending.Record.Knockout is 1 or 2)
+            {
+                Knock(frame, pending);
+            }
+            else
+            {
+                BlendDown(pending.Buffer, pending.Area, pending.Info, pending.Record.BlendRanges, frame.Canvas);
+            }
+
+            KeepBackground(frame, pending);
             Release(pending.Buffer);
             if (pending.Clip is not null)
             {
@@ -430,6 +464,8 @@ internal sealed partial class PsdFlattener
         BlendMode mode = ModeOf(info);
         bool ranges = HasRanges(blendRanges);
         float opacity = info.Opacity;
+        float fill = info.FillOpacity;
+        bool special = IsSpecial(mode) && (fill < 1 || mode is BlendMode.HardMix or BlendMode.VividLight);
         float[] row = ArrayPool<float>.Shared.Rent(_stride * area.Width);
         try
         {
@@ -449,9 +485,17 @@ internal sealed partial class PsdFlattener
                     BlendIf(blendRanges, s, d, _file.ColorChannels);
                 }
 
-                if (_channels == 4)
+                if (special)
+                {
+                    Special(mode, s, d, opacity, fill);
+                }
+                else if (_channels == 4)
                 {
                     InkRow(mode, s, d, opacity, area.X, y);
+                }
+                else if (_lab && IsLabNonSeparable(mode))
+                {
+                    LabRow(mode, s, d, opacity);
                 }
                 else if (mode == BlendMode.SoftLight)
                 {
@@ -571,6 +615,96 @@ internal sealed partial class PsdFlattener
             }
 
             d[i + 3] = sa + da - both;
+        }
+    }
+
+    /// <summary>Returns whether a mode is one of the eight whose fill opacity Photoshop applies inside the blend formula.</summary>
+    private static bool IsSpecial(BlendMode mode) => mode is BlendMode.ColorBurn or BlendMode.LinearBurn or BlendMode.ColorDodge or BlendMode.Add
+        or BlendMode.VividLight or BlendMode.LinearLight or BlendMode.HardMix or BlendMode.Difference;
+
+    /// <summary>
+    /// Blends a row of premultiplied pixels in one of Photoshop's eight special modes (see <see cref="IsSpecial"/>), as Photoshop
+    /// does: the fill opacity goes into the formula, which sees the source color pulled toward the mode's neutral color by it
+    /// (<see cref="SpecialBlend"/>), and where there is a backdrop the result covers it with the layer's coverage and opacity
+    /// alone; where there is none the source is drawn with its fill, as in every mode. Ink pixels blend their complements.
+    /// </summary>
+    private void Special(BlendMode mode, Span<float> s, Span<float> d, float opacity, float fill)
+    {
+        bool ink = _channels == 4;
+        for (int i = 0; i < d.Length; i += _stride)
+        {
+            float sa = s[i + _channels], da = d[i + _channels];
+            if (sa <= 0 || fill <= 0)
+            {
+                continue;
+            }
+
+            // The layer's coverage without the fill, and that coverage times the opacity, over the backdrop.
+            float cover = Math.Min(sa / fill, 1) * opacity;
+            float drawn = sa * opacity;
+            for (int c = 0; c < _channels; c++)
+            {
+                float cs = Math.Clamp(s[i + c] / sa, 0, 1), cb = da > 0 ? Math.Clamp(d[i + c] / da, 0, 1) : 0;
+                if (ink)
+                {
+                    (cs, cb) = (1 - cs, 1 - cb);
+                }
+
+                float b = SpecialBlend(mode, cb, cs, fill);
+                if (ink)
+                {
+                    (cs, cb, b) = (1 - cs, 1 - cb, 1 - b);
+                }
+
+                d[i + c] = (drawn * (1 - da) * cs) + (da * ((cover * b) + ((1 - cover) * cb)));
+            }
+
+            d[i + _channels] = drawn + da - (drawn * da);
+        }
+    }
+
+    /// <summary>
+    /// Photoshop's blend function for the special modes with fill opacity <paramref name="fill"/>: the source pulled toward the
+    /// mode's neutral color (black for the dodges and Difference, white for the burns, middle gray for the lights), and Hard
+    /// Mix's threshold widened to a ramp. At pure source values Vivid Light takes the source's side (0 stays 0 and 1 stays 1
+    /// whatever the backdrop), and Hard Mix with a white source over black stays black.
+    /// </summary>
+    internal static float SpecialBlend(BlendMode mode, float cb, float cs, float fill)
+    {
+        switch (mode)
+        {
+            case BlendMode.ColorBurn:
+                cs = 1 - (fill * (1 - cs));
+                return cb >= 1 ? 1 : cs <= 0 ? 0 : 1 - Math.Min(1, (1 - cb) / cs);
+            case BlendMode.LinearBurn:
+                return Math.Max(0, cb - (fill * (1 - cs)));
+            case BlendMode.ColorDodge:
+                cs *= fill;
+                return cb <= 0 ? 0 : cs >= 1 ? 1 : Math.Min(1, cb / (1 - cs));
+            case BlendMode.Add:
+                return Math.Min(1, cb + (fill * cs));
+            case BlendMode.Difference:
+                return Math.Abs(cb - (fill * cs));
+            case BlendMode.LinearLight:
+                return Math.Clamp(cb + (fill * ((2 * cs) - 1)), 0, 1);
+            case BlendMode.VividLight:
+                cs = 0.5f + (fill * (cs - 0.5f));
+                if (cs <= 0.5f)
+                {
+                    float burn = 2 * cs;
+                    return burn <= 0 ? 0 : Math.Max(0, 1 - ((1 - cb) / burn));
+                }
+
+                float dodge = (2 * cs) - 1;
+                return dodge >= 1 ? 1 : Math.Min(1, cb / (1 - dodge));
+            default:
+                if (fill < 1)
+                {
+                    // Hard Mix: a ramp from the backdrop (no fill) to the threshold of Cb + Cs at 1 (full fill).
+                    return Math.Clamp((cb - (fill * (1 - cs))) / (1 - fill), 0, 1);
+                }
+
+                return cs >= 1 ? (cb > 0 ? 1 : 0) : cb + cs >= BlendReference.HardMixThreshold ? 1 : 0;
         }
     }
 

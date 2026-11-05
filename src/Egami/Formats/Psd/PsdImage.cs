@@ -135,18 +135,19 @@ public sealed partial class PsdDocument : IDisposable
 
     /// <summary>
     /// Composites the layers as Photoshop does, with each layer's <see cref="PsdLayerImage.Info"/> as it is now, so a changed copy
-    /// (a layer hidden, another opacity or blend mode) flattens differently: visibility, opacity, fill opacity, blend mode (all of
-    /// Photoshop's), pixel and vector masks, clipping, pass-through and isolated groups, blending ranges, solid color fills and
-    /// the levels, curves, hue/saturation, brightness/contrast and invert adjustments. Layer effects, other adjustments,
-    /// gradient and pattern fills and knockout are left out with one warning a kind naming the layers. 8 and 16-bit documents
-    /// blend their stored values, 32-bit ones linear light.
+    /// (a layer hidden, another opacity or blend mode) flattens differently: visibility, opacity, fill opacity (inside the
+    /// formula of Photoshop's eight special modes), blend mode (all of Photoshop's), pixel and vector masks with their density
+    /// and feather, clipping, pass-through and isolated groups, shallow and deep knockout, blending ranges, solid color fills
+    /// and the levels, curves, hue/saturation, brightness/contrast and invert adjustments. Layer effects, other adjustments and
+    /// gradient and pattern fills are left out with one warning a kind naming the layers. 8 and 16-bit documents blend their
+    /// stored values (Lab its L*, a* and b*, turned into sRGB at the end), 32-bit ones linear light.
     /// </summary>
     /// <param name="options">The options, or <see langword="null"/> for the defaults.</param>
     /// <returns>
     /// The flattened image at the canvas's size, in the type Load gives a file of this mode and depth: with alpha only when some
     /// pixel is not opaque. Its metadata is the document's, with the warnings of the flattening. The caller must dispose it.
     /// </returns>
-    /// <exception cref="UnsupportedFormatException">The document is Lab, bitmap, indexed or multichannel, which Egami does not flatten.</exception>
+    /// <exception cref="UnsupportedFormatException">The document is bitmap, indexed, multichannel or 32-bit Lab, which Egami does not flatten.</exception>
     /// <exception cref="LimitExceededException">The canvases the flattening needs break <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
     /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
     /// <example>
@@ -191,7 +192,8 @@ public sealed partial class PsdDocument : IDisposable
     private PsdFlattener Flattener(PsdFlattenOptions? options, WarningList warnings)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (ColorMode is not (PsdColorMode.Rgb or PsdColorMode.Grayscale or PsdColorMode.Duotone or PsdColorMode.Cmyk))
+        if (ColorMode is not (PsdColorMode.Rgb or PsdColorMode.Grayscale or PsdColorMode.Duotone or PsdColorMode.Cmyk)
+            && !(ColorMode == PsdColorMode.Lab && _file.Depth is 8 or 16))
         {
             throw new UnsupportedFormatException($"{ColorMode} documents are not flattened; Load gives the composite Photoshop stored.");
         }
@@ -200,7 +202,7 @@ public sealed partial class PsdDocument : IDisposable
         for (int i = 0; i < _imageOf.Length; i++)
         {
             PsdLayerImage? layer = _imageOf[i] >= 0 ? _layers[_imageOf[i]] : null;
-            flattener.Add(i, layer?.Pixels, layer?.Mask, layer?.Ink);
+            flattener.Add(i, ColorMode == PsdColorMode.Lab ? layer?.Encoded : layer?.Pixels, layer?.Mask, layer?.Ink);
         }
 
         return flattener;
@@ -290,12 +292,16 @@ public sealed class PsdLayerImage : IDisposable
 
     internal PsdLayerRecord Record { get; }
 
+    /// <summary>Gets a Lab layer's pixels as Photoshop stores them (L*, a*, b* encoded, straight alpha), which the flattener blends.</summary>
+    internal Raster? Encoded { get; init; }
+
     /// <summary>Disposes the pixels and the mask.</summary>
     public void Dispose()
     {
         Pixels?.Dispose();
+        Encoded?.Dispose();
         Ink?.Dispose();
-        Mask?.Pixels.Dispose();
+        Mask?.Release();
     }
 }
 
@@ -327,4 +333,14 @@ public sealed class PsdMask
 
     /// <summary>Gets the feather radius in pixels Photoshop blurs the mask by when it draws; the values are not blurred.</summary>
     public double Feather { get; }
+
+    /// <summary>Gets the real user mask Photoshop stored with a layer that has a vector mask too: the two combined, or <see langword="null"/>.</summary>
+    internal PsdMask? Real { get; init; }
+
+    /// <summary>Disposes the mask's pixels and the real mask's.</summary>
+    internal void Release()
+    {
+        Pixels.Dispose();
+        Real?.Pixels.Dispose();
+    }
 }

@@ -20,7 +20,14 @@ internal sealed partial class PsdFlattener
         Rect canvas = new(0, 0, _width, _height);
         Rect area;
         float[]? solid = null;
-        if (pixels is not null && _channels == 3)
+        // A fill whose vector mask is thinned or feathered shows outside its shape, where Photoshop stored no pixels or only
+        // the hard edge: it is drawn afresh.
+        if ((record.VectorMaskDensity < 255 || record.VectorMaskFeather > 0) && FillColor(record) is float[] thinned)
+        {
+            solid = thinned;
+            area = canvas;
+        }
+        else if (pixels is not null && _channels == 3)
         {
             area = Intersect(new Rect(record.Left, record.Top, pixels.Width, pixels.Height), canvas);
         }
@@ -117,8 +124,20 @@ internal sealed partial class PsdFlattener
     {
         shape.Fill(1);
         // A shape layer's pixel mask that Photoshop rendered from its vector mask is already in its stored pixels.
-        bool rendered = (record.Mask?.Flags & 0x08) != 0 && record.RealMask is null && (record.Has("SoCo") || record.Has("GdFl") || record.Has("PtFl") || record.Has("vscg")) && !vector;
-        if (mask is { IsDisabled: false } && !rendered)
+        bool rendered = (record.Mask?.Flags & 0x08) != 0 && record.RealMask is null && (record.Has("SoCo") || record.Has("GdFl") || record.Has("PtFl") || record.Has("vscg")) && (!vector || record.Has("vmsk") || record.Has("vsms"));
+        if (mask is { IsDisabled: false, Real: { IsDisabled: false } real } && mask.Feather <= 0 && record.VectorMaskFeather <= 0)
+        {
+            // Photoshop's own combination of the user and vector masks replaces both: its vector edge is Photoshop's. It is
+            // not feathered, so a feathered layer combines its own.
+            mask = real;
+            vector = false;
+        }
+
+        if (mask is { IsDisabled: false, Feather: > 0 } && !rendered)
+        {
+            Feathered(mask).AsSpan((y * _width) + x0, shape.Length).CopyTo(shape);
+        }
+        else if (mask is { IsDisabled: false } && !rendered)
         {
             Rect bounds = mask.Bounds;
             float outside = mask.DefaultColor / 255f;
@@ -143,7 +162,8 @@ internal sealed partial class PsdFlattener
 
         if (vector)
         {
-            VectorRow(record, y, x0, shape);
+            // A user mask Photoshop rendered from the vector mask (flag bit 3) has the same edge, so the two combine by the lesser.
+            VectorRow(record, y, x0, shape, mask is { IsDisabled: false } && !rendered && (record.Mask?.Flags & 0x08) != 0);
         }
     }
 
@@ -161,6 +181,12 @@ internal sealed partial class PsdFlattener
             {
                 return [(float)((color.Number("Cyn ") ?? 0) / 100), (float)((color.Number("Mgnt") ?? 0) / 100), (float)((color.Number("Ylw ") ?? 0) / 100), (float)((color.Number("Blck") ?? 0) / 100), 1];
             }
+        }
+
+        if (_lab && color.ClassId == "LbCl")
+        {
+            (double l, double a, double bb) = PsdLab.Encode(_file.Depth, color.Number("Lmnc") ?? 0, color.Number("A   ") ?? 0, color.Number("B   ") ?? 0);
+            return [(float)Math.Clamp(l, 0, 1), (float)Math.Clamp(a, 0, 1), (float)Math.Clamp(bb, 0, 1), 1];
         }
 
         (double r, double g, double b) = color.ClassId switch
@@ -182,6 +208,12 @@ internal sealed partial class PsdFlattener
             double k = 1 - Math.Max(r, Math.Max(g, b));
             double Ink(double v) => k < 1 ? Math.Clamp((1 - v - k) / (1 - k), 0, 1) : 0;
             return [(float)Ink(r), (float)Ink(g), (float)Ink(b), (float)k, 1];
+        }
+
+        if (_lab)
+        {
+            (float l, float a, float bb) = LabOf(Math.Clamp(r, 0, 1), Math.Clamp(g, 0, 1), Math.Clamp(b, 0, 1));
+            return [l, a, bb, 1];
         }
 
         return [(float)Math.Clamp(r, 0, 1), (float)Math.Clamp(g, 0, 1), (float)Math.Clamp(b, 0, 1), 1];
@@ -243,7 +275,10 @@ internal sealed partial class PsdFlattener
                 }
             }
 
-            float weight = Range(ranges, 0, Gray(cs, ink)) * Range(ranges, 1, Gray(cb, ink));
+            // Lab's composite gray is its lightness.
+            float weight = _lab
+                ? Range(ranges, 0, cs[0]) * Range(ranges, 1, cb[0])
+                : Range(ranges, 0, Gray(cs, ink)) * Range(ranges, 1, Gray(cb, ink));
             for (int c = 0; c < channels && weight > 0; c++)
             {
                 weight *= Range(ranges, 2 + (2 * c), cs[c]) * Range(ranges, 3 + (2 * c), cb[c]);
@@ -295,6 +330,11 @@ internal sealed partial class PsdFlattener
     /// <summary>Returns the flattened canvas in the document's natural type: with alpha only when some pixel is not opaque.</summary>
     private Raster Output(float[] canvas)
     {
+        if (_lab)
+        {
+            LabToSrgb(canvas);
+        }
+
         int depth = _file.Depth;
         float full = depth == 8 ? 255 : depth == 16 ? 65535 : 1;
         bool opaque = true;

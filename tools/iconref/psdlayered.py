@@ -9,7 +9,9 @@ in psdcorpus.py, from ops/duck.png (public domain). The files:
     layered-cmyk8.psd, layered-cmyk16.psd, layered-lab8.psd: fewer layers in the other modes, depths and PSB;
   - layered-mode-<name>.psd: one per Photoshop blend mode, a layer with transparency at opacity 80 % over the background;
   - layered-fill.psd: a solid color fill layer (SoCo) and a shape layer (SoCo bounded by a vector mask, vmsk), without pixels;
-  - layered-nocomposite.psd: layers without a real composite (resource 1057), its stored image a white placeholder.
+  - layered-nocomposite.psd: layers without a real composite (resource 1057), its stored image a white placeholder;
+  - layered-lab16.psd and layered-lab-modes8.psd (multiply, luminosity, color, hue and saturation layers and an invert
+    adjustment): Lab without a real composite, flattened against Egami's model written out (Lab blended as stored).
 
 References, per file, in tests/reference/psd:
   - <file>.layerpixels.raw.gz and layered.json ("layers"): each layer's pixels as ReadLayers gives them (the natural type with
@@ -67,6 +69,33 @@ def quantize(x, depth):
 
 def unit(x, depth):
     return x.astype(np.float64) / (255 if depth == 8 else 65535 if depth == 16 else 1)
+
+
+def lab_encoded_to_srgb(enc, depth):
+    """Lab as stored (each value a fraction of the depth's full scale) to gamma-encoded sRGB 0 to 1."""
+    if depth == 16:
+        l, a, b = enc[..., 0] * 100, (enc[..., 1] * 65535 - 32768) / 256, (enc[..., 2] * 65535 - 32768) / 256
+    else:
+        l, a, b = enc[..., 0] * 100, enc[..., 1] * 255 - 128, enc[..., 2] * 255 - 128
+    return pc.lab_to_srgb(l, a, b)
+
+
+def srgb_to_lab_encoded(rgb, depth):
+    """The inverse of lab_encoded_to_srgb: sRGB 0 to 1 to D50 Lab (Bradford from D65), stored as fractions of full scale."""
+    def xyz(x, y):
+        return np.array([x / y, 1.0, (1 - x - y) / y])
+    d50, d65 = xyz(0.3457, 0.3585), xyz(0.3127, 0.3290)
+    brad = np.array([[0.8951, 0.2664, -0.1614], [-0.7502, 1.7135, 0.0367], [0.0389, -0.0685, 1.0296]])
+    adapt = np.linalg.inv(brad) @ np.diag((brad @ d50) / (brad @ d65)) @ brad
+    prim = np.array([xyz(0.64, 0.33), xyz(0.30, 0.60), xyz(0.15, 0.06)]).T
+    rgb_to_xyz = prim * np.linalg.solve(prim, d65)
+    lin = np.where(rgb <= 0.04045, rgb / 12.92, ((rgb + 0.055) / 1.055) ** 2.4)
+    X = lin @ (adapt @ rgb_to_xyz).T / d50
+    f = np.where(X > 216 / 24389, np.cbrt(X), (24389 / 27 * X + 16) / 116)
+    l, a, b = 116 * f[..., 1] - 16, 500 * (f[..., 0] - f[..., 1]), 200 * (f[..., 1] - f[..., 2])
+    if depth == 16:
+        return np.stack([l / 100, (a * 256 + 32768) / 65535, (b * 256 + 32768) / 65535], -1)
+    return np.stack([l / 100, (a + 128) / 255, (b + 128) / 255], -1)
 
 
 def be_f64(v):
@@ -221,12 +250,10 @@ def layer_truth(layer, mode, depth):
         dtype = np.uint8 if depth == 8 else "<u2"
         return ("Ink8" if depth == 8 else "Ink16"), np.stack(planes, axis=0).astype(dtype)
     if mode == "lab":
-        rgb = np.zeros((h, w, 3))
-        for y in range(h):
-            for x in range(w):
-                rgb[y, x] = pc.lab_to_srgb(layer.color[0][y, x] * 100.0 / 255, layer.color[1][y, x] - 128.0, layer.color[2][y, x] - 128.0)
-        a = alpha if alpha is not None else np.full((h, w), 255)
-        return "Rgba8", np.dstack([pc.unorm(rgb, 255), a]).astype(np.uint8)
+        full = 255 if depth == 8 else 65535
+        rgb = lab_encoded_to_srgb(np.dstack(layer.color) / full, depth)
+        a = alpha if alpha is not None else np.full((h, w), full)
+        return ("Rgba8", np.dstack([pc.unorm(rgb, 255), a]).astype(np.uint8)) if depth == 8 else ("Rgba16", np.dstack([pc.unorm(rgb, 65535), a]).astype("<u2"))
     if mode == "gray" and depth != 32:
         full = 255 if depth == 8 else 65535
         a = alpha if alpha is not None else np.full((h, w), full)
@@ -314,10 +341,12 @@ def range_weight(r, v):
     return out
 
 
-def own_composite(layers, depth):
+def own_composite(layers, depth, lab=False):
     """Egami's model, written out for the files psd-tools does not composite as Photoshop does: normal and multiply layers, a
     user mask with density, blending ranges, and clipping that keeps the base's coverage (the clipped layers blend onto the base
-    as if it were opaque, then the result takes the base's alpha)."""
+    as if it were opaque, then the result takes the base's alpha). Lab (lab=True) blends the values as stored, the luminosity,
+    color, hue and saturation modes on lightness, chroma and hue, and adjusts through sRGB; the result stays Lab as stored."""
+    center = (32768 / 65535 if depth == 16 else 128 / 255) if lab else None
     full = 255.0 if depth == 8 else 65535.0
     color = np.zeros((H, W, 3))
     alpha = np.zeros((H, W, 1))
@@ -339,8 +368,24 @@ def own_composite(layers, depth):
             a = a * (1 - d * (1 - m))
         return c, a
 
+    def lab_mode(bc, sc, key):
+        f = bc.copy()
+        bab, sab = bc[..., 1:] - center, sc[..., 1:] - center
+        bch, sch = np.hypot(bab[..., :1], bab[..., 1:]), np.hypot(sab[..., :1], sab[..., 1:])
+        if key == b"lum ":
+            f[..., 0] = sc[..., 0]
+        elif key == b"colr":
+            f[..., 1:] = sc[..., 1:]
+        elif key == b"hue ":
+            f[..., 1:] = np.where(sch > 0, center + sab / np.maximum(sch, 1e-12) * bch, bc[..., 1:])
+        elif key == b"sat ":
+            f[..., 1:] = np.where(bch > 0, center + bab / np.maximum(bch, 1e-12) * sch, bc[..., 1:])
+        else:
+            raise ValueError(key)
+        return f
+
     def blend(bc, ba, sc, sa, key):
-        f = sc if key == b"norm" else bc * sc
+        f = sc if key == b"norm" else bc * sc if key == b"mul " else lab_mode(bc, sc, key)
         ra = sa + ba * (1 - sa)
         rc = np.where(ra > 0, (sc * sa * (1 - ba) + bc * ba * (1 - sa) + f * sa * ba) / np.maximum(ra, 1e-12), 0)
         return rc, ra
@@ -350,7 +395,8 @@ def own_composite(layers, depth):
         layer = layers[i]
         if layer.adjust is not None:
             # An adjustment layer: the adjusted color mixed in by the layer's opacity; alpha stays.
-            color = color + (layer.adjust(color) - color) * (layer.opacity / 255)
+            adjusted = srgb_to_lab_encoded(layer.adjust(lab_encoded_to_srgb(color, depth)), depth) if lab else layer.adjust(color)
+            color = color + (adjusted - color) * (layer.opacity / 255)
             i += 1
             continue
         c, a = place(layer)
@@ -383,6 +429,11 @@ def finish(name, mode, depth, layers, *, version=1, flat="psd-tools", real=True,
         color, alpha = psd_tools_composite(path)
     elif flat == "ink":
         color, alpha = ink_composite(layers, depth)
+    elif flat == "own" and mode == "lab":
+        # The stored composite would need Lab flattened onto white; these files have none, so Load flattens them too.
+        assert not real
+        color, alpha = own_composite(layers, depth, lab=True)
+        color = np.where(alpha > 0, lab_encoded_to_srgb(color, depth), 0)
     elif flat == "own":
         color, alpha = own_composite(layers, depth)
     else:
@@ -422,6 +473,8 @@ def planes_of(rgb, alpha, mode, depth):
     elif mode == "lab":
         lab = np.array(Image.fromarray(np.round(rgb * 255).astype(np.uint8)).convert("LAB"), dtype=np.int64)
         color = [lab[..., 0], lab[..., 1], lab[..., 2]]
+        if depth == 16:
+            color = [color[0] * 257, (color[1] - 128) * 256 + 32768, (color[2] - 128) * 256 + 32768]
     else:
         color = [quantize(rgb[..., c], depth) for c in range(3)]
     return color, (quantize(alpha, depth) if alpha is not None else None)
@@ -483,6 +536,17 @@ def build():
     manifest["layered-cmyk8.psd"] = finish("layered-cmyk8.psd", "cmyk", 8, full_layers("cmyk", 8, False), flat="ink")
     manifest["layered-cmyk16.psd"] = finish("layered-cmyk16.psd", "cmyk", 16, full_layers("cmyk", 16, False), flat="ink")
     manifest["layered-lab8.psd"] = finish("layered-lab8.psd", "lab", 8, full_layers("lab", 8, False)[:2], flat=None)
+    # Lab: blended as stored, against Egami's model written out (no stored composite, so Load flattens them as well).
+    manifest["layered-lab16.psd"] = finish("layered-lab16.psd", "lab", 16, full_layers("lab", 16, False), flat="own", real=False)
+    lab_bg, _ = planes_of(duck(W, H), None, "lab", 8)
+    lab_layers = [Layer("Background", (0, 0, H, W), lab_bg, None)]
+    for k, (name, key) in enumerate((("Multiply", b"mul "), ("Luminosity", b"lum "), ("Color", b"colr"), ("Hue", b"hue "), ("Saturation", b"sat "))):
+        rgb, alpha = ramp_image(28, 20, 8.0 + k)
+        c, a = planes_of(rgb, alpha, "lab", 8)
+        lab_layers.append(Layer(name, (2 + 5 * k, 3 + 7 * k, 22 + 5 * k, 31 + 7 * k), c, a, blend=key, opacity=230))
+    lab_layers.append(Layer("Invert", None, None, None, opacity=128, blocks=block(b"nvrt", b""), adjust=lambda c: 1 - c))
+    manifest["layered-lab-modes8.psd"] = finish("layered-lab-modes8.psd", "lab", 8, lab_layers, flat="own", real=False)
+
     manifest["layered-nocomposite.psd"] = finish("layered-nocomposite.psd", "rgb", 8, full_layers("rgb", 8, False), real=False)
 
     # One file per blend mode: a layer with transparency at 80 % over the background.

@@ -1,0 +1,47 @@
+[
+ {
+  "name": "Background",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   64,
+   48
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Off canvas",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   -6,
+   10,
+   34,
+   40
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Masked",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 204,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   30,
+   4,
+   54,
+   24
+  ],
+  "depth": 0
+ }
+]
