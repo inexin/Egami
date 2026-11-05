@@ -39,6 +39,9 @@ decodes only the groups it touches.
 | `RenderSpotColors` | `true` | Mixes spot color channels into the color as djxl does; `false` leaves the color as coded |
 | `LinearOutput` | `false` | Gives linear light in float, in the file's own primaries, instead of its encoded color space |
 
+`SampleImage.Load` gives an integer image's samples at its own bits per sample, as coded (see
+[Stored samples](index.md#stored-samples)).
+
 ## Animations, layers and previews
 
 Animations load as their blended frames with delays and loop count. `JxlImage.ReadLayers` gives the frames before blending, each
