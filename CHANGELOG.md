@@ -5,6 +5,16 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+JPEG-LS in Egami.Formats.Extended (DICOM and science formats, stage A).
+
+- `JpegLsFormat` reads and writes JPEG-LS (ITU-T T.87, .jls): lossless and near-lossless coding of 2 to 16-bit samples in
+  every interleave mode, restart markers, preset coding parameters, mapping tables (palettes), subsampled components, sizes
+  from LSE and DNL segments, and HP's colour transforms. `WithJpegLs()` registers it, and `WithExtendedFormats()` now does
+  too, ahead of JPEG. Single-scan files stream; a lenient read recovers at the next restart marker.
+- `JpegLsWriterOptions` sets NEAR, the interleave mode, the colour transform, the bits of a sample and the restart interval,
+  and `JpegLsDetails` keeps what the file said. `JpegLsWriter.Write` codes plain samples (1 to 4 components) for callers such
+  as DICOM writers. Files decode exactly in CharLS, and lossless files are the size CharLS writes.
+
 DICOM dataset reading, a preview (DICOM Build Plan stage D, first part). Additive; every new type is `[Experimental]`
 (`EGAMIX001`).
 
