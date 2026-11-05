@@ -1167,7 +1167,7 @@ each page, a <code>ConvertColorTo</code> load) is one activity. A transcode that
 <tr>
 <td><code>Psd.AdjustmentSkipped</code></td>
 <td>Warning</td>
-<td>Flattening left out adjustment layers of a kind Egami does not apply; the warning names them</td>
+<td>Flattening left out adjustment layers of a kind Egami does not apply (noise gradient maps, color lookups that are not CUBE tables, version 3 photo filters); the warning names them</td>
 </tr>
 <tr>
 <td><code>Psd.BlendModeUnknown</code></td>
@@ -1197,7 +1197,7 @@ each page, a <code>ConvertColorTo</code> load) is one activity. A transcode that
 <tr>
 <td><code>Psd.FillSkipped</code></td>
 <td>Warning</td>
-<td>Flattening left out gradient and pattern fill layers; the warning names them</td>
+<td>Flattening left out fill layers it cannot draw (noise gradients, patterns the document does not hold); the warning names them</td>
 </tr>
 <tr>
 <td><code>Psd.FlattenUnsupported</code></td>
