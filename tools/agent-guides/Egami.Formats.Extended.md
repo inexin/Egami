@@ -28,8 +28,13 @@ format infos and options), with `Egami` and `Egami.Formats`.
 - DICOM (preview, `[Experimental]` `EGAMIX001`; namespace `Egami.Formats.Extended.Dicom`): `DicomFile.Load` reads the file meta
   information and dataset (`DicomDataset`: by keyword, `DicomTag` or index; `DicomElement` getters `GetString`, `GetNumbers`,
   `GetIntegers`, `GetDate`, `GetTime`, `GetDateTime`, `GetPersonName`, `GetTags`, `Items`, `Fragments`, `RawValue`).
-  `WithDicom()` (not in `WithExtendedFormats()`) registers `DicomFormat.Info` for detection and Probe; `Raster.Load` throws
-  `NotSupportedException` until pixel decoding lands. Warnings are `Dicom.*` diagnostics in `DicomFile.Warnings`.
+  `WithDicom()` (not in `WithExtendedFormats()`) registers `DicomFormat.Info`; `Raster.Load` gives one frame as a viewer
+  shows it (Gray8/Gray16 after rescale, window or VOI LUT and MONOCHROME1 inversion; Rgb8/Rgb16 for RGB, YBR and palette),
+  `DicomReaderOptions` picks `Frame`, `Values` (`Display`, `Modality` or `Stored`, the last two as GrayF32), a window
+  (`WindowCenter`, `WindowWidth`, `WindowFunction`), `VoiIndex` and `PreferWindow`; `DicomDetails` says what was applied.
+  Each frame is an image for `LoadAll`; `DicomFile.LoadFrame(i)` decodes frames without rereading. Native, RLE, deflated,
+  JPEG, JPEG-LS, JPEG 2000, HTJ2K and JPEG XL pixel data; MPEG/H.264/HEVC throw `NotSupportedException`. Warnings are
+  `Dicom.*` diagnostics.
 - DPX and Cineon: `DpxFormat`, `CineonFormat`. Load gives the stored code values unchanged (10-bit RGB as `Rgb16`, code 1023
   at 65535); `DpxReaderOptions.Linearize` gives scene-linear `RgbF32` by Kodak's conversion (685 white, 95 black) for log
   elements; `DpxReaderOptions.Element` and LoadAll reach every image element. `DpxDetails` and `CineonDetails` keep the depth,

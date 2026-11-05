@@ -22,6 +22,8 @@
     <None Include="../images/fuzz/dicom-seeds/*" LinkBase="images/dicom" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../reference/ktx/*" LinkBase="reference/ktx" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ops/duck.png" LinkBase="images/ops" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/jpeg2000/gray12-lossless.j2k" LinkBase="images/jpeg2000" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../images/htj2k/gray12-lossless.j2c;../images/htj2k/gray16-lossless.jph" LinkBase="images/htj2k" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

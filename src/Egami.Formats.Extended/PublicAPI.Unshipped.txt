@@ -655,3 +655,76 @@ static Egami.Formats.Extended.Textures.Texture.Load(string! path, Egami.EgamiCon
 static Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Textures.Texture!
 static Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Textures.Texture!
 ~[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomTag.Equals(object obj) -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.BitsStored.get -> int
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.BitsStored.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.DicomDetails() -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.Frame.get -> int
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.Frame.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.FrameCount.get -> int
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.FrameCount.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.FrameRate.get -> double?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.FrameRate.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.FrameTime.get -> System.TimeSpan?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.FrameTime.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.Inverted.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.Inverted.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.IsSigned.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.IsSigned.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.PhotometricInterpretation.get -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.PhotometricInterpretation.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.RescaleIntercept.get -> double
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.RescaleIntercept.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.RescaleSlope.get -> double
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.RescaleSlope.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.TransferSyntaxUid.get -> string!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.TransferSyntaxUid.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.UsedMinMax.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.UsedMinMax.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.UsedModalityLut.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.UsedModalityLut.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.UsedVoiLut.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.UsedVoiLut.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.Values.get -> Egami.Formats.Extended.Dicom.DicomValues
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.Values.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.WindowCenter.get -> double?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.WindowCenter.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.WindowFunction.get -> Egami.Formats.Extended.Dicom.DicomVoiFunction
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.WindowFunction.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.WindowWidth.get -> double?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.WindowWidth.set -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFile.FrameCount.get -> int
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFile.LoadFrame(int frame = 0, Egami.Formats.Extended.Dicom.DicomReaderOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Raster!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.DicomReaderOptions() -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.Equals(Egami.Formats.Extended.Dicom.DicomReaderOptions? other) -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.Frame.get -> int
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.Frame.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.PreferWindow.get -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.PreferWindow.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.Values.get -> Egami.Formats.Extended.Dicom.DicomValues
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.Values.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.VoiIndex.get -> int
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.VoiIndex.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.WindowCenter.get -> double?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.WindowCenter.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.WindowFunction.get -> Egami.Formats.Extended.Dicom.DicomVoiFunction?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.WindowFunction.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.WindowWidth.get -> double?
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomReaderOptions.WindowWidth.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomValues
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomValues.Display = 0 -> Egami.Formats.Extended.Dicom.DicomValues
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomValues.Modality = 1 -> Egami.Formats.Extended.Dicom.DicomValues
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomValues.Stored = 2 -> Egami.Formats.Extended.Dicom.DicomValues
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVoiFunction
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVoiFunction.Linear = 0 -> Egami.Formats.Extended.Dicom.DicomVoiFunction
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVoiFunction.LinearExact = 1 -> Egami.Formats.Extended.Dicom.DicomVoiFunction
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomVoiFunction.Sigmoid = 2 -> Egami.Formats.Extended.Dicom.DicomVoiFunction
+[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomDetails.Copy() -> Egami.Metadata.FormatDetails!
+[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomReaderOptions.<Clone>$() -> Egami.Formats.Extended.Dicom.DicomReaderOptions!
+[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomReaderOptions.Equals(object? obj) -> bool
+[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomReaderOptions.GetHashCode() -> int
+[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomReaderOptions.ToString() -> string!
+[EGAMIX001]override sealed Egami.Formats.Extended.Dicom.DicomReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomReaderOptions.operator !=(Egami.Formats.Extended.Dicom.DicomReaderOptions? left, Egami.Formats.Extended.Dicom.DicomReaderOptions? right) -> bool
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomReaderOptions.operator ==(Egami.Formats.Extended.Dicom.DicomReaderOptions? left, Egami.Formats.Extended.Dicom.DicomReaderOptions? right) -> bool

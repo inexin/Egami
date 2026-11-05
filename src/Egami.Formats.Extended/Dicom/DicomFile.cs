@@ -44,6 +44,9 @@ public sealed class DicomFile
     /// <summary>Gets the problems a lenient read recovered from and the irregularities it read past, such as <c>Dicom.Truncated</c>.</summary>
     public IReadOnlyList<EgamiDiagnostic> Warnings { get; }
 
+    /// <summary>Gets the number of frames: Number of Frames (0028,0008), 1 when the dataset has none.</summary>
+    public int FrameCount => Math.Max(DicomImageInfo.Integer(Dataset, 0x0028, 0x0008, 1), 1);
+
     /// <summary>Gets the PS3.6 edition whose data dictionary names tags, such as <c>DICOM PS3.6 2026d</c>.</summary>
     public static string DictionaryEdition => DicomDictionary.Edition;
 
@@ -98,6 +101,31 @@ public sealed class DicomFile
         using EgamiInput input = new(Stream.Null, context ?? EgamiContext.Default, default);
         input.CheckMemory(data.Length);
         return new DicomFile(DicomParser.Parse(data, input, options ?? ReaderOptions.Default)).Link();
+    }
+
+    /// <summary>
+    /// Decodes one frame of the file's pixel data, as <see cref="Raster.Load(Stream, EgamiContext?, ReaderOptions?)"/> of the
+    /// file would, without reading the file again.
+    /// </summary>
+    /// <param name="frame">The frame, from 0; it replaces <see cref="DicomReaderOptions.Frame"/>.</param>
+    /// <param name="options">What to give and how, or <see langword="null"/> for what a viewer shows.</param>
+    /// <param name="context">The context whose safety limits apply, or <see langword="null"/> for the default.</param>
+    /// <returns>The frame, in the pixel type that fits it (see <see cref="DicomValues"/>).</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Dicom.cs" region="dicom-frames"/>
+    /// </example>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="frame"/> is negative or not below <see cref="FrameCount"/>.</exception>
+    /// <exception cref="UnsupportedFormatException">The dataset has no image or no pixel data.</exception>
+    /// <exception cref="NotSupportedException">The pixel data is in a transfer syntax or layout that is not decoded, such as MPEG.</exception>
+    /// <exception cref="CorruptDataException">The pixel data is damaged and the read is strict, or cannot be read at all.</exception>
+    /// <exception cref="LimitExceededException">The frame breaks a safety limit.</exception>
+    public Raster LoadFrame(int frame = 0, DicomReaderOptions? options = null, EgamiContext? context = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(frame);
+        DicomReaderOptions read = (options ?? new DicomReaderOptions()) with { Frame = frame };
+        using EgamiInput input = new(Stream.Null, context ?? EgamiContext.Default, default);
+        using RowReader rows = DicomReader.Open(input, this, read);
+        return ((IWholeRead)rows).ReadNatural(input);
     }
 
     /// <summary>Reads the rest of an input as a DICOM file.</summary>

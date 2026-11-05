@@ -101,13 +101,88 @@ public class Dicom
         using SampleFiles files = new();
 
         #region dicom-probe
-        // Registered, DICOM is detected and probed; decoding its pixel data comes in a later version.
+        // Registered, DICOM is detected and probed: the size, the layout a load gives and the number of frames.
         EgamiContext context = new EgamiContext().WithDicom();
         RasterInfo info = Raster.Probe("scan.dcm", context);
-        Console.WriteLine($"{info.Format.Name} {info.Width}x{info.Height}, {info.FrameCount} frames");
+        Console.WriteLine($"{info.Format.Name} {info.Width}x{info.Height} {info.Layout}, {info.ImageCount} frames");
         #endregion
 
         Assert.Equal((4, 4), (info.Width, info.Height));
         Assert.Same(DicomFormat.Info, info.Format);
+    }
+
+    [Fact]
+    public void Pixels()
+    {
+        using SampleFiles files = new();
+
+        #region dicom-pixels
+        // A load gives what a viewer shows: rescaled, windowed, inverted for MONOCHROME1, colour as RGB.
+        EgamiContext context = new EgamiContext().WithDicom();
+        using Raster image = Raster.Load("scan.dcm", context);
+        DicomDetails details = (DicomDetails)image.Metadata.FormatDetails!;
+        Console.WriteLine($"{image.Layout}: window {details.WindowCenter}/{details.WindowWidth}, slope {details.RescaleSlope}");
+        image.Save("scan.png");
+        #endregion
+
+        Assert.Equal((4, 4), (image.Width, image.Height));
+        Assert.True(details.UsedMinMax); // The sample has window centers but no widths.
+    }
+
+    [Fact]
+    public void Window()
+    {
+        using SampleFiles files = new();
+        EgamiContext context = new EgamiContext().WithDicom();
+
+        #region dicom-window
+        // A window of your own, in modality values (Hounsfield units for CT), or the file's second one.
+        using Raster bone = Raster.Load("scan.dcm", context, new DicomReaderOptions { WindowCenter = 400, WindowWidth = 1800 });
+        using Raster second = Raster.Load("scan.dcm", context, new DicomReaderOptions { VoiIndex = 1 });
+        using Raster smooth = Raster.Load("scan.dcm", context,
+            new DicomReaderOptions { WindowCenter = 40, WindowWidth = 400, WindowFunction = DicomVoiFunction.Sigmoid });
+        #endregion
+
+        Assert.Equal(400, ((DicomDetails)bone.Metadata.FormatDetails!).WindowCenter);
+        Assert.Equal(1, ((DicomDetails)second.Metadata.FormatDetails!).FrameCount);
+        Assert.Equal(DicomVoiFunction.Sigmoid, ((DicomDetails)smooth.Metadata.FormatDetails!).WindowFunction);
+    }
+
+    [Fact]
+    public void ValuesOption()
+    {
+        using SampleFiles files = new();
+        EgamiContext context = new EgamiContext().WithDicom();
+
+        #region dicom-values-option
+        // The numbers behind the picture, as GrayF32: modality values (such as Hounsfield units), or the stored values.
+        using Raster<Egami.Pixels.GrayF32> hounsfield = Raster.Load<Egami.Pixels.GrayF32>("scan.dcm", context,
+            new DicomReaderOptions { Values = DicomValues.Modality });
+        float center = hounsfield.Row(2)[2].L;
+        #endregion
+
+        Assert.True(float.IsFinite(center));
+    }
+
+    [Fact]
+    public void Frames()
+    {
+        using SampleFiles files = new();
+        EgamiContext context = new EgamiContext().WithDicom();
+
+        #region dicom-frames
+        // Each frame of a multi-frame file is an image: LoadAll gives them all, DicomReaderOptions.Frame one of them.
+        using RasterList frames = Raster.LoadAll("scan.dcm", context);
+
+        // With the file read once, LoadFrame decodes frame after frame without reading it again.
+        DicomFile file = DicomFile.Load("scan.dcm");
+        for (int i = 0; i < file.FrameCount; i++)
+        {
+            using Raster frame = file.LoadFrame(i);
+            Console.WriteLine($"frame {i}: {frame.Width}x{frame.Height}");
+        }
+        #endregion
+
+        Assert.Equal(file.FrameCount, frames.Count);
     }
 }

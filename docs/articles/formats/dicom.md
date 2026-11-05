@@ -6,11 +6,13 @@ through the Egami.Formats.Extended package, as a preview: every DICOM type is ma
 `EGAMIX001`, so code that uses it suppresses that id (`<NoWarn>$(NoWarn);EGAMIX001</NoWarn>`), and the API may change before
 it is stable.
 
-This version reads the dataset. Decoding the pixel data, the display pipeline (rescale, window, color) and writing come in
-later versions; until then `Raster.Load` of a DICOM file throws `NotSupportedException`.
+This version reads the dataset and decodes the pixel data of every frame through the display pipeline (rescale, window,
+colour). Writing comes in a later version.
 
 | | |
 | --- | --- |
+| Loads | One frame a load, as a viewer shows it: `Gray8` or `Gray16` for monochrome images, `Rgb8` or `Rgb16` for colour and palette images; modality or stored values as `GrayF32` on request; each frame an image for `Raster.LoadAll` |
+| Pixel data | Native (1, 8, 16 and 32 bits allocated, planar or interleaved, either byte order), RLE Lossless, Deflated Image Frame Compression, encapsulated uncompressed, JPEG baseline, extended and lossless, JPEG-LS, JPEG 2000, High-Throughput JPEG 2000 and JPEG XL |
 | Reads | PS3.10 files with the 128-byte preamble and DICM, and bare datasets without them; implicit VR little endian, explicit VR little endian, explicit VR big endian and deflated explicit VR little endian datasets; sequences and items of defined and undefined length to 64 levels; every VR of PS3.5 table 6.2-1; encapsulated pixel data as fragments with the Basic and Extended Offset Tables; text in the character sets of PS3.3 C.12.1.1.2, ISO 2022 code extension included |
 | Writes | Nothing yet |
 | `FormatInfo` | `DicomFormat.Info`: name `DICOM`, extensions `.dcm`, `.dicom` and `.dic`, MIME type `application/dicom`; registered with `WithDicom()`, not by `WithExtendedFormats()` |
@@ -62,10 +64,58 @@ with the Basic Offset Table and, when the dataset has one, the Extended Offset T
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Dicom.cs#dicom-fragments)]
 
+## Pixels
+
+Registered with `WithDicom()`, `Raster.Load` decodes the first frame and takes it through what PS3.3 C.11 says a display does,
+so the image looks as it would in a viewer. `DicomDetails` in the metadata says what was applied.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Dicom.cs#dicom-pixels)]
+
+For a monochrome image, in order:
+
+1. Stored values: the Bits Stored under the High Bit, sign-extended when Pixel Representation is 1; other bits (old overlays)
+   are dropped. A JPEG, JPEG-LS or JPEG 2000 codestream that codes signed data as unsigned is sign-extended the same way.
+2. Modality values: the Modality LUT Sequence, or Rescale Slope and Intercept (for CT, Hounsfield units).
+3. The VOI transform: the VOI LUT Sequence, or the window (Window Center and Width with the VOI LUT Function LINEAR,
+   LINEAR_EXACT or SIGMOID of PS3.3 C.11.2.1.2). A file with neither is stretched from its frame's smallest to its largest
+   modality value. The output fills `Gray8` when Bits Stored is 8 or less, `Gray16` otherwise.
+4. Inversion: MONOCHROME1 images are inverted, unless a Presentation LUT Shape says IDENTITY; INVERSE inverts any.
+
+Enhanced multi-frame files take each frame's rescale (Pixel Value Transformation) and window (Frame VOI LUT) from its
+Per-Frame Functional Groups, then the Shared ones, then the dataset.
+
+`DicomReaderOptions` changes what a load gives: a window of your own, which of several windows or VOI LUTs, the window over
+the VOI LUT, or the numbers behind the picture.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Dicom.cs#dicom-window)]
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Dicom.cs#dicom-values-option)]
+
+| `DicomValues` | Monochrome | Colour and palette |
+| --- | --- | --- |
+| `Display` (default) | `Gray8` or `Gray16`, as above | `Rgb8` or `Rgb16`, YBR converted to RGB, palette indices through the colour tables |
+| `Modality` | `GrayF32` modality values, such as Hounsfield units | As `Display` |
+| `Stored` | `GrayF32` stored values with their sign (exact to 2^24; unsigned 32-bit values above 2^31 − 1 are clamped) | `Rgb8` or `Rgb16` as stored, YBR not converted; palette indices as `GrayF32` |
+
+Colour: RGB is scaled to 8 or 16 bits; YBR_FULL and YBR_FULL_422 convert by the full-range equations of PS3.3 C.7.6.3.1.2,
+YBR_PARTIAL_422 and YBR_PARTIAL_420 by the BT.601 studio-range ones; YBR_RCT and YBR_ICT are already RGB once the JPEG 2000
+decoder undoes its component transform, and JPEG XL decodes to RGB. PALETTE COLOR goes through the red, green and blue tables,
+segmented ones included, to `Rgb8` for 8-bit tables and `Rgb16` for 16-bit ones.
+
+## Frames
+
+Each frame of a multi-frame file is an image of its own: `Raster.Probe` gives their number as `ImageCount`, `Raster.LoadAll`
+loads them all, and `DicomReaderOptions.Frame` picks one. `DicomFile.LoadFrame` decodes frames of a file already read, so a
+long series is read once. Encapsulated frames are found by the Extended Offset Table, else the Basic Offset Table, else one
+fragment a frame when the counts match, else from where each codestream starts. Cine timing (Frame Time, the Frame Time
+Vector, and the recommended or cine frame rate) is in `DicomDetails`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Dicom.cs#dicom-frames)]
+
 ## Detection and probing
 
 Registered with `WithDicom()`, DICOM files are found by the DICM prefix at byte 128, and `Raster.Probe` gives the size, the
-frame count and a pixel layout from Rows, Columns, Number of Frames, Samples per Pixel and Bits Allocated. Bare datasets are
+number of frames and the pixel layout a load gives. Bare datasets are
 not detected; `DicomFile.Load` reads them, and `Raster.Probe` with `DicomFormat.Info` names the format.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Dicom.cs#dicom-probe)]
@@ -84,7 +134,13 @@ A lenient read (the default) keeps every element read before damage and says wha
 | `Dicom.Truncated` | A value, item or sequence says it is longer than the data; it was cut there |
 | `Dicom.MissingDelimiter` | An item or sequence of undefined length ended without its delimiter |
 | `Dicom.UndefinedLength`, `Dicom.BadItem`, `Dicom.BadFragment`, `Dicom.StrayDelimiter`, `Dicom.TrailingBytes` | Structure that breaks PS3.5; the rest was skipped |
-| `Dicom.Deflate` | The deflated dataset is damaged; what inflated was read |
+| `Dicom.Deflate` | The deflated dataset, or a deflated frame, is damaged; what inflated was read |
+| `Dicom.PixelDataShort` | Native pixel data ends before the frame does; the rest is 0 |
+| `Dicom.RleHeader`, `Dicom.RleSegments`, `Dicom.RleShort` | An RLE frame's header or segments are damaged; what decoded was kept |
+| `Dicom.FrameSize` | A frame's codestream is not Rows by Columns; it was cropped or padded |
+| `Dicom.OffsetTable` | An offset table does not point at fragment starts; frames were found from the codestreams |
+| `Dicom.Codestream`, `Dicom.JpegLsDamaged` | A codec recovered from damage in a frame |
+| `Dicom.WindowInvalid`, `Dicom.PaletteMissing` | The window width or the palette tables cannot be used; the frame's range or the indices are shown |
 
 A strict read (`ReaderOptions.Recovery = RecoveryMode.Strict`) throws `CorruptDataException` for those. Irregularities that
 lose nothing are noted in both modes: `Dicom.NoPreamble`, `Dicom.ImplicitMeta`, `Dicom.NoMeta` (strict throws), `Dicom.NoTransferSyntax`,
@@ -93,6 +149,6 @@ lose nothing are noted in both modes: `Dicom.NoPreamble`, `Dicom.ImplicitMeta`, 
 
 ## Not supported yet
 
-Pixel data decoding (native, RLE, and the codecs), the display pipeline, multi-frame pages and writing are the next stages of
-the DICOM work. Networking (DIMSE, DICOMweb), DICOMDIR media, structured reports, presentation states, segmentation and RT
+Writing is the next stage of the DICOM work. MPEG-2, H.264, HEVC and JPIP transfer syntaxes, Float and Double Float Pixel
+Data, 2-sample, ARGB and CMYK images and retired 12-bit packing throw `NotSupportedException`. Networking (DIMSE, DICOMweb), DICOMDIR media, structured reports, presentation states, segmentation and RT
 objects, overlay burn-in and anonymization are not planned.

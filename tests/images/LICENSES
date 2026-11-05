@@ -305,7 +305,8 @@ fuzz/dds-seeds/
 fuzz/dicom-seeds/
   Small DICOM files for the dicom fuzz target, written byte by byte from PS3.5 and PS3.10 by a script for this repository:
   each transfer syntax, sequences, encapsulated fragments, and the Japanese and Korean values of PS3.5 Annexes H and I. The
-  patient and study values are made up. Public domain (CC0).
+  patient and study values are made up. The pixels-*.dcm seeds hold made-up pixel data (windows, 1-bit frames, RLE, YBR,
+  palettes, JPEG-LS frames), written by DicomSeedTests in tests/Egami.Formats.Extended.Tests. Public domain (CC0).
 
 zstd/
   Zstandard files made by tools/make-zstd-references.py with zstd 1.5.6 (BSD-3) from generated text, noise and runs and from

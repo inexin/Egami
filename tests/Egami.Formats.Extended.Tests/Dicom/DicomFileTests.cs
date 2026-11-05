@@ -336,7 +336,7 @@ public class DicomFileTests
         Assert.Equal("DICOM", info.Format.Name);
         Assert.Equal((40, 30), (info.Width, info.Height));
         Assert.Equal(Gray16.Layout, info.Layout);
-        Assert.Throws<NotSupportedException>(() => Raster.Load(data, context));
+        Assert.Throws<UnsupportedFormatException>(() => Raster.Load(data, context));
         Assert.Throws<UnsupportedFormatException>(() => Raster.Probe(data, new EgamiContext()));
     }
 
