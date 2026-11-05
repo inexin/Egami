@@ -2,6 +2,7 @@ using Egami.Formats;
 using Egami.Formats.Extended;
 using Egami.Formats.Extended.Dds;
 using Egami.Formats.Extended.Dpx;
+using Egami.Formats.Extended.JpegLs;
 using Egami.Formats.Extended.Ktx;
 using Egami.Formats.Extended.Pcx;
 using Egami.Formats.Extended.Raw;
@@ -865,6 +866,85 @@ public class FormatsExtended
         }
 
         File.WriteAllBytes(path, file.ToArray());
+    }
+
+    [Fact]
+    public void JpegLs()
+    {
+        using SampleFiles files = new();
+
+        #region jpegls
+        // JPEG-LS (.jls) is lossless or near-lossless; WithExtendedFormats() registers it too.
+        EgamiContext context = EgamiContext.Default.WithJpegLs();
+        using Raster duck = Raster.Load("duck.png", context);
+        duck.Save("duck.jls");
+
+        // Load gives the natural pixel type: Gray8 or Gray16, GrayAlpha, Rgb or Rgba, 8 or 16 bits as stored.
+        using Raster back = Raster.Load("duck.jls", context);
+        if (back.Metadata.FormatDetails is JpegLsDetails jls)
+        {
+            Console.WriteLine($"NEAR {jls.Near}, {jls.Interleave}, {jls.BitsPerSample} bits, {jls.Components} components, {jls.ColorTransform}");
+        }
+        #endregion
+
+        Assert.Equal(duck.Width, back.Width);
+        Assert.Equal(0, Assert.IsType<JpegLsDetails>(back.Metadata.FormatDetails).Near);
+    }
+
+    [Fact]
+    public void JpegLsOptions()
+    {
+        using SampleFiles files = new();
+        using Raster duck = Raster.Load("duck.png");
+
+        #region jpegls-options
+        // Near-lossless: every sample within 2 of the original, for a much smaller file. Restart markers every 64 lines let a
+        // damaged file be read again from the next one.
+        using (FileStream near = File.Create("duck-near.jls"))
+        {
+            duck.Save(near, JpegLsFormat.Info, new JpegLsWriterOptions { Near = 2, RestartInterval = 64 });
+        }
+
+        // Lossless with HP's colour transform, which shrinks most photographs further, sample-interleaved.
+        using (FileStream hp = File.Create("duck-hp1.jls"))
+        {
+            duck.Save(hp, JpegLsFormat.Info, new JpegLsWriterOptions { ColorTransform = JpegLsColorTransform.Hp1, Interleave = JpegLsInterleave.Sample });
+        }
+
+        // 12-bit samples from a 16-bit raster, as medical images often store them.
+        using Raster<Gray16> scan = duck.As<Gray16>();
+        using (FileStream twelve = File.Create("scan-12.jls"))
+        {
+            scan.Save(twelve, JpegLsFormat.Info, new JpegLsWriterOptions { BitsPerSample = 12 });
+        }
+        #endregion
+
+        Assert.True(new FileInfo("duck-near.jls").Length < new FileInfo("duck-hp1.jls").Length);
+        JpegLsDetails details = Assert.IsType<JpegLsDetails>(Raster.Load("scan-12.jls", EgamiContext.Default.WithJpegLs()).Metadata.FormatDetails);
+        Assert.Equal(12, details.BitsPerSample);
+    }
+
+    [Fact]
+    public void JpegLsSamples()
+    {
+        using SampleFiles files = new();
+
+        #region jpegls-samples
+        // Samples straight from another source, such as a DICOM pixel data element: 2 components, 10 bits, 64 × 32.
+        ushort[] samples = new ushort[64 * 32 * 2];
+        for (int i = 0; i < samples.Length; i++)
+        {
+            samples[i] = (ushort)((i * 37) % 1024);
+        }
+
+        using (FileStream output = File.Create("samples.jls"))
+        {
+            JpegLsWriter.Write(output, samples, components: 2, width: 64, bitsPerSample: 10);
+        }
+        #endregion
+
+        using Raster back = Raster.Load("samples.jls", EgamiContext.Default.WithJpegLs());
+        Assert.Equal((64, 32), (back.Width, back.Height));
     }
 
     private static byte[] SavePcx(Raster image)

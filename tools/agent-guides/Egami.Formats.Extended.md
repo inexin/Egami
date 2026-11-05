@@ -1,7 +1,7 @@
 # Egami.Formats.Extended: guide for coding agents
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster, XBM,
-XPM, WBMP, Farbfeld and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures and writes KTX 2 (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), reads and writes DPX and Cineon film frames, and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
+XPM, WBMP, Farbfeld, JPEG-LS and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures and writes KTX 2 (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), reads and writes DPX and Cineon film frames, and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
 load. Each is a plugin on core Egami's public format API.
 
 Namespaces: `Egami.Formats.Extended` (the `With...` methods), `Egami.Formats.Extended.<Format>` (`PcxFormat` and the other
@@ -12,7 +12,7 @@ format infos and options), with `Egami` and `Egami.Formats`.
 ## Entry points
 
 - `WithExtendedFormats()`: every format in a context; `WithPcx()`, `WithSgi()`, `WithSunRaster()`, `WithXbm()`, `WithXpm()`,
-  `WithWbmp()`, `WithFarbfeld()`, `WithDds()`, `WithKtx()`, `WithKtx2()`, `WithDpx()`, `WithCineon()` and `WithRaw()` one at a time.
+  `WithWbmp()`, `WithFarbfeld()`, `WithJpegLs()`, `WithDds()`, `WithKtx()`, `WithKtx2()`, `WithDpx()`, `WithCineon()` and `WithRaw()` one at a time.
 - DDS: Load gives mip 0 of the first surface; `DdsReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
   `ReconstructNormalZ`) and LoadAll reach every face, array slice, depth slice and mip; `DdsDetails` keeps the DXGI format.
   Save writes a full mip chain; `DdsWriterOptions` (`Format`, `MipLevels`, `Effort`, `Srgb`, `Cube`) and SaveAll write
@@ -34,6 +34,10 @@ format infos and options), with `Egami` and `Egami.Formats`.
   (`Output` = `Developed`, `HalfSize`, `Preview` or `Mosaic`; `WhiteBalance`, `Temperature`, `Tint`, `Exposure`, `Demosaic`,
   `Highlights`, `LuminanceNoiseReduction`, `ColorNoiseReduction`, `LensCorrections`, `ApplyProfile`) sets it; `RawDetails`
   keeps the camera, sensor layout and the colour the develop used.
+- JPEG-LS: `JpegLsFormat` (.jls, T.87) reads every interleave mode, 2 to 16 bits, palettes and HP colour transforms, and
+  is detected ahead of JPEG. `JpegLsWriterOptions` (`Near`, `Interleave`, `ColorTransform`, `BitsPerSample`,
+  `RestartInterval`); `JpegLsDetails` keeps NEAR, depth and interleave; `JpegLsWriter.Write` codes plain `ushort` samples
+  (1 to 4 components), for DICOM and the like. No JPEG-LS part 2 (T.870).
 - `EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats())` at startup makes them work in every call.
 - Load, Probe, streaming decodes, Save and Transcode then work as they do for core formats, inside the same safety limits.
 
@@ -62,6 +66,12 @@ DPX code values and linear light:
 A RAW develop:
 
 {{sample FormatsExtended.cs#raw-develop}}
+
+JPEG-LS, near-lossless and from plain samples:
+
+{{sample FormatsExtended.cs#jpegls-options}}
+
+{{sample FormatsExtended.cs#jpegls-samples}}
 
 ## Common mistakes
 
