@@ -8,7 +8,7 @@ namespace Egami.Benchmarks;
 
 /// <summary>
 /// Egami.Formats.Extended's formats, one thread: a 4000 × 3000 picture saved and loaded in each format (bilevel for XBM and WBMP,
-/// 256 colors for XPM), so a change shows up in time and allocations. The comparison with ImageMagick lives in egami-compare
+/// 256 colors for XPM, 16-bit gray for FITS), so a change shows up in time and allocations. The comparison with ImageMagick lives in egami-compare
 /// (<c>-- extended</c>). Inputs are made in memory from fixed formulas.
 /// </summary>
 [MemoryDiagnoser]
@@ -19,7 +19,7 @@ public class ExtendedFormatBenchmarks
     private FormatInfo _format = null!;
     private byte[] _file = [];
 
-    [Params("PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "JPEG-LS", "DPX", "Cineon")]
+    [Params("PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "JPEG-LS", "DPX", "Cineon", "FITS")]
     public string Format { get; set; } = "";
 
     [GlobalSetup]
@@ -40,7 +40,7 @@ public class ExtendedFormatBenchmarks
             }
         }
 
-        _image = Format is "XBM" or "WBMP" ? picture.Derive(ops => ops.Threshold(0.5f)) : picture;
+        _image = Format is "XBM" or "WBMP" ? picture.Derive(ops => ops.Threshold(0.5f)) : Format == "FITS" ? picture.As<Gray16>() : picture;
         if (!ReferenceEquals(_image, picture))
         {
             picture.Dispose();

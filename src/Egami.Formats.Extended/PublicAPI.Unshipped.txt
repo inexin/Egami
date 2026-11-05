@@ -299,6 +299,90 @@ Egami.Formats.Extended.Dpx.DpxWriterOptions.BitsPerSample.init -> void
 Egami.Formats.Extended.Dpx.DpxWriterOptions.DpxWriterOptions() -> void
 Egami.Formats.Extended.Dpx.DpxWriterOptions.Transfer.get -> Egami.Formats.Extended.Dpx.DpxTransfer?
 Egami.Formats.Extended.Dpx.DpxWriterOptions.Transfer.init -> void
+Egami.Formats.Extended.Fits.FitsCard
+Egami.Formats.Extended.Fits.FitsCard.<Clone>$() -> Egami.Formats.Extended.Fits.FitsCard!
+Egami.Formats.Extended.Fits.FitsCard.Comment.get -> string?
+Egami.Formats.Extended.Fits.FitsCard.Comment.init -> void
+Egami.Formats.Extended.Fits.FitsCard.Deconstruct(out string! Keyword, out object? Value, out string? Comment) -> void
+Egami.Formats.Extended.Fits.FitsCard.Equals(Egami.Formats.Extended.Fits.FitsCard? other) -> bool
+Egami.Formats.Extended.Fits.FitsCard.FitsCard(string! Keyword, object? Value, string? Comment = null) -> void
+Egami.Formats.Extended.Fits.FitsCard.Keyword.get -> string!
+Egami.Formats.Extended.Fits.FitsCard.Keyword.init -> void
+Egami.Formats.Extended.Fits.FitsCard.Value.get -> object?
+Egami.Formats.Extended.Fits.FitsCard.Value.init -> void
+Egami.Formats.Extended.Fits.FitsDetails
+Egami.Formats.Extended.Fits.FitsDetails.Bitpix.get -> int
+Egami.Formats.Extended.Fits.FitsDetails.Bitpix.set -> void
+Egami.Formats.Extended.Fits.FitsDetails.Compression.get -> string?
+Egami.Formats.Extended.Fits.FitsDetails.Compression.set -> void
+Egami.Formats.Extended.Fits.FitsDetails.FitsDetails() -> void
+Egami.Formats.Extended.Fits.FitsDetails.Hdu.get -> int
+Egami.Formats.Extended.Fits.FitsDetails.Hdu.set -> void
+Egami.Formats.Extended.Fits.FitsDetails.Header.get -> Egami.Formats.Extended.Fits.FitsHeader!
+Egami.Formats.Extended.Fits.FitsDetails.Header.set -> void
+Egami.Formats.Extended.Fits.FitsDetails.High.get -> double
+Egami.Formats.Extended.Fits.FitsDetails.High.set -> void
+Egami.Formats.Extended.Fits.FitsDetails.Low.get -> double
+Egami.Formats.Extended.Fits.FitsDetails.Low.set -> void
+Egami.Formats.Extended.Fits.FitsDetails.Plane.get -> int
+Egami.Formats.Extended.Fits.FitsDetails.Plane.set -> void
+Egami.Formats.Extended.Fits.FitsDetails.Stretch.get -> Egami.Formats.Extended.Fits.FitsStretch
+Egami.Formats.Extended.Fits.FitsDetails.Stretch.set -> void
+Egami.Formats.Extended.Fits.FitsFile
+Egami.Formats.Extended.Fits.FitsFile.FirstImage.get -> Egami.Formats.Extended.Fits.FitsHdu?
+Egami.Formats.Extended.Fits.FitsFile.Hdus.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Extended.Fits.FitsHdu!>!
+Egami.Formats.Extended.Fits.FitsFile.ReadPlane(Egami.Formats.Extended.Fits.FitsHdu! hdu, int plane = 0) -> Egami.Raster<Egami.Pixels.GrayF32>!
+Egami.Formats.Extended.Fits.FitsFile.ReadValues(Egami.Formats.Extended.Fits.FitsHdu! hdu) -> double[]!
+Egami.Formats.Extended.Fits.FitsFormat
+Egami.Formats.Extended.Fits.FitsHdu
+Egami.Formats.Extended.Fits.FitsHdu.Axes.get -> System.Collections.Generic.IReadOnlyList<long>!
+Egami.Formats.Extended.Fits.FitsHdu.Bitpix.get -> int
+Egami.Formats.Extended.Fits.FitsHdu.Compression.get -> string?
+Egami.Formats.Extended.Fits.FitsHdu.Header.get -> Egami.Formats.Extended.Fits.FitsHeader!
+Egami.Formats.Extended.Fits.FitsHdu.Height.get -> int
+Egami.Formats.Extended.Fits.FitsHdu.Index.get -> int
+Egami.Formats.Extended.Fits.FitsHdu.IsImage.get -> bool
+Egami.Formats.Extended.Fits.FitsHdu.Kind.get -> Egami.Formats.Extended.Fits.FitsHduKind
+Egami.Formats.Extended.Fits.FitsHdu.Planes.get -> long
+Egami.Formats.Extended.Fits.FitsHdu.Width.get -> int
+Egami.Formats.Extended.Fits.FitsHduKind
+Egami.Formats.Extended.Fits.FitsHduKind.AsciiTable = 4 -> Egami.Formats.Extended.Fits.FitsHduKind
+Egami.Formats.Extended.Fits.FitsHduKind.BinaryTable = 3 -> Egami.Formats.Extended.Fits.FitsHduKind
+Egami.Formats.Extended.Fits.FitsHduKind.CompressedImage = 2 -> Egami.Formats.Extended.Fits.FitsHduKind
+Egami.Formats.Extended.Fits.FitsHduKind.Image = 1 -> Egami.Formats.Extended.Fits.FitsHduKind
+Egami.Formats.Extended.Fits.FitsHduKind.Other = 5 -> Egami.Formats.Extended.Fits.FitsHduKind
+Egami.Formats.Extended.Fits.FitsHduKind.Primary = 0 -> Egami.Formats.Extended.Fits.FitsHduKind
+Egami.Formats.Extended.Fits.FitsHeader
+Egami.Formats.Extended.Fits.FitsHeader.Contains(string! keyword) -> bool
+Egami.Formats.Extended.Fits.FitsHeader.Count.get -> int
+Egami.Formats.Extended.Fits.FitsHeader.Find(string! keyword) -> Egami.Formats.Extended.Fits.FitsCard?
+Egami.Formats.Extended.Fits.FitsHeader.FitsHeader(System.Collections.Generic.IEnumerable<Egami.Formats.Extended.Fits.FitsCard!>! cards) -> void
+Egami.Formats.Extended.Fits.FitsHeader.GetEnumerator() -> System.Collections.Generic.IEnumerator<Egami.Formats.Extended.Fits.FitsCard!>!
+Egami.Formats.Extended.Fits.FitsHeader.GetInteger(string! keyword) -> long?
+Egami.Formats.Extended.Fits.FitsHeader.GetLogical(string! keyword) -> bool?
+Egami.Formats.Extended.Fits.FitsHeader.GetReal(string! keyword) -> double?
+Egami.Formats.Extended.Fits.FitsHeader.GetString(string! keyword) -> string?
+Egami.Formats.Extended.Fits.FitsHeader.this[int index].get -> Egami.Formats.Extended.Fits.FitsCard!
+Egami.Formats.Extended.Fits.FitsReaderOptions
+Egami.Formats.Extended.Fits.FitsReaderOptions.Equals(Egami.Formats.Extended.Fits.FitsReaderOptions? other) -> bool
+Egami.Formats.Extended.Fits.FitsReaderOptions.FitsReaderOptions() -> void
+Egami.Formats.Extended.Fits.FitsReaderOptions.Image.get -> int?
+Egami.Formats.Extended.Fits.FitsReaderOptions.Image.init -> void
+Egami.Formats.Extended.Fits.FitsReaderOptions.Rgb.get -> bool
+Egami.Formats.Extended.Fits.FitsReaderOptions.Rgb.init -> void
+Egami.Formats.Extended.Fits.FitsReaderOptions.Stretch.get -> Egami.Formats.Extended.Fits.FitsStretch
+Egami.Formats.Extended.Fits.FitsReaderOptions.Stretch.init -> void
+Egami.Formats.Extended.Fits.FitsStretch
+Egami.Formats.Extended.Fits.FitsStretch.Asinh = 3 -> Egami.Formats.Extended.Fits.FitsStretch
+Egami.Formats.Extended.Fits.FitsStretch.MinMax = 1 -> Egami.Formats.Extended.Fits.FitsStretch
+Egami.Formats.Extended.Fits.FitsStretch.None = 0 -> Egami.Formats.Extended.Fits.FitsStretch
+Egami.Formats.Extended.Fits.FitsStretch.ZScale = 2 -> Egami.Formats.Extended.Fits.FitsStretch
+Egami.Formats.Extended.Fits.FitsWriterOptions
+Egami.Formats.Extended.Fits.FitsWriterOptions.Bitpix.get -> int?
+Egami.Formats.Extended.Fits.FitsWriterOptions.Bitpix.init -> void
+Egami.Formats.Extended.Fits.FitsWriterOptions.FitsWriterOptions() -> void
+Egami.Formats.Extended.Fits.FitsWriterOptions.Keywords.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Extended.Fits.FitsCard!>!
+Egami.Formats.Extended.Fits.FitsWriterOptions.Keywords.init -> void
 Egami.Formats.Extended.JpegLs.JpegLsColorTransform
 Egami.Formats.Extended.JpegLs.JpegLsColorTransform.Hp1 = 1 -> Egami.Formats.Extended.JpegLs.JpegLsColorTransform
 Egami.Formats.Extended.JpegLs.JpegLsColorTransform.Hp2 = 2 -> Egami.Formats.Extended.JpegLs.JpegLsColorTransform
@@ -520,6 +604,14 @@ override Egami.Formats.Extended.Dpx.DpxReaderOptions.<Clone>$() -> Egami.Formats
 override Egami.Formats.Extended.Dpx.DpxReaderOptions.Equals(object? obj) -> bool
 override Egami.Formats.Extended.Dpx.DpxReaderOptions.GetHashCode() -> int
 override Egami.Formats.Extended.Dpx.DpxReaderOptions.ToString() -> string!
+override Egami.Formats.Extended.Fits.FitsCard.Equals(object? obj) -> bool
+override Egami.Formats.Extended.Fits.FitsCard.GetHashCode() -> int
+override Egami.Formats.Extended.Fits.FitsCard.ToString() -> string!
+override Egami.Formats.Extended.Fits.FitsDetails.Copy() -> Egami.Metadata.FormatDetails!
+override Egami.Formats.Extended.Fits.FitsReaderOptions.<Clone>$() -> Egami.Formats.Extended.Fits.FitsReaderOptions!
+override Egami.Formats.Extended.Fits.FitsReaderOptions.Equals(object? obj) -> bool
+override Egami.Formats.Extended.Fits.FitsReaderOptions.GetHashCode() -> int
+override Egami.Formats.Extended.Fits.FitsReaderOptions.ToString() -> string!
 override Egami.Formats.Extended.JpegLs.JpegLsDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Extended.Ktx.KtxDetails.Copy() -> Egami.Metadata.FormatDetails!
 override Egami.Formats.Extended.Ktx.KtxReaderOptions.<Clone>$() -> Egami.Formats.Extended.Ktx.KtxReaderOptions!
@@ -535,9 +627,20 @@ static Egami.Formats.Extended.Dpx.DpxReaderOptions.operator ==(Egami.Formats.Ext
 static Egami.Formats.Extended.Dpx.DpxWriterOptions.Default.get -> Egami.Formats.Extended.Dpx.DpxWriterOptions!
 static Egami.Formats.Extended.ExtendedContextExtensions.WithCineon(this Egami.EgamiContext! context) -> Egami.EgamiContext!
 static Egami.Formats.Extended.ExtendedContextExtensions.WithDpx(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+override sealed Egami.Formats.Extended.Fits.FitsReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
+static Egami.Formats.Extended.ExtendedContextExtensions.WithFits(this Egami.EgamiContext! context) -> Egami.EgamiContext!
 static Egami.Formats.Extended.ExtendedContextExtensions.WithJpegLs(this Egami.EgamiContext! context) -> Egami.EgamiContext!
 static Egami.Formats.Extended.ExtendedContextExtensions.WithKtx(this Egami.EgamiContext! context) -> Egami.EgamiContext!
 static Egami.Formats.Extended.ExtendedContextExtensions.WithKtx2(this Egami.EgamiContext! context) -> Egami.EgamiContext!
+static Egami.Formats.Extended.Fits.FitsCard.operator !=(Egami.Formats.Extended.Fits.FitsCard? left, Egami.Formats.Extended.Fits.FitsCard? right) -> bool
+static Egami.Formats.Extended.Fits.FitsCard.operator ==(Egami.Formats.Extended.Fits.FitsCard? left, Egami.Formats.Extended.Fits.FitsCard? right) -> bool
+static Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Fits.FitsFile!
+static Egami.Formats.Extended.Fits.FitsFile.Load(string! path, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Fits.FitsFile!
+static Egami.Formats.Extended.Fits.FitsFormat.Info.get -> Egami.Formats.FormatInfo!
+static Egami.Formats.Extended.Fits.FitsReaderOptions.Default.get -> Egami.Formats.Extended.Fits.FitsReaderOptions!
+static Egami.Formats.Extended.Fits.FitsReaderOptions.operator !=(Egami.Formats.Extended.Fits.FitsReaderOptions? left, Egami.Formats.Extended.Fits.FitsReaderOptions? right) -> bool
+static Egami.Formats.Extended.Fits.FitsReaderOptions.operator ==(Egami.Formats.Extended.Fits.FitsReaderOptions? left, Egami.Formats.Extended.Fits.FitsReaderOptions? right) -> bool
+static Egami.Formats.Extended.Fits.FitsWriterOptions.Default.get -> Egami.Formats.Extended.Fits.FitsWriterOptions!
 static Egami.Formats.Extended.JpegLs.JpegLsFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Extended.JpegLs.JpegLsWriter.Write(System.IO.Stream! output, System.ReadOnlySpan<ushort> samples, int components, int width, int bitsPerSample, Egami.Formats.Extended.JpegLs.JpegLsWriterOptions? options = null) -> void
 static Egami.Formats.Extended.JpegLs.JpegLsWriterOptions.Default.get -> Egami.Formats.Extended.JpegLs.JpegLsWriterOptions!

@@ -135,6 +135,12 @@ Pictures" are the references, with Kodak's published printing-density to linear 
 0.002 density a code, film gamma 0.6). ImageMagick and FFmpeg run only as black-box tools, to make test files and to compare
 code values and speed; their DPX and Cineon code is never read.
 
+For FITS, the FITS Standard 4.0 (IAU FITS Working Group, 2016), the tiled image compression convention (Pence, Seaman and
+White, "Lossless astronomical image compression and the effects of noise", PASP 2009, and the FITS registry's tiled image
+convention 2.3, with its Rice, PLIO and subtractive dither descriptions) and IRAF's documented zscale algorithm are the
+references. CFITSIO and astropy (BSD-3) are not read; ImageMagick runs only as a black-box tool to compare values, orientation
+and speed.
+
 For HEIC, libheif and libde265 (LGPL-3), FFmpeg's HEVC decoder and openHEVC (LGPL-2.1) and x265 (GPL-2) are never read; they
 only run as black-box tools in Docker to make test files and references. Nokia's HEIF code (non-commercial licence) is never
 read.
@@ -219,6 +225,7 @@ LGPL code is never read.
 
 | Tool | License | Use |
 | --- | --- | --- |
+| ImageMagick (Magick.NET) | ImageMagick License, Apache 2.0 | Compare FITS values, orientation and speed |
 | FFmpeg, ffprobe | LGPL/GPL | Make test clips, decode and probe for comparison, in Docker |
 | ImageMagick (Magick.NET) | ImageMagick License, Apache 2.0 | Make DPX and Cineon test files and compare their code values and speed |
 | Adobe DNG SDK's dng_validate (1.7.1, built from Adobe's download outside the repository) | Adobe DNG SDK license | Validate the DNGs Egami writes in egami-compare's DNG writing gates (Lars's decision, 2026-11-01); its source is never read |

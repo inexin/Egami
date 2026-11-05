@@ -24,6 +24,7 @@ tests/svg/** -text
 *.wmz binary
 *.emz binary
 *.dcm binary
+*.fits binary
 # Barcode fuzz seeds are raw bytes.
 tests/images/fuzz/barcode-*/** binary
 # Egami.Video clips, fuzz seeds and regressions are raw bytes.

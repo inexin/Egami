@@ -1,7 +1,7 @@
 # Egami.Formats.Extended: guide for coding agents
 
 Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need: PCX, SGI, Sun raster, XBM,
-XPM, WBMP, Farbfeld, JPEG-LS and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures and writes KTX 2 (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), reads and writes DPX and Cineon film frames, and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
+XPM, WBMP, Farbfeld, JPEG-LS, FITS and DDS textures (BC1 to BC7, mips, cube maps, arrays and volumes), reads KTX and KTX 2 textures and writes KTX 2 (BC1 to BC7, ETC1, ETC2, EAC, 2D ASTC LDR and HDR, Basis Universal ETC1S and UASTC, and uncompressed; Zstandard and zlib supercompressed), reads and writes DPX and Cineon film frames, and reads camera RAW (DNG, CR2, NEF, PEF, ARW, ORF, RW2 and RAF; CR3 previews and metadata), developed on
 load. Each is a plugin on core Egami's public format API.
 
 Namespaces: `Egami.Formats.Extended` (the `With...` methods), `Egami.Formats.Extended.<Format>` (`PcxFormat` and the other
@@ -12,7 +12,7 @@ format infos and options), with `Egami` and `Egami.Formats`.
 ## Entry points
 
 - `WithExtendedFormats()`: every format in a context; `WithPcx()`, `WithSgi()`, `WithSunRaster()`, `WithXbm()`, `WithXpm()`,
-  `WithWbmp()`, `WithFarbfeld()`, `WithJpegLs()`, `WithDds()`, `WithKtx()`, `WithKtx2()`, `WithDpx()`, `WithCineon()` and `WithRaw()` one at a time.
+  `WithWbmp()`, `WithFarbfeld()`, `WithJpegLs()`, `WithDds()`, `WithKtx()`, `WithKtx2()`, `WithDpx()`, `WithCineon()`, `WithFits()` and `WithRaw()` one at a time.
 - DDS: Load gives mip 0 of the first surface; `DdsReaderOptions` (`Surface`, `MipLevel`, `IncludeMipLevels`,
   `ReconstructNormalZ`) and LoadAll reach every face, array slice, depth slice and mip; `DdsDetails` keeps the DXGI format.
   Save writes a full mip chain; `DdsWriterOptions` (`Format`, `MipLevels`, `Effort`, `Srgb`, `Cube`) and SaveAll write
@@ -35,6 +35,11 @@ format infos and options), with `Egami` and `Egami.Formats`.
   elements; `DpxReaderOptions.Element` and LoadAll reach every image element. `DpxDetails` and `CineonDetails` keep the depth,
   packing, transfer and the file, film and TV fields (timecode, frame rate, slate), and the writers write them back.
   `DpxWriterOptions` (`BitsPerSample` 8, 10, 12 or 16, `BigEndian`, `Transfer`); Cineon writes 10-bit RGB only.
+- FITS (`Egami.Formats.Extended.Fits`): Load gives `GrayF32` stretched into 0 to 1; `FitsReaderOptions` (`Stretch` =
+  `MinMax`, `ZScale`, `Asinh` or `None` for the physical values; `Image` picks an HDU or cube plane; `Rgb` reads a
+  three-plane cube as `RgbF32`); `FitsDetails.Header` keeps every card. `FitsFile.Load` lists every HDU and reads values.
+  Tile-compressed images (RICE_1, GZIP_1, GZIP_2, PLIO_1) read; HCOMPRESS throws. Save writes BITPIX 8, 16 or -32
+  (`FitsWriterOptions.Bitpix`, `Keywords`).
 - RAW: Load develops a DNG into `Rgb16` sRGB (or straight into the RGB space `ConvertColorTo` names); `RawReaderOptions`
   (`Output` = `Developed`, `HalfSize`, `Preview` or `Mosaic`; `WhiteBalance`, `Temperature`, `Tint`, `Exposure`, `Demosaic`,
   `Highlights`, `LuminanceNoiseReduction`, `ColorNoiseReduction`, `LensCorrections`, `ApplyProfile`) sets it; `RawDetails`
@@ -68,6 +73,10 @@ DPX code values and linear light:
 
 {{sample FormatsExtended.cs#dpx-linearize}}
 
+FITS stretches:
+
+{{sample FormatsExtended.cs#fits-stretch}}
+
 A RAW develop:
 
 {{sample FormatsExtended.cs#raw-develop}}
@@ -87,6 +96,8 @@ JPEG-LS, near-lossless and from plain samples:
 - Expecting a DDS cube map or array to load whole with Load: it gives one surface. Use LoadAll, or `DdsReaderOptions.Surface`.
 - Expecting a KTX texture written bottom-up (`KTXorientation` `ru`) to load bottom-up: Load turns it upright and applies
   `KTXswizzle`; `KtxReaderOptions.KeepStoredLayout` keeps the stored rows and channels.
+- Measuring FITS values from a plain Load: it is stretched for viewing. Use `FitsStretch.None` or `FitsFile.ReadValues`;
+  Load also turns the image upright (the file stores the bottom row first), `ReadValues` keeps file order.
 - Expecting BC5 normal maps to have blue: it loads as 0 unless `DdsReaderOptions.ReconstructNormalZ` is set.
 - Expecting a RAW load to turn the image upright: like every Egami load it returns the pixels as stored; `AutoOrient` turns
   them by `RasterInfo.Orientation`.

@@ -46,6 +46,8 @@
       href: formats/extended.md
     - name: Farbfeld
       href: formats/farbfeld.md
+    - name: FITS
+      href: formats/fits.md
     - name: GIF
       href: formats/gif.md
     - name: HEIC

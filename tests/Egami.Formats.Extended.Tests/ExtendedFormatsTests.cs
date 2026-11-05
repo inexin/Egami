@@ -20,7 +20,7 @@ public class ExtendedFormatsTests
         // RAW goes first, ahead of TIFF (a DNG is a TIFF file), and JPEG-LS ahead of JPEG; the others after the context's own.
         Assert.Equal(["RAW", "JPEG-LS"], context.Formats.Take(2).Select(f => f.Name));
         Assert.Equal(core.Formats, context.Formats.Skip(2).Take(core.Formats.Count));
-        Assert.Equal(["PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "DDS", "KTX", "KTX2", "DPX", "Cineon"], context.Formats.Skip(core.Formats.Count + 2).Select(f => f.Name));
+        Assert.Equal(["PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "DDS", "KTX", "KTX2", "DPX", "Cineon", "FITS"], context.Formats.Skip(core.Formats.Count + 2).Select(f => f.Name));
 
         // Registering again replaces in place.
         Assert.Equal(context.Formats.Count, context.WithExtendedFormats().WithPcx().Formats.Count);
@@ -58,6 +58,22 @@ public class ExtendedFormatsTests
     public void RoundTripsColors(string format)
     {
         using Raster<Rgba8> colors = TestImages.Colors();
+        if (format == "FITS")
+        {
+            // FITS keeps the stored values; a colour image is a cube of three planes, read as RGB on request.
+            using Raster<RgbF32> values = Raster.Load<RgbF32>(TestImages.Save(colors, format), TestImages.Context, new Extended.Fits.FitsReaderOptions { Rgb = true, Stretch = Extended.Fits.FitsStretch.None });
+            for (int y = 0; y < colors.Height; y++)
+            {
+                for (int x = 0; x < colors.Width; x++)
+                {
+                    Rgba8 p = colors.Row(y)[x];
+                    Assert.Equal(new RgbF32(p.R, p.G, p.B), values.Row(y)[x]);
+                }
+            }
+
+            return;
+        }
+
         using Raster<Rgba8> back = Raster.Load<Rgba8>(TestImages.Save(colors, format), TestImages.Context);
         for (int y = 0; y < colors.Height; y++)
         {
@@ -157,7 +173,7 @@ public class ExtendedFormatsTests
         using Raster<Gray8> back = Raster.Load<Gray8>(cut, TestImages.Context with { Diagnostics = seen.Add });
         Assert.Contains(back.Metadata.Warnings, w => w.Id.EndsWith(".RowsMissing", StringComparison.Ordinal));
         Assert.Contains(seen, w => w.Id.EndsWith(".RowsMissing", StringComparison.Ordinal));
-        int kept = format == "SGI" ? 39 : 0;
+        int kept = format is "SGI" or "FITS" ? 39 : 0;
         Assert.True(bitmap.Row(kept).SequenceEqual(back.Row(kept)), $"Row {kept}, which the file still has, is lost.");
         Assert.ThrowsAny<EgamiException>(() => Raster.Load(cut, TestImages.Context, new ReaderOptions { Recovery = RecoveryMode.Strict }));
 
@@ -219,6 +235,7 @@ public class ExtendedFormatsTests
             "JPEG-LS" => [0xFF, 0xD8, 0xFF, 0xF7, 0, 11, 8, 0xEA, 0x60, 0xEA, 0x60, 1, 1, 0x11, 0, 0xFF, 0xDA, 0, 8, 1, 1, 0, 0, 0, 0, 0, 0],
             "DPX" => Sized(TestImages.Save(TestImages.Bitmap(), "DPX"), 772, 776),
             "Cineon" => Sized(TestImages.Save(TestImages.Bitmap(), "Cineon"), 200, 204, 228, 232, 256, 260),
+            "FITS" => Tests.Fits.FitsFiles.Header("SIMPLE  =                    T", "BITPIX  =                    8", "NAXIS   =                    2", "NAXIS1  =                60000", "NAXIS2  =                60000"),
             _ => "/* XPM */\nstatic char *a[] = {\n\"60000 60000 1 1\",\n\". c #000000\",\n};\n"u8.ToArray(),
         };
         EgamiContext context = TestImages.Context with { Limits = new SafetyLimits { MaxPixels = 1_000_000 } };
