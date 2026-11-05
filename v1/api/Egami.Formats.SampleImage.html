@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_SampleImage" data-uid="Egami.Formats.SampleImage" class="text-break">
-Class SampleImage  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L19"><i class="bi bi-code-slash"></i></a>
+Class SampleImage  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L23"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -105,7 +105,8 @@ and JPEG XL load this way.</p>
   <div class="markdown conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public sealed class SampleImage</code></pre>
+    <pre><code class="lang-csharp hljs">[Experimental(&quot;EGAMIX001&quot;, UrlFormat = &quot;https://github.com/inexin/Egami/blob/main/docs/articles/formats/index.md#stored-samples&quot;)]
+public sealed class SampleImage</code></pre>
   </div>
 
 
@@ -160,6 +161,10 @@ int luma = row[0], cb = row[1], cr = row[2];</code></pre>
   <div class="markdown level0 remarks"><p>Samples are interleaved in component order, one <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a> each, so signed values keep their sign. Components sampled
 at less than full resolution are brought to the image's size: JPEG's chroma upsampled as <a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a>
 does it (or replicated with <a class="xref" href="Egami.Formats.Jpeg.JpegReaderOptions.html#Egami_Formats_Jpeg_JpegReaderOptions_FastUpsampling">FastUpsampling</a>), JPEG 2000's replicated.</p>
+<p>
+A preview, as DICOM is: marked <code>[Experimental]</code> with the diagnostic <code>EGAMIX001</code>, so a call does not compile until the
+app suppresses that id, and it may change in any minor release.
+</p>
 </div>
 
 
@@ -171,7 +176,7 @@ does it (or replicated with <a class="xref" href="Egami.Formats.Jpeg.JpegReaderO
 
   <h3 id="Egami_Formats_SampleImage_Color" data-uid="Egami.Formats.SampleImage.Color">
   Color
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L55"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets what the components are, as far as the codestream says: <a class="xref" href="Egami.Formats.SampleColor.html#Egami_Formats_SampleColor_YCbCr">YCbCr</a> means no conversion to RGB was made.</p>
@@ -203,7 +208,7 @@ does it (or replicated with <a class="xref" href="Egami.Formats.Jpeg.JpegReaderO
 
   <h3 id="Egami_Formats_SampleImage_Components" data-uid="Egami.Formats.SampleImage.Components">
   Components
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L52"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets each component's precision and sign, in the order the samples are interleaved.</p>
@@ -235,7 +240,7 @@ does it (or replicated with <a class="xref" href="Egami.Formats.Jpeg.JpegReaderO
 
   <h3 id="Egami_Formats_SampleImage_Height" data-uid="Egami.Formats.SampleImage.Height">
   Height
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L49"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the height in pixels.</p>
@@ -267,7 +272,7 @@ does it (or replicated with <a class="xref" href="Egami.Formats.Jpeg.JpegReaderO
 
   <h3 id="Egami_Formats_SampleImage_Metadata" data-uid="Egami.Formats.SampleImage.Metadata">
   Metadata
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L64"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the metadata the file holds, with any warnings from a lenient read of a damaged codestream.</p>
@@ -299,7 +304,7 @@ does it (or replicated with <a class="xref" href="Egami.Formats.Jpeg.JpegReaderO
 
   <h3 id="Egami_Formats_SampleImage_Samples" data-uid="Egami.Formats.SampleImage.Samples">
   Samples
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L61"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets every sample, row after row, each pixel's components together: sample <code>c</code> of pixel (x, y) is at
@@ -332,7 +337,7 @@ does it (or replicated with <a class="xref" href="Egami.Formats.Jpeg.JpegReaderO
 
   <h3 id="Egami_Formats_SampleImage_Width" data-uid="Egami.Formats.SampleImage.Width">
   Width
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L46"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the width in pixels.</p>
@@ -368,7 +373,7 @@ does it (or replicated with <a class="xref" href="Egami.Formats.Jpeg.JpegReaderO
 
   <h3 id="Egami_Formats_SampleImage_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.SampleImage.Load(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
   Load(Stream, EgamiContext?, ReaderOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L97"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Decodes an image to its stored samples. The format comes from the data, as for <a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a>.</p>
@@ -442,7 +447,7 @@ int luma = row[0], cb = row[1], cr = row[2];</code></pre>
 
   <h3 id="Egami_Formats_SampleImage_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.SampleImage.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext,Egami.Formats.ReaderOptions)">
   Load(ReadOnlyMemory&lt;byte&gt;, EgamiContext?, ReaderOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L140"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Decodes an image in memory to its stored samples. See <a class="xref" href="Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a>.</p>
@@ -511,7 +516,7 @@ int luma = row[0], cb = row[1], cr = row[2];</code></pre>
 
   <h3 id="Egami_Formats_SampleImage_Load_System_ReadOnlyMemory_System_Byte__Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.SampleImage.Load(System.ReadOnlyMemory{System.Byte},Egami.Formats.FormatInfo,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
   Load(ReadOnlyMemory&lt;byte&gt;, FormatInfo, EgamiContext?, ReaderOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L152"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L163"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Decodes an image of a known format to its stored samples, without detecting the format: a codestream taken from a
@@ -584,7 +589,7 @@ int first = image.Samples.Span[0];       // 0 to 4095 for 12 unsigned bits</code
 
   <h3 id="Egami_Formats_SampleImage_Load_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.SampleImage.Load(System.String,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
   Load(string, EgamiContext?, ReaderOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L122"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Decodes an image file to its stored samples. See <a class="xref" href="Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a>.</p>
@@ -656,7 +661,7 @@ int luma = row[0], cb = row[1], cr = row[2];</code></pre>
 
   <h3 id="Egami_Formats_SampleImage_Row_System_Int32_" data-uid="Egami.Formats.SampleImage.Row(System.Int32)">
   Row(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L70"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns row <code class="paramref">y</code>: <a class="xref" href="Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Width">Width</a> pixels of <a class="xref" href="Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Components">Components</a> samples each.</p>
@@ -701,7 +706,7 @@ int luma = row[0], cb = row[1], cr = row[2];</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L19" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/SampleImage.cs/#L23" class="edit-link">Edit this page</a>
         </div>
 
 

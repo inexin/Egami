@@ -142,7 +142,7 @@ file.Save("scan-rle.dcm", new DicomWriterOptions { TransferSyntax = DicomTransfe
 file.Save("scan-jpegls.dcm", new DicomWriterOptions
 {
     TransferSyntax = DicomTransferSyntax.JpegLsNearLossless,
-    NearLossless = 2,
+    Near = 2,
     OffsetTable = DicomOffsetTable.Extended,
 });</code></pre>
 

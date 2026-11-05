@@ -426,11 +426,12 @@ foreach (Jpeg2000Channel channel in details.Channels)
 
   <h3 id="Egami_Formats_Jpeg2000_Jpeg2000Details_HighThroughput" data-uid="Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput">
   HighThroughput
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg2000/Jpeg2000Format.cs/#L240"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg2000/Jpeg2000Format.cs/#L241"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets whether the codestream is a High-Throughput JPEG 2000 one (ITU-T T.814): its code-blocks use the HT block
-coder, or may mix it with the T.800 one.</p>
+coder, or may mix it with the T.800 one. Egami reads JPEG 2000 and HTJ2K but writes neither, so setting it has no
+effect on any save; it is settable only as every <a class="xref" href="Egami.Metadata.FormatDetails.html">FormatDetails</a> property is.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -688,7 +689,7 @@ marks an HTJ2K codestream.</p>
 
   <h3 id="Egami_Formats_Jpeg2000_Jpeg2000Details_Copy" data-uid="Egami.Formats.Jpeg2000.Jpeg2000Details.Copy">
   Copy()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg2000/Jpeg2000Format.cs/#L243"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Jpeg2000/Jpeg2000Format.cs/#L244"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a deep copy.</p>

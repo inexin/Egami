@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>Enum DicomVoiFunction | Egami </title>
+      <title>Enum DicomWindowFunction | Egami </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="Enum DicomVoiFunction | Egami ">
+      <meta name="title" content="Enum DicomWindowFunction | Egami ">
       
       <meta name="description" content="A VOI LUT Function (0028,1056): how a window maps modality values to shown values (PS3.3 C.11.2.1.2).">
       <link rel="icon" href="../images/favicon.ico">
@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Extended_Dicom_DicomVoiFunction.md&amp;value=---%0Auid%3A%20Egami.Formats.Extended.Dicom.DicomVoiFunction%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Extended_Dicom_DicomWindowFunction.md&amp;value=---%0Auid%3A%20Egami.Formats.Extended.Dicom.DicomWindowFunction%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -84,13 +84,13 @@
           <nav id="breadcrumb"></nav>
         </div>
 
-        <article data-uid="Egami.Formats.Extended.Dicom.DicomVoiFunction">
+        <article data-uid="Egami.Formats.Extended.Dicom.DicomWindowFunction">
 
 
 
 
-  <h1 id="Egami_Formats_Extended_Dicom_DicomVoiFunction" data-uid="Egami.Formats.Extended.Dicom.DicomVoiFunction" class="text-break">
-Enum DicomVoiFunction  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  <h1 id="Egami_Formats_Extended_Dicom_DicomWindowFunction" data-uid="Egami.Formats.Extended.Dicom.DicomWindowFunction" class="text-break">
+Enum DicomWindowFunction  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L121"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -104,7 +104,7 @@ Enum DicomVoiFunction  <a class="header-action link-secondary" title="View sourc
 
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">[Experimental(&quot;EGAMIX001&quot;, UrlFormat = &quot;https://github.com/inexin/Egami/blob/main/docs/articles/formats/dicom.md&quot;)]
-public enum DicomVoiFunction</code></pre>
+public enum DicomWindowFunction</code></pre>
   </div>
 
 
@@ -118,26 +118,26 @@ public enum DicomVoiFunction</code></pre>
   <h2 id="fields">Fields
 </h2>
   <dl class="parameters">
-    <dt id="Egami_Formats_Extended_Dicom_DicomVoiFunction_Linear"><code>Linear = 0</code></dt>
+    <dt id="Egami_Formats_Extended_Dicom_DicomWindowFunction_Linear"><code>Linear = 0</code></dt>
   
   <dd><p>LINEAR: a straight ramp from center − 0.5 − (width − 1) / 2 to center − 0.5 + (width − 1) / 2.</p>
 </dd>
-    <dt id="Egami_Formats_Extended_Dicom_DicomVoiFunction_LinearExact"><code>LinearExact = 1</code></dt>
+    <dt id="Egami_Formats_Extended_Dicom_DicomWindowFunction_LinearExact"><code>LinearExact = 1</code></dt>
   
   <dd><p>LINEAR_EXACT: a straight ramp from center − width / 2 to center + width / 2.</p>
 </dd>
-    <dt id="Egami_Formats_Extended_Dicom_DicomVoiFunction_Sigmoid"><code>Sigmoid = 2</code></dt>
+    <dt id="Egami_Formats_Extended_Dicom_DicomWindowFunction_Sigmoid"><code>Sigmoid = 2</code></dt>
   
   <dd><p>SIGMOID: a logistic curve centered on center, with slope set by width.</p>
 </dd>
   </dl>
 
-  <h2 id="Egami_Formats_Extended_Dicom_DicomVoiFunction_examples">Examples</h2>
+  <h2 id="Egami_Formats_Extended_Dicom_DicomWindowFunction_examples">Examples</h2>
   <pre><code class="lang-csharp">// A window of your own, in modality values (Hounsfield units for CT), or the file's second one.
 using Raster bone = Raster.Load("scan.dcm", context, new DicomReaderOptions { WindowCenter = 400, WindowWidth = 1800 });
-using Raster second = Raster.Load("scan.dcm", context, new DicomReaderOptions { VoiIndex = 1 });
+using Raster second = Raster.Load("scan.dcm", context, new DicomReaderOptions { WindowIndex = 1 });
 using Raster smooth = Raster.Load("scan.dcm", context,
-    new DicomReaderOptions { WindowCenter = 40, WindowWidth = 400, WindowFunction = DicomVoiFunction.Sigmoid });</code></pre>
+    new DicomReaderOptions { WindowCenter = 40, WindowWidth = 400, WindowFunction = DicomWindowFunction.Sigmoid });</code></pre>
 
 
 

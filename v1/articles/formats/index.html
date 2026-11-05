@@ -467,6 +467,9 @@ samples up to 16 bits) that way: one <code>int</code> a sample, interleaved, at 
 (<code>SampleComponent</code>), with no color conversion (<code>SampleColor</code> says what the components are), no widening and no offset. Other
 formats throw <code>NotSupportedException</code>, as do <code>Region</code>, <code>MinimumSize</code> and <code>ConvertColorTo</code>. Chroma at less than full resolution
 is brought to the image's size.</p>
+<p><code>SampleImage</code>, <code>SampleComponent</code> and <code>SampleColor</code> are a preview, like DICOM, which uses them: they carry .NET's
+<code>[Experimental]</code> attribute with the diagnostic <code>EGAMIX001</code>, so suppress that id to call them, and they may change in any minor
+release.</p>
 <pre><code class="lang-csharp">// The values the codestream stores: no color conversion, no widening to 8 or 16 bits, signed samples kept signed.
 SampleImage image = SampleImage.Load(&quot;duck.jpg&quot;);
 Console.WriteLine($&quot;{image.Color}, {image.Components.Count} components of {image.Components[0].Precision} bits&quot;);

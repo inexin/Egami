@@ -200,38 +200,6 @@ foreach (EgamiDiagnostic warning in file.Warnings)
 
 
 
-  <a id="Egami_Formats_Extended_Dicom_DicomFile_DictionaryEdition_" data-uid="Egami.Formats.Extended.Dicom.DicomFile.DictionaryEdition*"></a>
-
-  <h3 id="Egami_Formats_Extended_Dicom_DicomFile_DictionaryEdition" data-uid="Egami.Formats.Extended.Dicom.DicomFile.DictionaryEdition">
-  DictionaryEdition
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFile.cs/#L51"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets the PS3.6 edition whose data dictionary names tags, such as <code>DICOM PS3.6 2026d</code>.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static string DictionaryEdition { get; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
   <a id="Egami_Formats_Extended_Dicom_DicomFile_FileMetaInformation_" data-uid="Egami.Formats.Extended.Dicom.DicomFile.FileMetaInformation*"></a>
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomFile_FileMetaInformation" data-uid="Egami.Formats.Extended.Dicom.DicomFile.FileMetaInformation">
@@ -729,7 +697,7 @@ file.Save("scan-rle.dcm", new DicomWriterOptions { TransferSyntax = DicomTransfe
 file.Save("scan-jpegls.dcm", new DicomWriterOptions
 {
     TransferSyntax = DicomTransferSyntax.JpegLsNearLossless,
-    NearLossless = 2,
+    Near = 2,
     OffsetTable = DicomOffsetTable.Extended,
 });</code></pre>
 
@@ -794,7 +762,7 @@ file.Save("scan-rle.dcm", new DicomWriterOptions { TransferSyntax = DicomTransfe
 file.Save("scan-jpegls.dcm", new DicomWriterOptions
 {
     TransferSyntax = DicomTransferSyntax.JpegLsNearLossless,
-    NearLossless = 2,
+    Near = 2,
     OffsetTable = DicomOffsetTable.Extended,
 });</code></pre>
 

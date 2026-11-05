@@ -180,9 +180,9 @@ public sealed record DicomReaderOptions : ReaderOptions, IEquatable&lt;ReaderOpt
   <h2 id="Egami_Formats_Extended_Dicom_DicomReaderOptions_examples">Examples</h2>
   <pre><code class="lang-csharp">// A window of your own, in modality values (Hounsfield units for CT), or the file's second one.
 using Raster bone = Raster.Load("scan.dcm", context, new DicomReaderOptions { WindowCenter = 400, WindowWidth = 1800 });
-using Raster second = Raster.Load("scan.dcm", context, new DicomReaderOptions { VoiIndex = 1 });
+using Raster second = Raster.Load("scan.dcm", context, new DicomReaderOptions { WindowIndex = 1 });
 using Raster smooth = Raster.Load("scan.dcm", context,
-    new DicomReaderOptions { WindowCenter = 40, WindowWidth = 400, WindowFunction = DicomVoiFunction.Sigmoid });</code></pre>
+    new DicomReaderOptions { WindowCenter = 40, WindowWidth = 400, WindowFunction = DicomWindowFunction.Sigmoid });</code></pre>
 
 
 
@@ -294,45 +294,6 @@ using Raster smooth = Raster.Load("scan.dcm", context,
 
 
 
-  <a id="Egami_Formats_Extended_Dicom_DicomReaderOptions_VoiIndex_" data-uid="Egami.Formats.Extended.Dicom.DicomReaderOptions.VoiIndex*"></a>
-
-  <h3 id="Egami_Formats_Extended_Dicom_DicomReaderOptions_VoiIndex" data-uid="Egami.Formats.Extended.Dicom.DicomReaderOptions.VoiIndex">
-  VoiIndex
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L97"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets which of the file's windows or VOI LUTs to use when it has several, from 0 (the default, the first). An index past
-the last uses the last.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public int VoiIndex { get; init; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-  <h4 class="section">Exceptions</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
-    <dd><p>The value is negative.</p>
-</dd>
-  </dl>
-
-
-
   <a id="Egami_Formats_Extended_Dicom_DicomReaderOptions_WindowCenter_" data-uid="Egami.Formats.Extended.Dicom.DicomReaderOptions.WindowCenter*"></a>
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomReaderOptions_WindowCenter" data-uid="Egami.Formats.Extended.Dicom.DicomReaderOptions.WindowCenter">
@@ -379,7 +340,7 @@ the last uses the last.</p>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public DicomVoiFunction? WindowFunction { get; init; }</code></pre>
+    <pre><code class="lang-csharp hljs">public DicomWindowFunction? WindowFunction { get; init; }</code></pre>
   </div>
 
 
@@ -388,7 +349,7 @@ the last uses the last.</p>
 
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomVoiFunction.html">DicomVoiFunction</a>?</dt>
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomWindowFunction.html">DicomWindowFunction</a>?</dt>
     <dd></dd>
   </dl>
 
@@ -396,6 +357,45 @@ the last uses the last.</p>
 
 
 
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomReaderOptions_WindowIndex_" data-uid="Egami.Formats.Extended.Dicom.DicomReaderOptions.WindowIndex*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomReaderOptions_WindowIndex" data-uid="Egami.Formats.Extended.Dicom.DicomReaderOptions.WindowIndex">
+  WindowIndex
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L97"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets which of the file's windows or VOI LUTs to use when it has several, from 0 (the default, the first). An index past
+the last uses the last.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int WindowIndex { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is negative.</p>
+</dd>
+  </dl>
 
 
 

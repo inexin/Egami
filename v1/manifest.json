@@ -6705,17 +6705,17 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/Egami.Formats.Extended.Dicom.DicomVoiFunction.yml",
+      "source_relative_path": "api/Egami.Formats.Extended.Dicom.DicomWindowFunction.yml",
       "output": {
         ".html": {
-          "relative_path": "api/Egami.Formats.Extended.Dicom.DicomVoiFunction.html"
+          "relative_path": "api/Egami.Formats.Extended.Dicom.DicomWindowFunction.html"
         }
       },
       "version": "",
       "Uid": null,
       "IsMRef": true,
-      "Title": "Egami.Formats.Extended.Dicom.DicomVoiFunction",
-      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomVoiFunction.yml\" sourcestartlinenumber=\"1\">A VOI LUT Function (0028,1056): how a window maps modality values to shown values (PS3.3 C.11.2.1.2).</p>\n"
+      "Title": "Egami.Formats.Extended.Dicom.DicomWindowFunction",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomWindowFunction.yml\" sourcestartlinenumber=\"1\">A VOI LUT Function (0028,1056): how a window maps modality values to shown values (PS3.3 C.11.2.1.2).</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -7108,20 +7108,6 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.JpegLs.JpegLsInterleave",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.JpegLs.JpegLsInterleave.yml\" sourcestartlinenumber=\"1\">How the components of a JPEG-LS scan are interleaved (T.87 annex A.8).</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsWriter.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsWriter.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "Egami.Formats.Extended.JpegLs.JpegLsWriter",
-      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.JpegLs.JpegLsWriter.yml\" sourcestartlinenumber=\"1\">Writes JPEG-LS from samples that are not pixels, as DICOM and other containers store JPEG-LS streams: any bit depth from 2 to\n16 and 1 to 4 components, coded exactly as saving the same samples as pixels with <xref href=\"Egami.Formats.Extended.JpegLs.JpegLsWriterOptions\" data-throw-if-not-resolved=\"false\"></xref> codes\nthem.</p>\n"
     },
     {
       "type": "ManagedReference",

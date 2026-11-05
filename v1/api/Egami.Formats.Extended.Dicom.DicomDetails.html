@@ -161,6 +161,103 @@ image.Save("scan.png");</code></pre>
 </h2>
 
 
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_AppliedMinMax_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.AppliedMinMax*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_AppliedMinMax" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.AppliedMinMax">
+  AppliedMinMax
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L190"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets whether the shown values were stretched from the frame's smallest to its largest modality value, because
+the file has no window and no VOI LUT.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool AppliedMinMax { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_AppliedModalityLut_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.AppliedModalityLut*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_AppliedModalityLut" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.AppliedModalityLut">
+  AppliedModalityLut
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L172"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets whether a Modality LUT Sequence gave the modality values.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool AppliedModalityLut { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_AppliedVoiLut_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.AppliedVoiLut*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_AppliedVoiLut" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.AppliedVoiLut">
+  AppliedVoiLut
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L184"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets whether a VOI LUT Sequence gave the shown values.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool AppliedVoiLut { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Formats_Extended_Dicom_DicomDetails_BitsStored_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.BitsStored*"></a>
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_BitsStored" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.BitsStored">
@@ -482,19 +579,19 @@ Frame Time Vector (0018,1065); <a href="https://learn.microsoft.com/dotnet/cshar
 
 
 
-  <a id="Egami_Formats_Extended_Dicom_DicomDetails_TransferSyntaxUid_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.TransferSyntaxUid*"></a>
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_TransferSyntax_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.TransferSyntax*"></a>
 
-  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_TransferSyntaxUid" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.TransferSyntaxUid">
-  TransferSyntaxUid
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_TransferSyntax" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.TransferSyntax">
+  TransferSyntax
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L151"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets or sets the UID of the transfer syntax the pixel data was stored in.</p>
+  <div class="markdown level1 summary"><p>Gets or sets the transfer syntax the pixel data was stored in.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public string TransferSyntaxUid { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public DicomTransferSyntax TransferSyntax { get; set; }</code></pre>
   </div>
 
 
@@ -503,104 +600,7 @@ Frame Time Vector (0018,1065); <a href="https://learn.microsoft.com/dotnet/cshar
 
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-  <a id="Egami_Formats_Extended_Dicom_DicomDetails_UsedMinMax_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.UsedMinMax*"></a>
-
-  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_UsedMinMax" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.UsedMinMax">
-  UsedMinMax
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L190"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets or sets whether the shown values were stretched from the frame's smallest to its largest modality value, because
-the file has no window and no VOI LUT.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public bool UsedMinMax { get; set; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-  <a id="Egami_Formats_Extended_Dicom_DicomDetails_UsedModalityLut_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.UsedModalityLut*"></a>
-
-  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_UsedModalityLut" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.UsedModalityLut">
-  UsedModalityLut
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L172"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets or sets whether a Modality LUT Sequence gave the modality values.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public bool UsedModalityLut { get; set; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-  <a id="Egami_Formats_Extended_Dicom_DicomDetails_UsedVoiLut_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.UsedVoiLut*"></a>
-
-  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_UsedVoiLut" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.UsedVoiLut">
-  UsedVoiLut
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L184"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets or sets whether a VOI LUT Sequence gave the shown values.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public bool UsedVoiLut { get; set; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
     <dd></dd>
   </dl>
 
@@ -687,7 +687,7 @@ the file has no window and no VOI LUT.</p>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public DicomVoiFunction WindowFunction { get; set; }</code></pre>
+    <pre><code class="lang-csharp hljs">public DicomWindowFunction WindowFunction { get; set; }</code></pre>
   </div>
 
 
@@ -696,7 +696,7 @@ the file has no window and no VOI LUT.</p>
 
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
-    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomVoiFunction.html">DicomVoiFunction</a></dt>
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomWindowFunction.html">DicomWindowFunction</a></dt>
     <dd></dd>
   </dl>
 

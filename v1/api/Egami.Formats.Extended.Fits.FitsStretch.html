@@ -148,7 +148,7 @@ using Raster&lt;GrayF32&gt; values = Raster.Load&lt;GrayF32&gt;("m51.fits", cont
 // The header, and the values that became black and white, are in the details.
 if (zscale.Metadata.FormatDetails is FitsDetails fits)
 {
-    Console.WriteLine($"{fits.Header.GetString("OBJECT")}: BITPIX {fits.Bitpix}, {fits.Low} to {fits.High}");
+    Console.WriteLine($"{fits.Header.GetString("OBJECT")}: BITPIX {fits.Bitpix}, {fits.StretchLow} to {fits.StretchHigh}");
 }
 
 // A three-plane cube as one RGB image instead of three gray ones.

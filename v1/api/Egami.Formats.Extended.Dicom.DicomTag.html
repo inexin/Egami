@@ -146,7 +146,7 @@ public readonly record struct DicomTag : IComparable&lt;DicomTag&gt;, IEquatable
   <pre><code class="lang-csharp">DicomTag tag = DicomTag.FromKeyword("PixelSpacing");             // (0028,0030)
 string? keyword = new DicomTag(0x6002, 0x3000).Keyword;          // OverlayData: repeating groups match
 bool isPrivate = new DicomTag(0x0009, 0x1001).IsPrivate;
-Console.WriteLine($"{tag} {tag.Name}; dictionary {DicomFile.DictionaryEdition}");</code></pre>
+Console.WriteLine($"{tag} {tag.Name}");</code></pre>
 
 
 
@@ -377,102 +377,6 @@ Console.WriteLine($"{tag} {tag.Name}; dictionary {DicomFile.DictionaryEdition}")
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-  <a id="Egami_Formats_Extended_Dicom_DicomTag_PixelData_" data-uid="Egami.Formats.Extended.Dicom.DicomTag.PixelData*"></a>
-
-  <h3 id="Egami_Formats_Extended_Dicom_DicomTag_PixelData" data-uid="Egami.Formats.Extended.Dicom.DicomTag.PixelData">
-  PixelData
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTag.cs/#L26"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets Pixel Data (7FE0,0010).</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static DicomTag PixelData { get; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTag.html">DicomTag</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-  <a id="Egami_Formats_Extended_Dicom_DicomTag_SpecificCharacterSet_" data-uid="Egami.Formats.Extended.Dicom.DicomTag.SpecificCharacterSet*"></a>
-
-  <h3 id="Egami_Formats_Extended_Dicom_DicomTag_SpecificCharacterSet" data-uid="Egami.Formats.Extended.Dicom.DicomTag.SpecificCharacterSet">
-  SpecificCharacterSet
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTag.cs/#L29"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets Specific Character Set (0008,0005), which says how the dataset's text is encoded.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static DicomTag SpecificCharacterSet { get; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTag.html">DicomTag</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-  <a id="Egami_Formats_Extended_Dicom_DicomTag_TransferSyntaxUid_" data-uid="Egami.Formats.Extended.Dicom.DicomTag.TransferSyntaxUid*"></a>
-
-  <h3 id="Egami_Formats_Extended_Dicom_DicomTag_TransferSyntaxUid" data-uid="Egami.Formats.Extended.Dicom.DicomTag.TransferSyntaxUid">
-  TransferSyntaxUid
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTag.cs/#L32"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets Transfer Syntax UID (0002,0010), in the file meta information.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static DicomTag TransferSyntaxUid { get; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTag.html">DicomTag</a></dt>
     <dd></dd>
   </dl>
 

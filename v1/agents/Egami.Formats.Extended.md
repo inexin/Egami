@@ -47,7 +47,7 @@ and no `Configuration`.
   `WithDicom()` (not in `WithExtendedFormats()`) registers `DicomFormat.Info`; `Raster.Load` gives one frame as a viewer
   shows it (Gray8/Gray16 after rescale, window or VOI LUT and MONOCHROME1 inversion; Rgb8/Rgb16 for RGB, YBR and palette),
   `DicomReaderOptions` picks `Frame`, `Values` (`Display`, `Modality` or `Stored`, the last two as GrayF32), a window
-  (`WindowCenter`, `WindowWidth`, `WindowFunction`), `VoiIndex` and `PreferWindow`; `DicomDetails` says what was applied.
+  (`WindowCenter`, `WindowWidth`, `WindowFunction`), `WindowIndex` and `PreferWindow`; `DicomDetails` says what was applied.
   Each frame is an image for `LoadAll`; `DicomFile.LoadFrame(i)` decodes frames without rereading. Native, RLE, deflated,
   JPEG, JPEG-LS, JPEG 2000, HTJ2K and JPEG XL pixel data; MPEG/H.264/HEVC throw `NotSupportedException`. Warnings are
   `Dicom.*` diagnostics.
@@ -67,8 +67,8 @@ and no `Configuration`.
   keeps the camera, sensor layout and the colour the develop used.
 - JPEG-LS: `JpegLsFormat` (.jls, T.87) reads every interleave mode, 2 to 16 bits, palettes and HP colour transforms, and
   is detected ahead of JPEG. `JpegLsWriterOptions` (`Near`, `Interleave`, `ColorTransform`, `BitsPerSample`,
-  `RestartInterval`); `JpegLsDetails` keeps NEAR, depth and interleave; `JpegLsWriter.Write` codes plain `ushort` samples
-  (1 to 4 components), for DICOM and the like. No JPEG-LS part 2 (T.870).
+  `RestartInterval`); `JpegLsDetails` keeps NEAR, depth and interleave. No JPEG-LS part 2
+  (T.870).
 - `EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats())` at startup makes them work in every call.
 - Load, Probe, streaming decodes, Save and Transcode then work as they do for core formats, inside the same safety limits.
 
@@ -155,7 +155,7 @@ using Raster<GrayF32> values = Raster.Load<GrayF32>("m51.fits", context, new Fit
 // The header, and the values that became black and white, are in the details.
 if (zscale.Metadata.FormatDetails is FitsDetails fits)
 {
-    Console.WriteLine($"{fits.Header.GetString("OBJECT")}: BITPIX {fits.Bitpix}, {fits.Low} to {fits.High}");
+    Console.WriteLine($"{fits.Header.GetString("OBJECT")}: BITPIX {fits.Bitpix}, {fits.StretchLow} to {fits.StretchHigh}");
 }
 
 // A three-plane cube as one RGB image instead of three gray ones.
@@ -183,7 +183,7 @@ using Raster photo = Raster.Load("photo.dng", context, develop);
 photo.Save("photo-p3.png");
 ```
 
-JPEG-LS, near-lossless and from plain samples:
+JPEG-LS, near-lossless:
 
 ```csharp
 // Near-lossless: every sample within 2 of the original, for a much smaller file. Restart markers every 64 lines let a
@@ -204,20 +204,6 @@ using Raster<Gray16> scan = duck.As<Gray16>();
 using (FileStream twelve = File.Create("scan-12.jls"))
 {
     scan.Save(twelve, JpegLsFormat.Info, new JpegLsWriterOptions { BitsPerSample = 12 });
-}
-```
-
-```csharp
-// Samples straight from another source, such as a DICOM pixel data element: 2 components, 10 bits, 64 × 32.
-ushort[] samples = new ushort[64 * 32 * 2];
-for (int i = 0; i < samples.Length; i++)
-{
-    samples[i] = (ushort)((i * 37) % 1024);
-}
-
-using (FileStream output = File.Create("samples.jls"))
-{
-    JpegLsWriter.Write(output, samples, components: 2, width: 64, bitsPerSample: 10);
 }
 ```
 

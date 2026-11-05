@@ -139,6 +139,8 @@ frame.Save(&quot;frame.png&quot;);
 RasterInfo info = Raster.Probe(&quot;duck.dpx&quot;, context);
 Console.WriteLine($&quot;{info.Width}×{info.Height} {info.Layout.ChannelOrder}, {info.ImageCount} element(s)&quot;);
 </code></pre>
+<p>Cineon has no reader options of its own: a Cineon load takes <code>DpxReaderOptions</code> too, and of them <code>Linearize</code> applies (a
+Cineon file has one image element).</p>
 <p>Printing density, the usual transfer of film scans, is logarithmic. <code>DpxReaderOptions.Linearize</code> turns it into scene-linear
 light with Kodak's conversion, reference white at code 685, reference black at code 95 and 0.002 density a code with a film
 gamma of 0.6: code 685 becomes 1.0 and code 95 becomes 0.0. It applies to Cineon and to DPX elements whose transfer is printing

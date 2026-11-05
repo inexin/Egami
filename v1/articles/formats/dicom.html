@@ -200,13 +200,12 @@ Representation and the element. Private elements read as UN (their creators as L
 reads as the sequence PS3.5 section 6.2.2 says it is.</p>
 <h2 id="tags-and-the-dictionary">Tags and the dictionary</h2>
 <p><code>DicomTag</code> is a group and an element. Its keyword, name and retired flag come from the data dictionary of PS3.6, generated from
-the standard's own XML by <code>tools/make-dicom-dictionary.py</code> and embedded in the package; <code>DicomFile.DictionaryEdition</code> names the
-edition. Repeating groups such as the overlays (60xx) match every group they cover. <code>DicomTransferSyntax</code> names a file's
+the standard's own XML by <code>tools/make-dicom-dictionary.py</code> and embedded in the package (PS3.6 2026d). Repeating groups such as the overlays (60xx) match every group they cover. <code>DicomTransferSyntax</code> names a file's
 transfer syntax from PS3.6's UID registry.</p>
 <pre><code class="lang-csharp">DicomTag tag = DicomTag.FromKeyword(&quot;PixelSpacing&quot;);             // (0028,0030)
 string? keyword = new DicomTag(0x6002, 0x3000).Keyword;          // OverlayData: repeating groups match
 bool isPrivate = new DicomTag(0x0009, 0x1001).IsPrivate;
-Console.WriteLine($&quot;{tag} {tag.Name}; dictionary {DicomFile.DictionaryEdition}&quot;);
+Console.WriteLine($&quot;{tag} {tag.Name}&quot;);
 </code></pre><h2 id="character-sets">Character sets</h2>
 <p>Text in SH, LO, ST, LT, PN, UC and UT decodes by the dataset's Specific Character Set (0008,0005), which an item inherits
 unless it has its own: ISO-IR 6 (read as Latin-1 so that undeclared 8-bit text is kept), Latin-1 to Latin-5 and Latin-9,
@@ -218,7 +217,7 @@ An unknown term reads as Latin-1 with the <code>Dicom.CharacterSet</code> warnin
 with the Basic Offset Table and, when the dataset has one, the Extended Offset Table (7FE0,0001) and its lengths (7FE0,0002).</p>
 <pre><code class="lang-csharp">// Compressed pixel data stays as the fragments the file stores, with its offset tables.
 DicomFile file = DicomFile.Load(&quot;compressed.dcm&quot;);
-DicomFragments? pixels = file.Dataset[DicomTag.PixelData]?.Fragments;
+DicomFragments? pixels = file.Dataset[&quot;PixelData&quot;]?.Fragments;
 if (pixels is not null)
 {
     Console.WriteLine($&quot;{file.TransferSyntax.Name}: {pixels.Fragments.Count} fragments, {pixels.BasicOffsetTable.Count} frame offsets&quot;);
@@ -249,9 +248,9 @@ Per-Frame Functional Groups, then the Shared ones, then the dataset.</p>
 the VOI LUT, or the numbers behind the picture.</p>
 <pre><code class="lang-csharp">// A window of your own, in modality values (Hounsfield units for CT), or the file's second one.
 using Raster bone = Raster.Load(&quot;scan.dcm&quot;, context, new DicomReaderOptions { WindowCenter = 400, WindowWidth = 1800 });
-using Raster second = Raster.Load(&quot;scan.dcm&quot;, context, new DicomReaderOptions { VoiIndex = 1 });
+using Raster second = Raster.Load(&quot;scan.dcm&quot;, context, new DicomReaderOptions { WindowIndex = 1 });
 using Raster smooth = Raster.Load(&quot;scan.dcm&quot;, context,
-    new DicomReaderOptions { WindowCenter = 40, WindowWidth = 400, WindowFunction = DicomVoiFunction.Sigmoid });
+    new DicomReaderOptions { WindowCenter = 40, WindowWidth = 400, WindowFunction = DicomWindowFunction.Sigmoid });
 </code></pre><pre><code class="lang-csharp">// The numbers behind the picture, as GrayF32: modality values (such as Hounsfield units), or the stored values.
 using Raster&lt;Egami.Pixels.GrayF32&gt; hounsfield = Raster.Load&lt;Egami.Pixels.GrayF32&gt;(&quot;scan.dcm&quot;, context,
     new DicomReaderOptions { Values = DicomValues.Modality });
@@ -338,7 +337,7 @@ file.Save(&quot;scan-rle.dcm&quot;, new DicomWriterOptions { TransferSyntax = Di
 file.Save(&quot;scan-jpegls.dcm&quot;, new DicomWriterOptions
 {
     TransferSyntax = DicomTransferSyntax.JpegLsNearLossless,
-    NearLossless = 2,
+    Near = 2,
     OffsetTable = DicomOffsetTable.Extended,
 });
 </code></pre>
@@ -368,7 +367,7 @@ file.Save(&quot;scan-jpegls.dcm&quot;, new DicomWriterOptions
 </tr>
 <tr>
 <td>JPEG-LS Near-Lossless</td>
-<td>As JPEG-LS Lossless, each sample within <code>NearLossless</code> of its value; not for palette indices</td>
+<td>As JPEG-LS Lossless, each sample within <code>Near</code> of its value; not for palette indices</td>
 </tr>
 <tr>
 <td>JPEG Baseline, JPEG Extended, JPEG XL</td>

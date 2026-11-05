@@ -155,7 +155,7 @@ using Raster&lt;GrayF32&gt; values = Raster.Load&lt;GrayF32&gt;("m51.fits", cont
 // The header, and the values that became black and white, are in the details.
 if (zscale.Metadata.FormatDetails is FitsDetails fits)
 {
-    Console.WriteLine($"{fits.Header.GetString("OBJECT")}: BITPIX {fits.Bitpix}, {fits.Low} to {fits.High}");
+    Console.WriteLine($"{fits.Header.GetString("OBJECT")}: BITPIX {fits.Bitpix}, {fits.StretchLow} to {fits.StretchHigh}");
 }
 
 // A three-plane cube as one RGB image instead of three gray ones.
@@ -296,70 +296,6 @@ using Raster colour = Raster.Load("m51-rgb.fits", context, new FitsReaderOptions
 
 
 
-  <a id="Egami_Formats_Extended_Fits_FitsDetails_High_" data-uid="Egami.Formats.Extended.Fits.FitsDetails.High*"></a>
-
-  <h3 id="Egami_Formats_Extended_Fits_FitsDetails_High" data-uid="Egami.Formats.Extended.Fits.FitsDetails.High">
-  High
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFormat.cs/#L267"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets or sets the physical value the stretch put at 1 (NaN when there was no stretch).</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public double High { get; set; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-  <a id="Egami_Formats_Extended_Fits_FitsDetails_Low_" data-uid="Egami.Formats.Extended.Fits.FitsDetails.Low*"></a>
-
-  <h3 id="Egami_Formats_Extended_Fits_FitsDetails_Low" data-uid="Egami.Formats.Extended.Fits.FitsDetails.Low">
-  Low
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFormat.cs/#L264"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets or sets the physical value the stretch put at 0 (NaN when there was no stretch).</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public double Low { get; set; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
   <a id="Egami_Formats_Extended_Fits_FitsDetails_Plane_" data-uid="Egami.Formats.Extended.Fits.FitsDetails.Plane*"></a>
 
   <h3 id="Egami_Formats_Extended_Fits_FitsDetails_Plane" data-uid="Egami.Formats.Extended.Fits.FitsDetails.Plane">
@@ -414,6 +350,70 @@ using Raster colour = Raster.Load("m51-rgb.fits", context, new FitsReaderOptions
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
     <dt><a class="xref" href="Egami.Formats.Extended.Fits.FitsStretch.html">FitsStretch</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Fits_FitsDetails_StretchHigh_" data-uid="Egami.Formats.Extended.Fits.FitsDetails.StretchHigh*"></a>
+
+  <h3 id="Egami_Formats_Extended_Fits_FitsDetails_StretchHigh" data-uid="Egami.Formats.Extended.Fits.FitsDetails.StretchHigh">
+  StretchHigh
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFormat.cs/#L267"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the physical value the stretch put at 1 (NaN when there was no stretch).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double StretchHigh { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Fits_FitsDetails_StretchLow_" data-uid="Egami.Formats.Extended.Fits.FitsDetails.StretchLow*"></a>
+
+  <h3 id="Egami_Formats_Extended_Fits_FitsDetails_StretchLow" data-uid="Egami.Formats.Extended.Fits.FitsDetails.StretchLow">
+  StretchLow
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFormat.cs/#L264"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the physical value the stretch put at 0 (NaN when there was no stretch).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double StretchLow { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
     <dd></dd>
   </dl>
 

@@ -172,7 +172,7 @@ negative. Load maps them into the picture's 0 to 1 with <code>FitsReaderOptions.
 </tbody>
 </table>
 <p>Missing pixels (BLANK in an integer image, NaN in a float one) load black, or as NaN with <code>None</code>.
-<code>FitsDetails.Low</code> and <code>FitsDetails.High</code> say which values became black and white.</p>
+<code>FitsDetails.StretchLow</code> and <code>FitsDetails.StretchHigh</code> say which values became black and white.</p>
 <pre><code class="lang-csharp">// ZScale shows faint detail the way astronomy viewers do; Asinh lifts the faint end and keeps the bright one.
 using Raster zscale = Raster.Load(&quot;m51.fits&quot;, context, new FitsReaderOptions { Stretch = FitsStretch.ZScale });
 
@@ -182,7 +182,7 @@ using Raster&lt;GrayF32&gt; values = Raster.Load&lt;GrayF32&gt;(&quot;m51.fits&q
 // The header, and the values that became black and white, are in the details.
 if (zscale.Metadata.FormatDetails is FitsDetails fits)
 {
-    Console.WriteLine($&quot;{fits.Header.GetString(&quot;OBJECT&quot;)}: BITPIX {fits.Bitpix}, {fits.Low} to {fits.High}&quot;);
+    Console.WriteLine($&quot;{fits.Header.GetString(&quot;OBJECT&quot;)}: BITPIX {fits.Bitpix}, {fits.StretchLow} to {fits.StretchHigh}&quot;);
 }
 
 // A three-plane cube as one RGB image instead of three gray ones.

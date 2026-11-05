@@ -173,20 +173,6 @@ none writes one scan per component and keeps the image until the end.</li>
 <li>The HP transforms code RGB as differences, which shrinks most photographs. HP's software, CharLS and Egami read them; other
 decoders give the coded components as they are. They apply to lossless, interleaved RGB only and are ignored otherwise.</li>
 </ul>
-<p><code>JpegLsWriter.Write</code> codes samples that do not come from a raster, such as the pixel data of a DICOM file, 1 to 4 components
-of 2 to 16 bits, side by side in a row:</p>
-<pre><code class="lang-csharp">// Samples straight from another source, such as a DICOM pixel data element: 2 components, 10 bits, 64 × 32.
-ushort[] samples = new ushort[64 * 32 * 2];
-for (int i = 0; i &lt; samples.Length; i++)
-{
-    samples[i] = (ushort)((i * 37) % 1024);
-}
-
-using (FileStream output = File.Create(&quot;samples.jls&quot;))
-{
-    JpegLsWriter.Write(output, samples, components: 2, width: 64, bitsPerSample: 10);
-}
-</code></pre>
 <p>Files Egami writes decode exactly in CharLS, and lossless files are the size CharLS writes.</p>
 <h2 id="not-supported">Not supported</h2>
 <p>JPEG-LS part 2 (ITU-T T.870: arithmetic coding, prediction and error-mapping extensions) is not read, and DICOM files
