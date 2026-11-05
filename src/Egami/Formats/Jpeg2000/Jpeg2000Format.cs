@@ -4,7 +4,8 @@ namespace Egami.Formats.Jpeg2000;
 
 /// <summary>
 /// The JPEG 2000 format (ITU-T T.800, Part 1), read only, registered in <see cref="EgamiContext.Default"/>: JP2 and JPX files
-/// and raw codestreams (J2K, J2C), including the JPX streams a PDF holds, which load with plain <see cref="Raster.Load(ReadOnlyMemory{byte}, EgamiContext?, ReaderOptions?)"/>.
+/// and raw codestreams (J2K, J2C), High-Throughput JPEG 2000 (ITU-T T.814, Part 15) in JPH files, raw codestreams (JHC) and
+/// JP2 files, including the JPX streams a PDF holds, which load with plain <see cref="Raster.Load(ReadOnlyMemory{byte}, EgamiContext?, ReaderOptions?)"/>.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../../tests/Egami.DocSamples/Jpeg2000.cs" region="jpeg2000-load"/>
@@ -15,8 +16,8 @@ public static class Jpeg2000Format
     public static FormatInfo Info { get; } = new()
     {
         Name = "JPEG 2000",
-        MimeTypes = ["image/jp2", "image/jpx", "image/j2c"],
-        Extensions = ["jp2", "jpx", "jpf", "j2k", "j2c", "jpc"],
+        MimeTypes = ["image/jp2", "image/jpx", "image/j2c", "image/jph", "image/jphc"],
+        Extensions = ["jp2", "jpx", "jpf", "j2k", "j2c", "jpc", "jph", "jhc"],
         SignatureLength = 12,
         Matches = header => header.StartsWith(Jp2File.Signature) || J2kCodestream.Matches(header),
         Reader = Jpeg2000Reader.Instance,
@@ -82,6 +83,9 @@ public enum Jpeg2000Container
 
     /// <summary>A JPX file (T.801), of which the JP2 parts and the first codestream are read.</summary>
     Jpx,
+
+    /// <summary>A JPH file (T.814 Annex D): a JP2 file for a High-Throughput JPEG 2000 codestream.</summary>
+    Jph,
 }
 
 /// <summary>The color space a JPEG 2000 file declares.</summary>
@@ -184,7 +188,10 @@ public sealed class Jpeg2000Details : FormatDetails
     /// <summary>Gets or sets the container the codestream came in.</summary>
     public Jpeg2000Container Container { get; set; }
 
-    /// <summary>Gets or sets the codestream's capabilities (SIZ Rsiz): 0 for no restrictions, 1 and 2 for profiles 0 and 1.</summary>
+    /// <summary>
+    /// Gets or sets the codestream's capabilities (SIZ Rsiz): 0 for no restrictions, 1 and 2 for profiles 0 and 1; bit 14 (0x4000)
+    /// marks an HTJ2K codestream.
+    /// </summary>
     public int Profile { get; set; }
 
     /// <summary>Gets the codestream's components as stored.</summary>
@@ -226,6 +233,12 @@ public sealed class Jpeg2000Details : FormatDetails
     /// <summary>Gets the codestream's text comments (COM markers).</summary>
     public IList<string> Comments { get; } = [];
 
+    /// <summary>
+    /// Gets or sets whether the codestream is a High-Throughput JPEG 2000 one (ITU-T T.814): its code-blocks use the HT block
+    /// coder, or may mix it with the T.800 one.
+    /// </summary>
+    public bool HighThroughput { get; set; }
+
     /// <inheritdoc/>
     public override FormatDetails Copy()
     {
@@ -243,6 +256,7 @@ public sealed class Jpeg2000Details : FormatDetails
             ColorSpace = ColorSpace,
             EnumeratedColorSpace = EnumeratedColorSpace,
             HasPalette = HasPalette,
+            HighThroughput = HighThroughput,
         };
         foreach (Jpeg2000Component component in Components)
         {

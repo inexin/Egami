@@ -103,6 +103,13 @@ For LZMA (TIFF LZMA), The .xz File Format 1.2.1 and the LZMA SDK's lzma-specific
 references, with the LZMA SDK and XZ Utils as the listed libraries. The xz CLI runs in Docker to make the corpus
 (`tools/make-xz-references.py`) and to time liblzma.
 
+For High-Throughput JPEG 2000 (DICOM Build Plan task 23), ITU-T T.814 | ISO/IEC 15444-15 (2019) is the reference, with Taubman
+et al., "High throughput block coding in the HTJ2K compression standard" (ICIP 2019) as background. OpenJPH and OpenJPEG (both
+BSD-2) run only as black-box tools in Docker: ojph_compress makes the corpus and opj_decompress the references
+(`tools/make-htj2k-references.py`); their code is not read. Kakadu is never used. The ISO/IEC 15444-4 HTJ2K conformance
+codestreams (gitlab.com/wg1/htj2k-codestreams) may be used only for conformance testing, so they stay under `.cache` and are
+never committed.
+
 For barcodes, ZBar (LGPL) is never used, and of zint only the backend library (BSD-3) may be studied: its frontends and GUI are
 under the GPL and are never used.
 

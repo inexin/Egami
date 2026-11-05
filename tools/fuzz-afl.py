@@ -29,6 +29,8 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          "jbig2": "tests/images/jbig2/*", "jbig2codec": "tests/images/fuzz/jbig2codec-seeds/*", "ccitt": "tests/images/fuzz/ccitt-seeds/*", "zstd": "tests/images/zstd/*.zst", "zstd-write": "tests/images/fuzz/zstd-write-seeds/*", "xz": "tests/images/xz/*.xz", "xz-write": "tests/images/fuzz/zstd-write-seeds/*",
          "cube": "tests/images/fuzz/cube-seeds/*", "inktiff": "tests/images/fuzz/inktiff-seeds/*",
          "jpeg2000": "tests/images/fuzz/jpeg2000-seeds/*", "jpeg2000codec": "tests/images/fuzz/jpeg2000codec-seeds/*",
+         # HTJ2K (DICOM Build Plan task 23): the jpeg2000 target with the HT corpus as seeds.
+         "htj2k": "tests/images/htj2k/*",
          "font": "tests/images/fuzz/font-seeds/*", "hinting": "tests/images/fuzz/hinting-seeds/*", "cff": "tests/images/fuzz/cff-seeds/*", "fontdata": "tests/images/fuzz/fontdata-seeds/*", "subset": "tests/images/fuzz/font-seeds/*",
          "svgpath": "tests/images/fuzz/svgpath-seeds/*",
          "woff2": "tests/images/fuzz/woff2-seeds/*", "gvar": "tests/images/fuzz/gvar-seeds/*", "cff2": "tests/images/fuzz/cff2-seeds/*",
@@ -105,7 +107,7 @@ def main():
             role = "" if instances == 1 else "-M main" if i == 0 else f"-S secondary{i}"
             subprocess.run(["docker", "rm", "-f", name], capture_output=True)
             script = SCRIPT.format(seeds=" ".join("/src/" + pattern for pattern in SEEDS[target].split()), seconds=int(hours * 3600), target=target, role=role,
-                                   harness="raw" if target.startswith("raw-") else "tiff" if target == "tiff-lossless" else target)
+                                   harness="raw" if target.startswith("raw-") else "tiff" if target == "tiff-lossless" else "jpeg2000" if target == "htj2k" else target)
             # AFL_AUTORESUME carries on from an earlier run's queue in the same findings directory.
             subprocess.run(["docker", "run", "-d", "--name", name, "-e", "AFL_AUTORESUME=1", "-v", f"{repo}:/src:ro", "-v", f"{findings}:/findings",
                             "egami-fuzz", "bash", "-c", script], check=True)
