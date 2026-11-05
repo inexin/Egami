@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>DPX and Cineon | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="DPX and Cineon | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/dpx.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="dpx-and-cineon">DPX and Cineon</h1>
+
+<p>DPX (SMPTE ST 268, Digital Moving-Picture Exchange, .dpx) is the frame format of film scanning, grading and visual effects:
+one file per frame, a 2048-byte header of file, image, film and television fields, then up to eight image elements, most often
+10-bit printing-density RGB packed three samples to a 32-bit word. Cineon (.cin) is Kodak's film-scan format (version 4.5)
+from which DPX grew. Both read and write through the Egami.Formats.Extended package: register them with <code>WithDpx()</code> and
+<code>WithCineon()</code>, or <code>WithExtendedFormats()</code> (<a href="extended.html">Extended formats</a>).</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>DPX</th>
+<th>Cineon</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reads</td>
+<td>Versions 1.0, 2.0 and 3.0 in either byte order; 1, 8, 10, 12 and 16-bit integer and 32 and 64-bit float samples; packed (packing 0) or filled to 32 bits (packing 1 and 2); luma, depth, RGB, RGBA, ABGR, single R, G, B or A, and CbYCrY, CbYACrYA, CbYCr and CbYCrA (4:2:2 and 4:4:4, BT.709 or BT.601); run-length coded elements; every element through <code>DpxReaderOptions</code></td>
+<td>1 or 3 channels of 8, 10, 12 or 16 bits, pixel-interleaved, packed bit to bit or filled to 8, 16 or 32 bits, in either byte order</td>
+</tr>
+<tr>
+<td>Writes</td>
+<td>Version 2.0, gray, RGB or RGBA at 8, 10, 12 or 16 bits (<code>DpxWriterOptions</code>), big endian unless asked; the header fields of <code>DpxDetails</code></td>
+<td>10-bit RGB, three samples to a big-endian 32-bit word; the text and film fields of <code>CineonDetails</code></td>
+</tr>
+<tr>
+<td>Natural pixel type</td>
+<td><code>Gray8</code>, <code>Rgb8</code> or <code>Rgba8</code> at 8 bits and below, their 16-bit forms above; <code>GrayF32</code>, <code>RgbF32</code> or <code>RgbaF32</code> for float elements and when linearized</td>
+<td><code>Gray16</code> or <code>Rgb16</code> (<code>Gray8</code> or <code>Rgb8</code> for 8-bit files); <code>GrayF32</code> or <code>RgbF32</code> when linearized</td>
+</tr>
+<tr>
+<td><code>FormatInfo</code></td>
+<td><code>DpxFormat.Info</code>: name <code>DPX</code>, extension <code>.dpx</code>, MIME type <code>image/x-dpx</code></td>
+<td><code>CineonFormat.Info</code>: name <code>Cineon</code>, extension <code>.cin</code>, MIME types <code>image/cineon</code> and <code>image/x-cineon</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="code-values">Code values</h2>
+<p>Load gives the samples as the file stores them, scaled to the pixel type: a 10-bit code value <code>c</code> becomes <code>c × 65535 / 1023</code>
+in a 16-bit channel, rounded, and the writer turns it back into the same code, so a file that loads and saves at its own depth
+keeps every code value. Luma and colour-difference files (CbYCr) are turned into RGB with video range and the BT.709 matrix,
+or BT.601 when the colorimetric field says so.</p>
+<pre><code class="lang-csharp">// DPX (.dpx) and Cineon (.cin) are two formats; WithExtendedFormats() registers both.
+EgamiContext context = EgamiContext.Default.WithDpx().WithCineon();
+
+// Load gives the stored code values, unchanged: a 10-bit file loads as Rgb16 or Rgba16, code 1023 at 65535.
+using Raster frame = Raster.Load(&quot;duck.dpx&quot;, context);
+frame.Save(&quot;frame.png&quot;);
+
+// Probe reads the header alone: one image per image element Egami reads.
+RasterInfo info = Raster.Probe(&quot;duck.dpx&quot;, context);
+Console.WriteLine($&quot;{info.Width}×{info.Height} {info.Layout.ChannelOrder}, {info.ImageCount} element(s)&quot;);
+</code></pre>
+<p>Printing density, the usual transfer of film scans, is logarithmic. <code>DpxReaderOptions.Linearize</code> turns it into scene-linear
+light with Kodak's conversion, reference white at code 685, reference black at code 95 and 0.002 density a code with a film
+gamma of 0.6: code 685 becomes 1.0 and code 95 becomes 0.0. It applies to Cineon and to DPX elements whose transfer is printing
+density or logarithmic; other elements load as they are stored. Alpha stays linear from 0 to 1.</p>
+<pre><code class="lang-csharp">// A printing-density (log) scan, converted to scene-linear light with Kodak's conversion:
+// code 685 is 1.0 (white) and code 95 is 0.0 (black). Linear and video DPX files load unchanged.
+using Raster&lt;RgbF32&gt; linear = Raster.Load&lt;RgbF32&gt;(&quot;scan.cin&quot;, context, new DpxReaderOptions { Linearize = true });
+</code></pre><h2 id="header-fields">Header fields</h2>
+<p>What the header says that the pixels do not is kept in <code>RasterMetadata.FormatDetails</code>: <code>DpxDetails</code> holds the element's
+descriptor, depth, packing, byte order, transfer and colorimetric codes, and the file (name, time, creator, project,
+copyright), film (manufacturer, type, offset, prefix, count, format, frame position, sequence length, frame rate, frame id,
+slate) and television (timecode, user bits, frame rate) fields; <code>CineonDetails</code> the channels, depth, packing, orientation,
+text and film fields. The writers write them back, so a frame keeps its timecode and slate through a save.</p>
+<pre><code class="lang-csharp">// What the header says: the element's descriptor, depth, packing and transfer, and the file, film and TV fields.
+using Raster frame = Raster.Load(&quot;duck.dpx&quot;, context);
+if (frame.Metadata.FormatDetails is DpxDetails dpx)
+{
+    Console.WriteLine($&quot;{dpx.BitsPerSample}-bit, packing {dpx.Packing}, transfer {dpx.Transfer}, {(dpx.BigEndian ? &quot;big&quot; : &quot;little&quot;)} endian&quot;);
+    Console.WriteLine($&quot;timecode {dpx.Timecode ?? &quot;none&quot;}, {dpx.FrameRate} fps, frame {dpx.FramePosition}&quot;);
+
+    // The writer takes the fields back: change one and save.
+    dpx.Timecode = &quot;01:00:00:00&quot;;
+    dpx.FrameRate = 24;
+    frame.Save(&quot;tagged.dpx&quot;);
+}
+</code></pre><h2 id="writing">Writing</h2>
+<p>DPX is written 10-bit, big endian and filled three samples to a word (packing 1, method A) unless the details or
+<code>DpxWriterOptions</code> say otherwise: <code>BitsPerSample</code> picks 8, 10, 12 or 16, <code>BigEndian</code> the byte order and <code>Transfer</code> the
+transfer and colorimetric codes. Without one, a raster read from DPX keeps its own, one read from Cineon is printing density,
+and any other is user defined. 12-bit samples are filled to 16-bit words. Cineon is always written 10-bit RGB, big endian.</p>
+<pre><code class="lang-csharp">// 10-bit, big-endian, filled three samples to a 32-bit word: what most tools read. Options pick the depth,
+// byte order and transfer characteristic.
+image.Save(&quot;duck.dpx&quot;);
+image.Save(&quot;duck-16.dpx&quot;, new DpxWriterOptions { BitsPerSample = 16, BigEndian = false, Transfer = DpxTransfer.Linear });
+</code></pre><pre><code class="lang-csharp">// Cineon is written as the classic file: 10-bit printing-density RGB, three samples to a big-endian 32-bit word.
+image.Save(&quot;duck.cin&quot;);
+using Raster scan = Raster.Load(&quot;duck.cin&quot;, context);
+if (scan.Metadata.FormatDetails is CineonDetails cineon)
+{
+    Console.WriteLine($&quot;{cineon.Channels} channels of {cineon.BitsPerSample} bits, film format {cineon.FilmFormat}&quot;);
+}
+</code></pre><h2 id="elements-orientation-and-damaged-files">Elements, orientation and damaged files</h2>
+<p>A DPX file may hold up to eight image elements, such as a colour and a matte, or left and right eyes. Load gives the first
+one Egami reads; <code>Raster.Probe</code> counts them in <code>ImageCount</code>, LoadAll gives every one, and <code>DpxReaderOptions.Element</code> picks one.
+Elements in a layout Egami does not read (composite video, the generic 2 to 8-component descriptors and user-defined ones) are skipped. A file whose
+orientation is bottom-up or right to left loads upright; the four orientations that swap rows and columns load as stored, with
+the warning <code>Dpx.OrientationIgnored</code>.</p>
+<p>Rows decode from the input as <code>RasterDecoder</code> asks for them; a bottom-up or run-length coded element reads whole first. A
+lenient read of a file that ends early keeps the rows it has and leaves the rest black, with the warning <code>Dpx.RowsMissing</code> or
+<code>Cineon.RowsMissing</code>, and a broken run with <code>Dpx.RunDamaged</code>; a strict read throws <code>CorruptDataException</code>.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/dpx.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

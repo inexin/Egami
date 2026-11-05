@@ -6649,6 +6649,118 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dpx.CineonDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dpx.CineonDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dpx.CineonDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dpx.CineonDetails.yml\" sourcestartlinenumber=\"1\">Details only Cineon has, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>. The writer writes the text and film fields back.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dpx.CineonFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dpx.CineonFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dpx.CineonFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dpx.CineonFormat.yml\" sourcestartlinenumber=\"1\">Cineon, Kodak's film-scan format (version 4.5), from which DPX grew: a 1024-byte header and a 1024-byte film header, then\n10-bit printing-density samples, three to a 32-bit word. Load gives the stored code values; <xref href=\"Egami.Formats.Extended.Dpx.DpxReaderOptions\" data-throw-if-not-resolved=\"false\"></xref>\nturns them into linear light. Registered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithCineon(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dpx.DpxDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dpx.DpxDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dpx.DpxDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dpx.DpxDetails.yml\" sourcestartlinenumber=\"1\">Details only DPX has, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>. The writer writes the text, film and television fields back.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dpx.DpxFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dpx.DpxFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dpx.DpxFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dpx.DpxFormat.yml\" sourcestartlinenumber=\"1\">DPX (SMPTE ST 268, Digital Moving-Picture Exchange), the frame format of film scanning and visual effects: a 2048-byte header\nof file, image, film and television fields, then up to eight image elements of 1 to 16-bit integer or 32 and 64-bit float\nsamples, usually 10-bit printing-density RGB. Load gives the first element as its stored code values; LoadAll gives every\nelement, and <xref href=\"Egami.Formats.Extended.Dpx.DpxReaderOptions\" data-throw-if-not-resolved=\"false\"></xref> picks one or turns log code values into linear light. Registered with\n<xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithDpx(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dpx.DpxReaderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dpx.DpxReaderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dpx.DpxReaderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dpx.DpxReaderOptions.yml\" sourcestartlinenumber=\"1\">Options for reading DPX and Cineon.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dpx.DpxTransfer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dpx.DpxTransfer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dpx.DpxTransfer",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dpx.DpxTransfer.yml\" sourcestartlinenumber=\"1\">What the samples of a DPX image element mean: the transfer characteristic and colorimetric fields of ST 268.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dpx.DpxWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dpx.DpxWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dpx.DpxWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dpx.DpxWriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing DPX.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dpx.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dpx.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dpx",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Extended.ExtendedContextExtensions.yml",
       "output": {
         ".html": {
@@ -19578,6 +19690,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/formats/dicom.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/dpx.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/dpx.html"
         }
       },
       "version": ""
