@@ -36,6 +36,30 @@ public sealed class DicomTransferSyntax
     /// <summary>Gets Explicit VR Big Endian (1.2.840.10008.1.2.2), retired but still met.</summary>
     public static DicomTransferSyntax ExplicitVRBigEndian { get; } = new("1.2.840.10008.1.2.2", true, true, false, false);
 
+    /// <summary>Gets RLE Lossless (1.2.840.10008.1.2.5): PackBits byte planes (PS3.5 annex G).</summary>
+    public static DicomTransferSyntax RleLossless { get; } = new("1.2.840.10008.1.2.5", true, false, false, true);
+
+    /// <summary>Gets JPEG Baseline (Process 1) (1.2.840.10008.1.2.4.50): lossy, 8 bits.</summary>
+    public static DicomTransferSyntax JpegBaseline { get; } = new("1.2.840.10008.1.2.4.50", true, false, false, true);
+
+    /// <summary>Gets JPEG Extended (Process 2 and 4) (1.2.840.10008.1.2.4.51): lossy, 8 or 12 bits.</summary>
+    public static DicomTransferSyntax JpegExtended { get; } = new("1.2.840.10008.1.2.4.51", true, false, false, true);
+
+    /// <summary>Gets JPEG Lossless, Non-Hierarchical, First-Order Prediction (Process 14, Selection Value 1) (1.2.840.10008.1.2.4.70).</summary>
+    public static DicomTransferSyntax JpegLossless { get; } = new("1.2.840.10008.1.2.4.70", true, false, false, true);
+
+    /// <summary>Gets JPEG-LS Lossless (1.2.840.10008.1.2.4.80).</summary>
+    public static DicomTransferSyntax JpegLsLossless { get; } = new("1.2.840.10008.1.2.4.80", true, false, false, true);
+
+    /// <summary>Gets JPEG-LS Lossy (Near-Lossless) (1.2.840.10008.1.2.4.81).</summary>
+    public static DicomTransferSyntax JpegLsNearLossless { get; } = new("1.2.840.10008.1.2.4.81", true, false, false, true);
+
+    /// <summary>Gets JPEG XL Lossless (1.2.840.10008.1.2.4.110).</summary>
+    public static DicomTransferSyntax JpegXlLossless { get; } = new("1.2.840.10008.1.2.4.110", true, false, false, true);
+
+    /// <summary>Gets JPEG XL (1.2.840.10008.1.2.4.112): lossy.</summary>
+    public static DicomTransferSyntax JpegXl { get; } = new("1.2.840.10008.1.2.4.112", true, false, false, true);
+
     /// <summary>Gets the UID.</summary>
     public string Uid { get; }
 

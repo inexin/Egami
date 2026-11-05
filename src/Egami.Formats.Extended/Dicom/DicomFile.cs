@@ -128,6 +128,51 @@ public sealed class DicomFile
         return ((IWholeRead)rows).ReadNatural(input);
     }
 
+    /// <summary>
+    /// Writes the file again in the transfer syntax of <paramref name="options"/>, keeping every element (group lengths, which
+    /// would no longer be right, are left out). Pixel data already in that transfer syntax, or native in a little-endian file
+    /// written native, is copied as it is; any other is decoded and encoded again, with the photometric interpretation and bit
+    /// depth it then has. A lossy transfer syntax records itself in Lossy Image Compression, its ratio and method, and gives the
+    /// image a new SOP Instance UID (PS3.3 C.7.6.1.1.5). The file meta information is made anew, keeping its other elements.
+    /// </summary>
+    /// <param name="stream">Where to write. It is left open.</param>
+    /// <param name="options">The transfer syntax and its settings, or <see langword="null"/> for Explicit VR Little Endian.</param>
+    /// <param name="context">The context whose safety limits apply while the pixel data is decoded, or <see langword="null"/> for the default.</param>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Dicom.cs" region="dicom-transcode"/>
+    /// </example>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
+    /// <exception cref="NotSupportedException">
+    /// The pixel data cannot be decoded, or the transfer syntax cannot hold it, such as signed values in JPEG Baseline or more than
+    /// 8 bits in lossy JPEG XL.
+    /// </exception>
+    /// <exception cref="CorruptDataException">The pixel data is damaged.</exception>
+    public void Save(Stream stream, DicomWriterOptions? options = null, EgamiContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        DicomFileWriter.Transcode(this, stream, options ?? DicomWriterOptions.Default, context ?? EgamiContext.Default);
+    }
+
+    /// <summary>Writes the file again to a path, as <see cref="Save(Stream, DicomWriterOptions?, EgamiContext?)"/> does.</summary>
+    /// <param name="path">The file to write.</param>
+    /// <param name="options">The transfer syntax and its settings, or <see langword="null"/> for Explicit VR Little Endian.</param>
+    /// <param name="context">The context whose safety limits apply while the pixel data is decoded, or <see langword="null"/> for the default.</param>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Dicom.cs" region="dicom-transcode"/>
+    /// </example>
+    /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
+    /// <exception cref="NotSupportedException">The pixel data cannot be decoded, or the transfer syntax cannot hold it.</exception>
+    /// <exception cref="CorruptDataException">The pixel data is damaged.</exception>
+    public void Save(string path, DicomWriterOptions? options = null, EgamiContext? context = null)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        using MemoryStream buffer = new();
+        Save(buffer, options, context);
+        using FileStream file = File.Create(path);
+        buffer.Position = 0;
+        buffer.CopyTo(file);
+    }
+
     /// <summary>Reads the rest of an input as a DICOM file.</summary>
     internal static DicomFile Read(EgamiInput input, ReaderOptions options)
     {

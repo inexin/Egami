@@ -68,6 +68,109 @@ internal static class DicomRle
         }
     }
 
+    /// <summary>
+    /// Encodes a frame of interleaved stored values: <paramref name="components"/> times <paramref name="bitsAllocated"/> / 8
+    /// segments, each a byte plane coded with PackBits row by row (no run crosses a row, as G.3.1 asks) and padded to an even
+    /// length, after the 64-byte header of their offsets. Values are put under the high bit, signed ones as their two's complement.
+    /// </summary>
+    public static byte[] Encode(ReadOnlySpan<int> samples, int components, int rows, int columns, int bitsAllocated, int bitsStored, int highBit)
+    {
+        if (bitsAllocated is not (8 or 16 or 32))
+        {
+            throw new NotSupportedException($"RLE frames of {bitsAllocated} bits allocated are not written; RLE codes 8, 16 and 32-bit samples.");
+        }
+
+        int bytes = bitsAllocated / 8;
+        int segments = components * bytes;
+        if (segments > 15)
+        {
+            throw new NotSupportedException($"An RLE frame holds at most 15 segments; {components} samples of {bytes} bytes need {segments}.");
+        }
+
+        int shift = highBit + 1 - bitsStored;
+        uint mask = bitsStored >= 32 ? uint.MaxValue : (1u << bitsStored) - 1;
+        long worst = 64 + (segments * (((long)rows * (columns + ((columns + 127) / 128))) + 1));
+        if (worst > Array.MaxLength)
+        {
+            throw new NotSupportedException("The frame is too large for one RLE fragment.");
+        }
+
+        byte[] output = new byte[worst];
+        BinaryPrimitives.WriteUInt32LittleEndian(output, (uint)segments);
+        byte[] plane = new byte[columns];
+        int at = 64;
+        int stride = columns * components;
+        for (int s = 0; s < segments; s++)
+        {
+            BinaryPrimitives.WriteUInt32LittleEndian(output.AsSpan(4 + (s * 4)), (uint)at);
+            int component = s / bytes;
+            int byteShift = 8 * (bytes - 1 - (s % bytes));
+            for (int y = 0; y < rows; y++)
+            {
+                ReadOnlySpan<int> row = samples.Slice(y * stride, stride);
+                for (int x = 0, i = component; x < columns; x++, i += components)
+                {
+                    plane[x] = (byte)(((uint)row[i] & mask) << shift >> byteShift);
+                }
+
+                at += Pack(plane, output.AsSpan(at));
+            }
+
+            if ((at & 1) != 0)
+            {
+                output[at++] = 0;
+            }
+        }
+
+        Array.Resize(ref output, at);
+        return output;
+    }
+
+    /// <summary>Packs one row of a byte plane with PackBits (G.3.1): runs of three or more repeated, the rest literal; returns the bytes written.</summary>
+    internal static int Pack(ReadOnlySpan<byte> source, Span<byte> target)
+    {
+        int written = 0;
+        int i = 0;
+        int n = source.Length;
+        while (i < n)
+        {
+            byte value = source[i];
+            int run = 1;
+            while (i + run < n && run < 128 && source[i + run] == value)
+            {
+                run++;
+            }
+
+            if (run >= 3 || (run == 2 && i + run == n))
+            {
+                target[written++] = (byte)(257 - run);
+                target[written++] = value;
+                i += run;
+                continue;
+            }
+
+            // A literal stretch, up to the next run of three or 128 bytes.
+            int start = i;
+            int length = 0;
+            while (i < n && length < 128)
+            {
+                if (i + 2 < n && source[i] == source[i + 1] && source[i] == source[i + 2])
+                {
+                    break;
+                }
+
+                i++;
+                length++;
+            }
+
+            target[written++] = (byte)(length - 1);
+            source.Slice(start, length).CopyTo(target[written..]);
+            written += length;
+        }
+
+        return written;
+    }
+
     /// <summary>Unpacks one PackBits segment (G.3.2) into <paramref name="target"/>; returns the bytes written. Extra bytes are dropped.</summary>
     internal static int Unpack(ReadOnlySpan<byte> source, Span<byte> target)
     {

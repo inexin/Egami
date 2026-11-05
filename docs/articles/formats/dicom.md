@@ -7,14 +7,14 @@ through the Egami.Formats.Extended package, as a preview: every DICOM type is ma
 it is stable.
 
 This version reads the dataset and decodes the pixel data of every frame through the display pipeline (rescale, window,
-colour). Writing comes in a later version.
+colour), writes Secondary Capture images from rasters, and saves opened files again in another transfer syntax.
 
 | | |
 | --- | --- |
 | Loads | One frame a load, as a viewer shows it: `Gray8` or `Gray16` for monochrome images, `Rgb8` or `Rgb16` for colour and palette images; modality or stored values as `GrayF32` on request; each frame an image for `Raster.LoadAll` |
 | Pixel data | Native (1, 8, 16 and 32 bits allocated, planar or interleaved, either byte order), RLE Lossless, Deflated Image Frame Compression, encapsulated uncompressed, JPEG baseline, extended and lossless, JPEG-LS, JPEG 2000, High-Throughput JPEG 2000 and JPEG XL |
 | Reads | PS3.10 files with the 128-byte preamble and DICM, and bare datasets without them; implicit VR little endian, explicit VR little endian, explicit VR big endian and deflated explicit VR little endian datasets; sequences and items of defined and undefined length to 64 levels; every VR of PS3.5 table 6.2-1; encapsulated pixel data as fragments with the Basic and Extended Offset Tables; text in the character sets of PS3.3 C.12.1.1.2, ISO 2022 code extension included |
-| Writes | Nothing yet |
+| Writes | Secondary Capture images from any raster, and opened files in another transfer syntax: Explicit and Implicit VR Little Endian, Deflated Explicit VR Little Endian, RLE Lossless, JPEG Baseline, Extended and Lossless (SV1), JPEG-LS lossless and near-lossless, JPEG XL lossless and lossy |
 | `FormatInfo` | `DicomFormat.Info`: name `DICOM`, extensions `.dcm`, `.dicom` and `.dic`, MIME type `application/dicom`; registered with `WithDicom()`, not by `WithExtendedFormats()` |
 
 ## The dataset
@@ -112,6 +112,42 @@ Vector, and the recommended or cine frame rate) is in `DicomDetails`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Dicom.cs#dicom-frames)]
 
+## Writing
+
+A raster saves as a Secondary Capture image (PS3.3 A.8.1) with `DicomFormat.Info`: gray pixel types as MONOCHROME2, any other
+as RGB, at 8 bits for 8-bit pixel types and 16 for wider and float ones; alpha is dropped. The writer makes new Study, Series and
+SOP Instance UIDs and leaves the type 2 elements of the Patient, Study and Series modules empty; `DicomWriterOptions.Attributes`
+gives any element by PS3.6 keyword, its value as text (several separated by `\`), numbers and tags parsed by the element's VR.
+Text that is not ASCII is written in UTF-8 with Specific Character Set `ISO_IR 192`. The elements that describe the pixels (the
+Image Pixel module, Pixel Data, SOP Class UID) are the writer's own; giving one throws `ArgumentException`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Dicom.cs#dicom-save)]
+
+`DicomFile.Save` writes an opened file again in the transfer syntax `DicomWriterOptions.TransferSyntax` names, keeping every
+element, private ones and sequences included; only group lengths, which would no longer be right, are left out. Pixel data
+already in that transfer syntax, or native in a little-endian file written native, is copied as it is. Any other is decoded
+strictly (a damaged frame throws) and coded again; the Photometric Interpretation and Planar Configuration follow (YBR_FULL_422
+data decodes to YBR_FULL; JPEG 2000 YBR_RCT and YBR_ICT and JPEG XL to RGB).
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Dicom.cs#dicom-transcode)]
+
+| Transfer syntax | Holds |
+| --- | --- |
+| Explicit VR Little Endian (default), Implicit VR Little Endian, Deflated Explicit VR Little Endian | Native pixel data at the file's Bits Allocated, values under its High Bit |
+| RLE Lossless | 8, 16 and 32 bits allocated, up to 15 segments (a new PackBits encoder, PS3.5 annex G) |
+| JPEG Lossless (SV1), JPEG-LS Lossless | 2 to 16 bits stored, signed values as the two's complement of their stored bits |
+| JPEG XL Lossless | Up to 16 bits stored, gray, palette or RGB; YBR data throws, since DICOM reads JPEG XL as RGB |
+| JPEG-LS Near-Lossless | As JPEG-LS Lossless, each sample within `NearLossless` of its value; not for palette indices |
+| JPEG Baseline, JPEG Extended, JPEG XL | Unsigned gray and colour of up to 8 bits (12 for JPEG Extended, written with Bits Stored 12); colour JPEG as YBR_FULL_422 |
+
+Encapsulated frames are one fragment each, with the Basic Offset Table by default; `DicomOffsetTable.Extended` writes the
+Extended Offset Table instead (it is used anyway past 4 GiB), and `DicomOffsetTable.None` neither. A lossy transfer syntax
+sets Lossy Image Compression to 01, adds its ratio and method (`ISO_10918_1`, `ISO_14495_1`, `ISO_18181_1`) to any earlier
+ones, and gives the image a new SOP Instance UID, as PS3.3 C.7.6.1.1.5 asks. The file meta information is written anew:
+version, Media Storage SOP Class and Instance UIDs from the dataset, the transfer syntax, Egami's Implementation Class UID
+(`DicomUid.ImplementationClassUid`) and version name; other elements of the old one are kept. `DicomUid.Generate` makes UIDs
+from random UUIDs (PS3.5 B.2). Explicit VR Big Endian is retired and not written.
+
 ## Detection and probing
 
 Registered with `WithDicom()`, DICOM files are found by the DICM prefix at byte 128, and `Raster.Probe` gives the size, the
@@ -149,6 +185,7 @@ lose nothing are noted in both modes: `Dicom.NoPreamble`, `Dicom.ImplicitMeta`, 
 
 ## Not supported yet
 
-Writing is the next stage of the DICOM work. MPEG-2, H.264, HEVC and JPIP transfer syntaxes, Float and Double Float Pixel
+Writing JPEG 2000, High-Throughput JPEG 2000, JPEG XL JPEG recompression and Deflated Image Frame Compression, multi-frame
+Secondary Capture from animations, and editing a dataset's elements before a save are not written yet. MPEG-2, H.264, HEVC and JPIP transfer syntaxes, Float and Double Float Pixel
 Data, 2-sample, ARGB and CMYK images and retired 12-bit packing throw `NotSupportedException`. Networking (DIMSE, DICOMweb), DICOMDIR media, structured reports, presentation states, segmentation and RT
 objects, overlay burn-in and anonymization are not planned.

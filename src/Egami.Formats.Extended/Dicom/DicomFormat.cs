@@ -11,7 +11,8 @@ namespace Egami.Formats.Extended.Dicom;
 /// DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with
 /// <see cref="ExtendedContextExtensions.WithDicom"/>; in preview. A load gives one frame as a viewer shows it (see
 /// <see cref="DicomReaderOptions"/>), each frame of a multi-frame file is an image of its own for
-/// <see cref="Raster.LoadAll(Stream, EgamiContext?, ReaderOptions?)"/>, and <see cref="DicomFile"/> reads every element.
+/// <see cref="Raster.LoadAll(Stream, EgamiContext?, ReaderOptions?)"/>, and <see cref="DicomFile"/> reads every element. A save
+/// writes a Secondary Capture image (see <see cref="DicomWriterOptions"/>).
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/Dicom.cs" region="dicom-pixels"/>
@@ -28,6 +29,7 @@ public static class DicomFormat
         SignatureLength = 132,
         Matches = DicomParser.IsPart10,
         Reader = new DicomReader(),
+        Writer = new DicomWriter(),
     };
 }
 
@@ -95,6 +97,8 @@ internal sealed class DicomReader : ExtendedReader, IMultiImageReader, IFormatRe
             throw new ArgumentOutOfRangeException(nameof(options), options.Frame, $"The file has {info.Frames} frames.");
         }
 
+        // Rows and Columns may come as any VR, so far past 65535; the limits apply before a row is rented.
+        input.CheckFrameSize(info.Columns, info.Rows);
         DicomDisplay display = new(info, options.Frame, options);
         PixelLayoutInfo layout = display.Layout;
         return layout.ChannelOrder switch
