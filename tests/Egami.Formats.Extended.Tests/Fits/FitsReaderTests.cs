@@ -211,6 +211,16 @@ public sealed class FitsReaderTests
         Assert.Equal(1043618065, FitsTiles.LastSeed, 0);
     }
 
+    [Fact]
+    public void HoldsTheDitherTableAtSinglePrecision()
+    {
+        // The convention's table is of floats; dithered values match astropy (cfitsio) to the last bit only with those.
+        double[] random = FitsTiles.MakeRandom();
+        Assert.All(random, r => Assert.Equal((double)(float)r, r));
+        Assert.Equal((double)(float)(16807 / 2147483647d), random[0]);
+        Assert.NotEqual(16807 / 2147483647d, random[0]);
+    }
+
     public static TheoryData<int, int> RiceDepths() => new() { { 8, 1 }, { 16, 2 }, { 32, 4 }, { 16, 4 } };
 
     [Theory]
@@ -244,6 +254,27 @@ public sealed class FitsReaderTests
             }), 'B', Card("BZERO", 32768), Card("BSCALE", 1))];
             AssertDecodes(file, values.Select(v => v + 32768d), type, 16);
         }
+    }
+
+    [Theory]
+    [InlineData("GZIP_1", -32)]
+    [InlineData("GZIP_2", -32)]
+    [InlineData("GZIP_1", -64)]
+    [InlineData("GZIP_2", -64)]
+    public void ReadsGzipTilesOfFloatsThatWereNotQuantized(string type, int zbitpix)
+    {
+        // With no ZSCALE the tiles hold the IEEE values themselves (astropy's quantize_level=0 writes these).
+        long[] axes = [5, 3], tile = [5, 1];
+        double[] values = [.. Enumerable.Range(0, 15).Select(i => i == 7 ? double.NaN : (i * 1.25) - 3.5e5)];
+        List<Tile> tiles = [];
+        for (int row = 0; row < 3; row++)
+        {
+            byte[] raw = Samples(zbitpix, values.Skip(row * 5).Take(5));
+            tiles.Add(new Tile(Gzip(type == "GZIP_2" ? Shuffle(raw, zbitpix / -8) : raw)));
+        }
+
+        byte[] file = [.. Empty(), .. Compressed(type, zbitpix, axes, tile, tiles)];
+        AssertDecodes(file, values, type, zbitpix);
     }
 
     [Fact]

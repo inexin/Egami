@@ -67,7 +67,8 @@ header's `ZBITPIX`, `ZNAXISn` and `ZTILEn` give the image, and `FitsHeader` show
 codecs are Rice (`RICE_1`), gzip (`GZIP_1`, and `GZIP_2` with its byte shuffle), IRAF's PLIO for masks (`PLIO_1`) and
 `NOCOMPRESS`. Floating-point images quantized to integers are restored from each tile's `ZSCALE` and `ZZERO`, with
 `SUBTRACTIVE_DITHER_1` and `SUBTRACTIVE_DITHER_2` undone, and tiles stored losslessly in `GZIP_COMPRESSED_DATA` or
-`UNCOMPRESSED_DATA` are read from there. HCOMPRESS (`HCOMPRESS_1`) is not read: a load throws `UnsupportedFormatException` that
+`UNCOMPRESSED_DATA` are read from there; gzip tiles of floats that were not quantized (no `ZSCALE`) hold the values
+themselves. HCOMPRESS (`HCOMPRESS_1`) is not read: a load throws `UnsupportedFormatException` that
 names it.
 
 ## Writing

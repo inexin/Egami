@@ -162,6 +162,19 @@ internal static class FitsTiles
                 {
                     Dequantize(image, axes, at, size, v, scale, zero, blank ?? NullValue, dither, (k + dither0 - 1) % 10000);
                 }
+                else if (ok && isFloat && compression is "GZIP_1" or "GZIP_2")
+                {
+                    // Floats that were not quantized: the gzip stream holds their IEEE bits (shuffled for GZIP_2), lossless.
+                    if (hdu.Bitpix == -32)
+                    {
+                        for (int i = 0; i < n; i++)
+                        {
+                            v[i] = BitConverter.DoubleToInt64Bits(BitConverter.Int32BitsToSingle((int)v[i]));
+                        }
+                    }
+
+                    Place(image, axes, at, size, v, true, 1, 0, null);
+                }
                 else if (ok)
                 {
                     Place(image, axes, at, size, v, false, hdu.Scale, hdu.Zero, blank);
@@ -179,24 +192,30 @@ internal static class FitsTiles
         return damaged;
     }
 
-    /// <summary>Returns the convention's table of 10,000 uniform random numbers, Park and Miller's minimal standard generator from seed 1.</summary>
-    internal static double[] MakeRandom()
+    /// <summary>
+    /// Returns the convention's table of 10,000 uniform random numbers, Park and Miller's minimal standard generator from seed 1,
+    /// each held at single precision as the convention's table is: the dither subtracted is that float, so values match other
+    /// readers to the last bit.
+    /// </summary>
+    internal static double[] MakeRandom() => [.. Seeds().Select(s => (double)(float)(s / 2147483647))];
+
+    /// <summary>The last seed of the generator, which the convention gives as a check: 1043618065.</summary>
+    internal static double LastSeed => Seeds()[^1];
+
+    private static double[] Seeds()
     {
-        double[] random = new double[10000];
+        double[] seeds = new double[10000];
         const double A = 16807, M = 2147483647;
         double seed = 1;
-        for (int i = 0; i < random.Length; i++)
+        for (int i = 0; i < seeds.Length; i++)
         {
             double temp = A * seed;
             seed = temp - (M * Math.Floor(temp / M));
-            random[i] = seed / M;
+            seeds[i] = seed;
         }
 
-        return random;
+        return seeds;
     }
-
-    /// <summary>The last seed of the generator, which the convention gives as a check: 1043618065.</summary>
-    internal static double LastSeed => Random[^1] * 2147483647;
 
     private static FitsColumn? Column(FitsTable table, string name) => table.Columns.TryGetValue(name, out FitsColumn? c) ? c : null;
 
