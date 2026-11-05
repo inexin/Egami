@@ -198,7 +198,7 @@ public class PsdHandBuiltTests
     /// A pattern table holding one 8-bit RGB pattern, its colors row by row, as the specification lays out a pattern: its
     /// header, then the virtual memory array list of three raw channels and two unwritten masks.
     /// </summary>
-    private static byte[] Pattern(string id, int width, int height, (byte R, byte G, byte B)[] colors)
+    internal static byte[] Pattern(string id, int width, int height, (byte R, byte G, byte B)[] colors)
     {
         using MemoryStream body = new();
         void U16(int v) { Span<byte> b = stackalloc byte[2]; BinaryPrimitives.WriteUInt16BigEndian(b, (ushort)v); body.Write(b); }

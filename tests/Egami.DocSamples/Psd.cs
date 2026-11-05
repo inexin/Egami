@@ -112,7 +112,7 @@ public class Psd
         using Raster flat = document.Flatten();
         foreach (EgamiDiagnostic warning in flat.Metadata.Warnings)
         {
-            // What the flattening left out, such as layer effects, one warning a kind naming the layers.
+            // What the flattening left out, such as noise gradients, one warning a kind naming the layers.
             Console.WriteLine(warning.Message);
         }
 
@@ -120,6 +120,21 @@ public class Psd
         #endregion
 
         Assert.True(File.Exists("without-top.png"));
+    }
+
+    [Fact]
+    public void FlattenWithoutEffects()
+    {
+        using SampleFiles files = new();
+
+        #region psd-flatten-effects
+        // Layer effects (shadows, glows, bevels, overlays, strokes) are drawn by default; turn them off to see the bare layers.
+        using PsdDocument document = PsdImage.ReadLayers("layered.psd");
+        using Raster bare = document.Flatten(new PsdFlattenOptions { ApplyEffects = false });
+        bare.Save("without-effects.png");
+        #endregion
+
+        Assert.True(File.Exists("without-effects.png"));
     }
 
     [Fact]

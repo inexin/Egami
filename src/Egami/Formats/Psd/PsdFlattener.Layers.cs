@@ -12,10 +12,11 @@ internal sealed partial class PsdFlattener
 
     /// <summary>
     /// Renders a layer into <paramref name="buffer"/> (premultiplied color and alpha the canvas's size): its colors (its ink for
-    /// CMYK) times its coverage and fill opacity, and its coverage alone into <paramref name="clip"/> for what is clipped to it.
-    /// Returns the area it covers.
+    /// CMYK) times its coverage and fill opacity, and its coverage alone into <paramref name="clip"/> for what is clipped to it
+    /// (and its effects' shape). With <paramref name="effects"/> the masks that hide them are left to the effects, and the fill
+    /// opacity too when the interior effects blend as a group. Returns the area it covers.
     /// </summary>
-    private Rect Render(PsdLayer info, PsdLayerRecord record, Raster? pixels, InkRaster? ink, PsdMask? mask, float[] buffer, float[]? clip)
+    private Rect Render(PsdLayer info, PsdLayerRecord record, Raster? pixels, InkRaster? ink, PsdMask? mask, float[] buffer, float[]? clip, PsdEffects? effects = null)
     {
         Rect canvas = new(0, 0, _width, _height);
         Rect area;
@@ -53,7 +54,10 @@ internal sealed partial class PsdFlattener
 
         // A shape or fill layer's stored pixels already have its vector mask's edge; any other layer is cut by it here.
         bool vector = solid is not null || !(record.Has("SoCo") || record.Has("GdFl") || record.Has("PtFl") || record.Has("vscg"));
-        float fill = info.FillOpacity;
+        float fill = effects is { InteriorAsGroup: true } ? 1 : info.FillOpacity;
+        bool shaped = effects is not null && (solid is not null || record.Has("SoCo") || record.Has("GdFl") || record.Has("PtFl") || record.Has("vscg"));
+        PsdMask? shaping = effects is { UserMaskHides: true } ? null : mask;
+        vector &= effects is not { VectorMaskHides: true };
         Span<float> colors = _row.AsSpan(0, _stride * area.Width);
         Span<float> shape = (_shape ??= new float[_width]).AsSpan(0, area.Width);
         for (int y = area.Y; y < area.Bottom; y++)
@@ -71,7 +75,16 @@ internal sealed partial class PsdFlattener
                 pixels!.ReadRow(y - record.Top, area.X - record.Left, MemoryMarshal.Cast<float, RgbaF32>(colors));
             }
 
-            MaskRow(record, mask, y, area.X, shape, vector);
+            MaskRow(record, shaping, y, area.X, shape, vector);
+            Span<float> edge = shape;
+            if (shaped && !vector)
+            {
+                // The stored pixels have the vector mask's edge, so the effects' shape takes the vector mask afresh.
+                edge = (_maskRow ??= new float[_width]).AsSpan(0, area.Width);
+                shape.CopyTo(edge);
+                VectorRow(record, y, area.X, edge);
+            }
+
             int row = y * _width;
             for (int x = 0; x < area.Width; x++)
             {
@@ -87,7 +100,9 @@ internal sealed partial class PsdFlattener
                 buffer[at + _channels] = content;
                 if (clip is not null)
                 {
-                    clip[row + area.X + x] = a;
+                    // A fill or shape layer's effects take its shape from its masks, not from its fill's transparency (but
+                    // where Photoshop stored its pixels covered, they are).
+                    clip[row + area.X + x] = shaped ? Math.Max(edge[x], a) : a;
                 }
             }
         }

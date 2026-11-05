@@ -377,11 +377,11 @@ internal sealed class PsdFile
                         ReadLayerInfo(input, blockEnd, options);
                     }
                 }
-                else if (_layered && Records.Find(r => r.Has("PtFl")) is PsdLayerRecord user
+                else if (_layered && Records.Find(r => r.Has("PtFl") || r.Has("lfx2") || r.Has("lmfx") || r.Has("lfxs")) is PsdLayerRecord user
                     && (head[4..].SequenceEqual("Patt"u8) || head[4..].SequenceEqual("Pat2"u8) || head[4..].SequenceEqual("Pat3"u8)))
                 {
-                    // The pattern tables (the layer section's global data) are kept with the first pattern fill layer's blocks,
-                    // under PatternKeyPrefix and their key, where the flattener finds them.
+                    // The pattern tables (the layer section's global data) are kept with the first pattern fill layer's (or layer
+                    // with effects') blocks, under PatternKeyPrefix and their key, where the flattener finds them.
                     input.CheckMetadataBytes(user.Blocks.Where(b => b.Key.StartsWith(PatternKeyPrefix, StringComparison.Ordinal)).Sum(b => (long)b.Value.Length) + blockLength);
                     byte[] patterns = new byte[blockLength];
                     input.ReadExactly(patterns);
@@ -515,6 +515,7 @@ internal sealed class PsdFile
         float fill = 1;
         bool clippedAsGroup = true;
         int knockout = 0;
+        bool interiorAsGroup = false, transparencyShapes = true, userMaskHides = false, vectorMaskHides = false;
         List<string> keys = [];
         Dictionary<string, byte[]> blocks = [];
         Span<byte> head = stackalloc byte[8];
@@ -570,6 +571,18 @@ internal sealed class PsdFile
                     break;
                 case "knko" when blockLength >= 1:
                     knockout = input.ReadByte();
+                    break;
+                case "infx" when blockLength >= 1:
+                    interiorAsGroup = input.ReadByte() != 0;
+                    break;
+                case "tsly" when blockLength >= 1:
+                    transparencyShapes = input.ReadByte() != 0;
+                    break;
+                case "lmgm" when blockLength >= 1:
+                    userMaskHides = input.ReadByte() != 0;
+                    break;
+                case "vmgm" when blockLength >= 1:
+                    vectorMaskHides = input.ReadByte() != 0;
                     break;
                 default:
                     if (_layered && PsdLayerRecord.Keeps(head[4..]))
@@ -633,6 +646,13 @@ internal sealed class PsdFile
         foreach ((string k, byte[] v) in blocks)
         {
             record.Blocks[k] = v;
+        }
+
+        // The flags for how effects combine are kept only for a layer that has effects, so other layers cost nothing more.
+        byte effectFlags = PsdEffects.Flags(interiorAsGroup, transparencyShapes, userMaskHides, vectorMaskHides);
+        if (effectFlags != 0 && PsdEffects.Has(blocks))
+        {
+            record.Blocks[PsdEffects.FlagsKey] = [effectFlags];
         }
 
         return record;

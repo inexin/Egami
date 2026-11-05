@@ -101,7 +101,6 @@ internal sealed partial class PsdFlattener
             return;
         }
 
-        Note(info, record);
         float[] target = basis?.Buffer ?? frame.Canvas;
         Rect area = basis?.Area ?? new Rect(0, 0, _width, _height);
         BlendMode mode = ModeOf(info);

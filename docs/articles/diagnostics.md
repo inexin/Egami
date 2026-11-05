@@ -286,7 +286,7 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Psd.ChannelsDropped` | Warning | A multichannel file has no color model; its first channel was loaded as gray and the rest were not |
 | `Psd.ClippingBlendSkipped` | Warning | Clipped layers set to blend with the layers under their base were blended with the base alone |
 | `Psd.DataTruncated` | Warning | The file ends inside the flattened image; the missing pixels are 0 |
-| `Psd.EffectsSkipped` | Warning | Flattening did not draw layer effects; the warning names the layers |
+| `Psd.EffectsSkipped` | Warning | Flattening left out layer effects it cannot draw (noise gradients, missing patterns, effects on knockout layers, damaged settings); the warning names the layers |
 | `Psd.FillSkipped` | Warning | Flattening left out fill layers it cannot draw (noise gradients, patterns the document does not hold); the warning names them |
 | `Psd.FlattenUnsupported` | Warning | Load was asked to flatten a bitmap, indexed, multichannel or 32-bit Lab file; the stored composite was loaded |
 | `Psd.LayerDataDamaged` | Warning | A layer channel's data is damaged or uses an unknown compression; its missing pixels are 0 |
