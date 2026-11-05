@@ -24,6 +24,28 @@ internal static class PsdLab
         static double Encode(double v) => ColorValueMath.Encode(Math.Clamp(v, 0, 1));
     }
 
+    private static readonly Matrix3d FromRgb = ToRgb.Inverse();
+
+    /// <summary>Returns L* (0 to 100), a* and b* of encoded sRGB, the inverse of <see cref="ToSrgb"/>.</summary>
+    public static (double L, double A, double B) FromSrgb(double r, double g, double b)
+    {
+        Vector3d lab = Cie.XyzToLab(FromRgb * new Vector3d(ColorValueMath.Decode(r), ColorValueMath.Decode(g), ColorValueMath.Decode(b)), White);
+        return (lab.X, lab.Y, lab.Z);
+    }
+
+    /// <summary>
+    /// Returns L*, a* and b* of Lab encoded as Photoshop stores it, each value taken as a fraction of the depth's full scale:
+    /// L* over 0 to 100; a* and b* about 128 for 8 bits, about 32768 in steps of 1/256 for 16.
+    /// </summary>
+    public static (double L, double A, double B) Decode(int depth, double l, double a, double b) => depth == 16
+        ? (l * 100, ((a * 65535) - 32768) / 256, ((b * 65535) - 32768) / 256)
+        : (l * 100, (a * 255) - 128, (b * 255) - 128);
+
+    /// <summary>Returns Lab encoded as Photoshop stores it at a depth, as fractions of its full scale (see <see cref="Decode"/>).</summary>
+    public static (double L, double A, double B) Encode(int depth, double l, double a, double b) => depth == 16
+        ? (l / 100, ((a * 256) + 32768) / 65535, ((b * 256) + 32768) / 65535)
+        : (l / 100, (a + 128) / 255, (b + 128) / 255);
+
     public static byte Unorm8(double v) => (byte)Math.Round(Math.Clamp(v, 0, 1) * 255, MidpointRounding.AwayFromZero);
 
     public static ushort Unorm16(double v) => (ushort)Math.Round(Math.Clamp(v, 0, 1) * 65535, MidpointRounding.AwayFromZero);
@@ -91,7 +113,8 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
     {
         PsdComposite composite = (options as PsdReaderOptions)?.Composite ?? PsdComposite.Auto;
         bool wanted = composite == PsdComposite.Flatten || (composite == PsdComposite.Auto && !file.HasRealComposite);
-        return wanted && file.Mode is PsdColorMode.Rgb or PsdColorMode.Grayscale or PsdColorMode.Duotone or PsdColorMode.Cmyk;
+        return wanted && (file.Mode is PsdColorMode.Rgb or PsdColorMode.Grayscale or PsdColorMode.Duotone or PsdColorMode.Cmyk
+            || (file.Mode == PsdColorMode.Lab && file.Depth is 8 or 16));
     }
 
     /// <summary>
@@ -195,7 +218,7 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
             Colors.InkSet? inks = f.Mode == PsdColorMode.Cmyk ? PsdLayerReader.InksOf(f) : null;
             PsdChannels.Read(i, f, end, options, (index, planes) =>
             {
-                (Raster? pixels, InkRaster? ink, PsdMask? mask) = PsdLayerReader.Build(planes, f, i, inks, null);
+                (Raster? pixels, InkRaster? ink, PsdMask? mask) = PsdLayerReader.Build(planes, f, i, inks, null, encodedLab: true);
                 try
                 {
                     flattener.Add(index, pixels, mask, ink);
@@ -204,7 +227,7 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
                 {
                     pixels?.Dispose();
                     ink?.Dispose();
-                    mask?.Pixels.Dispose();
+                    mask?.Release();
                 }
             });
         }, wantsLayers: f => Flattens(f, options));
@@ -458,6 +481,7 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
         private readonly PsdPlanes _planes;
         private readonly bool _ownsInput;
         private readonly byte[][] _channelRows;
+        private readonly int[] _needed;
         private readonly TNatural[] _natural;
         private readonly byte[] _palette = [];
         private int _row = -1;
@@ -470,9 +494,9 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
             _planes = planes;
             _ownsInput = ownsInput;
             Metadata = metadata;
-            List<int> needed = Needed(file);
-            _channelRows = new byte[needed.Count][];
-            for (int i = 0; i < needed.Count; i++)
+            _needed = [.. Needed(file)];
+            _channelRows = new byte[_needed.Length][];
+            for (int i = 0; i < _needed.Length; i++)
             {
                 _channelRows[i] = ArrayPool<byte>.Shared.Rent(planes.RowBytes);
             }
@@ -537,10 +561,9 @@ internal sealed class PsdReader : IFormatReader, IRowSourceReader
         /// <summary>Reads row <paramref name="y"/> of every needed channel and converts it into the natural row.</summary>
         private void Gather(int y)
         {
-            List<int> needed = Needed(_file);
-            for (int i = 0; i < needed.Count; i++)
+            for (int i = 0; i < _needed.Length; i++)
             {
-                _planes.ReadRow(needed[i], y, _channelRows[i]);
+                _planes.ReadRow(_needed[i], y, _channelRows[i]);
             }
 
             Span<byte> natural = MemoryMarshal.AsBytes(_natural.AsSpan(0, _file.Width));

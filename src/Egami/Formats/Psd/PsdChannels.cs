@@ -288,11 +288,14 @@ internal sealed class PsdPlaneSet : IDisposable
     /// <summary>Gets the user mask plane (channel −2), the mask record's size.</summary>
     public byte[]? Mask { get; private set; }
 
+    /// <summary>Gets the real user mask plane (channel −3), the user and vector masks combined, the real mask record's size.</summary>
+    public byte[]? RealMask { get; private set; }
+
     /// <summary>Gets the bytes of one row of a layer plane.</summary>
     public int RowBytes => PsdChannels.RowBytes(Width, Depth);
 
-    /// <summary>Returns whether the channel is one Egami keeps: color, transparency or the user mask.</summary>
-    public bool Wants(short id) => id is -1 or -2 || (id >= 0 && id < Color.Length);
+    /// <summary>Returns whether the channel is one Egami keeps: color, transparency, the user mask or the real user mask.</summary>
+    public bool Wants(short id) => id is -1 or -2 || (id == -3 && Record.RealMask is not null && Record.Mask is not null) || (id >= 0 && id < Color.Length);
 
     /// <summary>Returns the size of a channel's plane: the user mask's own for −2, the real mask's for −3, else the layer's.</summary>
     public (int Width, int Height) SizeOf(short id) => id switch
@@ -326,6 +329,10 @@ internal sealed class PsdPlaneSet : IDisposable
                 Return(Mask);
                 Mask = plane;
                 break;
+            case -3:
+                Return(RealMask);
+                RealMask = plane;
+                break;
             default:
                 Return(Color[id]);
                 Color[id] = plane;
@@ -345,7 +352,8 @@ internal sealed class PsdPlaneSet : IDisposable
 
         Return(Alpha);
         Return(Mask);
-        Alpha = Mask = null;
+        Return(RealMask);
+        Alpha = Mask = RealMask = null;
     }
 
     private static void Return(byte[]? plane)
