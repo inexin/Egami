@@ -7,8 +7,8 @@ using Egami.Tests.Memory;
 namespace Egami.Tests.Formats.Psd;
 
 /// <summary>
-/// PSD allocation budgets: ReadLayers and flattening (a flattening Load and Flatten) allocate the same for 10 rows as for 3,000,
-/// since pixels, planes and canvases come from the memory source and the pools.
+/// PSD allocation budgets: a Load of the stored composite, ReadLayers and flattening (a flattening Load and Flatten) allocate the
+/// same for 10 rows as for 3,000, since pixels, planes and canvases come from the memory source and the pools.
 /// </summary>
 [Trait("Category", AllocationMeter.Category)]
 public class PsdAllocationTests
@@ -21,9 +21,10 @@ public class PsdAllocationTests
     {
         AllocationMeter.SkipUnlessOnDemand();
         byte[] small = Layered(300, 10, compression), large = Layered(300, 3000, compression);
-        PsdReaderOptions flatten = new() { Composite = PsdComposite.Flatten };
+        PsdReaderOptions flatten = new() { Composite = PsdComposite.Flatten }, stored = new() { Composite = PsdComposite.Stored };
         foreach ((string what, Action<byte[]> action) in new (string, Action<byte[]>)[]
         {
+            ("A stored-composite Load", data => Raster.Load(data, EgamiContext.Default, stored).Dispose()),
             ("A flattening Load", data => Raster.Load(data, EgamiContext.Default, flatten).Dispose()),
             ("ReadLayers", data => PsdImage.ReadLayers(new MemoryStream(data)).Dispose()),
             ("Flatten", data =>
@@ -40,8 +41,8 @@ public class PsdAllocationTests
     }
 
     /// <summary>
-    /// Writes a layered 8-bit RGB file: an opaque background, a half-transparent layer in multiply over part of it, and a raw
-    /// composite; each layer channel in the given compression.
+    /// Writes a layered 8-bit RGB file: an opaque background, a half-transparent layer in multiply over part of it, and a
+    /// composite, PackBits for compression 1 and raw otherwise; each layer channel in the given compression.
     /// </summary>
     internal static byte[] Layered(int width, int height, int compression)
     {
@@ -105,10 +106,28 @@ public class PsdAllocationTests
         info.Position = 0;
         info.CopyTo(file);
         U32(0);
-        U16(0);
-        foreach (byte[] plane in background)
+        if (compression == 1)
         {
-            file.Write(plane);
+            // One compression for the composite, then every row's byte count of every channel, then the rows.
+            byte[][] packed = [.. background.Select(p => Channel(p, width, height, 1))];
+            file.Write([0, 1]);
+            foreach (byte[] plane in packed)
+            {
+                file.Write(plane.AsSpan(2, 2 * height));
+            }
+
+            foreach (byte[] plane in packed)
+            {
+                file.Write(plane.AsSpan(2 + (2 * height)));
+            }
+        }
+        else
+        {
+            U16(0);
+            foreach (byte[] plane in background)
+            {
+                file.Write(plane);
+            }
         }
 
         return file.ToArray();

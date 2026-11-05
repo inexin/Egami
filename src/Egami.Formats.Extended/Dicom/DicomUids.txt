@@ -1,0 +1,469 @@
+# DICOM PS3.6 2026d, table A-1: UID Type Keyword Name
+1.2.840.10008.1.1	SOP Class	Verification	Verification SOP Class
+1.2.840.10008.1.2	Transfer Syntax	ImplicitVRLittleEndian	Implicit VR Little Endian: Default Transfer Syntax for DICOM
+1.2.840.10008.1.2.1	Transfer Syntax	ExplicitVRLittleEndian	Explicit VR Little Endian
+1.2.840.10008.1.2.1.98	Transfer Syntax	EncapsulatedUncompressedExplicitVRLittleEndian	Encapsulated Uncompressed Explicit VR Little Endian
+1.2.840.10008.1.2.1.99	Transfer Syntax	DeflatedExplicitVRLittleEndian	Deflated Explicit VR Little Endian
+1.2.840.10008.1.2.2	Transfer Syntax	ExplicitVRBigEndian	Explicit VR Big Endian
+1.2.840.10008.1.2.4.50	Transfer Syntax	JPEGBaseline8Bit	JPEG Baseline (Process 1): Default Transfer Syntax for Lossy JPEG 8 Bit Image Compression
+1.2.840.10008.1.2.4.51	Transfer Syntax	JPEGExtended12Bit	JPEG Extended (Process 2 & 4): Default Transfer Syntax for Lossy JPEG 12 Bit Image Compression (Process 4 only)
+1.2.840.10008.1.2.4.52	Transfer Syntax	JPEGExtended35	JPEG Extended (Process 3 & 5)
+1.2.840.10008.1.2.4.53	Transfer Syntax	JPEGSpectralSelectionNonHierarchical68	JPEG Spectral Selection, Non-Hierarchical (Process 6 & 8)
+1.2.840.10008.1.2.4.54	Transfer Syntax	JPEGSpectralSelectionNonHierarchical79	JPEG Spectral Selection, Non-Hierarchical (Process 7 & 9)
+1.2.840.10008.1.2.4.55	Transfer Syntax	JPEGFullProgressionNonHierarchical1012	JPEG Full Progression, Non-Hierarchical (Process 10 & 12)
+1.2.840.10008.1.2.4.56	Transfer Syntax	JPEGFullProgressionNonHierarchical1113	JPEG Full Progression, Non-Hierarchical (Process 11 & 13)
+1.2.840.10008.1.2.4.57	Transfer Syntax	JPEGLossless	JPEG Lossless, Non-Hierarchical (Process 14)
+1.2.840.10008.1.2.4.58	Transfer Syntax	JPEGLosslessNonHierarchical15	JPEG Lossless, Non-Hierarchical (Process 15)
+1.2.840.10008.1.2.4.59	Transfer Syntax	JPEGExtendedHierarchical1618	JPEG Extended, Hierarchical (Process 16 & 18)
+1.2.840.10008.1.2.4.60	Transfer Syntax	JPEGExtendedHierarchical1719	JPEG Extended, Hierarchical (Process 17 & 19)
+1.2.840.10008.1.2.4.61	Transfer Syntax	JPEGSpectralSelectionHierarchical2022	JPEG Spectral Selection, Hierarchical (Process 20 & 22)
+1.2.840.10008.1.2.4.62	Transfer Syntax	JPEGSpectralSelectionHierarchical2123	JPEG Spectral Selection, Hierarchical (Process 21 & 23)
+1.2.840.10008.1.2.4.63	Transfer Syntax	JPEGFullProgressionHierarchical2426	JPEG Full Progression, Hierarchical (Process 24 & 26)
+1.2.840.10008.1.2.4.64	Transfer Syntax	JPEGFullProgressionHierarchical2527	JPEG Full Progression, Hierarchical (Process 25 & 27)
+1.2.840.10008.1.2.4.65	Transfer Syntax	JPEGLosslessHierarchical28	JPEG Lossless, Hierarchical (Process 28)
+1.2.840.10008.1.2.4.66	Transfer Syntax	JPEGLosslessHierarchical29	JPEG Lossless, Hierarchical (Process 29)
+1.2.840.10008.1.2.4.70	Transfer Syntax	JPEGLosslessSV1	JPEG Lossless, Non-Hierarchical, First-Order Prediction (Process 14 [Selection Value 1]): Default Transfer Syntax for Lossless JPEG Image Compression
+1.2.840.10008.1.2.4.80	Transfer Syntax	JPEGLSLossless	JPEG-LS Lossless Image Compression
+1.2.840.10008.1.2.4.81	Transfer Syntax	JPEGLSNearLossless	JPEG-LS Lossy (Near-Lossless) Image Compression
+1.2.840.10008.1.2.4.90	Transfer Syntax	JPEG2000Lossless	JPEG 2000 Image Compression (Lossless Only)
+1.2.840.10008.1.2.4.91	Transfer Syntax	JPEG2000	JPEG 2000 Image Compression
+1.2.840.10008.1.2.4.92	Transfer Syntax	JPEG2000MCLossless	JPEG 2000 Part 2 Multi-component Image Compression (Lossless Only)
+1.2.840.10008.1.2.4.93	Transfer Syntax	JPEG2000MC	JPEG 2000 Part 2 Multi-component Image Compression
+1.2.840.10008.1.2.4.94	Transfer Syntax	JPIPReferenced	JPIP Referenced
+1.2.840.10008.1.2.4.95	Transfer Syntax	JPIPReferencedDeflate	JPIP Referenced Deflate
+1.2.840.10008.1.2.4.100	Transfer Syntax	MPEG2MPML	MPEG2 Main Profile / Main Level
+1.2.840.10008.1.2.4.100.1	Transfer Syntax	MPEG2MPMLF	Fragmentable MPEG2 Main Profile / Main Level
+1.2.840.10008.1.2.4.101	Transfer Syntax	MPEG2MPHL	MPEG2 Main Profile / High Level
+1.2.840.10008.1.2.4.101.1	Transfer Syntax	MPEG2MPHLF	Fragmentable MPEG2 Main Profile / High Level
+1.2.840.10008.1.2.4.102	Transfer Syntax	MPEG4HP41	MPEG-4 AVC/H.264 High Profile / Level 4.1
+1.2.840.10008.1.2.4.102.1	Transfer Syntax	MPEG4HP41F	Fragmentable MPEG-4 AVC/H.264 High Profile / Level 4.1
+1.2.840.10008.1.2.4.103	Transfer Syntax	MPEG4HP41BD	MPEG-4 AVC/H.264 BD-compatible High Profile / Level 4.1
+1.2.840.10008.1.2.4.103.1	Transfer Syntax	MPEG4HP41BDF	Fragmentable MPEG-4 AVC/H.264 BD-compatible High Profile / Level 4.1
+1.2.840.10008.1.2.4.104	Transfer Syntax	MPEG4HP422D	MPEG-4 AVC/H.264 High Profile / Level 4.2 For 2D Video
+1.2.840.10008.1.2.4.104.1	Transfer Syntax	MPEG4HP422DF	Fragmentable MPEG-4 AVC/H.264 High Profile / Level 4.2 For 2D Video
+1.2.840.10008.1.2.4.105	Transfer Syntax	MPEG4HP423D	MPEG-4 AVC/H.264 High Profile / Level 4.2 For 3D Video
+1.2.840.10008.1.2.4.105.1	Transfer Syntax	MPEG4HP423DF	Fragmentable MPEG-4 AVC/H.264 High Profile / Level 4.2 For 3D Video
+1.2.840.10008.1.2.4.106	Transfer Syntax	MPEG4HP42STEREO	MPEG-4 AVC/H.264 Stereo High Profile / Level 4.2
+1.2.840.10008.1.2.4.106.1	Transfer Syntax	MPEG4HP42STEREOF	Fragmentable MPEG-4 AVC/H.264 Stereo High Profile / Level 4.2
+1.2.840.10008.1.2.4.107	Transfer Syntax	HEVCMP51	HEVC/H.265 Main Profile / Level 5.1
+1.2.840.10008.1.2.4.108	Transfer Syntax	HEVCM10P51	HEVC/H.265 Main 10 Profile / Level 5.1
+1.2.840.10008.1.2.4.110	Transfer Syntax	JPEGXLLossless	JPEG XL Lossless
+1.2.840.10008.1.2.4.111	Transfer Syntax	JPEGXLJPEGRecompression	JPEG XL JPEG Recompression
+1.2.840.10008.1.2.4.112	Transfer Syntax	JPEGXL	JPEG XL
+1.2.840.10008.1.2.4.201	Transfer Syntax	HTJ2KLossless	High-Throughput JPEG 2000 Image Compression (Lossless Only)
+1.2.840.10008.1.2.4.202	Transfer Syntax	HTJ2KLosslessRPCL	High-Throughput JPEG 2000 with RPCL Options Image Compression (Lossless Only)
+1.2.840.10008.1.2.4.203	Transfer Syntax	HTJ2K	High-Throughput JPEG 2000 Image Compression
+1.2.840.10008.1.2.4.204	Transfer Syntax	JPIPHTJ2KReferenced	JPIP HTJ2K Referenced
+1.2.840.10008.1.2.4.205	Transfer Syntax	JPIPHTJ2KReferencedDeflate	JPIP HTJ2K Referenced Deflate
+1.2.840.10008.1.2.5	Transfer Syntax	RLELossless	RLE Lossless
+1.2.840.10008.1.2.6.1	Transfer Syntax	RFC2557MIMEEncapsulation	RFC 2557 MIME encapsulation
+1.2.840.10008.1.2.6.2	Transfer Syntax	XMLEncoding	XML Encoding
+1.2.840.10008.1.2.7.1	Transfer Syntax	SMPTEST211020UncompressedProgressiveActiveVideo	SMPTE ST 2110-20 Uncompressed Progressive Active Video
+1.2.840.10008.1.2.7.2	Transfer Syntax	SMPTEST211020UncompressedInterlacedActiveVideo	SMPTE ST 2110-20 Uncompressed Interlaced Active Video
+1.2.840.10008.1.2.7.3	Transfer Syntax	SMPTEST211030PCMDigitalAudio	SMPTE ST 2110-30 PCM Digital Audio
+1.2.840.10008.1.2.8.1	Transfer Syntax	DeflatedImageFrameCompression	Deflated Image Frame Compression
+1.2.840.10008.1.3.10	SOP Class	MediaStorageDirectoryStorage	Media Storage Directory Storage
+1.2.840.10008.1.5.1	Well-known SOP Instance	HotIronPalette	Hot Iron Color Palette SOP Instance
+1.2.840.10008.1.5.2	Well-known SOP Instance	PETPalette	PET Color Palette SOP Instance
+1.2.840.10008.1.5.3	Well-known SOP Instance	HotMetalBluePalette	Hot Metal Blue Color Palette SOP Instance
+1.2.840.10008.1.5.4	Well-known SOP Instance	PET20StepPalette	PET 20 Step Color Palette SOP Instance
+1.2.840.10008.1.5.5	Well-known SOP Instance	SpringPalette	Spring Color Palette SOP Instance
+1.2.840.10008.1.5.6	Well-known SOP Instance	SummerPalette	Summer Color Palette SOP Instance
+1.2.840.10008.1.5.7	Well-known SOP Instance	FallPalette	Fall Color Palette SOP Instance
+1.2.840.10008.1.5.8	Well-known SOP Instance	WinterPalette	Winter Color Palette SOP Instance
+1.2.840.10008.1.9	SOP Class	BasicStudyContentNotification	Basic Study Content Notification SOP Class
+1.2.840.10008.1.20	Transfer Syntax	Papyrus3ImplicitVRLittleEndian	Papyrus 3 Implicit VR Little Endian
+1.2.840.10008.1.20.1	SOP Class	StorageCommitmentPushModel	Storage Commitment Push Model SOP Class
+1.2.840.10008.1.20.1.1	Well-known SOP Instance	StorageCommitmentPushModelInstance	Storage Commitment Push Model SOP Instance
+1.2.840.10008.1.20.2	SOP Class	StorageCommitmentPullModel	Storage Commitment Pull Model SOP Class
+1.2.840.10008.1.20.2.1	Well-known SOP Instance	StorageCommitmentPullModelInstance	Storage Commitment Pull Model SOP Instance
+1.2.840.10008.1.40	SOP Class	ProceduralEventLogging	Procedural Event Logging SOP Class
+1.2.840.10008.1.40.1	Well-known SOP Instance	ProceduralEventLoggingInstance	Procedural Event Logging SOP Instance
+1.2.840.10008.1.42	SOP Class	SubstanceAdministrationLogging	Substance Administration Logging SOP Class
+1.2.840.10008.1.42.1	Well-known SOP Instance	SubstanceAdministrationLoggingInstance	Substance Administration Logging SOP Instance
+1.2.840.10008.2.6.1	DICOM UIDs as a Coding Scheme	DCMUID	DICOM UID Registry
+1.2.840.10008.2.16.4	Coding Scheme	DCM	DICOM Controlled Terminology
+1.2.840.10008.2.16.5	Coding Scheme	MA	Adult Mouse Anatomy Ontology
+1.2.840.10008.2.16.6	Coding Scheme	UBERON	Uberon Ontology
+1.2.840.10008.2.16.7	Coding Scheme	ITIS_TSN	Integrated Taxonomic Information System (ITIS) Taxonomic Serial Number (TSN)
+1.2.840.10008.2.16.8	Coding Scheme	MGI	Mouse Genome Initiative (MGI)
+1.2.840.10008.2.16.9	Coding Scheme	PUBCHEM_CID	PubChem Compound CID
+1.2.840.10008.2.16.10	Coding Scheme	DC	Dublin Core
+1.2.840.10008.2.16.11	Coding Scheme	NYUMCCG	New York University Melanoma Clinical Cooperative Group
+1.2.840.10008.2.16.12	Coding Scheme	MAYONRISBSASRG	Mayo Clinic Non-radiological Images Specific Body Structure Anatomical Surface Region Guide
+1.2.840.10008.2.16.13	Coding Scheme	IBSI	Image Biomarker Standardisation Initiative
+1.2.840.10008.2.16.14	Coding Scheme	RO	Radiomics Ontology
+1.2.840.10008.2.16.15	Coding Scheme	RADELEMENT	RadElement
+1.2.840.10008.2.16.16	Coding Scheme	I11	ICD-11
+1.2.840.10008.2.16.17	Coding Scheme	UNS	Unified numbering system (UNS) for metals and alloys
+1.2.840.10008.2.16.18	Coding Scheme	RRID	Research Resource Identification
+1.2.840.10008.3.1.1.1	Application Context Name	DICOMApplicationContext	DICOM Application Context Name
+1.2.840.10008.3.1.2.1.1	SOP Class	DetachedPatientManagement	Detached Patient Management SOP Class
+1.2.840.10008.3.1.2.1.4	Meta SOP Class	DetachedPatientManagementMeta	Detached Patient Management Meta SOP Class
+1.2.840.10008.3.1.2.2.1	SOP Class	DetachedVisitManagement	Detached Visit Management SOP Class
+1.2.840.10008.3.1.2.3.1	SOP Class	DetachedStudyManagement	Detached Study Management SOP Class
+1.2.840.10008.3.1.2.3.2	SOP Class	StudyComponentManagement	Study Component Management SOP Class
+1.2.840.10008.3.1.2.3.3	SOP Class	ModalityPerformedProcedureStep	Modality Performed Procedure Step SOP Class
+1.2.840.10008.3.1.2.3.4	SOP Class	ModalityPerformedProcedureStepRetrieve	Modality Performed Procedure Step Retrieve SOP Class
+1.2.840.10008.3.1.2.3.5	SOP Class	ModalityPerformedProcedureStepNotification	Modality Performed Procedure Step Notification SOP Class
+1.2.840.10008.3.1.2.5.1	SOP Class	DetachedResultsManagement	Detached Results Management SOP Class
+1.2.840.10008.3.1.2.5.4	Meta SOP Class	DetachedResultsManagementMeta	Detached Results Management Meta SOP Class
+1.2.840.10008.3.1.2.5.5	Meta SOP Class	DetachedStudyManagementMeta	Detached Study Management Meta SOP Class
+1.2.840.10008.3.1.2.6.1	SOP Class	DetachedInterpretationManagement	Detached Interpretation Management SOP Class
+1.2.840.10008.4.2	Service Class	Storage	Storage Service Class
+1.2.840.10008.5.1.1.1	SOP Class	BasicFilmSession	Basic Film Session SOP Class
+1.2.840.10008.5.1.1.2	SOP Class	BasicFilmBox	Basic Film Box SOP Class
+1.2.840.10008.5.1.1.4	SOP Class	BasicGrayscaleImageBox	Basic Grayscale Image Box SOP Class
+1.2.840.10008.5.1.1.4.1	SOP Class	BasicColorImageBox	Basic Color Image Box SOP Class
+1.2.840.10008.5.1.1.4.2	SOP Class	ReferencedImageBox	Referenced Image Box SOP Class
+1.2.840.10008.5.1.1.9	Meta SOP Class	BasicGrayscalePrintManagementMeta	Basic Grayscale Print Management Meta SOP Class
+1.2.840.10008.5.1.1.9.1	Meta SOP Class	ReferencedGrayscalePrintManagementMeta	Referenced Grayscale Print Management Meta SOP Class
+1.2.840.10008.5.1.1.14	SOP Class	PrintJob	Print Job SOP Class
+1.2.840.10008.5.1.1.15	SOP Class	BasicAnnotationBox	Basic Annotation Box SOP Class
+1.2.840.10008.5.1.1.16	SOP Class	Printer	Printer SOP Class
+1.2.840.10008.5.1.1.16.376	SOP Class	PrinterConfigurationRetrieval	Printer Configuration Retrieval SOP Class
+1.2.840.10008.5.1.1.17	Well-known SOP Instance	PrinterInstance	Printer SOP Instance
+1.2.840.10008.5.1.1.17.376	Well-known SOP Instance	PrinterConfigurationRetrievalInstance	Printer Configuration Retrieval SOP Instance
+1.2.840.10008.5.1.1.18	Meta SOP Class	BasicColorPrintManagementMeta	Basic Color Print Management Meta SOP Class
+1.2.840.10008.5.1.1.18.1	Meta SOP Class	ReferencedColorPrintManagementMeta	Referenced Color Print Management Meta SOP Class
+1.2.840.10008.5.1.1.22	SOP Class	VOILUTBox	VOI LUT Box SOP Class
+1.2.840.10008.5.1.1.23	SOP Class	PresentationLUT	Presentation LUT SOP Class
+1.2.840.10008.5.1.1.24	SOP Class	ImageOverlayBox	Image Overlay Box SOP Class
+1.2.840.10008.5.1.1.24.1	SOP Class	BasicPrintImageOverlayBox	Basic Print Image Overlay Box SOP Class
+1.2.840.10008.5.1.1.25	Well-known SOP Instance	PrintQueueInstance	Print Queue SOP Instance
+1.2.840.10008.5.1.1.26	SOP Class	PrintQueueManagement	Print Queue Management SOP Class
+1.2.840.10008.5.1.1.27	SOP Class	StoredPrintStorage	Stored Print Storage SOP Class
+1.2.840.10008.5.1.1.29	SOP Class	HardcopyGrayscaleImageStorage	Hardcopy Grayscale Image Storage SOP Class
+1.2.840.10008.5.1.1.30	SOP Class	HardcopyColorImageStorage	Hardcopy Color Image Storage SOP Class
+1.2.840.10008.5.1.1.31	SOP Class	PullPrintRequest	Pull Print Request SOP Class
+1.2.840.10008.5.1.1.32	Meta SOP Class	PullStoredPrintManagementMeta	Pull Stored Print Management Meta SOP Class
+1.2.840.10008.5.1.1.33	SOP Class	MediaCreationManagement	Media Creation Management SOP Class UID
+1.2.840.10008.5.1.1.40	SOP Class	DisplaySystem	Display System SOP Class
+1.2.840.10008.5.1.1.40.1	Well-known SOP Instance	DisplaySystemInstance	Display System SOP Instance
+1.2.840.10008.5.1.4.1.1.1	SOP Class	ComputedRadiographyImageStorage	Computed Radiography Image Storage
+1.2.840.10008.5.1.4.1.1.1.1	SOP Class	DigitalXRayImageStorageForPresentation	Digital X-Ray Image Storage - For Presentation
+1.2.840.10008.5.1.4.1.1.1.1.1	SOP Class	DigitalXRayImageStorageForProcessing	Digital X-Ray Image Storage - For Processing
+1.2.840.10008.5.1.4.1.1.1.2	SOP Class	DigitalMammographyXRayImageStorageForPresentation	Digital Mammography X-Ray Image Storage - For Presentation
+1.2.840.10008.5.1.4.1.1.1.2.1	SOP Class	DigitalMammographyXRayImageStorageForProcessing	Digital Mammography X-Ray Image Storage - For Processing
+1.2.840.10008.5.1.4.1.1.1.3	SOP Class	DigitalIntraOralXRayImageStorageForPresentation	Digital Intra-Oral X-Ray Image Storage - For Presentation
+1.2.840.10008.5.1.4.1.1.1.3.1	SOP Class	DigitalIntraOralXRayImageStorageForProcessing	Digital Intra-Oral X-Ray Image Storage - For Processing
+1.2.840.10008.5.1.4.1.1.2	SOP Class	CTImageStorage	CT Image Storage
+1.2.840.10008.5.1.4.1.1.2.1	SOP Class	EnhancedCTImageStorage	Enhanced CT Image Storage
+1.2.840.10008.5.1.4.1.1.2.2	SOP Class	LegacyConvertedEnhancedCTImageStorage	Legacy Converted Enhanced CT Image Storage
+1.2.840.10008.5.1.4.1.1.2.3	SOP Class	CTImageStorageForProcessing	CT Image Storage - For Processing
+1.2.840.10008.5.1.4.1.1.2.4	SOP Class	EnhancedCTImageStorageForProcessing	Enhanced CT Image Storage - For Processing
+1.2.840.10008.5.1.4.1.1.2.5	SOP Class	LegacyConvertedEnhancedCTImageStorageForProcessing	Legacy Converted Enhanced CT Image Storage - For Processing
+1.2.840.10008.5.1.4.1.1.3	SOP Class	UltrasoundMultiFrameImageStorageRetired	Ultrasound Multi-frame Image Storage
+1.2.840.10008.5.1.4.1.1.3.1	SOP Class	UltrasoundMultiFrameImageStorage	Ultrasound Multi-frame Image Storage
+1.2.840.10008.5.1.4.1.1.4	SOP Class	MRImageStorage	MR Image Storage
+1.2.840.10008.5.1.4.1.1.4.1	SOP Class	EnhancedMRImageStorage	Enhanced MR Image Storage
+1.2.840.10008.5.1.4.1.1.4.2	SOP Class	MRSpectroscopyStorage	MR Spectroscopy Storage
+1.2.840.10008.5.1.4.1.1.4.3	SOP Class	EnhancedMRColorImageStorage	Enhanced MR Color Image Storage
+1.2.840.10008.5.1.4.1.1.4.4	SOP Class	LegacyConvertedEnhancedMRImageStorage	Legacy Converted Enhanced MR Image Storage
+1.2.840.10008.5.1.4.1.1.5	SOP Class	NuclearMedicineImageStorageRetired	Nuclear Medicine Image Storage
+1.2.840.10008.5.1.4.1.1.6	SOP Class	UltrasoundImageStorageRetired	Ultrasound Image Storage
+1.2.840.10008.5.1.4.1.1.6.1	SOP Class	UltrasoundImageStorage	Ultrasound Image Storage
+1.2.840.10008.5.1.4.1.1.6.2	SOP Class	EnhancedUSVolumeStorage	Enhanced US Volume Storage
+1.2.840.10008.5.1.4.1.1.6.3	SOP Class	PhotoacousticImageStorage	Photoacoustic Image Storage
+1.2.840.10008.5.1.4.1.1.7	SOP Class	SecondaryCaptureImageStorage	Secondary Capture Image Storage
+1.2.840.10008.5.1.4.1.1.7.1	SOP Class	MultiFrameSingleBitSecondaryCaptureImageStorage	Multi-frame Single Bit Secondary Capture Image Storage
+1.2.840.10008.5.1.4.1.1.7.2	SOP Class	MultiFrameGrayscaleByteSecondaryCaptureImageStorage	Multi-frame Grayscale Byte Secondary Capture Image Storage
+1.2.840.10008.5.1.4.1.1.7.3	SOP Class	MultiFrameGrayscaleWordSecondaryCaptureImageStorage	Multi-frame Grayscale Word Secondary Capture Image Storage
+1.2.840.10008.5.1.4.1.1.7.4	SOP Class	MultiFrameTrueColorSecondaryCaptureImageStorage	Multi-frame True Color Secondary Capture Image Storage
+1.2.840.10008.5.1.4.1.1.8	SOP Class	StandaloneOverlayStorage	Standalone Overlay Storage
+1.2.840.10008.5.1.4.1.1.9	SOP Class	StandaloneCurveStorage	Standalone Curve Storage
+1.2.840.10008.5.1.4.1.1.9.1	SOP Class	WaveformStorageTrial	Waveform Storage - Trial
+1.2.840.10008.5.1.4.1.1.9.1.1	SOP Class	TwelveLeadECGWaveformStorage	12-lead ECG Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.1.2	SOP Class	GeneralECGWaveformStorage	General ECG Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.1.3	SOP Class	AmbulatoryECGWaveformStorage	Ambulatory ECG Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.1.4	SOP Class	General32bitECGWaveformStorage	General 32-bit ECG Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.2.1	SOP Class	HemodynamicWaveformStorage	Hemodynamic Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.3.1	SOP Class	CardiacElectrophysiologyWaveformStorage	Cardiac Electrophysiology Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.4.1	SOP Class	BasicVoiceAudioWaveformStorage	Basic Voice Audio Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.4.2	SOP Class	GeneralAudioWaveformStorage	General Audio Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.5.1	SOP Class	ArterialPulseWaveformStorage	Arterial Pulse Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.6.1	SOP Class	RespiratoryWaveformStorage	Respiratory Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.6.2	SOP Class	MultichannelRespiratoryWaveformStorage	Multi-channel Respiratory Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.7.1	SOP Class	RoutineScalpElectroencephalogramWaveformStorage	Routine Scalp Electroencephalogram Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.7.2	SOP Class	ElectromyogramWaveformStorage	Electromyogram Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.7.3	SOP Class	ElectrooculogramWaveformStorage	Electrooculogram Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.7.4	SOP Class	SleepElectroencephalogramWaveformStorage	Sleep Electroencephalogram Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.8.1	SOP Class	BodyPositionWaveformStorage	Body Position Waveform Storage
+1.2.840.10008.5.1.4.1.1.9.100.1	SOP Class	WaveformPresentationStateStorage	Waveform Presentation State Storage
+1.2.840.10008.5.1.4.1.1.9.100.2	SOP Class	WaveformAcquisitionPresentationStateStorage	Waveform Acquisition Presentation State Storage
+1.2.840.10008.5.1.4.1.1.10	SOP Class	StandaloneModalityLUTStorage	Standalone Modality LUT Storage
+1.2.840.10008.5.1.4.1.1.11	SOP Class	StandaloneVOILUTStorage	Standalone VOI LUT Storage
+1.2.840.10008.5.1.4.1.1.11.1	SOP Class	GrayscaleSoftcopyPresentationStateStorage	Grayscale Softcopy Presentation State Storage
+1.2.840.10008.5.1.4.1.1.11.2	SOP Class	ColorSoftcopyPresentationStateStorage	Color Softcopy Presentation State Storage
+1.2.840.10008.5.1.4.1.1.11.3	SOP Class	PseudoColorSoftcopyPresentationStateStorage	Pseudo-Color Softcopy Presentation State Storage
+1.2.840.10008.5.1.4.1.1.11.4	SOP Class	BlendingSoftcopyPresentationStateStorage	Blending Softcopy Presentation State Storage
+1.2.840.10008.5.1.4.1.1.11.5	SOP Class	XAXRFGrayscaleSoftcopyPresentationStateStorage	XA/XRF Grayscale Softcopy Presentation State Storage
+1.2.840.10008.5.1.4.1.1.11.6	SOP Class	GrayscalePlanarMPRVolumetricPresentationStateStorage	Grayscale Planar MPR Volumetric Presentation State Storage
+1.2.840.10008.5.1.4.1.1.11.7	SOP Class	CompositingPlanarMPRVolumetricPresentationStateStorage	Compositing Planar MPR Volumetric Presentation State Storage
+1.2.840.10008.5.1.4.1.1.11.8	SOP Class	AdvancedBlendingPresentationStateStorage	Advanced Blending Presentation State Storage
+1.2.840.10008.5.1.4.1.1.11.9	SOP Class	VolumeRenderingVolumetricPresentationStateStorage	Volume Rendering Volumetric Presentation State Storage
+1.2.840.10008.5.1.4.1.1.11.10	SOP Class	SegmentedVolumeRenderingVolumetricPresentationStateStorage	Segmented Volume Rendering Volumetric Presentation State Storage
+1.2.840.10008.5.1.4.1.1.11.11	SOP Class	MultipleVolumeRenderingVolumetricPresentationStateStorage	Multiple Volume Rendering Volumetric Presentation State Storage
+1.2.840.10008.5.1.4.1.1.11.12	SOP Class	VariableModalityLUTSoftcopyPresentationStateStorage	Variable Modality LUT Softcopy Presentation State Storage
+1.2.840.10008.5.1.4.1.1.12.1	SOP Class	XRayAngiographicImageStorage	X-Ray Angiographic Image Storage
+1.2.840.10008.5.1.4.1.1.12.1.1	SOP Class	EnhancedXAImageStorage	Enhanced XA Image Storage
+1.2.840.10008.5.1.4.1.1.12.2	SOP Class	XRayRadiofluoroscopicImageStorage	X-Ray Radiofluoroscopic Image Storage
+1.2.840.10008.5.1.4.1.1.12.2.1	SOP Class	EnhancedXRFImageStorage	Enhanced XRF Image Storage
+1.2.840.10008.5.1.4.1.1.12.3	SOP Class	XRayAngiographicBiPlaneImageStorage	X-Ray Angiographic Bi-Plane Image Storage
+1.2.840.10008.5.1.4.1.1.12.77	SOP Class	-	(Retired)
+1.2.840.10008.5.1.4.1.1.13.1.1	SOP Class	XRay3DAngiographicImageStorage	X-Ray 3D Angiographic Image Storage
+1.2.840.10008.5.1.4.1.1.13.1.2	SOP Class	XRay3DCraniofacialImageStorage	X-Ray 3D Craniofacial Image Storage
+1.2.840.10008.5.1.4.1.1.13.1.3	SOP Class	BreastTomosynthesisImageStorage	Breast Tomosynthesis Image Storage
+1.2.840.10008.5.1.4.1.1.13.1.4	SOP Class	BreastProjectionXRayImageStorageForPresentation	Breast Projection X-Ray Image Storage - For Presentation
+1.2.840.10008.5.1.4.1.1.13.1.5	SOP Class	BreastProjectionXRayImageStorageForProcessing	Breast Projection X-Ray Image Storage - For Processing
+1.2.840.10008.5.1.4.1.1.14.1	SOP Class	IntravascularOpticalCoherenceTomographyImageStorageForPresentation	Intravascular Optical Coherence Tomography Image Storage - For Presentation
+1.2.840.10008.5.1.4.1.1.14.2	SOP Class	IntravascularOpticalCoherenceTomographyImageStorageForProcessing	Intravascular Optical Coherence Tomography Image Storage - For Processing
+1.2.840.10008.5.1.4.1.1.20	SOP Class	NuclearMedicineImageStorage	Nuclear Medicine Image Storage
+1.2.840.10008.5.1.4.1.1.30	SOP Class	ParametricMapStorage	Parametric Map Storage
+1.2.840.10008.5.1.4.1.1.40	SOP Class	-	(Retired)
+1.2.840.10008.5.1.4.1.1.66	SOP Class	RawDataStorage	Raw Data Storage
+1.2.840.10008.5.1.4.1.1.66.1	SOP Class	SpatialRegistrationStorage	Spatial Registration Storage
+1.2.840.10008.5.1.4.1.1.66.2	SOP Class	SpatialFiducialsStorage	Spatial Fiducials Storage
+1.2.840.10008.5.1.4.1.1.66.3	SOP Class	DeformableSpatialRegistrationStorage	Deformable Spatial Registration Storage
+1.2.840.10008.5.1.4.1.1.66.4	SOP Class	SegmentationStorage	Segmentation Storage
+1.2.840.10008.5.1.4.1.1.66.5	SOP Class	SurfaceSegmentationStorage	Surface Segmentation Storage
+1.2.840.10008.5.1.4.1.1.66.6	SOP Class	TractographyResultsStorage	Tractography Results Storage
+1.2.840.10008.5.1.4.1.1.66.7	SOP Class	LabelMapSegmentationStorage	Label Map Segmentation Storage
+1.2.840.10008.5.1.4.1.1.66.8	SOP Class	HeightMapSegmentationStorage	Height Map Segmentation Storage
+1.2.840.10008.5.1.4.1.1.67	SOP Class	RealWorldValueMappingStorage	Real World Value Mapping Storage
+1.2.840.10008.5.1.4.1.1.68.1	SOP Class	SurfaceScanMeshStorage	Surface Scan Mesh Storage
+1.2.840.10008.5.1.4.1.1.68.2	SOP Class	SurfaceScanPointCloudStorage	Surface Scan Point Cloud Storage
+1.2.840.10008.5.1.4.1.1.77.1	SOP Class	VLImageStorageTrial	VL Image Storage - Trial
+1.2.840.10008.5.1.4.1.1.77.2	SOP Class	VLMultiFrameImageStorageTrial	VL Multi-frame Image Storage - Trial
+1.2.840.10008.5.1.4.1.1.77.1.1	SOP Class	VLEndoscopicImageStorage	VL Endoscopic Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.1.1	SOP Class	VideoEndoscopicImageStorage	Video Endoscopic Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.2	SOP Class	VLMicroscopicImageStorage	VL Microscopic Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.2.1	SOP Class	VideoMicroscopicImageStorage	Video Microscopic Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.3	SOP Class	VLSlideCoordinatesMicroscopicImageStorage	VL Slide-Coordinates Microscopic Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.4	SOP Class	VLPhotographicImageStorage	VL Photographic Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.4.1	SOP Class	VideoPhotographicImageStorage	Video Photographic Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.5.1	SOP Class	OphthalmicPhotography8BitImageStorage	Ophthalmic Photography 8 Bit Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.5.2	SOP Class	OphthalmicPhotography16BitImageStorage	Ophthalmic Photography 16 Bit Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.5.3	SOP Class	StereometricRelationshipStorage	Stereometric Relationship Storage
+1.2.840.10008.5.1.4.1.1.77.1.5.4	SOP Class	OphthalmicTomographyImageStorage	Ophthalmic Tomography Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.5.5	SOP Class	WideFieldOphthalmicPhotographyStereographicProjectionImageStorage	Wide Field Ophthalmic Photography Stereographic Projection Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.5.6	SOP Class	WideFieldOphthalmicPhotography3DCoordinatesImageStorage	Wide Field Ophthalmic Photography 3D Coordinates Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.5.7	SOP Class	OphthalmicOpticalCoherenceTomographyEnFaceImageStorage	Ophthalmic Optical Coherence Tomography En Face Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.5.8	SOP Class	OphthalmicOpticalCoherenceTomographyBscanVolumeAnalysisStorage	Ophthalmic Optical Coherence Tomography B-scan Volume Analysis Storage
+1.2.840.10008.5.1.4.1.1.77.1.6	SOP Class	VLWholeSlideMicroscopyImageStorage	VL Whole Slide Microscopy Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.7	SOP Class	DermoscopicPhotographyImageStorage	Dermoscopic Photography Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.8	SOP Class	ConfocalMicroscopyImageStorage	Confocal Microscopy Image Storage
+1.2.840.10008.5.1.4.1.1.77.1.9	SOP Class	ConfocalMicroscopyTiledPyramidalImageStorage	Confocal Microscopy Tiled Pyramidal Image Storage
+1.2.840.10008.5.1.4.1.1.78.1	SOP Class	LensometryMeasurementsStorage	Lensometry Measurements Storage
+1.2.840.10008.5.1.4.1.1.78.2	SOP Class	AutorefractionMeasurementsStorage	Autorefraction Measurements Storage
+1.2.840.10008.5.1.4.1.1.78.3	SOP Class	KeratometryMeasurementsStorage	Keratometry Measurements Storage
+1.2.840.10008.5.1.4.1.1.78.4	SOP Class	SubjectiveRefractionMeasurementsStorage	Subjective Refraction Measurements Storage
+1.2.840.10008.5.1.4.1.1.78.5	SOP Class	VisualAcuityMeasurementsStorage	Visual Acuity Measurements Storage
+1.2.840.10008.5.1.4.1.1.78.6	SOP Class	SpectaclePrescriptionReportStorage	Spectacle Prescription Report Storage
+1.2.840.10008.5.1.4.1.1.78.7	SOP Class	OphthalmicAxialMeasurementsStorage	Ophthalmic Axial Measurements Storage
+1.2.840.10008.5.1.4.1.1.78.8	SOP Class	IntraocularLensCalculationsStorage	Intraocular Lens Calculations Storage
+1.2.840.10008.5.1.4.1.1.79.1	SOP Class	MacularGridThicknessAndVolumeReportStorage	Macular Grid Thickness and Volume Report Storage
+1.2.840.10008.5.1.4.1.1.80.1	SOP Class	OphthalmicVisualFieldStaticPerimetryMeasurementsStorage	Ophthalmic Visual Field Static Perimetry Measurements Storage
+1.2.840.10008.5.1.4.1.1.81.1	SOP Class	OphthalmicThicknessMapStorage	Ophthalmic Thickness Map Storage
+1.2.840.10008.5.1.4.1.1.82.1	SOP Class	CornealTopographyMapStorage	Corneal Topography Map Storage
+1.2.840.10008.5.1.4.1.1.88.1	SOP Class	TextSRStorageTrial	Text SR Storage - Trial
+1.2.840.10008.5.1.4.1.1.88.2	SOP Class	AudioSRStorageTrial	Audio SR Storage - Trial
+1.2.840.10008.5.1.4.1.1.88.3	SOP Class	DetailSRStorageTrial	Detail SR Storage - Trial
+1.2.840.10008.5.1.4.1.1.88.4	SOP Class	ComprehensiveSRStorageTrial	Comprehensive SR Storage - Trial
+1.2.840.10008.5.1.4.1.1.88.11	SOP Class	BasicTextSRStorage	Basic Text SR Storage
+1.2.840.10008.5.1.4.1.1.88.22	SOP Class	EnhancedSRStorage	Enhanced SR Storage
+1.2.840.10008.5.1.4.1.1.88.33	SOP Class	ComprehensiveSRStorage	Comprehensive SR Storage
+1.2.840.10008.5.1.4.1.1.88.34	SOP Class	Comprehensive3DSRStorage	Comprehensive 3D SR Storage
+1.2.840.10008.5.1.4.1.1.88.35	SOP Class	ExtensibleSRStorage	Extensible SR Storage
+1.2.840.10008.5.1.4.1.1.88.40	SOP Class	ProcedureLogStorage	Procedure Log Storage
+1.2.840.10008.5.1.4.1.1.88.50	SOP Class	MammographyCADSRStorage	Mammography CAD SR Storage
+1.2.840.10008.5.1.4.1.1.88.59	SOP Class	KeyObjectSelectionDocumentStorage	Key Object Selection Document Storage
+1.2.840.10008.5.1.4.1.1.88.65	SOP Class	ChestCADSRStorage	Chest CAD SR Storage
+1.2.840.10008.5.1.4.1.1.88.67	SOP Class	XRayRadiationDoseSRStorage	X-Ray Radiation Dose SR Storage
+1.2.840.10008.5.1.4.1.1.88.68	SOP Class	RadiopharmaceuticalRadiationDoseSRStorage	Radiopharmaceutical Radiation Dose SR Storage
+1.2.840.10008.5.1.4.1.1.88.69	SOP Class	ColonCADSRStorage	Colon CAD SR Storage
+1.2.840.10008.5.1.4.1.1.88.70	SOP Class	ImplantationPlanSRStorage	Implantation Plan SR Storage
+1.2.840.10008.5.1.4.1.1.88.71	SOP Class	AcquisitionContextSRStorage	Acquisition Context SR Storage
+1.2.840.10008.5.1.4.1.1.88.72	SOP Class	SimplifiedAdultEchoSRStorage	Simplified Adult Echo SR Storage
+1.2.840.10008.5.1.4.1.1.88.73	SOP Class	PatientRadiationDoseSRStorage	Patient Radiation Dose SR Storage
+1.2.840.10008.5.1.4.1.1.88.74	SOP Class	PlannedImagingAgentAdministrationSRStorage	Planned Imaging Agent Administration SR Storage
+1.2.840.10008.5.1.4.1.1.88.75	SOP Class	PerformedImagingAgentAdministrationSRStorage	Performed Imaging Agent Administration SR Storage
+1.2.840.10008.5.1.4.1.1.88.76	SOP Class	EnhancedXRayRadiationDoseSRStorage	Enhanced X-Ray Radiation Dose SR Storage
+1.2.840.10008.5.1.4.1.1.88.77	SOP Class	WaveformAnnotationSRStorage	Waveform Annotation SR Storage
+1.2.840.10008.5.1.4.1.1.90.1	SOP Class	ContentAssessmentResultsStorage	Content Assessment Results Storage
+1.2.840.10008.5.1.4.1.1.91.1	SOP Class	MicroscopyBulkSimpleAnnotationsStorage	Microscopy Bulk Simple Annotations Storage
+1.2.840.10008.5.1.4.1.1.104.1	SOP Class	EncapsulatedPDFStorage	Encapsulated PDF Storage
+1.2.840.10008.5.1.4.1.1.104.2	SOP Class	EncapsulatedCDAStorage	Encapsulated CDA Storage
+1.2.840.10008.5.1.4.1.1.104.3	SOP Class	EncapsulatedSTLStorage	Encapsulated STL Storage
+1.2.840.10008.5.1.4.1.1.104.4	SOP Class	EncapsulatedOBJStorage	Encapsulated OBJ Storage
+1.2.840.10008.5.1.4.1.1.104.5	SOP Class	EncapsulatedMTLStorage	Encapsulated MTL Storage
+1.2.840.10008.5.1.4.1.1.128	SOP Class	PositronEmissionTomographyImageStorage	Positron Emission Tomography Image Storage
+1.2.840.10008.5.1.4.1.1.128.1	SOP Class	LegacyConvertedEnhancedPETImageStorage	Legacy Converted Enhanced PET Image Storage
+1.2.840.10008.5.1.4.1.1.129	SOP Class	StandalonePETCurveStorage	Standalone PET Curve Storage
+1.2.840.10008.5.1.4.1.1.130	SOP Class	EnhancedPETImageStorage	Enhanced PET Image Storage
+1.2.840.10008.5.1.4.1.1.131	SOP Class	BasicStructuredDisplayStorage	Basic Structured Display Storage
+1.2.840.10008.5.1.4.1.1.200.1	SOP Class	CTDefinedProcedureProtocolStorage	CT Defined Procedure Protocol Storage
+1.2.840.10008.5.1.4.1.1.200.2	SOP Class	CTPerformedProcedureProtocolStorage	CT Performed Procedure Protocol Storage
+1.2.840.10008.5.1.4.1.1.200.3	SOP Class	ProtocolApprovalStorage	Protocol Approval Storage
+1.2.840.10008.5.1.4.1.1.200.4	SOP Class	ProtocolApprovalInformationModelFind	Protocol Approval Information Model - FIND
+1.2.840.10008.5.1.4.1.1.200.5	SOP Class	ProtocolApprovalInformationModelMove	Protocol Approval Information Model - MOVE
+1.2.840.10008.5.1.4.1.1.200.6	SOP Class	ProtocolApprovalInformationModelGet	Protocol Approval Information Model - GET
+1.2.840.10008.5.1.4.1.1.200.7	SOP Class	XADefinedProcedureProtocolStorage	XA Defined Procedure Protocol Storage
+1.2.840.10008.5.1.4.1.1.200.8	SOP Class	XAPerformedProcedureProtocolStorage	XA Performed Procedure Protocol Storage
+1.2.840.10008.5.1.4.1.1.201.1	SOP Class	InventoryStorage	Inventory Storage
+1.2.840.10008.5.1.4.1.1.201.2	SOP Class	InventoryFind	Inventory - FIND
+1.2.840.10008.5.1.4.1.1.201.3	SOP Class	InventoryMove	Inventory - MOVE
+1.2.840.10008.5.1.4.1.1.201.4	SOP Class	InventoryGet	Inventory - GET
+1.2.840.10008.5.1.4.1.1.201.5	SOP Class	InventoryCreation	Inventory Creation
+1.2.840.10008.5.1.4.1.1.201.6	SOP Class	RepositoryQuery	Repository Query
+1.2.840.10008.5.1.4.1.1.201.1.1	Well-known SOP Instance	StorageManagementInstance	Storage Management SOP Instance
+1.2.840.10008.5.1.4.1.1.481.1	SOP Class	RTImageStorage	RT Image Storage
+1.2.840.10008.5.1.4.1.1.481.2	SOP Class	RTDoseStorage	RT Dose Storage
+1.2.840.10008.5.1.4.1.1.481.3	SOP Class	RTStructureSetStorage	RT Structure Set Storage
+1.2.840.10008.5.1.4.1.1.481.4	SOP Class	RTBeamsTreatmentRecordStorage	RT Beams Treatment Record Storage
+1.2.840.10008.5.1.4.1.1.481.5	SOP Class	RTPlanStorage	RT Plan Storage
+1.2.840.10008.5.1.4.1.1.481.6	SOP Class	RTBrachyTreatmentRecordStorage	RT Brachy Treatment Record Storage
+1.2.840.10008.5.1.4.1.1.481.7	SOP Class	RTTreatmentSummaryRecordStorage	RT Treatment Summary Record Storage
+1.2.840.10008.5.1.4.1.1.481.8	SOP Class	RTIonPlanStorage	RT Ion Plan Storage
+1.2.840.10008.5.1.4.1.1.481.9	SOP Class	RTIonBeamsTreatmentRecordStorage	RT Ion Beams Treatment Record Storage
+1.2.840.10008.5.1.4.1.1.481.10	SOP Class	RTPhysicianIntentStorage	RT Physician Intent Storage
+1.2.840.10008.5.1.4.1.1.481.11	SOP Class	RTSegmentAnnotationStorage	RT Segment Annotation Storage
+1.2.840.10008.5.1.4.1.1.481.12	SOP Class	RTRadiationSetStorage	RT Radiation Set Storage
+1.2.840.10008.5.1.4.1.1.481.13	SOP Class	CArmPhotonElectronRadiationStorage	C-Arm Photon-Electron Radiation Storage
+1.2.840.10008.5.1.4.1.1.481.14	SOP Class	TomotherapeuticRadiationStorage	Tomotherapeutic Radiation Storage
+1.2.840.10008.5.1.4.1.1.481.15	SOP Class	RoboticArmRadiationStorage	Robotic-Arm Radiation Storage
+1.2.840.10008.5.1.4.1.1.481.16	SOP Class	RTRadiationRecordSetStorage	RT Radiation Record Set Storage
+1.2.840.10008.5.1.4.1.1.481.17	SOP Class	RTRadiationSalvageRecordStorage	RT Radiation Salvage Record Storage
+1.2.840.10008.5.1.4.1.1.481.18	SOP Class	TomotherapeuticRadiationRecordStorage	Tomotherapeutic Radiation Record Storage
+1.2.840.10008.5.1.4.1.1.481.19	SOP Class	CArmPhotonElectronRadiationRecordStorage	C-Arm Photon-Electron Radiation Record Storage
+1.2.840.10008.5.1.4.1.1.481.20	SOP Class	RoboticRadiationRecordStorage	Robotic Radiation Record Storage
+1.2.840.10008.5.1.4.1.1.481.21	SOP Class	RTRadiationSetDeliveryInstructionStorage	RT Radiation Set Delivery Instruction Storage
+1.2.840.10008.5.1.4.1.1.481.22	SOP Class	RTTreatmentPreparationStorage	RT Treatment Preparation Storage
+1.2.840.10008.5.1.4.1.1.481.23	SOP Class	EnhancedRTImageStorage	Enhanced RT Image Storage
+1.2.840.10008.5.1.4.1.1.481.24	SOP Class	EnhancedContinuousRTImageStorage	Enhanced Continuous RT Image Storage
+1.2.840.10008.5.1.4.1.1.481.25	SOP Class	RTPatientPositionAcquisitionInstructionStorage	RT Patient Position Acquisition Instruction Storage
+1.2.840.10008.5.1.4.1.1.501.1	SOP Class	DICOSCTImageStorage	DICOS CT Image Storage
+1.2.840.10008.5.1.4.1.1.501.2.1	SOP Class	DICOSDigitalXRayImageStorageForPresentation	DICOS Digital X-Ray Image Storage - For Presentation
+1.2.840.10008.5.1.4.1.1.501.2.2	SOP Class	DICOSDigitalXRayImageStorageForProcessing	DICOS Digital X-Ray Image Storage - For Processing
+1.2.840.10008.5.1.4.1.1.501.3	SOP Class	DICOSThreatDetectionReportStorage	DICOS Threat Detection Report Storage
+1.2.840.10008.5.1.4.1.1.501.4	SOP Class	DICOS2DAITStorage	DICOS 2D AIT Storage
+1.2.840.10008.5.1.4.1.1.501.5	SOP Class	DICOS3DAITStorage	DICOS 3D AIT Storage
+1.2.840.10008.5.1.4.1.1.501.6	SOP Class	DICOSQuadrupoleResonanceStorage	DICOS Quadrupole Resonance (QR) Storage
+1.2.840.10008.5.1.4.1.1.601.1	SOP Class	EddyCurrentImageStorage	Eddy Current Image Storage
+1.2.840.10008.5.1.4.1.1.601.2	SOP Class	EddyCurrentMultiFrameImageStorage	Eddy Current Multi-frame Image Storage
+1.2.840.10008.5.1.4.1.1.601.3	SOP Class	ThermographyImageStorage	Thermography Image Storage
+1.2.840.10008.5.1.4.1.1.601.4	SOP Class	ThermographyMultiFrameImageStorage	Thermography Multi-frame Image Storage
+1.2.840.10008.5.1.4.1.1.601.5	SOP Class	UltrasoundWaveformStorage	Ultrasound Waveform Storage
+1.2.840.10008.5.1.4.1.2.1.1	SOP Class	PatientRootQueryRetrieveInformationModelFind	Patient Root Query/Retrieve Information Model - FIND
+1.2.840.10008.5.1.4.1.2.1.2	SOP Class	PatientRootQueryRetrieveInformationModelMove	Patient Root Query/Retrieve Information Model - MOVE
+1.2.840.10008.5.1.4.1.2.1.3	SOP Class	PatientRootQueryRetrieveInformationModelGet	Patient Root Query/Retrieve Information Model - GET
+1.2.840.10008.5.1.4.1.2.2.1	SOP Class	StudyRootQueryRetrieveInformationModelFind	Study Root Query/Retrieve Information Model - FIND
+1.2.840.10008.5.1.4.1.2.2.2	SOP Class	StudyRootQueryRetrieveInformationModelMove	Study Root Query/Retrieve Information Model - MOVE
+1.2.840.10008.5.1.4.1.2.2.3	SOP Class	StudyRootQueryRetrieveInformationModelGet	Study Root Query/Retrieve Information Model - GET
+1.2.840.10008.5.1.4.1.2.3.1	SOP Class	PatientStudyOnlyQueryRetrieveInformationModelFind	Patient/Study Only Query/Retrieve Information Model - FIND
+1.2.840.10008.5.1.4.1.2.3.2	SOP Class	PatientStudyOnlyQueryRetrieveInformationModelMove	Patient/Study Only Query/Retrieve Information Model - MOVE
+1.2.840.10008.5.1.4.1.2.3.3	SOP Class	PatientStudyOnlyQueryRetrieveInformationModelGet	Patient/Study Only Query/Retrieve Information Model - GET
+1.2.840.10008.5.1.4.1.2.4.2	SOP Class	CompositeInstanceRootRetrieveMove	Composite Instance Root Retrieve - MOVE
+1.2.840.10008.5.1.4.1.2.4.3	SOP Class	CompositeInstanceRootRetrieveGet	Composite Instance Root Retrieve - GET
+1.2.840.10008.5.1.4.1.2.5.3	SOP Class	CompositeInstanceRetrieveWithoutBulkDataGet	Composite Instance Retrieve Without Bulk Data - GET
+1.2.840.10008.5.1.4.20.1	SOP Class	DefinedProcedureProtocolInformationModelFind	Defined Procedure Protocol Information Model - FIND
+1.2.840.10008.5.1.4.20.2	SOP Class	DefinedProcedureProtocolInformationModelMove	Defined Procedure Protocol Information Model - MOVE
+1.2.840.10008.5.1.4.20.3	SOP Class	DefinedProcedureProtocolInformationModelGet	Defined Procedure Protocol Information Model - GET
+1.2.840.10008.5.1.4.31	SOP Class	ModalityWorklistInformationModelFind	Modality Worklist Information Model - FIND
+1.2.840.10008.5.1.4.32	Meta SOP Class	GeneralPurposeWorklistManagementMeta	General Purpose Worklist Management Meta SOP Class
+1.2.840.10008.5.1.4.32.1	SOP Class	GeneralPurposeWorklistInformationModelFind	General Purpose Worklist Information Model - FIND
+1.2.840.10008.5.1.4.32.2	SOP Class	GeneralPurposeScheduledProcedureStep	General Purpose Scheduled Procedure Step SOP Class
+1.2.840.10008.5.1.4.32.3	SOP Class	GeneralPurposePerformedProcedureStep	General Purpose Performed Procedure Step SOP Class
+1.2.840.10008.5.1.4.33	SOP Class	InstanceAvailabilityNotification	Instance Availability Notification SOP Class
+1.2.840.10008.5.1.4.34.1	SOP Class	RTBeamsDeliveryInstructionStorageTrial	RT Beams Delivery Instruction Storage - Trial
+1.2.840.10008.5.1.4.34.2	SOP Class	RTConventionalMachineVerificationTrial	RT Conventional Machine Verification - Trial
+1.2.840.10008.5.1.4.34.3	SOP Class	RTIonMachineVerificationTrial	RT Ion Machine Verification - Trial
+1.2.840.10008.5.1.4.34.4	Service Class	UnifiedWorklistAndProcedureStepTrial	Unified Worklist and Procedure Step Service Class - Trial
+1.2.840.10008.5.1.4.34.4.1	SOP Class	UnifiedProcedureStepPushTrial	Unified Procedure Step - Push SOP Class - Trial
+1.2.840.10008.5.1.4.34.4.2	SOP Class	UnifiedProcedureStepWatchTrial	Unified Procedure Step - Watch SOP Class - Trial
+1.2.840.10008.5.1.4.34.4.3	SOP Class	UnifiedProcedureStepPullTrial	Unified Procedure Step - Pull SOP Class - Trial
+1.2.840.10008.5.1.4.34.4.4	SOP Class	UnifiedProcedureStepEventTrial	Unified Procedure Step - Event SOP Class - Trial
+1.2.840.10008.5.1.4.34.5	Well-known SOP Instance	UPSGlobalSubscriptionInstance	UPS Global Subscription SOP Instance
+1.2.840.10008.5.1.4.34.5.1	Well-known SOP Instance	UPSFilteredGlobalSubscriptionInstance	UPS Filtered Global Subscription SOP Instance
+1.2.840.10008.5.1.4.34.6	Service Class	UnifiedWorklistAndProcedureStep	Unified Worklist and Procedure Step Service Class
+1.2.840.10008.5.1.4.34.6.1	SOP Class	UnifiedProcedureStepPush	Unified Procedure Step - Push SOP Class
+1.2.840.10008.5.1.4.34.6.2	SOP Class	UnifiedProcedureStepWatch	Unified Procedure Step - Watch SOP Class
+1.2.840.10008.5.1.4.34.6.3	SOP Class	UnifiedProcedureStepPull	Unified Procedure Step - Pull SOP Class
+1.2.840.10008.5.1.4.34.6.4	SOP Class	UnifiedProcedureStepEvent	Unified Procedure Step - Event SOP Class
+1.2.840.10008.5.1.4.34.6.5	SOP Class	UnifiedProcedureStepQuery	Unified Procedure Step - Query SOP Class
+1.2.840.10008.5.1.4.34.7	SOP Class	RTBeamsDeliveryInstructionStorage	RT Beams Delivery Instruction Storage
+1.2.840.10008.5.1.4.34.8	SOP Class	RTConventionalMachineVerification	RT Conventional Machine Verification
+1.2.840.10008.5.1.4.34.9	SOP Class	RTIonMachineVerification	RT Ion Machine Verification
+1.2.840.10008.5.1.4.34.10	SOP Class	RTBrachyApplicationSetupDeliveryInstructionStorage	RT Brachy Application Setup Delivery Instruction Storage
+1.2.840.10008.5.1.4.37.1	SOP Class	GeneralRelevantPatientInformationQuery	General Relevant Patient Information Query
+1.2.840.10008.5.1.4.37.2	SOP Class	BreastImagingRelevantPatientInformationQuery	Breast Imaging Relevant Patient Information Query
+1.2.840.10008.5.1.4.37.3	SOP Class	CardiacRelevantPatientInformationQuery	Cardiac Relevant Patient Information Query
+1.2.840.10008.5.1.4.38.1	SOP Class	HangingProtocolStorage	Hanging Protocol Storage
+1.2.840.10008.5.1.4.38.2	SOP Class	HangingProtocolInformationModelFind	Hanging Protocol Information Model - FIND
+1.2.840.10008.5.1.4.38.3	SOP Class	HangingProtocolInformationModelMove	Hanging Protocol Information Model - MOVE
+1.2.840.10008.5.1.4.38.4	SOP Class	HangingProtocolInformationModelGet	Hanging Protocol Information Model - GET
+1.2.840.10008.5.1.4.39.1	SOP Class	ColorPaletteStorage	Color Palette Storage
+1.2.840.10008.5.1.4.39.2	SOP Class	ColorPaletteQueryRetrieveInformationModelFind	Color Palette Query/Retrieve Information Model - FIND
+1.2.840.10008.5.1.4.39.3	SOP Class	ColorPaletteQueryRetrieveInformationModelMove	Color Palette Query/Retrieve Information Model - MOVE
+1.2.840.10008.5.1.4.39.4	SOP Class	ColorPaletteQueryRetrieveInformationModelGet	Color Palette Query/Retrieve Information Model - GET
+1.2.840.10008.5.1.4.41	SOP Class	ProductCharacteristicsQuery	Product Characteristics Query SOP Class
+1.2.840.10008.5.1.4.42	SOP Class	SubstanceApprovalQuery	Substance Approval Query SOP Class
+1.2.840.10008.5.1.4.43.1	SOP Class	GenericImplantTemplateStorage	Generic Implant Template Storage
+1.2.840.10008.5.1.4.43.2	SOP Class	GenericImplantTemplateInformationModelFind	Generic Implant Template Information Model - FIND
+1.2.840.10008.5.1.4.43.3	SOP Class	GenericImplantTemplateInformationModelMove	Generic Implant Template Information Model - MOVE
+1.2.840.10008.5.1.4.43.4	SOP Class	GenericImplantTemplateInformationModelGet	Generic Implant Template Information Model - GET
+1.2.840.10008.5.1.4.44.1	SOP Class	ImplantAssemblyTemplateStorage	Implant Assembly Template Storage
+1.2.840.10008.5.1.4.44.2	SOP Class	ImplantAssemblyTemplateInformationModelFind	Implant Assembly Template Information Model - FIND
+1.2.840.10008.5.1.4.44.3	SOP Class	ImplantAssemblyTemplateInformationModelMove	Implant Assembly Template Information Model - MOVE
+1.2.840.10008.5.1.4.44.4	SOP Class	ImplantAssemblyTemplateInformationModelGet	Implant Assembly Template Information Model - GET
+1.2.840.10008.5.1.4.45.1	SOP Class	ImplantTemplateGroupStorage	Implant Template Group Storage
+1.2.840.10008.5.1.4.45.2	SOP Class	ImplantTemplateGroupInformationModelFind	Implant Template Group Information Model - FIND
+1.2.840.10008.5.1.4.45.3	SOP Class	ImplantTemplateGroupInformationModelMove	Implant Template Group Information Model - MOVE
+1.2.840.10008.5.1.4.45.4	SOP Class	ImplantTemplateGroupInformationModelGet	Implant Template Group Information Model - GET
+1.2.840.10008.7.1.1	Application Hosting Model	NativeDICOMModel	Native DICOM Model
+1.2.840.10008.7.1.2	Application Hosting Model	AbstractMultiDimensionalImageModel	Abstract Multi-Dimensional Image Model
+1.2.840.10008.8.1.1	Mapping Resource	DICOMContentMappingResource	DICOM Content Mapping Resource
+1.2.840.10008.10.1	SOP Class	VideoEndoscopicImageRealTimeCommunication	Video Endoscopic Image Real-Time Communication
+1.2.840.10008.10.2	SOP Class	VideoPhotographicImageRealTimeCommunication	Video Photographic Image Real-Time Communication
+1.2.840.10008.10.3	SOP Class	AudioWaveformRealTimeCommunication	Audio Waveform Real-Time Communication
+1.2.840.10008.10.4	SOP Class	RenditionSelectionDocumentRealTimeCommunication	Rendition Selection Document Real-Time Communication
+1.2.840.10008.15.0.3.1	LDAP OID	dicomDeviceName	dicomDeviceName
+1.2.840.10008.15.0.3.2	LDAP OID	dicomDescription	dicomDescription
+1.2.840.10008.15.0.3.3	LDAP OID	dicomManufacturer	dicomManufacturer
+1.2.840.10008.15.0.3.4	LDAP OID	dicomManufacturerModelName	dicomManufacturerModelName
+1.2.840.10008.15.0.3.5	LDAP OID	dicomSoftwareVersion	dicomSoftwareVersion
+1.2.840.10008.15.0.3.6	LDAP OID	dicomVendorData	dicomVendorData
+1.2.840.10008.15.0.3.7	LDAP OID	dicomAETitle	dicomAETitle
+1.2.840.10008.15.0.3.8	LDAP OID	dicomNetworkConnectionReference	dicomNetworkConnectionReference
+1.2.840.10008.15.0.3.9	LDAP OID	dicomApplicationCluster	dicomApplicationCluster
+1.2.840.10008.15.0.3.10	LDAP OID	dicomAssociationInitiator	dicomAssociationInitiator
+1.2.840.10008.15.0.3.11	LDAP OID	dicomAssociationAcceptor	dicomAssociationAcceptor
+1.2.840.10008.15.0.3.12	LDAP OID	dicomHostname	dicomHostname
+1.2.840.10008.15.0.3.13	LDAP OID	dicomPort	dicomPort
+1.2.840.10008.15.0.3.14	LDAP OID	dicomSOPClass	dicomSOPClass
+1.2.840.10008.15.0.3.15	LDAP OID	dicomTransferRole	dicomTransferRole
+1.2.840.10008.15.0.3.16	LDAP OID	dicomTransferSyntax	dicomTransferSyntax
+1.2.840.10008.15.0.3.17	LDAP OID	dicomPrimaryDeviceType	dicomPrimaryDeviceType
+1.2.840.10008.15.0.3.18	LDAP OID	dicomRelatedDeviceReference	dicomRelatedDeviceReference
+1.2.840.10008.15.0.3.19	LDAP OID	dicomPreferredCalledAETitle	dicomPreferredCalledAETitle
+1.2.840.10008.15.0.3.20	LDAP OID	dicomTLSCyphersuite	dicomTLSCyphersuite
+1.2.840.10008.15.0.3.21	LDAP OID	dicomAuthorizedNodeCertificateReference	dicomAuthorizedNodeCertificateReference
+1.2.840.10008.15.0.3.22	LDAP OID	dicomThisNodeCertificateReference	dicomThisNodeCertificateReference
+1.2.840.10008.15.0.3.23	LDAP OID	dicomInstalled	dicomInstalled
+1.2.840.10008.15.0.3.24	LDAP OID	dicomStationName	dicomStationName
+1.2.840.10008.15.0.3.25	LDAP OID	dicomDeviceSerialNumber	dicomDeviceSerialNumber
+1.2.840.10008.15.0.3.26	LDAP OID	dicomInstitutionName	dicomInstitutionName
+1.2.840.10008.15.0.3.27	LDAP OID	dicomInstitutionAddress	dicomInstitutionAddress
+1.2.840.10008.15.0.3.28	LDAP OID	dicomInstitutionDepartmentName	dicomInstitutionDepartmentName
+1.2.840.10008.15.0.3.29	LDAP OID	dicomIssuerOfPatientID	dicomIssuerOfPatientID
+1.2.840.10008.15.0.3.30	LDAP OID	dicomPreferredCallingAETitle	dicomPreferredCallingAETitle
+1.2.840.10008.15.0.3.31	LDAP OID	dicomSupportedCharacterSet	dicomSupportedCharacterSet
+1.2.840.10008.15.0.4.1	LDAP OID	dicomConfigurationRoot	dicomConfigurationRoot
+1.2.840.10008.15.0.4.2	LDAP OID	dicomDevicesRoot	dicomDevicesRoot
+1.2.840.10008.15.0.4.3	LDAP OID	dicomUniqueAETitlesRegistryRoot	dicomUniqueAETitlesRegistryRoot
+1.2.840.10008.15.0.4.4	LDAP OID	dicomDevice	dicomDevice
+1.2.840.10008.15.0.4.5	LDAP OID	dicomNetworkAE	dicomNetworkAE
+1.2.840.10008.15.0.4.6	LDAP OID	dicomNetworkConnection	dicomNetworkConnection
+1.2.840.10008.15.0.4.7	LDAP OID	dicomUniqueAETitle	dicomUniqueAETitle
+1.2.840.10008.15.0.4.8	LDAP OID	dicomTransferCapability	dicomTransferCapability
+1.2.840.10008.15.1.1	Synchronization Frame of Reference	UTC	Universal Coordinated Time
