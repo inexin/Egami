@@ -5,6 +5,21 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+DICOM writing, a preview (DICOM Build Plan stage E, tasks 21 and 22). Additive; every new type is `[Experimental]`
+(`EGAMIX001`).
+
+- Saving a raster with `DicomFormat.Info` writes a Secondary Capture image: gray as MONOCHROME2, colour as RGB, 8 or 16 bits,
+  with new UIDs and the attributes `DicomWriterOptions.Attributes` gives by PS3.6 keyword.
+- `DicomFile.Save` writes an opened file again in another transfer syntax, keeping every element: Explicit and Implicit VR
+  Little Endian, Deflated Explicit VR Little Endian, RLE Lossless (a new encoder), JPEG Baseline, Extended and Lossless
+  (SV1), JPEG-LS lossless and near-lossless, and JPEG XL lossless and lossy. Pixel data already in the target transfer
+  syntax is copied as it is; lossy codings record Lossy Image Compression, its ratio and method, and a new SOP Instance UID.
+- The writer makes the file meta information with its group length, writes sequences with undefined lengths, swaps the values
+  of big-endian files, and gives encapsulated frames the Basic or Extended Offset Table (`DicomOffsetTable`).
+- New API: `DicomWriterOptions`, `DicomOffsetTable`, `DicomUid` (`Generate` makes 2.25 UUID-derived UIDs), `DicomFile.Save`,
+  and `DicomTransferSyntax.RleLossless`, `JpegBaseline`, `JpegExtended`, `JpegLossless`, `JpegLsLossless`,
+  `JpegLsNearLossless`, `JpegXlLossless` and `JpegXl`.
+
 DICOM pixel data, a preview (DICOM Build Plan stage D, tasks 17 to 19). Additive; every new type is `[Experimental]`
 (`EGAMIX001`).
 

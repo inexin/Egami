@@ -554,8 +554,10 @@ internal static class SettingsWriter
                 && type.Name.EndsWith("WriterOptions", StringComparison.Ordinal)
                 && type.Name.Length > "WriterOptions".Length
                 && InheritsFrom(type, writer)
-                && type.GetMembers("Default").OfType<IPropertySymbol>().Any(p => p.IsStatic))
+                && type.GetMembers("Default").OfType<IPropertySymbol>().Any(p => p.IsStatic)
+                && !type.GetAttributes().Any(a => a.AttributeClass?.ToDisplayString() == "System.Diagnostics.CodeAnalysis.ExperimentalAttribute"))
             {
+                // Preview formats' settings ([Experimental]) stay out until the CLI registers those formats.
                 found.Add(type);
             }
         }

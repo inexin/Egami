@@ -125,7 +125,7 @@ public class DicomBenchmarks
     }
 
     /// <summary>Writes a Part 10 file in explicit VR little endian with a rescale and, for gray, a window.</summary>
-    private static byte[] File(int width, int height, int samples, string photometric, int bits, string syntax, byte[] pixels, bool encapsulated)
+    internal static byte[] File(int width, int height, int samples, string photometric, int bits, string syntax, byte[] pixels, bool encapsulated)
     {
         using MemoryStream body = new();
         using BinaryWriter w = new(body);

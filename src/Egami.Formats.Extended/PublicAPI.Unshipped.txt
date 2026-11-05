@@ -728,3 +728,33 @@ static Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory<byte> 
 [EGAMIX001]override sealed Egami.Formats.Extended.Dicom.DicomReaderOptions.Equals(Egami.Formats.ReaderOptions? other) -> bool
 [EGAMIX001]static Egami.Formats.Extended.Dicom.DicomReaderOptions.operator !=(Egami.Formats.Extended.Dicom.DicomReaderOptions? left, Egami.Formats.Extended.Dicom.DicomReaderOptions? right) -> bool
 [EGAMIX001]static Egami.Formats.Extended.Dicom.DicomReaderOptions.operator ==(Egami.Formats.Extended.Dicom.DicomReaderOptions? left, Egami.Formats.Extended.Dicom.DicomReaderOptions? right) -> bool
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFile.Save(System.IO.Stream! stream, Egami.Formats.Extended.Dicom.DicomWriterOptions? options = null, Egami.EgamiContext? context = null) -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomFile.Save(string! path, Egami.Formats.Extended.Dicom.DicomWriterOptions? options = null, Egami.EgamiContext? context = null) -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomOffsetTable
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomOffsetTable.Basic = 0 -> Egami.Formats.Extended.Dicom.DicomOffsetTable
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomOffsetTable.Extended = 1 -> Egami.Formats.Extended.Dicom.DicomOffsetTable
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomOffsetTable.None = 2 -> Egami.Formats.Extended.Dicom.DicomOffsetTable
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomUid
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomWriterOptions
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomWriterOptions.Attributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomWriterOptions.Attributes.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomWriterOptions.DicomWriterOptions() -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomWriterOptions.NearLossless.get -> int
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomWriterOptions.NearLossless.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomWriterOptions.OffsetTable.get -> Egami.Formats.Extended.Dicom.DicomOffsetTable
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomWriterOptions.OffsetTable.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomWriterOptions.Quality.get -> int
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomWriterOptions.Quality.init -> void
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomWriterOptions.TransferSyntax.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomWriterOptions.TransferSyntax.init -> void
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegBaseline.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegExtended.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLossless.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsLossless.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsNearLossless.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXl.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXlLossless.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomTransferSyntax.RleLossless.get -> Egami.Formats.Extended.Dicom.DicomTransferSyntax!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomUid.Generate() -> string!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomUid.ImplementationClassUid.get -> string!
+[EGAMIX001]static Egami.Formats.Extended.Dicom.DicomWriterOptions.Default.get -> Egami.Formats.Extended.Dicom.DicomWriterOptions!

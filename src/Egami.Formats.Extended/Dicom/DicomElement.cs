@@ -37,6 +37,9 @@ public sealed class DicomElement
     /// <summary>Gets the tag.</summary>
     public DicomTag Tag { get; }
 
+    /// <summary>Gets whether <see cref="RawValue"/> is big-endian, as in a file of Explicit VR Big Endian.</summary>
+    internal bool IsBigEndian => _bigEndian;
+
     /// <summary>
     /// Gets the value representation: the one the file wrote, or for implicit VR files the one PS3.6 gives the tag (<see cref="DicomVR.UN"/>
     /// for private and unknown tags).

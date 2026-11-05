@@ -9,7 +9,9 @@ namespace Egami.Fuzz;
 /// element of every dataset and item and asks each for its value every way, probes them through the registered format, and
 /// decodes the first frames' pixel data as shown, as modality values and as stored values, the last with an odd window. Only
 /// EgamiExceptions and the documented NotSupportedException (a transfer syntax or layout not decoded) may escape the loads; a
-/// getter may refuse a value of the wrong VR or a malformed number or date, as documented.
+/// getter may refuse a value of the wrong VR or a malformed number or date, as documented. Small images are also saved again
+/// (tasks 21 and 22) as explicit VR, RLE and JPEG-LS: each file written must read strictly, with the stored values of its first
+/// frame those of the file it came from.
 /// </summary>
 internal static class DicomFuzzTarget
 {
@@ -24,6 +26,10 @@ internal static class DicomFuzzTarget
                 Walk(file.Dataset, 0);
                 _ = file.TransferSyntax.Name;
                 Pixels(file, context, recovery);
+                if (recovery == RecoveryMode.Lenient)
+                {
+                    Saves(file, context);
+                }
             }
             catch (EgamiException)
             {
@@ -62,6 +68,84 @@ internal static class DicomFuzzTarget
                 {
                 }
             }
+        }
+    }
+
+    /// <summary>Saves the file in three transfer syntaxes and checks that each reads back strictly with the same stored values.</summary>
+    private static void Saves(DicomFile file, EgamiContext context)
+    {
+        double size = (file.Dataset.GetNumberSafe("Rows") ?? 0) * (file.Dataset.GetNumberSafe("Columns") ?? 0) * file.FrameCount;
+        if (size > 1 << 16)
+        {
+            return;
+        }
+
+        int[]? before = Stored(file, context);
+        foreach (DicomTransferSyntax syntax in (DicomTransferSyntax[])[DicomTransferSyntax.ExplicitVRLittleEndian, DicomTransferSyntax.RleLossless, DicomTransferSyntax.JpegLsLossless])
+        {
+            using MemoryStream output = new();
+            try
+            {
+                file.Save(output, new DicomWriterOptions { TransferSyntax = syntax }, context);
+            }
+            catch (Exception e) when (e is EgamiException or NotSupportedException)
+            {
+                continue;
+            }
+
+            DicomFile again = DicomFile.Load(output.ToArray(), context, new ReaderOptions { Recovery = RecoveryMode.Strict });
+            if (again.TransferSyntax.Uid != syntax.Uid)
+            {
+                throw new InvalidOperationException($"A file saved as {syntax} reads back as {again.TransferSyntax}.");
+            }
+
+            if (before is not null && (Stored(again, context) is not int[] after || !before.AsSpan().SequenceEqual(after)))
+            {
+                throw new InvalidOperationException($"A file saved as {syntax} does not keep the stored values of its first frame.");
+            }
+        }
+    }
+
+    /// <summary>Returns the stored values of the first frame, decoded strictly, or null when they cannot be.</summary>
+    private static int[]? Stored(DicomFile file, EgamiContext context)
+    {
+        if (file.Dataset[DicomTag.PixelData] is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            using EgamiInput input = new(Stream.Null, context, default);
+            DicomImageInfo info = DicomImageInfo.Read(file);
+            DicomPixelDecoder decoder = new(info, input, new ReaderOptions { Recovery = RecoveryMode.Strict }, static (_, _) => { });
+            int[] samples = (int[])decoder.Decode(0).Samples.Clone();
+
+            // A codestream may hold values wider than Bits Stored; only the stored bits are written.
+            int bits = Math.Clamp(info.BitsStored, 1, 32);
+            for (int i = 0; i < samples.Length && bits < 32; i++)
+            {
+                int low = samples[i] & ((1 << bits) - 1);
+                samples[i] = info.IsSigned ? (low << (32 - bits)) >> (32 - bits) : low;
+            }
+
+            return samples;
+        }
+        catch (Exception e) when (e is EgamiException or NotSupportedException)
+        {
+            return null;
+        }
+    }
+
+    private static double? GetNumberSafe(this DicomDataset dataset, string keyword)
+    {
+        try
+        {
+            return dataset.GetNumber(keyword);
+        }
+        catch (Exception e) when (e is InvalidOperationException or FormatException)
+        {
+            return null;
         }
     }
 

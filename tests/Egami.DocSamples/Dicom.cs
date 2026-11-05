@@ -185,4 +185,57 @@ public class Dicom
 
         Assert.Equal(file.FrameCount, frames.Count);
     }
+
+    [Fact]
+    public void Save()
+    {
+        using SampleFiles files = new();
+        EgamiContext context = new EgamiContext().WithDicom();
+        using Raster<Egami.Pixels.Rgb8> raster = Raster.Create<Egami.Pixels.Rgb8>(64, 48);
+
+        #region dicom-save
+        // Any raster saves as a Secondary Capture image: gray as MONOCHROME2, colour as RGB, 8 or 16 bits.
+        using (FileStream output = File.Create("capture.dcm"))
+        {
+            raster.Save(output, DicomFormat.Info, new DicomWriterOptions
+            {
+                TransferSyntax = DicomTransferSyntax.JpegLsLossless,
+                Attributes = new Dictionary<string, string>
+                {
+                    ["PatientName"] = "Doe^Jane",
+                    ["PatientID"] = "12345",
+                    ["StudyInstanceUID"] = DicomUid.Generate(),
+                },
+            });
+        }
+        #endregion
+
+        DicomFile file = DicomFile.Load("capture.dcm");
+        Assert.Equal("Doe^Jane", file.Dataset.GetString("PatientName"));
+        using Raster back = Raster.Load("capture.dcm", context);
+        Assert.Equal(64, back.Width);
+    }
+
+    [Fact]
+    public void Transcode()
+    {
+        using SampleFiles files = new();
+
+        #region dicom-transcode
+        // An opened file saves again in another transfer syntax, every element kept and the pixel data coded anew.
+        DicomFile file = DicomFile.Load("scan.dcm");
+        file.Save("scan-rle.dcm", new DicomWriterOptions { TransferSyntax = DicomTransferSyntax.RleLossless });
+
+        // Lossy syntaxes record themselves (Lossy Image Compression) and give the image a new SOP Instance UID.
+        file.Save("scan-jpegls.dcm", new DicomWriterOptions
+        {
+            TransferSyntax = DicomTransferSyntax.JpegLsNearLossless,
+            NearLossless = 2,
+            OffsetTable = DicomOffsetTable.Extended,
+        });
+        #endregion
+
+        Assert.Equal(DicomTransferSyntax.RleLossless.Uid, DicomFile.Load("scan-rle.dcm").TransferSyntax.Uid);
+        Assert.Equal("01", DicomFile.Load("scan-jpegls.dcm").Dataset.GetString("LossyImageCompression"));
+    }
 }
