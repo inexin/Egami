@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>JPEG-LS | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="JPEG-LS | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/jpegls.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="jpeg-ls">JPEG-LS</h1>
+
+<p>JPEG-LS (ITU-T T.87, ISO/IEC 14495-1) codes 2 to 16-bit samples losslessly, or near-losslessly with every sample within a
+set error, by predicting each sample from its neighbours and coding the error with Golomb codes. It is quick, and it is one of
+the transfer syntaxes of DICOM, so medical images often carry it. It reads and writes through the Egami.Formats.Extended
+package: register it with <code>WithJpegLs()</code> or <code>WithExtendedFormats()</code> (<a href="extended.html">Extended formats</a>).</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reads</td>
+<td>The whole of T.87: lossless and near-lossless coding, 2 to 16 bits, 1 or more components, interleave none, line and sample, one scan or one per component, restart markers, preset coding parameters, mapping tables (palettes), subsampled components, sizes from an LSE segment or a DNL segment, and HP's colour transforms</td>
+</tr>
+<tr>
+<td>Writes</td>
+<td>Gray, gray and alpha, RGB and RGBA at 2 to 16 bits, lossless or near-lossless, in any interleave mode, with restart markers and HP's colour transforms</td>
+</tr>
+<tr>
+<td>Natural pixel type</td>
+<td><code>Gray8</code>, <code>GrayAlpha8</code>, <code>Rgb8</code> or <code>Rgba8</code> for 8 bits and fewer; <code>Gray16</code>, <code>GrayAlpha16</code>, <code>Rgb16</code> or <code>Rgba16</code> above; a palette loads as its colours</td>
+</tr>
+<tr>
+<td><code>FormatInfo</code></td>
+<td><code>JpegLsFormat.Info</code>: name <code>JPEG-LS</code>, extension <code>.jls</code>, MIME types <code>image/jls</code> and <code>image/x-jls</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="lang-csharp">// JPEG-LS (.jls) is lossless or near-lossless; WithExtendedFormats() registers it too.
+EgamiContext context = EgamiContext.Default.WithJpegLs();
+using Raster duck = Raster.Load(&quot;duck.png&quot;, context);
+duck.Save(&quot;duck.jls&quot;);
+
+// Load gives the natural pixel type: Gray8 or Gray16, GrayAlpha, Rgb or Rgba, 8 or 16 bits as stored.
+using Raster back = Raster.Load(&quot;duck.jls&quot;, context);
+if (back.Metadata.FormatDetails is JpegLsDetails jls)
+{
+    Console.WriteLine($&quot;NEAR {jls.Near}, {jls.Interleave}, {jls.BitsPerSample} bits, {jls.Components} components, {jls.ColorTransform}&quot;);
+}
+</code></pre>
+<p>JPEG-LS and JPEG both start with the SOI marker, so <code>WithJpegLs()</code> puts JPEG-LS ahead of the context's formats, where its
+detection looks for the JPEG-LS frame header; JPEG files still go to the JPEG reader.</p>
+<h2 id="reading">Reading</h2>
+<p>Samples of other depths than 8 and 16 bits are scaled to the pixel's full range, so a 12-bit file loads as <code>Gray16</code> with 4095
+at 65535. <code>JpegLsDetails</code> in <code>RasterMetadata.FormatDetails</code> keeps the stored depth, NEAR, the interleave mode, the colour
+transform, the number of components and whether a palette gave the colours. When one scan holds every component at full size
+(sampling 1 × 1), rows decode as <code>RasterDecoder</code> asks for them; files with one scan per component or with subsampled
+components are decoded whole first, and subsampled components are repeated up to full size. Files of more than four
+components load their first four, with a warning.</p>
+<p>A lenient read of a damaged file keeps what decoded. Inside a file with restart markers, a restart interval that cannot be
+decoded is left black and decoding goes on at the next marker (<code>JpegLs.IntervalDamaged</code>); without them the rows from the
+damage on are left transparent black (<code>JpegLs.Damaged</code>). A file that ends early keeps its rows with <code>JpegLs.RowsMissing</code>. JPEG-LS
+has no check sums, so damage that still decodes gives wrong samples without a warning. A strict read throws
+<code>CorruptDataException</code> instead.</p>
+<h2 id="writing">Writing</h2>
+<p><code>JpegLsWriterOptions</code> sets NEAR, the interleave mode, the colour transform, the bits of a sample and the restart interval.
+Without them a raster read from JPEG-LS is written with its own depth and NEAR again, and others losslessly at 8 or 16 bits.</p>
+<pre><code class="lang-csharp">// Near-lossless: every sample within 2 of the original, for a much smaller file. Restart markers every 64 lines let a
+// damaged file be read again from the next one.
+using (FileStream near = File.Create(&quot;duck-near.jls&quot;))
+{
+    duck.Save(near, JpegLsFormat.Info, new JpegLsWriterOptions { Near = 2, RestartInterval = 64 });
+}
+
+// Lossless with HP's colour transform, which shrinks most photographs further, sample-interleaved.
+using (FileStream hp = File.Create(&quot;duck-hp1.jls&quot;))
+{
+    duck.Save(hp, JpegLsFormat.Info, new JpegLsWriterOptions { ColorTransform = JpegLsColorTransform.Hp1, Interleave = JpegLsInterleave.Sample });
+}
+
+// 12-bit samples from a 16-bit raster, as medical images often store them.
+using Raster&lt;Gray16&gt; scan = duck.As&lt;Gray16&gt;();
+using (FileStream twelve = File.Create(&quot;scan-12.jls&quot;))
+{
+    scan.Save(twelve, JpegLsFormat.Info, new JpegLsWriterOptions { BitsPerSample = 12 });
+}
+</code></pre>
+<ul>
+<li>NEAR 0 is lossless. NEAR 1 to 3 make photographs much smaller, with no sample more than NEAR from its original.</li>
+<li>Line interleave, the default, writes rows as they come. Sample interleave does too and is a little slower; interleave
+none writes one scan per component and keeps the image until the end.</li>
+<li>The HP transforms code RGB as differences, which shrinks most photographs. HP's software, CharLS and Egami read them; other
+decoders give the coded components as they are. They apply to lossless, interleaved RGB only and are ignored otherwise.</li>
+</ul>
+<p><code>JpegLsWriter.Write</code> codes samples that do not come from a raster, such as the pixel data of a DICOM file, 1 to 4 components
+of 2 to 16 bits, side by side in a row:</p>
+<pre><code class="lang-csharp">// Samples straight from another source, such as a DICOM pixel data element: 2 components, 10 bits, 64 × 32.
+ushort[] samples = new ushort[64 * 32 * 2];
+for (int i = 0; i &lt; samples.Length; i++)
+{
+    samples[i] = (ushort)((i * 37) % 1024);
+}
+
+using (FileStream output = File.Create(&quot;samples.jls&quot;))
+{
+    JpegLsWriter.Write(output, samples, components: 2, width: 64, bitsPerSample: 10);
+}
+</code></pre>
+<p>Files Egami writes decode exactly in CharLS, and lossless files are the size CharLS writes.</p>
+<h2 id="not-supported">Not supported</h2>
+<p>JPEG-LS part 2 (ITU-T T.870: arithmetic coding, prediction and error-mapping extensions) is not read, and DICOM files
+themselves are not read here.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/jpegls.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

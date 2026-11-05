@@ -92,7 +92,7 @@ map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors
 2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB, layers included. HEIC phone photos load and save through the
 separate, opt-in Egami.Heic package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
 <a href="../guides/svg.html">Egami.Svg</a> and <a href="../guides/metafiles.html">Egami.Metafiles</a> packages, and PCX, SGI, Sun raster, XBM, XPM, WBMP
-Farbfeld, DDS and KTX textures and camera RAW (DNG and the camera makers' formats, with DNG written) through
+Farbfeld, JPEG-LS, DDS and KTX textures and camera RAW (DNG and the camera makers' formats, with DNG written) through
 <a href="extended.html">Egami.Formats.Extended</a>. The Package column says which package holds each format. Every reader checks sizes against the
 safety limits before it allocates, and every reader has been fuzzed.</p>
 <p>Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 and AV1 video frames decode
@@ -310,6 +310,13 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 <td>The whole format</td>
 <td>16-bit RGBA</td>
 <td><code>Rgba16</code></td>
+<td>Egami.Formats.Extended</td>
+</tr>
+<tr>
+<td><a href="jpegls.html">JPEG-LS</a></td>
+<td>T.87 lossless and near-lossless, 2 to 16 bits, every interleave mode, restart markers, mapping tables, subsampling and HP colour transforms</td>
+<td>Lossless and near-lossless, 2 to 16 bits, 1 to 4 components, HP colour transforms</td>
+<td><code>Gray8</code>, <code>GrayAlpha8</code>, <code>Rgb8</code>, <code>Rgba8</code> or their 16-bit forms</td>
 <td>Egami.Formats.Extended</td>
 </tr>
 <tr>

@@ -6551,6 +6551,104 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsColorTransform.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsColorTransform.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.JpegLs.JpegLsColorTransform",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.JpegLs.JpegLsColorTransform.yml\" sourcestartlinenumber=\"1\">A reversible colour transform applied to RGB before coding, as HP's JPEG-LS software and CharLS write it in an APP8 &quot;mrfx&quot;\nsegment. It usually makes colour photographs smaller.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.JpegLs.JpegLsDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.JpegLs.JpegLsDetails.yml\" sourcestartlinenumber=\"1\">Details only JPEG-LS has, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.JpegLs.JpegLsFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.JpegLs.JpegLsFormat.yml\" sourcestartlinenumber=\"1\">JPEG-LS (ITU-T T.87, ISO/IEC 14495-1; .jls): lossless and near-lossless coding of 2 to 16-bit samples by context modelling\nand Golomb codes, as DICOM uses it. Reads every interleave mode, restart markers, preset parameters, mapping tables\n(palettes), subsampled components and HP's colour transforms; writes lossless and near-lossless files of 1 to 4 components.\nRegistered with <xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithJpegLs(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsInterleave.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsInterleave.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.JpegLs.JpegLsInterleave",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.JpegLs.JpegLsInterleave.yml\" sourcestartlinenumber=\"1\">How the components of a JPEG-LS scan are interleaved (T.87 annex A.8).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsWriter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsWriter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.JpegLs.JpegLsWriter",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.JpegLs.JpegLsWriter.yml\" sourcestartlinenumber=\"1\">Writes JPEG-LS from samples that are not pixels, as DICOM and other containers store JPEG-LS streams: any bit depth from 2 to\n16 and 1 to 4 components, coded exactly as saving the same samples as pixels with <xref href=\"Egami.Formats.Extended.JpegLs.JpegLsWriterOptions\" data-throw-if-not-resolved=\"false\"></xref> codes\nthem.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.JpegLs.JpegLsWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.JpegLs.JpegLsWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.JpegLs.JpegLsWriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing JPEG-LS.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.JpegLs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.JpegLs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.JpegLs",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Extended.Ktx.Ktx2Format.yml",
       "output": {
         ".html": {
@@ -19398,6 +19496,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/formats/jpeg2000.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/jpegls.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/jpegls.html"
         }
       },
       "version": ""
