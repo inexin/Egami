@@ -25,6 +25,11 @@ format infos and options), with `Egami` and `Egami.Formats`.
   writing, no ASTC HDR or UASTC HDR, no SNORM.
 - `Texture` (`Egami.Formats.Extended.Textures`): `Texture.Load` a whole DDS, KTX or KTX 2 file; `GetImage`/`SetImage` by mip,
   layer, face and slice; `GenerateMips`, `TrimMips`; `Save` to .dds or .ktx2 with exactly its mips (volumes too).
+- DICOM (preview, `[Experimental]` `EGAMIX001`; namespace `Egami.Formats.Extended.Dicom`): `DicomFile.Load` reads the file meta
+  information and dataset (`DicomDataset`: by keyword, `DicomTag` or index; `DicomElement` getters `GetString`, `GetNumbers`,
+  `GetIntegers`, `GetDate`, `GetTime`, `GetDateTime`, `GetPersonName`, `GetTags`, `Items`, `Fragments`, `RawValue`).
+  `WithDicom()` (not in `WithExtendedFormats()`) registers `DicomFormat.Info` for detection and Probe; `Raster.Load` throws
+  `NotSupportedException` until pixel decoding lands. Warnings are `Dicom.*` diagnostics in `DicomFile.Warnings`.
 - RAW: Load develops a DNG into `Rgb16` sRGB (or straight into the RGB space `ConvertColorTo` names); `RawReaderOptions`
   (`Output` = `Developed`, `HalfSize`, `Preview` or `Mosaic`; `WhiteBalance`, `Temperature`, `Tint`, `Exposure`, `Demosaic`,
   `Highlights`, `LuminanceNoiseReduction`, `ColorNoiseReduction`, `LensCorrections`, `ApplyProfile`) sets it; `RawDetails`

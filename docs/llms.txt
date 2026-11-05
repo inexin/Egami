@@ -38,6 +38,7 @@ settings, safety limits and registered formats a call uses.
 - [Camera RAW](https://inexin.github.io/Egami/v1/articles/formats/raw.html): Camera RAW files hold the sensor data a camera recorded, before any processing.
 - [CCITT fax](https://inexin.github.io/Egami/v1/articles/formats/ccitt.html): Egami decodes raw CCITT fax data.
 - [DDS](https://inexin.github.io/Egami/v1/articles/formats/dds.html): DDS (DirectDraw Surface, .dds) is the texture container of Direct3D and most game engines.
+- [DICOM (preview)](https://inexin.github.io/Egami/v1/articles/formats/dicom.html): DICOM is the format of medical imaging.
 - [Extended formats](https://inexin.github.io/Egami/v1/articles/formats/extended.html): Egami.Formats.Extended reads and writes image formats that most apps never meet but some still need.
 - [Farbfeld](https://inexin.github.io/Egami/v1/articles/formats/farbfeld.html): Farbfeld is suckless.org's lossless format.
 - [GIF](https://inexin.github.io/Egami/v1/articles/formats/gif.html): Egami reads GIF 87a and 89a files, with every disposal method, interlaced images, transparency, the loop count, comments, XMP and ICC profiles, and writes GIF 89a.

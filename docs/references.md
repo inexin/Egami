@@ -66,6 +66,13 @@ basis_universal, etc2comp, etcpak and Compressonator as the listed libraries, be
 the corpus (`tools/make-ktx-references.py`). ImageSharp.Textures is never read. Code under GPL, LGPL or AGPL, and code with no
 license, is never used.
 
+For DICOM, the DICOM Standard (NEMA, edition 2026d) is the reference: PS3.5 (data structures and encoding, with its Annex H, I
+and J character set examples as test data), PS3.6 (the data dictionary and UID registry) and PS3.10 (the file format), with
+PS3.3 C.12.1.1.2 for the character set terms. `tools/make-dicom-dictionary.py` generates the embedded dictionary from the
+PS3.6 DocBook XML NEMA publishes (https://dicom.nema.org/medical/dicom/current/source/docbook/part06/part06.xml). pydicom
+(MIT) and GDCM's command-line tools may serve as black-box oracles; DCMTK, GDCM sources and other GPL, LGPL or AGPL code are
+never read.
+
 For Zstandard (TIFF ZSTD), IETF RFC 8878 and the xxHash specification (XXH64, for the content checksum) are the references,
 with zstd and ruzstd as the listed libraries. zstd is dual-licensed and is read under its BSD-3 licence only; its CLI runs in
 Docker to make the corpus (`tools/make-zstd-references.py`).
