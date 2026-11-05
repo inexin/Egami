@@ -157,7 +157,7 @@ top.Info = top.Info with { IsVisible = false };
 using Raster flat = document.Flatten();
 foreach (EgamiDiagnostic warning in flat.Metadata.Warnings)
 {
-    // What the flattening left out, such as layer effects, one warning a kind naming the layers.
+    // What the flattening left out, such as noise gradients, one warning a kind naming the layers.
     Console.WriteLine(warning.Message);
 }
 
@@ -184,6 +184,40 @@ invert) change the layers under them. On by default; off leaves every adjustment
 
   <div class="codewrapper">
     <pre><code class="lang-csharp hljs">public bool ApplyAdjustments { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Psd_PsdFlattenOptions_ApplyEffects_" data-uid="Egami.Formats.Psd.PsdFlattenOptions.ApplyEffects*"></a>
+
+  <h3 id="Egami_Formats_Psd_PsdFlattenOptions_ApplyEffects" data-uid="Egami.Formats.Psd.PsdFlattenOptions.ApplyEffects">
+  ApplyEffects
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Formats/Psd/PsdImage.cs/#L242"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a value indicating whether layer effects (layer styles: drop and inner shadows, outer and inner glows, bevel and
+emboss, satin, color, gradient and pattern overlays, and strokes) are drawn around and over their layers. On by default;
+off leaves every effect out, without a warning, and draws the layers as they are.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ApplyEffects { get; init; }</code></pre>
   </div>
 
 

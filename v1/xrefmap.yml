@@ -56454,6 +56454,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Psd.PsdFlattenOptions.ApplyAdjustments
   nameWithType: PsdFlattenOptions.ApplyAdjustments
+- uid: Egami.Formats.Psd.PsdFlattenOptions.ApplyEffects
+  name: ApplyEffects
+  href: api/Egami.Formats.Psd.PsdFlattenOptions.html#Egami_Formats_Psd_PsdFlattenOptions_ApplyEffects
+  commentId: P:Egami.Formats.Psd.PsdFlattenOptions.ApplyEffects
+  fullName: Egami.Formats.Psd.PsdFlattenOptions.ApplyEffects
+  nameWithType: PsdFlattenOptions.ApplyEffects
+- uid: Egami.Formats.Psd.PsdFlattenOptions.ApplyEffects*
+  name: ApplyEffects
+  href: api/Egami.Formats.Psd.PsdFlattenOptions.html#Egami_Formats_Psd_PsdFlattenOptions_ApplyEffects_
+  commentId: Overload:Egami.Formats.Psd.PsdFlattenOptions.ApplyEffects
+  isSpec: "True"
+  fullName: Egami.Formats.Psd.PsdFlattenOptions.ApplyEffects
+  nameWithType: PsdFlattenOptions.ApplyEffects
 - uid: Egami.Formats.Psd.PsdFlattenOptions.Default
   name: Default
   href: api/Egami.Formats.Psd.PsdFlattenOptions.html#Egami_Formats_Psd_PsdFlattenOptions_Default

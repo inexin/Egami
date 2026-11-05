@@ -474,7 +474,7 @@ top.Info = top.Info with { IsVisible = false };
 using Raster flat = document.Flatten();
 foreach (EgamiDiagnostic warning in flat.Metadata.Warnings)
 {
-    // What the flattening left out, such as layer effects, one warning a kind naming the layers.
+    // What the flattening left out, such as noise gradients, one warning a kind naming the layers.
     Console.WriteLine(warning.Message);
 }
 
@@ -541,7 +541,7 @@ top.Info = top.Info with { IsVisible = false };
 using Raster flat = document.Flatten();
 foreach (EgamiDiagnostic warning in flat.Metadata.Warnings)
 {
-    // What the flattening left out, such as layer effects, one warning a kind naming the layers.
+    // What the flattening left out, such as noise gradients, one warning a kind naming the layers.
     Console.WriteLine(warning.Message);
 }
 
