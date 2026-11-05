@@ -143,8 +143,24 @@ which names the natural pixel type.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.SampleImage.html">SampleImage</a></dt>
+      <dd><p>An image as its codestream stores it: every component's samples at their own precision and sign, with no color conversion,
+widening or offset. For a container that keeps its own pixel description, such as DICOM, which needs the stored values to
+apply its rescale, window and color rules itself. JPEG (baseline, extended 12-bit and lossless at 2 to 16 bits), JPEG 2000
+and JPEG XL load this way.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></dt>
       <dd><p>Options for writing. Each format has a subclass with its own settings; writers given this base class use their defaults.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.SampleComponent.html">SampleComponent</a></dt>
+      <dd><p>One component of a <a class="xref" href="Egami.Formats.SampleImage.html">SampleImage</a>.</p>
 </dd>
     </dl>
     <h3 id="interfaces">
@@ -214,6 +230,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.RecoveryMode.html">RecoveryMode</a></dt>
       <dd><p>How a reader handles damaged data.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.SampleColor.html">SampleColor</a></dt>
+      <dd><p>What the components of a <a class="xref" href="Egami.Formats.SampleImage.html">SampleImage</a> are.</p>
 </dd>
     </dl>
     <dl class="jumplist">

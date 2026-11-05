@@ -446,6 +446,26 @@ foreach (FormatInfo format in new[] { PngFormat.Info, JpegFormat.Info, GifFormat
 // A SignatureMatcher decides from the first SignatureLength bytes whether a file is in the format.
 SignatureMatcher isPng = PngFormat.Info.Matches;
 bool png = isPng(File.ReadAllBytes(&quot;duck.png&quot;).AsSpan(0, PngFormat.Info.SignatureLength));
+</code></pre><h2 id="stored-samples">Stored samples</h2>
+<p>A container that keeps its own pixel description, such as DICOM, needs the values a codestream stores rather than pixels.
+<code>SampleImage.Load</code> decodes JPEG (baseline, extended 12-bit and lossless at 2 to 16 bits), JPEG 2000 and JPEG XL (integer
+samples up to 16 bits) that way: one <code>int</code> a sample, interleaved, at each component's own precision and sign
+(<code>SampleComponent</code>), with no color conversion (<code>SampleColor</code> says what the components are), no widening and no offset. Other
+formats throw <code>NotSupportedException</code>, as do <code>Region</code>, <code>MinimumSize</code> and <code>ConvertColorTo</code>. Chroma at less than full resolution
+is brought to the image's size.</p>
+<pre><code class="lang-csharp">// The values the codestream stores: no color conversion, no widening to 8 or 16 bits, signed samples kept signed.
+SampleImage image = SampleImage.Load(&quot;duck.jpg&quot;);
+Console.WriteLine($&quot;{image.Color}, {image.Components.Count} components of {image.Components[0].Precision} bits&quot;);
+
+// A YCbCr JPEG stays YCbCr: luma, then the two chroma samples of each pixel, at full resolution.
+Span&lt;int&gt; row = image.Row(0);
+int luma = row[0], cb = row[1], cr = row[2];
+</code></pre>
+<p>A codestream taken out of a container is read as the format the container names, without detection:</p>
+<pre><code class="lang-csharp">// A codestream taken out of a container, such as a DICOM pixel data fragment, is read as the format the container names.
+SampleImage image = SampleImage.Load(fragment, JpegFormat.Info);
+SampleComponent gray = image.Components[0];
+int first = image.Samples.Span[0];       // 0 to 4095 for 12 unsigned bits
 </code></pre><h2 id="recipes">Recipes</h2>
 <p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
 <h3 id="batch-convert-a-folder">Batch convert a folder</h3>

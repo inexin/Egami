@@ -125,7 +125,8 @@ using Raster corner = Raster.Load(&quot;photo.jp2&quot;, options: new ReaderOpti
 </table>
 <p>Depths widen to the next Egami type by bit replication, so the stored value is recoverable by a shift: 1 to 8 bits load as
 <code>Gray8</code>, <code>Rgb8</code>, <code>Rgba8</code> or <code>Cmyk8</code>, 9 to 16 bits as their 16-bit forms, deeper ones as float types. Signed samples are offset
-by half their range, with the <code>Jpeg2000.SignedSamples</code> warning. Premultiplied alpha loads straight. ICC profiles go to
+by half their range, with the <code>Jpeg2000.SignedSamples</code> warning; <code>SampleImage.Load</code> gives them unshifted, as stored, with each
+component's precision and sign (see <a href="index.html#stored-samples">Stored samples</a>). Premultiplied alpha loads straight. ICC profiles go to
 <code>RasterMetadata.IccProfile</code> and the pixels stay as stored, as for every format; XMP, the resolution box and COM markers are read.</p>
 <p>Subsampled sYCC (4:2:0 and 4:2:2) is upsampled with the YUV kernels at JPEG 2000's chroma siting, or loads straight into a
 <code>YuvRaster</code> without upsampling; <code>FastUpsampling</code> repeats chroma as OpenJPEG does instead. <code>MaxQualityLayers</code> decodes only the

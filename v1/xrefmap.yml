@@ -55625,6 +55625,230 @@ references:
   fullName.vb: Egami.Formats.RowReader(Of TNatural).Layout
   nameWithType: RowReader<TNatural>.Layout
   nameWithType.vb: RowReader(Of TNatural).Layout
+- uid: Egami.Formats.SampleColor
+  name: SampleColor
+  href: api/Egami.Formats.SampleColor.html
+  commentId: T:Egami.Formats.SampleColor
+  fullName: Egami.Formats.SampleColor
+  nameWithType: SampleColor
+- uid: Egami.Formats.SampleColor.Gray
+  name: Gray
+  href: api/Egami.Formats.SampleColor.html#Egami_Formats_SampleColor_Gray
+  commentId: F:Egami.Formats.SampleColor.Gray
+  fullName: Egami.Formats.SampleColor.Gray
+  nameWithType: SampleColor.Gray
+- uid: Egami.Formats.SampleColor.Rgb
+  name: Rgb
+  href: api/Egami.Formats.SampleColor.html#Egami_Formats_SampleColor_Rgb
+  commentId: F:Egami.Formats.SampleColor.Rgb
+  fullName: Egami.Formats.SampleColor.Rgb
+  nameWithType: SampleColor.Rgb
+- uid: Egami.Formats.SampleColor.Unknown
+  name: Unknown
+  href: api/Egami.Formats.SampleColor.html#Egami_Formats_SampleColor_Unknown
+  commentId: F:Egami.Formats.SampleColor.Unknown
+  fullName: Egami.Formats.SampleColor.Unknown
+  nameWithType: SampleColor.Unknown
+- uid: Egami.Formats.SampleColor.YCbCr
+  name: YCbCr
+  href: api/Egami.Formats.SampleColor.html#Egami_Formats_SampleColor_YCbCr
+  commentId: F:Egami.Formats.SampleColor.YCbCr
+  fullName: Egami.Formats.SampleColor.YCbCr
+  nameWithType: SampleColor.YCbCr
+- uid: Egami.Formats.SampleComponent
+  name: SampleComponent
+  href: api/Egami.Formats.SampleComponent.html
+  commentId: T:Egami.Formats.SampleComponent
+  fullName: Egami.Formats.SampleComponent
+  nameWithType: SampleComponent
+- uid: Egami.Formats.SampleComponent.#ctor(System.Int32,System.Boolean)
+  name: SampleComponent(int, bool)
+  href: api/Egami.Formats.SampleComponent.html#Egami_Formats_SampleComponent__ctor_System_Int32_System_Boolean_
+  commentId: M:Egami.Formats.SampleComponent.#ctor(System.Int32,System.Boolean)
+  name.vb: New(Integer, Boolean)
+  fullName: Egami.Formats.SampleComponent.SampleComponent(int, bool)
+  fullName.vb: Egami.Formats.SampleComponent.New(Integer, Boolean)
+  nameWithType: SampleComponent.SampleComponent(int, bool)
+  nameWithType.vb: SampleComponent.New(Integer, Boolean)
+- uid: Egami.Formats.SampleComponent.#ctor*
+  name: SampleComponent
+  href: api/Egami.Formats.SampleComponent.html#Egami_Formats_SampleComponent__ctor_
+  commentId: Overload:Egami.Formats.SampleComponent.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Formats.SampleComponent.SampleComponent
+  fullName.vb: Egami.Formats.SampleComponent.New
+  nameWithType: SampleComponent.SampleComponent
+  nameWithType.vb: SampleComponent.New
+- uid: Egami.Formats.SampleComponent.IsSigned
+  name: IsSigned
+  href: api/Egami.Formats.SampleComponent.html#Egami_Formats_SampleComponent_IsSigned
+  commentId: P:Egami.Formats.SampleComponent.IsSigned
+  fullName: Egami.Formats.SampleComponent.IsSigned
+  nameWithType: SampleComponent.IsSigned
+- uid: Egami.Formats.SampleComponent.IsSigned*
+  name: IsSigned
+  href: api/Egami.Formats.SampleComponent.html#Egami_Formats_SampleComponent_IsSigned_
+  commentId: Overload:Egami.Formats.SampleComponent.IsSigned
+  isSpec: "True"
+  fullName: Egami.Formats.SampleComponent.IsSigned
+  nameWithType: SampleComponent.IsSigned
+- uid: Egami.Formats.SampleComponent.Precision
+  name: Precision
+  href: api/Egami.Formats.SampleComponent.html#Egami_Formats_SampleComponent_Precision
+  commentId: P:Egami.Formats.SampleComponent.Precision
+  fullName: Egami.Formats.SampleComponent.Precision
+  nameWithType: SampleComponent.Precision
+- uid: Egami.Formats.SampleComponent.Precision*
+  name: Precision
+  href: api/Egami.Formats.SampleComponent.html#Egami_Formats_SampleComponent_Precision_
+  commentId: Overload:Egami.Formats.SampleComponent.Precision
+  isSpec: "True"
+  fullName: Egami.Formats.SampleComponent.Precision
+  nameWithType: SampleComponent.Precision
+- uid: Egami.Formats.SampleImage
+  name: SampleImage
+  href: api/Egami.Formats.SampleImage.html
+  commentId: T:Egami.Formats.SampleImage
+  fullName: Egami.Formats.SampleImage
+  nameWithType: SampleImage
+- uid: Egami.Formats.SampleImage.Color
+  name: Color
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Color
+  commentId: P:Egami.Formats.SampleImage.Color
+  fullName: Egami.Formats.SampleImage.Color
+  nameWithType: SampleImage.Color
+- uid: Egami.Formats.SampleImage.Color*
+  name: Color
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Color_
+  commentId: Overload:Egami.Formats.SampleImage.Color
+  isSpec: "True"
+  fullName: Egami.Formats.SampleImage.Color
+  nameWithType: SampleImage.Color
+- uid: Egami.Formats.SampleImage.Components
+  name: Components
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Components
+  commentId: P:Egami.Formats.SampleImage.Components
+  fullName: Egami.Formats.SampleImage.Components
+  nameWithType: SampleImage.Components
+- uid: Egami.Formats.SampleImage.Components*
+  name: Components
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Components_
+  commentId: Overload:Egami.Formats.SampleImage.Components
+  isSpec: "True"
+  fullName: Egami.Formats.SampleImage.Components
+  nameWithType: SampleImage.Components
+- uid: Egami.Formats.SampleImage.Height
+  name: Height
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Height
+  commentId: P:Egami.Formats.SampleImage.Height
+  fullName: Egami.Formats.SampleImage.Height
+  nameWithType: SampleImage.Height
+- uid: Egami.Formats.SampleImage.Height*
+  name: Height
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Height_
+  commentId: Overload:Egami.Formats.SampleImage.Height
+  isSpec: "True"
+  fullName: Egami.Formats.SampleImage.Height
+  nameWithType: SampleImage.Height
+- uid: Egami.Formats.SampleImage.Load(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name: Load(Stream, EgamiContext?, ReaderOptions?)
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_
+  commentId: M:Egami.Formats.SampleImage.Load(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name.vb: Load(Stream, EgamiContext, ReaderOptions)
+  fullName: Egami.Formats.SampleImage.Load(System.IO.Stream, Egami.EgamiContext?, Egami.Formats.ReaderOptions?)
+  fullName.vb: Egami.Formats.SampleImage.Load(System.IO.Stream, Egami.EgamiContext, Egami.Formats.ReaderOptions)
+  nameWithType: SampleImage.Load(Stream, EgamiContext?, ReaderOptions?)
+  nameWithType.vb: SampleImage.Load(Stream, EgamiContext, ReaderOptions)
+- uid: Egami.Formats.SampleImage.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name: Load(ReadOnlyMemory<byte>, EgamiContext?, ReaderOptions?)
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_
+  commentId: M:Egami.Formats.SampleImage.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name.vb: Load(ReadOnlyMemory(Of Byte), EgamiContext, ReaderOptions)
+  fullName: Egami.Formats.SampleImage.Load(System.ReadOnlyMemory<byte>, Egami.EgamiContext?, Egami.Formats.ReaderOptions?)
+  fullName.vb: Egami.Formats.SampleImage.Load(System.ReadOnlyMemory(Of Byte), Egami.EgamiContext, Egami.Formats.ReaderOptions)
+  nameWithType: SampleImage.Load(ReadOnlyMemory<byte>, EgamiContext?, ReaderOptions?)
+  nameWithType.vb: SampleImage.Load(ReadOnlyMemory(Of Byte), EgamiContext, ReaderOptions)
+- uid: Egami.Formats.SampleImage.Load(System.ReadOnlyMemory{System.Byte},Egami.Formats.FormatInfo,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name: Load(ReadOnlyMemory<byte>, FormatInfo, EgamiContext?, ReaderOptions?)
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Load_System_ReadOnlyMemory_System_Byte__Egami_Formats_FormatInfo_Egami_EgamiContext_Egami_Formats_ReaderOptions_
+  commentId: M:Egami.Formats.SampleImage.Load(System.ReadOnlyMemory{System.Byte},Egami.Formats.FormatInfo,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name.vb: Load(ReadOnlyMemory(Of Byte), FormatInfo, EgamiContext, ReaderOptions)
+  fullName: Egami.Formats.SampleImage.Load(System.ReadOnlyMemory<byte>, Egami.Formats.FormatInfo, Egami.EgamiContext?, Egami.Formats.ReaderOptions?)
+  fullName.vb: Egami.Formats.SampleImage.Load(System.ReadOnlyMemory(Of Byte), Egami.Formats.FormatInfo, Egami.EgamiContext, Egami.Formats.ReaderOptions)
+  nameWithType: SampleImage.Load(ReadOnlyMemory<byte>, FormatInfo, EgamiContext?, ReaderOptions?)
+  nameWithType.vb: SampleImage.Load(ReadOnlyMemory(Of Byte), FormatInfo, EgamiContext, ReaderOptions)
+- uid: Egami.Formats.SampleImage.Load(System.String,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name: Load(string, EgamiContext?, ReaderOptions?)
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Load_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_
+  commentId: M:Egami.Formats.SampleImage.Load(System.String,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name.vb: Load(String, EgamiContext, ReaderOptions)
+  fullName: Egami.Formats.SampleImage.Load(string, Egami.EgamiContext?, Egami.Formats.ReaderOptions?)
+  fullName.vb: Egami.Formats.SampleImage.Load(String, Egami.EgamiContext, Egami.Formats.ReaderOptions)
+  nameWithType: SampleImage.Load(string, EgamiContext?, ReaderOptions?)
+  nameWithType.vb: SampleImage.Load(String, EgamiContext, ReaderOptions)
+- uid: Egami.Formats.SampleImage.Load*
+  name: Load
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Load_
+  commentId: Overload:Egami.Formats.SampleImage.Load
+  isSpec: "True"
+  fullName: Egami.Formats.SampleImage.Load
+  nameWithType: SampleImage.Load
+- uid: Egami.Formats.SampleImage.Metadata
+  name: Metadata
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Metadata
+  commentId: P:Egami.Formats.SampleImage.Metadata
+  fullName: Egami.Formats.SampleImage.Metadata
+  nameWithType: SampleImage.Metadata
+- uid: Egami.Formats.SampleImage.Metadata*
+  name: Metadata
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Metadata_
+  commentId: Overload:Egami.Formats.SampleImage.Metadata
+  isSpec: "True"
+  fullName: Egami.Formats.SampleImage.Metadata
+  nameWithType: SampleImage.Metadata
+- uid: Egami.Formats.SampleImage.Row(System.Int32)
+  name: Row(int)
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Row_System_Int32_
+  commentId: M:Egami.Formats.SampleImage.Row(System.Int32)
+  name.vb: Row(Integer)
+  fullName: Egami.Formats.SampleImage.Row(int)
+  fullName.vb: Egami.Formats.SampleImage.Row(Integer)
+  nameWithType: SampleImage.Row(int)
+  nameWithType.vb: SampleImage.Row(Integer)
+- uid: Egami.Formats.SampleImage.Row*
+  name: Row
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Row_
+  commentId: Overload:Egami.Formats.SampleImage.Row
+  isSpec: "True"
+  fullName: Egami.Formats.SampleImage.Row
+  nameWithType: SampleImage.Row
+- uid: Egami.Formats.SampleImage.Samples
+  name: Samples
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Samples
+  commentId: P:Egami.Formats.SampleImage.Samples
+  fullName: Egami.Formats.SampleImage.Samples
+  nameWithType: SampleImage.Samples
+- uid: Egami.Formats.SampleImage.Samples*
+  name: Samples
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Samples_
+  commentId: Overload:Egami.Formats.SampleImage.Samples
+  isSpec: "True"
+  fullName: Egami.Formats.SampleImage.Samples
+  nameWithType: SampleImage.Samples
+- uid: Egami.Formats.SampleImage.Width
+  name: Width
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Width
+  commentId: P:Egami.Formats.SampleImage.Width
+  fullName: Egami.Formats.SampleImage.Width
+  nameWithType: SampleImage.Width
+- uid: Egami.Formats.SampleImage.Width*
+  name: Width
+  href: api/Egami.Formats.SampleImage.html#Egami_Formats_SampleImage_Width_
+  commentId: Overload:Egami.Formats.SampleImage.Width
+  isSpec: "True"
+  fullName: Egami.Formats.SampleImage.Width
+  nameWithType: SampleImage.Width
 - uid: Egami.Formats.SaveKeeps
   name: SaveKeeps
   href: api/Egami.Formats.SaveKeeps.html

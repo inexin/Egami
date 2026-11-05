@@ -95,7 +95,8 @@ YCCK, any chroma subsampling. The decoded pixels match libjpeg-turbo's <code>djp
 Lossless JPEG, the kind inside DNG tiles and many DICOM files, decodes to its exact samples at 2 to 16 bits: up to 8 bits as
 <code>Gray8</code> or <code>Rgb8</code>, deeper as <code>Gray16</code> or <code>Rgb16</code>. Three-component lossless files are RGB unless a JFIF segment or Adobe
 transform says YCbCr. Lossless files have no DCT, so <code>MinimumSize</code> reduces them after a full decode. <code>JpegDetails.Precision</code>,
-<code>Arithmetic</code> and <code>Lossless</code> say what a file is. Hierarchical files are refused with <code>UnsupportedFormatException</code>.</p>
+<code>Arithmetic</code> and <code>Lossless</code> say what a file is; <code>SampleImage.Load</code> gives the stored samples at the file's own precision,
+without color conversion (see <a href="index.html#stored-samples">Stored samples</a>). Hierarchical files are refused with <code>UnsupportedFormatException</code>.</p>
 <p>Browsers show none of these modes. Egami writes each of them on request (below).</p>
 <h2 id="threads">Threads</h2>
 <p>A large file decodes on up to <code>MaxParallelism</code> threads with the same pixels as one thread. A file with restart markers is split

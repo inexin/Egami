@@ -9309,6 +9309,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.SampleColor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.SampleColor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.SampleColor",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.SampleColor.yml\" sourcestartlinenumber=\"1\">What the components of a <xref href=\"Egami.Formats.SampleImage\" data-throw-if-not-resolved=\"false\"></xref> are.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.SampleComponent.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.SampleComponent.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.SampleComponent",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.SampleComponent.yml\" sourcestartlinenumber=\"1\">One component of a <xref href=\"Egami.Formats.SampleImage\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.SampleImage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.SampleImage.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.SampleImage",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.SampleImage.yml\" sourcestartlinenumber=\"1\">An image as its codestream stores it: every component's samples at their own precision and sign, with no color conversion,\nwidening or offset. For a container that keeps its own pixel description, such as DICOM, which needs the stored values to\napply its rescale, window and color rules itself. JPEG (baseline, extended 12-bit and lossless at 2 to 16 bits), JPEG 2000\nand JPEG XL load this way.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.SaveKeeps.yml",
       "output": {
         ".html": {
