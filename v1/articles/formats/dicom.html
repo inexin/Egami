@@ -92,8 +92,8 @@ the pixels are stored), then the pixel data, native or compressed with JPEG, JPE
 through the Egami.Formats.Extended package, as a preview: every DICOM type is marked <code>[Experimental]</code> with the diagnostic id
 <code>EGAMIX001</code>, so code that uses it suppresses that id (<code>&lt;NoWarn&gt;$(NoWarn);EGAMIX001&lt;/NoWarn&gt;</code>), and the API may change before
 it is stable.</p>
-<p>This version reads the dataset. Decoding the pixel data, the display pipeline (rescale, window, color) and writing come in
-later versions; until then <code>Raster.Load</code> of a DICOM file throws <code>NotSupportedException</code>.</p>
+<p>This version reads the dataset and decodes the pixel data of every frame through the display pipeline (rescale, window,
+colour). Writing comes in a later version.</p>
 <table>
 <thead>
 <tr>
@@ -102,6 +102,14 @@ later versions; until then <code>Raster.Load</code> of a DICOM file throws <code
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>Loads</td>
+<td>One frame a load, as a viewer shows it: <code>Gray8</code> or <code>Gray16</code> for monochrome images, <code>Rgb8</code> or <code>Rgb16</code> for colour and palette images; modality or stored values as <code>GrayF32</code> on request; each frame an image for <code>Raster.LoadAll</code></td>
+</tr>
+<tr>
+<td>Pixel data</td>
+<td>Native (1, 8, 16 and 32 bits allocated, planar or interleaved, either byte order), RLE Lossless, Deflated Image Frame Compression, encapsulated uncompressed, JPEG baseline, extended and lossless, JPEG-LS, JPEG 2000, High-Throughput JPEG 2000 and JPEG XL</td>
+</tr>
 <tr>
 <td>Reads</td>
 <td>PS3.10 files with the 128-byte preamble and DICM, and bare datasets without them; implicit VR little endian, explicit VR little endian, explicit VR big endian and deflated explicit VR little endian datasets; sequences and items of defined and undefined length to 64 levels; every VR of PS3.5 table 6.2-1; encapsulated pixel data as fragments with the Basic and Extended Offset Tables; text in the character sets of PS3.3 C.12.1.1.2, ISO 2022 code extension included</td>
@@ -215,14 +223,94 @@ if (pixels is not null)
 {
     Console.WriteLine($&quot;{file.TransferSyntax.Name}: {pixels.Fragments.Count} fragments, {pixels.BasicOffsetTable.Count} frame offsets&quot;);
 }
+</code></pre><h2 id="pixels">Pixels</h2>
+<p>Registered with <code>WithDicom()</code>, <code>Raster.Load</code> decodes the first frame and takes it through what PS3.3 C.11 says a display does,
+so the image looks as it would in a viewer. <code>DicomDetails</code> in the metadata says what was applied.</p>
+<pre><code class="lang-csharp">// A load gives what a viewer shows: rescaled, windowed, inverted for MONOCHROME1, colour as RGB.
+EgamiContext context = new EgamiContext().WithDicom();
+using Raster image = Raster.Load(&quot;scan.dcm&quot;, context);
+DicomDetails details = (DicomDetails)image.Metadata.FormatDetails!;
+Console.WriteLine($&quot;{image.Layout}: window {details.WindowCenter}/{details.WindowWidth}, slope {details.RescaleSlope}&quot;);
+image.Save(&quot;scan.png&quot;);
+</code></pre>
+<p>For a monochrome image, in order:</p>
+<ol>
+<li>Stored values: the Bits Stored under the High Bit, sign-extended when Pixel Representation is 1; other bits (old overlays)
+are dropped. A JPEG, JPEG-LS or JPEG 2000 codestream that codes signed data as unsigned is sign-extended the same way.</li>
+<li>Modality values: the Modality LUT Sequence, or Rescale Slope and Intercept (for CT, Hounsfield units).</li>
+<li>The VOI transform: the VOI LUT Sequence, or the window (Window Center and Width with the VOI LUT Function LINEAR,
+LINEAR_EXACT or SIGMOID of PS3.3 C.11.2.1.2). A file with neither is stretched from its frame's smallest to its largest
+modality value. The output fills <code>Gray8</code> when Bits Stored is 8 or less, <code>Gray16</code> otherwise.</li>
+<li>Inversion: MONOCHROME1 images are inverted, unless a Presentation LUT Shape says IDENTITY; INVERSE inverts any.</li>
+</ol>
+<p>Enhanced multi-frame files take each frame's rescale (Pixel Value Transformation) and window (Frame VOI LUT) from its
+Per-Frame Functional Groups, then the Shared ones, then the dataset.</p>
+<p><code>DicomReaderOptions</code> changes what a load gives: a window of your own, which of several windows or VOI LUTs, the window over
+the VOI LUT, or the numbers behind the picture.</p>
+<pre><code class="lang-csharp">// A window of your own, in modality values (Hounsfield units for CT), or the file's second one.
+using Raster bone = Raster.Load(&quot;scan.dcm&quot;, context, new DicomReaderOptions { WindowCenter = 400, WindowWidth = 1800 });
+using Raster second = Raster.Load(&quot;scan.dcm&quot;, context, new DicomReaderOptions { VoiIndex = 1 });
+using Raster smooth = Raster.Load(&quot;scan.dcm&quot;, context,
+    new DicomReaderOptions { WindowCenter = 40, WindowWidth = 400, WindowFunction = DicomVoiFunction.Sigmoid });
+</code></pre><pre><code class="lang-csharp">// The numbers behind the picture, as GrayF32: modality values (such as Hounsfield units), or the stored values.
+using Raster&lt;Egami.Pixels.GrayF32&gt; hounsfield = Raster.Load&lt;Egami.Pixels.GrayF32&gt;(&quot;scan.dcm&quot;, context,
+    new DicomReaderOptions { Values = DicomValues.Modality });
+float center = hounsfield.Row(2)[2].L;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th><code>DicomValues</code></th>
+<th>Monochrome</th>
+<th>Colour and palette</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Display</code> (default)</td>
+<td><code>Gray8</code> or <code>Gray16</code>, as above</td>
+<td><code>Rgb8</code> or <code>Rgb16</code>, YBR converted to RGB, palette indices through the colour tables</td>
+</tr>
+<tr>
+<td><code>Modality</code></td>
+<td><code>GrayF32</code> modality values, such as Hounsfield units</td>
+<td>As <code>Display</code></td>
+</tr>
+<tr>
+<td><code>Stored</code></td>
+<td><code>GrayF32</code> stored values with their sign (exact to 2^24; unsigned 32-bit values above 2^31 − 1 are clamped)</td>
+<td><code>Rgb8</code> or <code>Rgb16</code> as stored, YBR not converted; palette indices as <code>GrayF32</code></td>
+</tr>
+</tbody>
+</table>
+<p>Colour: RGB is scaled to 8 or 16 bits; YBR_FULL and YBR_FULL_422 convert by the full-range equations of PS3.3 C.7.6.3.1.2,
+YBR_PARTIAL_422 and YBR_PARTIAL_420 by the BT.601 studio-range ones; YBR_RCT and YBR_ICT are already RGB once the JPEG 2000
+decoder undoes its component transform, and JPEG XL decodes to RGB. PALETTE COLOR goes through the red, green and blue tables,
+segmented ones included, to <code>Rgb8</code> for 8-bit tables and <code>Rgb16</code> for 16-bit ones.</p>
+<h2 id="frames">Frames</h2>
+<p>Each frame of a multi-frame file is an image of its own: <code>Raster.Probe</code> gives their number as <code>ImageCount</code>, <code>Raster.LoadAll</code>
+loads them all, and <code>DicomReaderOptions.Frame</code> picks one. <code>DicomFile.LoadFrame</code> decodes frames of a file already read, so a
+long series is read once. Encapsulated frames are found by the Extended Offset Table, else the Basic Offset Table, else one
+fragment a frame when the counts match, else from where each codestream starts. Cine timing (Frame Time, the Frame Time
+Vector, and the recommended or cine frame rate) is in <code>DicomDetails</code>.</p>
+<pre><code class="lang-csharp">// Each frame of a multi-frame file is an image: LoadAll gives them all, DicomReaderOptions.Frame one of them.
+using RasterList frames = Raster.LoadAll(&quot;scan.dcm&quot;, context);
+
+// With the file read once, LoadFrame decodes frame after frame without reading it again.
+DicomFile file = DicomFile.Load(&quot;scan.dcm&quot;);
+for (int i = 0; i &lt; file.FrameCount; i++)
+{
+    using Raster frame = file.LoadFrame(i);
+    Console.WriteLine($&quot;frame {i}: {frame.Width}x{frame.Height}&quot;);
+}
 </code></pre><h2 id="detection-and-probing">Detection and probing</h2>
 <p>Registered with <code>WithDicom()</code>, DICOM files are found by the DICM prefix at byte 128, and <code>Raster.Probe</code> gives the size, the
-frame count and a pixel layout from Rows, Columns, Number of Frames, Samples per Pixel and Bits Allocated. Bare datasets are
+number of frames and the pixel layout a load gives. Bare datasets are
 not detected; <code>DicomFile.Load</code> reads them, and <code>Raster.Probe</code> with <code>DicomFormat.Info</code> names the format.</p>
-<pre><code class="lang-csharp">// Registered, DICOM is detected and probed; decoding its pixel data comes in a later version.
+<pre><code class="lang-csharp">// Registered, DICOM is detected and probed: the size, the layout a load gives and the number of frames.
 EgamiContext context = new EgamiContext().WithDicom();
 RasterInfo info = Raster.Probe(&quot;scan.dcm&quot;, context);
-Console.WriteLine($&quot;{info.Format.Name} {info.Width}x{info.Height}, {info.FrameCount} frames&quot;);
+Console.WriteLine($&quot;{info.Format.Name} {info.Width}x{info.Height} {info.Layout}, {info.ImageCount} frames&quot;);
 </code></pre><h2 id="damaged-and-hostile-data">Damaged and hostile data</h2>
 <p>The file is read whole into memory, within <code>SafetyLimits.MaxTotalBytes</code>, and each element counts against the same budget, so
 a file of millions of empty elements cannot use more memory than the limit allows. Every length is checked against the data
@@ -251,7 +339,31 @@ limit.</p>
 </tr>
 <tr>
 <td><code>Dicom.Deflate</code></td>
-<td>The deflated dataset is damaged; what inflated was read</td>
+<td>The deflated dataset, or a deflated frame, is damaged; what inflated was read</td>
+</tr>
+<tr>
+<td><code>Dicom.PixelDataShort</code></td>
+<td>Native pixel data ends before the frame does; the rest is 0</td>
+</tr>
+<tr>
+<td><code>Dicom.RleHeader</code>, <code>Dicom.RleSegments</code>, <code>Dicom.RleShort</code></td>
+<td>An RLE frame's header or segments are damaged; what decoded was kept</td>
+</tr>
+<tr>
+<td><code>Dicom.FrameSize</code></td>
+<td>A frame's codestream is not Rows by Columns; it was cropped or padded</td>
+</tr>
+<tr>
+<td><code>Dicom.OffsetTable</code></td>
+<td>An offset table does not point at fragment starts; frames were found from the codestreams</td>
+</tr>
+<tr>
+<td><code>Dicom.Codestream</code>, <code>Dicom.JpegLsDamaged</code></td>
+<td>A codec recovered from damage in a frame</td>
+</tr>
+<tr>
+<td><code>Dicom.WindowInvalid</code>, <code>Dicom.PaletteMissing</code></td>
+<td>The window width or the palette tables cannot be used; the frame's range or the indices are shown</td>
 </tr>
 </tbody>
 </table>
@@ -260,8 +372,8 @@ lose nothing are noted in both modes: <code>Dicom.NoPreamble</code>, <code>Dicom
 <code>Dicom.TransferSyntaxMismatch</code> (the dataset is read in the VR encoding it is really in), <code>Dicom.ImplicitElement</code>,
 <code>Dicom.UnknownVR</code>, <code>Dicom.OddLength</code>, <code>Dicom.TagOrder</code>, <code>Dicom.ZlibHeader</code> and <code>Dicom.CharacterSet</code>.</p>
 <h2 id="not-supported-yet">Not supported yet</h2>
-<p>Pixel data decoding (native, RLE, and the codecs), the display pipeline, multi-frame pages and writing are the next stages of
-the DICOM work. Networking (DIMSE, DICOMweb), DICOMDIR media, structured reports, presentation states, segmentation and RT
+<p>Writing is the next stage of the DICOM work. MPEG-2, H.264, HEVC and JPIP transfer syntaxes, Float and Double Float Pixel
+Data, 2-sample, ARGB and CMYK images and retired 12-bit packing throw <code>NotSupportedException</code>. Networking (DIMSE, DICOMweb), DICOMDIR media, structured reports, presentation states, segmentation and RT
 objects, overlay burn-in and anonymization are not planned.</p>
 
 </article>

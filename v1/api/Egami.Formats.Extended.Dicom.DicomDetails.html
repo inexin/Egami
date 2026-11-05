@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class DicomDetails | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class DicomDetails | Egami ">
+      
+      <meta name="description" content="What a DICOM load read and did, in : the frame, how its pixels were stored, and the transforms that made the loaded values.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Extended_Dicom_DicomDetails.md&amp;value=---%0Auid%3A%20Egami.Formats.Extended.Dicom.DicomDetails%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Extended.Dicom.DicomDetails">
+
+
+
+  <h1 id="Egami_Formats_Extended_Dicom_DicomDetails" data-uid="Egami.Formats.Extended.Dicom.DicomDetails" class="text-break">
+Class DicomDetails  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L141"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Extended.html">Extended</a>.<a class="xref" href="Egami.Formats.Extended.Dicom.html">Dicom</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Formats.Extended.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>What a DICOM load read and did, in <a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_FormatDetails">FormatDetails</a>: the frame, how its pixels were stored,
+and the transforms that made the loaded values.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Experimental(&quot;EGAMIX001&quot;, UrlFormat = &quot;https://github.com/inexin/Egami/blob/main/docs/articles/formats/dicom.md&quot;)]
+public sealed class DicomDetails : FormatDetails</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Metadata.FormatDetails.html">FormatDetails</a></div>
+      <div><span class="xref">DicomDetails</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Extended_Dicom_DicomDetails_examples">Examples</h2>
+  <pre><code class="lang-csharp">// A load gives what a viewer shows: rescaled, windowed, inverted for MONOCHROME1, colour as RGB.
+EgamiContext context = new EgamiContext().WithDicom();
+using Raster image = Raster.Load("scan.dcm", context);
+DicomDetails details = (DicomDetails)image.Metadata.FormatDetails!;
+Console.WriteLine($"{image.Layout}: window {details.WindowCenter}/{details.WindowWidth}, slope {details.RescaleSlope}");
+image.Save("scan.png");</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_BitsStored_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.BitsStored*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_BitsStored" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.BitsStored">
+  BitsStored
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L157"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the bits each stored sample has (Bits Stored).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int BitsStored { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_Frame_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.Frame*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_Frame" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.Frame">
+  Frame
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L145"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the frame loaded, from 0.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Frame { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_FrameCount_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.FrameCount*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_FrameCount" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.FrameCount">
+  FrameCount
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L148"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the number of frames in the file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int FrameCount { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_FrameRate_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.FrameRate*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_FrameRate" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.FrameRate">
+  FrameRate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L202"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the Recommended Display Frame Rate (0008,2144) or Cine Rate (0018,0040), in frames a second, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double? FrameRate { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_FrameTime_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.FrameTime*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_FrameTime" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.FrameTime">
+  FrameTime
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L199"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the time from this frame to the next of a cine series: Frame Time (0018,1063), or this frame's entry of the
+Frame Time Vector (0018,1065); <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the file gives none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TimeSpan? FrameTime { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.timespan">TimeSpan</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_Inverted_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.Inverted*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_Inverted" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.Inverted">
+  Inverted
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L193"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets whether the shown values were inverted: MONOCHROME1, or Presentation LUT Shape INVERSE.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Inverted { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_IsSigned_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.IsSigned*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_IsSigned" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.IsSigned">
+  IsSigned
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets whether stored samples are signed (Pixel Representation 1).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsSigned { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_PhotometricInterpretation_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.PhotometricInterpretation*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_PhotometricInterpretation" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.PhotometricInterpretation">
+  PhotometricInterpretation
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L154"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the Photometric Interpretation (0028,0004), such as <code>MONOCHROME2</code> or <code>YBR_FULL_422</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string PhotometricInterpretation { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_RescaleIntercept_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.RescaleIntercept*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_RescaleIntercept" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.RescaleIntercept">
+  RescaleIntercept
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L169"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the Rescale Intercept applied, 0 when there is none or a Modality LUT was used.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double RescaleIntercept { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_RescaleSlope_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.RescaleSlope*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_RescaleSlope" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.RescaleSlope">
+  RescaleSlope
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L166"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the Rescale Slope applied, 1 when there is none or a Modality LUT was used.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double RescaleSlope { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_TransferSyntaxUid_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.TransferSyntaxUid*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_TransferSyntaxUid" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.TransferSyntaxUid">
+  TransferSyntaxUid
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L151"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the UID of the transfer syntax the pixel data was stored in.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string TransferSyntaxUid { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_UsedMinMax_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.UsedMinMax*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_UsedMinMax" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.UsedMinMax">
+  UsedMinMax
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L190"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets whether the shown values were stretched from the frame's smallest to its largest modality value, because
+the file has no window and no VOI LUT.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool UsedMinMax { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_UsedModalityLut_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.UsedModalityLut*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_UsedModalityLut" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.UsedModalityLut">
+  UsedModalityLut
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L172"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets whether a Modality LUT Sequence gave the modality values.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool UsedModalityLut { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_UsedVoiLut_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.UsedVoiLut*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_UsedVoiLut" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.UsedVoiLut">
+  UsedVoiLut
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L184"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets whether a VOI LUT Sequence gave the shown values.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool UsedVoiLut { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_Values_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.Values*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_Values" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.Values">
+  Values
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L163"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets what the load gave.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DicomValues Values { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomValues.html">DicomValues</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_WindowCenter_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.WindowCenter*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_WindowCenter" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.WindowCenter">
+  WindowCenter
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L175"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the window center applied, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when no window was.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double? WindowCenter { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_WindowFunction_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.WindowFunction*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_WindowFunction" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.WindowFunction">
+  WindowFunction
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L181"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the window function applied.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DicomVoiFunction WindowFunction { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomVoiFunction.html">DicomVoiFunction</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_WindowWidth_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.WindowWidth*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_WindowWidth" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.WindowWidth">
+  WindowWidth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L178"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the window width applied, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when no window was.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double? WindowWidth { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomDetails_Copy_" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.Copy*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomDetails_Copy" data-uid="Egami.Formats.Extended.Dicom.DicomDetails.Copy">
+  Copy()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L205"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a deep copy.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override FormatDetails Copy()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Metadata.FormatDetails.html">FormatDetails</a></dt>
+    <dd><p>The copy.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomReaderOptions.cs/#L141" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

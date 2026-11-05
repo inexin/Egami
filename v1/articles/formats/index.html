@@ -92,7 +92,7 @@ map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors
 2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB, layers included. HEIC phone photos load and save through the
 separate, opt-in Egami.Heic package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
 <a href="../guides/svg.html">Egami.Svg</a> and <a href="../guides/metafiles.html">Egami.Metafiles</a> packages, and PCX, SGI, Sun raster, XBM, XPM, WBMP
-Farbfeld, JPEG-LS, DDS and KTX textures, DPX and Cineon film frames, FITS, camera RAW (DNG and the camera makers' formats, with DNG written) and, as a preview, the DICOM dataset through
+Farbfeld, JPEG-LS, DDS and KTX textures, DPX and Cineon film frames, FITS, camera RAW (DNG and the camera makers' formats, with DNG written) and, as a preview, DICOM images and datasets through
 <a href="extended.html">Egami.Formats.Extended</a>. The Package column says which package holds each format. Every reader checks sizes against the
 safety limits before it allocates, and every reader has been fuzzed.</p>
 <p>Each format has its own page with its options and what it keeps from the file; the table below links them. VP8 and AV1 video frames decode
@@ -356,7 +356,7 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 </tr>
 <tr>
 <td><a href="dicom.html">DICOM</a></td>
-<td>Preview: the dataset of PS3.10 files (<code>DicomFile</code>), every native transfer syntax and deflated, sequences, character sets, compressed pixel data as fragments; probed, but the pixel data is not decoded yet</td>
+<td>Preview: the dataset of PS3.10 files (<code>DicomFile</code>), every native transfer syntax and deflated, sequences, character sets, frames decoded as a viewer shows them (rescale, window, VOI LUT, palette, YBR) from native, RLE, JPEG, JPEG-LS, JPEG 2000, HTJ2K and JPEG XL pixel data</td>
 <td>No</td>
 <td>—</td>
 <td>Egami.Formats.Extended</td>

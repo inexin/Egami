@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class DicomFormat | Egami ">
       
-      <meta name="description" content="DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with ; in preview. This version detects DICOM files and probes their size, frame count and dataset;  reads every element. Decoding the pixel data comes in a later version, and until then a load throws .">
+      <meta name="description" content="DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with ; in preview. A load gives one frame as a viewer shows it (see ), each frame of a multi-frame file is an image of its own for , and  reads every element.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_Extended_Dicom_DicomFormat" data-uid="Egami.Formats.Extended.Dicom.DicomFormat" class="text-break">
-Class DicomFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFormat.cs/#L16"><i class="bi bi-code-slash"></i></a>
+Class DicomFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFormat.cs/#L19"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -98,9 +98,9 @@ Class DicomFormat  <a class="header-action link-secondary" title="View source" h
   </div>
 
   <div class="markdown summary"><p>DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with
-<a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithDicom_Egami_EgamiContext_">WithDicom(EgamiContext)</a>; in preview. This version detects DICOM files and probes their size, frame
-count and dataset; <a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html">DicomFile</a> reads every element. Decoding the pixel data comes in a later version, and until
-then a load throws <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a>.</p>
+<a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithDicom_Egami_EgamiContext_">WithDicom(EgamiContext)</a>; in preview. A load gives one frame as a viewer shows it (see
+<a class="xref" href="Egami.Formats.Extended.Dicom.DicomReaderOptions.html">DicomReaderOptions</a>), each frame of a multi-frame file is an image of its own for
+<a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">LoadAll(Stream, EgamiContext?, ReaderOptions?)</a>, and <a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html">DicomFile</a> reads every element.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -151,10 +151,12 @@ public static class DicomFormat</code></pre>
 
 
   <h2 id="Egami_Formats_Extended_Dicom_DicomFormat_examples">Examples</h2>
-  <pre><code class="lang-csharp">// Registered, DICOM is detected and probed; decoding its pixel data comes in a later version.
+  <pre><code class="lang-csharp">// A load gives what a viewer shows: rescaled, windowed, inverted for MONOCHROME1, colour as RGB.
 EgamiContext context = new EgamiContext().WithDicom();
-RasterInfo info = Raster.Probe("scan.dcm", context);
-Console.WriteLine($"{info.Format.Name} {info.Width}x{info.Height}, {info.FrameCount} frames");</code></pre>
+using Raster image = Raster.Load("scan.dcm", context);
+DicomDetails details = (DicomDetails)image.Metadata.FormatDetails!;
+Console.WriteLine($"{image.Layout}: window {details.WindowCenter}/{details.WindowWidth}, slope {details.RescaleSlope}");
+image.Save("scan.png");</code></pre>
 
 
 
@@ -167,7 +169,7 @@ Console.WriteLine($"{info.Format.Name} {info.Width}x{info.Height}, {info.FrameCo
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomFormat_Info" data-uid="Egami.Formats.Extended.Dicom.DicomFormat.Info">
   Info
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFormat.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFormat.cs/#L23"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the format's registration: name, MIME type, extensions, signature and reader.</p>
@@ -199,7 +201,7 @@ Console.WriteLine($"{info.Format.Name} {info.Width}x{info.Height}, {info.FrameCo
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFormat.cs/#L16" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFormat.cs/#L19" class="edit-link">Edit this page</a>
         </div>
 
 

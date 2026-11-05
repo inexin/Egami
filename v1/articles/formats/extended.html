@@ -209,7 +209,7 @@ Console.WriteLine($&quot;{info.Format.Name} {info.Width}×{info.Height} {info.La
 <tr>
 <td><a href="dicom.html">DICOM</a> (preview)</td>
 <td><code>DicomFormat</code></td>
-<td>The dataset of PS3.10 files and bare datasets in every native transfer syntax and deflated, sequences, character sets, and compressed pixel data as fragments, through <code>DicomFile</code>; detected and probed when registered with <code>WithDicom()</code>, which <code>WithExtendedFormats()</code> leaves out; pixel data is not decoded yet</td>
+<td>The dataset of PS3.10 files and bare datasets in every native transfer syntax and deflated, sequences, character sets, and compressed pixel data as fragments, through <code>DicomFile</code>; and every frame's pixels through the display pipeline (native, RLE, JPEG, JPEG-LS, JPEG 2000, HTJ2K, JPEG XL), when registered with <code>WithDicom()</code>, which <code>WithExtendedFormats()</code> leaves out</td>
 <td>—</td>
 </tr>
 </tbody>

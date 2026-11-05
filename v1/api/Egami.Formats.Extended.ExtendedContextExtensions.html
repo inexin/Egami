@@ -294,10 +294,10 @@ public static EgamiContext WithDicom(this EgamiContext context)</code></pre>
 
 
   <h4 class="section" id="Egami_Formats_Extended_ExtendedContextExtensions_WithDicom_Egami_EgamiContext__examples">Examples</h4>
-  <pre><code class="lang-csharp">// Registered, DICOM is detected and probed; decoding its pixel data comes in a later version.
+  <pre><code class="lang-csharp">// Registered, DICOM is detected and probed: the size, the layout a load gives and the number of frames.
 EgamiContext context = new EgamiContext().WithDicom();
 RasterInfo info = Raster.Probe("scan.dcm", context);
-Console.WriteLine($"{info.Format.Name} {info.Width}x{info.Height}, {info.FrameCount} frames");</code></pre>
+Console.WriteLine($"{info.Format.Name} {info.Width}x{info.Height} {info.Layout}, {info.ImageCount} frames");</code></pre>
 
 
 

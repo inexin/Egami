@@ -6523,6 +6523,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dicom.DicomDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dicom.DicomDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dicom.DicomDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomDetails.yml\" sourcestartlinenumber=\"1\">What a DICOM load read and did, in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>: the frame, how its pixels were stored,\nand the transforms that made the loaded values.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Extended.Dicom.DicomElement.yml",
       "output": {
         ".html": {
@@ -6561,7 +6575,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.Dicom.DicomFormat",
-      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomFormat.yml\" sourcestartlinenumber=\"1\">DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with\n<xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithDicom(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>; in preview. This version detects DICOM files and probes their size, frame\ncount and dataset; <xref href=\"Egami.Formats.Extended.Dicom.DicomFile\" data-throw-if-not-resolved=\"false\"></xref> reads every element. Decoding the pixel data comes in a later version, and until\nthen a load throws <xref href=\"System.NotSupportedException\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomFormat.yml\" sourcestartlinenumber=\"1\">DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with\n<xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithDicom(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>; in preview. A load gives one frame as a viewer shows it (see\n<xref href=\"Egami.Formats.Extended.Dicom.DicomReaderOptions\" data-throw-if-not-resolved=\"false\"></xref>), each frame of a multi-frame file is an image of its own for\n<xref href=\"Egami.Raster.LoadAll(System.IO.Stream%2cEgami.EgamiContext%2cEgami.Formats.ReaderOptions)\" data-throw-if-not-resolved=\"false\"></xref>, and <xref href=\"Egami.Formats.Extended.Dicom.DicomFile\" data-throw-if-not-resolved=\"false\"></xref> reads every element.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -6590,6 +6604,20 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.Dicom.DicomPersonName",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomPersonName.yml\" sourcestartlinenumber=\"1\">A Person Name (PN) value: up to three component groups, alphabetic, ideographic and phonetic, separated by <code>=</code>; the\nalphabetic one split into its five components (PS3.5 section 6.2.1).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dicom.DicomReaderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dicom.DicomReaderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dicom.DicomReaderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomReaderOptions.yml\" sourcestartlinenumber=\"1\">Options for reading DICOM: which frame, what values, and which VOI transform shows a monochrome image. Pass them to\n<xref href=\"Egami.Raster.Load(System.IO.Stream%2cEgami.EgamiContext%2cEgami.Formats.ReaderOptions)\" data-throw-if-not-resolved=\"false\"></xref> or <xref href=\"Egami.Formats.Extended.Dicom.DicomFile.LoadFrame(System.Int32%2cEgami.Formats.Extended.Dicom.DicomReaderOptions%2cEgami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -6632,6 +6660,34 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.Dicom.DicomVR",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomVR.yml\" sourcestartlinenumber=\"1\">A value representation: how an element's value is encoded (PS3.5 section 6.2).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dicom.DicomValues.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dicom.DicomValues.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dicom.DicomValues",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomValues.yml\" sourcestartlinenumber=\"1\">What a DICOM load gives, for <xref href=\"Egami.Formats.Extended.Dicom.DicomReaderOptions.Values\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dicom.DicomVoiFunction.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dicom.DicomVoiFunction.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dicom.DicomVoiFunction",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomVoiFunction.yml\" sourcestartlinenumber=\"1\">A VOI LUT Function (0028,1056): how a window maps modality values to shown values (PS3.3 C.11.2.1.2).</p>\n"
     },
     {
       "type": "ManagedReference",

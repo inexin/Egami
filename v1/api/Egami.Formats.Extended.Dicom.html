@@ -101,6 +101,12 @@ meta information and each item of a sequence are datasets.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomDetails.html">DicomDetails</a></dt>
+      <dd><p>What a DICOM load read and did, in <a class="xref" href="Egami.Metadata.RasterMetadata.html#Egami_Metadata_RasterMetadata_FormatDetails">FormatDetails</a>: the frame, how its pixels were stored,
+and the transforms that made the loaded values.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomElement.html">DicomElement</a></dt>
       <dd><p>One data element of a <a class="xref" href="Egami.Formats.Extended.Dicom.DicomDataset.html">DicomDataset</a>: its tag, value representation and value, read as the file stores it and
 decoded on request by its VR (PS3.5 section 6.2).</p>
@@ -117,9 +123,9 @@ before it is stable.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomFormat.html">DicomFormat</a></dt>
       <dd><p>DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with
-<a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithDicom_Egami_EgamiContext_">WithDicom(EgamiContext)</a>; in preview. This version detects DICOM files and probes their size, frame
-count and dataset; <a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html">DicomFile</a> reads every element. Decoding the pixel data comes in a later version, and until
-then a load throws <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a>.</p>
+<a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithDicom_Egami_EgamiContext_">WithDicom(EgamiContext)</a>; in preview. A load gives one frame as a viewer shows it (see
+<a class="xref" href="Egami.Formats.Extended.Dicom.DicomReaderOptions.html">DicomReaderOptions</a>), each frame of a multi-frame file is an image of its own for
+<a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">LoadAll(Stream, EgamiContext?, ReaderOptions?)</a>, and <a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html">DicomFile</a> reads every element.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -132,6 +138,12 @@ Table when the dataset has one. The fragments are compressed data as stored; a f
       <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomPersonName.html">DicomPersonName</a></dt>
       <dd><p>A Person Name (PN) value: up to three component groups, alphabetic, ideographic and phonetic, separated by <code>=</code>; the
 alphabetic one split into its five components (PS3.5 section 6.2.1).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomReaderOptions.html">DicomReaderOptions</a></dt>
+      <dd><p>Options for reading DICOM: which frame, what values, and which VOI transform shows a monochrome image. Pass them to
+<a class="xref" href="Egami.Raster.html#Egami_Raster_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">Load(Stream, EgamiContext?, ReaderOptions?)</a> or <a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html#Egami_Formats_Extended_Dicom_DicomFile_LoadFrame_System_Int32_Egami_Formats_Extended_Dicom_DicomReaderOptions_Egami_EgamiContext_">LoadFrame(int, DicomReaderOptions?, EgamiContext?)</a>.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -155,6 +167,16 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomVR.html">DicomVR</a></dt>
       <dd><p>A value representation: how an element's value is encoded (PS3.5 section 6.2).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomValues.html">DicomValues</a></dt>
+      <dd><p>What a DICOM load gives, for <a class="xref" href="Egami.Formats.Extended.Dicom.DicomReaderOptions.html#Egami_Formats_Extended_Dicom_DicomReaderOptions_Values">Values</a>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomVoiFunction.html">DicomVoiFunction</a></dt>
+      <dd><p>A VOI LUT Function (0028,1056): how a window maps modality values to shown values (PS3.3 C.11.2.1.2).</p>
 </dd>
     </dl>
 
