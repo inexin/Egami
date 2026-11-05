@@ -67,6 +67,13 @@ basis_universal, etc2comp, etcpak and Compressonator as the listed libraries, be
 the corpus (`tools/make-ktx-references.py`). ImageSharp.Textures is never read. Code under GPL, LGPL or AGPL, and code with no
 license, is never used.
 
+For DICOM, the DICOM Standard (NEMA, edition 2026d) is the reference: PS3.5 (data structures and encoding, with its Annex H, I
+and J character set examples as test data), PS3.6 (the data dictionary and UID registry) and PS3.10 (the file format), with
+PS3.3 C.12.1.1.2 for the character set terms. `tools/make-dicom-dictionary.py` generates the embedded dictionary from the
+PS3.6 DocBook XML NEMA publishes (https://dicom.nema.org/medical/dicom/current/source/docbook/part06/part06.xml). pydicom
+(MIT) and GDCM's command-line tools may serve as black-box oracles; DCMTK, GDCM sources and other GPL, LGPL or AGPL code are
+never read.
+
 For Zstandard (TIFF ZSTD), IETF RFC 8878 and the xxHash specification (XXH64, for the content checksum) are the references,
 with zstd and ruzstd as the listed libraries. zstd is dual-licensed and is read under its BSD-3 licence only; its CLI runs in
 Docker to make the corpus (`tools/make-zstd-references.py`).
@@ -115,6 +122,11 @@ backward-compatibility page and *The Raster Tragedy* are the references, with sk
 For PSD layers (2.3.10), Adobe's Photoshop File Format Specification, the W3C Compositing and Blending specification and
 published blend-mode formulas are the references, with psd-tools and ag-psd as the listed libraries. GIMP and Krita (GPL) are
 never read; ImageMagick runs only as a black-box tool.
+
+For DPX and Cineon, SMPTE ST 268 (DPX 1.0, 2.0 and 3.0) and Kodak's Cineon "4.5 DRAFT - Image File Format Proposal for Digital
+Pictures" are the references, with Kodak's published printing-density to linear conversion (reference white 685, black 95,
+0.002 density a code, film gamma 0.6). ImageMagick and FFmpeg run only as black-box tools, to make test files and to compare
+code values and speed; their DPX and Cineon code is never read.
 
 For FITS, the FITS Standard 4.0 (IAU FITS Working Group, 2016), the tiled image compression convention (Pence, Seaman and
 White, "Lossless astronomical image compression and the effects of noise", PASP 2009, and the FITS registry's tiled image
@@ -208,6 +220,7 @@ LGPL code is never read.
 | --- | --- | --- |
 | ImageMagick (Magick.NET) | ImageMagick License, Apache 2.0 | Compare FITS values, orientation and speed |
 | FFmpeg, ffprobe | LGPL/GPL | Make test clips, decode and probe for comparison, in Docker |
+| ImageMagick (Magick.NET) | ImageMagick License, Apache 2.0 | Make DPX and Cineon test files and compare their code values and speed |
 | Adobe DNG SDK's dng_validate (1.7.1, built from Adobe's download outside the repository) | Adobe DNG SDK license | Validate the DNGs Egami writes in egami-compare's DNG writing gates (Lars's decision, 2026-11-01); its source is never read |
 | libvpx vpxenc and vpxdec | BSD-3 | Make VP8 and VP9 clips and give the expected frames, and decode the VP8 encoder's streams, in Docker (`tools/vp8ref`, `tools/video/vp9ref`) |
 | MKVToolNix (mkvinfo, mkvmerge, mkvextract) | GPL-2.0 | Check our Matroska files and make and check subtitle tracks, in Docker |
