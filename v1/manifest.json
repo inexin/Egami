@@ -8563,7 +8563,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Formats.Jpeg2000.Jpeg2000Format",
-      "Summary": "<p sourcefile=\"api/Egami.Formats.Jpeg2000.Jpeg2000Format.yml\" sourcestartlinenumber=\"1\">The JPEG 2000 format (ITU-T T.800, Part 1), read only, registered in <xref href=\"Egami.EgamiContext.Default\" data-throw-if-not-resolved=\"false\"></xref>: JP2 and JPX files\nand raw codestreams (J2K, J2C), including the JPX streams a PDF holds, which load with plain <xref href=\"Egami.Raster.Load(System.ReadOnlyMemory%7bSystem.Byte%7d%2cEgami.EgamiContext%2cEgami.Formats.ReaderOptions)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Jpeg2000.Jpeg2000Format.yml\" sourcestartlinenumber=\"1\">The JPEG 2000 format (ITU-T T.800, Part 1), read only, registered in <xref href=\"Egami.EgamiContext.Default\" data-throw-if-not-resolved=\"false\"></xref>: JP2 and JPX files\nand raw codestreams (J2K, J2C), High-Throughput JPEG 2000 (ITU-T T.814, Part 15) in JPH files, raw codestreams (JHC) and\nJP2 files, including the JPX streams a PDF holds, which load with plain <xref href=\"Egami.Raster.Load(System.ReadOnlyMemory%7bSystem.Byte%7d%2cEgami.EgamiContext%2cEgami.Formats.ReaderOptions)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",

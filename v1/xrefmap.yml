@@ -52460,6 +52460,12 @@ references:
   commentId: F:Egami.Formats.Jpeg2000.Jpeg2000Container.Jp2
   fullName: Egami.Formats.Jpeg2000.Jpeg2000Container.Jp2
   nameWithType: Jpeg2000Container.Jp2
+- uid: Egami.Formats.Jpeg2000.Jpeg2000Container.Jph
+  name: Jph
+  href: api/Egami.Formats.Jpeg2000.Jpeg2000Container.html#Egami_Formats_Jpeg2000_Jpeg2000Container_Jph
+  commentId: F:Egami.Formats.Jpeg2000.Jpeg2000Container.Jph
+  fullName: Egami.Formats.Jpeg2000.Jpeg2000Container.Jph
+  nameWithType: Jpeg2000Container.Jph
 - uid: Egami.Formats.Jpeg2000.Jpeg2000Container.Jpx
   name: Jpx
   href: api/Egami.Formats.Jpeg2000.Jpeg2000Container.html#Egami_Formats_Jpeg2000_Jpeg2000Container_Jpx
@@ -52589,6 +52595,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Jpeg2000.Jpeg2000Details.HasPalette
   nameWithType: Jpeg2000Details.HasPalette
+- uid: Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput
+  name: HighThroughput
+  href: api/Egami.Formats.Jpeg2000.Jpeg2000Details.html#Egami_Formats_Jpeg2000_Jpeg2000Details_HighThroughput
+  commentId: P:Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput
+  fullName: Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput
+  nameWithType: Jpeg2000Details.HighThroughput
+- uid: Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput*
+  name: HighThroughput
+  href: api/Egami.Formats.Jpeg2000.Jpeg2000Details.html#Egami_Formats_Jpeg2000_Jpeg2000Details_HighThroughput_
+  commentId: Overload:Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput
+  isSpec: "True"
+  fullName: Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput
+  nameWithType: Jpeg2000Details.HighThroughput
 - uid: Egami.Formats.Jpeg2000.Jpeg2000Details.Profile
   name: Profile
   href: api/Egami.Formats.Jpeg2000.Jpeg2000Details.html#Egami_Formats_Jpeg2000_Jpeg2000Details_Profile

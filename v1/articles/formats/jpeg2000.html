@@ -90,7 +90,9 @@
 <p>Egami reads JPEG 2000 (ITU-T T.800 | ISO/IEC 15444-1, all of Part 1), written from the 2019 edition of T.800, T.801's JPX boxes
 and the PDF specification's JPXDecode filter. <code>Jpeg2000Format.Info</code> is registered in <code>EgamiContext.Default</code>; JPEG 2000 is never
 written. Every ISO/IEC 15444-4 conformance codestream decodes within its tolerances: the reversible ones to OpenJPEG 2.5.4's
-samples exactly, the irreversible ones within one level, at full resolution and with levels dropped.</p>
+samples exactly, the irreversible ones within one level, at full resolution and with levels dropped. High-Throughput JPEG 2000
+(ITU-T T.814 | ISO/IEC 15444-15, HTJ2K) is read too, from the 2019 edition of T.814: JPH files, HT codestreams (JHC) and HT
+codestreams in JP2 files.</p>
 <h2 id="reading-files">Reading files</h2>
 <p>JP2 and JPX files start with the JP2 signature box and raw codestreams (J2K, J2C, a PDF's JPXDecode stream) with SOC and SIZ, so
 <code>Raster.Load</code> recognizes both. <code>MinimumSize</code> drops whole wavelet levels, JPEG 2000's own reduction (a quarter of the levels'
@@ -147,7 +149,7 @@ using Raster preview = Raster.Load(&quot;photo.jp2&quot;, options: new Jpeg2000R
 <tbody>
 <tr>
 <td>Codestream</td>
-<td>SIZ, COD, COC, QCD, QCC, RGN, POC, PPM, PPT and COM; TLM, PLM, PLT and CRG read past; SOP and EPH; tiles and tile-parts in any order</td>
+<td>SIZ, CAP, CPF, COD, COC, QCD, QCC, RGN, POC, PPM, PPT and COM; TLM, PLM, PLT and CRG read past; SOP and EPH; tiles and tile-parts in any order</td>
 </tr>
 <tr>
 <td>Tier 2</td>
@@ -162,18 +164,23 @@ using Raster preview = Raster.Load(&quot;photo.jp2&quot;, options: new Jpeg2000R
 <td>Reversible 5/3 and irreversible 9/7 wavelets at any number of levels, odd sizes and offsets; RCT and ICT; subsampled and signed components</td>
 </tr>
 <tr>
-<td>JP2 and JPX</td>
-<td>ihdr, colr (enumerated, restricted and any ICC), pclr, cmap, cdef, res, XMP uuid; JPX's several colr boxes and rreq; the first codestream</td>
+<td>HT block coder</td>
+<td>T.814's cleanup pass (MEL, VLC, UVLC and MagSgn), SigProp and MagRef passes; placeholder passes; HT and T.800 code-blocks mixed in one tile-component</td>
+</tr>
+<tr>
+<td>JP2, JPX and JPH</td>
+<td>ihdr, colr (enumerated, restricted and any ICC), pclr, cmap, cdef, res, XMP uuid; JPX's several colr boxes and rreq; the JPH brand; the first codestream</td>
 </tr>
 <tr>
 <td>Refused</td>
-<td>Part 2 coding tools and High-Throughput (Part 15) code-blocks throw <code>NotSupportedException</code> naming the feature</td>
+<td>Part 2 coding tools throw <code>NotSupportedException</code> naming the feature</td>
 </tr>
 </tbody>
 </table>
 <p><code>Jpeg2000Details</code> describes what was decoded: the <code>Jpeg2000Container</code>, the profile, each <code>Jpeg2000Component</code>'s precision, sign
 and sampling, the wavelet, levels, layers and <code>Jpeg2000ProgressionOrder</code>, the tiling, the <code>Jpeg2000ColorSpace</code>, whether there is
-a palette, the <code>Jpeg2000Channel</code> definitions with their <code>Jpeg2000ChannelType</code>, and the comments.</p>
+a palette, the <code>Jpeg2000Channel</code> definitions with their <code>Jpeg2000ChannelType</code>, the comments, and whether the codestream is an
+HTJ2K one (<code>HighThroughput</code>).</p>
 <pre><code class="lang-csharp">using Raster image = Raster.Load(&quot;photo.jp2&quot;);
 var details = (Jpeg2000Details)image.Metadata.FormatDetails!;
 Console.WriteLine($&quot;{details.Container}, {(details.Reversible ? &quot;lossless 5/3&quot; : &quot;lossy 9/7&quot;)}, {details.DecompositionLevels} levels&quot;);
@@ -187,7 +194,16 @@ foreach (Jpeg2000Channel channel in details.Channels)
 {
     Console.WriteLine($&quot;Channel {channel.Channel}: {channel.Type} for color {channel.Association}&quot;);
 }
-</code></pre><h2 id="speed-and-threads">Speed and threads</h2>
+</code></pre><h2 id="high-throughput-jpeg-2000">High-Throughput JPEG 2000</h2>
+<p>HTJ2K replaces Part 1's bit-plane coder with a block coder that codes a code-block's samples in one cleanup pass, optionally
+refined by one SigProp and one MagRef pass, so decoding does several times less work per sample; everything else (tiles,
+packets, wavelets, the file format) is Part 1's. HT files load like any JPEG 2000 file, with the same options, reductions,
+regions and streaming, and <code>Jpeg2000Details.HighThroughput</code> tells them apart; a JPH file's container is <code>Jpeg2000Container.Jph</code>.</p>
+<p>The ISO/IEC 15444-4 HTJ2K conformance codestreams decode to the samples of the Part 1 codestreams they were transcoded from
+(or, where their bit-depth cuts magnitudes short, with no more error than the set's statistics give), and to OpenJPEG 2.5.4's
+samples wherever OpenJPEG decodes them: reversible ones exactly, irreversible ones within one level. On a 12-megapixel photo
+an HT file decodes in about 55 % of the time of the same photo as a Part 1 file on one thread.</p>
+<h2 id="speed-and-threads">Speed and threads</h2>
 <p>Code-blocks are independent, so tier 1 runs across cores by <code>EgamiContext.MaxParallelism</code>, with the same output at any thread
 count; the wavelets and color conversions are vectorized. On a 10-megapixel photo Egami decodes lossy files faster than OpenJPEG on one
 thread and every file two to four times faster on all cores.</p>
