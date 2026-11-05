@@ -115,6 +115,11 @@ For PSD layers (2.3.10), Adobe's Photoshop File Format Specification, the W3C Co
 published blend-mode formulas are the references, with psd-tools and ag-psd as the listed libraries. GIMP and Krita (GPL) are
 never read; ImageMagick runs only as a black-box tool.
 
+For DPX and Cineon, SMPTE ST 268 (DPX 1.0, 2.0 and 3.0) and Kodak's Cineon "4.5 DRAFT - Image File Format Proposal for Digital
+Pictures" are the references, with Kodak's published printing-density to linear conversion (reference white 685, black 95,
+0.002 density a code, film gamma 0.6). ImageMagick and FFmpeg run only as black-box tools, to make test files and to compare
+code values and speed; their DPX and Cineon code is never read.
+
 For HEIC, libheif and libde265 (LGPL-3), FFmpeg's HEVC decoder and openHEVC (LGPL-2.1) and x265 (GPL-2) are never read; they
 only run as black-box tools in Docker to make test files and references. Nokia's HEIF code (non-commercial licence) is never
 read.
@@ -200,6 +205,7 @@ LGPL code is never read.
 | Tool | License | Use |
 | --- | --- | --- |
 | FFmpeg, ffprobe | LGPL/GPL | Make test clips, decode and probe for comparison, in Docker |
+| ImageMagick (Magick.NET) | ImageMagick License, Apache 2.0 | Make DPX and Cineon test files and compare their code values and speed |
 | Adobe DNG SDK's dng_validate (1.7.1, built from Adobe's download outside the repository) | Adobe DNG SDK license | Validate the DNGs Egami writes in egami-compare's DNG writing gates (Lars's decision, 2026-11-01); its source is never read |
 | libvpx vpxenc and vpxdec | BSD-3 | Make VP8 and VP9 clips and give the expected frames, and decode the VP8 encoder's streams, in Docker (`tools/vp8ref`, `tools/video/vp9ref`) |
 | MKVToolNix (mkvinfo, mkvmerge, mkvextract) | GPL-2.0 | Check our Matroska files and make and check subtitle tracks, in Docker |

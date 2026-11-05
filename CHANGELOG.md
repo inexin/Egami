@@ -5,6 +5,19 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+DPX and Cineon (DICOM and science formats, stage B). All additive.
+
+- `DpxFormat` and `CineonFormat` in Egami.Formats.Extended, registered by `WithExtendedFormats()`, `WithDpx()` and
+  `WithCineon()`, read DPX (SMPTE ST 268, versions 1.0 to 3.0) and Cineon 4.5 in either byte order: 1, 8, 10, 12 and 16-bit
+  integer and 32 and 64-bit float samples, packed or filled to 32 bits (methods A and B), luma, depth, RGB, RGBA, ABGR,
+  single channels and CbYCr 4:2:2 and 4:4:4, and run-length coded elements. Load gives the stored code values, unchanged;
+  `DpxReaderOptions.Linearize` turns printing-density and logarithmic elements into scene-linear float with Kodak's
+  conversion, and `DpxReaderOptions.Element` and LoadAll reach every image element. Rows stream unless the element is
+  bottom-up or run-length coded.
+- Save writes DPX 2.0 (gray, RGB or RGBA at 8, 10, 12 or 16 bits, big endian unless `DpxWriterOptions.BigEndian` is off) and
+  Cineon (10-bit RGB). `DpxDetails` and `CineonDetails` keep the transfer, colorimetric and the file, film and television
+  fields (timecode, frame rate, slate), and the writers write them back.
+
 Canon sRAW and Panasonic levels as Adobe's (RAW follow-up). No API changes.
 
 - Canon sRAW and mRAW files take the baseline exposure Adobe DNG Converter gives them, which the camera table now records

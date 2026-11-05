@@ -348,3 +348,8 @@ ktx/
 
 fuzz/ktx-seeds/ and fuzz/ktx2-seeds/
   Copies of ktx/ files above, the seeds of the ktx and ktx2 fuzz targets. Public domain.
+
+fuzz/dpx-seeds/ and fuzz/cineon-seeds/
+  The seeds of the dpx and cineon fuzz targets: small DPX and Cineon files built by hand from generated samples (every packing,
+  run-length coding, CbYCr, float, two elements, flips), written by Egami, and written by ffmpeg and ImageMagick (run as tools)
+  from generated samples. Public domain.

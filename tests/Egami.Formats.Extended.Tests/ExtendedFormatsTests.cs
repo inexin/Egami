@@ -20,7 +20,7 @@ public class ExtendedFormatsTests
         // RAW goes first, ahead of TIFF (a DNG is a TIFF file); the others after the context's own.
         Assert.Equal("RAW", context.Formats[0].Name);
         Assert.Equal(core.Formats, context.Formats.Skip(1).Take(core.Formats.Count));
-        Assert.Equal(["PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "DDS", "KTX", "KTX2"], context.Formats.Skip(core.Formats.Count + 1).Select(f => f.Name));
+        Assert.Equal(["PCX", "SGI", "Sun raster", "XBM", "XPM", "WBMP", "Farbfeld", "DDS", "KTX", "KTX2", "DPX", "Cineon"], context.Formats.Skip(core.Formats.Count + 1).Select(f => f.Name));
 
         // Registering again replaces in place.
         Assert.Equal(context.Formats.Count, context.WithExtendedFormats().WithPcx().Formats.Count);
@@ -58,8 +58,8 @@ public class ExtendedFormatsTests
                 Rgba8 p = colors.Row(y)[x];
                 Rgba8 expected = format switch
                 {
-                    "Farbfeld" or "SGI" => p,
-                    "PCX" or "Sun raster" => p with { A = 255 },
+                    "Farbfeld" or "SGI" or "DPX" => p,
+                    "PCX" or "Sun raster" or "Cineon" => p with { A = 255 },
                     "XPM" => p.A < 128 ? default : p,
                     _ => Gray(p) >= 128 ? new Rgba8(255, 255, 255, 255) : new Rgba8(0, 0, 0, 255),
                 };
@@ -207,6 +207,8 @@ public class ExtendedFormatsTests
             "Sun raster" => [0x59, 0xA6, 0x6A, 0x95, 0, 0, 0xEA, 0x60, 0, 0, 0xEA, 0x60, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
             "SGI" => [.. (byte[])[0x01, 0xDA, 0, 1, 0, 3, 0xEA, 0x60, 0xEA, 0x60, 0, 3], .. new byte[500]],
             "XBM" => "#define a_width 60000\n#define a_height 60000\nstatic char a_bits[] = { 0x00 };\n"u8.ToArray(),
+            "DPX" => Sized(TestImages.Save(TestImages.Bitmap(), "DPX"), 772, 776),
+            "Cineon" => Sized(TestImages.Save(TestImages.Bitmap(), "Cineon"), 200, 204, 228, 232, 256, 260),
             _ => "/* XPM */\nstatic char *a[] = {\n\"60000 60000 1 1\",\n\". c #000000\",\n};\n"u8.ToArray(),
         };
         EgamiContext context = TestImages.Context with { Limits = new SafetyLimits { MaxPixels = 1_000_000 } };
@@ -265,6 +267,18 @@ public class ExtendedFormatsTests
         using Raster<Rgb8> back = Raster.Load<Rgb8>(rleSun, TestImages.Context);
         TestImages.AssertEqual(flat, back);
         Assert.True(((SunRasterDetails)back.Metadata.FormatDetails!).Rle);
+    }
+
+    /// <summary>Returns the header of a DPX or Cineon file with the big-endian sizes at <paramref name="fields"/> set to 60000.</summary>
+    private static byte[] Sized(byte[] file, params int[] fields)
+    {
+        byte[] header = file.AsSpan(0, 2048).ToArray();
+        foreach (int at in fields)
+        {
+            System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(header.AsSpan(at), 60000);
+        }
+
+        return header;
     }
 
     private static byte[] Pcx(int width, int height)
