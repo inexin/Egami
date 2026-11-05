@@ -9,7 +9,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: improper image header `/w/tests/images/psd/bad//depth7.psd' @ error/psd.c/ReadPSDImage/2480.",
+   "magickError": "magick: improper image header `/w/tests/images/psd/bad//depth7.psd' @ error/psd.c/ReadPSDImage/2481.",
    "pillowError": "cannot identify image file '/w/tests/images/psd/bad//depth7.psd'"
   },
   "bad/huge.psd": {
@@ -21,7 +21,7 @@
     "version": 1,
     "width": 300000
    },
-   "magickError": "magick: width or height exceeds limit `/w/tests/images/psd/bad//huge.psd' @ error/psd.c/ReadPSDImage/2473.",
+   "magickError": "magick: width or height exceeds limit `/w/tests/images/psd/bad//huge.psd' @ error/psd.c/ReadPSDImage/2474.",
    "pillowError": "Truncated File Read"
   },
   "bad/mode5.psd": {
@@ -44,7 +44,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: missing image channel `/w/tests/images/psd/bad//no-channels.psd' @ error/psd.c/ReadPSDImage/2466.",
+   "magickError": "magick: missing image channel `/w/tests/images/psd/bad//no-channels.psd' @ error/psd.c/ReadPSDImage/2467.",
    "pillowError": "not enough channels"
   },
   "bad/resources-too-long.psd": {
@@ -56,7 +56,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/bad//resources-too-long.psd' @ error/psd.c/ReadPSDImage/2615.",
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/bad//resources-too-long.psd' @ error/psd.c/ReadPSDImage/2616.",
    "pillowError": "cannot identify image file '/w/tests/images/psd/bad//resources-too-long.psd'"
   },
   "bad/rle-counts.psd": {
@@ -68,12 +68,12 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/bad//rle-counts.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/bad//rle-counts.psd' @ error/psd.c/ReadPSDImage/2727.",
    "pillowError": "image file is truncated (0 bytes not processed)",
    "pillowMode": "RGB"
   },
   "bad/signature.psd": {
-   "magickError": "magick: improper image header `/w/tests/images/psd/bad//signature.psd' @ error/psd.c/ReadPSDImage/2462.",
+   "magickError": "magick: improper image header `/w/tests/images/psd/bad//signature.psd' @ error/psd.c/ReadPSDImage/2463.",
    "pillowError": "cannot identify image file '/w/tests/images/psd/bad//signature.psd'"
   },
   "bad/truncated.psd": {
@@ -85,7 +85,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/bad//truncated.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/bad//truncated.psd' @ error/psd.c/ReadPSDImage/2727.",
    "pillowError": "image file is truncated (59 bytes not processed)",
    "pillowMode": "RGB"
   },
@@ -98,7 +98,7 @@
     "version": 3,
     "width": 64
    },
-   "magickError": "magick: improper image header `/w/tests/images/psd/bad//version3.psd' @ error/psd.c/ReadPSDImage/2462.",
+   "magickError": "magick: improper image header `/w/tests/images/psd/bad//version3.psd' @ error/psd.c/ReadPSDImage/2463.",
    "pillowError": "cannot identify image file '/w/tests/images/psd/bad//version3.psd'"
   },
   "bitmap-raw.psd": {
@@ -206,7 +206,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray16-zip.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray16-zip.psd' @ error/psd.c/ReadPSDImage/2727.",
    "pillowError": "cannot identify image file '/w/tests/images/psd/gray16-zip.psd'",
    "truth": "Gray16"
   },
@@ -219,7 +219,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray16-zipp.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray16-zipp.psd' @ error/psd.c/ReadPSDImage/2727.",
    "pillowError": "cannot identify image file '/w/tests/images/psd/gray16-zipp.psd'",
    "truth": "Gray16"
   },
@@ -244,7 +244,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray32-zipp.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray32-zipp.psd' @ error/psd.c/ReadPSDImage/2727.",
    "pillowError": "cannot identify image file '/w/tests/images/psd/gray32-zipp.psd'",
    "truth": "GrayF32"
   },
@@ -293,7 +293,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray8-zip.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray8-zip.psd' @ error/psd.c/ReadPSDImage/2727.",
    "pillowError": "cannot load this image",
    "pillowMode": "L",
    "truth": "Gray8"
@@ -307,7 +307,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray8-zipp.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/gray8-zipp.psd' @ error/psd.c/ReadPSDImage/2727.",
    "pillowError": "cannot load this image",
    "pillowMode": "L",
    "truth": "Gray8"
@@ -484,6 +484,28 @@
     "width": 64
    },
    "pillowMode": "L"
+  },
+  "layered-lab-modes8.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 8,
+    "height": 48,
+    "mode": 9,
+    "version": 1,
+    "width": 64
+   },
+   "pillowMode": "LAB"
+  },
+  "layered-lab16.psd": {
+   "header": {
+    "channels": 3,
+    "depth": 16,
+    "height": 48,
+    "mode": 9,
+    "version": 1,
+    "width": 64
+   },
+   "pillowError": "cannot identify image file '/w/tests/images/psd/layered-lab16.psd'"
   },
   "layered-lab8.psd": {
    "header": {
@@ -1031,7 +1053,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/rgb16-zipp.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/rgb16-zipp.psd' @ error/psd.c/ReadPSDImage/2727.",
    "pillowError": "cannot identify image file '/w/tests/images/psd/rgb16-zipp.psd'",
    "truth": "Rgb16"
   },
@@ -1067,7 +1089,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/rgb32-zipp.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/rgb32-zipp.psd' @ error/psd.c/ReadPSDImage/2727.",
    "pillowError": "cannot identify image file '/w/tests/images/psd/rgb32-zipp.psd'",
    "truth": "RgbF32"
   },
@@ -1140,7 +1162,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/rgb8-zip.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/rgb8-zip.psd' @ error/psd.c/ReadPSDImage/2727.",
    "pillowError": "cannot load this image",
    "pillowMode": "RGB",
    "truth": "Rgb8"
@@ -1154,7 +1176,7 @@
     "version": 1,
     "width": 64
    },
-   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/rgb8-zipp.psd' @ error/psd.c/ReadPSDImage/2726.",
+   "magickError": "magick: insufficient image data in file `/w/tests/images/psd/rgb8-zipp.psd' @ error/psd.c/ReadPSDImage/2727.",
    "pillowError": "cannot load this image",
    "pillowMode": "RGB",
    "truth": "Rgb8"
@@ -1162,7 +1184,7 @@
  },
  "tools": {
   "exiftool": "13.55",
-  "imagemagick": "Version: ImageMagick 7.1.2-34 Q16-HDRI x86_64 24891 https://imagemagick.org",
+  "imagemagick": "Version: ImageMagick 7.1.2-35 Q16-HDRI x86_64 24992 https://imagemagick.org",
   "pillow": "13.0.0"
  }
 }
