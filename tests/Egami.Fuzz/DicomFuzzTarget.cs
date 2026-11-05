@@ -5,9 +5,11 @@ using Egami.Formats.Extended.Dicom;
 namespace Egami.Fuzz;
 
 /// <summary>
-/// The dicom fuzz target (DICOM Build Plan task 15): reads the bytes as a DICOM file leniently and strictly, walks every element
-/// of every dataset and item and asks each for its value every way, and probes them through the registered format. Only
-/// EgamiExceptions may escape the reads; a getter may refuse a value of the wrong VR or a malformed number or date, as documented.
+/// The dicom fuzz target (DICOM Build Plan tasks 15 and 19): reads the bytes as a DICOM file leniently and strictly, walks every
+/// element of every dataset and item and asks each for its value every way, probes them through the registered format, and
+/// decodes the first frames' pixel data as shown, as modality values and as stored values, the last with an odd window. Only
+/// EgamiExceptions and the documented NotSupportedException (a transfer syntax or layout not decoded) may escape the loads; a
+/// getter may refuse a value of the wrong VR or a malformed number or date, as documented.
 /// </summary>
 internal static class DicomFuzzTarget
 {
@@ -21,6 +23,7 @@ internal static class DicomFuzzTarget
                 Walk(file.FileMetaInformation, 0);
                 Walk(file.Dataset, 0);
                 _ = file.TransferSyntax.Name;
+                Pixels(file, context, recovery);
             }
             catch (EgamiException)
             {
@@ -33,6 +36,32 @@ internal static class DicomFuzzTarget
         }
         catch (EgamiException)
         {
+        }
+    }
+
+    /// <summary>Decodes up to three frames every way a load can give them.</summary>
+    private static void Pixels(DicomFile file, EgamiContext context, RecoveryMode recovery)
+    {
+        DicomReaderOptions[] ways =
+        [
+            new() { Recovery = recovery },
+            new() { Recovery = recovery, Values = DicomValues.Modality },
+            new() { Recovery = recovery, Values = DicomValues.Stored },
+            new() { Recovery = recovery, WindowCenter = -3.5, WindowWidth = 0.25, WindowFunction = DicomVoiFunction.Sigmoid, VoiIndex = 7, PreferWindow = true },
+        ];
+        for (int frame = 0; frame < Math.Min(file.FrameCount, 3); frame++)
+        {
+            foreach (DicomReaderOptions way in ways)
+            {
+                try
+                {
+                    using Raster raster = file.LoadFrame(frame, way, context);
+                    _ = raster.Metadata.FormatDetails?.Copy();
+                }
+                catch (Exception e) when (e is EgamiException or NotSupportedException)
+                {
+                }
+            }
         }
     }
 

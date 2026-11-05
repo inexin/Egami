@@ -76,8 +76,9 @@ using DrawingPath = Egami.Drawing.Path;
 // must load strictly; dpx and cineon also load every element linearized and write DPX at every depth, which must load
 // strictly; raw loads every output (mosaic,
 // half size, preview) and develops with every demosaic, highlight, white balance and noise path.
-// The dicom target (DICOM Build Plan task 15, DicomFuzzTarget.cs) reads DICOM datasets leniently and strictly, asks every
-// element of every item for its value every way, and probes the file through the registered format.
+// The dicom target (DICOM Build Plan tasks 15 and 19, DicomFuzzTarget.cs) reads DICOM datasets leniently and strictly, asks
+// every element of every item for its value every way, probes the file through the registered format, and decodes the first
+// three frames as shown, as modality values, as stored values and with an odd window.
 // The isobox target (Phase 2.9.8, IsoBoxFuzzTarget.cs) walks the public ISO BMFF box walker over arbitrary bytes as a tree.
 // The avif-write target (Phase 2.9.6) runs the AV1 encoder on arbitrary planes and options, which must decode exactly to its
 // reconstruction (and its source when lossless), and the AVIF writer with alpha and grids, whose lossless files load back exactly.
