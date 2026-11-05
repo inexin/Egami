@@ -43,6 +43,15 @@ DICOM dataset reading, a preview (DICOM Build Plan stage D, first part). Additiv
 - Damaged files read leniently with `Dicom.*` warnings, or throw `CorruptDataException` when strict; nesting, memory and
   inflated size are bounded by the safety limits. A `dicom` fuzz target is added.
 
+Stored samples (DICOM and science formats, stage D0). Additive API; loading a `Raster` is unchanged.
+
+- `SampleImage.Load` decodes a JPEG (baseline, extended 12-bit, lossless at 2 to 16 bits; gray or three components), JPEG
+  2000 or JPEG XL (integer samples up to 16 bits) to the values its codestream stores, for a container such as DICOM that
+  applies its own rescale, window and color rules: one `int` a sample, each component at its own precision and sign
+  (`SampleComponent`), with no color conversion (a YCbCr JPEG stays YCbCr, `SampleColor` says so), no widening and no
+  offset. JPEG 2000's signed components come back signed, as two's-complement values, not offset by half their range. A
+  `FormatInfo` overload reads a codestream taken out of a container without detecting it.
+
 Canon sRAW and Panasonic levels as Adobe's (RAW follow-up). No API changes.
 
 - Canon sRAW and mRAW files take the baseline exposure Adobe DNG Converter gives them, which the camera table now records

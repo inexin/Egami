@@ -105,6 +105,21 @@ Each format is described by a `FormatInfo`: its name, extensions, MIME types, an
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ApiExamples.cs#format-info)]
 
+## Stored samples
+
+A container that keeps its own pixel description, such as DICOM, needs the values a codestream stores rather than pixels.
+`SampleImage.Load` decodes JPEG (baseline, extended 12-bit and lossless at 2 to 16 bits), JPEG 2000 and JPEG XL (integer
+samples up to 16 bits) that way: one `int` a sample, interleaved, at each component's own precision and sign
+(`SampleComponent`), with no color conversion (`SampleColor` says what the components are), no widening and no offset. Other
+formats throw `NotSupportedException`, as do `Region`, `MinimumSize` and `ConvertColorTo`. Chroma at less than full resolution
+is brought to the image's size.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/StoredSamples.cs#sample-image)]
+
+A codestream taken out of a container is read as the format the container names, without detection:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/StoredSamples.cs#sample-image-format)]
+
 ## Recipes
 
 Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
