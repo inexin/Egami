@@ -155,8 +155,9 @@ public static class ExtendedContextExtensions
     }
 
     /// <summary>
-    /// Returns a copy of <paramref name="context"/> that detects and probes DICOM (<see cref="DicomFormat"/>). In preview, so
-    /// <see cref="WithExtendedFormats"/> leaves it out; pixel data decoding comes in a later version.
+    /// Returns a copy of <paramref name="context"/> that reads and writes DICOM (<see cref="DicomFormat"/>). In preview, so
+    /// <see cref="WithExtendedFormats"/> leaves it out. DICOM is detected ahead of the other formats: the 128-byte preamble may
+    /// hold another format's header (PS3.10 section 7.1 allows a TIFF one), which would otherwise be found first.
     /// </summary>
     /// <param name="context">The context to add the format to.</param>
     /// <returns>The new context.</returns>
@@ -165,7 +166,7 @@ public static class ExtendedContextExtensions
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Dicom.cs" region="dicom-probe"/>
     /// </example>
     [System.Diagnostics.CodeAnalysis.Experimental(DicomFile.DiagnosticId, UrlFormat = DicomFile.DiagnosticUrl)]
-    public static EgamiContext WithDicom(this EgamiContext context) => Add(context, DicomFormat.Info);
+    public static EgamiContext WithDicom(this EgamiContext context) => First(context, DicomFormat.Info);
 
     private static EgamiContext Add(EgamiContext context, FormatInfo format)
     {

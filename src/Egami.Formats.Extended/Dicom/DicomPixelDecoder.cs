@@ -151,7 +151,7 @@ internal sealed class DicomPixelDecoder
                 throw _input.Corrupt(pixels.Offset, $"The pixel data is encapsulated, but {Syntax} stores it native.");
             }
 
-            UnpackNative(pixels.RawValue.Span, Syntax.IsBigEndian, FrameBits() * frame, samples, pixels.Offset);
+            UnpackNative(NativeBytes(pixels), Syntax.IsBigEndian, FrameBits() * frame, samples, pixels.Offset);
             return new DicomSamples(components, samples, false);
         }
 
@@ -178,54 +178,74 @@ internal sealed class DicomPixelDecoder
     public Raster<Pixels.Rgb8>? DecodeJpegRgb(int frame, bool clean = false)
     {
         return Codec == DicomCodec.Jpeg && _info.SamplesPerPixel == 3 && _info.BitsStored <= 8 && _info.Photometric is "YBR_FULL" or "YBR_FULL_422"
-            ? DecodeJpeg<Pixels.Rgb8>(JpegFrame(frame), clean)
+            ? Decode<Pixels.Rgb8>(JpegFrame(frame), JpegFormat.Info, clean)
             : null;
     }
 
     /// <summary>
-    /// Decodes a monochrome JPEG frame whose precision is Bits Stored through the JPEG reader and maps it in place to the levels
-    /// <paramref name="display"/> shows, or returns <see langword="null"/> for any other frame or one the codec recovered from damage.
+    /// Decodes a monochrome JPEG, JPEG-LS or JPEG 2000 frame of one unsigned component whose precision is Bits Stored or more (GDCM
+    /// codes 12-bit data at 16) through the codec's own reader and maps it in place to the levels <paramref name="display"/> shows,
+    /// or returns <see langword="null"/> for any other frame or one the codec recovered from damage.
     /// </summary>
-    public Raster? DecodeJpegGray(int frame, DicomDisplay display, Action<string, string> warn)
+    public Raster? DecodeGray(int frame, DicomDisplay display, Action<string, string> warn)
     {
-        if (Codec != DicomCodec.Jpeg || !_info.IsMonochrome || _info.SamplesPerPixel != 1)
+        if (Codec is not (DicomCodec.Jpeg or DicomCodec.JpegLs or DicomCodec.Jpeg2000) || !_info.IsMonochrome || _info.SamplesPerPixel != 1)
         {
             return null;
         }
 
         ReadOnlyMemory<byte> codestream = JpegFrame(frame);
-        int precision = JpegPrecision(codestream.Span);
+        (int precision, FormatInfo format) = Codec == DicomCodec.Jpeg2000
+            ? (J2kPrecision(codestream.Span), Jpeg2000Format.Info)
+            : (JpegPrecision(codestream.Span), Codec == DicomCodec.JpegLs ? JpegLsFormat.Info : JpegFormat.Info);
         bool wide = display.Layout.BitsPerChannel > 8;
-        if (precision != _info.BitsStored || wide != precision > 8)
+        if (precision < _info.BitsStored || precision > 16 || wide != precision > 8)
         {
             return null;
         }
 
-        return wide ? MapGray<Pixels.Gray16, ushort>(codestream, precision, display, warn) : MapGray<Pixels.Gray8, byte>(codestream, precision, display, warn);
+        return wide
+            ? MapGray<Pixels.Gray16, ushort>(codestream, format, precision, display, warn)
+            : MapGray<Pixels.Gray8, byte>(codestream, format, precision, display, warn);
     }
 
-    private Raster<TPixel>? MapGray<TPixel, TValue>(ReadOnlyMemory<byte> codestream, int precision, DicomDisplay display, Action<string, string> warn)
+    private Raster<TPixel>? MapGray<TPixel, TValue>(ReadOnlyMemory<byte> codestream, FormatInfo format, int precision, DicomDisplay display, Action<string, string> warn)
         where TPixel : unmanaged, Pixels.IPixelType<TPixel>
         where TValue : unmanaged, System.Numerics.IBinaryInteger<TValue>
     {
-        Raster<TPixel>? raster = DecodeJpeg<TPixel>(codestream, clean: true);
+        Raster<TPixel>? raster = Decode<TPixel>(codestream, format, clean: true);
         if (raster is null)
         {
             return null;
         }
 
-        // The reader widens the codestream's values to the pixel type's range; each decoded value maps back to its stored value.
+        // The reader widens the codestream's values to the pixel type's range; each decoded value maps back to its code, and the
+        // code to its stored value as FromCodec takes it: signed data sign-extended from Bits Stored, unsigned kept (the display
+        // clamps codes past Bits Stored).
         int top = typeof(TValue) == typeof(byte) ? 255 : 65535;
         double scale = ((1L << precision) - 1) / (double)top;
+        int bits = _info.BitsStored, unused = 32 - bits, mask = (1 << bits) - 1;
         int[] stored = new int[top + 1];
         for (int v = 0; v <= top; v++)
         {
-            int value = (int)((v * scale) + 0.5);
-            stored[v] = _info.IsSigned && value >= 1 << (precision - 1) ? value - (1 << precision) : value;
+            int code = (int)((v * scale) + 0.5);
+            stored[v] = _info.IsSigned ? ((code & mask) << unused) >> unused : code;
         }
 
-        (int Min, int Max) Range()
+        (long Min, long Max) Range()
         {
+            if (!_info.IsSigned)
+            {
+                // Stored values rise with the decoded ones, so the smallest and largest decoded values give the range.
+                TValue low = TValue.CreateTruncating(top), high = TValue.Zero;
+                for (int y = 0; y < raster.Height; y++)
+                {
+                    MinMax(MemoryMarshal.Cast<TPixel, TValue>(raster.Row(y)), ref low, ref high);
+                }
+
+                return low > high ? (0, 0) : (stored[int.CreateTruncating(low)], stored[int.CreateTruncating(high)]);
+            }
+
             bool[] seen = new bool[top + 1];
             for (int y = 0; y < raster.Height; y++)
             {
@@ -248,12 +268,29 @@ internal sealed class DicomPixelDecoder
             return min > most ? (0, 0) : (min, most);
         }
 
-        int first = _info.IsSigned ? -(1 << (precision - 1)) : 0;
-        ushort[] levels = display.Levels(first, 1 << precision, Range, warn);
+        int first = _info.IsSigned ? -(1 << (bits - 1)) : 0;
+        ushort[] levels = display.Levels(first, 1 << bits, Range, warn);
         TValue[] table = new TValue[top + 1];
         for (int v = 0; v <= top; v++)
         {
-            table[v] = TValue.CreateTruncating(levels[stored[v] - first]);
+            table[v] = TValue.CreateTruncating(levels[Math.Clamp(stored[v] - first, 0, levels.Length - 1)]);
+        }
+
+        // A full-range frame with no window (or one that spans it) shows as decoded: nothing to map. Only the values the reader
+        // gives can occur: the codes themselves at 8 or 16-bit precision; otherwise the JPEG and JPEG-LS readers widen each code
+        // to round(code × top / max), while how the JPEG 2000 reader widens is its own, so its frames are always mapped.
+        bool exact = precision == (top == 255 ? 8 : 16);
+        bool identity = exact || format != Jpeg2000Format.Info;
+        int codes = (1 << precision) - 1;
+        for (long code = 0; code <= codes && identity; code++)
+        {
+            int v = exact ? (int)code : (int)(((code * top) + (codes >> 1)) / codes);
+            identity = int.CreateTruncating(table[v]) == v;
+        }
+
+        if (identity)
+        {
+            return raster;
         }
 
         for (int y = 0; y < raster.Height; y++)
@@ -262,6 +299,37 @@ internal sealed class DicomPixelDecoder
         }
 
         return raster;
+    }
+
+    /// <summary>Widens <paramref name="low"/> and <paramref name="high"/> to the smallest and largest values of <paramref name="row"/>.</summary>
+    private static void MinMax<TValue>(ReadOnlySpan<TValue> row, ref TValue low, ref TValue high)
+        where TValue : unmanaged, System.Numerics.IBinaryInteger<TValue>
+    {
+        int x = 0;
+        if (System.Numerics.Vector.IsHardwareAccelerated && row.Length >= System.Numerics.Vector<TValue>.Count)
+        {
+            System.Numerics.Vector<TValue> lows = new(low), highs = new(high);
+            ReadOnlySpan<System.Numerics.Vector<TValue>> vectors = MemoryMarshal.Cast<TValue, System.Numerics.Vector<TValue>>(row);
+            foreach (System.Numerics.Vector<TValue> v in vectors)
+            {
+                lows = System.Numerics.Vector.Min(lows, v);
+                highs = System.Numerics.Vector.Max(highs, v);
+            }
+
+            for (int i = 0; i < System.Numerics.Vector<TValue>.Count; i++)
+            {
+                low = TValue.Min(low, lows[i]);
+                high = TValue.Max(high, highs[i]);
+            }
+
+            x = vectors.Length * System.Numerics.Vector<TValue>.Count;
+        }
+
+        for (; x < row.Length; x++)
+        {
+            low = TValue.Min(low, row[x]);
+            high = TValue.Max(high, row[x]);
+        }
     }
 
     private static void Map<TValue>(Span<TValue> row, TValue[] table)
@@ -283,11 +351,11 @@ internal sealed class DicomPixelDecoder
         return FrameData(Fragments(pixels), frame, pixels.Offset);
     }
 
-    /// <summary>Loads a JPEG codestream of the image's size, or returns <see langword="null"/>.</summary>
-    private Raster<TPixel>? DecodeJpeg<TPixel>(ReadOnlyMemory<byte> codestream, bool clean)
+    /// <summary>Loads a codestream of the image's size, or returns <see langword="null"/>.</summary>
+    private Raster<TPixel>? Decode<TPixel>(ReadOnlyMemory<byte> codestream, FormatInfo format, bool clean)
         where TPixel : unmanaged, Pixels.IPixelType<TPixel>
     {
-        Raster<TPixel> raster = Raster.Load<TPixel>(codestream, JpegFormat.Info, _input.Context, new ReaderOptions { Recovery = _options.Recovery, ReadMetadata = false });
+        Raster<TPixel> raster = Raster.Load<TPixel>(codestream, format, _input.Context, new ReaderOptions { Recovery = _options.Recovery, ReadMetadata = false });
         if (raster.Width != _info.Columns || raster.Height != _info.Rows || (clean && raster.Metadata.Warnings.Count > 0))
         {
             raster.Dispose();
@@ -302,7 +370,26 @@ internal sealed class DicomPixelDecoder
         return raster;
     }
 
-    /// <summary>Returns the sample precision of a JPEG codestream's first frame header (ITU-T T.81 B.2.2), or 0.</summary>
+    /// <summary>
+    /// Returns the precision of a JPEG 2000 codestream (raw, or the first in a JP2 file) of one unsigned, unsubsampled component
+    /// (ITU-T T.800 A.5.1), or 0 for any other.
+    /// </summary>
+    private static int J2kPrecision(ReadOnlySpan<byte> data)
+    {
+        int siz = data.IndexOf((ReadOnlySpan<byte>)[0xFF, 0x4F, 0xFF, 0x51]);
+        if (siz < 0 || data.Length < siz + 2 + 44)
+        {
+            return 0;
+        }
+
+        // After SOC: SIZ marker, Lsiz, Rsiz, eight 32-bit sizes, Csiz, then Ssiz, XRsiz and YRsiz of each component.
+        int at = siz + 2;
+        int components = BinaryPrimitives.ReadUInt16BigEndian(data[(at + 38)..]);
+        byte ssiz = data[at + 40];
+        return components == 1 && (ssiz & 0x80) == 0 && data[at + 41] == 1 && data[at + 42] == 1 ? (ssiz & 0x7F) + 1 : 0;
+    }
+
+    /// <summary>Returns the sample precision of a JPEG or JPEG-LS codestream's first frame header (ITU-T T.81 B.2.2, T.87 C.2.2), or 0.</summary>
     private static int JpegPrecision(ReadOnlySpan<byte> data)
     {
         int i = 2;
@@ -320,7 +407,7 @@ internal sealed class DicomPixelDecoder
                 continue;
             }
 
-            if (marker is >= 0xC0 and <= 0xCF and not 0xC4 and not 0xC8 and not 0xCC)
+            if (marker is (>= 0xC0 and <= 0xCF and not 0xC4 and not 0xC8 and not 0xCC) or 0xF7)
             {
                 return data[i + 4];
             }
@@ -457,6 +544,28 @@ internal sealed class DicomPixelDecoder
         }
     }
 
+    /// <summary>
+    /// Gets native pixel data's bytes in sample order. OW is a run of 16-bit words in the transfer syntax's byte order (PS3.5
+    /// section 6.2), so 1-bit and 8-bit samples packed into OW in a big-endian file come with the two bytes of each word
+    /// swapped; OB is bytes and needs nothing.
+    /// </summary>
+    private ReadOnlySpan<byte> NativeBytes(DicomElement pixels)
+    {
+        ReadOnlySpan<byte> raw = pixels.RawValue.Span;
+        if (!Syntax.IsBigEndian || pixels.VR != DicomVR.OW || _info.BitsAllocated >= 16)
+        {
+            return raw;
+        }
+
+        byte[] swapped = raw.ToArray();
+        for (int i = 0; i + 1 < swapped.Length; i += 2)
+        {
+            (swapped[i], swapped[i + 1]) = (swapped[i + 1], swapped[i]);
+        }
+
+        return swapped;
+    }
+
     /// <summary>Reads value <paramref name="at"/> of a frame, or 0 past what the data holds.</summary>
     private static int Value(ReadOnlySpan<byte> data, bool bigEndian, long bitOffset, long at, long values, int bits, int shift, int stored, bool signed)
     {
@@ -476,7 +585,11 @@ internal sealed class DicomPixelDecoder
         return Stored(raw, shift, stored, signed);
     }
 
-    /// <summary>Takes the stored bits from under the high bit, sign-extended when signed; unsigned 32-bit values above <see cref="int.MaxValue"/> are clamped.</summary>
+    /// <summary>
+    /// Takes the stored bits from under the high bit, sign-extended when signed. Unsigned 32-bit values keep their 32 bits, so
+    /// those above <see cref="int.MaxValue"/> read negative as <see langword="int"/>: whoever reads them takes them as
+    /// <see langword="uint"/>.
+    /// </summary>
     internal static int Stored(uint raw, int shift, int stored, bool signed)
     {
         uint value = raw >> shift;
@@ -491,7 +604,7 @@ internal sealed class DicomPixelDecoder
             return ((int)value << unused) >> unused;
         }
 
-        return value > int.MaxValue ? int.MaxValue : (int)value;
+        return unchecked((int)value);
     }
 
     /// <summary>Unpacks a whole interleaved frame of 8, 16 or 32-bit words.</summary>

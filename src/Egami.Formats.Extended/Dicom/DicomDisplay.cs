@@ -127,22 +127,25 @@ internal sealed class DicomDisplay
             : photometric is "YBR_FULL" or "YBR_FULL_422" ? DicomYbr.Full
             : photometric is "YBR_PARTIAL_422" or "YBR_PARTIAL_420" ? DicomYbr.Partial
             : DicomYbr.None;
-        return new ColourRender(frame.Samples, _info.Columns, max, target, ybr);
+        return new ColourRender(frame.Samples, _info.Columns, max, target, ybr, Math.Max(0, bits - 16));
     }
 
     private DicomRender Monochrome(int[] samples, Action<string, string> warn)
     {
         int bits = _info.BitsStored;
-        (int min, int max) = bits <= 16
+
+        // Unsigned 32-bit samples hold their bits as they are; values above int.MaxValue read negative unless taken as uint.
+        bool unsigned32 = !_info.IsSigned && bits == 32;
+        (long min, long max) = bits <= 16
             ? (_info.IsSigned ? (-(1 << (bits - 1)), (1 << (bits - 1)) - 1) : (0, (1 << bits) - 1))
-            : Range(samples);
-        Func<long, double> transform = Transform(() => Range(samples), warn);
+            : Range(samples, unsigned32);
+        Func<long, double> transform = Transform(() => Range(samples, unsigned32), warn);
 
         // The table covers every value the stored bits hold (inputs outside it, from a codestream deeper than Bits Stored, are
         // clamped to it); wider data is scanned for its range.
         bool float32 = Layout.ChannelType == PixelChannelType.Float32;
-        long span = (long)max - min + 1;
-        if (span <= 1 << 22)
+        long span = max - min + 1;
+        if (span <= 1 << 22 && !unsigned32)
         {
             if (float32)
             {
@@ -152,7 +155,7 @@ internal sealed class DicomDisplay
                     table[i] = (float)transform(min + i);
                 }
 
-                return new TableRender<float>(samples, _info.Columns, min, table);
+                return new TableRender<float>(samples, _info.Columns, (int)min, table);
             }
 
             ushort[] levels = new ushort[span];
@@ -162,11 +165,11 @@ internal sealed class DicomDisplay
             }
 
             return Layout.BitsPerChannel > 8
-                ? new TableRender<ushort>(samples, _info.Columns, min, levels)
-                : new TableRender<byte>(samples, _info.Columns, min, [.. levels.Select(v => (byte)v)]);
+                ? new TableRender<ushort>(samples, _info.Columns, (int)min, levels)
+                : new TableRender<byte>(samples, _info.Columns, (int)min, [.. levels.Select(v => (byte)v)]);
         }
 
-        return new FunctionRender(samples, _info.Columns, transform, float32 ? 32 : Layout.BitsPerChannel);
+        return new FunctionRender(samples, _info.Columns, transform, float32 ? 32 : Layout.BitsPerChannel, unsigned32);
     }
 
     /// <summary>
@@ -174,7 +177,7 @@ internal sealed class DicomDisplay
     /// for an image shown as Gray8 or Gray16; <paramref name="range"/> gives the frame's smallest and largest stored values,
     /// asked for only when the frame gives no window.
     /// </summary>
-    public ushort[] Levels(int first, int count, Func<(int Min, int Max)> range, Action<string, string> warn)
+    public ushort[] Levels(int first, int count, Func<(long Min, long Max)> range, Action<string, string> warn)
     {
         Func<long, double> transform = Transform(range, warn);
         ushort[] levels = new ushort[count];
@@ -187,7 +190,7 @@ internal sealed class DicomDisplay
     }
 
     /// <summary>Returns the whole transform from a stored value to a loaded value, for <see cref="DicomReaderOptions.Values"/>.</summary>
-    private Func<long, double> Transform(Func<(int Min, int Max)> range, Action<string, string> warn)
+    private Func<long, double> Transform(Func<(long Min, long Max)> range, Action<string, string> warn)
     {
         DicomFrameParameters p = _parameters;
         DicomLut? modality = p.ModalityLut;
@@ -215,27 +218,28 @@ internal sealed class DicomDisplay
         return x => value(toModality(x));
     }
 
-    /// <summary>Returns the smallest and largest of the samples.</summary>
-    private static (int Min, int Max) Range(int[] samples)
+    /// <summary>Returns the smallest and largest of the samples, taken as unsigned when <paramref name="unsigned32"/>.</summary>
+    private static (long Min, long Max) Range(int[] samples, bool unsigned32)
     {
         if (samples.Length == 0)
         {
             return (0, 0);
         }
 
-        int min = int.MaxValue;
-        int max = int.MinValue;
+        long min = long.MaxValue;
+        long max = long.MinValue;
         foreach (int v in samples)
         {
-            min = Math.Min(min, v);
-            max = Math.Max(max, v);
+            long value = unsigned32 ? (uint)v : v;
+            min = Math.Min(min, value);
+            max = Math.Max(max, value);
         }
 
         return (min, max);
     }
 
     /// <summary>Returns the VOI and presentation transform, from a modality value to a shown level of the output's range.</summary>
-    private Func<double, double> Voi(Func<long, double> toModality, Func<(int Min, int Max)> range, Action<string, string> warn)
+    private Func<double, double> Voi(Func<long, double> toModality, Func<(long Min, long Max)> range, Action<string, string> warn)
     {
         DicomFrameParameters p = _parameters;
         double top = Layout.BitsPerChannel > 8 ? 65535 : 255;
@@ -265,7 +269,7 @@ internal sealed class DicomDisplay
                 warn("WindowInvalid", "The file's window width is not greater than 0; the frame's range is shown instead.");
             }
 
-            (int min, int max) = range();
+            (long min, long max) = range();
             double low = Math.Min(toModality(min), toModality(max));
             double high = Math.Max(toModality(min), toModality(max));
             if (_parameters.ModalityLut is not null)
@@ -379,11 +383,12 @@ internal sealed class RasterRender(Raster<Rgb8> raster) : DicomRender, IDisposab
 }
 
 /// <summary>Monochrome values computed one by one, for stored ranges too wide for a table.</summary>
-internal sealed class FunctionRender(int[] samples, int width, Func<long, double> value, int bits) : DicomRender
+internal sealed class FunctionRender(int[] samples, int width, Func<long, double> transform, int bits, bool unsigned32) : DicomRender
 {
     public override void Row(int y, Span<byte> row)
     {
         ReadOnlySpan<int> source = samples.AsSpan(y * width, width);
+        Func<int, double> value = unsigned32 ? v => transform((uint)v) : v => transform(v);
         if (bits == 32)
         {
             Span<float> target = MemoryMarshal.Cast<byte, float>(row);
@@ -490,9 +495,12 @@ internal sealed class ColourRender : DicomRender
     private readonly int _target;
     private readonly DicomYbr _ybr;
     private readonly ushort[] _scale;
+    private readonly int _shift;
 
-    public ColourRender(int[] samples, int width, int max, int target, DicomYbr ybr)
+    /// <summary>Renders colour samples of up to 16 bits; wider ones are first shifted right by <paramref name="shift"/> bits.</summary>
+    public ColourRender(int[] samples, int width, int max, int target, DicomYbr ybr, int shift)
     {
+        _shift = shift;
         _samples = samples;
         _width = width;
         _max = max;
@@ -518,6 +526,13 @@ internal sealed class ColourRender : DicomRender
             int r = source[i];
             int g = source[i + 1];
             int b = source[i + 2];
+            if (_shift > 0)
+            {
+                // Samples wider than 16 bits keep their top 16 (32-bit ones taken as unsigned, which their bits are).
+                r = (int)((uint)r >> _shift);
+                g = (int)((uint)g >> _shift);
+                b = (int)((uint)b >> _shift);
+            }
             if (_ybr != DicomYbr.None)
             {
                 double l = r;

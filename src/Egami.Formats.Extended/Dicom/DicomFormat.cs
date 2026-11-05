@@ -127,14 +127,16 @@ internal sealed class DicomReader : ExtendedReader, IMultiImageReader, IFormatRe
     }
 
     /// <summary>
-    /// Returns a shown JPEG frame as the JPEG reader decoded it, mapped in place, with no second raster or copy, or
+    /// Returns a shown JPEG, JPEG-LS or JPEG 2000 frame as its codec's reader decoded it, mapped in place, with no second raster or copy, or
     /// <see langword="null"/> for a frame that goes row by row through <see cref="Open(EgamiInput, DicomFile, DicomReaderOptions)"/>.
     /// </summary>
     private static Raster? Whole(EgamiInput input, DicomReaderOptions options)
     {
         DicomFile file = options.File!;
         DicomImageInfo info = DicomImageInfo.Read(file);
-        if (options.Values != DicomValues.Display || options.Frame >= info.Frames || DicomPixelDecoder.CodecFor(file.TransferSyntax.Uid) != DicomPixelDecoder.DicomCodec.Jpeg)
+        DicomPixelDecoder.DicomCodec codec = DicomPixelDecoder.CodecFor(file.TransferSyntax.Uid);
+        if (options.Values != DicomValues.Display || options.Frame >= info.Frames
+            || codec is not (DicomPixelDecoder.DicomCodec.Jpeg or DicomPixelDecoder.DicomCodec.JpegLs or DicomPixelDecoder.DicomCodec.Jpeg2000))
         {
             return null;
         }
@@ -145,7 +147,7 @@ internal sealed class DicomReader : ExtendedReader, IMultiImageReader, IFormatRe
         DicomPixelDecoder decoder = new(info, input, options, Note);
         Raster? raster = display.Layout.ChannelOrder == PixelChannelOrder.Rgb
             ? display.Layout.BitsPerChannel == 8 ? decoder.DecodeJpegRgb(options.Frame, clean: true) : null
-            : decoder.DecodeJpegGray(options.Frame, display, Note);
+            : decoder.DecodeGray(options.Frame, display, Note);
         if (raster is null)
         {
             return null;

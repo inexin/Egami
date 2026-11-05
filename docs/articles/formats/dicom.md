@@ -95,9 +95,9 @@ the VOI LUT, or the numbers behind the picture.
 | --- | --- | --- |
 | `Display` (default) | `Gray8` or `Gray16`, as above | `Rgb8` or `Rgb16`, YBR converted to RGB, palette indices through the colour tables |
 | `Modality` | `GrayF32` modality values, such as Hounsfield units | As `Display` |
-| `Stored` | `GrayF32` stored values with their sign (exact to 2^24; unsigned 32-bit values above 2^31 − 1 are clamped) | `Rgb8` or `Rgb16` as stored, YBR not converted; palette indices as `GrayF32` |
+| `Stored` | `GrayF32` stored values with their sign (exact to 2^24) | `Rgb8` or `Rgb16` as stored (samples wider than 16 bits by their top 16), YBR not converted; palette indices as `GrayF32` |
 
-Colour: RGB is scaled to 8 or 16 bits; YBR_FULL and YBR_FULL_422 convert by the full-range equations of PS3.3 C.7.6.3.1.2,
+Colour: RGB is scaled to 8 or 16 bits (32-bit samples keep their top 16); YBR_FULL and YBR_FULL_422 convert by the full-range equations of PS3.3 C.7.6.3.1.2,
 YBR_PARTIAL_422 and YBR_PARTIAL_420 by the BT.601 studio-range ones; YBR_RCT and YBR_ICT are already RGB once the JPEG 2000
 decoder undoes its component transform, and JPEG XL decodes to RGB. PALETTE COLOR goes through the red, green and blue tables,
 segmented ones included, to `Rgb8` for 8-bit tables and `Rgb16` for 16-bit ones.
