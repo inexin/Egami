@@ -36,6 +36,7 @@ def public_api():
     """Returns the public types and the public methods that take options, from the declared API."""
     types, methods = set(), set()
     for line in (line for f in API_FILES for line in open(f, encoding="utf-8")):
+        line = re.sub(r"^\[[A-Z0-9]+\]", "", line.strip())  # the [ID] prefix of an [Experimental] symbol
         line = re.sub(r"^((abstract|sealed|static|override|readonly|virtual|const) )*", "", line.strip())
         if not line or line.startswith("#") or line.startswith("*REMOVED*"):
             continue

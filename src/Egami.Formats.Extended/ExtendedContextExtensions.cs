@@ -1,4 +1,5 @@
 using Egami.Formats.Extended.Dds;
+using Egami.Formats.Extended.Dicom;
 using Egami.Formats.Extended.Dpx;
 using Egami.Formats.Extended.Farbfeld;
 using Egami.Formats.Extended.JpegLs;
@@ -145,6 +146,19 @@ public static class ExtendedContextExtensions
         ArgumentNullException.ThrowIfNull(context);
         return context with { Formats = [format, .. context.Formats.Where(f => !string.Equals(f.Name, format.Name, StringComparison.OrdinalIgnoreCase))] };
     }
+
+    /// <summary>
+    /// Returns a copy of <paramref name="context"/> that detects and probes DICOM (<see cref="DicomFormat"/>). In preview, so
+    /// <see cref="WithExtendedFormats"/> leaves it out; pixel data decoding comes in a later version.
+    /// </summary>
+    /// <param name="context">The context to add the format to.</param>
+    /// <returns>The new context.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Dicom.cs" region="dicom-probe"/>
+    /// </example>
+    [System.Diagnostics.CodeAnalysis.Experimental(DicomFile.DiagnosticId, UrlFormat = DicomFile.DiagnosticUrl)]
+    public static EgamiContext WithDicom(this EgamiContext context) => Add(context, DicomFormat.Info);
 
     private static EgamiContext Add(EgamiContext context, FormatInfo format)
     {

@@ -76,6 +76,8 @@ using DrawingPath = Egami.Drawing.Path;
 // must load strictly; dpx and cineon also load every element linearized and write DPX at every depth, which must load
 // strictly; raw loads every output (mosaic,
 // half size, preview) and develops with every demosaic, highlight, white balance and noise path.
+// The dicom target (DICOM Build Plan task 15, DicomFuzzTarget.cs) reads DICOM datasets leniently and strictly, asks every
+// element of every item for its value every way, and probes the file through the registered format.
 // The isobox target (Phase 2.9.8, IsoBoxFuzzTarget.cs) walks the public ISO BMFF box walker over arbitrary bytes as a tree.
 // The avif-write target (Phase 2.9.6) runs the AV1 encoder on arbitrary planes and options, which must decode exactly to its
 // reconstruction (and its source when lossless), and the AVIF writer with alpha and grids, whose lossless files load back exactly.
@@ -229,6 +231,7 @@ static Action<Stream> Target(string name) => name switch
     "av1" => stream => Egami.Fuzz.AvifFuzzTarget.DecodeAv1(ReadAll(stream), Context()),
     "av1stream" => stream => Egami.Fuzz.AvifFuzzTarget.DecodeStream(ReadAll(stream), Context()),
     "pcx" or "sgi" or "sun" or "xbm" or "xpm" or "wbmp" or "farbfeld" or "dds" or "ktx" or "ktx2" or "jpegls" or "dpx" or "cineon" or "raw" => stream => Egami.Fuzz.ExtendedFuzzTarget.Load(ReadAll(stream), Context(), name),
+    "dicom" => stream => Egami.Fuzz.DicomFuzzTarget.Load(ReadAll(stream), Context()),
     "heic" => stream => Egami.Fuzz.HeicFuzzTarget.Load(ReadAll(stream), Context()),
     "isobox" => stream => Egami.Fuzz.IsoBoxFuzzTarget.Walk(ReadAll(stream)),
     "heicbox" => stream => Egami.Fuzz.HeicFuzzTarget.LoadBoxes(ReadAll(stream), Context()),
