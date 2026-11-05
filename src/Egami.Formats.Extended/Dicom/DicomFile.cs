@@ -48,7 +48,7 @@ public sealed class DicomFile
     public int FrameCount => Math.Max(DicomImageInfo.Integer(Dataset, 0x0028, 0x0008, 1), 1);
 
     /// <summary>Gets the PS3.6 edition whose data dictionary names tags, such as <c>DICOM PS3.6 2026d</c>.</summary>
-    public static string DictionaryEdition => DicomDictionary.Edition;
+    internal static string DictionaryEdition => DicomDictionary.Edition;
 
     /// <summary>Reads a DICOM file from a path.</summary>
     /// <param name="path">The file.</param>

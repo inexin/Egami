@@ -116,6 +116,10 @@ samples up to 16 bits) that way: one `int` a sample, interleaved, at each compon
 formats throw `NotSupportedException`, as do `Region`, `MinimumSize` and `ConvertColorTo`. Chroma at less than full resolution
 is brought to the image's size.
 
+`SampleImage`, `SampleComponent` and `SampleColor` are a preview, like DICOM, which uses them: they carry .NET's
+`[Experimental]` attribute with the diagnostic `EGAMIX001`, so suppress that id to call them, and they may change in any minor
+release.
+
 [!code-csharp[](../../../tests/Egami.DocSamples/StoredSamples.cs#sample-image)]
 
 A codestream taken out of a container is read as the format the container names, without detection:

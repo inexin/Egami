@@ -43,8 +43,7 @@ reads as the sequence PS3.5 section 6.2.2 says it is.
 ## Tags and the dictionary
 
 `DicomTag` is a group and an element. Its keyword, name and retired flag come from the data dictionary of PS3.6, generated from
-the standard's own XML by `tools/make-dicom-dictionary.py` and embedded in the package; `DicomFile.DictionaryEdition` names the
-edition. Repeating groups such as the overlays (60xx) match every group they cover. `DicomTransferSyntax` names a file's
+the standard's own XML by `tools/make-dicom-dictionary.py` and embedded in the package (PS3.6 2026d). Repeating groups such as the overlays (60xx) match every group they cover. `DicomTransferSyntax` names a file's
 transfer syntax from PS3.6's UID registry.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Dicom.cs#dicom-tags)]
@@ -137,7 +136,7 @@ data decodes to YBR_FULL; JPEG 2000 YBR_RCT and YBR_ICT and JPEG XL to RGB).
 | RLE Lossless | 8, 16 and 32 bits allocated, up to 15 segments (a new PackBits encoder, PS3.5 annex G) |
 | JPEG Lossless (SV1), JPEG-LS Lossless | 2 to 16 bits stored, signed values as the two's complement of their stored bits |
 | JPEG XL Lossless | Up to 16 bits stored, gray, palette or RGB; YBR data throws, since DICOM reads JPEG XL as RGB |
-| JPEG-LS Near-Lossless | As JPEG-LS Lossless, each sample within `NearLossless` of its value; not for palette indices |
+| JPEG-LS Near-Lossless | As JPEG-LS Lossless, each sample within `Near` of its value; not for palette indices |
 | JPEG Baseline, JPEG Extended, JPEG XL | Unsigned gray and colour of up to 8 bits (12 for JPEG Extended, written with Bits Stored 12); colour JPEG as YBR_FULL_422 |
 
 Encapsulated frames are one fragment each, with the Basic Offset Table by default; `DicomOffsetTable.Extended` writes the

@@ -87,14 +87,14 @@ public sealed record DicomReaderOptions : ReaderOptions
     /// Gets the window function to use with <see cref="WindowCenter"/> and <see cref="WindowWidth"/>, or <see langword="null"/>
     /// (the default) for the file's VOI LUT Function, LINEAR when it has none.
     /// </summary>
-    public DicomVoiFunction? WindowFunction { get; init; }
+    public DicomWindowFunction? WindowFunction { get; init; }
 
     /// <summary>
     /// Gets which of the file's windows or VOI LUTs to use when it has several, from 0 (the default, the first). An index past
     /// the last uses the last.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is negative.</exception>
-    public int VoiIndex
+    public int WindowIndex
     {
         get => _voiIndex;
         init
@@ -119,7 +119,7 @@ public sealed record DicomReaderOptions : ReaderOptions
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/Dicom.cs" region="dicom-window"/>
 /// </example>
 [Experimental(DicomFile.DiagnosticId, UrlFormat = DicomFile.DiagnosticUrl)]
-public enum DicomVoiFunction
+public enum DicomWindowFunction
 {
     /// <summary>LINEAR: a straight ramp from center − 0.5 − (width − 1) / 2 to center − 0.5 + (width − 1) / 2.</summary>
     Linear,
@@ -147,8 +147,8 @@ public sealed class DicomDetails : FormatDetails
     /// <summary>Gets or sets the number of frames in the file.</summary>
     public int FrameCount { get; set; } = 1;
 
-    /// <summary>Gets or sets the UID of the transfer syntax the pixel data was stored in.</summary>
-    public string TransferSyntaxUid { get; set; } = "";
+    /// <summary>Gets or sets the transfer syntax the pixel data was stored in.</summary>
+    public DicomTransferSyntax TransferSyntax { get; set; } = DicomTransferSyntax.ExplicitVRLittleEndian;
 
     /// <summary>Gets or sets the Photometric Interpretation (0028,0004), such as <c>MONOCHROME2</c> or <c>YBR_FULL_422</c>.</summary>
     public string PhotometricInterpretation { get; set; } = "";
@@ -169,7 +169,7 @@ public sealed class DicomDetails : FormatDetails
     public double RescaleIntercept { get; set; }
 
     /// <summary>Gets or sets whether a Modality LUT Sequence gave the modality values.</summary>
-    public bool UsedModalityLut { get; set; }
+    public bool AppliedModalityLut { get; set; }
 
     /// <summary>Gets or sets the window center applied, or <see langword="null"/> when no window was.</summary>
     public double? WindowCenter { get; set; }
@@ -178,16 +178,16 @@ public sealed class DicomDetails : FormatDetails
     public double? WindowWidth { get; set; }
 
     /// <summary>Gets or sets the window function applied.</summary>
-    public DicomVoiFunction WindowFunction { get; set; }
+    public DicomWindowFunction WindowFunction { get; set; }
 
     /// <summary>Gets or sets whether a VOI LUT Sequence gave the shown values.</summary>
-    public bool UsedVoiLut { get; set; }
+    public bool AppliedVoiLut { get; set; }
 
     /// <summary>
     /// Gets or sets whether the shown values were stretched from the frame's smallest to its largest modality value, because
     /// the file has no window and no VOI LUT.
     /// </summary>
-    public bool UsedMinMax { get; set; }
+    public bool AppliedMinMax { get; set; }
 
     /// <summary>Gets or sets whether the shown values were inverted: MONOCHROME1, or Presentation LUT Shape INVERSE.</summary>
     public bool Inverted { get; set; }

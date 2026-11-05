@@ -148,7 +148,7 @@ public class DicomWriterTests
         int[] gray = Ramp(50, 30, 12, false, 5);
         DicomFile original = DicomFile.Load(Mono(50, 30, 16, 12, 11, false, [gray]).File(Explicit));
 
-        DicomFile written = Transcode(original, DicomTransferSyntax.JpegLsNearLossless, new DicomWriterOptions { TransferSyntax = DicomTransferSyntax.JpegLsNearLossless, NearLossless = 3 });
+        DicomFile written = Transcode(original, DicomTransferSyntax.JpegLsNearLossless, new DicomWriterOptions { TransferSyntax = DicomTransferSyntax.JpegLsNearLossless, Near = 3 });
 
         int[] back = Samples(written, 0);
         Assert.InRange(gray.Zip(back, (a, b) => Math.Abs(a - b)).Max(), 1, 3);

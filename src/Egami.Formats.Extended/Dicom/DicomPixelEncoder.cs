@@ -220,7 +220,7 @@ internal static class DicomPixelEncoder
             case "1.2.840.10008.1.2.4.80":
                 return new JpegLsCoder(layout, 0);
             case "1.2.840.10008.1.2.4.81":
-                return new JpegLsCoder(layout, options.NearLossless);
+                return new JpegLsCoder(layout, options.Near);
             case "1.2.840.10008.1.2.4.50":
                 return new JpegCoder(layout, extended: false, options.Quality, context);
             case "1.2.840.10008.1.2.4.51":

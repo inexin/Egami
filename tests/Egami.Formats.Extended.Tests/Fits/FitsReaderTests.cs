@@ -77,7 +77,7 @@ public sealed class FitsReaderTests
         Assert.Equal(0, minMax.Row(9)[0].L);
         Assert.Equal(1, minMax.Row(0)[9].L);
         FitsDetails details = Assert.IsType<FitsDetails>(minMax.Metadata.FormatDetails);
-        Assert.Equal((FitsStretch.MinMax, 0d, 99d), (details.Stretch, details.Low, details.High));
+        Assert.Equal((FitsStretch.MinMax, 0d, 99d), (details.Stretch, details.StretchLow, details.StretchHigh));
 
         // DATAMIN and DATAMAX win when present; values outside clip.
         using Raster<GrayF32> limited = Raster.Load<GrayF32>(Image(16, [10, 10], stored, Card("DATAMIN", 10), Card("DATAMAX", 20)), TestImages.Context);

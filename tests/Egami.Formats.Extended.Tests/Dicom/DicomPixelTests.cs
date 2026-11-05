@@ -49,7 +49,7 @@ public class DicomPixelTests
         using Raster raster = Raster.Load(image.File(Explicit), Context);
         Assert.Equal([0, 21845, 43690, 65535], Gray16Values(raster));
         DicomDetails details = Assert.IsType<DicomDetails>(raster.Metadata.FormatDetails);
-        Assert.True(details.UsedMinMax);
+        Assert.True(details.AppliedMinMax);
         Assert.False(details.Inverted);
         Assert.Equal("MONOCHROME2", details.PhotometricInterpretation);
         Assert.Empty(raster.Metadata.Warnings);
@@ -115,10 +115,10 @@ public class DicomPixelTests
         double[] hu = [-1024, -24, 0, 40, 3071];
         using Raster first = Raster.Load(image.File(Explicit), Context);
         Assert.Equal([.. hu.Select(x => Window("LINEAR", 40, 80, x, 65535))], Gray16Values(first));
-        using Raster second = Raster.Load(image.File(Explicit), Context, new DicomReaderOptions { VoiIndex = 1 });
+        using Raster second = Raster.Load(image.File(Explicit), Context, new DicomReaderOptions { WindowIndex = 1 });
         Assert.Equal([.. hu.Select(x => Window("LINEAR", 400, 2000, x, 65535))], Gray16Values(second));
         using Raster asked = Raster.Load(image.File(Explicit), Context,
-            new DicomReaderOptions { WindowCenter = 0, WindowWidth = 100, WindowFunction = DicomVoiFunction.LinearExact });
+            new DicomReaderOptions { WindowCenter = 0, WindowWidth = 100, WindowFunction = DicomWindowFunction.LinearExact });
         Assert.Equal([.. hu.Select(x => Window("LINEAR_EXACT", 0, 100, x, 65535))], Gray16Values(asked));
         Assert.Throws<ArgumentException>(() => Raster.Load(image.File(Explicit), Context, new DicomReaderOptions { WindowCenter = 0 }));
         Assert.Throws<ArgumentOutOfRangeException>(() => new DicomReaderOptions { WindowWidth = 0 });
@@ -155,7 +155,7 @@ public class DicomPixelTests
             .Native([0, 1, 2, 3], "OB");
         using Raster lut = Raster.Load(image.File(Explicit), Context);
         Assert.Equal([10, 20, 30, 255], Gray8Values(lut));
-        Assert.True(Assert.IsType<DicomDetails>(lut.Metadata.FormatDetails).UsedVoiLut);
+        Assert.True(Assert.IsType<DicomDetails>(lut.Metadata.FormatDetails).AppliedVoiLut);
         using Raster window = Raster.Load(image.File(Explicit), Context, new DicomReaderOptions { PreferWindow = true });
         Assert.Equal([.. FourLevels.Select(x => Window("LINEAR", 2, 4, x, 255))], Gray8Values(window));
     }
@@ -173,7 +173,7 @@ public class DicomPixelTests
 
         // Inputs below the first entry take the first; past the last, the last.
         Assert.Equal([0f, 0f, 1000f, 2000f, 3000f, 3000f], FloatValues(raster));
-        Assert.True(Assert.IsType<DicomDetails>(raster.Metadata.FormatDetails).UsedModalityLut);
+        Assert.True(Assert.IsType<DicomDetails>(raster.Metadata.FormatDetails).AppliedModalityLut);
     }
 
     [Fact]
@@ -464,7 +464,7 @@ public class DicomPixelTests
         Assert.Equal(rows.GetType(), whole.GetType());
         Assert.Equal(Bytes(rows), Bytes(whole));
         DicomDetails details = Assert.IsType<DicomDetails>(whole.Metadata.FormatDetails);
-        Assert.Equal(window is null, details.UsedMinMax);
+        Assert.Equal(window is null, details.AppliedMinMax);
         Assert.Equal("DICOM", whole.Metadata.FormatName);
     }
 

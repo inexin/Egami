@@ -22,6 +22,9 @@ or BT.601 when the colorimetric field says so.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#dpx-load)]
 
+Cineon has no reader options of its own: a Cineon load takes `DpxReaderOptions` too, and of them `Linearize` applies (a
+Cineon file has one image element).
+
 Printing density, the usual transfer of film scans, is logarithmic. `DpxReaderOptions.Linearize` turns it into scene-linear
 light with Kodak's conversion, reference white at code 685, reference black at code 95 and 0.002 density a code with a film
 gamma of 0.6: code 685 becomes 1.0 and code 95 becomes 0.0. It applies to Cineon and to DPX elements whose transfer is printing

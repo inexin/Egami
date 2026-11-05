@@ -41,7 +41,7 @@ negative. Load maps them into the picture's 0 to 1 with `FitsReaderOptions.Stret
 | `None` | No mapping: the physical values themselves | Measuring |
 
 Missing pixels (BLANK in an integer image, NaN in a float one) load black, or as NaN with `None`.
-`FitsDetails.Low` and `FitsDetails.High` say which values became black and white.
+`FitsDetails.StretchLow` and `FitsDetails.StretchHigh` say which values became black and white.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#fits-stretch)]
 

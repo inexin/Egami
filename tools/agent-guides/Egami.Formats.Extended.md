@@ -31,7 +31,7 @@ format infos and options), with `Egami` and `Egami.Formats`.
   `WithDicom()` (not in `WithExtendedFormats()`) registers `DicomFormat.Info`; `Raster.Load` gives one frame as a viewer
   shows it (Gray8/Gray16 after rescale, window or VOI LUT and MONOCHROME1 inversion; Rgb8/Rgb16 for RGB, YBR and palette),
   `DicomReaderOptions` picks `Frame`, `Values` (`Display`, `Modality` or `Stored`, the last two as GrayF32), a window
-  (`WindowCenter`, `WindowWidth`, `WindowFunction`), `VoiIndex` and `PreferWindow`; `DicomDetails` says what was applied.
+  (`WindowCenter`, `WindowWidth`, `WindowFunction`), `WindowIndex` and `PreferWindow`; `DicomDetails` says what was applied.
   Each frame is an image for `LoadAll`; `DicomFile.LoadFrame(i)` decodes frames without rereading. Native, RLE, deflated,
   JPEG, JPEG-LS, JPEG 2000, HTJ2K and JPEG XL pixel data; MPEG/H.264/HEVC throw `NotSupportedException`. Warnings are
   `Dicom.*` diagnostics.
@@ -51,8 +51,8 @@ format infos and options), with `Egami` and `Egami.Formats`.
   keeps the camera, sensor layout and the colour the develop used.
 - JPEG-LS: `JpegLsFormat` (.jls, T.87) reads every interleave mode, 2 to 16 bits, palettes and HP colour transforms, and
   is detected ahead of JPEG. `JpegLsWriterOptions` (`Near`, `Interleave`, `ColorTransform`, `BitsPerSample`,
-  `RestartInterval`); `JpegLsDetails` keeps NEAR, depth and interleave; `JpegLsWriter.Write` codes plain `ushort` samples
-  (1 to 4 components), for DICOM and the like. No JPEG-LS part 2 (T.870).
+  `RestartInterval`); `JpegLsDetails` keeps NEAR, depth and interleave. No JPEG-LS part 2
+  (T.870).
 - `EgamiContext.SetDefault(new EgamiContext().WithExtendedFormats())` at startup makes them work in every call.
 - Load, Probe, streaming decodes, Save and Transcode then work as they do for core formats, inside the same safety limits.
 
@@ -86,11 +86,9 @@ A RAW develop:
 
 {{sample FormatsExtended.cs#raw-develop}}
 
-JPEG-LS, near-lossless and from plain samples:
+JPEG-LS, near-lossless:
 
 {{sample FormatsExtended.cs#jpegls-options}}
-
-{{sample FormatsExtended.cs#jpegls-samples}}
 
 ## Common mistakes
 

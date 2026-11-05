@@ -215,7 +215,7 @@ internal sealed class DicomFrameParameters
 
     public double[] Widths { get; private set; } = [];
 
-    public DicomVoiFunction Function { get; private set; }
+    public DicomWindowFunction Function { get; private set; }
 
     public List<DicomLut> VoiLuts { get; } = [];
 
@@ -255,9 +255,9 @@ internal sealed class DicomFrameParameters
         p.Widths = widths[..windows];
         p.Function = (DicomImageInfo.Text(voi, 0x0028, 0x1056) ?? DicomImageInfo.Text(data, 0x0028, 0x1056))?.ToUpperInvariant() switch
         {
-            "LINEAR_EXACT" => DicomVoiFunction.LinearExact,
-            "SIGMOID" => DicomVoiFunction.Sigmoid,
-            _ => DicomVoiFunction.Linear,
+            "LINEAR_EXACT" => DicomWindowFunction.LinearExact,
+            "SIGMOID" => DicomWindowFunction.Sigmoid,
+            _ => DicomWindowFunction.Linear,
         };
         if (data[new DicomTag(0x0028, 0x3010)] is DicomElement luts)
         {

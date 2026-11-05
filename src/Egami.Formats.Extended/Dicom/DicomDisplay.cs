@@ -42,7 +42,7 @@ internal sealed class DicomDisplay
         {
             Frame = frame,
             FrameCount = info.Frames,
-            TransferSyntaxUid = info.File.TransferSyntax.Uid,
+            TransferSyntax = info.File.TransferSyntax,
             PhotometricInterpretation = info.Photometric,
             BitsStored = info.BitsStored,
             IsSigned = info.IsSigned,
@@ -198,7 +198,7 @@ internal sealed class DicomDisplay
         double intercept = modality is null ? p.Intercept : 0;
         Details.RescaleSlope = slope;
         Details.RescaleIntercept = intercept;
-        Details.UsedModalityLut = modality is not null;
+        Details.AppliedModalityLut = modality is not null;
         Func<long, double> toModality = modality is not null ? x => modality.Lookup(x) : x => (x * slope) + intercept;
         Func<double, double> value;
         if (_options.Values == DicomValues.Stored)
@@ -246,7 +246,7 @@ internal sealed class DicomDisplay
         bool invert = p.PresentationShape is string shape ? shape == "INVERSE" : _info.Photometric == "MONOCHROME1";
         Details.Inverted = invert;
         Func<double, double> voi;
-        int index = _options.VoiIndex;
+        int index = _options.WindowIndex;
         if (_options.WindowCenter is double center && _options.WindowWidth is double width)
         {
             voi = Window(center, width, _options.WindowFunction ?? p.Function, top);
@@ -256,7 +256,7 @@ internal sealed class DicomDisplay
             DicomLut lut = p.VoiLuts[Math.Min(index, p.VoiLuts.Count - 1)];
             double scale = top / lut.Max;
             voi = m => lut.Lookup((long)Math.Round(m)) * scale;
-            Details.UsedVoiLut = true;
+            Details.AppliedVoiLut = true;
         }
         else if (p.Centers.Length > 0 && Valid(p, Math.Min(index, p.Centers.Length - 1)) is int pick)
         {
@@ -286,7 +286,7 @@ internal sealed class DicomDisplay
 
             double spread = high - low;
             voi = spread > 0 ? m => (m - low) / spread * top : _ => 0;
-            Details.UsedMinMax = true;
+            Details.AppliedMinMax = true;
         }
 
         return invert ? m => top - Level(voi(m), top) : m => Level(voi(m), top);
@@ -295,7 +295,7 @@ internal sealed class DicomDisplay
     /// <summary>Returns the window to use: the one asked for, or the first with a usable width.</summary>
     private static int? Valid(DicomFrameParameters p, int index)
     {
-        if (p.Widths[index] > 0 || (p.Function == DicomVoiFunction.Linear && p.Widths[index] >= 0))
+        if (p.Widths[index] > 0 || (p.Function == DicomWindowFunction.Linear && p.Widths[index] >= 0))
         {
             return index;
         }
@@ -311,16 +311,16 @@ internal sealed class DicomDisplay
         return null;
     }
 
-    private Func<double, double> Window(double c, double w, DicomVoiFunction function, double top)
+    private Func<double, double> Window(double c, double w, DicomWindowFunction function, double top)
     {
         Details.WindowCenter = c;
         Details.WindowWidth = w;
         Details.WindowFunction = function;
         switch (function)
         {
-            case DicomVoiFunction.LinearExact:
+            case DicomWindowFunction.LinearExact:
                 return x => x <= c - (w / 2) ? 0 : x > c + (w / 2) ? top : ((x - c) / w + 0.5) * top;
-            case DicomVoiFunction.Sigmoid:
+            case DicomWindowFunction.Sigmoid:
                 return x => top / (1 + Math.Exp(-4 * (x - c) / w));
             default:
                 double span = Math.Max(w - 1, 0);

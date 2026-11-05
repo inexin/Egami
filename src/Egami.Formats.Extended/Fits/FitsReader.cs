@@ -79,8 +79,8 @@ internal sealed class FitsReader : ExtendedReader, IMultiImageReader
             Bitpix = hdu.Bitpix,
             Compression = hdu.Compression,
             Stretch = stretch,
-            Low = low,
-            High = high,
+            StretchLow = low,
+            StretchHigh = high,
         };
         Source source = new(values, hdu.Width, hdu.Height, (int)Math.Min(rowsRead, hdu.Height), damagedTiles, stretch, low, high, details);
         return page.Rgb ? new Rows<RgbF32>(input, options, source) : new Rows<GrayF32>(input, options, source);

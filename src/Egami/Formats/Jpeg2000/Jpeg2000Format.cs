@@ -235,7 +235,8 @@ public sealed class Jpeg2000Details : FormatDetails
 
     /// <summary>
     /// Gets or sets whether the codestream is a High-Throughput JPEG 2000 one (ITU-T T.814): its code-blocks use the HT block
-    /// coder, or may mix it with the T.800 one.
+    /// coder, or may mix it with the T.800 one. Egami reads JPEG 2000 and HTJ2K but writes neither, so setting it has no
+    /// effect on any save; it is settable only as every <see cref="FormatDetails"/> property is.
     /// </summary>
     public bool HighThroughput { get; set; }
 

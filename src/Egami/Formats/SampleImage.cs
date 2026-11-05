@@ -12,12 +12,23 @@ namespace Egami.Formats;
 /// Samples are interleaved in component order, one <see cref="int"/> each, so signed values keep their sign. Components sampled
 /// at less than full resolution are brought to the image's size: JPEG's chroma upsampled as <see cref="Raster.Load(Stream, EgamiContext?, ReaderOptions?)"/>
 /// does it (or replicated with <see cref="Jpeg.JpegReaderOptions.FastUpsampling"/>), JPEG 2000's replicated.
+/// <para>
+/// A preview, as DICOM is: marked <c>[Experimental]</c> with the diagnostic <c>EGAMIX001</c>, so a call does not compile until the
+/// app suppresses that id, and it may change in any minor release.
+/// </para>
 /// </remarks>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/StoredSamples.cs" region="sample-image"/>
 /// </example>
+[System.Diagnostics.CodeAnalysis.Experimental(SampleImage.DiagnosticId, UrlFormat = SampleImage.DiagnosticUrl)]
 public sealed class SampleImage
 {
+    /// <summary>The diagnostic id of the preview, shared with DICOM in Egami.Formats.Extended.</summary>
+    internal const string DiagnosticId = "EGAMIX001";
+
+    /// <summary>Where the diagnostic points.</summary>
+    internal const string DiagnosticUrl = "https://github.com/inexin/Egami/blob/main/docs/articles/formats/index.md#stored-samples";
+
     private readonly int[] _samples;
     private readonly SampleComponent[] _components;
 
@@ -181,12 +192,14 @@ public sealed class SampleImage
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/StoredSamples.cs" region="sample-image"/>
 /// </example>
+[System.Diagnostics.CodeAnalysis.Experimental(SampleImage.DiagnosticId, UrlFormat = SampleImage.DiagnosticUrl)]
 public readonly record struct SampleComponent(int Precision, bool IsSigned);
 
 /// <summary>What the components of a <see cref="SampleImage"/> are.</summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/StoredSamples.cs" region="sample-image"/>
 /// </example>
+[System.Diagnostics.CodeAnalysis.Experimental(SampleImage.DiagnosticId, UrlFormat = SampleImage.DiagnosticUrl)]
 public enum SampleColor
 {
     /// <summary>The codestream does not say, such as palette indices or a component count no color space has.</summary>
