@@ -53,7 +53,7 @@ internal static class DicomFuzzTarget
             new() { Recovery = recovery },
             new() { Recovery = recovery, Values = DicomValues.Modality },
             new() { Recovery = recovery, Values = DicomValues.Stored },
-            new() { Recovery = recovery, WindowCenter = -3.5, WindowWidth = 0.25, WindowFunction = DicomVoiFunction.Sigmoid, VoiIndex = 7, PreferWindow = true },
+            new() { Recovery = recovery, WindowCenter = -3.5, WindowWidth = 0.25, WindowFunction = DicomWindowFunction.Sigmoid, WindowIndex = 7, PreferWindow = true },
         ];
         for (int frame = 0; frame < Math.Min(file.FrameCount, 3); frame++)
         {

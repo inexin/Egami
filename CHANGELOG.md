@@ -5,6 +5,21 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+API review of the new formats (DICOM Build Plan task 26). These change only API added since 1.4.0, so no released code breaks.
+
+- `JpegLsWriter` is internal: save a raster with `JpegLsFormat.Info` and `JpegLsWriterOptions.BitsPerSample` instead.
+- `FitsDetails.Low` and `High` are now `StretchLow` and `StretchHigh`.
+- `SampleImage`, `SampleComponent` and `SampleColor` are a preview, like DICOM: `[Experimental]` with the diagnostic `EGAMIX001`.
+- DICOM renames:
+  - `DicomVoiFunction` is now `DicomWindowFunction`, and `DicomReaderOptions.VoiIndex` is now `WindowIndex`.
+  - `DicomWriterOptions.NearLossless` is now `Near`, as on `JpegLsWriterOptions`.
+  - `DicomDetails.UsedModalityLut`, `UsedVoiLut` and `UsedMinMax` are now `AppliedModalityLut`, `AppliedVoiLut` and `AppliedMinMax`.
+  - `DicomDetails.TransferSyntaxUid` (a string) is now `TransferSyntax` (a `DicomTransferSyntax`).
+- DICOM members made internal: `DicomElement.Offset`, `DicomFile.DictionaryEdition`, and the `DicomTag.PixelData`,
+  `SpecificCharacterSet` and `TransferSyntaxUid` constants. Use `DicomTag.FromKeyword` or the dataset's keyword indexer instead.
+- Docs: `Jpeg2000Details.HighThroughput` says Egami writes no JPEG 2000, and the DPX page says Cineon loads take
+  `DpxReaderOptions`.
+
 DICOM fixes found by the pydicom and GDCM gates (DICOM Build Plan task 20).
 
 - A file whose 128-byte preamble holds a TIFF header (PS3.10 allows it; pydicom's MR_small.dcm has one) loaded as TIFF and
@@ -72,8 +87,7 @@ JPEG-LS in Egami.Formats.Extended (DICOM and science formats, stage A).
   from LSE and DNL segments, and HP's colour transforms. `WithJpegLs()` registers it, and `WithExtendedFormats()` now does
   too, ahead of JPEG. Single-scan files stream; a lenient read recovers at the next restart marker.
 - `JpegLsWriterOptions` sets NEAR, the interleave mode, the colour transform, the bits of a sample and the restart interval,
-  and `JpegLsDetails` keeps what the file said. `JpegLsWriter.Write` codes plain samples (1 to 4 components) for callers such
-  as DICOM writers. Files decode exactly in CharLS, and lossless files are the size CharLS writes.
+  and `JpegLsDetails` keeps what the file said. Files decode exactly in CharLS, and lossless files are the size CharLS writes.
 
 PSD flattening extras, stage A (roadmap 2.3.13). No API changes.
 

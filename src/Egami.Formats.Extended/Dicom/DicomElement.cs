@@ -54,7 +54,7 @@ public sealed class DicomElement
     public ReadOnlyMemory<byte> RawValue { get; }
 
     /// <summary>Gets the byte offset of the element's tag in the dataset as read (after inflating a deflated file).</summary>
-    public long Offset { get; }
+    internal long Offset { get; }
 
     /// <summary>Gets the items of a sequence (<see cref="DicomVR.SQ"/>), each a dataset; empty for other elements.</summary>
     public IReadOnlyList<DicomDataset> Items => _items;

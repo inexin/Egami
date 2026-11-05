@@ -23,13 +23,13 @@ public readonly record struct DicomTag : IComparable<DicomTag>
     }
 
     /// <summary>Gets Pixel Data (7FE0,0010).</summary>
-    public static DicomTag PixelData { get; } = new(0x7FE0, 0x0010);
+    internal static DicomTag PixelData { get; } = new(0x7FE0, 0x0010);
 
     /// <summary>Gets Specific Character Set (0008,0005), which says how the dataset's text is encoded.</summary>
-    public static DicomTag SpecificCharacterSet { get; } = new(0x0008, 0x0005);
+    internal static DicomTag SpecificCharacterSet { get; } = new(0x0008, 0x0005);
 
     /// <summary>Gets Transfer Syntax UID (0002,0010), in the file meta information.</summary>
-    public static DicomTag TransferSyntaxUid { get; } = new(0x0002, 0x0010);
+    internal static DicomTag TransferSyntaxUid { get; } = new(0x0002, 0x0010);
 
     /// <summary>Gets the group number.</summary>
     public ushort Group { get; }

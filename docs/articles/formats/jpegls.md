@@ -45,11 +45,6 @@ Without them a raster read from JPEG-LS is written with its own depth and NEAR a
 - The HP transforms code RGB as differences, which shrinks most photographs. HP's software, CharLS and Egami read them; other
   decoders give the coded components as they are. They apply to lossless, interleaved RGB only and are ignored otherwise.
 
-`JpegLsWriter.Write` codes samples that do not come from a raster, such as the pixel data of a DICOM file, 1 to 4 components
-of 2 to 16 bits, side by side in a row:
-
-[!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#jpegls-samples)]
-
 Files Egami writes decode exactly in CharLS, and lossless files are the size CharLS writes.
 
 ## Not supported

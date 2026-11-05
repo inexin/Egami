@@ -69,7 +69,7 @@ public class Dicom
         DicomTag tag = DicomTag.FromKeyword("PixelSpacing");             // (0028,0030)
         string? keyword = new DicomTag(0x6002, 0x3000).Keyword;          // OverlayData: repeating groups match
         bool isPrivate = new DicomTag(0x0009, 0x1001).IsPrivate;
-        Console.WriteLine($"{tag} {tag.Name}; dictionary {DicomFile.DictionaryEdition}");
+        Console.WriteLine($"{tag} {tag.Name}");
         #endregion
 
         Assert.Equal(new DicomTag(0x0028, 0x0030), tag);
@@ -85,7 +85,7 @@ public class Dicom
         #region dicom-fragments
         // Compressed pixel data stays as the fragments the file stores, with its offset tables.
         DicomFile file = DicomFile.Load("compressed.dcm");
-        DicomFragments? pixels = file.Dataset[DicomTag.PixelData]?.Fragments;
+        DicomFragments? pixels = file.Dataset["PixelData"]?.Fragments;
         if (pixels is not null)
         {
             Console.WriteLine($"{file.TransferSyntax.Name}: {pixels.Fragments.Count} fragments, {pixels.BasicOffsetTable.Count} frame offsets");
@@ -126,7 +126,7 @@ public class Dicom
         #endregion
 
         Assert.Equal((4, 4), (image.Width, image.Height));
-        Assert.True(details.UsedMinMax); // The sample has window centers but no widths.
+        Assert.True(details.AppliedMinMax); // The sample has window centers but no widths.
     }
 
     [Fact]
@@ -138,14 +138,14 @@ public class Dicom
         #region dicom-window
         // A window of your own, in modality values (Hounsfield units for CT), or the file's second one.
         using Raster bone = Raster.Load("scan.dcm", context, new DicomReaderOptions { WindowCenter = 400, WindowWidth = 1800 });
-        using Raster second = Raster.Load("scan.dcm", context, new DicomReaderOptions { VoiIndex = 1 });
+        using Raster second = Raster.Load("scan.dcm", context, new DicomReaderOptions { WindowIndex = 1 });
         using Raster smooth = Raster.Load("scan.dcm", context,
-            new DicomReaderOptions { WindowCenter = 40, WindowWidth = 400, WindowFunction = DicomVoiFunction.Sigmoid });
+            new DicomReaderOptions { WindowCenter = 40, WindowWidth = 400, WindowFunction = DicomWindowFunction.Sigmoid });
         #endregion
 
         Assert.Equal(400, ((DicomDetails)bone.Metadata.FormatDetails!).WindowCenter);
         Assert.Equal(1, ((DicomDetails)second.Metadata.FormatDetails!).FrameCount);
-        Assert.Equal(DicomVoiFunction.Sigmoid, ((DicomDetails)smooth.Metadata.FormatDetails!).WindowFunction);
+        Assert.Equal(DicomWindowFunction.Sigmoid, ((DicomDetails)smooth.Metadata.FormatDetails!).WindowFunction);
     }
 
     [Fact]
@@ -230,7 +230,7 @@ public class Dicom
         file.Save("scan-jpegls.dcm", new DicomWriterOptions
         {
             TransferSyntax = DicomTransferSyntax.JpegLsNearLossless,
-            NearLossless = 2,
+            Near = 2,
             OffsetTable = DicomOffsetTable.Extended,
         });
         #endregion

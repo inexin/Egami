@@ -9,10 +9,7 @@ namespace Egami.Formats.Extended.JpegLs;
 /// 16 and 1 to 4 components, coded exactly as saving the same samples as pixels with <see cref="JpegLsWriterOptions"/> codes
 /// them.
 /// </summary>
-/// <example>
-/// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="jpegls-samples"/>
-/// </example>
-public static class JpegLsWriter
+internal static class JpegLsWriter
 {
     /// <summary>
     /// Writes <paramref name="samples"/>, rows of <paramref name="width"/> pixels of <paramref name="components"/> samples each,
@@ -28,9 +25,6 @@ public static class JpegLsWriter
     /// <param name="options">NEAR, the interleave mode, the colour transform and the restart interval; <see langword="null"/> for the defaults.</param>
     /// <exception cref="ArgumentOutOfRangeException">A count, the bits or NEAR is out of range.</exception>
     /// <exception cref="ArgumentException"><paramref name="samples"/> is not whole rows, or a sample is too large.</exception>
-    /// <example>
-    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="jpegls-samples"/>
-    /// </example>
     public static void Write(Stream output, ReadOnlySpan<ushort> samples, int components, int width, int bitsPerSample, JpegLsWriterOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(output);

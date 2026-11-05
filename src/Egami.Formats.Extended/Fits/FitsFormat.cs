@@ -261,10 +261,10 @@ public sealed class FitsDetails : FormatDetails
     public FitsStretch Stretch { get; set; }
 
     /// <summary>Gets or sets the physical value the stretch put at 0 (NaN when there was no stretch).</summary>
-    public double Low { get; set; } = double.NaN;
+    public double StretchLow { get; set; } = double.NaN;
 
     /// <summary>Gets or sets the physical value the stretch put at 1 (NaN when there was no stretch).</summary>
-    public double High { get; set; } = double.NaN;
+    public double StretchHigh { get; set; } = double.NaN;
 
     /// <inheritdoc/>
     public override FormatDetails Copy() => (FitsDetails)MemberwiseClone();

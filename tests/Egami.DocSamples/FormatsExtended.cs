@@ -871,7 +871,7 @@ public class FormatsExtended
         // The header, and the values that became black and white, are in the details.
         if (zscale.Metadata.FormatDetails is FitsDetails fits)
         {
-            Console.WriteLine($"{fits.Header.GetString("OBJECT")}: BITPIX {fits.Bitpix}, {fits.Low} to {fits.High}");
+            Console.WriteLine($"{fits.Header.GetString("OBJECT")}: BITPIX {fits.Bitpix}, {fits.StretchLow} to {fits.StretchHigh}");
         }
 
         // A three-plane cube as one RGB image instead of three gray ones.
@@ -1054,29 +1054,6 @@ public class FormatsExtended
         Assert.True(new FileInfo("duck-near.jls").Length < new FileInfo("duck-hp1.jls").Length);
         JpegLsDetails details = Assert.IsType<JpegLsDetails>(Raster.Load("scan-12.jls", EgamiContext.Default.WithJpegLs()).Metadata.FormatDetails);
         Assert.Equal(12, details.BitsPerSample);
-    }
-
-    [Fact]
-    public void JpegLsSamples()
-    {
-        using SampleFiles files = new();
-
-        #region jpegls-samples
-        // Samples straight from another source, such as a DICOM pixel data element: 2 components, 10 bits, 64 × 32.
-        ushort[] samples = new ushort[64 * 32 * 2];
-        for (int i = 0; i < samples.Length; i++)
-        {
-            samples[i] = (ushort)((i * 37) % 1024);
-        }
-
-        using (FileStream output = File.Create("samples.jls"))
-        {
-            JpegLsWriter.Write(output, samples, components: 2, width: 64, bitsPerSample: 10);
-        }
-        #endregion
-
-        using Raster back = Raster.Load("samples.jls", EgamiContext.Default.WithJpegLs());
-        Assert.Equal((64, 32), (back.Width, back.Height));
     }
 
     private static byte[] SavePcx(Raster image)

@@ -72,7 +72,7 @@ public sealed class DicomWriterOptions : WriterOptions
     /// 1 to 255. Defaults to 2.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is outside 1 to 255.</exception>
-    public int NearLossless
+    public int Near
     {
         get => _near;
         init
