@@ -111,6 +111,10 @@ public class PsdLayersTests(ITestOutputHelper output)
         // psd-tools rounds Hard Mix's ties (Cb + Cs = 1) down; Photoshop gives 1 there, as Egami does.
         "layered-mode-hardmix.psd" => 12,
 
+        // Where the layer's blue is 1 over a blue of 0, psd-tools' Vivid Light gives 0; Photoshop checks the source first and
+        // gives 1 (vivid-light.psd in egami-compare's Photoshop-saved corpus), as Egami does.
+        "layered-mode-vividlight.psd" => 1,
+
         // psd-tools (aggdraw) antialiases the vector mask's edge about half a pixel off Egami's, which puts 0, 0 at the
         // canvas's corner; inside and outside the shape they agree.
         "layered-fill.psd" => 200,
@@ -215,7 +219,7 @@ public class PsdLayersTests(ITestOutputHelper output)
         Assert.Equal(new Rgb8(255, 255, 255), ((Raster<Rgb8>)stored).Row(0)[0]);
     }
 
-    /// <summary>PsdComposite.Flatten flattens a file with a real composite too; a Lab file gives its stored composite with a warning.</summary>
+    /// <summary>PsdComposite.Flatten flattens a file with a real composite too; Lab too.</summary>
     [Fact]
     public void FlattenOnRequest()
     {
@@ -228,7 +232,11 @@ public class PsdLayersTests(ITestOutputHelper output)
         Assert.True(a.Row(30).SequenceEqual(b.Row(30)));
 
         using Raster lab = Raster.Load(File("layered-lab8.psd"), EgamiContext.Default, flatten);
-        Assert.Contains(lab.Metadata.Warnings, w => w.Id == "Psd.FlattenUnsupported");
+        using PsdDocument labDocument = PsdImage.ReadLayers(File("layered-lab8.psd"));
+        using Raster labFlat = labDocument.Flatten();
+        Assert.DoesNotContain(lab.Metadata.Warnings, w => w.Id == "Psd.FlattenUnsupported");
+        using Raster<Rgba8> e = lab.As<Rgba8>(), f = labFlat.As<Rgba8>();
+        Assert.True(e.Row(20).SequenceEqual(f.Row(20)));
         Assert.Throws<ArgumentOutOfRangeException>(() => new PsdReaderOptions { Composite = (PsdComposite)7 });
     }
 
@@ -253,12 +261,44 @@ public class PsdLayersTests(ITestOutputHelper output)
     }
 
     [Fact]
-    public void FlattenRefusesLabAndADisposedDocument()
+    public void FlattenRefusesIndexedAndADisposedDocument()
     {
+        using (PsdDocument indexed = PsdImage.ReadLayers(File("indexed.psd")))
+        {
+            Assert.Throws<UnsupportedFormatException>(() => indexed.Flatten());
+        }
+
         PsdDocument lab = PsdImage.ReadLayers(File("layered-lab8.psd"));
-        Assert.Throws<UnsupportedFormatException>(() => lab.Flatten());
         lab.Dispose();
         Assert.Throws<ObjectDisposedException>(() => lab.Flatten());
+    }
+
+    /// <summary>A Lab document flattens in Lab, as Load does when it flattens, to sRGB; one without layers to its stored image.</summary>
+    [Fact]
+    public void LabFlattensLikeLoad()
+    {
+        using PsdDocument document = PsdImage.ReadLayers(File("layered-lab16.psd"));
+        using Raster mine = document.Flatten();
+        using Raster loaded = Raster.Load(File("layered-lab16.psd"));
+        Assert.Equal(Raster.Probe(File("layered-lab16.psd")).Layout, loaded.Layout);
+        using Raster<Rgba16> a = mine.As<Rgba16>(), b = loaded.As<Rgba16>();
+        for (int y = 0; y < a.Height; y++)
+        {
+            Assert.True(a.Row(y).SequenceEqual(b.Row(y)));
+        }
+
+        using PsdDocument flat = PsdImage.ReadLayers(File("lab8.psd"));
+        using Raster again = flat.Flatten();
+        using Raster stored = Raster.Load(File("lab8.psd"));
+        using Raster<Rgb8> c = again.As<Rgb8>(), d = stored.As<Rgb8>();
+        for (int y = 0; y < c.Height; y++)
+        {
+            for (int x = 0; x < c.Width; x++)
+            {
+                Rgb8 p = c.Row(y)[x], q = d.Row(y)[x];
+                Assert.True(Math.Abs(p.R - q.R) <= 1 && Math.Abs(p.G - q.G) <= 1 && Math.Abs(p.B - q.B) <= 1, $"({x}, {y}): {p} against {q}");
+            }
+        }
     }
 
     /// <summary>A vector mask's coverage adds up to its shape's area, and the inside is full and the outside empty.</summary>

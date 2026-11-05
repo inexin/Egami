@@ -1,0 +1,107 @@
+[
+ {
+  "name": "Background",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 255,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   64,
+   48
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Multiply",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 230,
+  "blend": "BlendMode.MULTIPLY",
+  "clipping": false,
+  "bbox": [
+   3,
+   2,
+   31,
+   22
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Luminosity",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 230,
+  "blend": "BlendMode.LUMINOSITY",
+  "clipping": false,
+  "bbox": [
+   10,
+   7,
+   38,
+   27
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Color",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 230,
+  "blend": "BlendMode.COLOR",
+  "clipping": false,
+  "bbox": [
+   17,
+   12,
+   45,
+   32
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Hue",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 230,
+  "blend": "BlendMode.HUE",
+  "clipping": false,
+  "bbox": [
+   24,
+   17,
+   52,
+   37
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Saturation",
+  "kind": "pixel",
+  "visible": true,
+  "opacity": 230,
+  "blend": "BlendMode.SATURATION",
+  "clipping": false,
+  "bbox": [
+   31,
+   22,
+   59,
+   42
+  ],
+  "depth": 0
+ },
+ {
+  "name": "Invert",
+  "kind": "invert",
+  "visible": true,
+  "opacity": 128,
+  "blend": "BlendMode.NORMAL",
+  "clipping": false,
+  "bbox": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "depth": 0
+ }
+]
