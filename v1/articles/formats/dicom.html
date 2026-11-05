@@ -93,7 +93,7 @@ through the Egami.Formats.Extended package, as a preview: every DICOM type is ma
 <code>EGAMIX001</code>, so code that uses it suppresses that id (<code>&lt;NoWarn&gt;$(NoWarn);EGAMIX001&lt;/NoWarn&gt;</code>), and the API may change before
 it is stable.</p>
 <p>This version reads the dataset and decodes the pixel data of every frame through the display pipeline (rescale, window,
-colour). Writing comes in a later version.</p>
+colour), writes Secondary Capture images from rasters, and saves opened files again in another transfer syntax.</p>
 <table>
 <thead>
 <tr>
@@ -116,7 +116,7 @@ colour). Writing comes in a later version.</p>
 </tr>
 <tr>
 <td>Writes</td>
-<td>Nothing yet</td>
+<td>Secondary Capture images from any raster, and opened files in another transfer syntax: Explicit and Implicit VR Little Endian, Deflated Explicit VR Little Endian, RLE Lossless, JPEG Baseline, Extended and Lossless (SV1), JPEG-LS lossless and near-lossless, JPEG XL lossless and lossy</td>
 </tr>
 <tr>
 <td><code>FormatInfo</code></td>
@@ -303,7 +303,87 @@ for (int i = 0; i &lt; file.FrameCount; i++)
     using Raster frame = file.LoadFrame(i);
     Console.WriteLine($&quot;frame {i}: {frame.Width}x{frame.Height}&quot;);
 }
-</code></pre><h2 id="detection-and-probing">Detection and probing</h2>
+</code></pre><h2 id="writing">Writing</h2>
+<p>A raster saves as a Secondary Capture image (PS3.3 A.8.1) with <code>DicomFormat.Info</code>: gray pixel types as MONOCHROME2, any other
+as RGB, at 8 bits for 8-bit pixel types and 16 for wider and float ones; alpha is dropped. The writer makes new Study, Series and
+SOP Instance UIDs and leaves the type 2 elements of the Patient, Study and Series modules empty; <code>DicomWriterOptions.Attributes</code>
+gives any element by PS3.6 keyword, its value as text (several separated by <code>\</code>), numbers and tags parsed by the element's VR.
+Text that is not ASCII is written in UTF-8 with Specific Character Set <code>ISO_IR 192</code>. The elements that describe the pixels (the
+Image Pixel module, Pixel Data, SOP Class UID) are the writer's own; giving one throws <code>ArgumentException</code>.</p>
+<pre><code class="lang-csharp">// Any raster saves as a Secondary Capture image: gray as MONOCHROME2, colour as RGB, 8 or 16 bits.
+using (FileStream output = File.Create(&quot;capture.dcm&quot;))
+{
+    raster.Save(output, DicomFormat.Info, new DicomWriterOptions
+    {
+        TransferSyntax = DicomTransferSyntax.JpegLsLossless,
+        Attributes = new Dictionary&lt;string, string&gt;
+        {
+            [&quot;PatientName&quot;] = &quot;Doe^Jane&quot;,
+            [&quot;PatientID&quot;] = &quot;12345&quot;,
+            [&quot;StudyInstanceUID&quot;] = DicomUid.Generate(),
+        },
+    });
+}
+</code></pre>
+<p><code>DicomFile.Save</code> writes an opened file again in the transfer syntax <code>DicomWriterOptions.TransferSyntax</code> names, keeping every
+element, private ones and sequences included; only group lengths, which would no longer be right, are left out. Pixel data
+already in that transfer syntax, or native in a little-endian file written native, is copied as it is. Any other is decoded
+strictly (a damaged frame throws) and coded again; the Photometric Interpretation and Planar Configuration follow (YBR_FULL_422
+data decodes to YBR_FULL; JPEG 2000 YBR_RCT and YBR_ICT and JPEG XL to RGB).</p>
+<pre><code class="lang-csharp">// An opened file saves again in another transfer syntax, every element kept and the pixel data coded anew.
+DicomFile file = DicomFile.Load(&quot;scan.dcm&quot;);
+file.Save(&quot;scan-rle.dcm&quot;, new DicomWriterOptions { TransferSyntax = DicomTransferSyntax.RleLossless });
+
+// Lossy syntaxes record themselves (Lossy Image Compression) and give the image a new SOP Instance UID.
+file.Save(&quot;scan-jpegls.dcm&quot;, new DicomWriterOptions
+{
+    TransferSyntax = DicomTransferSyntax.JpegLsNearLossless,
+    NearLossless = 2,
+    OffsetTable = DicomOffsetTable.Extended,
+});
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Transfer syntax</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Explicit VR Little Endian (default), Implicit VR Little Endian, Deflated Explicit VR Little Endian</td>
+<td>Native pixel data at the file's Bits Allocated, values under its High Bit</td>
+</tr>
+<tr>
+<td>RLE Lossless</td>
+<td>8, 16 and 32 bits allocated, up to 15 segments (a new PackBits encoder, PS3.5 annex G)</td>
+</tr>
+<tr>
+<td>JPEG Lossless (SV1), JPEG-LS Lossless</td>
+<td>2 to 16 bits stored, signed values as the two's complement of their stored bits</td>
+</tr>
+<tr>
+<td>JPEG XL Lossless</td>
+<td>Up to 16 bits stored, gray, palette or RGB; YBR data throws, since DICOM reads JPEG XL as RGB</td>
+</tr>
+<tr>
+<td>JPEG-LS Near-Lossless</td>
+<td>As JPEG-LS Lossless, each sample within <code>NearLossless</code> of its value; not for palette indices</td>
+</tr>
+<tr>
+<td>JPEG Baseline, JPEG Extended, JPEG XL</td>
+<td>Unsigned gray and colour of up to 8 bits (12 for JPEG Extended, written with Bits Stored 12); colour JPEG as YBR_FULL_422</td>
+</tr>
+</tbody>
+</table>
+<p>Encapsulated frames are one fragment each, with the Basic Offset Table by default; <code>DicomOffsetTable.Extended</code> writes the
+Extended Offset Table instead (it is used anyway past 4 GiB), and <code>DicomOffsetTable.None</code> neither. A lossy transfer syntax
+sets Lossy Image Compression to 01, adds its ratio and method (<code>ISO_10918_1</code>, <code>ISO_14495_1</code>, <code>ISO_18181_1</code>) to any earlier
+ones, and gives the image a new SOP Instance UID, as PS3.3 C.7.6.1.1.5 asks. The file meta information is written anew:
+version, Media Storage SOP Class and Instance UIDs from the dataset, the transfer syntax, Egami's Implementation Class UID
+(<code>DicomUid.ImplementationClassUid</code>) and version name; other elements of the old one are kept. <code>DicomUid.Generate</code> makes UIDs
+from random UUIDs (PS3.5 B.2). Explicit VR Big Endian is retired and not written.</p>
+<h2 id="detection-and-probing">Detection and probing</h2>
 <p>Registered with <code>WithDicom()</code>, DICOM files are found by the DICM prefix at byte 128, and <code>Raster.Probe</code> gives the size, the
 number of frames and the pixel layout a load gives. Bare datasets are
 not detected; <code>DicomFile.Load</code> reads them, and <code>Raster.Probe</code> with <code>DicomFormat.Info</code> names the format.</p>
@@ -372,7 +452,8 @@ lose nothing are noted in both modes: <code>Dicom.NoPreamble</code>, <code>Dicom
 <code>Dicom.TransferSyntaxMismatch</code> (the dataset is read in the VR encoding it is really in), <code>Dicom.ImplicitElement</code>,
 <code>Dicom.UnknownVR</code>, <code>Dicom.OddLength</code>, <code>Dicom.TagOrder</code>, <code>Dicom.ZlibHeader</code> and <code>Dicom.CharacterSet</code>.</p>
 <h2 id="not-supported-yet">Not supported yet</h2>
-<p>Writing is the next stage of the DICOM work. MPEG-2, H.264, HEVC and JPIP transfer syntaxes, Float and Double Float Pixel
+<p>Writing JPEG 2000, High-Throughput JPEG 2000, JPEG XL JPEG recompression and Deflated Image Frame Compression, multi-frame
+Secondary Capture from animations, and editing a dataset's elements before a save are not written yet. MPEG-2, H.264, HEVC and JPIP transfer syntaxes, Float and Double Float Pixel
 Data, 2-sample, ARGB and CMYK images and retired 12-bit packing throw <code>NotSupportedException</code>. Networking (DIMSE, DICOMweb), DICOMDIR media, structured reports, presentation states, segmentation and RT
 objects, overlay burn-in and anonymization are not planned.</p>
 

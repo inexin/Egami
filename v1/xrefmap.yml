@@ -43751,6 +43751,31 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Dicom.DicomFile.LoadFrame
   nameWithType: DicomFile.LoadFrame
+- uid: Egami.Formats.Extended.Dicom.DicomFile.Save(System.IO.Stream,Egami.Formats.Extended.Dicom.DicomWriterOptions,Egami.EgamiContext)
+  name: Save(Stream, DicomWriterOptions?, EgamiContext?)
+  href: api/Egami.Formats.Extended.Dicom.DicomFile.html#Egami_Formats_Extended_Dicom_DicomFile_Save_System_IO_Stream_Egami_Formats_Extended_Dicom_DicomWriterOptions_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Extended.Dicom.DicomFile.Save(System.IO.Stream,Egami.Formats.Extended.Dicom.DicomWriterOptions,Egami.EgamiContext)
+  name.vb: Save(Stream, DicomWriterOptions, EgamiContext)
+  fullName: Egami.Formats.Extended.Dicom.DicomFile.Save(System.IO.Stream, Egami.Formats.Extended.Dicom.DicomWriterOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Extended.Dicom.DicomFile.Save(System.IO.Stream, Egami.Formats.Extended.Dicom.DicomWriterOptions, Egami.EgamiContext)
+  nameWithType: DicomFile.Save(Stream, DicomWriterOptions?, EgamiContext?)
+  nameWithType.vb: DicomFile.Save(Stream, DicomWriterOptions, EgamiContext)
+- uid: Egami.Formats.Extended.Dicom.DicomFile.Save(System.String,Egami.Formats.Extended.Dicom.DicomWriterOptions,Egami.EgamiContext)
+  name: Save(string, DicomWriterOptions?, EgamiContext?)
+  href: api/Egami.Formats.Extended.Dicom.DicomFile.html#Egami_Formats_Extended_Dicom_DicomFile_Save_System_String_Egami_Formats_Extended_Dicom_DicomWriterOptions_Egami_EgamiContext_
+  commentId: M:Egami.Formats.Extended.Dicom.DicomFile.Save(System.String,Egami.Formats.Extended.Dicom.DicomWriterOptions,Egami.EgamiContext)
+  name.vb: Save(String, DicomWriterOptions, EgamiContext)
+  fullName: Egami.Formats.Extended.Dicom.DicomFile.Save(string, Egami.Formats.Extended.Dicom.DicomWriterOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Formats.Extended.Dicom.DicomFile.Save(String, Egami.Formats.Extended.Dicom.DicomWriterOptions, Egami.EgamiContext)
+  nameWithType: DicomFile.Save(string, DicomWriterOptions?, EgamiContext?)
+  nameWithType.vb: DicomFile.Save(String, DicomWriterOptions, EgamiContext)
+- uid: Egami.Formats.Extended.Dicom.DicomFile.Save*
+  name: Save
+  href: api/Egami.Formats.Extended.Dicom.DicomFile.html#Egami_Formats_Extended_Dicom_DicomFile_Save_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomFile.Save
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomFile.Save
+  nameWithType: DicomFile.Save
 - uid: Egami.Formats.Extended.Dicom.DicomFile.TransferSyntax
   name: TransferSyntax
   href: api/Egami.Formats.Extended.Dicom.DicomFile.html#Egami_Formats_Extended_Dicom_DicomFile_TransferSyntax
@@ -43854,6 +43879,30 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Dicom.DicomFragments.Fragments
   nameWithType: DicomFragments.Fragments
+- uid: Egami.Formats.Extended.Dicom.DicomOffsetTable
+  name: DicomOffsetTable
+  href: api/Egami.Formats.Extended.Dicom.DicomOffsetTable.html
+  commentId: T:Egami.Formats.Extended.Dicom.DicomOffsetTable
+  fullName: Egami.Formats.Extended.Dicom.DicomOffsetTable
+  nameWithType: DicomOffsetTable
+- uid: Egami.Formats.Extended.Dicom.DicomOffsetTable.Basic
+  name: Basic
+  href: api/Egami.Formats.Extended.Dicom.DicomOffsetTable.html#Egami_Formats_Extended_Dicom_DicomOffsetTable_Basic
+  commentId: F:Egami.Formats.Extended.Dicom.DicomOffsetTable.Basic
+  fullName: Egami.Formats.Extended.Dicom.DicomOffsetTable.Basic
+  nameWithType: DicomOffsetTable.Basic
+- uid: Egami.Formats.Extended.Dicom.DicomOffsetTable.Extended
+  name: Extended
+  href: api/Egami.Formats.Extended.Dicom.DicomOffsetTable.html#Egami_Formats_Extended_Dicom_DicomOffsetTable_Extended
+  commentId: F:Egami.Formats.Extended.Dicom.DicomOffsetTable.Extended
+  fullName: Egami.Formats.Extended.Dicom.DicomOffsetTable.Extended
+  nameWithType: DicomOffsetTable.Extended
+- uid: Egami.Formats.Extended.Dicom.DicomOffsetTable.None
+  name: None
+  href: api/Egami.Formats.Extended.Dicom.DicomOffsetTable.html#Egami_Formats_Extended_Dicom_DicomOffsetTable_None
+  commentId: F:Egami.Formats.Extended.Dicom.DicomOffsetTable.None
+  fullName: Egami.Formats.Extended.Dicom.DicomOffsetTable.None
+  nameWithType: DicomOffsetTable.None
 - uid: Egami.Formats.Extended.Dicom.DicomPersonName
   name: DicomPersonName
   href: api/Egami.Formats.Extended.Dicom.DicomPersonName.html
@@ -44521,6 +44570,97 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsKnown
   nameWithType: DicomTransferSyntax.IsKnown
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegBaseline
+  name: JpegBaseline
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegBaseline
+  commentId: P:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegBaseline
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegBaseline
+  nameWithType: DicomTransferSyntax.JpegBaseline
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegBaseline*
+  name: JpegBaseline
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegBaseline_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegBaseline
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegBaseline
+  nameWithType: DicomTransferSyntax.JpegBaseline
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegExtended
+  name: JpegExtended
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegExtended
+  commentId: P:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegExtended
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegExtended
+  nameWithType: DicomTransferSyntax.JpegExtended
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegExtended*
+  name: JpegExtended
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegExtended_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegExtended
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegExtended
+  nameWithType: DicomTransferSyntax.JpegExtended
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLossless
+  name: JpegLossless
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLossless
+  commentId: P:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLossless
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLossless
+  nameWithType: DicomTransferSyntax.JpegLossless
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLossless*
+  name: JpegLossless
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLossless_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLossless
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLossless
+  nameWithType: DicomTransferSyntax.JpegLossless
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsLossless
+  name: JpegLsLossless
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLsLossless
+  commentId: P:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsLossless
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsLossless
+  nameWithType: DicomTransferSyntax.JpegLsLossless
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsLossless*
+  name: JpegLsLossless
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLsLossless_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsLossless
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsLossless
+  nameWithType: DicomTransferSyntax.JpegLsLossless
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsNearLossless
+  name: JpegLsNearLossless
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLsNearLossless
+  commentId: P:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsNearLossless
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsNearLossless
+  nameWithType: DicomTransferSyntax.JpegLsNearLossless
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsNearLossless*
+  name: JpegLsNearLossless
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLsNearLossless_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsNearLossless
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsNearLossless
+  nameWithType: DicomTransferSyntax.JpegLsNearLossless
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXl
+  name: JpegXl
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegXl
+  commentId: P:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXl
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXl
+  nameWithType: DicomTransferSyntax.JpegXl
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXl*
+  name: JpegXl
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegXl_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXl
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXl
+  nameWithType: DicomTransferSyntax.JpegXl
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXlLossless
+  name: JpegXlLossless
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegXlLossless
+  commentId: P:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXlLossless
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXlLossless
+  nameWithType: DicomTransferSyntax.JpegXlLossless
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXlLossless*
+  name: JpegXlLossless
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegXlLossless_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXlLossless
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXlLossless
+  nameWithType: DicomTransferSyntax.JpegXlLossless
 - uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.Name
   name: Name
   href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_Name
@@ -44534,6 +44674,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.Name
   nameWithType: DicomTransferSyntax.Name
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.RleLossless
+  name: RleLossless
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_RleLossless
+  commentId: P:Egami.Formats.Extended.Dicom.DicomTransferSyntax.RleLossless
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.RleLossless
+  nameWithType: DicomTransferSyntax.RleLossless
+- uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.RleLossless*
+  name: RleLossless
+  href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_RleLossless_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomTransferSyntax.RleLossless
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.RleLossless
+  nameWithType: DicomTransferSyntax.RleLossless
 - uid: Egami.Formats.Extended.Dicom.DicomTransferSyntax.ToString
   name: ToString()
   href: api/Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_ToString
@@ -44560,6 +44713,38 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Dicom.DicomTransferSyntax.Uid
   nameWithType: DicomTransferSyntax.Uid
+- uid: Egami.Formats.Extended.Dicom.DicomUid
+  name: DicomUid
+  href: api/Egami.Formats.Extended.Dicom.DicomUid.html
+  commentId: T:Egami.Formats.Extended.Dicom.DicomUid
+  fullName: Egami.Formats.Extended.Dicom.DicomUid
+  nameWithType: DicomUid
+- uid: Egami.Formats.Extended.Dicom.DicomUid.Generate
+  name: Generate()
+  href: api/Egami.Formats.Extended.Dicom.DicomUid.html#Egami_Formats_Extended_Dicom_DicomUid_Generate
+  commentId: M:Egami.Formats.Extended.Dicom.DicomUid.Generate
+  fullName: Egami.Formats.Extended.Dicom.DicomUid.Generate()
+  nameWithType: DicomUid.Generate()
+- uid: Egami.Formats.Extended.Dicom.DicomUid.Generate*
+  name: Generate
+  href: api/Egami.Formats.Extended.Dicom.DicomUid.html#Egami_Formats_Extended_Dicom_DicomUid_Generate_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomUid.Generate
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomUid.Generate
+  nameWithType: DicomUid.Generate
+- uid: Egami.Formats.Extended.Dicom.DicomUid.ImplementationClassUid
+  name: ImplementationClassUid
+  href: api/Egami.Formats.Extended.Dicom.DicomUid.html#Egami_Formats_Extended_Dicom_DicomUid_ImplementationClassUid
+  commentId: P:Egami.Formats.Extended.Dicom.DicomUid.ImplementationClassUid
+  fullName: Egami.Formats.Extended.Dicom.DicomUid.ImplementationClassUid
+  nameWithType: DicomUid.ImplementationClassUid
+- uid: Egami.Formats.Extended.Dicom.DicomUid.ImplementationClassUid*
+  name: ImplementationClassUid
+  href: api/Egami.Formats.Extended.Dicom.DicomUid.html#Egami_Formats_Extended_Dicom_DicomUid_ImplementationClassUid_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomUid.ImplementationClassUid
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomUid.ImplementationClassUid
+  nameWithType: DicomUid.ImplementationClassUid
 - uid: Egami.Formats.Extended.Dicom.DicomVR
   name: DicomVR
   href: api/Egami.Formats.Extended.Dicom.DicomVR.html
@@ -44818,6 +45003,90 @@ references:
   commentId: F:Egami.Formats.Extended.Dicom.DicomVoiFunction.Sigmoid
   fullName: Egami.Formats.Extended.Dicom.DicomVoiFunction.Sigmoid
   nameWithType: DicomVoiFunction.Sigmoid
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions
+  name: DicomWriterOptions
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html
+  commentId: T:Egami.Formats.Extended.Dicom.DicomWriterOptions
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions
+  nameWithType: DicomWriterOptions
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions.Attributes
+  name: Attributes
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html#Egami_Formats_Extended_Dicom_DicomWriterOptions_Attributes
+  commentId: P:Egami.Formats.Extended.Dicom.DicomWriterOptions.Attributes
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions.Attributes
+  nameWithType: DicomWriterOptions.Attributes
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions.Attributes*
+  name: Attributes
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html#Egami_Formats_Extended_Dicom_DicomWriterOptions_Attributes_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomWriterOptions.Attributes
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions.Attributes
+  nameWithType: DicomWriterOptions.Attributes
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions.Default
+  name: Default
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html#Egami_Formats_Extended_Dicom_DicomWriterOptions_Default
+  commentId: P:Egami.Formats.Extended.Dicom.DicomWriterOptions.Default
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions.Default
+  nameWithType: DicomWriterOptions.Default
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions.Default*
+  name: Default
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html#Egami_Formats_Extended_Dicom_DicomWriterOptions_Default_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomWriterOptions.Default
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions.Default
+  nameWithType: DicomWriterOptions.Default
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions.NearLossless
+  name: NearLossless
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html#Egami_Formats_Extended_Dicom_DicomWriterOptions_NearLossless
+  commentId: P:Egami.Formats.Extended.Dicom.DicomWriterOptions.NearLossless
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions.NearLossless
+  nameWithType: DicomWriterOptions.NearLossless
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions.NearLossless*
+  name: NearLossless
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html#Egami_Formats_Extended_Dicom_DicomWriterOptions_NearLossless_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomWriterOptions.NearLossless
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions.NearLossless
+  nameWithType: DicomWriterOptions.NearLossless
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions.OffsetTable
+  name: OffsetTable
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html#Egami_Formats_Extended_Dicom_DicomWriterOptions_OffsetTable
+  commentId: P:Egami.Formats.Extended.Dicom.DicomWriterOptions.OffsetTable
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions.OffsetTable
+  nameWithType: DicomWriterOptions.OffsetTable
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions.OffsetTable*
+  name: OffsetTable
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html#Egami_Formats_Extended_Dicom_DicomWriterOptions_OffsetTable_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomWriterOptions.OffsetTable
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions.OffsetTable
+  nameWithType: DicomWriterOptions.OffsetTable
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions.Quality
+  name: Quality
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html#Egami_Formats_Extended_Dicom_DicomWriterOptions_Quality
+  commentId: P:Egami.Formats.Extended.Dicom.DicomWriterOptions.Quality
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions.Quality
+  nameWithType: DicomWriterOptions.Quality
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions.Quality*
+  name: Quality
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html#Egami_Formats_Extended_Dicom_DicomWriterOptions_Quality_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomWriterOptions.Quality
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions.Quality
+  nameWithType: DicomWriterOptions.Quality
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions.TransferSyntax
+  name: TransferSyntax
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html#Egami_Formats_Extended_Dicom_DicomWriterOptions_TransferSyntax
+  commentId: P:Egami.Formats.Extended.Dicom.DicomWriterOptions.TransferSyntax
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions.TransferSyntax
+  nameWithType: DicomWriterOptions.TransferSyntax
+- uid: Egami.Formats.Extended.Dicom.DicomWriterOptions.TransferSyntax*
+  name: TransferSyntax
+  href: api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html#Egami_Formats_Extended_Dicom_DicomWriterOptions_TransferSyntax_
+  commentId: Overload:Egami.Formats.Extended.Dicom.DicomWriterOptions.TransferSyntax
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Dicom.DicomWriterOptions.TransferSyntax
+  nameWithType: DicomWriterOptions.TransferSyntax
 - uid: Egami.Formats.Extended.Dpx
   name: Egami.Formats.Extended.Dpx
   href: api/Egami.Formats.Extended.Dpx.html

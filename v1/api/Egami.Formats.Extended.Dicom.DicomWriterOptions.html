@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class DicomWriterOptions | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class DicomWriterOptions | Egami ">
+      
+      <meta name="description" content="Options for writing DICOM: the transfer syntax, the quality of lossy ones, and the attributes of a Secondary Capture image. Pass them to  with , or to .">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Formats_Extended_Dicom_DicomWriterOptions.md&amp;value=---%0Auid%3A%20Egami.Formats.Extended.Dicom.DicomWriterOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions">
+
+
+
+  <h1 id="Egami_Formats_Extended_Dicom_DicomWriterOptions" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions" class="text-break">
+Class DicomWriterOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomWriterOptions.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Formats.html">Formats</a>.<a class="xref" href="Egami.Formats.Extended.html">Extended</a>.<a class="xref" href="Egami.Formats.Extended.Dicom.html">Dicom</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Formats.Extended.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Options for writing DICOM: the transfer syntax, the quality of lossy ones, and the attributes of a Secondary Capture image.
+Pass them to <a class="xref" href="Egami.Raster.html#Egami_Raster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">Save(Stream, FormatInfo, WriterOptions?)</a> with <a class="xref" href="Egami.Formats.Extended.Dicom.DicomFormat.html#Egami_Formats_Extended_Dicom_DicomFormat_Info">Info</a>, or to
+<a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html#Egami_Formats_Extended_Dicom_DicomFile_Save_System_IO_Stream_Egami_Formats_Extended_Dicom_DicomWriterOptions_Egami_EgamiContext_">Save(Stream, DicomWriterOptions?, EgamiContext?)</a>.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">[Experimental(&quot;EGAMIX001&quot;, UrlFormat = &quot;https://github.com/inexin/Egami/blob/main/docs/articles/formats/dicom.md&quot;)]
+public sealed class DicomWriterOptions : WriterOptions</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Egami.Formats.WriterOptions.html">WriterOptions</a></div>
+      <div><span class="xref">DicomWriterOptions</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_StripMetadata">WriterOptions.StripMetadata</a>
+    </div>
+    <div>
+      <a class="xref" href="Egami.Formats.WriterOptions.html#Egami_Formats_WriterOptions_OmitSrgbProfile">WriterOptions.OmitSrgbProfile</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Formats_Extended_Dicom_DicomWriterOptions_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Any raster saves as a Secondary Capture image: gray as MONOCHROME2, colour as RGB, 8 or 16 bits.
+using (FileStream output = File.Create("capture.dcm"))
+{
+    raster.Save(output, DicomFormat.Info, new DicomWriterOptions
+    {
+        TransferSyntax = DicomTransferSyntax.JpegLsLossless,
+        Attributes = new Dictionary&lt;string, string&gt;
+        {
+            ["PatientName"] = "Doe^Jane",
+            ["PatientID"] = "12345",
+            ["StudyInstanceUID"] = DicomUid.Generate(),
+        },
+    });
+}</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomWriterOptions_Attributes_" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions.Attributes*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomWriterOptions_Attributes" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions.Attributes">
+  Attributes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomWriterOptions.cs/#L95"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets attributes to give a Secondary Capture image written from a raster, by PS3.6 keyword, such as <code>PatientName</code>,
+<code>PatientID</code> or <code>StudyInstanceUID</code>, each value as text (several values separated by <code>&lt;/code&gt;). The VR comes
+from PS3.6; text is written in UTF-8 (Specific Character Set <code>ISO_IR 192</code>) when it is not ASCII. Ignored by
+<a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html#Egami_Formats_Extended_Dicom_DicomFile_Save_System_IO_Stream_Egami_Formats_Extended_Dicom_DicomWriterOptions_Egami_EgamiContext_">Save(Stream, DicomWriterOptions?, EgamiContext?)</a>, which keeps the file's own.</code></p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyDictionary&lt;string, string&gt; Attributes { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2">IReadOnlyDictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomWriterOptions_Default_" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions.Default*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomWriterOptions_Default" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions.Default">
+  Default
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomWriterOptions.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the default options: Explicit VR Little Endian, quality 90, the Basic Offset Table.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomWriterOptions Default { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomWriterOptions.html">DicomWriterOptions</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomWriterOptions_NearLossless_" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions.NearLossless*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomWriterOptions_NearLossless" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions.NearLossless">
+  NearLossless
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomWriterOptions.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the largest error per sample of <a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLsNearLossless">JpegLsNearLossless</a> (the JPEG-LS NEAR parameter),
+1 to 255. Defaults to 2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int NearLossless { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 1 to 255.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomWriterOptions_OffsetTable_" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions.OffsetTable*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomWriterOptions_OffsetTable" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions.OffsetTable">
+  OffsetTable
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomWriterOptions.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets where encapsulated pixel data says each frame starts. Defaults to <a class="xref" href="Egami.Formats.Extended.Dicom.DicomOffsetTable.html#Egami_Formats_Extended_Dicom_DicomOffsetTable_Basic">Basic</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DicomOffsetTable OffsetTable { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomOffsetTable.html">DicomOffsetTable</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomWriterOptions_Quality_" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions.Quality*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomWriterOptions_Quality" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions.Quality">
+  Quality
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomWriterOptions.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the quality of <a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegBaseline">JpegBaseline</a>, <a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegExtended">JpegExtended</a> and
+<a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegXl">JpegXl</a>, 1 (smallest) to 100 (best), as their own writers take it. Defaults to 90.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Quality { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 1 to 100.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomWriterOptions_TransferSyntax_" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions.TransferSyntax*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomWriterOptions_TransferSyntax" data-uid="Egami.Formats.Extended.Dicom.DicomWriterOptions.TransferSyntax">
+  TransferSyntax
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomWriterOptions.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the transfer syntax to write. Native: <a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_ExplicitVRLittleEndian">ExplicitVRLittleEndian</a> (the default),
+<a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_ImplicitVRLittleEndian">ImplicitVRLittleEndian</a> and <a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_DeflatedExplicitVRLittleEndian">DeflatedExplicitVRLittleEndian</a>;
+lossless: <a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_RleLossless">RleLossless</a>, <a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLossless">JpegLossless</a>,
+<a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLsLossless">JpegLsLossless</a> and <a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegXlLossless">JpegXlLossless</a>; lossy:
+<a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegBaseline">JpegBaseline</a>, <a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegExtended">JpegExtended</a>,
+<a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLsNearLossless">JpegLsNearLossless</a> and <a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html#Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegXl">JpegXl</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DicomTransferSyntax TransferSyntax { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomWriterOptions.cs/#L35" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

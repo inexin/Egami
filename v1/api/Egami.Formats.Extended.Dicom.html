@@ -125,7 +125,8 @@ before it is stable.</p>
       <dd><p>DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with
 <a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithDicom_Egami_EgamiContext_">WithDicom(EgamiContext)</a>; in preview. A load gives one frame as a viewer shows it (see
 <a class="xref" href="Egami.Formats.Extended.Dicom.DicomReaderOptions.html">DicomReaderOptions</a>), each frame of a multi-frame file is an image of its own for
-<a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">LoadAll(Stream, EgamiContext?, ReaderOptions?)</a>, and <a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html">DicomFile</a> reads every element.</p>
+<a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">LoadAll(Stream, EgamiContext?, ReaderOptions?)</a>, and <a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html">DicomFile</a> reads every element. A save
+writes a Secondary Capture image (see <a class="xref" href="Egami.Formats.Extended.Dicom.DicomWriterOptions.html">DicomWriterOptions</a>).</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -152,6 +153,18 @@ alphabetic one split into its five components (PS3.5 section 6.2.1).</p>
 or encapsulated in a codec's codestream), named by a UID of PS3.6 table A-1 (PS3.5 section 10).</p>
 </dd>
     </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomUid.html">DicomUid</a></dt>
+      <dd><p>DICOM unique identifiers (PS3.5 chapter 9).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomWriterOptions.html">DicomWriterOptions</a></dt>
+      <dd><p>Options for writing DICOM: the transfer syntax, the quality of lossy ones, and the attributes of a Secondary Capture image.
+Pass them to <a class="xref" href="Egami.Raster.html#Egami_Raster_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_">Save(Stream, FormatInfo, WriterOptions?)</a> with <a class="xref" href="Egami.Formats.Extended.Dicom.DicomFormat.html#Egami_Formats_Extended_Dicom_DicomFormat_Info">Info</a>, or to
+<a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html#Egami_Formats_Extended_Dicom_DicomFile_Save_System_IO_Stream_Egami_Formats_Extended_Dicom_DicomWriterOptions_Egami_EgamiContext_">Save(Stream, DicomWriterOptions?, EgamiContext?)</a>.</p>
+</dd>
+    </dl>
     <h3 id="structs">
 Structs
 </h3>
@@ -164,6 +177,11 @@ PS3.6's data dictionary; odd groups are private.</p>
     <h3 id="enums">
 Enums
 </h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomOffsetTable.html">DicomOffsetTable</a></dt>
+      <dd><p>Where encapsulated pixel data says each frame starts (PS3.5 section A.4).</p>
+</dd>
+    </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomVR.html">DicomVR</a></dt>
       <dd><p>A value representation: how an element's value is encoded (PS3.5 section 6.2).</p>

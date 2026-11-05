@@ -6575,7 +6575,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.Dicom.DicomFormat",
-      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomFormat.yml\" sourcestartlinenumber=\"1\">DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with\n<xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithDicom(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>; in preview. A load gives one frame as a viewer shows it (see\n<xref href=\"Egami.Formats.Extended.Dicom.DicomReaderOptions\" data-throw-if-not-resolved=\"false\"></xref>), each frame of a multi-frame file is an image of its own for\n<xref href=\"Egami.Raster.LoadAll(System.IO.Stream%2cEgami.EgamiContext%2cEgami.Formats.ReaderOptions)\" data-throw-if-not-resolved=\"false\"></xref>, and <xref href=\"Egami.Formats.Extended.Dicom.DicomFile\" data-throw-if-not-resolved=\"false\"></xref> reads every element.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomFormat.yml\" sourcestartlinenumber=\"1\">DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with\n<xref href=\"Egami.Formats.Extended.ExtendedContextExtensions.WithDicom(Egami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>; in preview. A load gives one frame as a viewer shows it (see\n<xref href=\"Egami.Formats.Extended.Dicom.DicomReaderOptions\" data-throw-if-not-resolved=\"false\"></xref>), each frame of a multi-frame file is an image of its own for\n<xref href=\"Egami.Raster.LoadAll(System.IO.Stream%2cEgami.EgamiContext%2cEgami.Formats.ReaderOptions)\" data-throw-if-not-resolved=\"false\"></xref>, and <xref href=\"Egami.Formats.Extended.Dicom.DicomFile\" data-throw-if-not-resolved=\"false\"></xref> reads every element. A save\nwrites a Secondary Capture image (see <xref href=\"Egami.Formats.Extended.Dicom.DicomWriterOptions\" data-throw-if-not-resolved=\"false\"></xref>).</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -6590,6 +6590,20 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.Dicom.DicomFragments",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomFragments.yml\" sourcestartlinenumber=\"1\">Encapsulated pixel data (PS3.5 section A.4): the Basic Offset Table, the fragments that follow it, and the Extended Offset\nTable when the dataset has one. The fragments are compressed data as stored; a frame may span several.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dicom.DicomOffsetTable.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dicom.DicomOffsetTable.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dicom.DicomOffsetTable",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomOffsetTable.yml\" sourcestartlinenumber=\"1\">Where encapsulated pixel data says each frame starts (PS3.5 section A.4).</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -6649,6 +6663,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dicom.DicomUid.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dicom.DicomUid.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dicom.DicomUid",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomUid.yml\" sourcestartlinenumber=\"1\">DICOM unique identifiers (PS3.5 chapter 9).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Extended.Dicom.DicomVR.yml",
       "output": {
         ".html": {
@@ -6688,6 +6716,20 @@
       "IsMRef": true,
       "Title": "Egami.Formats.Extended.Dicom.DicomVoiFunction",
       "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomVoiFunction.yml\" sourcestartlinenumber=\"1\">A VOI LUT Function (0028,1056): how a window maps modality values to shown values (PS3.3 C.11.2.1.2).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Extended.Dicom.DicomWriterOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Extended.Dicom.DicomWriterOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Extended.Dicom.DicomWriterOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Extended.Dicom.DicomWriterOptions.yml\" sourcestartlinenumber=\"1\">Options for writing DICOM: the transfer syntax, the quality of lossy ones, and the attributes of a Secondary Capture image.\nPass them to <xref href=\"Egami.Raster.Save(System.IO.Stream%2cEgami.Formats.FormatInfo%2cEgami.Formats.WriterOptions)\" data-throw-if-not-resolved=\"false\"></xref> with <xref href=\"Egami.Formats.Extended.Dicom.DicomFormat.Info\" data-throw-if-not-resolved=\"false\"></xref>, or to\n<xref href=\"Egami.Formats.Extended.Dicom.DicomFile.Save(System.IO.Stream%2cEgami.Formats.Extended.Dicom.DicomWriterOptions%2cEgami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",

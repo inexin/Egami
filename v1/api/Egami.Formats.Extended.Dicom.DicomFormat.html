@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class DicomFormat | Egami ">
       
-      <meta name="description" content="DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with ; in preview. A load gives one frame as a viewer shows it (see ), each frame of a multi-frame file is an image of its own for , and  reads every element.">
+      <meta name="description" content="DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with ; in preview. A load gives one frame as a viewer shows it (see ), each frame of a multi-frame file is an image of its own for , and  reads every element. A save writes a Secondary Capture image (see ).">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Formats_Extended_Dicom_DicomFormat" data-uid="Egami.Formats.Extended.Dicom.DicomFormat" class="text-break">
-Class DicomFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFormat.cs/#L19"><i class="bi bi-code-slash"></i></a>
+Class DicomFormat  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFormat.cs/#L20"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -100,7 +100,8 @@ Class DicomFormat  <a class="header-action link-secondary" title="View source" h
   <div class="markdown summary"><p>DICOM (PS3.10 files, .dcm): medical images with their dataset. Registered with
 <a class="xref" href="Egami.Formats.Extended.ExtendedContextExtensions.html#Egami_Formats_Extended_ExtendedContextExtensions_WithDicom_Egami_EgamiContext_">WithDicom(EgamiContext)</a>; in preview. A load gives one frame as a viewer shows it (see
 <a class="xref" href="Egami.Formats.Extended.Dicom.DicomReaderOptions.html">DicomReaderOptions</a>), each frame of a multi-frame file is an image of its own for
-<a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">LoadAll(Stream, EgamiContext?, ReaderOptions?)</a>, and <a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html">DicomFile</a> reads every element.</p>
+<a class="xref" href="Egami.Raster.html#Egami_Raster_LoadAll_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_">LoadAll(Stream, EgamiContext?, ReaderOptions?)</a>, and <a class="xref" href="Egami.Formats.Extended.Dicom.DicomFile.html">DicomFile</a> reads every element. A save
+writes a Secondary Capture image (see <a class="xref" href="Egami.Formats.Extended.Dicom.DicomWriterOptions.html">DicomWriterOptions</a>).</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -169,7 +170,7 @@ image.Save("scan.png");</code></pre>
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomFormat_Info" data-uid="Egami.Formats.Extended.Dicom.DicomFormat.Info">
   Info
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFormat.cs/#L23"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFormat.cs/#L24"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the format's registration: name, MIME type, extensions, signature and reader.</p>
@@ -201,7 +202,7 @@ image.Save("scan.png");</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFormat.cs/#L19" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomFormat.cs/#L20" class="edit-link">Edit this page</a>
         </div>
 
 

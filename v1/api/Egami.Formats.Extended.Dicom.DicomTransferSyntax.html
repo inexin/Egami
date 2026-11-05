@@ -295,7 +295,7 @@ foreach (EgamiDiagnostic warning in file.Warnings)
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsBigEndian" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsBigEndian">
   IsBigEndian
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L73"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether binary values are big-endian.</p>
@@ -327,7 +327,7 @@ foreach (EgamiDiagnostic warning in file.Warnings)
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsDeflated" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsDeflated">
   IsDeflated
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L76"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the dataset after the file meta information is deflated (RFC 1951).</p>
@@ -359,7 +359,7 @@ foreach (EgamiDiagnostic warning in file.Warnings)
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsEncapsulated" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsEncapsulated">
   IsEncapsulated
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L79"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether pixel data is encapsulated: compressed, in fragments (PS3.5 section A.4).</p>
@@ -391,7 +391,7 @@ foreach (EgamiDiagnostic warning in file.Warnings)
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsExplicitVR" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsExplicitVR">
   IsExplicitVR
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L70"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether each element states its VR.</p>
@@ -423,7 +423,7 @@ foreach (EgamiDiagnostic warning in file.Warnings)
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_IsKnown" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.IsKnown">
   IsKnown
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L82"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether PS3.6 lists the UID.</p>
@@ -451,11 +451,235 @@ foreach (EgamiDiagnostic warning in file.Warnings)
 
 
 
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegBaseline_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegBaseline*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegBaseline" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegBaseline">
+  JpegBaseline
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets JPEG Baseline (Process 1) (1.2.840.10008.1.2.4.50): lossy, 8 bits.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax JpegBaseline { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegExtended_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegExtended*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegExtended" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegExtended">
+  JpegExtended
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets JPEG Extended (Process 2 and 4) (1.2.840.10008.1.2.4.51): lossy, 8 or 12 bits.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax JpegExtended { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLossless_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLossless*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLossless" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLossless">
+  JpegLossless
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets JPEG Lossless, Non-Hierarchical, First-Order Prediction (Process 14, Selection Value 1) (1.2.840.10008.1.2.4.70).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax JpegLossless { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLsLossless_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsLossless*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLsLossless" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsLossless">
+  JpegLsLossless
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets JPEG-LS Lossless (1.2.840.10008.1.2.4.80).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax JpegLsLossless { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLsNearLossless_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsNearLossless*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegLsNearLossless" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegLsNearLossless">
+  JpegLsNearLossless
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets JPEG-LS Lossy (Near-Lossless) (1.2.840.10008.1.2.4.81).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax JpegLsNearLossless { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegXl_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXl*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegXl" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXl">
+  JpegXl
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets JPEG XL (1.2.840.10008.1.2.4.112): lossy.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax JpegXl { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegXlLossless_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXlLossless*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_JpegXlLossless" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.JpegXlLossless">
+  JpegXlLossless
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets JPEG XL Lossless (1.2.840.10008.1.2.4.110).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax JpegXlLossless { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_Name_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.Name*"></a>
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_Name" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.Name">
   Name
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L67"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the PS3.6 name, such as <code>JPEG 2000 Image Compression (Lossless Only)</code>, or the UID when PS3.6 does not list it.</p>
@@ -483,11 +707,43 @@ foreach (EgamiDiagnostic warning in file.Warnings)
 
 
 
+  <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_RleLossless_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.RleLossless*"></a>
+
+  <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_RleLossless" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.RleLossless">
+  RleLossless
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets RLE Lossless (1.2.840.10008.1.2.5): PackBits byte planes (PS3.5 annex G).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DicomTransferSyntax RleLossless { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Dicom.DicomTransferSyntax.html">DicomTransferSyntax</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_Uid_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.Uid*"></a>
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_Uid" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.Uid">
   Uid
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L64"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the UID.</p>
@@ -523,7 +779,7 @@ foreach (EgamiDiagnostic warning in file.Warnings)
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_FromUid_System_String_" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.FromUid(System.String)">
   FromUid(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L91"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the transfer syntax a UID names. UIDs other than the four native ones are read as explicit VR little endian with
@@ -569,7 +825,7 @@ encapsulated pixel data, as every compressed transfer syntax is.</p>
 
   <h3 id="Egami_Formats_Extended_Dicom_DicomTransferSyntax_ToString" data-uid="Egami.Formats.Extended.Dicom.DicomTransferSyntax.ToString">
   ToString()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Dicom/DicomTransferSyntax.cs/#L107"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the name and UID.</p>
