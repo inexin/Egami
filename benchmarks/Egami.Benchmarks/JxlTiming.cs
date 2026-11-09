@@ -35,7 +35,8 @@ internal static class JxlTiming
 
         // --one-thread times one thread only; --runs=N runs N times with no separate warm-up (tools/video/count-instructions.py
         // counts the difference of two run counts); EGAMI_JXL_STAGES=1 prints the bytes one decode allocates and, in a build with
-        // -p:JxlStageTimers=true, where one thread's time goes.
+        // -p:JxlStageTimers=true, where the time goes at each thread count (the stages' wall-clock time, which on all threads shows
+        // the serial share of each stage).
         int[] counts = files.Contains("--one-thread") ? [1] : [1, Environment.ProcessorCount];
         int? runs = Runs(files);
         foreach (string file in files.Where(f => !f.StartsWith("--", StringComparison.Ordinal)))
@@ -53,7 +54,7 @@ internal static class JxlTiming
 
                 double best = Timed(runs, Decode);
                 Console.WriteLine($"{file}: {best:F2} ms an image on {threads} thread{(threads == 1 ? "" : "s")}");
-                if (Stages && threads == 1)
+                if (Stages)
                 {
                     PrintStages(Decode);
                 }
@@ -90,7 +91,7 @@ internal static class JxlTiming
 
                 double best = Timed(runs, Encode);
                 Console.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{file} {setting}: {output.Length} bytes, {best:F2} ms on {threads} thread{(threads == 1 ? "" : "s")}"));
-                if (Stages && threads == 1)
+                if (Stages)
                 {
                     PrintStages(Encode);
                 }
@@ -146,7 +147,8 @@ internal static class JxlTiming
 
     /// <summary>
     /// Prints the managed bytes one run allocates (on every thread) and, in a build with the stage timers, the milliseconds each
-    /// stage takes, the fastest of five runs stage by stage. An encode's own draft decodes (the EPF and quantization searches)
+    /// stage takes (wall-clock, so on more than one thread a stage's parallel loops count as the time they take on all of them),
+    /// the fastest of five runs stage by stage. An encode's own draft decodes (the EPF and quantization searches)
     /// land in the decode stages, which an encode prints together as drafts.
     /// </summary>
     private static void PrintStages(Action action)
