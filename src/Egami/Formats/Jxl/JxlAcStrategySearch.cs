@@ -91,6 +91,8 @@ internal sealed class JxlAcStrategySearch
         cmap[2] = bFactor;
         float[] entropyEstimate = s.EntropyEstimate;
         Array.Clear(entropyEstimate);
+        Array.Clear(s.Kind);
+        (s.TileX, s.TileY) = (bx, by);
         const float K8x8Mul1 = -0.4f;
         const float K8x8Mul2 = 1.0f;
         const float K8x8Base = 1.4f;
@@ -268,7 +270,7 @@ internal sealed class JxlAcStrategySearch
                 entropyMul += AvoidEntropyOfTransforms * m;
             }
 
-            float entropy = EstimateEntropy(type, entropyMul, x, y, cmap, s);
+            float entropy = EstimateEntropy(type, entropyMul, x, y, cmap, s, (float)best);
 
             if (entropy < best)
             {
@@ -289,23 +291,74 @@ internal sealed class JxlAcStrategySearch
         internal readonly float[] Cmap = new float[3];
         internal readonly float[] EntropyEstimate = new float[64];
         internal readonly byte[] Priority = new byte[64];
+
+        // The tile's estimates of the merged transforms, by transform and first block: the unaligned passes ask for many twice.
+        internal readonly float[] Value = new float[Cached * 64];
+        internal readonly float[] Mul = new float[Cached * 64];
+        internal readonly byte[] Kind = new byte[Cached * 64];  // 0 none, 1 the estimate, 2 a lower bound of it
+        internal int TileX;
+        internal int TileY;
+        internal float Bound;
+    }
+
+    private const int Cached = 9;
+
+    // The slot of a merged transform in the tile's estimates.
+    private static int Slot(JxlTransformType t) => t switch
+    {
+        JxlTransformType.Dct16x8 => 0,
+        JxlTransformType.Dct8x16 => 1,
+        JxlTransformType.Dct16 => 2,
+        JxlTransformType.Dct32x16 => 3,
+        JxlTransformType.Dct16x32 => 4,
+        JxlTransformType.Dct32 => 5,
+        JxlTransformType.Dct64x32 => 6,
+        JxlTransformType.Dct32x64 => 7,
+        _ => 8,
+    };
+
+    /// <summary>
+    /// <see cref="EstimateEntropy"/> of a merged transform at block (<paramref name="x"/>, <paramref name="y"/>), from the
+    /// tile's estimates when it was made before with the same multiplier (it depends on nothing that changes within a tile).
+    /// </summary>
+    private float Estimate(JxlTransformType t, float entropyMul, int x, int y, float[] cmap, Scratch s, float threshold)
+    {
+        int at = (Slot(t) * 64) + ((y - s.TileY) * 8) + x - s.TileX;
+        if (s.Kind[at] != 0 && s.Mul[at] == entropyMul)
+        {
+            if (s.Kind[at] == 1)
+            {
+                return s.Value[at];
+            }
+
+            if (s.Value[at] >= threshold)
+            {
+                return float.MaxValue;
+            }
+        }
+
+        float entropy = EstimateEntropy(t, entropyMul, x * 8, y * 8, cmap, s, threshold);
+        s.Mul[at] = entropyMul;
+        (s.Kind[at], s.Value[at]) = entropy == float.MaxValue ? ((byte)2, s.Bound) : ((byte)1, entropy);
+        return entropy;
     }
 
     /// <summary>
     /// libjxl's EstimateEntropy: the bits a varblock would take (√|q| per coefficient plus the cost of its nonzero count) times
     /// the transform's multiplier, plus the information loss: the quantization error, back in pixels, weighted by the 1×1 mask
-    /// and taken to the 8th norm.
+    /// and taken to the 8th norm. Every caller only asks whether the estimate is below <paramref name="threshold"/> unless it
+    /// is: once the channels so far show it cannot be, the rest is skipped and <see cref="float.MaxValue"/> returned (with the
+    /// lower bound in <see cref="Scratch.Bound"/>), which decides the same.
     /// </summary>
-    private float EstimateEntropy(JxlTransformType t, float entropyMul, int x, int y, float[] cmap, Scratch s)
+    private float EstimateEntropy(JxlTransformType t, float entropyMul, int x, int y, float[] cmap, Scratch s, float threshold = float.MaxValue)
     {
         (int w8, int h8) = JxlTransforms8.Size(t);
         int numBlocks = w8 * h8;
         int size = numBlocks * 64;
         int offset = (y * _stride) + x;
-        for (int c = 0; c < 3; c++)
-        {
-            Transform(t, _xyb[c], offset, _stride, s.Pixels, s.Block[c]);
-        }
+
+        // Y first: X and B are taken less their part predicted from Y, and each waits until it is needed.
+        Transform(t, _xyb[1], offset, _stride, s.Pixels, s.Block[1]);
 
         int qx = x / 8, qy = y / 8;
         float quantNorm16;
@@ -336,14 +389,26 @@ internal sealed class JxlAcStrategySearch
             quantNorm16 = JxlFastMath.Pow(quantNorm16, 1.0f / 16.0f);
         }
 
-        float entropy = 0;
-        Vector256<float> loss = Vector256<float>.Zero;
         bool transposed = JxlTransforms8.Transposed(t);
         int cw = Math.Max(w8, h8) * 8;
         int ch = Math.Min(w8, h8) * 8;
         Vector256<float> quant = Vector256.Create(quantNorm16);
-        for (int c = 0; c < 3; c++)
+        bool exits = threshold != float.MaxValue && entropyMul > 0 && quantNorm16 > 0;
+
+        // Each channel's bits (the root sum, then the nonzero count) and loss, summed below in libjxl's order. Y goes first: it
+        // decides most estimates that lose, so X and B are not transformed until it has been seen.
+        Span<float> bits = stackalloc float[6];
+        Span<Vector256<float>> losses = stackalloc Vector256<float>[3];
+        Span<bool> done = stackalloc bool[3];
+        float w = numBlocks >= 2 ? 1.0f + MathF.Min(3.0f, numBlocks / 8.0f) : 1;
+        for (int step = 0; step < 3; step++)
         {
+            int c = step == 0 ? 1 : step == 1 ? 0 : 2;
+            if (c != 1)
+            {
+                Transform(t, _xyb[c], offset, _stride, s.Pixels, s.Block[c]);
+            }
+
             float[] matrix = _matrices.GetWide(c, t);
 
             // libjxl's inverse weights, which are zero at the lowest frequencies the LF image carries.
@@ -362,6 +427,17 @@ internal sealed class JxlAcStrategySearch
                 Vector256<float> q = Vector256.Abs(rval);
                 entropyV = Vector256.Sqrt(q) + entropyV;
                 zerosV += Vector256.ConditionalSelect(Vector256.Equals(q, Vector256<float>.Zero), Vector256<float>.Zero, one);
+            }
+
+            bits[2 * c] = _costDelta * SumOfLanes(entropyV);
+            int nonZeros = (int)SumOfLanes(zerosV);
+            int nbits = CeilLog2Nonzero((uint)nonZeros + 1) + 1;
+            bits[(2 * c) + 1] = _zerosMul * (CeilLog2Nonzero((uint)nbits + 17) + nbits);
+            losses[c] = Vector256<float>.Zero;
+            done[c] = true;
+            if (exits && Exits(bits, losses, done, w, entropyMul, size, quantNorm16, threshold, s))
+            {
+                return float.MaxValue;
             }
 
             // The error back in pixels, in the natural layout (which untransposed coefficients already have).
@@ -396,6 +472,7 @@ internal sealed class JxlAcStrategySearch
 
                 JxlDct.Inverse(t, pixels, 0, width);
             }
+
             Vector256<float> maskOffset = Vector256.Create(MaskOffset[c]);
             Vector256<float> lossc = Vector256<float>.Zero;
             for (int py = 0; py < h8 * 8; py++)
@@ -412,20 +489,64 @@ internal sealed class JxlAcStrategySearch
                 }
             }
 
-            loss += Vector256.Create(ChannelMul[c]) * lossc;
-            entropy += _costDelta * SumOfLanes(entropyV);
-            int nonZeros = (int)SumOfLanes(zerosV);
-            int nbits = CeilLog2Nonzero((uint)nonZeros + 1) + 1;
-            entropy += _zerosMul * (CeilLog2Nonzero((uint)nbits + 17) + nbits);
-            if (c == 0 && numBlocks >= 2)
+            losses[c] = lossc;
+            if (exits && step < 2 && Exits(bits, losses, done, w, entropyMul, size, quantNorm16, threshold, s))
+            {
+                return float.MaxValue;
+            }
+        }
+
+        (float entropy, Vector256<float> loss) = Sum(bits, losses, done, w);
+        return Total(entropy, loss, entropyMul, size, quantNorm16);
+    }
+
+    /// <summary>
+    /// The bits and loss of the channels done so far, summed as libjxl sums all three (X, Y, B, with X's ringing weight
+    /// <paramref name="w"/> on what X adds): the others count as zero, and every term only adds, so it bounds the whole from below.
+    /// </summary>
+    private static (float Entropy, Vector256<float> Loss) Sum(ReadOnlySpan<float> bits, ReadOnlySpan<Vector256<float>> losses, ReadOnlySpan<bool> done, float w)
+    {
+        float entropy = 0;
+        Vector256<float> loss = Vector256<float>.Zero;
+        for (int c = 0; c < 3; c++)
+        {
+            if (done[c])
+            {
+                loss += Vector256.Create(ChannelMul[c]) * losses[c];
+                entropy += bits[2 * c];
+                entropy += bits[(2 * c) + 1];
+            }
+
+            if (c == 0 && w != 1)
             {
                 // X ringing in large blocks costs more.
-                float w = 1.0f + MathF.Min(3.0f, numBlocks / 8.0f);
                 entropy *= w;
                 loss *= w;
             }
         }
 
+        return (entropy, loss);
+    }
+
+    // Whether the channels so far already put the estimate at or above the threshold, less a margin for rounding and
+    // Math.Pow; the bound is kept for Estimate.
+    private bool Exits(ReadOnlySpan<float> bits, ReadOnlySpan<Vector256<float>> losses, ReadOnlySpan<bool> done, float w, float entropyMul, int size, float quantNorm16, float threshold, Scratch s)
+    {
+        (float entropy, Vector256<float> loss) = Sum(bits, losses, done, w);
+        float bound = Total(entropy, loss, entropyMul, size, quantNorm16) * 0.999f;
+        if (float.IsFinite(bound) && bound >= threshold)
+        {
+            s.Bound = bound;
+            return true;
+        }
+
+        return false;
+    }
+
+    // The estimate from the bits and the loss summed so far. Every channel only adds to both, so the estimate of the channels so
+    // far, less a margin for rounding and Math.Pow, is a lower bound of the whole one.
+    private float Total(float entropy, Vector256<float> loss, float entropyMul, int size, float quantNorm16)
+    {
         float lossScalar = (float)(Math.Pow(SumOfLanes(loss) / size, 1.0f / 8.0f) * size / quantNorm16);
         entropy *= entropyMul;
         entropy += _infoLossMultiplier * lossScalar;
@@ -527,7 +648,7 @@ internal sealed class JxlAcStrategySearch
             }
         }
 
-        float candidate = EstimateEntropy(t, entropyMul, (bx + cx) * 8, (by + cy) * 8, cmap, s);
+        float candidate = Estimate(t, entropyMul, bx + cx, by + cy, cmap, s, current);
         if (candidate >= current)
         {
             return;
@@ -595,16 +716,18 @@ internal sealed class JxlAcStrategySearch
         }
 
         float jxkLeft = float.MaxValue, jxkRight = float.MaxValue, kxjTop = float.MaxValue, kxjBottom = float.MaxValue, square = float.MaxValue;
+        // Each half only counts when below the blocks it covers, and the square when below both splits: estimates above their
+        // threshold decide nothing, so their rest is skipped.
         if (allowJxK)
         {
             if (_strategy[(y * _blocksX) + x] != (sbyte)jxk)
             {
-                jxkLeft = EstimateEntropy(jxk, mulJxK, x * 8, y * 8, cmap, s);
+                jxkLeft = Estimate(jxk, mulJxK, x, y, cmap, s, entropy[0] + entropy[2]);
             }
 
             if (_strategy[(y * _blocksX) + x + half] != (sbyte)jxk)
             {
-                jxkRight = EstimateEntropy(jxk, mulJxK, (x + half) * 8, y * 8, cmap, s);
+                jxkRight = Estimate(jxk, mulJxK, x + half, y, cmap, s, entropy[1] + entropy[3]);
             }
         }
 
@@ -612,22 +735,22 @@ internal sealed class JxlAcStrategySearch
         {
             if (_strategy[(y * _blocksX) + x] != (sbyte)kxj)
             {
-                kxjTop = EstimateEntropy(kxj, mulJxK, x * 8, y * 8, cmap, s);
+                kxjTop = Estimate(kxj, mulJxK, x, y, cmap, s, entropy[0] + entropy[1]);
             }
 
             if (_strategy[((y + half) * _blocksX) + x] != (sbyte)kxj)
             {
-                kxjBottom = EstimateEntropy(kxj, mulJxK, x * 8, (y + half) * 8, cmap, s);
+                kxjBottom = Estimate(kxj, mulJxK, x, y + half, cmap, s, entropy[2] + entropy[3]);
             }
-        }
-
-        if (allowSquare)
-        {
-            square = EstimateEntropy(jxj, mulJxJ, x * 8, y * 8, cmap, s);
         }
 
         float costJxN = MathF.Min(jxkLeft, entropy[0] + entropy[2]) + MathF.Min(jxkRight, entropy[1] + entropy[3]);
         float costNxJ = MathF.Min(kxjTop, entropy[0] + entropy[1]) + MathF.Min(kxjBottom, entropy[2] + entropy[3]);
+        if (allowSquare)
+        {
+            square = Estimate(jxj, mulJxJ, x, y, cmap, s, MathF.Min(costJxN, costNxJ));
+        }
+
         if (square < costJxN && square < costNxJ)
         {
             Set(x, y, jxj);

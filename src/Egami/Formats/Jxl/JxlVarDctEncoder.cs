@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
@@ -76,6 +77,9 @@ internal sealed partial class JxlVarDctEncoder
         180, 180, 180, 180, 180, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,
         206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,
     ];
+
+    // (CoeffNumNonzeroContext[n] + CoeffFreqContext[k]) · 2 at n · 64 + k: a coefficient's zero density context less its block's.
+    private static readonly int[] ZeroDensityContext = MakeZeroDensityContext();
 
     private readonly JxlLossySettings _settings;
     private readonly ParallelOptions _parallel;
@@ -1187,14 +1191,18 @@ internal sealed partial class JxlVarDctEncoder
                     (cfl.Yx, cfl.Xs, cfl.Yb, cfl.Bs) = (yx, xs, yb, bs);
                 }
 
-                for (int i = 0; i < size; i++)
+                // Eight at a time (sizes are multiples of 64), the same divisions and products.
+                Vector256<float> vq = Vector256.Create(q);
+                float[] b0 = block[0], b1 = block[1], b2 = block[2];
+                for (int i = 0; i < size; i += 8)
                 {
-                    float qx = q / qmX[i];
-                    float qb = q / qmB[i];
-                    yx[n + i] = block[1][i] * qx;
-                    xs[n + i] = block[0][i] * qx;
-                    yb[n + i] = block[1][i] * qb;
-                    bs[n + i] = block[2][i] * qb;
+                    Vector256<float> qx = vq / Vector256.Create(qmX, i);
+                    Vector256<float> qb = vq / Vector256.Create(qmB, i);
+                    Vector256<float> ly = Vector256.Create(b1, i);
+                    (ly * qx).CopyTo(yx, n + i);
+                    (Vector256.Create(b0, i) * qx).CopyTo(xs, n + i);
+                    (ly * qb).CopyTo(yb, n + i);
+                    (Vector256.Create(b2, i) * qb).CopyTo(bs, n + i);
                 }
 
                 n += size;
@@ -2943,6 +2951,20 @@ internal sealed partial class JxlVarDctEncoder
     /// <summary>Gets the order of a channel for an order id: the chosen one when it is sent, else the natural order.</summary>
     private int[] Order(int orderId, int c, int pass) => (_passUsed[pass] & (1 << orderId)) != 0 ? _passOrders[pass][(orderId * 3) + c] : JxlHfPass.Natural(orderId);
 
+    private static int[] MakeZeroDensityContext()
+    {
+        int[] table = new int[64 * 64];
+        for (int n = 0; n < CoeffNumNonzeroContext.Length; n++)
+        {
+            for (int k = 0; k < CoeffFreqContext.Length; k++)
+            {
+                table[(n * 64) + k] = (CoeffNumNonzeroContext[n] + CoeffFreqContext[k]) * 2;
+            }
+        }
+
+        return table;
+    }
+
     /// <summary>Tokenizes a pass group's coefficients (TokenizeCoefficients), Y, X then B for each varblock.</summary>
     private List<JxlToken> TokenizeGroup(int g, int pass)
     {
@@ -2987,10 +3009,18 @@ internal sealed partial class JxlVarDctEncoder
                     ReadOnlySpan<int> block = _passCoeffs[pass][g][c].AsSpan(offsets[c], size);
                     offsets[c] += size;
                     int[] order = Order(orderId, c, pass);
+                    if (order.Length < size)
+                    {
+                        throw new InvalidOperationException("A coefficient order is shorter than its varblock.");
+                    }
+
+                    // The order is a permutation of the varblock's places, so its entries index the block.
+                    ref int coeffs = ref MemoryMarshal.GetReference(block);
+                    ref int places = ref MemoryMarshal.GetArrayDataReference(order);
                     int nz = 0;
                     for (int i = covered; i < size; i++)
                     {
-                        nz += block[order[i]] != 0 ? 1 : 0;
+                        nz += Unsafe.Add(ref coeffs, Unsafe.Add(ref places, i)) != 0 ? 1 : 0;
                     }
 
                     int[] row = rows[c];
@@ -3006,13 +3036,19 @@ internal sealed partial class JxlVarDctEncoder
                     span[count++] = new JxlToken(blockCtx + (nzIndex * _blockClusters), (uint)nz);
                     int baseCtx = (blockCtx * ZeroDensityContexts) + (NonZeroBuckets * _blockClusters);
                     int prev = nz > size / 16 ? 0 : 1;
+                    ref JxlToken output = ref MemoryMarshal.GetReference(span);
+                    ref int density = ref MemoryMarshal.GetArrayDataReference(ZeroDensityContext);
+                    ref int densityRow = ref Unsafe.Add(ref density, nz == 0 ? 0 : ((nz - 1) >> logCovered) * 64);
                     for (int i = covered; i < size && nz != 0; i++)
                     {
-                        int coeff = block[order[i]];
-                        int ctx = baseCtx + ((CoeffNumNonzeroContext[(nz - 1) >> logCovered] + CoeffFreqContext[(i - covered) >> logCovered]) * 2) + prev;
-                        span[count++] = new JxlToken(ctx, JxlTreeLearner.PackSigned(coeff));
+                        int coeff = Unsafe.Add(ref coeffs, Unsafe.Add(ref places, i));
+                        int ctx = baseCtx + Unsafe.Add(ref densityRow, (i - covered) >> logCovered) + prev;
+                        Unsafe.Add(ref output, count++) = new JxlToken(ctx, JxlTreeLearner.PackSigned(coeff));
                         prev = coeff != 0 ? 1 : 0;
-                        nz -= prev;
+                        if (prev != 0 && --nz != 0)
+                        {
+                            densityRow = ref Unsafe.Add(ref density, ((nz - 1) >> logCovered) * 64);
+                        }
                     }
                 }
 

@@ -145,6 +145,7 @@ internal sealed class JxlLinearRows
     private readonly ColorTransform _transform;
     private readonly ColorTransform? _primaries;
     private readonly float[]? _lut8;
+    private readonly bool _rgb8;
     private readonly bool _pq;
     private readonly float[] _luminances = [0.2627f, 0.6780f, 0.0593f];
     private readonly int _width;
@@ -182,6 +183,11 @@ internal sealed class JxlLinearRows
                 _lut8 = [.. linear.Select(p => p.R)];
             }
         }
+
+        // Other 8-bit RGB through a matrix transform (an ICC profile of curves and colorants): the transform's own table of its
+        // input curves, which gives the same floats as converting each pixel.
+        _rgb8 = _lut8 is null && !gray && _primaries is null && profile.Model == ColorModel.Rgb && layout.ChannelType == PixelChannelType.Unorm8
+            && layout.Alpha != AlphaKind.Premultiplied && _transform.HasRgb8Planes;
 
         _cmyk = profile.Model == ColorModel.Cmyk;
         int count = width * height;
@@ -241,6 +247,15 @@ internal sealed class JxlLinearRows
                 (color[0][at + x], color[1][at + x], color[2][at + x]) = (lut[p.R], lut[p.G], lut[p.B]);
             }
 
+            ArrayPool<Rgb8>.Shared.Return(rgb8);
+            return;
+        }
+
+        if (_rgb8)
+        {
+            Rgb8[] rgb8 = ArrayPool<Rgb8>.Shared.Rent(_width);
+            PixelConvert.Convert(row, rgb8.AsSpan(0, _width));
+            _transform.ApplyRgb8(rgb8.AsSpan(0, _width), color[0].AsSpan(at, _width), color[1].AsSpan(at, _width), color[2].AsSpan(at, _width));
             ArrayPool<Rgb8>.Shared.Return(rgb8);
             return;
         }

@@ -1,4 +1,7 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Formats.Jxl;
 
@@ -133,37 +136,19 @@ internal sealed class JxlAdaptiveQuantization
     /// <summary>One 64×64 tile of AdaptiveQuantizationImpl::ComputeTile.</summary>
     private void ComputeTile(float distance, float scale, int bx0, int by0, int bx1, int by1)
     {
-        const float MatchGammaOffset = 0.019f;
         int xsize = _xsize;
         int ysize = _ysize;
 
-        // The 1×1 Laplacian of Y over the tile (libjxl widens it only for streaming tiles).
+        // The gamma-weighted Laplacian of Y, gammac · (c − b), once per pixel for both of libjxl's passes: the 1×1 mask over
+        // the tile, and the squared Laplacian averaged over 4×4, four pixels beyond the tile.
         int yStart1 = by0 * 8;
         int yEnd1 = by1 * 8;
         int xStart1 = bx0 * 8;
         int xEnd1 = bx1 * 8;
-        for (int y = yStart1; y < yEnd1; y++)
-        {
-            int y2 = y + 1 < ysize ? y + 1 : y;
-            int y1 = y > 0 ? y - 1 : y;
-            for (int x = xStart1; x < xEnd1; x++)
-            {
-                int x2 = x + 1 < xsize ? x + 1 : x;
-                int x1 = x > 0 ? x - 1 : x;
-                float c = Y(x, y);
-                float b = 0.25f * (Y(x, y2) + Y(x, y1) + Y(x1, y) + Y(x2, y));
-                float gammac = RatioOfDerivatives(c + MatchGammaOffset, false);
-                float diff = MathF.Abs(gammac * (c - b));
-                diff = (float)Math.Log(1 + (double)diff);
-                Mask1x1[(y * xsize) + x] = 1f / (diff + 0.01f);
-            }
-        }
-
-        // Squared Laplacian (masked by the gamma ratio), averaged over 4×4, four pixels beyond the tile.
-        int yStart = by0 * 8;
-        int yEnd = by1 * 8;
-        int xStart = bx0 * 8;
-        int xEnd = bx1 * 8;
+        int yStart = yStart1;
+        int yEnd = yEnd1;
+        int xStart = xStart1;
+        int xEnd = xEnd1;
         if (xStart != 0)
         {
             xStart -= 4;
@@ -187,37 +172,25 @@ internal sealed class JxlAdaptiveQuantization
         const float Limit = 0.2f;
         int pw = (xEnd - xStart) / 4;
         int ph = (yEnd - yStart) / 4;
-        float[] pre = new float[pw * ph];
-        float[] rowOut = new float[xEnd - xStart];
+        TileScratch scratch = t_tile ??= new();
+        Span<float> pre = scratch.Pre.AsSpan(0, pw * ph);
+        Span<float> rowOut = scratch.RowOut.AsSpan(0, xEnd - xStart);
+        Span<float> d = scratch.Laplacian.AsSpan(0, xEnd - xStart);
         for (int y = yStart; y < yEnd; y++)
         {
-            int y2 = y + 1 < ysize ? y + 1 : y;
-            int y1 = y > 0 ? y - 1 : y;
-            for (int x = xStart; x < xEnd; x++)
+            Laplacian(y, xStart, xEnd, d);
+            if (y >= yStart1 && y < yEnd1)
             {
-                int x2 = x + 1 < xsize ? x + 1 : x;
-                int x1 = x > 0 ? x - 1 : x;
-                float c = Y(x, y);
-                float b = 0.25f * (Y(x, y2) + Y(x, y1) + Y(x1, y) + Y(x2, y));
-                float gammac = RatioOfDerivatives(c + MatchGammaOffset, false);
-                float diff = gammac * (c - b);
-                diff *= diff;
-                if (diff >= Limit)
+                int row = y * xsize;
+                for (int x = xStart1; x < xEnd1; x++)
                 {
-                    diff = Limit;
-                }
-
-                diff = MaskingSqrt(diff);
-                if ((y % 4) != 0)
-                {
-                    rowOut[x - xStart] += diff;
-                }
-                else
-                {
-                    rowOut[x - xStart] = diff;
+                    float diff = MathF.Abs(d[x - xStart]);
+                    diff = (float)Math.Log(1 + (double)diff);
+                    Mask1x1[row + x] = 1f / (diff + 0.01f);
                 }
             }
 
+            SquaredRow(d, rowOut, y % 4 != 0, Limit);
             if (y % 4 == 3)
             {
                 int row = (y - yStart) / 4 * pw;
@@ -245,8 +218,140 @@ internal sealed class JxlAdaptiveQuantization
         PerBlockModulations(distance, scale, bx0, by0, bx1, by1);
     }
 
+    [ThreadStatic]
+    private static TileScratch? t_tile;
+
+    private static readonly float MaskingMul = MathF.Sqrt(211.66567973503678f * 1e8f);
+
+    /// <summary>
+    /// Row <paramref name="y"/> of gammac · (c − b) from <paramref name="x0"/> to <paramref name="x1"/>: c the Y sample, b the
+    /// mean of its four neighbours (edges repeated), gammac <see cref="RatioOfDerivatives(float, bool)"/> of c + 0.019. Eight at a
+    /// time away from the left and right edges, with the same operations (fused where they are fused) in the same order.
+    /// </summary>
+    private void Laplacian(int y, int x0, int x1, Span<float> d)
+    {
+        const float MatchGammaOffset = 0.019f;
+        int xsize = _xsize;
+        float[] plane = _xyb[1];
+        int row = y * xsize;
+        int below = (y + 1 < _ysize ? y + 1 : y) * xsize;
+        int above = (y > 0 ? y - 1 : y) * xsize;
+        int x = x0;
+        if (Fma.IsSupported && Avx.IsSupported)
+        {
+            ref float p = ref MemoryMarshal.GetArrayDataReference(plane);
+            ref float o = ref MemoryMarshal.GetReference(d);
+            Vector256<float> quarter = Vector256.Create(0.25f);
+            Vector256<float> offset = Vector256.Create(MatchGammaOffset);
+            int start = Math.Max(x0, 1);
+            int end = Math.Min(x1, xsize - 1) - 8;
+            for (; x < start; x++)
+            {
+                d[x - x0] = LaplacianAt(plane, row, below, above, x);
+            }
+
+            for (; x <= end; x += 8)
+            {
+                Vector256<float> c = Vector256.LoadUnsafe(ref p, (nuint)(row + x));
+                Vector256<float> b = quarter * (Vector256.LoadUnsafe(ref p, (nuint)(below + x)) + Vector256.LoadUnsafe(ref p, (nuint)(above + x))
+                    + Vector256.LoadUnsafe(ref p, (nuint)(row + x - 1)) + Vector256.LoadUnsafe(ref p, (nuint)(row + x + 1)));
+                (RatioOfDerivatives(c + offset) * (c - b)).StoreUnsafe(ref o, (nuint)(x - x0));
+            }
+        }
+
+        for (; x < x1; x++)
+        {
+            d[x - x0] = LaplacianAt(plane, row, below, above, x);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private float LaplacianAt(float[] plane, int row, int below, int above, int x)
+    {
+        const float MatchGammaOffset = 0.019f;
+        int x2 = x + 1 < _xsize ? x + 1 : x;
+        int x1 = x > 0 ? x - 1 : x;
+        float c = plane[row + x];
+        float b = 0.25f * (plane[below + x] + plane[above + x] + plane[row + x1] + plane[row + x2]);
+        return RatioOfDerivatives(c + MatchGammaOffset, false) * (c - b);
+    }
+
+    /// <summary><see cref="RatioOfDerivatives(float, bool)"/> (not inverted) of eight values, with its fused steps fused.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<float> RatioOfDerivatives(Vector256<float> v)
+    {
+        const float Epsilon = 1e-2f;
+        v = Vector256.Max(v, Vector256<float>.Zero);
+        float numMul = SgRetMul * 3 * SgMul;
+        float vOffset = (SgVOffset * InvLog2e) + Epsilon;
+        float denMul = InvLog2e * SgMul;
+        Vector256<float> v2 = v * v;
+        Vector256<float> num = Fma.MultiplyAdd(Vector256.Create(numMul), v2, Vector256.Create(Epsilon));
+        Vector256<float> den = Fma.MultiplyAdd(Vector256.Create(denMul) * v, v2, Vector256.Create(vOffset));
+        return den / num;
+    }
+
+    /// <summary><see cref="RatioOfDerivatives(float, bool)"/> inverted, of eight values.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<float> InverseRatioOfDerivatives(Vector256<float> v)
+    {
+        const float Epsilon = 1e-2f;
+        v = Vector256.Max(v, Vector256<float>.Zero);
+        float numMul = SgRetMul * 3 * SgMul;
+        float vOffset = (SgVOffset * InvLog2e) + Epsilon;
+        float denMul = InvLog2e * SgMul;
+        Vector256<float> v2 = v * v;
+        Vector256<float> num = Fma.MultiplyAdd(Vector256.Create(numMul), v2, Vector256.Create(Epsilon));
+        Vector256<float> den = Fma.MultiplyAdd(Vector256.Create(denMul) * v, v2, Vector256.Create(vOffset));
+        return num / den;
+    }
+
+    /// <summary>Adds <see cref="MaskingSqrt"/> of each squared Laplacian (at most <paramref name="limit"/>) to the row sums, or starts them.</summary>
+    private static void SquaredRow(ReadOnlySpan<float> d, Span<float> sums, bool add, float limit)
+    {
+        const float LogOffset = 27.505837037000106f;
+        int x = 0;
+        if (Fma.IsSupported && Avx.IsSupported)
+        {
+            ref float dr = ref MemoryMarshal.GetReference(d);
+            ref float sr = ref MemoryMarshal.GetReference(sums);
+            Vector256<float> lim = Vector256.Create(limit);
+            Vector256<float> mul = Vector256.Create(MaskingMul);
+            Vector256<float> logOffset = Vector256.Create(LogOffset);
+            Vector256<float> quarter = Vector256.Create(0.25f);
+            for (; x <= d.Length - 8; x += 8)
+            {
+                Vector256<float> v = Vector256.LoadUnsafe(ref dr, (nuint)x);
+                v *= v;
+                v = Vector256.ConditionalSelect(Vector256.GreaterThanOrEqual(v, lim), lim, v);
+                v = quarter * Vector256.Sqrt(Fma.MultiplyAdd(v, mul, logOffset));
+                (add ? Vector256.LoadUnsafe(ref sr, (nuint)x) + v : v).StoreUnsafe(ref sr, (nuint)x);
+            }
+        }
+
+        for (; x < d.Length; x++)
+        {
+            float v = d[x] * d[x];
+            if (v >= limit)
+            {
+                v = limit;
+            }
+
+            v = MaskingSqrt(v);
+            sums[x] = add ? sums[x] + v : v;
+        }
+    }
+
+    /// <summary>A thread's buffers for <see cref="ComputeTile"/>, large enough for a 64×64 tile and its four-pixel border.</summary>
+    private sealed class TileScratch
+    {
+        internal readonly float[] Pre = new float[18 * 18];
+        internal readonly float[] RowOut = new float[72];
+        internal readonly float[] Laplacian = new float[72];
+    }
+
     /// <summary>libjxl's FuzzyErosion: a weighted sum of the four smallest of each 3×3 neighbourhood, downsampled 2×.</summary>
-    private void FuzzyErosion(float distance, float[] from, int fw, int fh, int x0, int y0, int w, int h, int bx0, int by0)
+    private void FuzzyErosion(float distance, ReadOnlySpan<float> from, int fw, int fh, int x0, int y0, int w, int h, int bx0, int by0)
     {
         ReadOnlySpan<float> mulBase = [0.125f, 0.1f, 0.09f, 0.06f];
         ReadOnlySpan<float> mulAdd = [0.0f, -0.1f, -0.09f, -0.06f];
@@ -395,15 +500,37 @@ internal sealed class JxlAdaptiveQuantization
     {
         const float Bias = 0.16f;
         float ratio = 0;
-        for (int dy = 0; dy < 8; dy++)
+        if (Fma.IsSupported && Avx.IsSupported)
         {
-            int row = (y + dy) * _xsize;
-            for (int dx = 0; dx < 8; dx++)
+            // Each row's 16 ratios eight at a time, then summed in the order below.
+            Span<float> minus = stackalloc float[8];
+            Span<float> plus = stackalloc float[8];
+            for (int dy = 0; dy < 8; dy++)
             {
-                float iny = _xyb[1][row + x + dx] + Bias;
-                float inx = _xyb[0][row + x + dx];
-                ratio += RatioOfDerivatives(iny - inx, true);
-                ratio += RatioOfDerivatives(iny + inx, true);
+                int row = ((y + dy) * _xsize) + x;
+                Vector256<float> iny = Vector256.Create(_xyb[1], row) + Vector256.Create(Bias);
+                Vector256<float> inx = Vector256.Create(_xyb[0], row);
+                InverseRatioOfDerivatives(iny - inx).CopyTo(minus);
+                InverseRatioOfDerivatives(iny + inx).CopyTo(plus);
+                for (int dx = 0; dx < 8; dx++)
+                {
+                    ratio += minus[dx];
+                    ratio += plus[dx];
+                }
+            }
+        }
+        else
+        {
+            for (int dy = 0; dy < 8; dy++)
+            {
+                int row = (y + dy) * _xsize;
+                for (int dx = 0; dx < 8; dx++)
+                {
+                    float iny = _xyb[1][row + x + dx] + Bias;
+                    float inx = _xyb[0][row + x + dx];
+                    ratio += RatioOfDerivatives(iny - inx, true);
+                    ratio += RatioOfDerivatives(iny + inx, true);
+                }
             }
         }
 
@@ -416,6 +543,34 @@ internal sealed class JxlAdaptiveQuantization
     {
         const float ValMin = 0.0206f;
         float sum = 0;
+        float[] plane = _xyb[1];
+        if (Avx.IsSupported && ((y + 7) * _xsize) + x + 9 <= plane.Length)
+        {
+            // Each row's differences eight at a time (the eighth to the right unused), then summed in the order below.
+            Span<float> across = stackalloc float[8];
+            Span<float> down = stackalloc float[8];
+            Vector256<float> valMin = Vector256.Create(ValMin);
+            for (int dy = 0; dy < 8; dy++)
+            {
+                int row = ((y + dy) * _xsize) + x;
+                int next = dy == 7 ? row : row + _xsize;
+                Vector256<float> p = Vector256.Create(plane, row);
+                Vector256.Min(valMin, Vector256.Abs(p - Vector256.Create(plane, row + 1))).CopyTo(across);
+                Vector256.Min(valMin, Vector256.Abs(p - Vector256.Create(plane, next))).CopyTo(down);
+                for (int dx = 0; dx < 8; dx++)
+                {
+                    if (dx < 7)
+                    {
+                        sum += across[dx];
+                    }
+
+                    sum += down[dx];
+                }
+            }
+
+            return outVal + ((sum * -0.38f) + 0.42f);
+        }
+
         for (int dy = 0; dy < 8; dy++)
         {
             int row = (y + dy) * _xsize;
@@ -440,17 +595,38 @@ internal sealed class JxlAdaptiveQuantization
         const float Limit = 0.010474084867598155f;
         const float Offset = 0.0031994768654636393f;
         float sum = 0;
-        for (int dy = 0; dy < 8; dy++)
+        if (Avx.IsSupported)
         {
-            int row = (y + dy) * _xsize;
-            for (int dx = 0; dx < 8; dx++)
+            // Each row's terms eight at a time (zero where blue is not above), then summed in order: adding zero changes nothing.
+            Span<float> terms = stackalloc float[8];
+            Vector256<float> offset = Vector256.Create(Offset), limit = Vector256.Create(Limit);
+            for (int dy = 0; dy < 8; dy++)
             {
-                float px = _xyb[0][row + x + dx];
-                float pb = _xyb[2][row + x + dx];
-                float pyEffective = _xyb[1][row + x + dx] + Offset + MathF.Abs(px);
-                if (pb > pyEffective)
+                int row = ((y + dy) * _xsize) + x;
+                Vector256<float> px = Vector256.Create(_xyb[0], row);
+                Vector256<float> pb = Vector256.Create(_xyb[2], row);
+                Vector256<float> pyEffective = Vector256.Create(_xyb[1], row) + offset + Vector256.Abs(px);
+                Vector256.ConditionalSelect(Vector256.GreaterThan(pb, pyEffective), Vector256.Min(pb - pyEffective, limit), Vector256<float>.Zero).CopyTo(terms);
+                for (int dx = 0; dx < 8; dx++)
                 {
-                    sum += MathF.Min(pb - pyEffective, Limit);
+                    sum += terms[dx];
+                }
+            }
+        }
+        else
+        {
+            for (int dy = 0; dy < 8; dy++)
+            {
+                int row = (y + dy) * _xsize;
+                for (int dx = 0; dx < 8; dx++)
+                {
+                    float px = _xyb[0][row + x + dx];
+                    float pb = _xyb[2][row + x + dx];
+                    float pyEffective = _xyb[1][row + x + dx] + Offset + MathF.Abs(px);
+                    if (pb > pyEffective)
+                    {
+                        sum += MathF.Min(pb - pyEffective, Limit);
+                    }
                 }
             }
         }

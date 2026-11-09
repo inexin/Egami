@@ -5,6 +5,15 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+Faster JPEG XL lossy and lossless encoding. Files are unchanged byte for byte at every effort.
+
+- The AC strategy search stops an estimate once the channels done so far already make it lose, starting with Y, and keeps
+  scratch and estimates per tile. On one thread d1 at effort 5 takes 24–49 % fewer instructions and effort 7 20–45 % fewer.
+- 8-bit RGB input with an ICC or parametric profile goes to linear light through a table that gives the same floats as before:
+  d1 at effort 3 takes 30–38 % fewer instructions on such files.
+- Adaptive quantization, chroma from luma and token context lookup are vectorized; the lossless weighted predictor tokenizes
+  in one pass (lossless effort 3: 11–16 % fewer instructions).
+
 Faster JPEG XL lossless decoding. Pixels are unchanged.
 
 - Lossless and other integer-coded frames loaded as 8-bit or 16-bit pixels go from the decoded samples to the pixels row by row
