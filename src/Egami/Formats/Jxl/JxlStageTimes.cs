@@ -3,11 +3,12 @@ using System.Diagnostics;
 namespace Egami.Formats.Jxl;
 
 /// <summary>
-/// Where a single-thread JPEG XL decode or encode spends its time, for the roadmap 2.4.11 profile
-/// (benchmarks/Egami.Benchmarks/JxlTiming.cs, EGAMI_JXL_STAGES=1). Each <see cref="Lap"/> adds the time since the previous lap
-/// to one stage. The calls exist only in a build with JXL_STAGE_TIMERS defined (dotnet build -p:JxlStageTimers=true); the
-/// shipped library never defines it, so there they compile to nothing, arguments included. The stages are plain statics: time
-/// one thread at a time.
+/// Where a JPEG XL decode or encode spends its time, for the roadmap 2.4.11 profile (benchmarks/Egami.Benchmarks/JxlTiming.cs,
+/// EGAMI_JXL_STAGES=1). Each <see cref="Lap"/> adds the time since the previous lap to one stage. The calls exist only in a build
+/// with JXL_STAGE_TIMERS defined (dotnet build -p:JxlStageTimers=true); the shipped library never defines it, so there they
+/// compile to nothing, arguments included. The stages are plain statics, so time one decode or encode at a time. Every lap is
+/// taken on the thread that runs the decode or encode, between its parallel loops, so on more than one thread a stage is its
+/// wall-clock time and comparing it with one thread's shows how much of the stage runs in parallel.
 /// </summary>
 internal static class JxlStageTimes
 {
