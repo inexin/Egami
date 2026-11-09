@@ -92,6 +92,9 @@ internal sealed record JxlHistogramParams
     /// <summary>Gets whether every symbol of the alphabet gets a count in every context (add_missing_symbols), so later data can use any.</summary>
     internal bool AddMissingSymbols { get; init; }
 
+    /// <summary>Gets the threads the code may be built on (the choices are the same on any number), or one thread when null.</summary>
+    internal ParallelOptions? Parallel { get; init; }
+
     /// <summary>Gets libjxl's settings for Modular data at <paramref name="effort"/> (ForModular, lossless).</summary>
     internal static JxlHistogramParams ForModular(int effort) => new()
     {
@@ -751,11 +754,12 @@ internal sealed class JxlEntropyCode
     internal static JxlEntropyCode Build(IJxlBitSink w, JxlHistogramParams p, int contexts, List<List<JxlToken>> streams, out long cost)
     {
         JxlEntropyCode code = new();
+        JxlHistogram[]? counted = null;
         List<List<JxlToken>>? lz = p.Lz77 switch
         {
             JxlHistogramParams.Lz77Kind.Greedy => JxlLz77.Greedy(p, contexts, streams),
             JxlHistogramParams.Lz77Kind.Optimal => JxlLz77.Optimal(p, contexts, streams),
-            _ => p.Rle ? ApplyRle(p, contexts, streams) : null,
+            _ => p.Rle ? ApplyRle(p, contexts, streams, out counted) : null,
         };
         code._lz77 = lz is not null;
 
@@ -770,21 +774,10 @@ internal sealed class JxlEntropyCode
             streams.AddRange(lz!);
         }
 
-        JxlHistogram[] builder = new JxlHistogram[contexts];
-        for (int i = 0; i < contexts; i++)
-        {
-            builder[i] = new JxlHistogram();
-        }
-
-        JxlUintConfig config = p.UintConfig;
-        foreach (List<JxlToken> stream in streams)
-        {
-            foreach (JxlToken t in stream)
-            {
-                (uint tok, _, _) = Split(t.IsLz77Length ? Lz77LengthConfig : config, t.Value);
-                builder[t.Context].Add(t.IsLz77Length ? tok + Lz77MinSymbol : tok);
-            }
-        }
+        // The runs search counts the same tokens as Build does (with the default configuration) and leaves them as they were when it declines.
+        JxlHistogram[] builder = !code._lz77 && counted is not null && p.UintMethod != JxlHistogramParams.UintKind.ContextMap
+            ? counted
+            : Count(streams, contexts, p.UintConfig, p.Parallel);
 
         if (p.AddMissingSymbols)
         {
@@ -1014,23 +1007,10 @@ internal sealed class JxlEntropyCode
     /// Replaces runs of a repeated value by LZ77 copies at distance 1 where that saves bits (libjxl's ApplyLZ77_RLE), or
     /// gives <see langword="null"/> when the saving is too small to switch LZ77 on.
     /// </summary>
-    private static List<List<JxlToken>>? ApplyRle(JxlHistogramParams p, int contexts, List<List<JxlToken>> streams)
+    private static List<List<JxlToken>>? ApplyRle(JxlHistogramParams p, int contexts, List<List<JxlToken>> streams, out JxlHistogram[] counted)
     {
-        JxlHistogram[] builder = new JxlHistogram[contexts];
-        for (int i = 0; i < contexts; i++)
-        {
-            builder[i] = new JxlHistogram();
-        }
-
         JxlUintConfig config = Config(4, 2, 0);
-        foreach (List<JxlToken> stream in streams)
-        {
-            foreach (JxlToken t in stream)
-            {
-                builder[t.Context].Add(Split(config, t.Value).Token);
-            }
-        }
-
+        JxlHistogram[] builder = counted = Count(streams, contexts, config, p.Parallel);
         float[][] bits = new float[contexts][];
         for (int i = 0; i < contexts; i++)
         {
@@ -1043,16 +1023,17 @@ internal sealed class JxlEntropyCode
             }
         }
 
-        List<List<JxlToken>> output = new(streams.Count);
-        float decrease = 0;
-        long total = 0;
-        for (int s = 0; s < streams.Count; s++)
+        // Each stream on its own thread; what each run saves is summed after, in stream order, as one thread sums it.
+        List<JxlToken>[] output = new List<JxlToken>[streams.Count];
+        List<float>[] savings = new List<float>[streams.Count];
+        void Stream(int s)
         {
             int multiplier = p.ImageWidths.Count > s ? p.ImageWidths[s] : 0;
             List<JxlToken> input = streams[s];
             List<JxlToken> o = new(input.Count);
-            total += input.Count;
-            float[] cumulative = new float[input.Count + 1];
+            List<float> saved = [];
+            float[] cumulative = ArrayPool<float>.Shared.Rent(input.Count + 1);
+            cumulative[0] = 0;
             for (int i = 0; i < input.Count; i++)
             {
                 (uint tok, int nbits, _) = Split(config, input[i].Value);
@@ -1092,22 +1073,152 @@ internal sealed class JxlEntropyCode
 
                 o.Add(new JxlToken(input[i].Context, length, true));
                 i += copy - 1;
-                decrease += cost - lzCost;
+                saved.Add(cost - lzCost);
 
                 // Distance 1: the special distance (1, 0) when the stream has a width, else the plain distance code 0.
                 o.Add(new JxlToken(contexts, multiplier != 0 ? 1u : 0u));
             }
 
-            output.Add(o);
+            ArrayPool<float>.Shared.Return(cumulative);
+            output[s] = o;
+            savings[s] = saved;
         }
 
-        return decrease > (total * 0.2) + 16 ? output : null;
+        long total = streams.Sum(st => (long)st.Count);
+        if (p.Parallel is not null && streams.Count > 1 && total >= 2 * ParallelTokens)
+        {
+            Parallel.For(0, streams.Count, p.Parallel, Stream);
+        }
+        else
+        {
+            for (int s = 0; s < streams.Count; s++)
+            {
+                Stream(s);
+            }
+        }
+
+        float decrease = 0;
+        foreach (List<float> saved in savings)
+        {
+            foreach (float d in saved)
+            {
+                decrease += d;
+            }
+        }
+
+        return decrease > (total * 0.2) + 16 ? [.. output] : null;
+    }
+
+    /// <summary>Runs <paramref name="body"/> for 0 to <paramref name="count"/> - 1: on the threads of <paramref name="parallel"/>, else in order on this one.</summary>
+    private static void Each(int count, ParallelOptions? parallel, Action<int> body)
+    {
+        if (parallel is not null && count > 1)
+        {
+            Parallel.For(0, count, parallel, body);
+            return;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            body(i);
+        }
+    }
+
+    // Streams are counted on several threads when they hold at least twice this many tokens, in runs of about this many or more.
+    private const int ParallelTokens = 1 << 18;
+
+    /// <summary>
+    /// Splits the streams into runs (given as the first stream of each, then the count) to count on separate threads: one run
+    /// unless <paramref name="parallel"/> is given and there are enough tokens.
+    /// </summary>
+    private static int[] Chunks(List<List<JxlToken>> streams, ParallelOptions? parallel)
+    {
+        long total = 0;
+        foreach (List<JxlToken> stream in streams)
+        {
+            total += stream.Count;
+        }
+
+        if (parallel is null || streams.Count < 2 || total < 2 * ParallelTokens)
+        {
+            return [0, streams.Count];
+        }
+
+        long target = Math.Max(ParallelTokens, total / (2 * Math.Max(1, parallel.MaxDegreeOfParallelism == -1 ? Environment.ProcessorCount : parallel.MaxDegreeOfParallelism)));
+        List<int> bounds = [0];
+        long run = 0;
+        for (int i = 0; i < streams.Count; i++)
+        {
+            run += streams[i].Count;
+            if (run >= target && i + 1 < streams.Count)
+            {
+                bounds.Add(i + 1);
+                run = 0;
+            }
+        }
+
+        bounds.Add(streams.Count);
+        return [.. bounds];
+    }
+
+    /// <summary>
+    /// Counts each context's symbols (LZ77 lengths above the literal ones). Runs of streams may be counted on separate threads
+    /// and added up after: counts add up the same in any order, and each histogram's array comes out as long as one thread makes it.
+    /// </summary>
+    private static JxlHistogram[] Count(List<List<JxlToken>> streams, int contexts, JxlUintConfig config, ParallelOptions? parallel)
+    {
+        JxlHistogram[] result = new JxlHistogram[contexts];
+        for (int i = 0; i < contexts; i++)
+        {
+            result[i] = new JxlHistogram();
+        }
+
+        static void CountRun(List<List<JxlToken>> streams, int first, int end, JxlUintConfig config, JxlHistogram?[] into)
+        {
+            for (int s = first; s < end; s++)
+            {
+                foreach (JxlToken t in CollectionsMarshal.AsSpan(streams[s]))
+                {
+                    (uint tok, _, _) = Split(t.IsLz77Length ? Lz77LengthConfig : config, t.Value);
+                    (into[t.Context] ??= new JxlHistogram()).Add(t.IsLz77Length ? tok + Lz77MinSymbol : tok);
+                }
+            }
+        }
+
+        int[] chunks = Chunks(streams, parallel);
+        if (chunks.Length == 2)
+        {
+            CountRun(streams, 0, streams.Count, config, result);
+            return result;
+        }
+
+        JxlHistogram?[][] parts = new JxlHistogram?[chunks.Length - 1][];
+        Parallel.For(0, parts.Length, parallel!, c =>
+        {
+            parts[c] = new JxlHistogram?[contexts];
+            CountRun(streams, chunks[c], chunks[c + 1], config, parts[c]);
+        });
+        foreach (JxlHistogram?[] part in parts)
+        {
+            for (int i = 0; i < contexts; i++)
+            {
+                if (part[i] is JxlHistogram h)
+                {
+                    result[i].AddHistogram(h);
+                }
+            }
+        }
+
+        return result;
     }
 
     /// <summary>
     /// Clusters the contexts' histograms (libjxl's FastClusterHistograms, then for the best setting the pairwise merges that
     /// lower the ANS cost), numbered in order of first use.
     /// </summary>
+    // Contexts a thread measures at a time against a new cluster.
+    private const int DistanceBlock = 128;
+
     private static List<JxlHistogram> ClusterHistograms(JxlHistogramParams p, JxlHistogram[] input, int maxHistograms, out int[] symbols)
     {
         maxHistograms = Math.Min(Math.Min(maxHistograms, p.MaxHistograms), input.Length);
@@ -1140,17 +1251,41 @@ internal sealed class JxlEntropyCode
             output.Add(input[largest].Clone());
             dists[largest] = 0;
             largest = 0;
-            for (int i = 0; i < input.Length; i++)
+            JxlHistogram newest = output[^1];
+            if (p.Parallel is not null && input.Length >= 4 * DistanceBlock)
             {
-                if (dists[i] == 0)
+                Parallel.For(0, (input.Length + DistanceBlock - 1) / DistanceBlock, p.Parallel, b =>
                 {
-                    continue;
+                    for (int i = b * DistanceBlock; i < Math.Min(input.Length, (b + 1) * DistanceBlock); i++)
+                    {
+                        if (dists[i] != 0)
+                        {
+                            dists[i] = Math.Min(Distance(input[i], newest), dists[i]);
+                        }
+                    }
+                });
+                for (int i = 0; i < input.Length; i++)
+                {
+                    if (dists[i] != 0 && dists[i] > dists[largest])
+                    {
+                        largest = i;
+                    }
                 }
-
-                dists[i] = Math.Min(Distance(input[i], output[^1]), dists[i]);
-                if (dists[i] > dists[largest])
+            }
+            else
+            {
+                for (int i = 0; i < input.Length; i++)
                 {
-                    largest = i;
+                    if (dists[i] == 0)
+                    {
+                        continue;
+                    }
+
+                    dists[i] = Math.Min(Distance(input[i], newest), dists[i]);
+                    if (dists[i] > dists[largest])
+                    {
+                        largest = i;
+                    }
                 }
             }
 
@@ -1160,28 +1295,7 @@ internal sealed class JxlEntropyCode
             }
         }
 
-        for (int i = 0; i < input.Length; i++)
-        {
-            if (symbols[i] != maxHistograms)
-            {
-                continue;
-            }
-
-            int best = 0;
-            float bestDist = float.MaxValue;
-            for (int j = 0; j < output.Count; j++)
-            {
-                float d = Distance(input[i], output[j]);
-                if (d < bestDist)
-                {
-                    (best, bestDist) = (j, d);
-                }
-            }
-
-            output[best].AddHistogram(input[i]);
-            output[best].ShannonEntropy();
-            symbols[i] = best;
-        }
+        AssignRest(p.Parallel, input, output, symbols, maxHistograms);
 
         if (p.Clustering == JxlHistogramParams.ClusteringKind.Best)
         {
@@ -1206,6 +1320,70 @@ internal sealed class JxlEntropyCode
         }
 
         return ordered;
+    }
+
+    /// <summary>
+    /// Adds each context not yet clustered, in order, to the nearest cluster, which then changes. With threads, a block of
+    /// contexts at a time is measured against the clusters as they stand, and then in order each context takes those distances,
+    /// measuring again only to the clusters the block has changed so far: every distance is the one measured in order.
+    /// </summary>
+    private static void AssignRest(ParallelOptions? parallel, JxlHistogram[] input, List<JxlHistogram> output, int[] symbols, int unassigned)
+    {
+        int m = output.Count;
+        int[] rest = [.. Enumerable.Range(0, input.Length).Where(i => symbols[i] == unassigned)];
+        if (parallel is null || rest.Length < 2 * DistanceBlock || m < 2)
+        {
+            foreach (int i in rest)
+            {
+                Assign(i, null, 0, null);
+            }
+
+            return;
+        }
+
+        float[] measured = ArrayPool<float>.Shared.Rent(DistanceBlock * m);
+        bool[] changed = new bool[m];
+        for (int start = 0; start < rest.Length; start += DistanceBlock)
+        {
+            int count = Math.Min(DistanceBlock, rest.Length - start);
+            Parallel.For(0, count, parallel, k =>
+            {
+                JxlHistogram h = input[rest[start + k]];
+                for (int j = 0; j < m; j++)
+                {
+                    measured[(k * m) + j] = Distance(h, output[j]);
+                }
+            });
+            Array.Clear(changed);
+            for (int k = 0; k < count; k++)
+            {
+                Assign(rest[start + k], measured, k * m, changed);
+            }
+        }
+
+        ArrayPool<float>.Shared.Return(measured);
+
+        void Assign(int i, float[]? distances, int at, bool[]? dirty)
+        {
+            int best = 0;
+            float bestDist = float.MaxValue;
+            for (int j = 0; j < m; j++)
+            {
+                float d = distances is null || dirty![j] ? Distance(input[i], output[j]) : distances[at + j];
+                if (d < bestDist)
+                {
+                    (best, bestDist) = (j, d);
+                }
+            }
+
+            output[best].AddHistogram(input[i]);
+            output[best].ShannonEntropy();
+            symbols[i] = best;
+            if (dirty is not null)
+            {
+                dirty[best] = true;
+            }
+        }
     }
 
     private static void MergePairs(List<JxlHistogram> output, int[] symbols)
@@ -1386,6 +1564,15 @@ internal sealed class JxlEntropyCode
     }
 
     /// <summary>Clusters, writes the context map, chooses each cluster's configuration and writes the distributions.</summary>
+
+    // The bits a sink has taken so far, or -1 when it doesn't say.
+    private static long Position(IJxlBitSink w) => w switch
+    {
+        JxlBitWriter writer => writer.BitLength,
+        JxlBitCounter counter => counter.Bits,
+        _ => -1,
+    };
+
     private long BuildCodes(IJxlBitSink w, JxlHistogramParams p, List<List<JxlToken>> streams, JxlHistogram[] builder)
     {
         long cost = 0;
@@ -1394,10 +1581,19 @@ internal sealed class JxlEntropyCode
         {
             clustered = ClusterHistograms(p, builder, ClustersLimit, out int[] symbols);
             _contextMap = [.. symbols.Select(s => (byte)s)];
-            JxlBitCounter mapCost = new();
-            WriteContextMap(mapCost, _contextMap, clustered.Count);
-            cost += mapCost.Bits;
-            WriteContextMap(w, _contextMap, clustered.Count);
+            long before = Position(w);
+            if (before >= 0)
+            {
+                WriteContextMap(w, _contextMap, clustered.Count);
+                cost += Position(w) - before;
+            }
+            else
+            {
+                JxlBitCounter mapCost = new();
+                WriteContextMap(mapCost, _contextMap, clustered.Count);
+                cost += mapCost.Bits;
+                WriteContextMap(w, _contextMap, clustered.Count);
+            }
         }
         else
         {
@@ -1421,9 +1617,22 @@ internal sealed class JxlEntropyCode
         _magic = null;
         _reverse = new ushort[clustered.Count][];
         _start = new ushort[clustered.Count][];
+        JxlAnsEncodingHistogram[] best = new JxlAnsEncodingHistogram[clustered.Count];
+        if (p.Parallel is not null && clustered.Count >= 4)
+        {
+            Parallel.For(0, clustered.Count, p.Parallel, c => best[c] = JxlAnsEncodingHistogram.ComputeBest(clustered[c], p.AnsStrategy));
+        }
+        else
+        {
+            for (int c = 0; c < clustered.Count; c++)
+            {
+                best[c] = JxlAnsEncodingHistogram.ComputeBest(clustered[c], p.AnsStrategy);
+            }
+        }
+
         for (int c = 0; c < clustered.Count; c++)
         {
-            JxlAnsEncodingHistogram normalized = JxlAnsEncodingHistogram.ComputeBest(clustered[c], p.AnsStrategy);
+            JxlAnsEncodingHistogram normalized = best[c];
             normalized.Encode(w);
             if (_histogramBits is not null)
             {
@@ -1619,63 +1828,130 @@ internal sealed class JxlEntropyCode
                     Config(0, 0, 0), Config(2, 0, 1), Config(7, 0, 0), Config(8, 0, 0), Config(9, 0, 0), Config(10, 0, 0), Config(11, 0, 0), Config(12, 0, 0)]
                 : [Config(4, 2, 0), Config(4, 1, 2), Config(0, 0, 0), Config(2, 0, 1)];
 
-            List<uint>[] values = new List<uint>[count];
-            for (int h = 0; h < count; h++)
+            // Each cluster's values, laid out cluster after cluster in one array by a counting sort over runs of streams (the
+            // order within a cluster changes neither a count nor a sum).
+            int[] chunks = Chunks(streams, p.Parallel);
+            int runs = chunks.Length - 1;
+            int[][] counts = new int[runs][];
+            JxlHistogram?[][] lengths = new JxlHistogram?[runs][];
+            byte[] map = _contextMap;
+            void CountRun(int r)
             {
-                values[h] = [];
-            }
-
-            foreach (List<JxlToken> stream in streams)
-            {
-                foreach (JxlToken t in stream)
+                int[] into = counts[r] = new int[count];
+                JxlHistogram?[] lz = lengths[r] = new JxlHistogram?[count];
+                for (int s = chunks[r]; s < chunks[r + 1]; s++)
                 {
-                    if (!t.IsLz77Length)
+                    foreach (JxlToken t in CollectionsMarshal.AsSpan(streams[s]))
                     {
-                        values[_contextMap[t.Context]].Add(t.Value);
+                        int h = map[t.Context];
+                        if (!t.IsLz77Length)
+                        {
+                            into[h]++;
+                        }
+                        else
+                        {
+                            // The LZ77 lengths keep their place above the literal tokens.
+                            (lz[h] ??= new JxlHistogram()).Add(Split(Lz77LengthConfig, t.Value).Token + Lz77MinSymbol);
+                        }
                     }
                 }
             }
 
+            Each(runs, p.Parallel, CountRun);
+            int[] start = new int[count + 1];
+            int[][] at = new int[runs][];
+            for (int r = 0; r < runs; r++)
+            {
+                at[r] = new int[count];
+            }
+
             for (int h = 0; h < count; h++)
             {
-                uint max = values[h].Count == 0 ? 0 : values[h].Max();
-                float best = float.MaxValue;
-                foreach (JxlUintConfig cfg in candidates)
+                int pos = start[h];
+                for (int r = 0; r < runs; r++)
                 {
-                    (uint maxTok, _, _) = Split(cfg, max);
-                    maxTok |= (1u << cfg.LsbInToken) - 1;
-                    if (maxTok >= 256 || (_lz77 && maxTok >= Lz77MinSymbol))
-                    {
-                        continue;
-                    }
+                    at[r][h] = pos;
+                    pos += counts[r][h];
+                }
 
-                    JxlHistogram histo = new();
-                    long extra = 0;
-                    foreach (uint v in values[h])
-                    {
-                        (uint tok, int nbits, _) = Split(cfg, v);
-                        histo.Add(tok);
-                        extra += nbits;
-                    }
+                start[h + 1] = pos;
+            }
 
-                    float cost = histo.AnsPopulationCost() + extra + CeilLog2(cfg.SplitExponent + 1) + CeilLog2(cfg.SplitExponent - cfg.MsbInToken + 1);
-                    if (cost < best)
+            uint[] all = new uint[start[count]];
+            Each(runs, p.Parallel, r =>
+            {
+                int[] next = at[r];
+                for (int s = chunks[r]; s < chunks[r + 1]; s++)
+                {
+                    foreach (JxlToken t in CollectionsMarshal.AsSpan(streams[s]))
                     {
-                        _configs[h] = cfg;
-                        best = cost;
+                        if (!t.IsLz77Length)
+                        {
+                            all[next[map[t.Context]]++] = t.Value;
+                        }
+                    }
+                }
+            });
+            uint[] max = new uint[count];
+            Each(count, runs > 1 ? p.Parallel : null, h =>
+            {
+                uint m = 0;
+                foreach (uint v in all.AsSpan(start[h], start[h + 1] - start[h]))
+                {
+                    m = Math.Max(m, v);
+                }
+
+                max[h] = m;
+            });
+
+            // Every cluster and candidate priced on its own, the cheapest kept in candidate order.
+            int n = candidates.Length;
+            JxlHistogram?[] histos = new JxlHistogram?[count * n];
+            float[] costs = new float[count * n];
+            void Price(int i)
+            {
+                int h = i / n;
+                JxlUintConfig cfg = candidates[i % n];
+                (uint maxTok, _, _) = Split(cfg, max[h]);
+                maxTok |= (1u << cfg.LsbInToken) - 1;
+                if (maxTok >= 256 || (_lz77 && maxTok >= Lz77MinSymbol))
+                {
+                    return;
+                }
+
+                JxlHistogram histo = new();
+                long extra = 0;
+                foreach (uint v in all.AsSpan(start[h], start[h + 1] - start[h]))
+                {
+                    (uint tok, int nbits, _) = Split(cfg, v);
+                    histo.Add(tok);
+                    extra += nbits;
+                }
+
+                costs[i] = histo.AnsPopulationCost() + extra + CeilLog2(cfg.SplitExponent + 1) + CeilLog2(cfg.SplitExponent - cfg.MsbInToken + 1);
+                histos[i] = histo;
+            }
+
+            Each(count * n, runs > 1 ? p.Parallel : null, Price);
+
+            for (int h = 0; h < count; h++)
+            {
+                float best = float.MaxValue;
+                for (int c = 0; c < n; c++)
+                {
+                    if (histos[(h * n) + c] is JxlHistogram histo && costs[(h * n) + c] < best)
+                    {
+                        _configs[h] = candidates[c];
+                        best = costs[(h * n) + c];
                         clustered[h] = histo;
                     }
                 }
-            }
 
-            // The LZ77 lengths keep their place above the literal tokens.
-            foreach (List<JxlToken> stream in streams)
-            {
-                foreach (JxlToken t in stream)
+                for (int r = 0; r < runs; r++)
                 {
-                    if (t.IsLz77Length)
+                    if (lengths[r][h] is JxlHistogram lz)
                     {
-                        clustered[_contextMap[t.Context]].Add(Split(Lz77LengthConfig, t.Value).Token + Lz77MinSymbol);
+                        clustered[h].AddHistogram(lz);
                     }
                 }
             }

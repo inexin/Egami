@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Buffers.Binary;
 using System.IO.Compression;
 using System.Numerics;
@@ -394,6 +395,62 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
             }
 
             _rows++;
+        }
+
+        /// <summary>
+        /// Writes a large 8-bit image's rows in bands of 64 on all threads, as many bands at a time as threads, with a step after
+        /// each such run; other images row by row.
+        /// </summary>
+        public override IEnumerable<int> WriteWhole(Raster<TPixel> raster)
+        {
+            ArgumentNullException.ThrowIfNull(raster);
+            int threads = start.Context.MaxParallelism;
+            if (_black is not null || _planes.Kind != PixelChannelType.Unorm8 || threads <= 1 || _rows != 0 || (long)start.Width * start.Height < 1 << 18)
+            {
+                foreach (int y in base.WriteWhole(raster))
+                {
+                    yield return y;
+                }
+
+                yield break;
+            }
+
+            ParallelOptions parallel = new() { MaxDegreeOfParallelism = threads };
+            int height = start.Height;
+            for (int y0 = 0; y0 < height; y0 += BandRows * threads)
+            {
+                int y1 = Math.Min(height, y0 + (BandRows * threads));
+                Parallel.For(0, (y1 - y0 + BandRows - 1) / BandRows, parallel, b => WriteBand(raster, y0 + (b * BandRows), Math.Min(y1, y0 + ((b + 1) * BandRows))));
+                _rows = y1;
+                SaveReporter.Current?.Rows(y1, height);
+                yield return y1 - 1;
+            }
+        }
+
+        private const int BandRows = 64;
+
+        // Rows y0 to y1 into the planes, each row's own part of them.
+        private void WriteBand(Raster<TPixel> raster, int y0, int y1)
+        {
+            int width = start.Width;
+            if (typeof(TPixel) == typeof(Rgba8))
+            {
+                for (int y = y0; y < y1; y++)
+                {
+                    _planes.Add8(MemoryMarshal.Cast<TPixel, Rgba8>(raster.Row(y)), y);
+                }
+
+                return;
+            }
+
+            Rgba8[] row = ArrayPool<Rgba8>.Shared.Rent(width);
+            for (int y = y0; y < y1; y++)
+            {
+                PixelConvert.Convert<TPixel, Rgba8>(raster.Row(y), row.AsSpan(0, width));
+                _planes.Add8(row.AsSpan(0, width), y);
+            }
+
+            ArrayPool<Rgba8>.Shared.Return(row);
         }
 
         public override void Complete()

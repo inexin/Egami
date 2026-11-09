@@ -3273,6 +3273,7 @@ internal sealed partial class JxlVarDctEncoder
                 AnsStrategy = JxlHistogramParams.AnsKind.Precise,
                 UintMethod = JxlHistogramParams.UintKind.Best,
                 Lz77 = Effort >= 9 ? JxlHistogramParams.Lz77Kind.Optimal : JxlHistogramParams.Lz77Kind.Greedy,
+                Parallel = _parallel,
             }
             : new()
             {
@@ -3280,6 +3281,7 @@ internal sealed partial class JxlVarDctEncoder
                 AnsStrategy = JxlHistogramParams.AnsKind.Approximate,
                 UintMethod = _lfPrecision != 0 && !_draft ? JxlHistogramParams.UintKind.Fast : JxlHistogramParams.UintKind.None,
                 MaxHistograms = maxHistograms,
+                Parallel = _parallel,
             };
         JxlEntropyCode treeCode = JxlEntropyCode.Write(global, mp, 6, treeTokens);
         treeCode.WriteTokens(global, treeTokens[0]);
@@ -3336,6 +3338,7 @@ internal sealed partial class JxlVarDctEncoder
             AnsStrategy = slow ? JxlHistogramParams.AnsKind.Precise : JxlHistogramParams.AnsKind.Approximate,
             Rle = slow && Effort >= 9,
             MaxHistograms = Math.Min(maxHistograms, effort <= 2 ? 4 : int.MaxValue),
+            Parallel = _parallel,
         };
         JxlEntropyCode[] acCodes = new JxlEntropyCode[_passes];
         for (int pass = 0; pass < _passes; pass++)

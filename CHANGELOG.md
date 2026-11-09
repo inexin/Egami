@@ -13,6 +13,12 @@ Faster JPEG XL lossy and lossless encoding. Files are unchanged byte for byte at
   d1 at effort 3 takes 30–38 % fewer instructions on such files.
 - Adaptive quantization, chroma from luma and token context lookup are vectorized; the lossless weighted predictor tokenizes
   in one pass (lossless effort 3: 11–16 % fewer instructions).
+- More of the encoder runs on all threads, merged in a fixed order so that files stay the same at every thread count: entropy
+  code histograms, clustering and code building; lossless tree learning (samples gathered and deduplicated in parallel); the
+  lossless palette, channel palette, RCT and cost estimates; and the 8-bit input conversion at effort 1. On 24 threads lossless
+  effort 7 takes 38–48 % less time (flower 1958 → 1021 ms), effort 3 16–62 % less (article-2x 444 → 167 ms) and effort 1 up
+  to 19 % less; lossy timings are unchanged within noise. On one thread lossless effort 7 takes 2–27 % fewer instructions and
+  effort 3 up to 24 % fewer on screen content.
 
 Faster JPEG XL lossy (VarDCT) decoding. Pixels are unchanged.
 
