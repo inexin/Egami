@@ -684,22 +684,31 @@ internal sealed class JxlGroupPipeline
                 tapOffsets[k] = (kernel[(2 * k) + 1] * area.Stride) + kernel[2 * k];
             }
 
-            Span<float> factor = worker.Factor(width);
+            // The factors start at the block x0 is in (lead places before it) and run to the end of x1's block.
+            int lead = x0 & 7;
+            Span<float> factors = worker.Factor(lead + width + 8);
+            Span<float> factor = factors[lead..];
             for (int y = band; y < bandEnd; y++)
             {
                 // The same values as 6.6 (√0.5 − 1) / sigma · sm, worked out once a block.
                 bool yBorder = ((y + 1) & 6) == 0;
-                for (int x = x0; x < x1;)
+                for (int bx = x0 >> 3; bx * 8 < x1; bx++)
                 {
-                    int bx = x >> 3;
                     float s = sigma is null ? _modularSigma : sigma[((y >> 3) * blocksX) + bx];
                     float t = scaleFactor / s;
                     float fi = s < 0.3f ? float.NaN : t * (yBorder ? edge : inner);
                     float fe = s < 0.3f ? float.NaN : t * edge;
-                    int end = Math.Min(x1, (bx + 1) * 8);
-                    for (; x < end; x++)
+                    Span<float> block = factors.Slice((bx * 8) - x0 + lead, 8);
+                    if (Vector256.IsHardwareAccelerated)
                     {
-                        factor[x - x0] = (x & 7) is 0 or 7 ? fe : fi;
+                        // A block's first and last columns take the edge factor.
+                        Vector256.ConditionalSelect(Vector256.Create(-1, 0, 0, 0, 0, 0, 0, -1).AsSingle(), Vector256.Create(fe), Vector256.Create(fi)).CopyTo(block);
+                    }
+                    else
+                    {
+                        block.Fill(fi);
+                        block[0] = fe;
+                        block[7] = fe;
                     }
                 }
 
@@ -712,27 +721,35 @@ internal sealed class JxlGroupPipeline
                     ref float r0 = ref MemoryMarshal.GetArrayDataReference(p0);
                     ref float r1 = ref MemoryMarshal.GetArrayDataReference(p1);
                     ref float r2 = ref MemoryMarshal.GetArrayDataReference(p2);
+                    ref float o0 = ref MemoryMarshal.GetArrayDataReference(output[0]);
+                    ref float o1 = ref MemoryMarshal.GetArrayDataReference(output[1]);
+                    ref float o2 = ref MemoryMarshal.GetArrayDataReference(output[2]);
+                    ref float fr = ref MemoryMarshal.GetReference(factor);
+                    ref int ar = ref MemoryMarshal.GetReference(around);
+                    ref int tr = ref MemoryMarshal.GetReference(tapOffsets);
                     for (; px + lanes <= width; px += lanes)
                     {
-                        Vector<float> f = new(factor[px..]);
-                        Vector<float> c0 = Load(ref r0, at + px);
-                        Vector<float> c1 = Load(ref r1, at + px);
-                        Vector<float> c2 = Load(ref r2, at + px);
+                        Vector<float> f = Load(ref fr, px);
+                        int a = at + px;
+                        Vector<float> c0 = Load(ref r0, a);
+                        Vector<float> c1 = Load(ref r1, a);
+                        Vector<float> c2 = Load(ref r2, a);
                         Vector<float> s0 = c0;
                         Vector<float> s1 = c1;
                         Vector<float> s2 = c2;
                         Vector<float> sumW = Vector<float>.One;
+                        int rp = row + px;
                         for (int k = 0; k < taps; k++)
                         {
-                            int o = k * n;
-                            Vector<float> d = Load(ref wr, around[o] + row + px);
+                            ref int o = ref Unsafe.Add(ref ar, k * n);
+                            Vector<float> d = Load(ref wr, o + rp);
                             for (int i = 1; i < n; i++)
                             {
-                                d += Load(ref wr, around[o + i] + row + px);
+                                d += Load(ref wr, Unsafe.Add(ref o, i) + rp);
                             }
 
                             Vector<float> weight = Vector.Max(Vector<float>.Zero, Vector<float>.One + (d * f));
-                            int t = at + px + tapOffsets[k];
+                            int t = a + Unsafe.Add(ref tr, k);
                             sumW += weight;
                             s0 += weight * Load(ref r0, t);
                             s1 += weight * Load(ref r1, t);
@@ -741,9 +758,9 @@ internal sealed class JxlGroupPipeline
 
                         // Pixels the filter leaves as they are (a NaN factor) keep their input.
                         Vector<int> filtered = Vector.Equals(f, f);
-                        Vector.ConditionalSelect(filtered, s0 / sumW, c0).CopyTo(output[0], at + px);
-                        Vector.ConditionalSelect(filtered, s1 / sumW, c1).CopyTo(output[1], at + px);
-                        Vector.ConditionalSelect(filtered, s2 / sumW, c2).CopyTo(output[2], at + px);
+                        Store(ref o0, a, Vector.ConditionalSelect(filtered, s0 / sumW, c0));
+                        Store(ref o1, a, Vector.ConditionalSelect(filtered, s1 / sumW, c1));
+                        Store(ref o2, a, Vector.ConditionalSelect(filtered, s2 / sumW, c2));
                     }
                 }
 
@@ -929,7 +946,7 @@ internal sealed class JxlGroupPipeline
     /// <summary>
     /// Writes a row of XYB as 8-bit sRGB gray, RGB or RGBA (alpha 255), eight pixels at a time with each step kept in registers:
     /// the same arithmetic as <see cref="JxlImageDecoder.ToColorSpace(float[][], int, int, JxlFile)"/> (XYB to linear sRGB,
-    /// the sRGB curve) and <see cref="WriteBytes"/>; the last pixels through those.
+    /// the sRGB curve) and <see cref="WriteBytes"/>; a row of under eight pixels through those.
     /// </summary>
     private static void WriteSrgbBytes(Span<byte> bytes, float[][] color, int at, int samples, in JxlXyb8 xyb, JxlFile file)
     {
@@ -946,7 +963,15 @@ internal sealed class JxlGroupPipeline
             Store8(ref to, x, samples, ri, samples == 1 ? ri : Round8(JxlColor.EncodeSrgb8(g)), samples == 1 ? ri : Round8(JxlColor.EncodeSrgb8(b)));
         }
 
-        if (x < width)
+        if (x < width && width >= 8)
+        {
+            // The last pixels as the last eight of the row, writing some again with the same values.
+            x = width - 8;
+            (Vector256<float> r, Vector256<float> g, Vector256<float> b) = xyb.ToLinear(Load8(p0, at + x), Load8(p1, at + x), Load8(p2, at + x));
+            Vector256<int> ri = Round8(JxlColor.EncodeSrgb8(r));
+            Store8(ref to, x, samples, ri, samples == 1 ? ri : Round8(JxlColor.EncodeSrgb8(g)), samples == 1 ? ri : Round8(JxlColor.EncodeSrgb8(b)));
+        }
+        else if (x < width)
         {
             JxlImageDecoder.ToColorSpace(color, at + x, at + width, file);
             WriteBytesTail(bytes, color, at, samples, x);

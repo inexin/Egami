@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
 namespace Egami.Formats.Jxl;
@@ -22,6 +24,9 @@ internal sealed class JxlVarDct
         180, 180, 180, 180, 180, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,
         206, 206, 206, 206, 206, 206, 206, 206, 206, 206, 206,
     ];
+
+    // The zero density contexts (I.3.3) before the last bit: twice CoeffNumNonzeroContext[n] + CoeffFreqContext[k], at n * 64 + k.
+    private static readonly int[] ZeroDensityContext = MakeZeroDensityContext();
 
     // The products of the LLF scales a large varblock's LF coefficients are divided by, by log2 of its width and height in blocks.
     private static readonly float[]?[] LlfDivisors = new float[36][];
@@ -475,44 +480,52 @@ internal sealed class JxlVarDct
                     // The frame's plane, or the varblock's own coefficients in the scratch.
                     int[] plane = direct is null ? _coeffs[c] : direct.Coefficients[c];
                     int stride = direct is null ? PlaneBlocksX(c) * 8 : w8 * 8;
-                    int px0 = direct is null ? ((bx0 >> _hs[c]) + sx) * 8 : 0;
-                    int py0 = direct is null ? ((by0 >> _vs[c]) + sy) * 8 : 0;
+                    int origin = direct is null ? ((((by0 >> _vs[c]) + sy) * 8 * stride) + (((bx0 >> _hs[c]) + sx) * 8)) : 0;
                     int prevNonzero = nz <= (uint)(numBlocks * 4) ? 1 : 0;
                     int[] order = hfPass.Order(orderId, c);
                     int logWidth = System.Numerics.BitOperations.Log2((uint)JxlHfPass.OrderWidth(orderId));
                     int widthMask = (1 << logWidth) - 1;
+
+                    // A coefficient at column dx and row dy of the order's grid adds to place dx * mx + dy * my (swapped for
+                    // the transforms coded across).
                     bool transposed = JxlTransforms8.Transposed(t);
-                    int coeffBase = (blockCtx * 458) + (37 * nbc);
-                    for (int i = numBlocks; i < order.Length; i++)
+                    int mx = transposed ? stride : 1;
+                    int my = transposed ? 1 : stride;
+                    int end = order.Length;
+                    if (plane.Length - origin <= (widthMask * mx) + (((end - 1) >> logWidth) * my) || (uint)blockCtx >= (uint)nbc)
                     {
-                        int ctx = (((CoeffNumNonzeroContext[(int)((nz - 1) >> logBlocks)] + CoeffFreqContext[(i - numBlocks) >> logBlocks]) * 2) + prevNonzero);
+                        throw r.Corrupt("A varblock lies outside its coefficient plane or block contexts.");
+                    }
+
+                    ref int target = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(plane), origin);
+                    ref int place = ref MemoryMarshal.GetArrayDataReference(order);
+                    ref byte contexts = ref Unsafe.Add(ref MemoryMarshal.GetReference(clusters), (blockCtx * 458) + (37 * nbc));
+                    ref int density = ref MemoryMarshal.GetArrayDataReference(ZeroDensityContext);
+                    ref int row64 = ref Unsafe.Add(ref density, (int)((nz - 1) >> logBlocks) * 64);
+                    for (int i = numBlocks; i < end; i++)
+                    {
+                        int ctx = Unsafe.Add(ref row64, (i - numBlocks) >> logBlocks) + prevNonzero;
                         if (ctx >= 458)
                         {
                             throw r.Corrupt("Too many zeros in a varblock's HF coefficients.");
                         }
 
-                        uint u = decoder.Read(r, clusters[coeffBase + ctx]);
+                        uint u = decoder.Read(r, Unsafe.Add(ref contexts, ctx));
                         if (u == 0)
                         {
                             prevNonzero = 0;
                             continue;
                         }
 
-                        int coeff = JxlHeaders.UnpackSigned(u) << shift;
-                        int pos = order[i];
-                        int dx = pos & widthMask;
-                        int dy = pos >> logWidth;
-                        if (transposed)
-                        {
-                            (dx, dy) = (dy, dx);
-                        }
-
-                        plane[((py0 + dy) * stride) + px0 + dx] += coeff;
+                        int pos = Unsafe.Add(ref place, i);
+                        Unsafe.Add(ref target, ((pos & widthMask) * mx) + ((pos >> logWidth) * my)) += JxlHeaders.UnpackSigned(u) << shift;
                         prevNonzero = 1;
                         if (--nz == 0)
                         {
                             break;
                         }
+
+                        row64 = ref Unsafe.Add(ref density, (int)((nz - 1) >> logBlocks) * 64);
                     }
                 }
 
@@ -522,6 +535,20 @@ internal sealed class JxlVarDct
                 }
             }
         }
+    }
+
+    private static int[] MakeZeroDensityContext()
+    {
+        int[] table = new int[64 * 64];
+        for (int n = 0; n < CoeffNumNonzeroContext.Length; n++)
+        {
+            for (int k = 0; k < CoeffFreqContext.Length; k++)
+            {
+                table[(n * 64) + k] = (CoeffNumNonzeroContext[n] + CoeffFreqContext[k]) * 2;
+            }
+        }
+
+        return table;
     }
 
     /// <summary>

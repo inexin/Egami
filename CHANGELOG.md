@@ -5,6 +5,13 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+Faster JPEG XL lossy (VarDCT) decoding. Pixels are unchanged.
+
+- One-thread VarDCT decoding takes 10–12 % fewer instructions (kodim05 d1: 447 → 396 M per megapixel), from the AC
+  coefficient loop (one context table, no bounds checks inside a varblock), the edge-preserving filter (factors filled a block
+  at a time, no bounds checks), the weighted-predictor LF coefficients decoded with the predictor's state in locals, and the
+  last pixels of a row written through the vector sRGB path.
+
 Faster JPEG XL lossless decoding. Pixels are unchanged.
 
 - Lossless and other integer-coded frames loaded as 8-bit or 16-bit pixels go from the decoded samples to the pixels row by row
