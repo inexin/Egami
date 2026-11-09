@@ -175,7 +175,7 @@ half types keep values outside 0..1 (as wide-gamut and HDR conversions produce) 
 
   <h3 id="Egami_Colors_ColorTransform_InputChannels" data-uid="Egami.Colors.ColorTransform.InputChannels">
   InputChannels
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorTransform.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorTransform.cs/#L62"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the channels of each color converted from: the source's <a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_ChannelCount">ChannelCount</a>.</p>
@@ -271,7 +271,7 @@ half types keep values outside 0..1 (as wide-gamut and HDR conversions produce) 
 
   <h3 id="Egami_Colors_ColorTransform_OutputChannels" data-uid="Egami.Colors.ColorTransform.OutputChannels">
   OutputChannels
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorTransform.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorTransform.cs/#L65"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the channels of each color converted to: the target's <a class="xref" href="Egami.Colors.ColorProfile.html#Egami_Colors_ColorProfile_ChannelCount">ChannelCount</a>.</p>
@@ -371,7 +371,7 @@ half types keep values outside 0..1 (as wide-gamut and HDR conversions produce) 
 
   <h3 id="Egami_Colors_ColorTransform_Apply_System_ReadOnlySpan_System_Single__System_Span_System_Single__" data-uid="Egami.Colors.ColorTransform.Apply(System.ReadOnlySpan{System.Single},System.Span{System.Single})">
   Apply(ReadOnlySpan&lt;float&gt;, Span&lt;float&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorTransform.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorTransform.cs/#L139"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Converts colors stored as floats, <a class="xref" href="Egami.Colors.ColorTransform.html#Egami_Colors_ColorTransform_InputChannels">InputChannels</a> per color in and <a class="xref" href="Egami.Colors.ColorTransform.html#Egami_Colors_ColorTransform_OutputChannels">OutputChannels</a> out, each 0 to 1
@@ -415,7 +415,7 @@ that are not pixels. Inputs are clamped to 0 to 1; outputs keep any value the co
 
   <h3 id="Egami_Colors_ColorTransform_Apply__1_System_Span___0__" data-uid="Egami.Colors.ColorTransform.Apply``1(System.Span{``0})">
   Apply&lt;TPixel&gt;(Span&lt;TPixel&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorTransform.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorTransform.cs/#L94"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Converts pixels in place.</p>
@@ -454,7 +454,7 @@ that are not pixels. Inputs are clamped to 0 to 1; outputs keep any value the co
 
   <h3 id="Egami_Colors_ColorTransform_Apply__2_System_ReadOnlySpan___0__System_Span___1__" data-uid="Egami.Colors.ColorTransform.Apply``2(System.ReadOnlySpan{``0},System.Span{``1})">
   Apply&lt;TFrom, TTo&gt;(ReadOnlySpan&lt;TFrom&gt;, Span&lt;TTo&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorTransform.cs/#L96"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorTransform.cs/#L106"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Converts pixels from one type to another; the spans may be the same memory when the types are the same.</p>
@@ -505,7 +505,7 @@ that are not pixels. Inputs are clamped to 0 to 1; outputs keep any value the co
 
   <h3 id="Egami_Colors_ColorTransform_Create_Egami_Colors_ColorProfile_Egami_Colors_ColorProfile_Egami_Colors_ColorTransformOptions_Egami_EgamiContext_" data-uid="Egami.Colors.ColorTransform.Create(Egami.Colors.ColorProfile,Egami.Colors.ColorProfile,Egami.Colors.ColorTransformOptions,Egami.EgamiContext)">
   Create(ColorProfile, ColorProfile, ColorTransformOptions?, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorTransform.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami/Colors/ColorTransform.cs/#L78"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Compiles the conversion from <code class="paramref">source</code> to <code class="paramref">target</code>, or returns it from the cache.</p>
