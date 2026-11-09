@@ -136,6 +136,10 @@ internal static class JxlModularDecoder
                     case 5:
                         DecodeLookup<TResiduals, GradientPredictor>(r, residuals, tree.Leaves, plan, weighted, c, channel, stream);
                         break;
+                    case 6 when plan.Property == 15:
+                        // The weighted predictor with its leaf picked by its own largest error, the usual LF coefficient tree.
+                        weighted!.DecodeByMaxError(r, residuals, tree.Leaves, plan.Lookup!, plan.Min, plan.Max, ref Samples(c), c.Width, c.Height);
+                        break;
                     case 6:
                         DecodeLookup<TResiduals, WeightedPredictor>(r, residuals, tree.Leaves, plan, weighted, c, channel, stream);
                         break;
@@ -318,7 +322,7 @@ internal static class JxlModularDecoder
 
     /// <summary>Gets sample (x, y)'s neighbours, with the spec's edge rules near the edges.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Neighbours(ref int data, int row, int width, int x, int y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee)
+    internal static void Neighbours(ref int data, int row, int width, int x, int y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee)
     {
         if (y > 1 && x > 1 && x + 2 < width)
         {

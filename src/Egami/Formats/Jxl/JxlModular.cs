@@ -613,6 +613,125 @@ internal sealed class JxlWeightedPredictor
         }
     }
 
+    /// <summary>
+    /// Decodes a whole channel (from the predictor's start) whose leaves all use this predictor and are picked by its largest
+    /// error (property 15) through <paramref name="lookup"/>: <see cref="Predict"/> and <see cref="Record"/> for every sample,
+    /// with the state in locals.
+    /// </summary>
+    internal void DecodeByMaxError<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf[] leaves, int[] lookup, int min, int max, ref int data, int width, int height)
+        where TResiduals : struct, IJxlUintReader
+    {
+        long p1 = _p1, p2 = _p2, p3a = _p3a, p3b = _p3b, p3c = _p3c, p3d = _p3d, p3e = _p3e;
+        uint wt0 = _w0, wt1 = _w1, wt2 = _w2, wt3 = _w3;
+        uint[] errRow = _errRow;
+        if (errRow.Length < width * 5)
+        {
+            throw new InvalidOperationException("The weighted predictor is narrower than the channel.");
+        }
+
+        ref uint errors = ref MemoryMarshal.GetArrayDataReference(errRow);
+        for (int y = 0; y < height; y++)
+        {
+            int row = y * width;
+
+            // The state at a row's start, as Record leaves it.
+            int errW = 0;
+            int errN = y == 0 ? 0 : (int)errors;
+            int errNw = errN;
+            uint snw0 = 0, snw1 = 0, snw2 = 0, snw3 = 0;
+            if (y > 0)
+            {
+                (snw0, snw1, snw2, snw3) = (Unsafe.Add(ref errors, 1), Unsafe.Add(ref errors, 2), Unsafe.Add(ref errors, 3), Unsafe.Add(ref errors, 4));
+            }
+
+            uint sww0 = snw0, sww1 = snw1, sww2 = snw2, sww3 = snw3;
+            int errNe;
+            uint sne0, sne1, sne2, sne3;
+            if (y == 0 || width <= 1)
+            {
+                errNe = errN;
+                (sne0, sne1, sne2, sne3) = (snw0, snw1, snw2, snw3);
+            }
+            else
+            {
+                errNe = (int)Unsafe.Add(ref errors, 5);
+                (sne0, sne1, sne2, sne3) = (Unsafe.Add(ref errors, 6), Unsafe.Add(ref errors, 7), Unsafe.Add(ref errors, 8), Unsafe.Add(ref errors, 9));
+            }
+
+            for (int x = 0; x < width; x++)
+            {
+                JxlModularDecoder.Neighbours(ref data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out _, out _);
+
+                // Predict.
+                long n3 = (long)n << 3;
+                long nw3 = (long)nw << 3;
+                long ne3 = (long)ne << 3;
+                long w3 = (long)w << 3;
+                long nn3 = (long)nn << 3;
+                long s0 = w3 + ne3 - n3;
+                long s1 = n3 - ((((long)errW + errN + errNe) * p1) >> 5);
+                long s2 = w3 - ((((long)errW + errN + errNw) * p2) >> 5);
+                long s3 = n3 - ((((long)errNw * p3a) + ((long)errN * p3b) + ((long)errNe * p3c) + ((nn3 - n3) * p3d) + ((nw3 - w3) * p3e)) >> 5);
+                uint w0 = Weight(unchecked(sww0 + snw0 + sne0), wt0);
+                uint w1 = Weight(unchecked(sww1 + snw1 + sne1), wt1);
+                uint w2 = Weight(unchecked(sww2 + snw2 + sne2), wt2);
+                uint w3w = Weight(unchecked(sww3 + snw3 + sne3), wt3);
+                uint sum = w0 + w1 + w2 + w3w;
+                int logWeight = System.Numerics.BitOperations.Log2(sum >> 4);
+                w0 >>= logWeight;
+                w1 >>= logWeight;
+                w2 >>= logWeight;
+                w3w >>= logWeight;
+                sum = w0 + w1 + w2 + w3w;
+                long s = ((long)sum >> 1) - 1 + (s0 * w0) + (s1 * w1) + (s2 * w2) + (s3 * w3w);
+                long prediction = (s * Divide(sum)) >> 24;
+                long clamped = JxlBranchFree.Clamp(prediction, JxlBranchFree.Min(n3, JxlBranchFree.Min(w3, ne3)), JxlBranchFree.Max(n3, JxlBranchFree.Max(w3, ne3)));
+                long agree = ((((long)errN ^ errW) | ((long)errN ^ errNw)) - 1) >> 63;
+                prediction ^= (prediction ^ clamped) & agree;
+                int maxError = (int)LargestError(errW, errN, errNw, errNe);
+
+                // The leaf, the residual and the sample.
+                JxlLeaf leaf = leaves[lookup[Math.Min(Math.Max(maxError, min), max) - min]];
+                int residual = unchecked((JxlHeaders.UnpackSigned(residuals.Read(r, leaf.Cluster)) * leaf.Multiplier) + leaf.Offset);
+                int sample = unchecked((int)((prediction + 3) >> 3) + residual);
+                Unsafe.Add(ref data, row + x) = sample;
+
+                // Record.
+                long s8 = (long)sample << 3;
+                int trueErr = (int)(prediction - s8);
+                uint e0 = (uint)((Abs(s0 - s8) + 3) >> 3);
+                uint e1 = (uint)((Abs(s1 - s8) + 3) >> 3);
+                uint e2 = (uint)((Abs(s2 - s8) + 3) >> 3);
+                uint e3 = (uint)((Abs(s3 - s8) + 3) >> 3);
+                ref uint at = ref Unsafe.Add(ref errors, 5 * x);
+                at = (uint)trueErr;
+                Unsafe.Add(ref at, 1) = e0;
+                Unsafe.Add(ref at, 2) = e1;
+                Unsafe.Add(ref at, 3) = e2;
+                Unsafe.Add(ref at, 4) = e3;
+                errW = trueErr;
+                errNw = errN;
+                errN = errNe;
+                (sww0, sww1, sww2, sww3) = (snw0, snw1, snw2, snw3);
+                snw0 = unchecked(sne0 + e0);
+                snw1 = unchecked(sne1 + e1);
+                snw2 = unchecked(sne2 + e2);
+                snw3 = unchecked(sne3 + e3);
+                if (x + 2 >= width)
+                {
+                    errNe = errN;
+                    (sne0, sne1, sne2, sne3) = (snw0, snw1, snw2, snw3);
+                }
+                else if (y != 0)
+                {
+                    ref uint next = ref Unsafe.Add(ref errors, 5 * (x + 2));
+                    errNe = (int)next;
+                    (sne0, sne1, sne2, sne3) = (Unsafe.Add(ref next, 1), Unsafe.Add(ref next, 2), Unsafe.Add(ref next, 3), Unsafe.Add(ref next, 4));
+                }
+            }
+        }
+    }
+
     private static ulong Abs(long v) => v < 0 ? (ulong)-v : (ulong)v;
 
     /// <summary>Gets the error of largest magnitude, the first of equals, without branches.</summary>
