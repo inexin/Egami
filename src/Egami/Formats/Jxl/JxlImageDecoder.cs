@@ -1124,6 +1124,24 @@ internal static class JxlImageDecoder
                 return raster;
             }
 
+            if (d.Ints is JxlFrameChannels lossless && extra < 0 && !cmyk && layout.ChannelType is PixelChannelType.Unorm8 or PixelChannelType.Unorm16)
+            {
+                // Lossless integers: each sample's plane and bit depth picked once; rows on several threads.
+                int[]?[] planes = new int[samples][];
+                JxlBitDepth[] depths = new JxlBitDepth[samples];
+                for (int s = 0; s < samples; s++)
+                {
+                    bool isAlpha = alpha && s == samples - 1;
+                    planes[s] = isAlpha ? (alphaIndex >= 0 ? lossless.Channels[lossless.ExtraStart + alphaIndex].Data : null)
+                        : lossless.Channels[Math.Min(s, lossless.ColorChannels - 1)].Data;
+                    depths[s] = isAlpha && alphaIndex >= 0 ? h.ExtraChannels[alphaIndex].BitDepth : h.BitDepth;
+                }
+
+                bool wide = layout.ChannelType == PixelChannelType.Unorm16;
+                d.File.Parallel.For(d.Height, y => IntegerRow(MemoryMarshal.AsBytes(raster.Row(y)), planes, depths, y * d.Width, d.Width, wide), minimumPerThread: 16);
+                return raster;
+            }
+
             for (int y = 0; y < d.Height; y++)
             {
                 Span<byte> row = MemoryMarshal.AsBytes(raster.Row(y));
@@ -1200,6 +1218,73 @@ internal static class JxlImageDecoder
         long top = (1L << depth.BitsPerSample) - 1;
         long clamped = Math.Clamp(v, 0, top);
         return top == max ? (int)clamped : (int)(((clamped * max * 2) + top) / (2 * top));
+    }
+
+    /// <summary>
+    /// Writes one row of lossless integer samples as 8-bit (or with <paramref name="wide"/>, 16-bit) unsigned normalized
+    /// samples, each the value <see cref="Scale"/> gives; a missing plane (no alpha channel) writes opaque samples.
+    /// </summary>
+    private static void IntegerRow(Span<byte> bytes, int[]?[] planes, JxlBitDepth[] depths, int at, int width, bool wide)
+    {
+        int samples = planes.Length;
+        int max = wide ? 65535 : 255;
+        Span<ushort> words = MemoryMarshal.Cast<byte, ushort>(bytes);
+        for (int s = 0; s < samples; s++)
+        {
+            int[]? plane = planes[s];
+            JxlBitDepth depth = depths[s];
+            if (plane is null)
+            {
+                for (int x = 0, i = s; x < width; x++, i += samples)
+                {
+                    if (wide)
+                    {
+                        words[i] = 65535;
+                    }
+                    else
+                    {
+                        bytes[i] = 255;
+                    }
+                }
+
+                continue;
+            }
+
+            ReadOnlySpan<int> source = plane.AsSpan(at, width);
+            if (!depth.IsFloat && depth.BitsPerSample == (wide ? 16 : 8))
+            {
+                // The common case: the coded depth is the pixel type's, so a sample is only clamped.
+                if (wide)
+                {
+                    for (int x = 0, i = s; x < source.Length; x++, i += samples)
+                    {
+                        words[i] = (ushort)Math.Clamp(source[x], 0, 65535);
+                    }
+                }
+                else
+                {
+                    for (int x = 0, i = s; x < source.Length; x++, i += samples)
+                    {
+                        bytes[i] = (byte)Math.Clamp(source[x], 0, 255);
+                    }
+                }
+
+                continue;
+            }
+
+            for (int x = 0, i = s; x < source.Length; x++, i += samples)
+            {
+                int v = Scale(source[x], depth, max);
+                if (wide)
+                {
+                    words[i] = (ushort)v;
+                }
+                else
+                {
+                    bytes[i] = (byte)v;
+                }
+            }
+        }
     }
 
     /// <summary>

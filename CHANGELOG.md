@@ -5,6 +5,12 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+Faster JPEG XL lossless decoding. Pixels are unchanged.
+
+- Lossless and other integer-coded frames loaded as 8-bit or 16-bit pixels go from the decoded samples to the pixels row by row
+  on all threads, without a float copy. On 24 threads docs (lossless) loads in 12 ms instead of 39, article-2x in 44 instead of
+  152; on one thread lossless decoding takes 8–20 % fewer instructions.
+
 API review of the new formats (DICOM Build Plan task 26). These change only API added since 1.4.0, so no released code breaks.
 
 - `JpegLsWriter` is internal: save a raster with `JpegLsFormat.Info` and `JpegLsWriterOptions.BitsPerSample` instead.
