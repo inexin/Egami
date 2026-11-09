@@ -2,6 +2,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
+using Egami.Pixels;
+
 namespace Egami.Colors;
 
 /// <summary>Where the color channels of an 8-bit pixel are: its size in bytes, and whether three channels are stored B, G, R.</summary>
@@ -335,6 +337,62 @@ internal sealed class MatrixTransform : CompiledTransform
             }
         }
     }
+
+    /// <summary>
+    /// Converts 8-bit RGB into three float planes, giving exactly what <see cref="Apply(ReadOnlySpan{float}, Span{float}, int)"/>
+    /// gives each byte over 255: the input curves work value by value, so a table of what they give the 256 levels stands in for
+    /// them, and the rest runs as there, a chunk at a time.
+    /// </summary>
+    internal void ApplyRgb8(ReadOnlySpan<Rgb8> source, Span<float> r, Span<float> g, Span<float> b)
+    {
+        float[][] tables = _levels8 ??= LevelTables();
+        float[] t0 = tables[0], t1 = tables[1], t2 = tables[2];
+        Span<float> planes = stackalloc float[Chunk * 3];
+        for (int start = 0; start < source.Length; start += Chunk)
+        {
+            int n = Math.Min(Chunk, source.Length - start);
+            Span<float> x = planes.Slice(0, n), y = planes.Slice(Chunk, n), z = planes.Slice(Chunk * 2, n);
+            ReadOnlySpan<Rgb8> from = source.Slice(start, n);
+            for (int i = 0; i < n; i++)
+            {
+                Rgb8 p = from[i];
+                (x[i], y[i], z[i]) = (t0[p.R], t1[p.G], t2[p.B]);
+            }
+
+            Span<float> rs = r.Slice(start, n), gs = g.Slice(start, n), bs = b.Slice(start, n);
+            BeforeMap(x, y, z);
+            Affine(x, y, z, rs, gs, bs);
+            AfterMap(rs, gs, bs, _outScale);
+            _out[0].FromLinear(rs, rs);
+            _out[1].FromLinear(gs, gs);
+            _out[2].FromLinear(bs, bs);
+        }
+    }
+
+    // What the float path's input curves and scale give each 8-bit level, as Rgb8.ToScaled gives it (the byte over 255).
+    private float[][] LevelTables()
+    {
+        float[] levels = new float[256];
+        for (int i = 0; i < 256; i++)
+        {
+            levels[i] = i / 255f;
+        }
+
+        float[][] tables = new float[3][];
+        for (int c = 0; c < 3; c++)
+        {
+            tables[c] = new float[256];
+            _in[c].ToLinear(levels, tables[c]);
+            if (_inScale != 1)
+            {
+                Scale(tables[c], _inScale);
+            }
+        }
+
+        return tables;
+    }
+
+    private float[][]? _levels8;
 
     private static void Scale(Span<float> plane, float factor)
     {

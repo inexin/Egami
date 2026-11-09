@@ -763,6 +763,17 @@ internal sealed class JxlWeightedPredictor
     /// </summary>
     internal void Row(int[] data, int y, Span<long> prediction, Span<int> maxError)
     {
+        PredictionSink sink = new(prediction[.._width], maxError[.._width]);
+        Row(data, y, ref sink);
+    }
+
+    /// <summary>
+    /// <see cref="Row(int[], int, Span{long}, Span{int})"/> with each sample's prediction and largest error given to
+    /// <paramref name="sink"/> as it is made.
+    /// </summary>
+    internal void Row<TSink>(int[] data, int y, ref TSink sink)
+        where TSink : IRowSink, allows ref struct
+    {
         int width = _width;
         uint[] errRow = _errRow;
         long p1 = _p1, p2 = _p2, p3a = _p3a, p3b = _p3b, p3c = _p3c, p3d = _p3d, p3e = _p3e;
@@ -797,8 +808,6 @@ internal sealed class JxlWeightedPredictor
         ref int pc = ref rows[1];
         ref int pu = ref rows[width + 3];
         ref int pu2 = ref rows[(2 * width) + 5];
-        prediction = prediction[..width];
-        maxError = maxError[..width];
         for (int x = 0; x < width; x++)
         {
             int w = Unsafe.Add(ref pc, x - 1);
@@ -846,8 +855,7 @@ internal sealed class JxlWeightedPredictor
 
                 long me = LargestError(errW, errN, errNw, errNe);
 
-                prediction[x] = predicted;
-                maxError[x] = (int)me;
+                sink.Put(x, predicted, (int)me);
 
                 // Record.
                 long s8 = (long)Unsafe.Add(ref pc, x) << 3;
@@ -909,6 +917,25 @@ internal sealed class JxlWeightedPredictor
         }
     }
 
+
+    /// <summary>Takes each sample's prediction (eight times the sample) and largest neighbour error from <see cref="Row{TSink}"/>.</summary>
+    internal interface IRowSink
+    {
+        void Put(int x, long prediction, int maxError);
+    }
+
+    private ref struct PredictionSink(Span<long> prediction, Span<int> maxError) : IRowSink
+    {
+        private readonly Span<long> _prediction = prediction;
+        private readonly Span<int> _maxError = maxError;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Put(int x, long prediction, int maxError)
+        {
+            _prediction[x] = prediction;
+            _maxError[x] = maxError;
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint Weight(uint errorSum, uint maxWeight)

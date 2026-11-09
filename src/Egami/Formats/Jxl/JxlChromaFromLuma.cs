@@ -57,9 +57,14 @@ internal static class JxlChromaFromLuma
             const float Eps = 100;
             const float Clamp = 20.0f;
             x = 0;
+
+            // Each value's a and b, the same in every step, made once.
+            float[] rented = System.Buffers.ArrayPool<float>.Shared.Rent(2 * num);
+            Span<float> av = rented.AsSpan(0, num), bv = rented.AsSpan(num, num);
+            Coefficients(valuesM, valuesS, baseCorrelation, av, bv);
             for (int i = 0; i < 20; i++)
             {
-                float d = Derivative(valuesM, valuesS, baseCorrelation, x, Eps, out float dpeps, out float dmeps);
+                float d = Derivative(av, bv, x, Eps, out float dpeps, out float dmeps);
                 float ddf = (dpeps - dmeps) / (2 * Eps);
                 const float Stabilizer = 0.85f;
                 float step = d / (ddf + Stabilizer);
@@ -69,6 +74,8 @@ internal static class JxlChromaFromLuma
                     break;
                 }
             }
+
+            System.Buffers.ArrayPool<float>.Shared.Return(rented);
         }
 
         // Pulled towards zero, which keeps large transforms from red-green oscillations.
@@ -77,12 +84,32 @@ internal static class JxlChromaFromLuma
         return (int)Math.Clamp(MathF.Round(x, MidpointRounding.AwayFromZero), -128f, 127f);
     }
 
+    /// <summary>Each value's a (M over the color factor) and b (M times the base correlation, less S), as the cost takes them.</summary>
+    private static void Coefficients(ReadOnlySpan<float> valuesM, ReadOnlySpan<float> valuesS, float baseCorrelation, Span<float> av, Span<float> bv)
+    {
+        int num = valuesM.Length;
+        int i = 0;
+        Vector256<float> inv = Vector256.Create(InvColorFactor), bc = Vector256.Create(baseCorrelation);
+        for (; i + 8 <= num; i += 8)
+        {
+            Vector256<float> m = Vector256.Create(valuesM.Slice(i, 8));
+            (inv * m).CopyTo(av[i..]);
+            ((bc * m) - Vector256.Create(valuesS.Slice(i, 8))).CopyTo(bv[i..]);
+        }
+
+        for (; i < num; i++)
+        {
+            av[i] = InvColorFactor * valuesM[i];
+            bv[i] = (baseCorrelation * valuesM[i]) - valuesS[i];
+        }
+    }
+
     /// <summary>CFLFunction::Compute: f'(x) of 1/3 Σ((|residual| + 1)² − 1) + distance_mul · x² · n, and f' at x ± eps.</summary>
-    private static float Derivative(ReadOnlySpan<float> valuesM, ReadOnlySpan<float> valuesS, float baseCorrelation, float x, float eps, out float fpeps, out float fmeps)
+    private static float Derivative(ReadOnlySpan<float> aValues, ReadOnlySpan<float> bValues, float x, float eps, out float fpeps, out float fmeps)
     {
         const float Coeff = 1f / 3;
         const float Thres = 100.0f;
-        int num = valuesM.Length;
+        int num = aValues.Length;
         float first = 2 * DistanceMultiplierAc * num * x;
         float firstPeps = 2 * DistanceMultiplierAc * num * (x + eps);
         float firstMeps = 2 * DistanceMultiplierAc * num * (x - eps);
@@ -90,14 +117,12 @@ internal static class JxlChromaFromLuma
         int i = 0;
         {
             Vector256<float> vfd = Vector256<float>.Zero, vfdpe = Vector256<float>.Zero, vfdme = Vector256<float>.Zero;
-            Vector256<float> inv = Vector256.Create(InvColorFactor), bc = Vector256.Create(baseCorrelation);
             Vector256<float> vx = Vector256.Create(x), vxp = Vector256.Create(x + eps), vxm = Vector256.Create(x - eps);
             Vector256<float> one = Vector256.Create(1.0f), two3 = Vector256.Create(Coeff * 2.0f), thres = Vector256.Create(Thres);
             for (; i + 8 <= num; i += 8)
             {
-                Vector256<float> m = Vector256.Create(valuesM.Slice(i, 8));
-                Vector256<float> a = inv * m;
-                Vector256<float> b = (bc * m) - Vector256.Create(valuesS.Slice(i, 8));
+                Vector256<float> a = Vector256.Create(aValues.Slice(i, 8));
+                Vector256<float> b = Vector256.Create(bValues.Slice(i, 8));
                 Vector256<float> v = Vector256.FusedMultiplyAdd(a, vx, b);
                 Vector256<float> vpe = Vector256.FusedMultiplyAdd(a, vxp, b);
                 Vector256<float> vme = Vector256.FusedMultiplyAdd(a, vxm, b);
@@ -122,8 +147,8 @@ internal static class JxlChromaFromLuma
 
         for (; i < num; i++)
         {
-            float a = InvColorFactor * valuesM[i];
-            float b = (baseCorrelation * valuesM[i]) - valuesS[i];
+            float a = aValues[i];
+            float b = bValues[i];
             float v = MathF.FusedMultiplyAdd(a, x, b);
             float vpe = MathF.FusedMultiplyAdd(a, x + eps, b);
             float vme = MathF.FusedMultiplyAdd(a, x - eps, b);

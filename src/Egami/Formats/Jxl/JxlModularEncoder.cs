@@ -2241,6 +2241,18 @@ internal sealed class JxlModularEncoder
         CollectionsMarshal.SetCount(tokens, width * height);
         Span<JxlToken> output = CollectionsMarshal.AsSpan(tokens);
         bool gradient = wp is null && lut.All(leaf => predictor[leaf] == 5 && (multiplier is null || multiplier[leaf] <= 1));
+        if (wp is not null && only == 15 && lut.All(leaf => predictor[leaf] == 6 && (multiplier is null || multiplier[leaf] <= 1)))
+        {
+            // Every leaf predicts with the WP and splits only on its largest error: each token straight from the WP row.
+            for (int y = 0; y < height; y++)
+            {
+                WpTokens sink = new(d, y * width, lut, range, context, output);
+                wp.Row(d, y, ref sink);
+            }
+
+            return tokens;
+        }
+
         long[] wpRow = wp is null ? [] : new long[width];
         int[] errorRow = wp is null ? [] : new int[width];
         for (int y = 0; y < height; y++)
@@ -2290,6 +2302,20 @@ internal sealed class JxlModularEncoder
         }
 
         return tokens;
+    }
+
+    /// <summary>The tokens of a row whose leaves all use the WP and test only its largest error, as the loop in TokenizeLookup makes them.</summary>
+    private ref struct WpTokens(int[] data, int row, int[] lut, int range, int[] context, Span<JxlToken> output) : JxlWeightedPredictor.IRowSink
+    {
+        private readonly Span<JxlToken> _output = output;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly void Put(int x, long prediction, int maxError)
+        {
+            int leaf = lut[Math.Clamp(maxError, -range, range - 1) + range];
+            long guess = (prediction + 3) >> 3;
+            _output[row + x] = new JxlToken(context[leaf], JxlTreeLearner.PackSigned(unchecked(data[row + x] - (int)guess)));
+        }
     }
 
     /// <summary>

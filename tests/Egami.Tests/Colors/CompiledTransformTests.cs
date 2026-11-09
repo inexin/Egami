@@ -1,4 +1,5 @@
 using Egami.Colors;
+using Egami.Pixels;
 
 namespace Egami.Tests.Colors;
 
@@ -225,6 +226,37 @@ public class CompiledTransformTests(ITestOutputHelper output)
         }
 
         Assert.Equal(TransformCache.Capacity, TransformCache.Count(context));
+    }
+
+    /// <summary>
+    /// The JPEG XL encoder's 8-bit path (a table of the input curves) gives bit for bit the floats of converting each pixel, for
+    /// formula and table curves, every level of each channel and mixed pixels, over lengths that end inside a chunk.
+    /// </summary>
+    [Theory]
+    [InlineData("Display P3")]
+    [InlineData("Adobe RGB (1998)")]
+    [InlineData("compact/AdobeCompat-v2.icc")]
+    [InlineData("compact/ProPhoto-v2-micro.icc")]
+    [InlineData("compact/Rec709-v4.icc")]
+    [InlineData("synthetic/matrix-curv-v2.icc")]
+    [InlineData("synthetic/matrix-para-v4.icc")]
+    public void Rgb8PlanesMatchPixels(string name)
+    {
+        ColorTransform transform = ColorTransform.Create(Profile(name), ColorProfile.LinearSrgb);
+        Assert.True(transform.HasRgb8Planes);
+        Random random = new(7);
+        Rgb8[] pixels = [.. Enumerable.Range(0, 256).Select(i => new Rgb8((byte)i, (byte)(255 - i), (byte)(i * 7))),
+            .. Enumerable.Range(0, 1789).Select(_ => new Rgb8((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256)))];
+        RgbF32[] expected = new RgbF32[pixels.Length];
+        transform.Apply<Rgb8, RgbF32>(pixels, expected);
+        float[] r = new float[pixels.Length], g = new float[pixels.Length], b = new float[pixels.Length];
+        transform.ApplyRgb8(pixels, r, g, b);
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            Assert.Equal(BitConverter.SingleToInt32Bits(expected[i].R), BitConverter.SingleToInt32Bits(r[i]));
+            Assert.Equal(BitConverter.SingleToInt32Bits(expected[i].G), BitConverter.SingleToInt32Bits(g[i]));
+            Assert.Equal(BitConverter.SingleToInt32Bits(expected[i].B), BitConverter.SingleToInt32Bits(b[i]));
+        }
     }
 
     internal static ColorProfile Profile(string name) => name.EndsWith(".icc", StringComparison.Ordinal)

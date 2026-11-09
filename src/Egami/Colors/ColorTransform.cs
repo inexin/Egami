@@ -48,6 +48,16 @@ public sealed class ColorTransform
     /// <summary>Gets a value indicating whether the two encodings mean the same colors, so applying the transform changes nothing.</summary>
     public bool IsIdentity => _compiled is IdentityTransform;
 
+    /// <summary>Gets whether <see cref="ApplyRgb8"/> works: a matrix transform between three-channel encodings.</summary>
+    internal bool HasRgb8Planes => _compiled is MatrixTransform { InputChannels: 3, OutputChannels: 3 };
+
+    /// <summary>
+    /// Converts 8-bit RGB into three float planes, the same values <see cref="Apply{TFrom, TTo}"/> gives as <see cref="RgbF32"/>,
+    /// through a table of the input curves; only when <see cref="HasRgb8Planes"/>.
+    /// </summary>
+    internal void ApplyRgb8(ReadOnlySpan<Rgb8> source, Span<float> r, Span<float> g, Span<float> b) =>
+        ((MatrixTransform)_compiled).ApplyRgb8(source, r, g, b);
+
     /// <summary>Gets the channels of each color converted from: the source's <see cref="ColorProfile.ChannelCount"/>.</summary>
     public int InputChannels => _compiled.InputChannels;
 
