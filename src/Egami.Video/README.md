@@ -12,8 +12,8 @@ Egami rasters, so resizing, color conversion and drawing from Egami work on vide
 - Editing (`VideoEdit`, `Clip`): joins, transitions, overlays, keying, layouts and titles, rendered to a file.
 - Deinterlacing (`Deinterlacer`), HDR metadata, scene detection, waveforms and spectrograms.
 
-Royalty-free codecs only in this package (the MP3 and AC-3 patents have expired). No native code, no wrapped C or C++
-libraries.
+Royalty-free codecs only in this package (the MP3 and AC-3 patents have expired; AAC is decoded as AAC LC only, without
+SBR, parametric stereo, USAC or DRC). No native code, no wrapped C or C++ libraries.
 
 ## Read frames
 
