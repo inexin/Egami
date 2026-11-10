@@ -983,7 +983,10 @@ See <http://creativecommons.org/publicdomain/zero/1.0/>.
 Egami.Video's AAC LC decoder (`src/Egami.Video/Audio/Codecs/Aac`: `AacFrameDecoder.cs` and `AacTables.cs`) is translated from
 oxideav-aac (commit ff39596): its parsing of ics_info, section, scalefactor, pulse, TNS and spectral data, inverse quantization,
 M/S and intensity stereo, perceptual noise substitution, TNS synthesis and the filterbank, and its Huffman, scalefactor band
-and TNS tables, rewritten as one decoder over float buffers. oxideav-aac is distributed under the MIT license:
+and TNS tables, rewritten as one decoder over float buffers. The AAC LC encoder (`AacFrameEncoder.cs`, `AacSpectrumCoder.cs`
+and `AacTnsEncoder.cs`) translates parts of its encoder: the window-sequence state machine, the analysis windows, short-window
+grouping, the intensity-stereo and noise-likeness tests, the codebook costs and section search, the TNS analysis and the raw
+data block layout. oxideav-aac is distributed under the MIT license:
 
 ```
 MIT License

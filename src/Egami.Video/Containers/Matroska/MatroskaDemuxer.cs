@@ -894,6 +894,15 @@ internal sealed class MatroskaDemuxer : IDemuxer
                 packet.Duration = new MediaTime(Math.Max(0, samples - cut), sample);
             }
 
+            else if (track.Track is AudioTrackInfo { CodecId: CodecIds.Aac, SampleRate: > 0 } aac && frames == 1 && discardPadding > 0
+                && Audio.Codecs.Aac.AacConfig.TryRead(aac.CodecPrivate.Span, out Audio.Codecs.Aac.AacConfig aacConfig) && aacConfig.PacketSamples > 0)
+            {
+                // AAC frames have a fixed length in samples; DiscardPadding cuts the last one.
+                Rational sample = new(1, aac.SampleRate);
+                long cut = new MediaTime(discardPadding, Rational.Nanosecond).Rescale(sample).Ticks;
+                packet.Duration = new MediaTime(Math.Max(0, aacConfig.PacketSamples - cut), sample);
+            }
+
             else if (track.Track?.CodecId == CodecIds.Alac && frames == 1 && track.Track is AudioTrackInfo { SampleRate: > 0 } alac
                 && Audio.Codecs.Alac.AlacDecoder.SampleCount(payload, alac.CodecPrivate.Span) is { } alacSamples)
             {

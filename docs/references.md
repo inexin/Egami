@@ -222,7 +222,7 @@ LGPL code is never read.
 | OpenH264 2.4.1 (Cisco) | BSD-2 | Egami.Video.H264's CABAC context initialisation values and CAVLC code tables (`H264Tables.Data.cs`, made by `tools/video/make-h264-tables.py`); the decoder itself is written from ITU-T H.264 |
 | Apple ALAC (macosforge/alac, commit c38887c) | Apache-2.0 | The ALAC decoder and encoder (`src/Egami.Video/Audio/Codecs/Alac`), so packets equal Apple's encoder's byte for byte; `tools/video/alacref` builds Apple's code as the reference |
 | minimp3 (lieff) | CC0 1.0 | The MPEG audio decoder (`src/Egami.Video/Audio/Codecs/Mp3`): frame decoding, tables, synthesis and frame search; its copies of the ISO compliance streams and references test it |
-| oxideav-aac (Karpelès Lab, commit ff39596) | MIT | The AAC LC decoder (`src/Egami.Video/Audio/Codecs/Aac`): syntax parsing, tables, inverse quantization, stereo tools, noise substitution, TNS and the filterbank, rewritten over float buffers |
+| oxideav-aac (Karpelès Lab, commit ff39596) | MIT | The AAC LC decoder (`src/Egami.Video/Audio/Codecs/Aac`): syntax parsing, tables, inverse quantization, stereo tools, noise substitution, TNS and the filterbank, rewritten over float buffers; parts of the AAC LC encoder: window switching and grouping, the intensity and noise tests, codebook costs and sections, TNS analysis and the block layout |
 
 ### Tools run as black boxes only (never read)
 

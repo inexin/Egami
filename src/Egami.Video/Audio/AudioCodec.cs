@@ -123,6 +123,12 @@ public sealed record AudioEncoderOptions
     /// <see cref="FrameSize"/> and <see cref="Level"/>; the frame duration and effort are set here.
     /// </summary>
     public OpusEncoderOptions? Opus { get; init; }
+
+    /// <summary>
+    /// Gets how AAC codes, or <see langword="null"/> for <see cref="AacEncoderOptions.Default"/>. AAC ignores
+    /// <see cref="FrameSize"/>, <see cref="Level"/> and <see cref="BitsPerSample"/>: its blocks hold 1024 samples per channel.
+    /// </summary>
+    public AacEncoderOptions? Aac { get; init; }
 }
 
 /// <summary>

@@ -25,6 +25,7 @@ internal sealed class AacDecoder : IAudioDecoder
     private MediaTime? _packetEnd;
     private Rational _packetTick = new(1, 1000000);
     private int _packet = -1;
+    private readonly MediaTime? _delay;
     private bool _warned;
     private bool _noiseBefore;
 
@@ -32,6 +33,7 @@ internal sealed class AacDecoder : IAudioDecoder
     {
         _options = options;
         _context = context;
+        _delay = track.CodecDelay is { Ticks: > 0 } delay ? delay : null;
         if (!AacConfig.TryRead(track.CodecPrivate.Span, out AacConfig config))
         {
             // No AudioSpecificConfig: take an LC stream at the track's rate and channel count.
@@ -147,15 +149,31 @@ internal sealed class AacDecoder : IAudioDecoder
         return best;
     }
 
-    /// <summary>Puts a container's rounded timestamp (Matroska's milliseconds) on the sample after the last frame when it is within a millisecond of it.</summary>
+    /// <summary>
+    /// Puts a container's rounded timestamp (Matroska's milliseconds) on the sample after the last frame when it is within a
+    /// millisecond of it; the first packet goes on the frame grid that starts the track's CodecDelay before zero, which the
+    /// container rounded too.
+    /// </summary>
     private MediaTime Snap(MediaTime timestamp)
     {
+        MediaTime tolerance = new(1, new Rational(1, 1000));
         if (_next is { } next)
         {
-            MediaTime tolerance = new(1, new Rational(1, 1000));
             if (timestamp >= next - tolerance && timestamp <= next + tolerance)
             {
                 return next;
+            }
+        }
+        else if (_delay is { } delay && OutputRate > 0)
+        {
+            Rational sampleTime = new(1, OutputRate);
+            long origin = -delay.Rescale(sampleTime).Ticks;
+            long frame = _decoder.FrameLength;
+            long k = (long)Math.Round((double)(timestamp.Rescale(sampleTime).Ticks - origin) / frame);
+            MediaTime grid = new(origin + (k * frame), sampleTime);
+            if (timestamp >= grid - tolerance && timestamp <= grid + tolerance)
+            {
+                return grid;
             }
         }
 
