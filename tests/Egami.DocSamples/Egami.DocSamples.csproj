@@ -35,6 +35,8 @@
     <None Include="../video/corpus/audio/mp3/mp3-id3v23-cover-chapters.mp3" Link="images/podcast.mp3" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/audio/mp3/mka-mp3.mka" Link="images/episode.mka" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/audio/ac3/ac3-51-48k.ac3" Link="images/surround.ac3" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/audio/aac/ff-lc-stereo-44k.aac" Link="images/song.aac" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/audio/aac/ff-lc-stereo.m4a" Link="images/song.m4a" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ktx/rgba8-zstd.ktx2" Link="images/texture.ktx2" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ktx/rgba8-cube.ktx2" Link="images/sky.ktx2" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../images/ops/egret.png" Link="images/egret.png" CopyToOutputDirectory="PreserveNewest" />

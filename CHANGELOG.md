@@ -910,6 +910,16 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
   draw as before.
 
+## Egami.Video 1.3.0 (unreleased)
+
+AAC (V5.10), in progress.
+
+- `AdtsFormat` reads and writes raw AAC in ADTS frames (.aac, .adts): one `CodecIds.Aac` packet per frame with the header and
+  CRC stripped, the AudioSpecificConfig built from the first header, ID3v2 tags at the start read into the tags, junk between
+  frames skipped, and seeks through a frame index built in one pass. Writing adds a header without a CRC to each packet, so AAC
+  from MP4, Matroska, CAF or AVI can be extracted to .aac without decoding (HE-AAC as its AAC LC core, as ADTS has no field
+  for SBR). Channel configuration 0 (a program config element) is not read yet.
+
 ## Egami.Video 1.2.1 and Egami.Video.Cli 1.2.1 (unreleased)
 
 Fixes, no API changes. Egami.Video.H264 and Egami.Video.Hevc have no changes; they move to 1.2.1 only when released with
