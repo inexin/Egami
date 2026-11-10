@@ -36,6 +36,17 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   tables take one-thread encoding at effort 4 from about 540 to about 100 ms a 640×360 frame, with the same output; x264's
   medium preset takes 8 to 13, so the speed goal of twice x264's time is not met yet. AVX2 SATD on four blocks at once, SIMD
   half-sample planes and an all-zero quantization shortcut then take 9 % fewer cycles, with the same output.
+- Gates (task 12), with tools/video/check-h264-encoder.py and time-h264-encoder.py (x264, FFmpeg and the JM decoder in
+  Docker, black boxes only), run by egami-compare's video/native/h264-encode-gate.py on the derf clips:
+  - FFmpeg and JM 19.0's decoder give Egami's frames, byte for byte, for 31 streams across every effort, profile, entropy coder,
+    B-frame setting, slice count, rate mode and size; each stream is the same at one thread and at all cores.
+  - BD-rate PSNR-Y against x264 medium (both tuned for PSNR), 720p, 60 frames: +6.0 % to +17.4 % (mean +11.6 %); the +15 %
+    gate is not met on park_joy. In bits effort 4 lands between x264's veryfast and faster presets.
+  - Speed is not met: at 1080p effort 4 takes 7.4 times x264 medium's time on one thread and 7.3 times on 24; at 720p it takes
+    11 to 18 times x264 medium's CPU cycles a frame (2.5 to 4.1 G against 0.14 to 0.32 G).
+  - One- and two-pass bitrate land within 3.6 % of the target at 2.5 and 6 Mbit/s (720p50). Constant bitrate holds at 6 Mbit/s
+    (within 4.7 %, buffer never below 10 %) but not at a starved 2.5 Mbit/s, where it overshoots by up to 10 % and the buffer
+    runs dry.
 - The encoder core learned B-frames (planning only; Egami's VP8, VP9 and AV1 streams are unchanged byte for byte).
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
