@@ -189,7 +189,14 @@ using (VideoWriter writer = VideoWriter.Create(&quot;duck.mp4&quot;, options))
 
 // Expert settings: Constrained Baseline (CAVLC) at level 3.0 for the simplest players.
 VideoWriterOptions baseline = options with { H264 = new H264EncoderOptions { Profile = H264Profile.ConstrainedBaseline, Level = 30, Entropy = H264EntropyCoder.Cavlc } };
-</code></pre><h2 id="raw-h264-files">Raw .h264 files</h2>
+</code></pre><h3 id="compression-and-speed">Compression and speed</h3>
+<p>The encoder is measured against x264 0.164 on four Xiph test clips (crowd_run, ducks_take_off, park_joy and old_town_cross at
+720p, 50 frames a second), both tuned for PSNR. At effort 4 it needs 6 to 17 % more bits than x264's medium preset for the same
+PSNR (11.6 % on average), about what x264's faster preset gives, and it is slower: on one thread about 7 times x264 medium's
+time at 1080p, and 11 to 18 times its CPU cycles a frame at 720p. Effort 0 to 2 trade compression for speed, 6 and up the
+other way. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as Egami's own
+decoder. tools/video/time-h264-encoder.py and check-h264-encoder.py in the repository repeat these measurements.</p>
+<h2 id="raw-h264-files">Raw .h264 files</h2>
 <p><code>H264Format</code> reads raw Annex B streams (<code>.h264</code>, <code>.264</code> and <code>.avc</code>), as encoders and <code>ffmpeg -f h264</code> write them. Such a stream
 has no timestamps, so frames are timed by the stream's VUI frame rate, or 25 frames a second, unless <code>FrameRate</code> is set.
 Seeking goes back to the IDR frame before the target.</p>

@@ -92,6 +92,8 @@ WebM, Matroska, MP4, IVF, raw OBU and Annex B files. VP8's frame coding is Egami
 and AV1's Egami's <code>Av1StreamEncoder</code>; for all three, Egami.Video decides how each frame is coded: where keyframes go, which
 frames become references, and how many bits each frame gets. Motion JPEG and uncompressed video encode too, without these
 settings: every frame is a keyframe.</p>
+<p>H.264 encodes with the opt-in Egami.Video.H264 package (<code>VideoWriterOptions.Codec = H264Codec.Instance</code>) into MP4 and Matroska, or as
+Annex B packets for raw streams, with the same <code>Quality</code>, <code>Effort</code>, rate control and keyframe settings as below; see <a href="h264.html#encoding">H.264</a>.</p>
 <h2 id="writing-vp8">Writing VP8</h2>
 <p>Set <code>VideoWriterOptions.Codec</code> to <code>VideoCodecs.Vp8</code>. <code>Quality</code> runs from 0 to 100 (default 60, the scale of Egami's AVIF
 writer) and <code>Effort</code> from 0 (fastest) to 10 (smallest files, default 4). Frames given as 8-bit 4:2:0 planes are coded as they
