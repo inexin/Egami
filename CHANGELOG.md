@@ -24,6 +24,10 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
 - Rate control: `Quality` 50 is about x264's CRF 23 (QP 23, equal PSNR on three clips within a few quality points); one- and
   two-pass average bitrate and constant bitrate land within 5 % of the target on 640×360 clips, and constant bitrate never runs
   the decoder buffer dry. B-frame groups plan bits by their average cost, and the H.264 probe codes at QP 26.
+  Constant bitrate also holds at starved rates (720p50 derf clips at 2.5 Mbit/s: within 1 % of the target, the buffer never
+  below 60 %, where it overshot by up to 10 % and ran dry): in real time the first inter frame is planned from the keyframe's
+  bit model instead of an unlearned one, and the buffer's fill pulls harder on the budget and on the step, as at coarse steps
+  bits fall more slowly than the model expects.
 - Slices: each picture is cut into bands of macroblock rows (`H264EncoderOptions.Slices`, by default one per 1800 macroblocks:
   one below 1280×720, four at 1920×1080, up to eight) coded on `EgamiContext.MaxParallelism` threads. The stream depends only on
   the slice count, never on the thread count. Tracks carry an avcC record, or Annex B packets with the

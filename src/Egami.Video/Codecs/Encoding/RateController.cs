@@ -91,6 +91,20 @@ internal sealed record RateSettings
     /// buffer from running dry on the first inter frame.
     /// </summary>
     public bool InterFromKeyProbe { get; init; }
+
+    /// <summary>
+    /// Gets how strongly constant bitrate steers the buffer back to three quarters full: the budget over the horizon gains or
+    /// loses this many times the buffer's distance from there. Default 1; more holds the bitrate closer to the target over a
+    /// short clip when the bit model keeps erring one way.
+    /// </summary>
+    public double BufferPull { get; init; } = 1;
+
+    /// <summary>
+    /// Gets how strongly constant bitrate scales the step by the buffer's fill, past what the bit model asks: the step is multiplied
+    /// by 1 − pull × (fill − 3/4), held between 1/2 and 2. Default 0 (off). At starved rates bits fall more slowly than the model's
+    /// step^1.5 as the step grows, so the model alone keeps the steps too coarse and the buffer fills.
+    /// </summary>
+    public double BufferStepPull { get; init; }
 }
 
 /// <summary>
@@ -250,6 +264,11 @@ internal sealed class RateController
 
         // need / step^1.5 = budget, so step = ratio^(2/3): the cube of the square root's cube root, by Newton for repeatability.
         double interStep = CubeRoot(ratio * ratio);
+        if (s.Mode == RateControlMode.ConstantBitrate && s.BufferStepPull > 0 && s.BufferSize > 0)
+        {
+            interStep *= Math.Clamp(1 - (s.BufferStepPull * ((_bufferLevel / s.BufferSize) - 0.75)), 0.5, 2);
+        }
+
         if (_step > 0)
         {
             // Steps move gradually, so a frame never re-codes much of its reference at a very different quality; coarser
@@ -304,7 +323,7 @@ internal sealed class RateController
         if (s.Mode == RateControlMode.ConstantBitrate)
         {
             // Steer the buffer back towards three quarters full.
-            budget = (horizon * _frameBits) + (_bufferLevel - (s.BufferSize * 0.75));
+            budget = (horizon * _frameBits) + ((_bufferLevel - (s.BufferSize * 0.75)) * s.BufferPull);
         }
         else if (s.FirstPass is { } pass && _framesDone < pass.Length)
         {
