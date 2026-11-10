@@ -1,3 +1,6 @@
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
 namespace Egami.Video.Codecs.H264;
 
 /// <summary>
@@ -87,7 +90,16 @@ internal sealed class H264RefPlanes
         for (int y = y0 - 2; y < y1 + 3; y++)
         {
             int row = _origin + (y * s);
-            for (int x = x0; x < x1; x++)
+            int x = x0;
+            if (Vector256.IsHardwareAccelerated)
+            {
+                for (; x + 32 <= x1; x += 32)
+                {
+                    HalfRow(f, row + x);
+                }
+            }
+
+            for (; x < x1; x++)
             {
                 int at = row + x;
                 int b1 = f[at - 2] - (5 * f[at - 1]) + (20 * f[at]) + (20 * f[at + 1]) - (5 * f[at + 2]) + f[at + 3];
@@ -99,7 +111,18 @@ internal sealed class H264RefPlanes
         for (int y = y0; y < y1; y++)
         {
             int row = _origin + (y * s);
-            for (int x = x0; x < x1; x++)
+            int x = x0;
+            if (Vector256.IsHardwareAccelerated)
+            {
+                for (; x + 32 <= x1; x += 32)
+                {
+                    DownRow(f, row + x);
+                    CenterRow(row + x);
+                    CenterRow(row + x + 16);
+                }
+            }
+
+            for (; x < x1; x++)
             {
                 int at = row + x;
                 int h1 = f[at - (2 * s)] - (5 * f[at - s]) + (20 * f[at]) + (20 * f[at + s]) - (5 * f[at + (2 * s)]) + f[at + (3 * s)];
@@ -111,6 +134,64 @@ internal sealed class H264RefPlanes
     }
 
     private static byte Clip(int v) => (byte)Math.Clamp(v, 0, 255);
+
+    /// <summary>The six-tap sum (a + f) − 5 (b + e) + 20 (c + d) of six rows or columns of 16 samples.</summary>
+    private static Vector256<short> Tap(Vector256<short> a, Vector256<short> b, Vector256<short> c, Vector256<short> d, Vector256<short> e, Vector256<short> g) =>
+        (a + g) - ((b + e) * 5) + ((c + d) * 20);
+
+    private static Vector256<short> Widen(byte[] f, int at) => Vector256.WidenLower(Vector256.Create(Vector128.LoadUnsafe(ref MemoryMarshal.GetArrayDataReference(f), (nuint)at), Vector128<byte>.Zero)).AsInt16();
+
+    /// <summary>Clips (v + 16) >> 5 of two halves to bytes.</summary>
+    private static Vector256<byte> Round5(Vector256<short> lo, Vector256<short> hi)
+    {
+        Vector256<short> zero = Vector256<short>.Zero, top = Vector256.Create((short)255), sixteen = Vector256.Create((short)16);
+        lo = Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic(lo + sixteen, 5), zero), top);
+        hi = Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic(hi + sixteen, 5), zero), top);
+        return Vector256.Narrow(lo.AsUInt16(), hi.AsUInt16());
+    }
+
+    /// <summary>32 samples of b and its unrounded sums from at, as the scalar loop computes them.</summary>
+    private void HalfRow(byte[] f, int at)
+    {
+        Vector256<short> lo = Tap(Widen(f, at - 2), Widen(f, at - 1), Widen(f, at), Widen(f, at + 1), Widen(f, at + 2), Widen(f, at + 3));
+        Vector256<short> hi = Tap(Widen(f, at + 14), Widen(f, at + 15), Widen(f, at + 16), Widen(f, at + 17), Widen(f, at + 18), Widen(f, at + 19));
+        lo.StoreUnsafe(ref MemoryMarshal.GetArrayDataReference(_mid), (nuint)at);
+        hi.StoreUnsafe(ref MemoryMarshal.GetArrayDataReference(_mid), (nuint)(at + 16));
+        Round5(lo, hi).StoreUnsafe(ref MemoryMarshal.GetArrayDataReference(Half), (nuint)at);
+    }
+
+    /// <summary>32 samples of h from at.</summary>
+    private void DownRow(byte[] f, int at)
+    {
+        int s = _stride;
+        Vector256<short> lo = Tap(Widen(f, at - (2 * s)), Widen(f, at - s), Widen(f, at), Widen(f, at + s), Widen(f, at + (2 * s)), Widen(f, at + (3 * s)));
+        at += 16;
+        Vector256<short> hi = Tap(Widen(f, at - (2 * s)), Widen(f, at - s), Widen(f, at), Widen(f, at + s), Widen(f, at + (2 * s)), Widen(f, at + (3 * s)));
+        Round5(lo, hi).StoreUnsafe(ref MemoryMarshal.GetArrayDataReference(Down), (nuint)(at - 16));
+    }
+
+    /// <summary>16 samples of j from at: the six-tap of the unrounded sums, in 32 bits, (v + 512) >> 10 clipped.</summary>
+    private void CenterRow(int at)
+    {
+        int s = _stride;
+        ref short mid = ref MemoryMarshal.GetArrayDataReference(_mid);
+        Vector256<int> lo = Vector256<int>.Zero, hi = Vector256<int>.Zero;
+        ReadOnlySpan<int> taps = [1, -5, 20, 20, -5, 1];
+        for (int t = 0; t < 6; t++)
+        {
+            (Vector256<int> l, Vector256<int> h) = Vector256.Widen(Vector256.LoadUnsafe(ref mid, (nuint)(at + ((t - 2) * s))));
+            Vector256<int> k = Vector256.Create(taps[t]);
+            lo += l * k;
+            hi += h * k;
+        }
+
+        Vector256<int> zero = Vector256<int>.Zero, top = Vector256.Create(255), round = Vector256.Create(512);
+        lo = Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic(lo + round, 10), zero), top);
+        hi = Vector256.Min(Vector256.Max(Vector256.ShiftRightArithmetic(hi + round, 10), zero), top);
+        Vector256<ushort> words = Vector256.Narrow(lo.AsUInt32(), hi.AsUInt32());
+        Vector128<byte> bytes = Vector128.Narrow(words.GetLower(), words.GetUpper());
+        bytes.StoreUnsafe(ref MemoryMarshal.GetArrayDataReference(Center), (nuint)at);
+    }
 
     /// <summary>
     /// The one or two planes and offsets whose rounded mean is the quarter sample (fx, fy) at full sample offset at
