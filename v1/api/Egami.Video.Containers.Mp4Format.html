@@ -166,7 +166,7 @@ foreach (TrackInfo track in demuxer.Tracks)
 
   <h3 id="Egami_Video_Containers_Mp4Format_CanMux" data-uid="Egami.Video.Containers.Mp4Format.CanMux">
   CanMux
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L94"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.Containers.ContainerFormat.html#Egami_Video_Containers_ContainerFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_">CreateMuxer(Stream, IReadOnlyList&lt;TrackInfo&gt;, MediaMetadata, MediaContext, bool)</a> is supported.</p>
@@ -230,7 +230,7 @@ foreach (TrackInfo track in demuxer.Tracks)
 
   <h3 id="Egami_Video_Containers_Mp4Format_Fragments" data-uid="Egami.Video.Containers.Mp4Format.Fragments">
   Fragments
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L72"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how writers fragment the file (V4.3 Design Q1), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for flat MP4. Fragmented, moov holds only
@@ -270,12 +270,14 @@ it suits cloud blobs and browsers' Media Source Extensions. A seekable output ge
 
   <h3 id="Egami_Video_Containers_Mp4Format_IgnoreEditLists" data-uid="Egami.Video.Containers.Mp4Format.IgnoreEditLists">
   IgnoreEditLists
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L44"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether readers ignore edit lists (V4.1 Design Q5). By default an edit list is applied: packet timestamps follow it,
 an empty edit delays the track, and packets wholly outside the edit are marked <a class="xref" href="Egami.Video.EncodedPacket.html#Egami_Video_EncodedPacket_IsDiscardable">IsDiscardable</a>.
-Ignored, timestamps are the media's own. Register a format with this set through <a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_WithContainer_Egami_Video_Containers_ContainerFormat_">WithContainer(ContainerFormat)</a>.</p>
+An audio track with no edit list takes the same window from iTunes's gapless tag (iTunSMPB) when the file has one, as Apple's
+AAC encoders write it. Ignored, timestamps are the media's own. Register a format with this set through
+<a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_WithContainer_Egami_Video_Containers_ContainerFormat_">WithContainer(ContainerFormat)</a>.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -336,7 +338,7 @@ Ignored, timestamps are the media's own. Register a format with this set through
 
   <h3 id="Egami_Video_Containers_Mp4Format_MoovAtEnd" data-uid="Egami.Video.Containers.Mp4Format.MoovAtEnd">
   MoovAtEnd
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L52"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether writers put moov after the media (V4.1 Design Q4). By default moov comes first, so the file plays while it
@@ -408,7 +410,7 @@ in a temporary file. With moov at the end the media goes straight to the output,
 
   <h3 id="Egami_Video_Containers_Mp4Format_NonSeekable" data-uid="Egami.Video.Containers.Mp4Format.NonSeekable">
   NonSeekable
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L89"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L91"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets what writers do when <a class="xref" href="Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_Fragments">Fragments</a> is not set and the output cannot seek and read back, as with an upload
@@ -478,7 +480,7 @@ mp4-fragmented warning; <a class="xref" href="Egami.Video.Containers.Mp4NonSeeka
 
   <h3 id="Egami_Video_Containers_Mp4Format_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_" data-uid="Egami.Video.Containers.Mp4Format.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)">
   CreateMuxer(Stream, IReadOnlyList&lt;TrackInfo&gt;, MediaMetadata, MediaContext, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L133"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L135"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a muxer that writes ISO MP4: tracks numbered from 1 in the order given, chunks of about half a second interleaved
@@ -540,7 +542,7 @@ cannot seek and read back (see <a class="xref" href="Egami.Video.Containers.Mp4F
 
   <h3 id="Egami_Video_Containers_Mp4Format_IsMatch_System_ReadOnlySpan_System_Byte__" data-uid="Egami.Video.Containers.Mp4Format.IsMatch(System.ReadOnlySpan{System.Byte})">
   IsMatch(ReadOnlySpan&lt;byte&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L95"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L97"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns whether the file's first bytes belong to this format.</p>
@@ -579,7 +581,7 @@ cannot seek and read back (see <a class="xref" href="Egami.Video.Containers.Mp4F
 
   <h3 id="Egami_Video_Containers_Mp4Format_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_" data-uid="Egami.Video.Containers.Mp4Format.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)">
   OpenDemuxer(Stream, MediaContext, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L113"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Opens a demuxer that reads packets from <code class="paramref">stream</code>, starting at its current position.</p>

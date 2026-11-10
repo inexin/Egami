@@ -164,9 +164,13 @@ Main, or Constrained Baseline for the simplest players), the level (the lowest t
 the <code>H264EntropyCoder</code> (CABAC, or CAVLC), QP limits, adaptive quantization and Annex B packets for raw streams. HDR metadata on
 the first frame goes into the stream as mastering display and content light level SEI. Every picture the encoder makes decodes
 in Egami's decoder, and FFmpeg's, to the encoder's own reconstruction, sample for sample.</p>
-<p>Keyframes are IDR pictures and the frames between them P pictures, predicted from the frames before: one reference at effort 0
-and 1, two at 2 and 3, three from 4 (fewer when the level's buffer is smaller). Fades are predicted with explicit weights, except
-in Constrained Baseline, which has none. <code>AdaptiveQuantization</code> (on by default) codes busy macroblocks coarser and flat ones
+<p>Keyframes are IDR pictures. P pictures are predicted from the frames before: one reference at effort 0 and 1, two at 2 and 3,
+three from 4 (fewer when the level's buffer is smaller). Fades are predicted with explicit weights, except in Constrained
+Baseline, which has none. Between them come B pictures, predicted from the frames on both sides and coded with fewer bits:
+<code>H264EncoderOptions.BFrames</code> caps a run (3 by default, none at effort 0), and the encoder picks each run's length from the
+content. From effort 4 a run of two or three is a pyramid, whose middle B picture the others predict from; from effort 8 each B
+picture tries spatial and temporal direct prediction and keeps the smaller. B-frames need <code>LatencyMode.Quality</code> (the default):
+they are coded out of order, so packets carry decode timestamps. Constrained Baseline has none. <code>AdaptiveQuantization</code> (on by default) codes busy macroblocks coarser and flat ones
 finer, which looks better at the same size but lowers PSNR: turn it off to measure PSNR.</p>
 <pre><code class="lang-csharp">// H.264 in MP4: High profile with CABAC by default, the level picked from the frame size and rate.
 VideoWriterOptions options = new() { Codec = H264Codec.Instance, FrameRate = new Rational(30, 1), Quality = 60 };

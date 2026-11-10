@@ -124056,6 +124056,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.H264EncoderOptions.AnnexB
   nameWithType: H264EncoderOptions.AnnexB
+- uid: Egami.Video.Codecs.H264EncoderOptions.BFrames
+  name: BFrames
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_BFrames
+  commentId: P:Egami.Video.Codecs.H264EncoderOptions.BFrames
+  fullName: Egami.Video.Codecs.H264EncoderOptions.BFrames
+  nameWithType: H264EncoderOptions.BFrames
+- uid: Egami.Video.Codecs.H264EncoderOptions.BFrames*
+  name: BFrames
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_BFrames_
+  commentId: Overload:Egami.Video.Codecs.H264EncoderOptions.BFrames
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.H264EncoderOptions.BFrames
+  nameWithType: H264EncoderOptions.BFrames
 - uid: Egami.Video.Codecs.H264EncoderOptions.Default
   name: Default
   href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_Default
