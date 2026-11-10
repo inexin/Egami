@@ -936,6 +936,11 @@ AAC (V5.10), in progress.
   frames skipped, and seeks through a frame index built in one pass. Writing adds a header without a CRC to each packet, so AAC
   from MP4, Matroska, CAF or AVI can be extracted to .aac without decoding (HE-AAC as its AAC LC core, as ADTS has no field
   for SBR). Channel configuration 0 (a program config element) is not read yet.
+- MP4 audio tracks without an edit list take their priming and length from iTunes's `iTunSMPB` tag, so AAC from Apple's
+  encoders and tools starts and ends at the source samples; `Mp4Format.IgnoreEditLists` skips the tag too. Writing an AAC track
+  that starts with priming adds the tag beside the edit list, for players that read only one of them.
+- Internal: a shared MDCT with sine and Kaiser-Bessel-derived windows for the AAC codec to come; the AC-3 decoder now uses its
+  complex FFT and window, at the same speed.
 
 ## Egami.Video 1.2.1 and Egami.Video.Cli 1.2.1 (unreleased)
 

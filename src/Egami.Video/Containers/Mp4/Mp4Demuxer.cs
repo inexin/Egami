@@ -23,6 +23,7 @@ internal sealed partial class Mp4Demuxer : IDemuxer
     private readonly List<TrackState> _tracks = [];
     private readonly Dictionary<uint, TrackState> _byId = [];
     private readonly Dictionary<string, string> _tags = [];
+    private bool _gaplessTaken;
     private readonly List<ChapterInfo> _chapters = [];
     private readonly List<AttachmentInfo> _attachments = [];
     private readonly List<(TrackState Track, Mp4Sample Sample)> _fragment = [];
@@ -596,6 +597,37 @@ internal sealed partial class Mp4Demuxer : IDemuxer
         }
     }
 
+    /// <summary>
+    /// Takes the priming and the length in samples from iTunes's gapless tag (iTunSMPB) for the first audio track that has no edit
+    /// list, as Apple's encoders write it instead of one. The tag is hex fields: zero, the encoder delay, the padding at the end
+    /// and the original length. It is used once, and only when the media holds that many samples.
+    /// </summary>
+    private (long Priming, long Samples)? TakeGaplessInfo(Mp4Track track)
+    {
+        if (_gaplessTaken || !_tags.TryGetValue(Mp4Gapless.TagName, out string? value) || Mp4Gapless.Parse(value) is not var (priming, _, samples))
+        {
+            return null;
+        }
+
+        _gaplessTaken = true;
+
+        // The tag counts samples; the media counts ticks of its timescale, which is the sample rate in Apple's files.
+        long rate = track.Entries.Count > 0 && track.Entries[0].Box.Length >= 36 ? BinaryPrimitives.ReadUInt32BigEndian(track.Entries[0].Box.AsSpan(32)) >> 16 : 0;
+        if (rate > 0 && rate != track.Timescale)
+        {
+            priming = (long)((Int128)priming * track.Timescale / rate);
+            samples = (long)((Int128)samples * track.Timescale / rate);
+        }
+
+        if (track.Timescale == 0 || samples <= 0 || priming + samples > track.MediaDuration)
+        {
+            Warn("mp4-itunsmpb", $"Track {track.Id}'s iTunSMPB gapless tag does not fit its media, so it was not applied.", (int)track.Id);
+            return null;
+        }
+
+        return (priming, samples);
+    }
+
     /// <summary>A track's packets: its sample cursor, the edit list as a shift and a window, and its place in fragments.</summary>
     private sealed class TrackState
     {
@@ -723,6 +755,16 @@ internal sealed partial class Mp4Demuxer : IDemuxer
         private void ApplyEdits(Mp4Demuxer demuxer)
         {
             Mp4Track track = Track;
+            if (!demuxer._ignoreEdits && track.Edits.Count == 0 && track.Handler == Mp4Track.Soun && demuxer.TakeGaplessInfo(track) is var (priming, samples))
+            {
+                // No edit list, but iTunes's gapless tag: the same window, as an edit into the media at the priming would give.
+                Shift = -priming;
+                Start = 0;
+                End = samples;
+                EditsApplied = true;
+                return;
+            }
+
             if (demuxer._ignoreEdits || track.Edits.Count == 0 || track.Timescale == 0 || demuxer._movieTimescale == 0)
             {
                 return;

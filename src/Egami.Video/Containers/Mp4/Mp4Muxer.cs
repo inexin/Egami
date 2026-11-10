@@ -313,25 +313,33 @@ internal sealed class Mp4Muxer : IMuxer
         }
 
         chapters?.WriteTrak(w, mediaData, MovieTimescale, movieDuration);
-        Udta(w, _metadata);
+        Udta(w, _metadata, _tracks.Select(t => t.GaplessTag()).FirstOrDefault(t => t is not null));
         w.End();
         return w.ToArray();
     }
 
-    /// <summary>Writes moov's udta: Nero chapters (chpl), and the tags and cover art as iTunes items.</summary>
-    internal static void Udta(BoxWriter w, MediaMetadata metadata)
+    /// <summary>
+    /// Writes moov's udta: Nero chapters (chpl), and the tags and cover art as iTunes items. A source's iTunSMPB tag is left out,
+    /// as it describes the source's packets; <paramref name="gapless"/> is the one for this file's AAC track, if it has priming.
+    /// </summary>
+    internal static void Udta(BoxWriter w, MediaMetadata metadata, string? gapless = null)
     {
         const uint Freeform = 0x2D2D2D2D; // "----"
         List<(uint Type, string? Name, string Value)> items = [];
         Dictionary<string, uint> reverse = Mp4Metadata.ItemTags.GroupBy(p => p.Value).ToDictionary(g => g.Key, g => g.First().Key, StringComparer.Ordinal);
         foreach ((string name, string value) in metadata.Tags)
         {
-            if (name == "MAJOR_BRAND")
+            if (name is "MAJOR_BRAND" or Mp4Gapless.TagName)
             {
                 continue;
             }
 
             items.Add(reverse.TryGetValue(name, out uint code) ? (code, null, value) : (Freeform, name, value));
+        }
+
+        if (gapless is not null)
+        {
+            items.Add((Freeform, Mp4Gapless.TagName, gapless));
         }
 
         List<AttachmentInfo> covers = [.. metadata.Attachments.Where(IsCover)];
@@ -577,6 +585,32 @@ internal sealed class Mp4Muxer : IMuxer
             }
 
             return start == long.MaxValue ? (0, 0) : (start, end);
+        }
+
+        /// <summary>
+        /// Gets iTunes's gapless tag for an AAC track whose first packets are priming (shown from after their start), so that
+        /// players that read iTunSMPB and not the edit list trim it too: the priming, the padding after the last shown sample
+        /// and the shown length, in samples. Returns <see langword="null"/> for other tracks.
+        /// </summary>
+        public string? GaplessTag()
+        {
+            if (Input is not AudioTrackInfo { CodecId: CodecIds.Aac } audio || Timescale != audio.SampleRate || _decodeTimes.Count < 2)
+            {
+                return null;
+            }
+
+            (long start, long end) = Shown();
+            long priming = Math.Max(start, 0) - _decodeTimes[0];
+            long samples = end - Math.Max(start, 0);
+            if (priming <= 0 || samples <= 0)
+            {
+                return null;
+            }
+
+            // Every AAC frame holds the same number of samples, the last one too, however much of it shows.
+            long frame = _decodeTimes[^1] - _decodeTimes[^2];
+            long total = _decodeTimes[^1] - _decodeTimes[0] + frame;
+            return Mp4Gapless.Format(priming, Math.Max(0, total - priming - samples), samples);
         }
 
         public long MovieDuration(uint movieTimescale)

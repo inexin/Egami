@@ -1,3 +1,5 @@
+using Egami.Video.Audio.Transforms;
+
 namespace Egami.Video.Audio.Codecs.Ac3;
 
 /// <summary>The fixed tables of the AC-3 decoder, from ATSC A/52:2018 section 7.</summary>
@@ -83,7 +85,7 @@ internal static class Ac3Tables
     public static float[] PowerOfTwo { get; } = MakePowers();
 
     /// <summary>Gets the 512-point Kaiser-Bessel-derived window, alpha 5: the 256 values of Table 7.33, to full precision.</summary>
-    public static float[] Window { get; } = MakeWindow();
+    public static float[] Window { get; } = MdctWindows.KaiserBesselDerived(512, 5);
 
     private static byte[] MakeBandOfBin()
     {
@@ -137,43 +139,5 @@ internal static class Ac3Tables
         }
 
         return table;
-    }
-
-    private static float[] MakeWindow()
-    {
-        // w[n] = sqrt(sum of the Kaiser kernel up to n / its total), with the kernel I0(pi * alpha * sqrt(1 - (n / 128 - 1)^2)).
-        const int Half = 256;
-        double[] kernel = new double[Half + 1];
-        double total = 0;
-        for (int n = 0; n <= Half; n++)
-        {
-            double x = (2.0 * n / Half) - 1;
-            kernel[n] = BesselI0(Math.PI * 5 * Math.Sqrt(1 - (x * x)));
-            total += kernel[n];
-        }
-
-        float[] window = new float[Half];
-        double sum = 0;
-        for (int n = 0; n < Half; n++)
-        {
-            sum += kernel[n];
-            window[n] = (float)Math.Sqrt(sum / total);
-        }
-
-        return window;
-    }
-
-    private static double BesselI0(double x)
-    {
-        double sum = 1;
-        double term = 1;
-        double q = x * x / 4;
-        for (int k = 1; k < 100 && term > sum * 1e-17; k++)
-        {
-            term *= q / ((double)k * k);
-            sum += term;
-        }
-
-        return sum;
     }
 }
