@@ -4955,6 +4955,90 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.MathConstants.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.MathConstants.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.MathConstants",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.MathConstants.yml\" sourcestartlinenumber=\"1\">The constants of a face's OpenType <code>MATH</code> table, which place scripts, limits, fractions, stacks, bars and radicals.\nDistances are in font units; the two script scale-downs and the radical degree's raise are percentages. A face without\nconstants reads as all zeros.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.MathDirection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.MathDirection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.MathDirection",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.MathDirection.yml\" sourcestartlinenumber=\"1\">Which way a math glyph grows: up and down for delimiters and radicals, left and right for arrows and accents.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.MathGlyphAssembly.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.MathGlyphAssembly.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.MathGlyphAssembly",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.MathGlyphAssembly.yml\" sourcestartlinenumber=\"1\">How to build a math glyph of any size from parts, when none of its variants is large enough.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.MathGlyphPart.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.MathGlyphPart.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.MathGlyphPart",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.MathGlyphPart.yml\" sourcestartlinenumber=\"1\">One part of a glyph assembly, such as the top hook, an extender or the middle of a brace. Parts are listed bottom to top for a\nvertical assembly and left to right for a horizontal one; consecutive parts overlap by up to their connector lengths.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.MathGlyphVariant.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.MathGlyphVariant.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.MathGlyphVariant",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.MathGlyphVariant.yml\" sourcestartlinenumber=\"1\">A larger form of a math glyph: the glyph and its full height (vertical) or width (horizontal), in font units.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.MathKernCorner.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.MathKernCorner.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.MathKernCorner",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.MathKernCorner.yml\" sourcestartlinenumber=\"1\">A corner of a glyph's math kerning: where a superscript (top) or subscript (bottom) attaches, on the right or left.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Fonts.NamedInstance.yml",
       "output": {
         ".html": {
@@ -5273,7 +5357,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Fonts.Substitutes.SubstituteFonts",
-      "Summary": "<p sourcefile=\"api/Egami.Fonts.Substitutes.SubstituteFonts.yml\" sourcestartlinenumber=\"1\">Open fonts that stand in for the fonts documents name most without embedding them, each metric-compatible with the\nfont it replaces, so text keeps its line breaks: Liberation Sans for Helvetica and Arial, Liberation Serif for Times and\nTimes New Roman, Liberation Mono for Courier and Courier New, Carlito for Calibri and Caladea for Cambria, each in\nregular, bold, italic and bold italic. All are under the SIL Open Font License 1.1 and ship inside this assembly, so they\nwork whatever fonts are installed; a face is loaded the first time it is asked for.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Substitutes.SubstituteFonts.yml\" sourcestartlinenumber=\"1\">Open fonts that stand in for the fonts documents name most without embedding them, each metric-compatible with the\nfont it replaces, so text keeps its line breaks: Liberation Sans for Helvetica and Arial, Liberation Serif for Times and\nTimes New Roman, Liberation Mono for Courier and Courier New, Carlito for Calibri and Caladea for Cambria, each in\nregular, bold, italic and bold italic, and STIX Two Math for Cambria Math, a single face with an OpenType <code>MATH</code> table\n(see <xref href=\"Egami.Fonts.Typeface.Math\" data-throw-if-not-resolved=\"false\"></xref>) for laying out equations. All are under the SIL Open Font License 1.1 and ship inside this assembly, so they\nwork whatever fonts are installed; a face is loaded the first time it is asked for.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -5344,6 +5428,20 @@
       "IsMRef": true,
       "Title": "Egami.Fonts.Typeface",
       "Summary": "<p sourcefile=\"api/Egami.Fonts.Typeface.yml\" sourcestartlinenumber=\"1\">One font face: its names, style, metrics, character map, glyph outlines and kerning, read from a TrueType or OpenType font, a\ncollection, or a bare CFF stream. Immutable and safe to share across threads, canvases and backends.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.TypefaceMath.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.TypefaceMath.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.TypefaceMath",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.TypefaceMath.yml\" sourcestartlinenumber=\"1\">The math layout data of a face, from its OpenType <code>MATH</code> table: the constants that place scripts, fractions, radicals and\nlimits, per-glyph italics corrections, top accent attachments and kerning, and the larger variants and assemblies of\nstretchy glyphs. Get it from <xref href=\"Egami.Fonts.Typeface.Math\" data-throw-if-not-resolved=\"false\"></xref>. Every distance is in font units (see\n<xref href=\"Egami.Fonts.Typeface.UnitsPerEm\" data-throw-if-not-resolved=\"false\"></xref>), as the face's design gives it: device table and variation adjustments are not applied.</p>\n"
     },
     {
       "type": "ManagedReference",

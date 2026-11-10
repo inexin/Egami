@@ -239,6 +239,18 @@ lets a PDF writer keep text searchable.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.MathConstants.html">MathConstants</a></dt>
+      <dd><p>The constants of a face's OpenType <code>MATH</code> table, which place scripts, limits, fractions, stacks, bars and radicals.
+Distances are in font units; the two script scale-downs and the radical degree's raise are percentages. A face without
+constants reads as all zeros.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.MathGlyphAssembly.html">MathGlyphAssembly</a></dt>
+      <dd><p>How to build a math glyph of any size from parts, when none of its variants is large enough.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Fonts.NamedInstance.html">NamedInstance</a></dt>
       <dd><p>A named instance of a variable font, such as &quot;Bold Condensed&quot;, from its fvar table.</p>
 </dd>
@@ -257,6 +269,14 @@ lets a PDF writer keep text searchable.</p>
       <dt><a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
       <dd><p>One font face: its names, style, metrics, character map, glyph outlines and kerning, read from a TrueType or OpenType font, a
 collection, or a bare CFF stream. Immutable and safe to share across threads, canvases and backends.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.TypefaceMath.html">TypefaceMath</a></dt>
+      <dd><p>The math layout data of a face, from its OpenType <code>MATH</code> table: the constants that place scripts, fractions, radicals and
+limits, per-glyph italics corrections, top accent attachments and kerning, and the larger variants and assemblies of
+stretchy glyphs. Get it from <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_Math">Math</a>. Every distance is in font units (see
+<a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_UnitsPerEm">UnitsPerEm</a>), as the face's design gives it: device table and variation adjustments are not applied.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -340,6 +360,17 @@ keeps only this color's alpha as a factor.</p>
       <dt><a class="xref" href="Egami.Fonts.GlyphTransform.html">GlyphTransform</a></dt>
       <dd><p>A glyph's placement in a transformed <a class="xref" href="Egami.Fonts.GlyphRun.html">GlyphRun</a>: a rotation and uniform scale, then its origin, as Skia's RSXform.
 A point (x, y) of the glyph, y down, goes to (ScaleCos x - ScaleSin y + Tx, ScaleSin x + ScaleCos y + Ty).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.MathGlyphPart.html">MathGlyphPart</a></dt>
+      <dd><p>One part of a glyph assembly, such as the top hook, an extender or the middle of a brace. Parts are listed bottom to top for a
+vertical assembly and left to right for a horizontal one; consecutive parts overlap by up to their connector lengths.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.MathGlyphVariant.html">MathGlyphVariant</a></dt>
+      <dd><p>A larger form of a math glyph: the glyph and its full height (vertical) or width (horizontal), in font units.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -439,6 +470,16 @@ embeds fonts, such as a PDF writer, decides what to do.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Fonts.GenericFamily.html">GenericFamily</a></dt>
       <dd><p>A generic family name, matched against fixed per-platform preference lists.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.MathDirection.html">MathDirection</a></dt>
+      <dd><p>Which way a math glyph grows: up and down for delimiters and radicals, left and right for arrows and accents.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.MathKernCorner.html">MathKernCorner</a></dt>
+      <dd><p>A corner of a glyph's math kerning: where a superscript (top) or subscript (bottom) attaches, on the right or left.</p>
 </dd>
     </dl>
     <dl class="jumplist">

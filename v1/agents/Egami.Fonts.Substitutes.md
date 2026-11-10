@@ -39,7 +39,7 @@ and no `Configuration`.
 Typeface? arial = SubstituteFonts.Find("Arial", FontStyle.Bold);
 Font body = new(SubstituteFonts.Find("Calibri", FontStyle.Normal)!, 11);
 
-// All twenty faces as a collection, matched by family name and style.
+// All twenty-one faces as a collection, matched by family name and style.
 FontMatch? mono = SubstituteFonts.Collection.Match("Liberation Mono", FontStyle.Italic);
 ```
 

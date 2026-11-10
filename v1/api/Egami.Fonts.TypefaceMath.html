@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class TypefaceMath | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class TypefaceMath | Egami ">
+      
+      <meta name="description" content="The math layout data of a face, from its OpenType MATH table: the constants that place scripts, fractions, radicals and limits, per-glyph italics corrections, top accent attachments and kerning, and the larger variants and assemblies of stretchy glyphs. Get it from . Every distance is in font units (see ), as the face&#39;s design gives it: device table and variation adjustments are not applied.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_TypefaceMath.md&amp;value=---%0Auid%3A%20Egami.Fonts.TypefaceMath%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.TypefaceMath">
+
+
+
+  <h1 id="Egami_Fonts_TypefaceMath" data-uid="Egami.Fonts.TypefaceMath" class="text-break">
+Class TypefaceMath  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/TypefaceMath.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The math layout data of a face, from its OpenType <code>MATH</code> table: the constants that place scripts, fractions, radicals and
+limits, per-glyph italics corrections, top accent attachments and kerning, and the larger variants and assemblies of
+stretchy glyphs. Get it from <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_Math">Math</a>. Every distance is in font units (see
+<a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_UnitsPerEm">UnitsPerEm</a>), as the face's design gives it: device table and variation adjustments are not applied.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class TypefaceMath</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">TypefaceMath</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Fonts_TypefaceMath_examples">Examples</h2>
+  <pre><code class="lang-csharp">// STIX Two Math stands in for Cambria Math; its MATH table places scripts and grows delimiters.
+Typeface face = SubstituteFonts.Find("Cambria Math", FontStyle.Normal)!;
+TypefaceMath math = face.Math!;
+float scale = 24f / face.UnitsPerEm;                       // font units to pixels at 24 px
+float axis = math.Constants.AxisHeight * scale;           // where fraction bars and minus signs sit
+float scriptSize = 24f * math.Constants.ScriptPercentScaleDown / 100;
+
+// A parenthesis tall enough for 60 px: the smallest variant that fits, else an assembly built from parts.
+ushort paren = face.GetGlyph('(');
+MathGlyphVariant? variant = null;
+foreach (MathGlyphVariant v in math.GetVariants(paren, MathDirection.Vertical))
+{
+    if (v.Advance * scale &gt;= 60)
+    {
+        variant = v;
+        break;
+    }
+}
+
+MathGlyphAssembly? assembly = variant is null ? math.GetAssembly(paren, MathDirection.Vertical) : null;</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_TypefaceMath_Constants_" data-uid="Egami.Fonts.TypefaceMath.Constants*"></a>
+
+  <h3 id="Egami_Fonts_TypefaceMath_Constants" data-uid="Egami.Fonts.TypefaceMath.Constants">
+  Constants
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/TypefaceMath.cs/#L96"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the face's math constants.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MathConstants Constants { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.MathConstants.html">MathConstants</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_TypefaceMath_MinConnectorOverlap_" data-uid="Egami.Fonts.TypefaceMath.MinConnectorOverlap*"></a>
+
+  <h3 id="Egami_Fonts_TypefaceMath_MinConnectorOverlap" data-uid="Egami.Fonts.TypefaceMath.MinConnectorOverlap">
+  MinConnectorOverlap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/TypefaceMath.cs/#L99"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how much, at least, the parts of a glyph assembly overlap, in font units.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float MinConnectorOverlap { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Fonts_TypefaceMath_GetAssembly_" data-uid="Egami.Fonts.TypefaceMath.GetAssembly*"></a>
+
+  <h3 id="Egami_Fonts_TypefaceMath_GetAssembly_System_UInt16_Egami_Fonts_MathDirection_" data-uid="Egami.Fonts.TypefaceMath.GetAssembly(System.UInt16,Egami.Fonts.MathDirection)">
+  GetAssembly(ushort, MathDirection)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/TypefaceMath.cs/#L213"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>How to build <code class="paramref">glyph</code> from parts in one direction; null when the face gives no assembly for it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MathGlyphAssembly? GetAssembly(ushort glyph, MathDirection direction)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph.</p>
+</dd>
+    <dt><code>direction</code> <a class="xref" href="Egami.Fonts.MathDirection.html">MathDirection</a></dt>
+    <dd><p>The direction it grows.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.MathGlyphAssembly.html">MathGlyphAssembly</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">direction</code> is not a defined direction.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_TypefaceMath_GetItalicsCorrection_" data-uid="Egami.Fonts.TypefaceMath.GetItalicsCorrection*"></a>
+
+  <h3 id="Egami_Fonts_TypefaceMath_GetItalicsCorrection_System_UInt16_" data-uid="Egami.Fonts.TypefaceMath.GetItalicsCorrection(System.UInt16)">
+  GetItalicsCorrection(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/TypefaceMath.cs/#L119"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The italics correction of <code class="paramref">glyph</code>: how far a superscript or a limit moves right of a slanted glyph, in font
+units; null when the face gives none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float? GetItalicsCorrection(ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_TypefaceMath_GetKerning_" data-uid="Egami.Fonts.TypefaceMath.GetKerning*"></a>
+
+  <h3 id="Egami_Fonts_TypefaceMath_GetKerning_System_UInt16_Egami_Fonts_MathKernCorner_System_Single_" data-uid="Egami.Fonts.TypefaceMath.GetKerning(System.UInt16,Egami.Fonts.MathKernCorner,System.Single)">
+  GetKerning(ushort, MathKernCorner, float)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/TypefaceMath.cs/#L144"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The kerning at one corner of <code class="paramref">glyph</code> for a script whose nearest edge is at <code class="paramref">height</code>
+(from the baseline, in font units): positive moves the script away, negative closer. 0 when the face gives none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float GetKerning(ushort glyph, MathKernCorner corner, float height)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph.</p>
+</dd>
+    <dt><code>corner</code> <a class="xref" href="Egami.Fonts.MathKernCorner.html">MathKernCorner</a></dt>
+    <dd><p>The corner.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd><p>The height at which the script meets the glyph.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">corner</code> is not a defined corner.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_TypefaceMath_GetTopAccentAttachment_" data-uid="Egami.Fonts.TypefaceMath.GetTopAccentAttachment*"></a>
+
+  <h3 id="Egami_Fonts_TypefaceMath_GetTopAccentAttachment_System_UInt16_" data-uid="Egami.Fonts.TypefaceMath.GetTopAccentAttachment(System.UInt16)">
+  GetTopAccentAttachment(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/TypefaceMath.cs/#L126"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Where an accent above <code class="paramref">glyph</code> centres, from the glyph's origin, in font units; null when the face gives
+none, and the accent then centres on the glyph's advance.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float? GetTopAccentAttachment(ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_TypefaceMath_GetVariants_" data-uid="Egami.Fonts.TypefaceMath.GetVariants*"></a>
+
+  <h3 id="Egami_Fonts_TypefaceMath_GetVariants_System_UInt16_Egami_Fonts_MathDirection_" data-uid="Egami.Fonts.TypefaceMath.GetVariants(System.UInt16,Egami.Fonts.MathDirection)">
+  GetVariants(ushort, MathDirection)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/TypefaceMath.cs/#L188"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The larger forms of <code class="paramref">glyph</code> in one direction, smallest first; the first is usually the glyph itself. Empty
+when the glyph does not grow that way.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;MathGlyphVariant&gt; GetVariants(ushort glyph, MathDirection direction)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph.</p>
+</dd>
+    <dt><code>direction</code> <a class="xref" href="Egami.Fonts.MathDirection.html">MathDirection</a></dt>
+    <dd><p>The direction it grows.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.MathGlyphVariant.html">MathGlyphVariant</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">direction</code> is not a defined direction.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_TypefaceMath_IsExtendedShape_" data-uid="Egami.Fonts.TypefaceMath.IsExtendedShape*"></a>
+
+  <h3 id="Egami_Fonts_TypefaceMath_IsExtendedShape_System_UInt16_" data-uid="Egami.Fonts.TypefaceMath.IsExtendedShape(System.UInt16)">
+  IsExtendedShape(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/TypefaceMath.cs/#L130"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Whether <code class="paramref">glyph</code> is an extended shape, such as a large operator, whose scripts are placed by its ink.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsExtendedShape(ushort glyph)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>glyph</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The glyph.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/TypefaceMath.cs/#L76" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

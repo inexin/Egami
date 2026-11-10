@@ -504,18 +504,54 @@ Font font = noto.ToFont(16);
 servers and containers above all) have none of them. Egami.Fonts.Substitutes is a separate, opt-in package that bundles open
 fonts with the same glyph widths, so text set in a substitute keeps the original's line breaks: Liberation Sans for Helvetica
 and Arial, Liberation Serif for Times and Times New Roman, Liberation Mono for Courier and Courier New, Carlito for Calibri and
-Caladea for Cambria, each in four styles. It adds about 7 MB, which is why Egami.Fonts does not carry the fonts itself. The
+Caladea for Cambria, each in four styles, and STIX Two Math for Cambria Math, the font Word sets equations in. It adds about
+9 MB, which is why Egami.Fonts does not carry the fonts itself. The
 fonts are under the SIL Open Font License 1.1, and their licences ship in the package.</p>
 <p><code>SubstituteFonts.Find</code> takes a family name or a common alias (<code>ArialMT</code>, <code>Times-Roman</code>, <code>Courier New</code>; spaces, hyphens and case
 are ignored) and returns the face in the nearest style, or null for any other name. <code>SubstituteFonts.Collection</code> holds all
-twenty faces as a <code>FontCollection</code>, to match by family name or to pass to anything that takes fonts, such as
+twenty-one faces as a <code>FontCollection</code>, to match by family name or to pass to anything that takes fonts, such as
 <code>MetafileRenderOptions.Fonts</code> or <code>SvgFontOptions.Collection</code>.</p>
 <pre><code class="lang-csharp">// Bundled faces for the fonts documents name most, on any machine: Arial is Liberation Sans, Calibri is Carlito.
 Typeface? arial = SubstituteFonts.Find(&quot;Arial&quot;, FontStyle.Bold);
 Font body = new(SubstituteFonts.Find(&quot;Calibri&quot;, FontStyle.Normal)!, 11);
 
-// All twenty faces as a collection, matched by family name and style.
+// All twenty-one faces as a collection, matched by family name and style.
 FontMatch? mono = SubstituteFonts.Collection.Match(&quot;Liberation Mono&quot;, FontStyle.Italic);
+</code></pre><h2 id="math-layout-data">Math layout data</h2>
+<p>A font made for equations, such as Cambria Math or STIX Two Math, carries an OpenType <code>MATH</code> table: what an equation layout
+needs beyond the glyphs. <code>Typeface.Math</code> reads it as a <code>TypefaceMath</code>, or is null for a face without one.</p>
+<ul>
+<li><code>Constants</code> (<code>MathConstants</code>) are the face's distances for placing scripts, fractions, stacks, radicals, limits and
+accents, such as <code>AxisHeight</code> (where fraction bars sit), <code>FractionRuleThickness</code> and <code>SuperscriptShiftUp</code>, and the sizes of
+scripts (<code>ScriptPercentScaleDown</code>).</li>
+<li><code>GetItalicsCorrection</code> gives how far a superscript moves right of a slanted glyph, <code>GetTopAccentAttachment</code> where an accent
+above a glyph centres, <code>IsExtendedShape</code> whether a glyph is a large operator, and <code>GetKerning</code> how close a script may come at
+each corner (<code>MathKernCorner</code>), by height.</li>
+<li><code>GetVariants</code> lists a stretchy glyph's larger forms, such as taller parentheses or wider braces (<code>MathDirection</code>), smallest
+first. When none is large enough, <code>GetAssembly</code> gives the parts to build one of any size: <code>MathGlyphPart</code>s, bottom to top or
+left to right, whose extenders repeat, overlapping by at least <code>MinConnectorOverlap</code>.</li>
+</ul>
+<p>Every distance is in font units, as the design gives it; variations and device tables are not applied.</p>
+<pre><code class="lang-csharp">// STIX Two Math stands in for Cambria Math; its MATH table places scripts and grows delimiters.
+Typeface face = SubstituteFonts.Find(&quot;Cambria Math&quot;, FontStyle.Normal)!;
+TypefaceMath math = face.Math!;
+float scale = 24f / face.UnitsPerEm;                       // font units to pixels at 24 px
+float axis = math.Constants.AxisHeight * scale;           // where fraction bars and minus signs sit
+float scriptSize = 24f * math.Constants.ScriptPercentScaleDown / 100;
+
+// A parenthesis tall enough for 60 px: the smallest variant that fits, else an assembly built from parts.
+ushort paren = face.GetGlyph('(');
+MathGlyphVariant? variant = null;
+foreach (MathGlyphVariant v in math.GetVariants(paren, MathDirection.Vertical))
+{
+    if (v.Advance * scale &gt;= 60)
+    {
+        variant = v;
+        break;
+    }
+}
+
+MathGlyphAssembly? assembly = variant is null ? math.GetAssembly(paren, MathDirection.Vertical) : null;
 </code></pre><h2 id="subsets">Subsets</h2>
 <p><code>FontSubsetter.Subset</code> writes a font with only some glyphs, as PDF embedding and SVG export want: TrueType, OpenType CFF or a bare
 CID-keyed CFF stream (<code>SubsetFormat</code>), closed over composites and accents, with unused CFF subroutines dropped. <code>SubsetOptions</code>

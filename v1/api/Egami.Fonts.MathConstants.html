@@ -1,0 +1,2000 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class MathConstants | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class MathConstants | Egami ">
+      
+      <meta name="description" content="The constants of a face&#39;s OpenType MATH table, which place scripts, limits, fractions, stacks, bars and radicals. Distances are in font units; the two script scale-downs and the radical degree&#39;s raise are percentages. A face without constants reads as all zeros.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_MathConstants.md&amp;value=---%0Auid%3A%20Egami.Fonts.MathConstants%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.MathConstants">
+
+
+
+  <h1 id="Egami_Fonts_MathConstants" data-uid="Egami.Fonts.MathConstants" class="text-break">
+Class MathConstants  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L13"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The constants of a face's OpenType <code>MATH</code> table, which place scripts, limits, fractions, stacks, bars and radicals.
+Distances are in font units; the two script scale-downs and the radical degree's raise are percentages. A face without
+constants reads as all zeros.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record MathConstants : IEquatable&lt;MathConstants&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">MathConstants</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Fonts.MathConstants.html">MathConstants</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Fonts_MathConstants_examples">Examples</h2>
+  <pre><code class="lang-csharp">// STIX Two Math stands in for Cambria Math; its MATH table places scripts and grows delimiters.
+Typeface face = SubstituteFonts.Find("Cambria Math", FontStyle.Normal)!;
+TypefaceMath math = face.Math!;
+float scale = 24f / face.UnitsPerEm;                       // font units to pixels at 24 px
+float axis = math.Constants.AxisHeight * scale;           // where fraction bars and minus signs sit
+float scriptSize = 24f * math.Constants.ScriptPercentScaleDown / 100;
+
+// A parenthesis tall enough for 60 px: the smallest variant that fits, else an assembly built from parts.
+ushort paren = face.GetGlyph('(');
+MathGlyphVariant? variant = null;
+foreach (MathGlyphVariant v in math.GetVariants(paren, MathDirection.Vertical))
+{
+    if (v.Advance * scale &gt;= 60)
+    {
+        variant = v;
+        break;
+    }
+}
+
+MathGlyphAssembly? assembly = variant is null ? math.GetAssembly(paren, MathDirection.Vertical) : null;</code></pre>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_MathConstants_AccentBaseHeight_" data-uid="Egami.Fonts.MathConstants.AccentBaseHeight*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_AccentBaseHeight" data-uid="Egami.Fonts.MathConstants.AccentBaseHeight">
+  AccentBaseHeight
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the largest height of a base that takes an accent without moving it up: for taller bases the accent moves up by the difference.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float AccentBaseHeight { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_AxisHeight_" data-uid="Egami.Fonts.MathConstants.AxisHeight*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_AxisHeight" data-uid="Egami.Fonts.MathConstants.AxisHeight">
+  AxisHeight
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the height of the math axis, where fraction bars and the centres of operators sit, above the baseline.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float AxisHeight { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_DelimitedSubFormulaMinHeight_" data-uid="Egami.Fonts.MathConstants.DelimitedSubFormulaMinHeight*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_DelimitedSubFormulaMinHeight" data-uid="Egami.Fonts.MathConstants.DelimitedSubFormulaMinHeight">
+  DelimitedSubFormulaMinHeight
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least height of a sub-formula that delimiters grow to cover.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float DelimitedSubFormulaMinHeight { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_DisplayOperatorMinHeight_" data-uid="Egami.Fonts.MathConstants.DisplayOperatorMinHeight*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_DisplayOperatorMinHeight" data-uid="Egami.Fonts.MathConstants.DisplayOperatorMinHeight">
+  DisplayOperatorMinHeight
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least height of a large operator, such as an integral or a sum, in display style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float DisplayOperatorMinHeight { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_FlattenedAccentBaseHeight_" data-uid="Egami.Fonts.MathConstants.FlattenedAccentBaseHeight*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_FlattenedAccentBaseHeight" data-uid="Egami.Fonts.MathConstants.FlattenedAccentBaseHeight">
+  FlattenedAccentBaseHeight
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the height above which a base takes the flattened form of an accent (the flac feature).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float FlattenedAccentBaseHeight { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_FractionDenomDisplayStyleGapMin_" data-uid="Egami.Fonts.MathConstants.FractionDenomDisplayStyleGapMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_FractionDenomDisplayStyleGapMin" data-uid="Egami.Fonts.MathConstants.FractionDenomDisplayStyleGapMin">
+  FractionDenomDisplayStyleGapMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L136"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least gap between the fraction bar and a denominator's top, in display style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float FractionDenomDisplayStyleGapMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_FractionDenominatorDisplayStyleShiftDown_" data-uid="Egami.Fonts.MathConstants.FractionDenominatorDisplayStyleShiftDown*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_FractionDenominatorDisplayStyleShiftDown" data-uid="Egami.Fonts.MathConstants.FractionDenominatorDisplayStyleShiftDown">
+  FractionDenominatorDisplayStyleShiftDown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least drop of a denominator's baseline, in display style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float FractionDenominatorDisplayStyleShiftDown { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_FractionDenominatorGapMin_" data-uid="Egami.Fonts.MathConstants.FractionDenominatorGapMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_FractionDenominatorGapMin" data-uid="Egami.Fonts.MathConstants.FractionDenominatorGapMin">
+  FractionDenominatorGapMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L133"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least gap between the fraction bar and a denominator's top, in text style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float FractionDenominatorGapMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_FractionDenominatorShiftDown_" data-uid="Egami.Fonts.MathConstants.FractionDenominatorShiftDown*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_FractionDenominatorShiftDown" data-uid="Egami.Fonts.MathConstants.FractionDenominatorShiftDown">
+  FractionDenominatorShiftDown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least drop of a denominator's baseline, in text style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float FractionDenominatorShiftDown { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_FractionNumDisplayStyleGapMin_" data-uid="Egami.Fonts.MathConstants.FractionNumDisplayStyleGapMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_FractionNumDisplayStyleGapMin" data-uid="Egami.Fonts.MathConstants.FractionNumDisplayStyleGapMin">
+  FractionNumDisplayStyleGapMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L127"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least gap between a numerator's bottom and the fraction bar, in display style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float FractionNumDisplayStyleGapMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_FractionNumeratorDisplayStyleShiftUp_" data-uid="Egami.Fonts.MathConstants.FractionNumeratorDisplayStyleShiftUp*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_FractionNumeratorDisplayStyleShiftUp" data-uid="Egami.Fonts.MathConstants.FractionNumeratorDisplayStyleShiftUp">
+  FractionNumeratorDisplayStyleShiftUp
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L115"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least rise of a numerator's baseline, in display style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float FractionNumeratorDisplayStyleShiftUp { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_FractionNumeratorGapMin_" data-uid="Egami.Fonts.MathConstants.FractionNumeratorGapMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_FractionNumeratorGapMin" data-uid="Egami.Fonts.MathConstants.FractionNumeratorGapMin">
+  FractionNumeratorGapMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L124"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least gap between a numerator's bottom and the fraction bar, in text style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float FractionNumeratorGapMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_FractionNumeratorShiftUp_" data-uid="Egami.Fonts.MathConstants.FractionNumeratorShiftUp*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_FractionNumeratorShiftUp" data-uid="Egami.Fonts.MathConstants.FractionNumeratorShiftUp">
+  FractionNumeratorShiftUp
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least rise of a numerator's baseline, in text style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float FractionNumeratorShiftUp { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_FractionRuleThickness_" data-uid="Egami.Fonts.MathConstants.FractionRuleThickness*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_FractionRuleThickness" data-uid="Egami.Fonts.MathConstants.FractionRuleThickness">
+  FractionRuleThickness
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L130"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the thickness of the fraction bar.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float FractionRuleThickness { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_LowerLimitBaselineDropMin_" data-uid="Egami.Fonts.MathConstants.LowerLimitBaselineDropMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_LowerLimitBaselineDropMin" data-uid="Egami.Fonts.MathConstants.LowerLimitBaselineDropMin">
+  LowerLimitBaselineDropMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least drop of a lower limit's baseline below the bottom of its operator.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float LowerLimitBaselineDropMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_LowerLimitGapMin_" data-uid="Egami.Fonts.MathConstants.LowerLimitGapMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_LowerLimitGapMin" data-uid="Egami.Fonts.MathConstants.LowerLimitGapMin">
+  LowerLimitGapMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least gap between a lower limit's top and the bottom of its operator.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float LowerLimitGapMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_MathLeading_" data-uid="Egami.Fonts.MathConstants.MathLeading*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_MathLeading" data-uid="Egami.Fonts.MathConstants.MathLeading">
+  MathLeading
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the white space between successive lines of a matrix or stacked text.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float MathLeading { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_OverbarExtraAscender_" data-uid="Egami.Fonts.MathConstants.OverbarExtraAscender*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_OverbarExtraAscender" data-uid="Egami.Fonts.MathConstants.OverbarExtraAscender">
+  OverbarExtraAscender
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L151"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the extra white space above an overbar.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float OverbarExtraAscender { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_OverbarRuleThickness_" data-uid="Egami.Fonts.MathConstants.OverbarRuleThickness*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_OverbarRuleThickness" data-uid="Egami.Fonts.MathConstants.OverbarRuleThickness">
+  OverbarRuleThickness
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L148"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the thickness of an overbar.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float OverbarRuleThickness { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_OverbarVerticalGap_" data-uid="Egami.Fonts.MathConstants.OverbarVerticalGap*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_OverbarVerticalGap" data-uid="Egami.Fonts.MathConstants.OverbarVerticalGap">
+  OverbarVerticalGap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L145"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the gap between an overbar and the top of its base.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float OverbarVerticalGap { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_RadicalDegreeBottomRaisePercent_" data-uid="Egami.Fonts.MathConstants.RadicalDegreeBottomRaisePercent*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_RadicalDegreeBottomRaisePercent" data-uid="Egami.Fonts.MathConstants.RadicalDegreeBottomRaisePercent">
+  RadicalDegreeBottomRaisePercent
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L181"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how far a radical's degree is raised, in percent of the radical sign's height.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int RadicalDegreeBottomRaisePercent { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_RadicalDisplayStyleVerticalGap_" data-uid="Egami.Fonts.MathConstants.RadicalDisplayStyleVerticalGap*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_RadicalDisplayStyleVerticalGap" data-uid="Egami.Fonts.MathConstants.RadicalDisplayStyleVerticalGap">
+  RadicalDisplayStyleVerticalGap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L166"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the gap between a radical's rule and its base's top, in display style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float RadicalDisplayStyleVerticalGap { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_RadicalExtraAscender_" data-uid="Egami.Fonts.MathConstants.RadicalExtraAscender*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_RadicalExtraAscender" data-uid="Egami.Fonts.MathConstants.RadicalExtraAscender">
+  RadicalExtraAscender
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L172"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the extra white space above a radical's rule.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float RadicalExtraAscender { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_RadicalKernAfterDegree_" data-uid="Egami.Fonts.MathConstants.RadicalKernAfterDegree*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_RadicalKernAfterDegree" data-uid="Egami.Fonts.MathConstants.RadicalKernAfterDegree">
+  RadicalKernAfterDegree
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L178"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the space after a radical's degree (usually negative, so the degree tucks into the sign).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float RadicalKernAfterDegree { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_RadicalKernBeforeDegree_" data-uid="Egami.Fonts.MathConstants.RadicalKernBeforeDegree*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_RadicalKernBeforeDegree" data-uid="Egami.Fonts.MathConstants.RadicalKernBeforeDegree">
+  RadicalKernBeforeDegree
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L175"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the space before a radical's degree.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float RadicalKernBeforeDegree { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_RadicalRuleThickness_" data-uid="Egami.Fonts.MathConstants.RadicalRuleThickness*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_RadicalRuleThickness" data-uid="Egami.Fonts.MathConstants.RadicalRuleThickness">
+  RadicalRuleThickness
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L169"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the thickness of a radical's rule.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float RadicalRuleThickness { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_RadicalVerticalGap_" data-uid="Egami.Fonts.MathConstants.RadicalVerticalGap*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_RadicalVerticalGap" data-uid="Egami.Fonts.MathConstants.RadicalVerticalGap">
+  RadicalVerticalGap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L163"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the gap between a radical's rule and its base's top, in text style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float RadicalVerticalGap { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_ScriptPercentScaleDown_" data-uid="Egami.Fonts.MathConstants.ScriptPercentScaleDown*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_ScriptPercentScaleDown" data-uid="Egami.Fonts.MathConstants.ScriptPercentScaleDown">
+  ScriptPercentScaleDown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L16"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how much smaller a first-level script is, in percent of the base size (80 means 80 %).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int ScriptPercentScaleDown { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_ScriptScriptPercentScaleDown_" data-uid="Egami.Fonts.MathConstants.ScriptScriptPercentScaleDown*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_ScriptScriptPercentScaleDown" data-uid="Egami.Fonts.MathConstants.ScriptScriptPercentScaleDown">
+  ScriptScriptPercentScaleDown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how much smaller a second-level script is, in percent of the base size.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int ScriptScriptPercentScaleDown { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_SkewedFractionHorizontalGap_" data-uid="Egami.Fonts.MathConstants.SkewedFractionHorizontalGap*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_SkewedFractionHorizontalGap" data-uid="Egami.Fonts.MathConstants.SkewedFractionHorizontalGap">
+  SkewedFractionHorizontalGap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the horizontal gap between the numerator and denominator of a skewed fraction.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float SkewedFractionHorizontalGap { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_SkewedFractionVerticalGap_" data-uid="Egami.Fonts.MathConstants.SkewedFractionVerticalGap*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_SkewedFractionVerticalGap" data-uid="Egami.Fonts.MathConstants.SkewedFractionVerticalGap">
+  SkewedFractionVerticalGap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the vertical gap between the numerator and denominator of a skewed fraction.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float SkewedFractionVerticalGap { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_SpaceAfterScript_" data-uid="Egami.Fonts.MathConstants.SpaceAfterScript*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_SpaceAfterScript" data-uid="Egami.Fonts.MathConstants.SpaceAfterScript">
+  SpaceAfterScript
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the space after a subscript or superscript.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float SpaceAfterScript { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_StackBottomDisplayStyleShiftDown_" data-uid="Egami.Fonts.MathConstants.StackBottomDisplayStyleShiftDown*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_StackBottomDisplayStyleShiftDown" data-uid="Egami.Fonts.MathConstants.StackBottomDisplayStyleShiftDown">
+  StackBottomDisplayStyleShiftDown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least drop of a stack's bottom baseline, in display style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float StackBottomDisplayStyleShiftDown { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_StackBottomShiftDown_" data-uid="Egami.Fonts.MathConstants.StackBottomShiftDown*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_StackBottomShiftDown" data-uid="Egami.Fonts.MathConstants.StackBottomShiftDown">
+  StackBottomShiftDown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least drop of a stack's bottom baseline, in text style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float StackBottomShiftDown { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_StackDisplayStyleGapMin_" data-uid="Egami.Fonts.MathConstants.StackDisplayStyleGapMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_StackDisplayStyleGapMin" data-uid="Egami.Fonts.MathConstants.StackDisplayStyleGapMin">
+  StackDisplayStyleGapMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L97"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least gap between a stack's top and bottom, in display style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float StackDisplayStyleGapMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_StackGapMin_" data-uid="Egami.Fonts.MathConstants.StackGapMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_StackGapMin" data-uid="Egami.Fonts.MathConstants.StackGapMin">
+  StackGapMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least gap between a stack's top and bottom, in text style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float StackGapMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_StackTopDisplayStyleShiftUp_" data-uid="Egami.Fonts.MathConstants.StackTopDisplayStyleShiftUp*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_StackTopDisplayStyleShiftUp" data-uid="Egami.Fonts.MathConstants.StackTopDisplayStyleShiftUp">
+  StackTopDisplayStyleShiftUp
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least rise of a stack's top baseline, in display style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float StackTopDisplayStyleShiftUp { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_StackTopShiftUp_" data-uid="Egami.Fonts.MathConstants.StackTopShiftUp*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_StackTopShiftUp" data-uid="Egami.Fonts.MathConstants.StackTopShiftUp">
+  StackTopShiftUp
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least rise of a stack's top baseline, in text style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float StackTopShiftUp { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_StretchStackBottomShiftDown_" data-uid="Egami.Fonts.MathConstants.StretchStackBottomShiftDown*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_StretchStackBottomShiftDown" data-uid="Egami.Fonts.MathConstants.StretchStackBottomShiftDown">
+  StretchStackBottomShiftDown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the drop of the baseline of what sits below a stretched glyph.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float StretchStackBottomShiftDown { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_StretchStackGapAboveMin_" data-uid="Egami.Fonts.MathConstants.StretchStackGapAboveMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_StretchStackGapAboveMin" data-uid="Egami.Fonts.MathConstants.StretchStackGapAboveMin">
+  StretchStackGapAboveMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L106"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least gap between a stretched glyph and what sits above it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float StretchStackGapAboveMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_StretchStackGapBelowMin_" data-uid="Egami.Fonts.MathConstants.StretchStackGapBelowMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_StretchStackGapBelowMin" data-uid="Egami.Fonts.MathConstants.StretchStackGapBelowMin">
+  StretchStackGapBelowMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L109"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least gap between a stretched glyph and what sits below it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float StretchStackGapBelowMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_StretchStackTopShiftUp_" data-uid="Egami.Fonts.MathConstants.StretchStackTopShiftUp*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_StretchStackTopShiftUp" data-uid="Egami.Fonts.MathConstants.StretchStackTopShiftUp">
+  StretchStackTopShiftUp
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the rise of the baseline of what sits above a stretched glyph.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float StretchStackTopShiftUp { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_SubSuperscriptGapMin_" data-uid="Egami.Fonts.MathConstants.SubSuperscriptGapMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_SubSuperscriptGapMin" data-uid="Egami.Fonts.MathConstants.SubSuperscriptGapMin">
+  SubSuperscriptGapMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least gap between a subscript's top and a superscript's bottom.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float SubSuperscriptGapMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_SubscriptBaselineDropMin_" data-uid="Egami.Fonts.MathConstants.SubscriptBaselineDropMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_SubscriptBaselineDropMin" data-uid="Egami.Fonts.MathConstants.SubscriptBaselineDropMin">
+  SubscriptBaselineDropMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least drop of a subscript's baseline below the bottom of an extended-shape base.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float SubscriptBaselineDropMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_SubscriptShiftDown_" data-uid="Egami.Fonts.MathConstants.SubscriptShiftDown*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_SubscriptShiftDown" data-uid="Egami.Fonts.MathConstants.SubscriptShiftDown">
+  SubscriptShiftDown
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least drop of a subscript's baseline below the base's.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float SubscriptShiftDown { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_SubscriptTopMax_" data-uid="Egami.Fonts.MathConstants.SubscriptTopMax*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_SubscriptTopMax" data-uid="Egami.Fonts.MathConstants.SubscriptTopMax">
+  SubscriptTopMax
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the highest a subscript's top may reach above the baseline.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float SubscriptTopMax { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_SuperscriptBaselineDropMax_" data-uid="Egami.Fonts.MathConstants.SuperscriptBaselineDropMax*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_SuperscriptBaselineDropMax" data-uid="Egami.Fonts.MathConstants.SuperscriptBaselineDropMax">
+  SuperscriptBaselineDropMax
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the most a superscript's baseline may sit below the top of an extended-shape base.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float SuperscriptBaselineDropMax { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_SuperscriptBottomMaxWithSubscript_" data-uid="Egami.Fonts.MathConstants.SuperscriptBottomMaxWithSubscript*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_SuperscriptBottomMaxWithSubscript" data-uid="Egami.Fonts.MathConstants.SuperscriptBottomMaxWithSubscript">
+  SuperscriptBottomMaxWithSubscript
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the highest a superscript's bottom is raised to when the gap to its subscript is too small.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float SuperscriptBottomMaxWithSubscript { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_SuperscriptBottomMin_" data-uid="Egami.Fonts.MathConstants.SuperscriptBottomMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_SuperscriptBottomMin" data-uid="Egami.Fonts.MathConstants.SuperscriptBottomMin">
+  SuperscriptBottomMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the lowest a superscript's bottom may reach above the baseline.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float SuperscriptBottomMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_SuperscriptShiftUp_" data-uid="Egami.Fonts.MathConstants.SuperscriptShiftUp*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_SuperscriptShiftUp" data-uid="Egami.Fonts.MathConstants.SuperscriptShiftUp">
+  SuperscriptShiftUp
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least rise of a superscript's baseline in uncramped style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float SuperscriptShiftUp { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_SuperscriptShiftUpCramped_" data-uid="Egami.Fonts.MathConstants.SuperscriptShiftUpCramped*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_SuperscriptShiftUpCramped" data-uid="Egami.Fonts.MathConstants.SuperscriptShiftUpCramped">
+  SuperscriptShiftUpCramped
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least rise of a superscript's baseline in cramped style.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float SuperscriptShiftUpCramped { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_UnderbarExtraDescender_" data-uid="Egami.Fonts.MathConstants.UnderbarExtraDescender*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_UnderbarExtraDescender" data-uid="Egami.Fonts.MathConstants.UnderbarExtraDescender">
+  UnderbarExtraDescender
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the extra white space below an underbar.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float UnderbarExtraDescender { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_UnderbarRuleThickness_" data-uid="Egami.Fonts.MathConstants.UnderbarRuleThickness*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_UnderbarRuleThickness" data-uid="Egami.Fonts.MathConstants.UnderbarRuleThickness">
+  UnderbarRuleThickness
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L157"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the thickness of an underbar.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float UnderbarRuleThickness { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_UnderbarVerticalGap_" data-uid="Egami.Fonts.MathConstants.UnderbarVerticalGap*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_UnderbarVerticalGap" data-uid="Egami.Fonts.MathConstants.UnderbarVerticalGap">
+  UnderbarVerticalGap
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L154"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the gap between an underbar and the bottom of its base.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float UnderbarVerticalGap { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_UpperLimitBaselineRiseMin_" data-uid="Egami.Fonts.MathConstants.UpperLimitBaselineRiseMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_UpperLimitBaselineRiseMin" data-uid="Egami.Fonts.MathConstants.UpperLimitBaselineRiseMin">
+  UpperLimitBaselineRiseMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least rise of an upper limit's baseline above the top of its operator.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float UpperLimitBaselineRiseMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_MathConstants_UpperLimitGapMin_" data-uid="Egami.Fonts.MathConstants.UpperLimitGapMin*"></a>
+
+  <h3 id="Egami_Fonts_MathConstants_UpperLimitGapMin" data-uid="Egami.Fonts.MathConstants.UpperLimitGapMin">
+  UpperLimitGapMin
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the least gap between an upper limit's bottom and the top of its operator.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float UpperLimitGapMin { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/MathConstants.cs/#L13" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
