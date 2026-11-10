@@ -4,7 +4,7 @@ using Egami.Pixels;
 namespace Egami.Video.Codecs.H264;
 
 /// <summary>
-/// Codes pictures into slices, macroblock by macroblock, and keeps the reconstructed, deblocked pictures a decoder makes of them:
+/// Codes pictures into slices (bands of macroblock rows, coded in parallel), macroblock by macroblock, and keeps the reconstructed, deblocked pictures a decoder makes of them:
 /// the short-term references (most recent first, up to <see cref="H264StreamConfig.MaxRefFrames"/>) that P and B pictures
 /// predict from. The oldest leaves by the sliding window; a referenced B-frame leaves when the next P or I picture marks it
 /// unused (memory_management_control_operation 1).
@@ -17,21 +17,18 @@ internal sealed class H264PictureEncoder
     private readonly H264StreamConfig _config;
     private readonly int _effort;
     private readonly H264MbState _mb;
-    private readonly H264MbSyntax _syntax;
-    private readonly H264MbEncoder _encoder;
+    private readonly SliceCoder[] _slices;
     private readonly H264Deblock _deblock = new();
-    private readonly List<H264FilterParams> _filters = [new(0, 0, 0)];
+    private readonly List<H264FilterParams> _filters;
     private readonly byte[] _srcY;
     private readonly byte[] _srcCb;
     private readonly byte[] _srcCr;
-    private readonly CabacEncoder _cabac = new();
     private readonly List<H264RefPlanes> _free = [];
     private readonly List<H264RefPlanes> _refs = [];
     private readonly int[] _qpOffsets;
     private readonly double[] _logs;
     private readonly List<H264RefPlanes> _drop = [];
     private H264RefPlanes _current;
-    private double _sliceCost;
 
     public H264PictureEncoder(H264StreamConfig config, int effort)
     {
@@ -40,11 +37,19 @@ internal sealed class H264PictureEncoder
         _current = new H264RefPlanes(config.WidthMbs, config.HeightMbs);
         H264Picture pic = _current.Picture;
         _mb = new H264MbState(config.WidthMbs, config.HeightMbs, 1);
-        _syntax = new H264MbSyntax(_mb) { Cabac = config.Cabac, Transform8x8Mode = config.Transform8x8 };
         _srcY = new byte[pic.Y<byte>().Length];
         _srcCb = new byte[pic.Cb<byte>().Length];
         _srcCr = new byte[pic.Cr<byte>().Length];
-        _encoder = new H264MbEncoder(pic, _mb, _syntax, _srcY, _srcCb, _srcCr, config.Transform8x8, effort);
+        int count = Math.Clamp(config.Slices, 1, config.HeightMbs);
+        _slices = new SliceCoder[count];
+        for (int i = 0; i < count; i++)
+        {
+            H264MbSyntax syntax = new(_mb) { Cabac = config.Cabac, Transform8x8Mode = config.Transform8x8 };
+            H264MbEncoder encoder = new(pic, _mb, syntax, _srcY, _srcCb, _srcCr, config.Transform8x8, effort);
+            _slices[i] = new SliceCoder(i, syntax, encoder, i * config.HeightMbs / count * config.WidthMbs, (i + 1) * config.HeightMbs / count * config.WidthMbs);
+        }
+
+        _filters = [.. Enumerable.Repeat(new H264FilterParams(0, 0, 0), count)];
         _qpOffsets = new int[config.WidthMbs * config.HeightMbs];
         _logs = new double[_qpOffsets.Length];
     }
@@ -103,31 +108,35 @@ internal sealed class H264PictureEncoder
         }
     }
 
-    /// <summary>Codes the loaded picture as one I slice and returns its NAL unit; an IDR picture empties the references.</summary>
-    public byte[] EncodeIntra(bool idr, int idrPicId, int frameNum, int pocLsb, int qp, bool referenced = true)
+    /// <summary>Codes the loaded picture as I slices and returns their NAL units; an IDR picture empties the references.</summary>
+    public byte[][] EncodeIntra(bool idr, int idrPicId, int frameNum, int pocLsb, int qp, bool referenced = true)
     {
         if (idr)
         {
             _free.AddRange(_refs);
             _refs.Clear();
-            _encoder.ResetMotion();
+            foreach (SliceCoder slice in _slices)
+            {
+                slice.Encoder.ResetMotion();
+            }
         }
 
         int[] unmark = Marking(frameNum, referenced, disposable: false);
         StartPicture(qp);
-        NalBitWriter w = new(_config.WidthMbs * _config.HeightMbs * 32);
-        H264StreamWriter.SliceHeader(w, _config, 0, H264SliceType.I, idr, idrPicId, frameNum, pocLsb, qp, referenced: referenced, unmark: unmark);
-        _syntax.StartSlice(0, H264SliceType.I, qp, 0);
-        WriteSlice(w, qp, predicted: false);
+        CodeSlices(qp, predicted: false, (w, slice) =>
+        {
+            H264StreamWriter.SliceHeader(w, _config, slice.FirstMb, H264SliceType.I, idr, idrPicId, frameNum, pocLsb, qp, referenced: referenced, unmark: unmark);
+            slice.Syntax.StartSlice(slice.Index, H264SliceType.I, qp, 0);
+        });
         FinishPicture(referenced, false, frameNum, pocLsb);
-        return H264StreamWriter.Nal(referenced ? 3 : 0, idr ? 5 : 1, w);
+        return Nals(referenced ? 3 : 0, idr ? 5 : 1);
     }
 
     /// <summary>
-    /// Codes the loaded picture as one P slice predicted from the references held (up to <paramref name="maxRefs"/>, most
-    /// recent first) and returns its NAL unit.
+    /// Codes the loaded picture as P slices predicted from the references held (up to <paramref name="maxRefs"/>, most recent
+    /// first) and returns their NAL units.
     /// </summary>
-    public byte[] EncodePredicted(int frameNum, int pocLsb, int qp, int maxRefs, bool referenced = true)
+    public byte[][] EncodePredicted(int frameNum, int pocLsb, int qp, int maxRefs, bool referenced = true)
     {
         if (_refs.Count == 0)
         {
@@ -143,24 +152,30 @@ internal sealed class H264PictureEncoder
 
         int[] unmark = Marking(frameNum, referenced, disposable: false);
         StartPicture(qp);
-        _syntax.RefIds = [.. refs.Select(r => r.Picture.Id)];
-        _syntax.RefCount = count;
+        int[] ids = [.. refs.Select(r => r.Picture.Id)];
         int maxMvY = 4 * H264Levels.MaxVerticalMv(_config.LevelIdc);
-        _encoder.SetReferences(refs, count, maxMvY, _effort >= 6 && _config.LevelIdc <= 30);
-        NalBitWriter w = new(_config.WidthMbs * _config.HeightMbs * 32);
-        H264StreamWriter.SliceHeader(w, _config, 0, H264SliceType.P, false, 0, frameNum, pocLsb, qp, 0, refs, referenced: referenced, unmark: unmark);
-        _syntax.StartSlice(0, H264SliceType.P, qp, 0);
-        WriteSlice(w, qp, predicted: true);
+        foreach (SliceCoder slice in _slices)
+        {
+            slice.Syntax.RefIds = ids;
+            slice.Syntax.RefCount = count;
+            slice.Encoder.SetReferences(refs, count, maxMvY, _effort >= 6 && _config.LevelIdc <= 30);
+        }
+
+        CodeSlices(qp, predicted: true, (w, slice) =>
+        {
+            H264StreamWriter.SliceHeader(w, _config, slice.FirstMb, H264SliceType.P, false, 0, frameNum, pocLsb, qp, 0, refs, referenced: referenced, unmark: unmark);
+            slice.Syntax.StartSlice(slice.Index, H264SliceType.P, qp, 0);
+        });
         FinishPicture(referenced, false, frameNum, pocLsb);
-        return H264StreamWriter.Nal(referenced ? 2 : 0, 1, w);
+        return Nals(referenced ? 2 : 0, 1);
     }
 
     /// <summary>
-    /// Codes the loaded picture, whose order count is <paramref name="poc"/>, as one B slice predicted from the references
-    /// before and after it (8.2.4.2.3: list 0 the earlier ones nearest first, then the later ones; list 1 the other way round),
-    /// and returns its NAL unit. A referenced B picture is <see cref="H264RefPlanes.Disposable"/>.
+    /// Codes the loaded picture, whose order count is <paramref name="poc"/>, as B slices predicted from the references before
+    /// and after it (8.2.4.2.3: list 0 the earlier ones nearest first, then the later ones; list 1 the other way round), and
+    /// returns their NAL units. A referenced B picture is <see cref="H264RefPlanes.Disposable"/>.
     /// </summary>
-    public byte[] EncodeBidirectional(int frameNum, int poc, int qp, bool referenced)
+    public byte[][] EncodeBidirectional(int frameNum, int poc, int qp, bool referenced)
     {
         List<H264RefPlanes> list0 = [.. _refs.Where(r => r.Poc < poc).OrderByDescending(r => r.Poc), .. _refs.Where(r => r.Poc > poc).OrderBy(r => r.Poc)];
         List<H264RefPlanes> list1 = [.. _refs.Where(r => r.Poc > poc).OrderBy(r => r.Poc), .. _refs.Where(r => r.Poc < poc).OrderByDescending(r => r.Poc)];
@@ -183,50 +198,89 @@ internal sealed class H264PictureEncoder
 
         int[] unmark = Marking(frameNum, referenced, disposable: true);
         StartPicture(qp);
-        _syntax.RefIds = [.. refs0.Select(r => r.Picture.Id)];
-        _syntax.RefIds1 = [refs1[0].Picture.Id];
-        _syntax.RefCount = count0;
-        _syntax.RefCount1 = 1;
-        _syntax.Col = refs1[0].Picture;
-        _syntax.ColPoc = refs1[0].Poc;
-        _syntax.RefPocs = [.. refs0.Select(r => r.Poc)];
-        _syntax.CurrentPoc = poc;
-        _encoder.SetBReferences(refs0, count0, refs1, 1, 4 * H264Levels.MaxVerticalMv(_config.LevelIdc));
-        bool temporalAllowed = _syntax.TemporalAllowed();
+        int[] ids0 = [.. refs0.Select(r => r.Picture.Id)], ids1 = [refs1[0].Picture.Id], pocs0 = [.. refs0.Select(r => r.Poc)];
+        foreach (SliceCoder slice in _slices)
+        {
+            H264MbSyntax syntax = slice.Syntax;
+            syntax.RefIds = ids0;
+            syntax.RefIds1 = ids1;
+            syntax.RefCount = count0;
+            syntax.RefCount1 = 1;
+            syntax.Col = refs1[0].Picture;
+            syntax.ColPoc = refs1[0].Poc;
+            syntax.RefPocs = pocs0;
+            syntax.CurrentPoc = poc;
+            slice.Encoder.SetBReferences(refs0, count0, refs1, 1, 4 * H264Levels.MaxVerticalMv(_config.LevelIdc));
+        }
+
+        bool temporalAllowed = _slices[0].Syntax.TemporalAllowed();
         bool temporal = TemporalDirect is bool forced ? forced && temporalAllowed : false;
-        NalBitWriter w = CodeB(frameNum, poc, qp, referenced, unmark, temporal);
+        CodeB(frameNum, poc, qp, referenced, unmark, temporal);
         if (TemporalDirect is null && _effort >= 8 && temporalAllowed)
         {
-            // Both ways, keeping the cheaper: the second pass is coded again when the first was.
-            double first = _sliceCost;
+            // Both ways, keeping the cheaper: the first is coded again when it was.
+            double first = SliceCost;
             ResetPicture(qp);
-            NalBitWriter other = CodeB(frameNum, poc, qp, referenced, unmark, !temporal);
-            if (_sliceCost < first)
+            CodeB(frameNum, poc, qp, referenced, unmark, !temporal);
+            if (SliceCost < first)
             {
-                (w, temporal) = (other, !temporal);
+                temporal = !temporal;
             }
             else
             {
                 ResetPicture(qp);
-                w = CodeB(frameNum, poc, qp, referenced, unmark, temporal);
+                CodeB(frameNum, poc, qp, referenced, unmark, temporal);
             }
         }
 
         LastTemporal = temporal;
         FinishPicture(referenced, true, frameNum, poc);
-        return H264StreamWriter.Nal(referenced ? 2 : 0, 1, w);
+        return Nals(referenced ? 2 : 0, 1);
     }
 
-    private NalBitWriter CodeB(int frameNum, int poc, int qp, bool referenced, int[] unmark, bool temporal)
+    private void CodeB(int frameNum, int poc, int qp, bool referenced, int[] unmark, bool temporal)
     {
-        _syntax.DirectSpatial = !temporal;
-        NalBitWriter w = new(_config.WidthMbs * _config.HeightMbs * 32);
-        H264RefPlanes[] refs0 = new H264RefPlanes[_syntax.RefCount];
-        H264StreamWriter.SliceHeader(w, _config, 0, H264SliceType.B, false, 0, frameNum, poc, qp, 0, refs0, 1, !temporal, referenced, unmark);
-        _syntax.StartSlice(0, H264SliceType.B, qp, 0);
-        WriteSlice(w, qp, predicted: true);
-        return w;
+        H264RefPlanes[] refs0 = new H264RefPlanes[_slices[0].Syntax.RefCount];
+        CodeSlices(qp, predicted: true, (w, slice) =>
+        {
+            slice.Syntax.DirectSpatial = !temporal;
+            H264StreamWriter.SliceHeader(w, _config, slice.FirstMb, H264SliceType.B, false, 0, frameNum, poc, qp, 0, refs0, 1, !temporal, referenced, unmark);
+            slice.Syntax.StartSlice(slice.Index, H264SliceType.B, qp, 0);
+        });
     }
+
+    /// <summary>The sum of the macroblocks' costs over the slices last coded.</summary>
+    private double SliceCost => _slices.Sum(s => s.Cost);
+
+    /// <summary>
+    /// Codes every slice of the picture, each with its header written by <paramref name="header"/>, in parallel up to
+    /// <see cref="H264StreamConfig.Parallelism"/>: a slice predicts nothing from another, so the order does not matter.
+    /// </summary>
+    private void CodeSlices(int qp, bool predicted, Action<NalBitWriter, SliceCoder> header)
+    {
+        void Code(SliceCoder slice)
+        {
+            NalBitWriter w = new((slice.EndMb - slice.FirstMb) * 32);
+            header(w, slice);
+            WriteSlice(slice, w, qp, predicted);
+            slice.Writer = w;
+        }
+
+        if (_slices.Length == 1 || _config.Parallelism <= 1)
+        {
+            foreach (SliceCoder slice in _slices)
+            {
+                Code(slice);
+            }
+        }
+        else
+        {
+            Parallel.ForEach(_slices, new ParallelOptions { MaxDegreeOfParallelism = _config.Parallelism }, Code);
+        }
+    }
+
+    /// <summary>The NAL units of the slices last coded.</summary>
+    private byte[][] Nals(int refIdc, int type) => [.. _slices.Select(s => H264StreamWriter.Nal(refIdc, type, s.Writer!))];
 
     /// <summary>
     /// Works out how a picture marks the references (8.2.5.3, 8.2.5.4): a P or I picture marks the referenced B-frames unused,
@@ -272,8 +326,12 @@ internal sealed class H264PictureEncoder
             _current = new H264RefPlanes(_config.WidthMbs, _config.HeightMbs);
         }
 
-        _syntax.RefIds = [];
-        _syntax.RefCount = 1;
+        foreach (SliceCoder slice in _slices)
+        {
+            slice.Syntax.RefIds = [];
+            slice.Syntax.RefCount = 1;
+        }
+
         ResetPicture(qp);
     }
 
@@ -282,8 +340,12 @@ internal sealed class H264PictureEncoder
     {
         H264Picture pic = _current.Picture;
         pic.Reset();
-        _encoder.Target(pic);
-        _syntax.Motion = pic;
+        foreach (SliceCoder slice in _slices)
+        {
+            slice.Encoder.Target(pic);
+            slice.Syntax.Motion = pic;
+        }
+
         _mb.Clear();
         Array.Clear(pic.MbIntra);
         if (AdaptiveQuantization)
@@ -334,10 +396,10 @@ internal sealed class H264PictureEncoder
         _refs.Insert(0, _current);
     }
 
-    private void WriteSlice(NalBitWriter w, int qp, bool predicted)
+    private void WriteSlice(SliceCoder slice, NalBitWriter w, int qp, bool predicted)
     {
-        int total = _config.WidthMbs * _config.HeightMbs;
-        _sliceCost = 0;
+        H264MbSyntax syntax = slice.Syntax;
+        slice.Cost = 0;
         if (_config.Cabac)
         {
             while (!w.ByteAligned)
@@ -345,40 +407,41 @@ internal sealed class H264PictureEncoder
                 w.U(1, 1); // cabac_alignment_one_bit
             }
 
-            _cabac.Start();
-            CabacWriteSink sink = new(_cabac);
-            for (int addr = 0; addr < total; addr++)
+            CabacEncoder cabac = slice.Cabac;
+            cabac.Start();
+            CabacWriteSink sink = new(cabac);
+            for (int addr = slice.FirstMb; addr < slice.EndMb; addr++)
             {
-                H264MbCode code = Code(addr, qp, predicted);
+                H264MbCode code = Code(slice, addr, qp, predicted);
                 if (predicted)
                 {
-                    _syntax.SkipFlagCabac(ref sink, H264MbState.IsSkip(code.Kind));
+                    syntax.SkipFlagCabac(ref sink, H264MbState.IsSkip(code.Kind));
                 }
 
-                _syntax.Begin(addr % _config.WidthMbs, addr / _config.WidthMbs, code);
+                syntax.Begin(addr % _config.WidthMbs, addr / _config.WidthMbs, code);
                 if (!H264MbState.IsSkip(code.Kind))
                 {
-                    _syntax.WriteCabac(code, ref sink);
+                    syntax.WriteCabac(code, ref sink);
                 }
 
-                _syntax.Commit(code);
-                _cabac.Terminate(addr == total - 1 ? 1 : 0); // end_of_slice_flag
+                syntax.Commit(code);
+                cabac.Terminate(addr == slice.EndMb - 1 ? 1 : 0); // end_of_slice_flag
             }
 
-            w.Bytes(_cabac.Finish());
+            w.Bytes(cabac.Finish());
         }
         else
         {
             BitWriteSink sink = new(w);
             int run = 0;
-            for (int addr = 0; addr < total; addr++)
+            for (int addr = slice.FirstMb; addr < slice.EndMb; addr++)
             {
-                H264MbCode code = Code(addr, qp, predicted);
-                _syntax.Begin(addr % _config.WidthMbs, addr / _config.WidthMbs, code);
+                H264MbCode code = Code(slice, addr, qp, predicted);
+                syntax.Begin(addr % _config.WidthMbs, addr / _config.WidthMbs, code);
                 if (H264MbState.IsSkip(code.Kind))
                 {
                     run++;
-                    _syntax.Commit(code);
+                    syntax.Commit(code);
                     continue;
                 }
 
@@ -388,8 +451,8 @@ internal sealed class H264PictureEncoder
                     run = 0;
                 }
 
-                _syntax.WriteCavlc(code, ref sink);
-                _syntax.Commit(code);
+                syntax.WriteCavlc(code, ref sink);
+                syntax.Commit(code);
             }
 
             if (run > 0)
@@ -401,16 +464,17 @@ internal sealed class H264PictureEncoder
         }
     }
 
-    private H264MbCode Code(int addr, int qp, bool predicted)
+    private H264MbCode Code(SliceCoder slice, int addr, int qp, bool predicted)
     {
         int mbX = addr % _config.WidthMbs, mbY = addr / _config.WidthMbs;
         int mbQp = Math.Clamp(qp + _qpOffsets[addr], MinQp, MaxQp);
-        _sliceCost += !predicted ? _encoder.Encode(mbX, mbY, mbQp)
-            : _syntax.SliceType == H264SliceType.B ? _encoder.EncodeB(mbX, mbY, mbQp) : _encoder.EncodeP(mbX, mbY, mbQp);
+        H264MbEncoder encoder = slice.Encoder;
+        slice.Cost += !predicted ? encoder.Encode(mbX, mbY, mbQp)
+            : slice.Syntax.SliceType == H264SliceType.B ? encoder.EncodeB(mbX, mbY, mbQp) : encoder.EncodeP(mbX, mbY, mbQp);
 
         // mb_skip_flag's contexts come from this macroblock's neighbours.
-        _syntax.Locate(mbX, mbY);
-        return _encoder.Best;
+        slice.Syntax.Locate(mbX, mbY);
+        return encoder.Best;
     }
 
     /// <summary>
@@ -544,5 +608,28 @@ internal sealed class H264PictureEncoder
         int weight = devRef < 1 ? unit : Math.Clamp((int)Math.Round(unit * devSrc / devRef), -128, 127);
         int offset = Math.Clamp((int)Math.Round(meanSrc - (weight * meanRef / unit)), -128, 127);
         return (weight, offset);
+    }
+
+    /// <summary>
+    /// One slice's coder: its macroblocks (<see cref="FirstMb"/> to before <see cref="EndMb"/>), syntax writer, macroblock
+    /// encoder and arithmetic coder, and the NAL payload and cost of its last coding.
+    /// </summary>
+    private sealed class SliceCoder(int index, H264MbSyntax syntax, H264MbEncoder encoder, int firstMb, int endMb)
+    {
+        public int Index { get; } = index;
+
+        public H264MbSyntax Syntax { get; } = syntax;
+
+        public H264MbEncoder Encoder { get; } = encoder;
+
+        public CabacEncoder Cabac { get; } = new();
+
+        public int FirstMb { get; } = firstMb;
+
+        public int EndMb { get; } = endMb;
+
+        public double Cost { get; set; }
+
+        public NalBitWriter? Writer { get; set; }
     }
 }

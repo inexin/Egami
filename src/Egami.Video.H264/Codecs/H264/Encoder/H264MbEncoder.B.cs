@@ -148,7 +148,7 @@ internal sealed partial class H264MbEncoder
             }
         }
 
-        if (_effort >= 1 || firstCost > 16 * 16 * 4)
+        if (TryIntra(firstCost))
         {
             double cost = Encode(mbX, mbY, qp);
             _round = InterRound;
@@ -212,27 +212,8 @@ internal sealed partial class H264MbEncoder
     /// </summary>
     private long SearchBPart(H264MbCode code, int index, int bx, int by, int w, int h, int mask, ReadOnlySpan<int> starts0, ReadOnlySpan<int> starts1)
     {
-        long cost0 = long.MaxValue, cost1 = long.MaxValue;
-        int r0 = 0, mv0 = 0, mvp0 = 0, r1 = 0, mv1 = 0, mvp1 = 0;
-        for (int r = 0; r < _refCount; r++)
-        {
-            int mvp = _syntax.PredictMv(0, bx, by, w, h, r, mask);
-            int mv = Search(0, r, bx, by, w, h, mvp, starts0, out long cost);
-            if (cost < cost0)
-            {
-                (cost0, r0, mv0, mvp0) = (cost, r, mv, mvp);
-            }
-        }
-
-        for (int r = 0; r < _refCount1; r++)
-        {
-            int mvp = _syntax.PredictMv(1, bx, by, w, h, r, mask);
-            int mv = Search(1, r, bx, by, w, h, mvp, starts1, out long cost);
-            if (cost < cost1)
-            {
-                (cost1, r1, mv1, mvp1) = (cost, r, mv, mvp);
-            }
-        }
+        int mv0 = SearchRefs(0, bx, by, w, h, mask, starts0, out int r0, out int mvp0, out long cost0);
+        int mv1 = SearchRefs(1, bx, by, w, h, mask, starts1, out int r1, out int mvp1, out long cost1);
 
         long costBi = PartSatd(bx, by, w, h, r0, mv0, r1, mv1)
             + MvCost(H264SliceDecoder.MvX(mv0), H264SliceDecoder.MvY(mv0), mvp0) + MvCost(H264SliceDecoder.MvX(mv1), H264SliceDecoder.MvY(mv1), mvp1)
@@ -310,17 +291,7 @@ internal sealed partial class H264MbEncoder
     }
 
     /// <summary>The default weighted prediction of two lists (8-273): the rounded mean, into <paramref name="a"/>.</summary>
-    private static void Average(byte[] a, byte[] b, int at, int stride, int w, int h)
-    {
-        for (int y = 0; y < h; y++)
-        {
-            int row = at + (y * stride);
-            for (int x = 0; x < w; x++)
-            {
-                a[row + x] = (byte)((a[row + x] + b[row + x] + 1) >> 1);
-            }
-        }
-    }
+    private static void Average(byte[] a, byte[] b, int at, int stride, int w, int h) => H264EncodeSimd.Average(a, at, stride, b, at, stride, a, at, stride, w, h);
 
     private static void FillMv(int[] mvs, int bx, int by, int w, int h, int mv)
     {

@@ -101,9 +101,10 @@ static Action<Stream> Target(string name) => name switch
     "ffv1" => ReadFfv1,
     "ffv1raw" => DecodeFfv1Packets,
     "ffv1enc" => EncodeFfv1,
+    "h264enc" => EncodeH264,
     "afilters" => FilterAudio,
     "deinterlace" => Deinterlace,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, adts, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, hevc, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, afilters, deinterlace."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, adts, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, hevc, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, h264enc, afilters, deinterlace."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -333,6 +334,114 @@ static void EncodeVp9OrAv1(Stream stream, VideoCodec codec)
         shown++;
     }
 
+    if (shown != frames)
+    {
+        throw new InvalidOperationException($"{frames} frames went in, {shown} came out of the decoder.");
+    }
+}
+
+// The H.264 encoder: the first bytes pick an even size, the profile, entropy coder, effort, B-frames, slices, threads, rate
+// control and QP limits, the rest fills the frames; every option it can pick is valid, so nothing may throw, and every frame
+// must come back out of Egami's decoder at the coded size.
+static void EncodeH264(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 13)
+    {
+        return;
+    }
+
+    int width = 2 * (1 + (data[0] % 48)), height = 2 * (1 + (data[1] % 32)), frames = 1 + (data[2] % 10);
+    RateControlMode mode = (RateControlMode)(data[3] % 4);
+    H264Profile profile = (data[8] % 3) switch { 1 => H264Profile.Main, 2 => H264Profile.ConstrainedBaseline, _ => H264Profile.High };
+    bool baseline = profile == H264Profile.ConstrainedBaseline;
+    int minQp = data[9] % 30, maxQp = minQp + (data[10] % (52 - minQp));
+    VideoEncoderOptions options = new()
+    {
+        Width = width,
+        Height = height,
+        Quality = data[4] % 101,
+        Effort = data[5] % 11,
+        RateControl = mode,
+        Bitrate = mode is RateControlMode.Bitrate or RateControlMode.ConstantBitrate ? 1000 + (data[6] * 4000L) : null,
+        Quantizer = mode == RateControlMode.Quantizer ? data[6] % 52 : null,
+        LatencyMode = (data[7] & 1) != 0 ? LatencyMode.Realtime : LatencyMode.Quality,
+        KeyframeInterval = (data[7] & 2) != 0 ? 1 + (data[7] >> 4) : null,
+        SceneCutKeyframes = (data[7] & 4) == 0,
+        H264 = new H264EncoderOptions
+        {
+            Profile = profile,
+            Entropy = baseline || (data[8] & 8) != 0 ? H264EntropyCoder.Cavlc : null,
+            BFrames = baseline ? null : (data[11] & 7) switch { 0 => null, var b => b - 1 },
+            Slices = ((data[11] >> 3) % 5) switch { 0 => null, var n => n },
+            AdaptiveQuantization = (data[7] & 8) == 0,
+            AnnexB = (data[8] & 16) != 0,
+            MinQuantizer = minQp,
+            MaxQuantizer = maxQp,
+        },
+    };
+    MediaContext context = Context().WithH264() with { Egami = Context().Egami with { MaxParallelism = 1 + ((data[8] >> 5) & 3) } };
+    using IVideoEncoder encoder = H264Codec.Instance.CreateEncoder(options, context);
+    List<EncodedPacket> packets = [];
+    int at = 0;
+    for (int f = 0; f < frames; f++)
+    {
+        YuvRaster<byte> picture = YuvRaster.Create(width, height, ChromaFormat.Yuv420, YuvColor.Bt601Limited);
+        foreach (YuvPlane<byte>? plane in (YuvPlane<byte>?[])[picture.Y, picture.U, picture.V])
+        {
+            for (int y = 0; y < plane!.Height; y++)
+            {
+                Span<byte> row = plane.Row(y);
+                for (int x = 0; x < row.Length; x++)
+                {
+                    row[x] = data[12 + (at++ % (data.Length - 12))];
+                }
+            }
+        }
+
+        using YuvVideoFrame frame = new(picture, new MediaTime(f, new Rational(1, 30)));
+        encoder.Send(frame, new EncodeFrameOptions { ForceKeyframe = (data[(at + f) % data.Length] & 7) == 0 });
+        while (encoder.TryReceive(out EncodedPacket? packet))
+        {
+            packets.Add(packet);
+        }
+    }
+
+    encoder.Flush();
+    while (encoder.TryReceive(out EncodedPacket? packet))
+    {
+        packets.Add(packet);
+    }
+
+    using IVideoDecoder decoder = H264Codec.Instance.CreateDecoder(encoder.Track, null, context);
+    int shown = 0;
+    void Take()
+    {
+        while (decoder.TryReceive(out YuvVideoFrame? frame))
+        {
+            using (frame)
+            {
+                if (frame.Width != width || frame.Height != height)
+                {
+                    throw new InvalidOperationException($"A {width}x{height} frame came out as {frame.Width}x{frame.Height}.");
+                }
+            }
+
+            shown++;
+        }
+    }
+
+    foreach (EncodedPacket packet in packets)
+    {
+        using (packet)
+        {
+            decoder.Send(packet);
+            Take();
+        }
+    }
+
+    decoder.Flush();
+    Take();
     if (shown != frames)
     {
         throw new InvalidOperationException($"{frames} frames went in, {shown} came out of the decoder.");

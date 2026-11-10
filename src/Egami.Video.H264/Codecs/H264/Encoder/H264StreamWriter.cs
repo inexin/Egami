@@ -39,6 +39,12 @@ internal sealed record H264StreamConfig
     /// <summary>Gets the color code points, written in the VUI.</summary>
     public required ColorCodePoints Color { get; init; }
 
+    /// <summary>Gets the slices of each picture: bands of whole macroblock rows, as even as they divide.</summary>
+    public int Slices { get; init; } = 1;
+
+    /// <summary>Gets how many slices are coded at once; the stream is the same for any number.</summary>
+    public int Parallelism { get; init; } = 1;
+
     /// <summary>Gets the width in macroblocks.</summary>
     public int WidthMbs => (Width + 15) >> 4;
 

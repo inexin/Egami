@@ -84,8 +84,16 @@ internal sealed class H264VideoEncoder : IVideoEncoder
         double fps = (double)options.FrameRate.Numerator / options.FrameRate.Denominator;
         int keyInterval = options.KeyframeInterval is int k ? Check(k, 1, int.MaxValue, "KeyframeInterval") : Math.Max(1, (int)Math.Ceiling(fps * 10));
         int widthMbs = (options.Width + 15) >> 4, heightMbs = (options.Height + 15) >> 4;
-        int level = h264.Level ?? H264Levels.Choose(widthMbs, heightMbs, fps, 1);
-        if (H264Levels.Misfit(H264Levels.Of(level), widthMbs, heightMbs, fps, 1) is { } why)
+        long maxBitrate = options.RateControl switch
+        {
+            RateControlMode.ConstantBitrate => bitrate,
+            RateControlMode.Bitrate => options.MaxBitrate is > 0 and var peak ? Math.Max(peak, bitrate) : bitrate * 2,
+            _ => 0,
+        };
+        long buffer = bitrate > 0 ? options.BufferSize is > 0 and var size ? size : bitrate : 0;
+        H264Levels.Demand demand = new(fps, 1, maxBitrate, buffer, h264.Profile == H264Profile.High ? 1250 : 1000);
+        int level = h264.Level ?? H264Levels.Choose(widthMbs, heightMbs, demand);
+        if (H264Levels.Misfit(H264Levels.Of(level), widthMbs, heightMbs, demand) is { } why)
         {
             throw new ArgumentException($"The stream does not fit its level: {why}.", nameof(options));
         }
@@ -122,6 +130,8 @@ internal sealed class H264VideoEncoder : IVideoEncoder
             ReorderFrames = bFrames,
             FrameRate = options.FrameRate,
             Color = H264Color,
+            Slices = Math.Min(h264.Slices ?? AutoSlices(widthMbs, heightMbs), heightMbs),
+            Parallelism = Math.Max(1, context.Egami.MaxParallelism),
         };
         _settings = new CoreSettings
         {
@@ -142,10 +152,12 @@ internal sealed class H264VideoEncoder : IVideoEncoder
                 MaxQuantizer = h264.MaxQuantizer,
                 Bitrate = bitrate,
                 MaxBitrate = options.MaxBitrate is > 0 and var m ? Math.Max(m, bitrate) : bitrate * 2,
-                BufferSize = options.BufferSize is > 0 and var buffer ? buffer : bitrate,
+                BufferSize = buffer,
                 FrameRate = fps,
                 Pixels = (long)options.Width * options.Height,
                 Steps = H264FrameCoder.QpSteps,
+                PlanWholeGroupAhead = bFrames > 0,
+                ProbeQuantizer = 26,
                 FirstPass = options.RateControl == RateControlMode.Bitrate && options.FirstPassStats is { } stats ? FirstPassComplexities(stats) : null,
             },
         };
@@ -157,8 +169,14 @@ internal sealed class H264VideoEncoder : IVideoEncoder
     /// <summary>Gets the frame coder once the first frame is in, for tests.</summary>
     internal H264FrameCoder? Coder => _coder;
 
+    /// <summary>Gets the stream's settings, for tests.</summary>
+    internal H264StreamConfig Config => _config;
+
     /// <summary>The color of frames converted to the coded format, and of tracks before the first frame: BT.601 limited range.</summary>
     internal static readonly ColorCodePoints H264Color = new(2, 2, 6, false);
+
+    /// <summary>The slices a picture of a size is cut into when the options leave it open: one per 1800 macroblocks, up to eight.</summary>
+    internal static int AutoSlices(int widthMbs, int heightMbs) => Math.Clamp(widthMbs * heightMbs / 1800, 1, 8);
 
     /// <summary>The reference frames P pictures search at an effort: one, two from effort 2, three from 4.</summary>
     internal static int RefFrames(int effort) => effort >= 4 ? 3 : effort >= 2 ? 2 : 1;
@@ -353,7 +371,7 @@ internal sealed class H264FrameCoder : IFrameCoder
         int qp = Math.Clamp(decision.Quantizer, 0, 51);
         int poc = 2 * (decision.Index - _idrIndex);
         _encoder.Load(picture);
-        byte[] slice = idr || _encoder.References == 0
+        byte[][] slices = idr || _encoder.References == 0
             ? _encoder.EncodeIntra(idr, _idrPicId, _frameNum, poc, qp, decision.Referenced)
             : decision.Type == FrameType.Bidirectional
             ? EncodeB(poc, qp, decision.Referenced)
@@ -375,17 +393,17 @@ internal sealed class H264FrameCoder : IFrameCoder
             nals.Add(_sei);
         }
 
-        nals.Add(slice);
+        nals.AddRange(slices);
         Coded?.Invoke(_encoder.Recon, decision.Index);
         return new CodedFrame(H264StreamWriter.AccessUnit(nals, _annexB), null, qp);
     }
 
-    private byte[] EncodeB(int poc, int qp, bool referenced)
+    private byte[][] EncodeB(int poc, int qp, bool referenced)
     {
-        byte[] slice = _encoder.EncodeBidirectional(_frameNum, poc, qp, referenced);
+        byte[][] slices = _encoder.EncodeBidirectional(_frameNum, poc, qp, referenced);
         BPictures++;
         TemporalPictures += _encoder.LastTemporal ? 1 : 0;
-        return slice;
+        return slices;
     }
 
     public (long Key, long Next) Probe(YuvRaster<byte> key, YuvRaster<byte>? next, int quantizer)
@@ -393,12 +411,12 @@ internal sealed class H264FrameCoder : IFrameCoder
         H264PictureEncoder probe = NewEncoder();
         int qp = Math.Clamp(quantizer, 0, 51);
         probe.Load(key);
-        long keyBits = probe.EncodeIntra(true, 0, 0, 0, qp).Length * 8L;
+        long keyBits = probe.EncodeIntra(true, 0, 0, 0, qp).Sum(n => (long)n.Length) * 8;
         long nextBits = 0;
         if (next is not null)
         {
             probe.Load(next);
-            nextBits = probe.EncodePredicted(1, 2, qp, 1).Length * 8L;
+            nextBits = probe.EncodePredicted(1, 2, qp, 1).Sum(n => (long)n.Length) * 8;
         }
 
         return (keyBits, nextBits);

@@ -150,20 +150,16 @@ internal sealed class H264RefPlanes
         int qx = (x * 4) + H264SliceDecoder.MvX(mv), qy = (y * 4) + H264SliceDecoder.MvY(mv);
         int at = _origin + ((qy >> 2) * _stride) + (qx >> 2);
         (byte[] a, int atA, byte[]? b, int atB) = Sources(at, qx & 3, qy & 3);
-        for (int j = 0; j < h; j++)
+        if (b is null)
         {
-            int ra = atA + (j * _stride), rb = atB + (j * _stride), d = dstAt + (j * dstStride);
-            if (b is null)
+            for (int j = 0; j < h; j++)
             {
-                a.AsSpan(ra, w).CopyTo(dst.AsSpan(d, w));
+                a.AsSpan(atA + (j * _stride), w).CopyTo(dst.AsSpan(dstAt + (j * dstStride), w));
             }
-            else
-            {
-                for (int i = 0; i < w; i++)
-                {
-                    dst[d + i] = (byte)((a[ra + i] + b[rb + i] + 1) >> 1);
-                }
-            }
+        }
+        else
+        {
+            H264EncodeSimd.Average(a, atA, _stride, b, atB, _stride, dst, dstAt, dstStride, w, h);
         }
 
         if (weighted && Weighted)
