@@ -6,6 +6,9 @@ and AV1's Egami's `Av1StreamEncoder`; for all three, Egami.Video decides how eac
 frames become references, and how many bits each frame gets. Motion JPEG and uncompressed video encode too, without these
 settings: every frame is a keyframe.
 
+H.264 encodes with the opt-in Egami.Video.H264 package (`VideoWriterOptions.Codec = H264Codec.Instance`) into MP4 and Matroska, or as
+Annex B packets for raw streams, with the same `Quality`, `Effort`, rate control and keyframe settings as below; see [H.264](h264.md#encoding).
+
 ## Writing VP8
 
 Set `VideoWriterOptions.Codec` to `VideoCodecs.Vp8`. `Quality` runs from 0 to 100 (default 60, the scale of Egami's AVIF

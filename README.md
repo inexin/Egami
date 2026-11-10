@@ -73,7 +73,7 @@ Add only the packages you use. Each one has its own guides, and its name links t
 | Package | What it does | Docs | NuGet |
 | --- | --- | --- | --- |
 | [Egami.Video](src/Egami.Video) | Reads and writes video and audio with Egami rasters as frames: MP4, WebM, Matroska, AVI; AV1, VP9 and VP8 decode and encode; Opus, Vorbis, FLAC, MP3 and more | [Guide](https://inexin.github.io/Egami/v1/articles/guides/video.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Video.svg)](https://www.nuget.org/packages/Egami.Video) |
-| [Egami.Video.H264](src/Egami.Video.H264) | H.264 decoding for Egami.Video; opt-in because H.264 is covered by patents | [Guide](https://inexin.github.io/Egami/v1/articles/guides/h264.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Video.H264.svg)](https://www.nuget.org/packages/Egami.Video.H264) |
+| [Egami.Video.H264](src/Egami.Video.H264) | H.264 decoding and encoding for Egami.Video; opt-in because H.264 is covered by patents | [Guide](https://inexin.github.io/Egami/v1/articles/guides/h264.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Video.H264.svg)](https://www.nuget.org/packages/Egami.Video.H264) |
 | [Egami.Video.Hevc](src/Egami.Video.Hevc) | HEVC (H.265) decoding for Egami.Video; opt-in because HEVC is covered by patents | [Guide](https://inexin.github.io/Egami/v1/articles/guides/hevc.html) | [![NuGet](https://img.shields.io/nuget/v/Egami.Video.Hevc.svg)](https://www.nuget.org/packages/Egami.Video.Hevc) |
 
 ### Command-line tools
