@@ -63,6 +63,18 @@ internal sealed class H264RefPlanes
     /// <summary>Gets or sets whether the slices predicting from this picture weight it explicitly.</summary>
     public bool Weighted { get; set; }
 
+    /// <summary>Gets or sets the picture's frame_num.</summary>
+    public int FrameNum { get; set; }
+
+    /// <summary>Gets or sets the picture's order count.</summary>
+    public int Poc { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the picture is a B-frame other pictures predict from (a pyramid's middle), which the next P or I
+    /// picture marks unused.
+    /// </summary>
+    public bool Disposable { get; set; }
+
     /// <summary>Extends the picture's borders and interpolates its half-sample planes.</summary>
     public void Build()
     {

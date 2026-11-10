@@ -11,6 +11,7 @@ namespace Egami.Video.Codecs;
 public sealed record H264EncoderOptions
 {
     private readonly int? _level;
+    private readonly int? _bFrames;
     private readonly int _minQuantizer;
     private readonly int _maxQuantizer = 51;
 
@@ -59,6 +60,20 @@ public sealed record H264EncoderOptions
     /// measure PSNR, which it lowers.
     /// </summary>
     public bool AdaptiveQuantization { get; init; } = true;
+
+    /// <summary>
+    /// Gets the most B-frames between two reference frames, 0 to 16, or <see langword="null"/> (the default) for the effort's:
+    /// none at effort 0, else 3. B-frames predict from the frames on both sides and take fewer bits; how many each run has
+    /// follows the content. They need <see cref="LatencyMode.Quality"/> (the frames are coded out of order, and packets carry
+    /// decode timestamps) and are not in <see cref="H264Profile.ConstrainedBaseline"/>. From effort 4 a run of two or three is
+    /// coded as a pyramid: its middle B-frame is a reference for the others.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 16.</exception>
+    public int? BFrames
+    {
+        get => _bFrames;
+        init => _bFrames = value is int v ? InRange(v, 0, 16) : null;
+    }
 
     /// <summary>
     /// Gets whether packets are Annex B byte streams (start codes, with the parameter sets in every keyframe's packet), as raw

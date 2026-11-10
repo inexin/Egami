@@ -44,6 +44,7 @@ internal sealed partial class H264MbEncoder
         _refCount = count;
         _maxMvY = maxMvY;
         _sub8x8 = sub8x8;
+        _weighted = true;
         if (_frameMv.Length != _mb.WidthMbs * _mb.HeightMbs)
         {
             _frameMv = new int[_mb.WidthMbs * _mb.HeightMbs];
@@ -174,7 +175,10 @@ internal sealed partial class H264MbEncoder
         code.Cbp = 0;
         Array.Clear(code.SubTypes);
         Array.Clear(code.RefIdx);
+        Array.Fill(code.RefIdx1, -1);
+        Array.Clear(code.Mv1);
         Array.Clear(code.Mvd);
+        Array.Clear(code.Mvd1);
         Array.Clear(code.LumaCount);
         Array.Clear(code.Luma8Count);
         Array.Clear(code.ChromaDcCount);
@@ -375,21 +379,25 @@ internal sealed partial class H264MbEncoder
     private long MvCost(int mvx, int mvy, int mvp) =>
         (long)(_sadLambda * (MvdBits(mvx - H264SliceDecoder.MvX(mvp)) + MvdBits(mvy - H264SliceDecoder.MvY(mvp))));
 
-    private long RefCost(int r) => _refCount <= 1 ? 0 : (long)(_sadLambda * (_refCount == 2 ? 1 : BitSinkCodes.UeBits((uint)r)));
+    private long RefCost(int r, int count) => count <= 1 ? 0 : (long)(_sadLambda * (count == 2 ? 1 : BitSinkCodes.UeBits((uint)r)));
 
     /// <summary>
     /// Searches the w by h block at 4x4 block (bx, by) of the macroblock in reference r: the best start in whole samples, a
     /// pattern search around it, then half and quarter samples; returns the vector and its cost.
     /// </summary>
-    private int Search(int r, int bx, int by, int w, int h, int mvp, ReadOnlySpan<int> starts, out long cost)
+    private int Search(int r, int bx, int by, int w, int h, int mvp, ReadOnlySpan<int> starts, out long cost) =>
+        Search(0, r, bx, by, w, h, mvp, starts, out cost);
+
+    /// <summary>Searches the block in reference r of a list.</summary>
+    private int Search(int list, int r, int bx, int by, int w, int h, int mvp, ReadOnlySpan<int> starts, out long cost)
     {
-        H264RefPlanes rp = _refs[r];
+        H264RefPlanes rp = (list == 0 ? _refs : _refs1)[r];
         int px = (_mbX * 16) + (bx * 4), py = (_mbY * 16) + (by * 4), pw = w * 4, ph = h * 4;
         (int minX, int maxX, int minY, int maxY) = Bounds(bx, by, w, h);
         int srcAt = _origin + (py * _stride) + px;
-        long refCost = RefCost(r);
+        long refCost = RefCost(r, list == 0 ? _refCount : _refCount1);
 
-        long IntCost(int x, int y) => (rp.Weighted ? Satd(rp, px, py, pw, ph, H264SliceDecoder.PackMv(x * 4, y * 4), srcAt) : Sad(srcAt, rp.Picture.Y<byte>(), _origin + ((py + y) * _stride) + px + x, pw, ph))
+        long IntCost(int x, int y) => (rp.Weighted && _weighted ? Satd(rp, px, py, pw, ph, H264SliceDecoder.PackMv(x * 4, y * 4), srcAt) : Sad(srcAt, rp.Picture.Y<byte>(), _origin + ((py + y) * _stride) + px + x, pw, ph))
             + MvCost(x * 4, y * 4, mvp);
 
         int ix = Math.Clamp((H264SliceDecoder.MvX(mvp) + 2) >> 2, minX, maxX), iy = Math.Clamp((H264SliceDecoder.MvY(mvp) + 2) >> 2, minY, maxY);
@@ -521,7 +529,7 @@ internal sealed partial class H264MbEncoder
 
     private long Satd(H264RefPlanes rp, int px, int py, int pw, int ph, int mv, int srcAt)
     {
-        rp.Luma(px, py, pw, ph, mv, _mc, 0, 16, true);
+        rp.Luma(px, py, pw, ph, mv, _mc, 0, 16, _weighted);
         return Satd(_srcY, srcAt, _stride, _mc, 0, 16, pw, ph);
     }
 
@@ -533,28 +541,47 @@ internal sealed partial class H264MbEncoder
     /// </summary>
     private double CodeInter(H264MbCode code)
     {
-        code.Kind = H264MbKind.Inter;
+        bool b = _syntax.SliceType == H264SliceType.B;
+        if (!code.Direct)
+        {
+            code.Kind = H264MbKind.Inter;
+        }
+
         code.Qp = _qp;
         Span<int> parts = stackalloc int[16];
-        int n = H264MbSyntax.Parts(code, parts);
-        int mask = 0;
+        int n = H264MbSyntax.Parts(code, parts, b);
+        for (int list = 0; list < (b ? 2 : 1); list++)
+        {
+            int[] mvs = list == 0 ? code.Mv : code.Mv1, mvds = list == 0 ? code.Mvd : code.Mvd1;
+            int mask = 0;
+            for (int i = 0; i < n; i++)
+            {
+                int bx = parts[i] & 15, by = (parts[i] >> 4) & 15, w = (parts[i] >> 8) & 15, h = parts[i] >> 12;
+                int r = H264MbSyntax.BlockRef(code, list, bx, by);
+                int mv = r >= 0 ? mvs[(by * 4) + bx] : 0;
+                int mvd = 0;
+                bool direct = code.Direct || (b && code.Partition == 3 && code.SubTypes[((by >> 1) * 2) + (bx >> 1)] == 0);
+                if (r >= 0 && !direct)
+                {
+                    int mvp = _syntax.PredictMv(list, bx, by, w, h, r, mask);
+                    mvd = H264SliceDecoder.PackMv(H264SliceDecoder.MvX(mv) - H264SliceDecoder.MvX(mvp), H264SliceDecoder.MvY(mv) - H264SliceDecoder.MvY(mvp));
+                }
+
+                for (int y = by; y < by + h; y++)
+                {
+                    mvds.AsSpan((y * 4) + bx, w).Fill(mvd);
+                }
+
+                _syntax.SetBlocks(list, bx, by, w, h, r, mv);
+                mask |= BlockMask(bx, by, w, h);
+            }
+        }
+
         for (int i = 0; i < n; i++)
         {
             int bx = parts[i] & 15, by = (parts[i] >> 4) & 15, w = (parts[i] >> 8) & 15, h = parts[i] >> 12;
-            int r = H264MbSyntax.BlockRef(code, bx, by);
-            int mv = code.Mv[(by * 4) + bx];
-            int mvp = _syntax.PredictMv(bx, by, w, h, r, mask);
-            int mvd = H264SliceDecoder.PackMv(H264SliceDecoder.MvX(mv) - H264SliceDecoder.MvX(mvp), H264SliceDecoder.MvY(mv) - H264SliceDecoder.MvY(mvp));
-            for (int y = by; y < by + h; y++)
-            {
-                code.Mvd.AsSpan((y * 4) + bx, w).Fill(mvd);
-            }
-
-            _syntax.SetBlocks(bx, by, w, h, r, mv);
-            mask |= BlockMask(bx, by, w, h);
-            H264RefPlanes rp = _refs[r];
-            rp.Luma((_mbX * 16) + (bx * 4), (_mbY * 16) + (by * 4), w * 4, h * 4, mv, _ip, (by * 64) + (bx * 4), 16, true);
-            rp.Chroma((_mbX * 8) + (bx * 2), (_mbY * 8) + (by * 2), w * 2, h * 2, mv, _ipCb, _ipCr, (by * 16) + (bx * 2), 8, true);
+            int at = (by * 4) + bx;
+            PredictPart(bx, by, w, h, H264MbSyntax.BlockRef(code, 0, bx, by), code.Mv[at], H264MbSyntax.BlockRef(code, 1, bx, by), code.Mv1[at]);
         }
 
         WritePrediction();
@@ -570,7 +597,7 @@ internal sealed partial class H264MbEncoder
         long chromaSse = Sse(_srcCb, _cb, _chromaAt, _cstride, 8, 8) + Sse(_srcCr, _cr, _chromaAt, _cstride, 8, 8);
         long sse = CodeInterLuma(code, eight: false);
         double cost = sse + chromaSse + (_lambda * Rate(code) / CabacCost.Bit);
-        if (_allow8x8 && _effort >= 2 && H264MbSyntax.NoSub8x8(code))
+        if (_allow8x8 && _effort >= 2 && H264MbSyntax.NoSub8x8(code, b))
         {
             Save(_recon[0]);
             H264MbCode eight = _inter8;

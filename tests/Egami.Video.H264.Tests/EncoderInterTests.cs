@@ -128,17 +128,21 @@ public sealed class EncoderInterTests
     }
 
     /// <summary>Encodes frames, checks each decodes to the reconstruction, and returns the packets.</summary>
-    private static List<EncodedPacket> Check(VideoEncoderOptions options, int frames, Func<int, int, int, YuvRaster<byte>> make)
+    internal static List<EncodedPacket> Check(VideoEncoderOptions options, int frames, Func<int, int, int, YuvRaster<byte>> make, Action<H264FrameCoder>? setup = null)
     {
         using H264VideoEncoder encoder = (H264VideoEncoder)H264Codec.Instance.CreateEncoder(options, MediaContext.Default);
         List<EncodedPacket> packets = [];
-        List<byte[]> recon = [];
+        List<byte[]> recon = [.. Enumerable.Repeat(Array.Empty<byte>(), frames)];
         Rational timeBase = options.FrameRate.Reciprocal();
         for (int i = 0; i < frames; i++)
         {
             using YuvRaster<byte> picture = make(options.Width, options.Height, i);
             encoder.Send(new YuvVideoFrame(picture, new MediaTime(i, timeBase)));
-            encoder.Coder!.Coded ??= pic => recon.Add(H264EncoderTests.Planes(pic, options.Width, options.Height));
+            if (encoder.Coder!.Coded is null)
+            {
+                encoder.Coder.Coded = (pic, index) => recon[index] = H264EncoderTests.Planes(pic, options.Width, options.Height);
+                setup?.Invoke(encoder.Coder);
+            }
             while (encoder.TryReceive(out EncodedPacket? packet))
             {
                 packets.Add(packet);
