@@ -82,7 +82,7 @@ The end needs no encoding: VP8, VP9 and AV1 decode in packet order and code a hi
 the cut keeps every packet up to the one that shows its last frame and drops a hidden frame after it that nothing shows.
 
 Smart cut falls back where it must and says so in a `MediaWarning`, in `TrimResult.Warnings` and through
-`MediaContext.Warnings`: a codec Egami.Video cannot encode (H.264, HEVC) starts at the keyframe (`trim-keyframe`), as do
+`MediaContext.Warnings`: a codec smart cut cannot match (H.264, HEVC) starts at the keyframe (`trim-keyframe`), as do
 frames that change size, and a stream the encoder cannot match (a VP8 version other than 0, 4:4:0 or monochrome AV1, an AV1
 sequence header with frame ids or a decoder model) is encoded again whole (`trim-reencode`). `TrimResult` tells where the cut
 starts in the input, how many frames it holds and how many were encoded again.
