@@ -9,7 +9,9 @@ namespace Egami.Video.Codecs;
 /// 10 and High 4:2:2 profiles and their Intra profiles, progressive or interlaced (field pictures and MBAFF frames, woven, with
 /// <see cref="VideoFrame.FieldOrder"/>): 4:2:0, 4:2:2 and monochrome, 8 to 10 bits. Frames come out in
 /// presentation order at the stream's cropped size, as 8-bit planes, or 16-bit planes holding 9 or 10 bits; monochrome streams
-/// give a luma plane only (<see cref="Egami.Pixels.ChromaFormat.Yuv400"/>). Register it with <see cref="H264MediaContextExtensions.WithH264"/>. Decode only.
+/// give a luma plane only (<see cref="Egami.Pixels.ChromaFormat.Yuv400"/>). Register it with <see cref="H264MediaContextExtensions.WithH264"/>.
+/// <see cref="CreateEncoder"/> encodes 8-bit 4:2:0 progressive streams in the Constrained Baseline, Main and High profiles
+/// (<see cref="H264EncoderOptions"/>).
 /// </summary>
 /// <remarks>
 /// <para>
@@ -26,9 +28,9 @@ namespace Egami.Video.Codecs;
 /// <see cref="DecodeErrorMode.Conceal"/> mode the macroblocks a broken slice leaves are copied from the previous picture.
 /// </para>
 /// <para>
-/// H.264 is covered by patents. Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence
-/// depends on your country and on how you use and distribute this package; commercial products may need one from the AVC patent
-/// pools or holders.
+/// H.264 is covered by patents, for encoding as for decoding. Egami's authors grant no patent rights and are not lawyers.
+/// Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial
+/// products may need one from the AVC patent pools or holders.
 /// </para>
 /// </remarks>
 /// <example>
@@ -88,5 +90,24 @@ public sealed class H264Codec : VideoCodec
         }
 
         return new H264VideoDecoder(track, options, context);
+    }
+
+    /// <inheritdoc/>
+    public override bool CanEncode => true;
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// The frames are coded as 8-bit 4:2:0 planes; others are converted. The width and height must be even. Packets are
+    /// length-prefixed with the parameter sets in the track's avcC record, or Annex B with <see cref="H264EncoderOptions.AnnexB"/>.
+    /// </remarks>
+    /// <exception cref="ArgumentException">The options do not make a valid stream, such as an odd size or a level too small for it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/VideoH264.cs" region="encode"/>
+    /// </example>
+    public override IVideoEncoder CreateEncoder(VideoEncoderOptions options, MediaContext context)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(context);
+        return new H264VideoEncoder(options, context);
     }
 }

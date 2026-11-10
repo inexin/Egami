@@ -1,3 +1,4 @@
+using Egami.Colors;
 using Egami.Pixels;
 using Egami.Video;
 using Egami.Video.Codecs;
@@ -94,5 +95,33 @@ public class VideoH264
         Assert.Equal((170, 100), (reader.Track.Width, reader.Track.Height));
         Assert.Equal(new Rational(30, 1), reader.Track.FrameRate);
         Assert.Equal(10, reader.ReadFrames().Select(f => { f.Dispose(); return 0; }).Count());
+    }
+
+    [Fact]
+    public void Encode()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgb8> duck = Raster.Load<Rgb8>("duck.png");
+
+        #region encode
+        // H.264 in MP4: High profile with CABAC by default, the level picked from the frame size and rate.
+        VideoWriterOptions options = new() { Codec = H264Codec.Instance, FrameRate = new Rational(30, 1), Quality = 60 };
+        using (VideoWriter writer = VideoWriter.Create("duck.mp4", options))
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                using Raster<Rgb8> frame = duck.Derive(ops => ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+                writer.WriteFrame(frame);
+            }
+        }
+
+        // Expert settings: Constrained Baseline (CAVLC) at level 3.0 for the simplest players.
+        VideoWriterOptions baseline = options with { H264 = new H264EncoderOptions { Profile = H264Profile.ConstrainedBaseline, Level = 30, Entropy = H264EntropyCoder.Cavlc } };
+        #endregion
+
+        using VideoReader reader = VideoReader.Open("duck.mp4", context: MediaContext.Default.WithH264());
+        Assert.Equal(CodecIds.Avc, reader.Track.CodecId);
+        Assert.Equal(10, reader.ReadFrames().Select(f => { f.Dispose(); return 0; }).Count());
+        Assert.Equal(H264Profile.ConstrainedBaseline, baseline.H264!.Profile);
     }
 }

@@ -1,0 +1,74 @@
+namespace Egami.Video.Codecs.H264;
+
+/// <summary>The level limits of H.264's Table A-1 that the encoder picks levels by and keeps to.</summary>
+internal static class H264Levels
+{
+    /// <summary>One level's limits: macroblocks per second and per frame, the DPB in macroblocks, and the bitrate in 1000 bits per second (Baseline and Main; High allows 1.25 times).</summary>
+    internal readonly record struct Limits(int Idc, long MaxMbps, int MaxFs, int MaxDpbMbs, int MaxBr);
+
+    internal static readonly Limits[] Table =
+    [
+        new(10, 1485, 99, 396, 64),
+        new(11, 3000, 396, 900, 192),
+        new(12, 6000, 396, 2376, 384),
+        new(13, 11880, 396, 2376, 768),
+        new(20, 11880, 396, 2376, 2000),
+        new(21, 19800, 792, 4752, 4000),
+        new(22, 20250, 1620, 8100, 4000),
+        new(30, 40500, 1620, 8100, 10000),
+        new(31, 108000, 3600, 18000, 14000),
+        new(32, 216000, 5120, 20480, 20000),
+        new(40, 245760, 8192, 32768, 20000),
+        new(41, 245760, 8192, 32768, 50000),
+        new(42, 522240, 8704, 34816, 50000),
+        new(50, 589824, 22080, 110400, 135000),
+        new(51, 983040, 36864, 184320, 240000),
+        new(52, 2073600, 36864, 184320, 240000),
+        new(60, 4177920, 139264, 696320, 240000),
+        new(61, 8355840, 139264, 696320, 480000),
+        new(62, 16711680, 139264, 696320, 800000),
+    ];
+
+    /// <summary>The limits of a level_idc.</summary>
+    internal static Limits Of(int idc) => Array.Find(Table, l => l.Idc == idc);
+
+    /// <summary>
+    /// Why a stream of this size, rate and DPB does not fit a level (A.3.1, A.3.2), or <see langword="null"/> when it does:
+    /// frame size and each side (no side longer than √(8 MaxFS) macroblocks), macroblock rate, and the frames the DPB holds.
+    /// </summary>
+    internal static string? Misfit(Limits level, int widthMbs, int heightMbs, double fps, int dpbFrames)
+    {
+        int frame = widthMbs * heightMbs;
+        double side = Math.Sqrt(level.MaxFs * 8.0);
+        if (frame > level.MaxFs || widthMbs > side || heightMbs > side)
+        {
+            return $"{widthMbs}x{heightMbs} macroblocks is larger than level {level.Idc / 10.0:0.0} allows ({level.MaxFs} macroblocks, no side over {(int)side})";
+        }
+
+        if (frame * fps > level.MaxMbps)
+        {
+            return $"{frame * fps:0} macroblocks a second is more than level {level.Idc / 10.0:0.0} allows ({level.MaxMbps})";
+        }
+
+        if (dpbFrames * frame > level.MaxDpbMbs)
+        {
+            return $"{dpbFrames} reference frames of {frame} macroblocks are more than level {level.Idc / 10.0:0.0}'s buffer holds ({level.MaxDpbMbs} macroblocks)";
+        }
+
+        return null;
+    }
+
+    /// <summary>The lowest level a stream fits, or the highest when it fits none.</summary>
+    internal static int Choose(int widthMbs, int heightMbs, double fps, int dpbFrames)
+    {
+        foreach (Limits level in Table)
+        {
+            if (Misfit(level, widthMbs, heightMbs, fps, dpbFrames) is null)
+            {
+                return level.Idc;
+            }
+        }
+
+        return Table[^1].Idc;
+    }
+}
