@@ -5,6 +5,14 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
+
+- `Typeface.Math` reads a face's OpenType `MATH` table: `MathConstants`, italics corrections, top accent attachments, extended
+  shapes, corner kerning, and the variants and assemblies (`MathGlyphVariant`, `MathGlyphAssembly`, `MathGlyphPart`) of
+  stretchy glyphs.
+- Egami.Fonts.Substitutes bundles STIX Two Math (SIL OFL 1.1) for Cambria Math: `SubstituteFonts.Find("Cambria Math", ...)`
+  returns it, and the collection holds it as a sixth family.
+
 Faster JPEG XL lossy and lossless encoding. Files are unchanged byte for byte at every effort.
 
 - The AC strategy search stops an estimate once the channels done so far already make it lose, starting with Y, and keeps

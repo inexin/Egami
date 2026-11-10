@@ -136,7 +136,7 @@ public sealed partial class Typeface
             {
                 if (axes[i].Tag == v.Axis)
                 {
-                    user[i] = Math.Clamp(v.Value, axes[i].Min, axes[i].Max);
+                    user[i] = System.Math.Clamp(v.Value, axes[i].Min, axes[i].Max);
                 }
             }
         }
@@ -160,7 +160,7 @@ public sealed partial class Typeface
         float[] user = (float[])data.Space.Instances[index].Coordinates.Clone();
         for (int i = 0; i < user.Length; i++)
         {
-            user[i] = Math.Clamp(user[i], axes[i].Min, axes[i].Max);
+            user[i] = System.Math.Clamp(user[i], axes[i].Min, axes[i].Max);
         }
 
         return Root.AtPosition(data, user);
@@ -421,7 +421,7 @@ public sealed partial class Typeface
         {
             if (instance.User[i] != space.Axes[i].Default)
             {
-                name.Append('_').Append(Math.Round(instance.User[i], 3).ToString("0.###", CultureInfo.InvariantCulture)).Append(space.Axes[i].Tag.ToString().TrimEnd(' ', '_'));
+                name.Append('_').Append(System.Math.Round(instance.User[i], 3).ToString("0.###", CultureInfo.InvariantCulture)).Append(space.Axes[i].Tag.ToString().TrimEnd(' ', '_'));
             }
         }
 

@@ -241,7 +241,7 @@ public sealed partial class Typeface
         for (int i = 0; i < maps.Length; i++)
         {
             CmapRecord record = records[i];
-            maps[i] = new CharacterMap(record.PlatformId, record.EncodingId, Math.Max(record.Format, 0), record.Language, GlyphCount, () => LoadSubtable(table, tableOffset, record));
+            maps[i] = new CharacterMap(record.PlatformId, record.EncodingId, System.Math.Max(record.Format, 0), record.Language, GlyphCount, () => LoadSubtable(table, tableOffset, record));
         }
 
         return Array.AsReadOnly(maps);
@@ -275,7 +275,7 @@ public sealed partial class Typeface
 
         // Read at once (256 codes): the Standard or Expert Encoding naming no glyph of the font gives no map, as FreeType adds no
         // charmap then; a custom encoding always gives one.
-        int kind = Math.Clamp(cff.Top.GetInt(CffFont.OpEncoding, 0), 0, 2);
+        int kind = System.Math.Clamp(cff.Top.GetInt(CffFont.OpEncoding, 0), 0, 2);
         TrimmedSubtable? table;
         try
         {

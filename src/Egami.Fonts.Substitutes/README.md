@@ -5,6 +5,7 @@ Egami.Fonts.Substitutes bundles open fonts that stand in for the fonts documents
 
 - Liberation Sans, Serif and Mono for Helvetica, Arial, Times, Times New Roman, Courier and Courier New, Carlito for Calibri and
   Caladea for Cambria, each in regular, bold, italic and bold italic.
+- STIX Two Math for Cambria Math: one face with an OpenType MATH table, for laying out equations.
 - Every glyph has the width of the font it replaces, so text set in a substitute keeps the original's line breaks.
 - Works on any machine, whatever fonts are installed. The fonts are under the SIL Open Font License 1.1; their licences ship in
   the package.

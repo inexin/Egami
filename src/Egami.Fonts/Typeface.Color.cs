@@ -212,7 +212,7 @@ public sealed partial class Typeface
             return colors;
         }
 
-        int size = Math.Max(colors.Length, palette.Overrides.Max(o => o.Index) + 1);
+        int size = System.Math.Max(colors.Length, palette.Overrides.Max(o => o.Index) + 1);
         Array.Resize(ref colors, size);
         foreach (FontPaletteEntry entry in palette.Overrides)
         {
