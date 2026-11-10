@@ -124147,6 +124147,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.H264EncoderOptions.Profile
   nameWithType: H264EncoderOptions.Profile
+- uid: Egami.Video.Codecs.H264EncoderOptions.Slices
+  name: Slices
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_Slices
+  commentId: P:Egami.Video.Codecs.H264EncoderOptions.Slices
+  fullName: Egami.Video.Codecs.H264EncoderOptions.Slices
+  nameWithType: H264EncoderOptions.Slices
+- uid: Egami.Video.Codecs.H264EncoderOptions.Slices*
+  name: Slices
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_Slices_
+  commentId: Overload:Egami.Video.Codecs.H264EncoderOptions.Slices
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.H264EncoderOptions.Slices
+  nameWithType: H264EncoderOptions.Slices
 - uid: Egami.Video.Codecs.H264EntropyCoder
   name: H264EntropyCoder
   href: api/Egami.Video.Codecs.H264EntropyCoder.html
