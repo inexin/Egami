@@ -158,6 +158,9 @@ internal sealed class H264VideoEncoder : IVideoEncoder
                 Steps = H264FrameCoder.QpSteps,
                 PlanWholeGroupAhead = bFrames > 0,
                 ProbeQuantizer = 26,
+                InterFromKeyProbe = true,
+                BufferPull = 8,
+                BufferStepPull = 2,
                 FirstPass = options.RateControl == RateControlMode.Bitrate && options.FirstPassStats is { } stats ? FirstPassComplexities(stats) : null,
             },
         };

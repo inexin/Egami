@@ -48,6 +48,28 @@ public sealed class EncoderRateTests
     }
 
     [Theory]
+    [InlineData(20_000)]
+    [InlineData(40_000)]
+    [InlineData(80_000)]
+    public void StarvedConstantBitrateHoldsTheBufferAndTheRate(long bitrate)
+    {
+        // Real time at rates that need coarse steps: the first inter frame must not be planned from an unlearned model, and the
+        // stream must not drift far below the target either.
+        const int Frames = 90;
+        List<EncodedPacket> packets = Encode(Frames, Options(RateControlMode.ConstantBitrate, bitrate, null) with { LatencyMode = LatencyMode.Realtime });
+        double level = bitrate * 0.75, perFrame = bitrate / 30.0, bits = 0;
+        foreach (EncodedPacket packet in packets)
+        {
+            level = Math.Min(bitrate, level + perFrame) - (packet.Data.Length * 8);
+            bits += packet.Data.Length * 8;
+            Assert.True(level >= 0, $"buffer at {level:F0} bits");
+            packet.Dispose();
+        }
+
+        Assert.InRange(bits / (Frames / 30.0) / bitrate, 0.95, 1.05);
+    }
+
+    [Theory]
     [InlineData(RateControlMode.Quality, null, 13)]
     [InlineData(RateControlMode.ConstantBitrate, 1_500_000L, 20)]
     [InlineData(RateControlMode.ConstantBitrate, 3_000_000L, 21)]
