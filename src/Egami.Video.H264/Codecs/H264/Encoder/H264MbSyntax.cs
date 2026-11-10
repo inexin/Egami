@@ -504,9 +504,12 @@ internal sealed class H264MbSyntax
 
     /// <summary>Writes residual_block_cabac (7.3.5.3.3) of a block's levels: coded_block_flag, significance map, then levels.</summary>
     public void BlockCabac<T>(ref T sink, int cat, int cbfInc, int maxNumCoeff, int[] levels, int at, int count)
+        where T : struct, ICabacSink => BlockCabac(Contexts, ref sink, cat, cbfInc, maxNumCoeff, levels, at, count);
+
+    /// <summary>Writes residual_block_cabac with the contexts in <paramref name="ctx"/>.</summary>
+    public static void BlockCabac<T>(byte[] ctx, ref T sink, int cat, int cbfInc, int maxNumCoeff, int[] levels, int at, int count)
         where T : struct, ICabacSink
     {
-        byte[] ctx = Contexts;
         if (cbfInc >= 0)
         {
             sink.Encode(ref ctx[85 + CbfOffset[cat] + cbfInc], count > 0 ? 1 : 0);

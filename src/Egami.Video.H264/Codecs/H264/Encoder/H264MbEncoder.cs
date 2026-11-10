@@ -34,6 +34,7 @@ internal sealed class H264MbEncoder
     private readonly byte[][] _recon = [new byte[256], new byte[256], new byte[256]];
     private readonly byte[] _pred = new byte[256];
     private readonly byte[] _ctx = new byte[460];
+    private readonly byte[] _rdoqCtx = new byte[460];
     private readonly int[] _t = new int[33];
     private readonly int[] _l = new int[17];
     private readonly int[] _w = new int[256];
@@ -214,15 +215,7 @@ internal sealed class H264MbEncoder
         bool anyAc = false;
         for (int blk = 0; blk < 16; blk++)
         {
-            int n = 0;
-            for (int k = 1; k < 16; k++)
-            {
-                int pos = H264ScalingLists.Zigzag4x4[k];
-                int level = H264Forward.Quantize(_w[(blk * 16) + pos], H264Forward.Mf4[(m * 16) + pos], H264Forward.Shift4 + q6, IntraRound);
-                code.Luma[(blk * 16) + k - 1] = level;
-                n += level != 0 ? 1 : 0;
-            }
-
+            int n = QuantizeBlock(_w.AsSpan(blk * 16, 16), code.Luma, blk * 16, 1, 15, false, _qp, 1);
             code.Luma[(blk * 16) + 15] = 0;
             code.LumaCount[blk] = n;
             anyAc |= n > 0;
@@ -337,20 +330,9 @@ internal sealed class H264MbEncoder
             H264IntraPredict.PredictNxN(_pred, 4, 4, bestMode, t, l, top, left);
             Residual(_srcY, at, _stride, _pred, 0, 4, 4, block);
             H264Forward.Transform4x4(block);
-            int n = 0;
+            int n = QuantizeBlock(block, code.Luma, blk * 16, 0, 16, false, _qp, 2);
             Span<int> d = _d.AsSpan(0, 16);
-            d.Clear();
-            for (int k = 0; k < 16; k++)
-            {
-                int pos = H264ScalingLists.Zigzag4x4[k];
-                int level = H264Forward.Quantize(block[pos], H264Forward.Mf4[(m * 16) + pos], H264Forward.Shift4 + q6, IntraRound);
-                code.Luma[(blk * 16) + k] = level;
-                if (level != 0)
-                {
-                    n++;
-                    d[pos] = Scale4x4(level, _qp, _scale4, pos);
-                }
-            }
+            Dequantize(code.Luma, blk * 16, 0, 16, false, _qp, d);
 
             code.LumaCount[blk] = n;
             cbp |= n > 0 ? 1 << (blk >> 2) : 0;
@@ -406,20 +388,9 @@ internal sealed class H264MbEncoder
             H264IntraPredict.PredictNxN(_pred, 8, 8, bestMode, t, l, top, left);
             Residual(_srcY, at, _stride, _pred, 0, 8, 8, block);
             H264Forward.Transform8x8(block);
-            int n = 0;
+            int n = QuantizeBlock(block, code.Luma8, i8 * 64, 0, 64, true, _qp, 5);
             Span<int> d = _d.AsSpan(0, 64);
-            d.Clear();
-            for (int k = 0; k < 64; k++)
-            {
-                int pos = H264ScalingLists.Zigzag8x8[k];
-                int level = H264Forward.Quantize(block[pos], H264Forward.Mf8[(m * 64) + pos], H264Forward.Shift8 + q6, IntraRound);
-                code.Luma8[(i8 * 64) + k] = level;
-                if (level != 0)
-                {
-                    n++;
-                    d[pos] = Scale8x8(level, _qp, _scale8, pos);
-                }
-            }
+            Dequantize(code.Luma8, i8 * 64, 0, 64, true, _qp, d);
 
             code.Luma8Count[i8] = n;
             cbp |= n > 0 ? 1 << i8 : 0;
@@ -535,15 +506,8 @@ internal sealed class H264MbEncoder
         bool anyAc = false;
         for (int blk = 0; blk < 4; blk++)
         {
-            int n = 0;
             int at = ((c * 4) + blk) * 16;
-            for (int k = 1; k < 16; k++)
-            {
-                int pos = H264ScalingLists.Zigzag4x4[k];
-                int level = H264Forward.Quantize(w[(blk * 16) + pos], H264Forward.Mf4[(m * 16) + pos], H264Forward.Shift4 + q6, IntraRound);
-                code.ChromaAc[at + k - 1] = level;
-                n += level != 0 ? 1 : 0;
-            }
+            int n = QuantizeBlock(w.Slice(blk * 16, 16), code.ChromaAc, at, 1, 15, false, _qpc, 4);
 
             code.ChromaAc[at + 15] = 0;
             code.ChromaAcCount[(c * 4) + blk] = n;
@@ -591,6 +555,145 @@ internal sealed class H264MbEncoder
         }
 
         return (dcCount > 0, anyAc);
+    }
+
+    // ---- Quantization ----
+
+    /// <summary>
+    /// Quantizes a block's transform coefficients (raster order) into <paramref name="max"/> levels in scan order from scan
+    /// position <paramref name="first"/>, then, from effort 3 on, lowers each level by one or to zero where the squared error
+    /// it adds is less than λ times the bits it saves (RDOQ, greedy from the last level back); returns the non-zero levels.
+    /// </summary>
+    private int QuantizeBlock(ReadOnlySpan<int> w, int[] levels, int at, int first, int max, bool eight, int qp, int cat)
+    {
+        int m = qp % 6, q6 = qp / 6;
+        byte[] scan = eight ? H264ScalingLists.Zigzag8x8 : H264ScalingLists.Zigzag4x4;
+        bool rdoq = _effort >= 3;
+        int round = rdoq ? 128 : IntraRound;
+        int n = 0;
+        for (int k = 0; k < max; k++)
+        {
+            int pos = scan[k + first];
+            int level = eight
+                ? H264Forward.Quantize(w[pos], H264Forward.Mf8[(m * 64) + pos], H264Forward.Shift8 + q6, round)
+                : H264Forward.Quantize(w[pos], H264Forward.Mf4[(m * 16) + pos], H264Forward.Shift4 + q6, round);
+            levels[at + k] = level;
+            n += level != 0 ? 1 : 0;
+        }
+
+        return rdoq && n > 0 ? Rdoq(w, levels, at, first, max, eight, qp, cat, n) : n;
+    }
+
+    private int Rdoq(ReadOnlySpan<int> w, int[] levels, int at, int first, int max, bool eight, int qp, int cat, int n)
+    {
+        byte[] scan = eight ? H264ScalingLists.Zigzag8x8 : H264ScalingLists.Zigzag4x4;
+        double lambda = _lambda / CabacCost.Bit;
+        double distortion = 0, zero = 0;
+        for (int k = 0; k < max; k++)
+        {
+            int pos = scan[k + first];
+            double step = eight ? H264Forward.Step8(qp, pos) : H264Forward.Step4(qp, pos);
+            double weight = eight ? H264Forward.Weight8[pos] : H264Forward.Weight4[pos];
+            double e = w[pos] - (levels[at + k] * step);
+            distortion += e * e * weight;
+            zero += (double)w[pos] * w[pos] * weight;
+        }
+
+        long rate = BlockRate(levels, at, max, cat, n);
+        for (int k = max - 1; k >= 0; k--)
+        {
+            int level = levels[at + k];
+            if (level == 0)
+            {
+                continue;
+            }
+
+            int pos = scan[k + first];
+            double step = eight ? H264Forward.Step8(qp, pos) : H264Forward.Step4(qp, pos);
+            double weight = eight ? H264Forward.Weight8[pos] : H264Forward.Weight4[pos];
+            int lower = level - Math.Sign(level);
+            double before = w[pos] - (level * step), after = w[pos] - (lower * step);
+            double dd = ((after * after) - (before * before)) * weight;
+            levels[at + k] = lower;
+            int n2 = lower == 0 ? n - 1 : n;
+            long rate2 = BlockRate(levels, at, max, cat, n2);
+            if (dd + (lambda * (rate2 - rate)) < 0)
+            {
+                distortion += dd;
+                rate = rate2;
+                n = n2;
+            }
+            else
+            {
+                levels[at + k] = level;
+            }
+        }
+
+        // The whole block as zeros: coded_block_flag 0 instead of the levels.
+        if (n > 0 && zero <= distortion + (lambda * rate))
+        {
+            levels.AsSpan(at, max).Clear();
+            n = 0;
+        }
+
+        return n;
+    }
+
+    /// <summary>
+    /// The bits of a block's levels in 1/32768 bit: CABAC from the slice's current states, with one bit standing for the
+    /// coded_block_flag (its context depends on the neighbours), or CAVLC with nC 0.
+    /// </summary>
+    private long BlockRate(int[] levels, int at, int max, int cat, int n)
+    {
+        if (n == 0)
+        {
+            return 0;
+        }
+
+        if (_syntax.Cabac)
+        {
+            Array.Copy(_syntax.Contexts, _rdoqCtx, _rdoqCtx.Length);
+            CabacCountSink sink = default;
+            H264MbSyntax.BlockCabac(_rdoqCtx, ref sink, cat, -1, max, levels, at, n);
+            return sink.Cost + CabacCost.Bit;
+        }
+
+        BitCountSink bits = default;
+        if (cat == 5)
+        {
+            Span<int> list = stackalloc int[16];
+            for (int i4 = 0; i4 < 4; i4++)
+            {
+                for (int k = 0; k < 16; k++)
+                {
+                    list[k] = levels[at + (4 * k) + i4];
+                }
+
+                H264MbSyntax.BlockCavlc(ref bits, 0, 16, list);
+            }
+        }
+        else
+        {
+            H264MbSyntax.BlockCavlc(ref bits, 0, max, levels.AsSpan(at, max));
+        }
+
+        return bits.Bits * CabacCost.Bit;
+    }
+
+    /// <summary>Scales a block's levels (scan order from <paramref name="first"/>) into raster coefficients as the decoder does.</summary>
+    private void Dequantize(int[] levels, int at, int first, int max, bool eight, int qp, Span<int> d)
+    {
+        d.Clear();
+        byte[] scan = eight ? H264ScalingLists.Zigzag8x8 : H264ScalingLists.Zigzag4x4;
+        for (int k = 0; k < max; k++)
+        {
+            int level = levels[at + k];
+            if (level != 0)
+            {
+                int pos = scan[k + first];
+                d[pos] = eight ? Scale8x8(level, qp, _scale8, pos) : Scale4x4(level, qp, _scale4, pos);
+            }
+        }
     }
 
     // ---- Shared ----

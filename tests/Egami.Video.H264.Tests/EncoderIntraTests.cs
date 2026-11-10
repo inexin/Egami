@@ -25,7 +25,19 @@ public sealed class EncoderIntraTests
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public void DecodesToTheReconstruction(int profile, bool cabac, bool t8, int qp, int width, int height)
+    public void DecodesToTheReconstruction(int profile, bool cabac, bool t8, int qp, int width, int height) =>
+        Check(profile, cabac, t8, qp, width, height, 4);
+
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(0, false)]
+    [InlineData(2, true)]
+    [InlineData(2, false)]
+    [InlineData(10, true)]
+    [InlineData(10, false)]
+    public void EveryEffortDecodesToTheReconstruction(int effort, bool cabac) => Check(100, cabac, true, 28, 64, 48, effort);
+
+    private static void Check(int profile, bool cabac, bool t8, int qp, int width, int height, int effort)
     {
         H264StreamConfig config = new()
         {
@@ -38,7 +50,7 @@ public sealed class EncoderIntraTests
             FrameRate = new Rational(25, 1),
             Color = new ColorCodePoints(1, 1, 1, false),
         };
-        H264PictureEncoder encoder = new(config, 4);
+        H264PictureEncoder encoder = new(config, effort);
         byte[] sps = H264StreamWriter.Sps(config), pps = H264StreamWriter.Pps(config);
         VideoTrackInfo track = new()
         {
@@ -74,7 +86,7 @@ public sealed class EncoderIntraTests
         }
     }
 
-    private static double MinPsnr(int qp) => qp switch { <= 10 => 42, <= 26 => 33, <= 30 => 30, <= 45 => 21, _ => 15 };
+    private static double MinPsnr(int qp) => qp switch { <= 10 => 42, <= 26 => 33, <= 30 => 30, <= 45 => 19, _ => 15 };
 
     private static void Compare(byte[] recon, int origin, int stride, YuvPlane<byte> decoded, int width, int height, string plane)
     {
