@@ -552,8 +552,8 @@ public sealed partial class Typeface
             int count = _cff.GlyphCount;
             if (declared >= 0 && declared != count)
             {
-                Repair("Font.BadTable", $"maxp gives {declared} glyphs but the CFF data has {count}; {Math.Min(declared, count)} are used.", maxpOffset);
-                count = Math.Min(declared, count);
+                Repair("Font.BadTable", $"maxp gives {declared} glyphs but the CFF data has {count}; {System.Math.Min(declared, count)} are used.", maxpOffset);
+                count = System.Math.Min(declared, count);
             }
 
             if (count <= 0)
@@ -579,11 +579,11 @@ public sealed partial class Typeface
             _ => declared >= 0 ? loca.Length >= (declared + 1) * 4 : loca.Length / 2 - 1 > 0xFFFF,
         };
         int available = (longFormat ? loca.Length / 4 : loca.Length / 2) - 1;
-        int glyphs = declared >= 0 ? declared : Math.Min(available, 0xFFFF);
+        int glyphs = declared >= 0 ? declared : System.Math.Min(available, 0xFFFF);
         if (available < glyphs)
         {
-            Repair("Font.BadTable", $"The loca table has entries for {Math.Max(0, available)} glyphs of {glyphs}; the rest are left out.", locaOffset);
-            glyphs = Math.Max(0, available);
+            Repair("Font.BadTable", $"The loca table has entries for {System.Math.Max(0, available)} glyphs of {glyphs}; the rest are left out.", locaOffset);
+            glyphs = System.Math.Max(0, available);
         }
 
         if (glyphs <= 0)
@@ -595,7 +595,7 @@ public sealed partial class Typeface
         return glyphs;
     }
 
-    private static short Clamp16(double value) => (short)Math.Clamp(Math.Round(value), short.MinValue, short.MaxValue);
+    private static short Clamp16(double value) => (short)System.Math.Clamp(System.Math.Round(value), short.MinValue, short.MaxValue);
 
     private static void CheckSize(long length, FontLoadOptions options)
     {

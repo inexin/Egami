@@ -547,13 +547,44 @@ public class Text
         Typeface? arial = SubstituteFonts.Find("Arial", FontStyle.Bold);
         Font body = new(SubstituteFonts.Find("Calibri", FontStyle.Normal)!, 11);
 
-        // All twenty faces as a collection, matched by family name and style.
+        // All twenty-one faces as a collection, matched by family name and style.
         FontMatch? mono = SubstituteFonts.Collection.Match("Liberation Mono", FontStyle.Italic);
         #endregion
 
         Assert.Equal("LiberationSans-Bold", arial!.PostScriptName);
         Assert.Equal("Carlito-Regular", body.Typeface.PostScriptName);
         Assert.Equal("LiberationMono-Italic", mono!.Value.Typeface.PostScriptName);
+    }
+
+    [Fact]
+    public void MathTable()
+    {
+        #region math
+        // STIX Two Math stands in for Cambria Math; its MATH table places scripts and grows delimiters.
+        Typeface face = SubstituteFonts.Find("Cambria Math", FontStyle.Normal)!;
+        TypefaceMath math = face.Math!;
+        float scale = 24f / face.UnitsPerEm;                       // font units to pixels at 24 px
+        float axis = math.Constants.AxisHeight * scale;           // where fraction bars and minus signs sit
+        float scriptSize = 24f * math.Constants.ScriptPercentScaleDown / 100;
+
+        // A parenthesis tall enough for 60 px: the smallest variant that fits, else an assembly built from parts.
+        ushort paren = face.GetGlyph('(');
+        MathGlyphVariant? variant = null;
+        foreach (MathGlyphVariant v in math.GetVariants(paren, MathDirection.Vertical))
+        {
+            if (v.Advance * scale >= 60)
+            {
+                variant = v;
+                break;
+            }
+        }
+
+        MathGlyphAssembly? assembly = variant is null ? math.GetAssembly(paren, MathDirection.Vertical) : null;
+        #endregion
+
+        Assert.InRange(axis, 4, 8);
+        Assert.InRange(scriptSize, 15, 20);
+        Assert.True(variant is not null || assembly is not null);
     }
 
     [Fact]

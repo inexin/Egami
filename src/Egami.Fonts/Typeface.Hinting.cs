@@ -201,16 +201,16 @@ public sealed partial class Typeface
     private void MeasureZones(List<HintZone> zones)
     {
         GlyphExtents x = InkOf('x'), h = InkOf('H'), o = InkOf('o'), capO = InkOf('O'), p = InkOf('p');
-        float baselineOvershoot = Math.Min(o.IsEmpty ? 0 : o.YMin, capO.IsEmpty ? 0 : capO.YMin);
-        zones.Add(new HintZone(0, Math.Min(0, baselineOvershoot)));
+        float baselineOvershoot = System.Math.Min(o.IsEmpty ? 0 : o.YMin, capO.IsEmpty ? 0 : capO.YMin);
+        zones.Add(new HintZone(0, System.Math.Min(0, baselineOvershoot)));
         if (!x.IsEmpty)
         {
-            zones.Add(new HintZone(x.YMax, Math.Max(x.YMax, o.IsEmpty ? x.YMax : o.YMax)));
+            zones.Add(new HintZone(x.YMax, System.Math.Max(x.YMax, o.IsEmpty ? x.YMax : o.YMax)));
         }
 
         if (!h.IsEmpty)
         {
-            zones.Add(new HintZone(h.YMax, Math.Max(h.YMax, capO.IsEmpty ? h.YMax : capO.YMax)));
+            zones.Add(new HintZone(h.YMax, System.Math.Max(h.YMax, capO.IsEmpty ? h.YMax : capO.YMax)));
         }
 
         if (!p.IsEmpty && p.YMin < 0)

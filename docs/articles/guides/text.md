@@ -259,15 +259,35 @@ Documents often name Arial, Helvetica, Times, Courier, Calibri or Cambria withou
 servers and containers above all) have none of them. Egami.Fonts.Substitutes is a separate, opt-in package that bundles open
 fonts with the same glyph widths, so text set in a substitute keeps the original's line breaks: Liberation Sans for Helvetica
 and Arial, Liberation Serif for Times and Times New Roman, Liberation Mono for Courier and Courier New, Carlito for Calibri and
-Caladea for Cambria, each in four styles. It adds about 7 MB, which is why Egami.Fonts does not carry the fonts itself. The
+Caladea for Cambria, each in four styles, and STIX Two Math for Cambria Math, the font Word sets equations in. It adds about
+9 MB, which is why Egami.Fonts does not carry the fonts itself. The
 fonts are under the SIL Open Font License 1.1, and their licences ship in the package.
 
 `SubstituteFonts.Find` takes a family name or a common alias (`ArialMT`, `Times-Roman`, `Courier New`; spaces, hyphens and case
 are ignored) and returns the face in the nearest style, or null for any other name. `SubstituteFonts.Collection` holds all
-twenty faces as a `FontCollection`, to match by family name or to pass to anything that takes fonts, such as
+twenty-one faces as a `FontCollection`, to match by family name or to pass to anything that takes fonts, such as
 `MetafileRenderOptions.Fonts` or `SvgFontOptions.Collection`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#substitutes)]
+
+## Math layout data
+
+A font made for equations, such as Cambria Math or STIX Two Math, carries an OpenType `MATH` table: what an equation layout
+needs beyond the glyphs. `Typeface.Math` reads it as a `TypefaceMath`, or is null for a face without one.
+
+- `Constants` (`MathConstants`) are the face's distances for placing scripts, fractions, stacks, radicals, limits and
+  accents, such as `AxisHeight` (where fraction bars sit), `FractionRuleThickness` and `SuperscriptShiftUp`, and the sizes of
+  scripts (`ScriptPercentScaleDown`).
+- `GetItalicsCorrection` gives how far a superscript moves right of a slanted glyph, `GetTopAccentAttachment` where an accent
+  above a glyph centres, `IsExtendedShape` whether a glyph is a large operator, and `GetKerning` how close a script may come at
+  each corner (`MathKernCorner`), by height.
+- `GetVariants` lists a stretchy glyph's larger forms, such as taller parentheses or wider braces (`MathDirection`), smallest
+  first. When none is large enough, `GetAssembly` gives the parts to build one of any size: `MathGlyphPart`s, bottom to top or
+  left to right, whose extenders repeat, overlapping by at least `MinConnectorOverlap`.
+
+Every distance is in font units, as the design gives it; variations and device tables are not applied.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#math)]
 
 ## Subsets
 

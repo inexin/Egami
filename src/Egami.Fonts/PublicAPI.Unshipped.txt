@@ -1,1 +1,188 @@
 #nullable enable
+Egami.Fonts.MathConstants
+Egami.Fonts.MathConstants.<Clone>$() -> Egami.Fonts.MathConstants!
+Egami.Fonts.MathConstants.AccentBaseHeight.get -> float
+Egami.Fonts.MathConstants.AccentBaseHeight.init -> void
+Egami.Fonts.MathConstants.AxisHeight.get -> float
+Egami.Fonts.MathConstants.AxisHeight.init -> void
+Egami.Fonts.MathConstants.DelimitedSubFormulaMinHeight.get -> float
+Egami.Fonts.MathConstants.DelimitedSubFormulaMinHeight.init -> void
+Egami.Fonts.MathConstants.DisplayOperatorMinHeight.get -> float
+Egami.Fonts.MathConstants.DisplayOperatorMinHeight.init -> void
+Egami.Fonts.MathConstants.Equals(Egami.Fonts.MathConstants? other) -> bool
+Egami.Fonts.MathConstants.FlattenedAccentBaseHeight.get -> float
+Egami.Fonts.MathConstants.FlattenedAccentBaseHeight.init -> void
+Egami.Fonts.MathConstants.FractionDenomDisplayStyleGapMin.get -> float
+Egami.Fonts.MathConstants.FractionDenomDisplayStyleGapMin.init -> void
+Egami.Fonts.MathConstants.FractionDenominatorDisplayStyleShiftDown.get -> float
+Egami.Fonts.MathConstants.FractionDenominatorDisplayStyleShiftDown.init -> void
+Egami.Fonts.MathConstants.FractionDenominatorGapMin.get -> float
+Egami.Fonts.MathConstants.FractionDenominatorGapMin.init -> void
+Egami.Fonts.MathConstants.FractionDenominatorShiftDown.get -> float
+Egami.Fonts.MathConstants.FractionDenominatorShiftDown.init -> void
+Egami.Fonts.MathConstants.FractionNumDisplayStyleGapMin.get -> float
+Egami.Fonts.MathConstants.FractionNumDisplayStyleGapMin.init -> void
+Egami.Fonts.MathConstants.FractionNumeratorDisplayStyleShiftUp.get -> float
+Egami.Fonts.MathConstants.FractionNumeratorDisplayStyleShiftUp.init -> void
+Egami.Fonts.MathConstants.FractionNumeratorGapMin.get -> float
+Egami.Fonts.MathConstants.FractionNumeratorGapMin.init -> void
+Egami.Fonts.MathConstants.FractionNumeratorShiftUp.get -> float
+Egami.Fonts.MathConstants.FractionNumeratorShiftUp.init -> void
+Egami.Fonts.MathConstants.FractionRuleThickness.get -> float
+Egami.Fonts.MathConstants.FractionRuleThickness.init -> void
+Egami.Fonts.MathConstants.LowerLimitBaselineDropMin.get -> float
+Egami.Fonts.MathConstants.LowerLimitBaselineDropMin.init -> void
+Egami.Fonts.MathConstants.LowerLimitGapMin.get -> float
+Egami.Fonts.MathConstants.LowerLimitGapMin.init -> void
+Egami.Fonts.MathConstants.MathConstants() -> void
+Egami.Fonts.MathConstants.MathLeading.get -> float
+Egami.Fonts.MathConstants.MathLeading.init -> void
+Egami.Fonts.MathConstants.OverbarExtraAscender.get -> float
+Egami.Fonts.MathConstants.OverbarExtraAscender.init -> void
+Egami.Fonts.MathConstants.OverbarRuleThickness.get -> float
+Egami.Fonts.MathConstants.OverbarRuleThickness.init -> void
+Egami.Fonts.MathConstants.OverbarVerticalGap.get -> float
+Egami.Fonts.MathConstants.OverbarVerticalGap.init -> void
+Egami.Fonts.MathConstants.RadicalDegreeBottomRaisePercent.get -> int
+Egami.Fonts.MathConstants.RadicalDegreeBottomRaisePercent.init -> void
+Egami.Fonts.MathConstants.RadicalDisplayStyleVerticalGap.get -> float
+Egami.Fonts.MathConstants.RadicalDisplayStyleVerticalGap.init -> void
+Egami.Fonts.MathConstants.RadicalExtraAscender.get -> float
+Egami.Fonts.MathConstants.RadicalExtraAscender.init -> void
+Egami.Fonts.MathConstants.RadicalKernAfterDegree.get -> float
+Egami.Fonts.MathConstants.RadicalKernAfterDegree.init -> void
+Egami.Fonts.MathConstants.RadicalKernBeforeDegree.get -> float
+Egami.Fonts.MathConstants.RadicalKernBeforeDegree.init -> void
+Egami.Fonts.MathConstants.RadicalRuleThickness.get -> float
+Egami.Fonts.MathConstants.RadicalRuleThickness.init -> void
+Egami.Fonts.MathConstants.RadicalVerticalGap.get -> float
+Egami.Fonts.MathConstants.RadicalVerticalGap.init -> void
+Egami.Fonts.MathConstants.ScriptPercentScaleDown.get -> int
+Egami.Fonts.MathConstants.ScriptPercentScaleDown.init -> void
+Egami.Fonts.MathConstants.ScriptScriptPercentScaleDown.get -> int
+Egami.Fonts.MathConstants.ScriptScriptPercentScaleDown.init -> void
+Egami.Fonts.MathConstants.SkewedFractionHorizontalGap.get -> float
+Egami.Fonts.MathConstants.SkewedFractionHorizontalGap.init -> void
+Egami.Fonts.MathConstants.SkewedFractionVerticalGap.get -> float
+Egami.Fonts.MathConstants.SkewedFractionVerticalGap.init -> void
+Egami.Fonts.MathConstants.SpaceAfterScript.get -> float
+Egami.Fonts.MathConstants.SpaceAfterScript.init -> void
+Egami.Fonts.MathConstants.StackBottomDisplayStyleShiftDown.get -> float
+Egami.Fonts.MathConstants.StackBottomDisplayStyleShiftDown.init -> void
+Egami.Fonts.MathConstants.StackBottomShiftDown.get -> float
+Egami.Fonts.MathConstants.StackBottomShiftDown.init -> void
+Egami.Fonts.MathConstants.StackDisplayStyleGapMin.get -> float
+Egami.Fonts.MathConstants.StackDisplayStyleGapMin.init -> void
+Egami.Fonts.MathConstants.StackGapMin.get -> float
+Egami.Fonts.MathConstants.StackGapMin.init -> void
+Egami.Fonts.MathConstants.StackTopDisplayStyleShiftUp.get -> float
+Egami.Fonts.MathConstants.StackTopDisplayStyleShiftUp.init -> void
+Egami.Fonts.MathConstants.StackTopShiftUp.get -> float
+Egami.Fonts.MathConstants.StackTopShiftUp.init -> void
+Egami.Fonts.MathConstants.StretchStackBottomShiftDown.get -> float
+Egami.Fonts.MathConstants.StretchStackBottomShiftDown.init -> void
+Egami.Fonts.MathConstants.StretchStackGapAboveMin.get -> float
+Egami.Fonts.MathConstants.StretchStackGapAboveMin.init -> void
+Egami.Fonts.MathConstants.StretchStackGapBelowMin.get -> float
+Egami.Fonts.MathConstants.StretchStackGapBelowMin.init -> void
+Egami.Fonts.MathConstants.StretchStackTopShiftUp.get -> float
+Egami.Fonts.MathConstants.StretchStackTopShiftUp.init -> void
+Egami.Fonts.MathConstants.SubscriptBaselineDropMin.get -> float
+Egami.Fonts.MathConstants.SubscriptBaselineDropMin.init -> void
+Egami.Fonts.MathConstants.SubscriptShiftDown.get -> float
+Egami.Fonts.MathConstants.SubscriptShiftDown.init -> void
+Egami.Fonts.MathConstants.SubscriptTopMax.get -> float
+Egami.Fonts.MathConstants.SubscriptTopMax.init -> void
+Egami.Fonts.MathConstants.SubSuperscriptGapMin.get -> float
+Egami.Fonts.MathConstants.SubSuperscriptGapMin.init -> void
+Egami.Fonts.MathConstants.SuperscriptBaselineDropMax.get -> float
+Egami.Fonts.MathConstants.SuperscriptBaselineDropMax.init -> void
+Egami.Fonts.MathConstants.SuperscriptBottomMaxWithSubscript.get -> float
+Egami.Fonts.MathConstants.SuperscriptBottomMaxWithSubscript.init -> void
+Egami.Fonts.MathConstants.SuperscriptBottomMin.get -> float
+Egami.Fonts.MathConstants.SuperscriptBottomMin.init -> void
+Egami.Fonts.MathConstants.SuperscriptShiftUp.get -> float
+Egami.Fonts.MathConstants.SuperscriptShiftUp.init -> void
+Egami.Fonts.MathConstants.SuperscriptShiftUpCramped.get -> float
+Egami.Fonts.MathConstants.SuperscriptShiftUpCramped.init -> void
+Egami.Fonts.MathConstants.UnderbarExtraDescender.get -> float
+Egami.Fonts.MathConstants.UnderbarExtraDescender.init -> void
+Egami.Fonts.MathConstants.UnderbarRuleThickness.get -> float
+Egami.Fonts.MathConstants.UnderbarRuleThickness.init -> void
+Egami.Fonts.MathConstants.UnderbarVerticalGap.get -> float
+Egami.Fonts.MathConstants.UnderbarVerticalGap.init -> void
+Egami.Fonts.MathConstants.UpperLimitBaselineRiseMin.get -> float
+Egami.Fonts.MathConstants.UpperLimitBaselineRiseMin.init -> void
+Egami.Fonts.MathConstants.UpperLimitGapMin.get -> float
+Egami.Fonts.MathConstants.UpperLimitGapMin.init -> void
+Egami.Fonts.MathDirection
+Egami.Fonts.MathDirection.Horizontal = 1 -> Egami.Fonts.MathDirection
+Egami.Fonts.MathDirection.Vertical = 0 -> Egami.Fonts.MathDirection
+Egami.Fonts.MathGlyphAssembly
+Egami.Fonts.MathGlyphAssembly.<Clone>$() -> Egami.Fonts.MathGlyphAssembly!
+Egami.Fonts.MathGlyphAssembly.Deconstruct(out float ItalicsCorrection, out System.Collections.Generic.IReadOnlyList<Egami.Fonts.MathGlyphPart>! Parts) -> void
+Egami.Fonts.MathGlyphAssembly.Equals(Egami.Fonts.MathGlyphAssembly? other) -> bool
+Egami.Fonts.MathGlyphAssembly.ItalicsCorrection.get -> float
+Egami.Fonts.MathGlyphAssembly.ItalicsCorrection.init -> void
+Egami.Fonts.MathGlyphAssembly.MathGlyphAssembly(float ItalicsCorrection, System.Collections.Generic.IReadOnlyList<Egami.Fonts.MathGlyphPart>! Parts) -> void
+Egami.Fonts.MathGlyphAssembly.Parts.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.MathGlyphPart>!
+Egami.Fonts.MathGlyphAssembly.Parts.init -> void
+Egami.Fonts.MathGlyphPart
+Egami.Fonts.MathGlyphPart.Deconstruct(out ushort Glyph, out float StartConnectorLength, out float EndConnectorLength, out float FullAdvance, out bool IsExtender) -> void
+Egami.Fonts.MathGlyphPart.EndConnectorLength.get -> float
+Egami.Fonts.MathGlyphPart.EndConnectorLength.init -> void
+Egami.Fonts.MathGlyphPart.Equals(Egami.Fonts.MathGlyphPart other) -> bool
+Egami.Fonts.MathGlyphPart.FullAdvance.get -> float
+Egami.Fonts.MathGlyphPart.FullAdvance.init -> void
+Egami.Fonts.MathGlyphPart.Glyph.get -> ushort
+Egami.Fonts.MathGlyphPart.Glyph.init -> void
+Egami.Fonts.MathGlyphPart.IsExtender.get -> bool
+Egami.Fonts.MathGlyphPart.IsExtender.init -> void
+Egami.Fonts.MathGlyphPart.MathGlyphPart() -> void
+Egami.Fonts.MathGlyphPart.MathGlyphPart(ushort Glyph, float StartConnectorLength, float EndConnectorLength, float FullAdvance, bool IsExtender) -> void
+Egami.Fonts.MathGlyphPart.StartConnectorLength.get -> float
+Egami.Fonts.MathGlyphPart.StartConnectorLength.init -> void
+Egami.Fonts.MathGlyphVariant
+Egami.Fonts.MathGlyphVariant.Advance.get -> float
+Egami.Fonts.MathGlyphVariant.Advance.init -> void
+Egami.Fonts.MathGlyphVariant.Deconstruct(out ushort Glyph, out float Advance) -> void
+Egami.Fonts.MathGlyphVariant.Equals(Egami.Fonts.MathGlyphVariant other) -> bool
+Egami.Fonts.MathGlyphVariant.Glyph.get -> ushort
+Egami.Fonts.MathGlyphVariant.Glyph.init -> void
+Egami.Fonts.MathGlyphVariant.MathGlyphVariant() -> void
+Egami.Fonts.MathGlyphVariant.MathGlyphVariant(ushort Glyph, float Advance) -> void
+Egami.Fonts.MathKernCorner
+Egami.Fonts.MathKernCorner.BottomLeft = 3 -> Egami.Fonts.MathKernCorner
+Egami.Fonts.MathKernCorner.BottomRight = 2 -> Egami.Fonts.MathKernCorner
+Egami.Fonts.MathKernCorner.TopLeft = 1 -> Egami.Fonts.MathKernCorner
+Egami.Fonts.MathKernCorner.TopRight = 0 -> Egami.Fonts.MathKernCorner
+Egami.Fonts.Typeface.Math.get -> Egami.Fonts.TypefaceMath?
+Egami.Fonts.TypefaceMath
+Egami.Fonts.TypefaceMath.Constants.get -> Egami.Fonts.MathConstants!
+Egami.Fonts.TypefaceMath.GetAssembly(ushort glyph, Egami.Fonts.MathDirection direction) -> Egami.Fonts.MathGlyphAssembly?
+Egami.Fonts.TypefaceMath.GetItalicsCorrection(ushort glyph) -> float?
+Egami.Fonts.TypefaceMath.GetKerning(ushort glyph, Egami.Fonts.MathKernCorner corner, float height) -> float
+Egami.Fonts.TypefaceMath.GetTopAccentAttachment(ushort glyph) -> float?
+Egami.Fonts.TypefaceMath.GetVariants(ushort glyph, Egami.Fonts.MathDirection direction) -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.MathGlyphVariant>!
+Egami.Fonts.TypefaceMath.IsExtendedShape(ushort glyph) -> bool
+Egami.Fonts.TypefaceMath.MinConnectorOverlap.get -> float
+override Egami.Fonts.MathConstants.Equals(object? obj) -> bool
+override Egami.Fonts.MathConstants.GetHashCode() -> int
+override Egami.Fonts.MathConstants.ToString() -> string!
+override Egami.Fonts.MathGlyphAssembly.Equals(object? obj) -> bool
+override Egami.Fonts.MathGlyphAssembly.GetHashCode() -> int
+override Egami.Fonts.MathGlyphAssembly.ToString() -> string!
+override Egami.Fonts.MathGlyphPart.GetHashCode() -> int
+override Egami.Fonts.MathGlyphVariant.GetHashCode() -> int
+static Egami.Fonts.MathConstants.operator !=(Egami.Fonts.MathConstants? left, Egami.Fonts.MathConstants? right) -> bool
+static Egami.Fonts.MathConstants.operator ==(Egami.Fonts.MathConstants? left, Egami.Fonts.MathConstants? right) -> bool
+static Egami.Fonts.MathGlyphAssembly.operator !=(Egami.Fonts.MathGlyphAssembly? left, Egami.Fonts.MathGlyphAssembly? right) -> bool
+static Egami.Fonts.MathGlyphAssembly.operator ==(Egami.Fonts.MathGlyphAssembly? left, Egami.Fonts.MathGlyphAssembly? right) -> bool
+static Egami.Fonts.MathGlyphPart.operator !=(Egami.Fonts.MathGlyphPart left, Egami.Fonts.MathGlyphPart right) -> bool
+static Egami.Fonts.MathGlyphPart.operator ==(Egami.Fonts.MathGlyphPart left, Egami.Fonts.MathGlyphPart right) -> bool
+static Egami.Fonts.MathGlyphVariant.operator !=(Egami.Fonts.MathGlyphVariant left, Egami.Fonts.MathGlyphVariant right) -> bool
+static Egami.Fonts.MathGlyphVariant.operator ==(Egami.Fonts.MathGlyphVariant left, Egami.Fonts.MathGlyphVariant right) -> bool
+~override Egami.Fonts.MathGlyphPart.Equals(object obj) -> bool
+~override Egami.Fonts.MathGlyphPart.ToString() -> string
+~override Egami.Fonts.MathGlyphVariant.Equals(object obj) -> bool
+~override Egami.Fonts.MathGlyphVariant.ToString() -> string

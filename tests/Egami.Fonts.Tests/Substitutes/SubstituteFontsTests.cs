@@ -29,9 +29,10 @@ public sealed class SubstituteFontsTests
     [Fact]
     public void TheCollectionHoldsEveryFaceAndTheLicencesShip()
     {
-        Assert.Equal(5, SubstituteFonts.Collection.Count);
-        Assert.All(SubstituteFonts.Collection.Families, f => Assert.Equal(4, f.Styles.Count));
+        Assert.Equal(6, SubstituteFonts.Collection.Count);
+        Assert.All(SubstituteFonts.Collection.Families, f => Assert.Equal(f.Name == "STIX Two Math" ? 1 : 4, f.Styles.Count));
         string[] resources = typeof(SubstituteFonts).Assembly.GetManifestResourceNames();
+        Assert.Contains("Egami.Fonts.Substitutes.STIXTwoMath-OFL.txt", resources);
         Assert.Contains("Egami.Fonts.Substitutes.Liberation-OFL.txt", resources);
         Assert.Contains("Egami.Fonts.Substitutes.Carlito-OFL.txt", resources);
         Assert.Contains("Egami.Fonts.Substitutes.Caladea-OFL.txt", resources);

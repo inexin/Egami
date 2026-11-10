@@ -33,7 +33,7 @@ public sealed partial class Typeface
     internal bool CanRunInstructions => _glyf is not null && !IsVariable && _instance is null && HintingData.HasHinting;
 
     /// <summary>The whole ppem a size hints at: rounded, at least 1.</summary>
-    internal static int HintingPpem(float pixelsPerEm) => Math.Max(1, (int)MathF.Round(MathF.Abs(pixelsPerEm)));
+    internal static int HintingPpem(float pixelsPerEm) => System.Math.Max(1, (int)MathF.Round(MathF.Abs(pixelsPerEm)));
 
     /// <summary>
     /// GDI's compatible width of a glyph at a size, in whole pixels: hdmx when it holds the ppem; else, where LTSH says the glyph
@@ -79,7 +79,7 @@ public sealed partial class Typeface
             float? advance;
             try
             {
-                advance = _monochrome.Hint(glyph, ppem, (long)Math.Round(em * 64 * 65536 / UnitsPerEm))?.Advance is float a ? MathF.Round(a) : null;
+                advance = _monochrome.Hint(glyph, ppem, (long)System.Math.Round(em * 64 * 65536 / UnitsPerEm))?.Advance is float a ? MathF.Round(a) : null;
             }
             catch (CorruptDataException)
             {
@@ -132,7 +132,7 @@ public sealed partial class Typeface
             });
 
             float em = data.IntegerPpem ? ppem : MathF.Abs(pixelsPerEm);
-            long scale = (long)Math.Round(em * 64 * 65536 / UnitsPerEm);
+            long scale = (long)System.Math.Round(em * 64 * 65536 / UnitsPerEm);
             HintedGlyph? hinted;
             try
             {

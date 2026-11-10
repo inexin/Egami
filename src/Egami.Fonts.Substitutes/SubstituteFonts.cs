@@ -6,7 +6,8 @@ namespace Egami.Fonts.Substitutes;
 /// Open fonts that stand in for the fonts documents name most without embedding them, each metric-compatible with the
 /// font it replaces, so text keeps its line breaks: Liberation Sans for Helvetica and Arial, Liberation Serif for Times and
 /// Times New Roman, Liberation Mono for Courier and Courier New, Carlito for Calibri and Caladea for Cambria, each in
-/// regular, bold, italic and bold italic. All are under the SIL Open Font License 1.1 and ship inside this assembly, so they
+/// regular, bold, italic and bold italic, and STIX Two Math for Cambria Math, a single face with an OpenType <c>MATH</c> table
+/// (see <see cref="Typeface.Math"/>) for laying out equations. All are under the SIL Open Font License 1.1 and ship inside this assembly, so they
 /// work whatever fonts are installed; a face is loaded the first time it is asked for.
 /// </summary>
 /// <example>
@@ -16,6 +17,7 @@ public static class SubstituteFonts
 {
     private static readonly string[] Families = ["LiberationSans", "LiberationSerif", "LiberationMono", "Carlito", "Caladea"];
     private static readonly string[] Styles = ["Regular", "Bold", "Italic", "BoldItalic"];
+    private const string MathFace = "STIXTwoMath-Regular";
     private static readonly ConcurrentDictionary<string, Typeface> Loaded = new(StringComparer.Ordinal);
     private static readonly Lazy<FontCollection> All = new(() =>
     {
@@ -28,17 +30,19 @@ public static class SubstituteFonts
             }
         }
 
+        collection.Add(Load(MathFace));
         return collection;
     });
 
-    /// <summary>The five families, four styles each, as an Egami font collection, for matching by family name and style or for text layout.</summary>
+    /// <summary>The five text families, four styles each, and STIX Two Math, as an Egami font collection, for matching by family name and style or for text layout.</summary>
     public static FontCollection Collection => All.Value;
 
     /// <summary>
     /// The face that stands in for a font: by its family name or a common alias, spaces, hyphens and case ignored
     /// (<c>Helvetica</c>, <c>Arial</c>, <c>ArialMT</c>, <c>Times-Roman</c>, <c>TimesNewRoman</c>, <c>Courier New</c>,
     /// <c>Calibri</c>, <c>Cambria</c>, or the Liberation, Carlito and Caladea names themselves), in the style nearest to
-    /// <paramref name="style"/>: bold from weight 600, italic for any slant. <see langword="null"/> for any other name.
+    /// <paramref name="style"/>: bold from weight 600, italic for any slant. <c>Cambria Math</c> and <c>STIX Two Math</c> give
+    /// STIX Two Math, whatever the style, as math fonts have one face. <see langword="null"/> for any other name.
     /// </summary>
     /// <param name="familyName">The family name or alias.</param>
     /// <param name="style">The style wanted.</param>
@@ -47,6 +51,11 @@ public static class SubstituteFonts
     {
         ArgumentNullException.ThrowIfNull(familyName);
         string key = new([.. familyName.Where(char.IsLetter).Select(char.ToLowerInvariant)]);
+        if (key.StartsWith("cambriamath", StringComparison.Ordinal) || key.StartsWith("stixtwomath", StringComparison.Ordinal) || key.StartsWith("stixmath", StringComparison.Ordinal))
+        {
+            return Load(MathFace);
+        }
+
         string? family = key switch
         {
             _ when key.StartsWith("helvetica", StringComparison.Ordinal) || key.StartsWith("arial", StringComparison.Ordinal) || key.StartsWith("liberationsans", StringComparison.Ordinal) => "LiberationSans",
