@@ -87,7 +87,7 @@
         <article data-uid="">
 <h1 id="h264">H.264</h1>
 
-<p>Egami.Video.H264 decodes H.264 (AVC), the codec of most MP4 and MOV files from phones, cameras and the web. It is a separate,
+<p>Egami.Video.H264 decodes and encodes H.264 (AVC), the codec of most MP4 and MOV files from phones, cameras and the web. It is a separate,
 opt-in package because H.264 is covered by patents (see <a href="#patents">Patents</a>); Egami.Video itself contains no H.264 decoder and
 copies H.264 tracks through untouched when this package is not registered.</p>
 <ul>
@@ -156,7 +156,28 @@ foreach (VideoFrame frame in reader.ReadFrames())
 </code></pre>
 <p>A field without its second field, as a cut stream can end, comes out with its rows doubled into the missing field and reports
 <code>H264.UnpairedField</code>.</p>
-<h2 id="raw-h264-files">Raw .h264 files</h2>
+<h2 id="encoding">Encoding</h2>
+<p><code>H264Codec.Instance</code> encodes through <code>VideoWriter</code> (or <code>CreateEncoder</code> for packets): 8-bit 4:2:0 progressive frames, with an
+even width and height. <code>Quality</code> (0 to 100, default 60; 50 is about x264's default CRF 23) and <code>Effort</code> (0 to 10, default 4)
+work as for Egami's other encoders. <code>H264EncoderOptions</code> holds the H.264 settings: the <code>H264Profile</code> (High by default,
+Main, or Constrained Baseline for the simplest players), the level (the lowest that the frame size and rate fit, unless set),
+the <code>H264EntropyCoder</code> (CABAC, or CAVLC), QP limits and Annex B packets for raw streams. HDR metadata on the first frame goes
+into the stream as mastering display and content light level SEI. Every picture the encoder makes decodes in Egami's decoder,
+and FFmpeg's, to the encoder's own reconstruction, sample for sample.</p>
+<pre><code class="lang-csharp">// H.264 in MP4: High profile with CABAC by default, the level picked from the frame size and rate.
+VideoWriterOptions options = new() { Codec = H264Codec.Instance, FrameRate = new Rational(30, 1), Quality = 60 };
+using (VideoWriter writer = VideoWriter.Create(&quot;duck.mp4&quot;, options))
+{
+    for (int i = 0; i &lt; 10; i++)
+    {
+        using Raster&lt;Rgb8&gt; frame = duck.Derive(ops =&gt; ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+        writer.WriteFrame(frame);
+    }
+}
+
+// Expert settings: Constrained Baseline (CAVLC) at level 3.0 for the simplest players.
+VideoWriterOptions baseline = options with { H264 = new H264EncoderOptions { Profile = H264Profile.ConstrainedBaseline, Level = 30, Entropy = H264EntropyCoder.Cavlc } };
+</code></pre><h2 id="raw-h264-files">Raw .h264 files</h2>
 <p><code>H264Format</code> reads raw Annex B streams (<code>.h264</code>, <code>.264</code> and <code>.avc</code>), as encoders and <code>ffmpeg -f h264</code> write them. Such a stream
 has no timestamps, so frames are timed by the stream's VUI frame rate, or 25 frames a second, unless <code>FrameRate</code> is set.
 Seeking goes back to the IDR frame before the target.</p>

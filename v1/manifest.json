@@ -17863,6 +17863,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.H264EncoderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.H264EncoderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.H264EncoderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.H264EncoderOptions.yml\" sourcestartlinenumber=\"1\">The H.264 settings beyond <xref href=\"Egami.Video.Codecs.VideoEncoderOptions\" data-throw-if-not-resolved=\"false\"></xref>, for experts (<xref href=\"Egami.Video.Codecs.VideoEncoderOptions.H264\" data-throw-if-not-resolved=\"false\"></xref>): the profile\nand level, the entropy coder, quantizer limits and the framing of the packets. Every one has a default that suits most uses.\nThe encoder lives in the Egami.Video.H264 package.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.H264EntropyCoder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.H264EntropyCoder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.H264EntropyCoder",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.H264EntropyCoder.yml\" sourcestartlinenumber=\"1\">The entropy coder of an H.264 stream.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.H264Profile.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.H264Profile.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.H264Profile",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.H264Profile.yml\" sourcestartlinenumber=\"1\">The H.264 profiles Egami encodes: which coding tools a stream may use, and so which decoders play it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Codecs.IVideoDecoder-1.yml",
       "output": {
         ".html": {

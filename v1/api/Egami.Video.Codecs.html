@@ -177,6 +177,13 @@ so the two passes can run apart, as FFmpeg's pass log does.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.H264EncoderOptions.html">H264EncoderOptions</a></dt>
+      <dd><p>The H.264 settings beyond <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html">VideoEncoderOptions</a>, for experts (<a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_H264">H264</a>): the profile
+and level, the entropy coder, quantizer limits and the framing of the packets. Every one has a default that suits most uses.
+The encoder lives in the Egami.Video.H264 package.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Codecs.MotionJpegCodec.html">MotionJpegCodec</a></dt>
       <dd><p>Motion JPEG: every frame a complete JPEG image, decoded and encoded by Egami's JPEG codec. Decoding fixes frames without
 a DHT segment, weaves interlaced field pairs, ignores junk around the image and decodes several frames at once. Frames
@@ -285,6 +292,16 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Codecs.Ffv1ContextModel.html">Ffv1ContextModel</a></dt>
       <dd><p>How many neighbours FFV1's contexts look at.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.H264EntropyCoder.html">H264EntropyCoder</a></dt>
+      <dd><p>The entropy coder of an H.264 stream.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.H264Profile.html">H264Profile</a></dt>
+      <dd><p>The H.264 profiles Egami encodes: which coding tools a stream may use, and so which decoders play it.</p>
 </dd>
     </dl>
     <dl class="jumplist">

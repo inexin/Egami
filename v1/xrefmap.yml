@@ -124024,6 +124024,145 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.FirstPassStats.Width
   nameWithType: FirstPassStats.Width
+- uid: Egami.Video.Codecs.H264EncoderOptions
+  name: H264EncoderOptions
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html
+  commentId: T:Egami.Video.Codecs.H264EncoderOptions
+  fullName: Egami.Video.Codecs.H264EncoderOptions
+  nameWithType: H264EncoderOptions
+- uid: Egami.Video.Codecs.H264EncoderOptions.AnnexB
+  name: AnnexB
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_AnnexB
+  commentId: P:Egami.Video.Codecs.H264EncoderOptions.AnnexB
+  fullName: Egami.Video.Codecs.H264EncoderOptions.AnnexB
+  nameWithType: H264EncoderOptions.AnnexB
+- uid: Egami.Video.Codecs.H264EncoderOptions.AnnexB*
+  name: AnnexB
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_AnnexB_
+  commentId: Overload:Egami.Video.Codecs.H264EncoderOptions.AnnexB
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.H264EncoderOptions.AnnexB
+  nameWithType: H264EncoderOptions.AnnexB
+- uid: Egami.Video.Codecs.H264EncoderOptions.Default
+  name: Default
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_Default
+  commentId: P:Egami.Video.Codecs.H264EncoderOptions.Default
+  fullName: Egami.Video.Codecs.H264EncoderOptions.Default
+  nameWithType: H264EncoderOptions.Default
+- uid: Egami.Video.Codecs.H264EncoderOptions.Default*
+  name: Default
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_Default_
+  commentId: Overload:Egami.Video.Codecs.H264EncoderOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.H264EncoderOptions.Default
+  nameWithType: H264EncoderOptions.Default
+- uid: Egami.Video.Codecs.H264EncoderOptions.Entropy
+  name: Entropy
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_Entropy
+  commentId: P:Egami.Video.Codecs.H264EncoderOptions.Entropy
+  fullName: Egami.Video.Codecs.H264EncoderOptions.Entropy
+  nameWithType: H264EncoderOptions.Entropy
+- uid: Egami.Video.Codecs.H264EncoderOptions.Entropy*
+  name: Entropy
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_Entropy_
+  commentId: Overload:Egami.Video.Codecs.H264EncoderOptions.Entropy
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.H264EncoderOptions.Entropy
+  nameWithType: H264EncoderOptions.Entropy
+- uid: Egami.Video.Codecs.H264EncoderOptions.Level
+  name: Level
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_Level
+  commentId: P:Egami.Video.Codecs.H264EncoderOptions.Level
+  fullName: Egami.Video.Codecs.H264EncoderOptions.Level
+  nameWithType: H264EncoderOptions.Level
+- uid: Egami.Video.Codecs.H264EncoderOptions.Level*
+  name: Level
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_Level_
+  commentId: Overload:Egami.Video.Codecs.H264EncoderOptions.Level
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.H264EncoderOptions.Level
+  nameWithType: H264EncoderOptions.Level
+- uid: Egami.Video.Codecs.H264EncoderOptions.MaxQuantizer
+  name: MaxQuantizer
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_MaxQuantizer
+  commentId: P:Egami.Video.Codecs.H264EncoderOptions.MaxQuantizer
+  fullName: Egami.Video.Codecs.H264EncoderOptions.MaxQuantizer
+  nameWithType: H264EncoderOptions.MaxQuantizer
+- uid: Egami.Video.Codecs.H264EncoderOptions.MaxQuantizer*
+  name: MaxQuantizer
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_MaxQuantizer_
+  commentId: Overload:Egami.Video.Codecs.H264EncoderOptions.MaxQuantizer
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.H264EncoderOptions.MaxQuantizer
+  nameWithType: H264EncoderOptions.MaxQuantizer
+- uid: Egami.Video.Codecs.H264EncoderOptions.MinQuantizer
+  name: MinQuantizer
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_MinQuantizer
+  commentId: P:Egami.Video.Codecs.H264EncoderOptions.MinQuantizer
+  fullName: Egami.Video.Codecs.H264EncoderOptions.MinQuantizer
+  nameWithType: H264EncoderOptions.MinQuantizer
+- uid: Egami.Video.Codecs.H264EncoderOptions.MinQuantizer*
+  name: MinQuantizer
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_MinQuantizer_
+  commentId: Overload:Egami.Video.Codecs.H264EncoderOptions.MinQuantizer
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.H264EncoderOptions.MinQuantizer
+  nameWithType: H264EncoderOptions.MinQuantizer
+- uid: Egami.Video.Codecs.H264EncoderOptions.Profile
+  name: Profile
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_Profile
+  commentId: P:Egami.Video.Codecs.H264EncoderOptions.Profile
+  fullName: Egami.Video.Codecs.H264EncoderOptions.Profile
+  nameWithType: H264EncoderOptions.Profile
+- uid: Egami.Video.Codecs.H264EncoderOptions.Profile*
+  name: Profile
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_Profile_
+  commentId: Overload:Egami.Video.Codecs.H264EncoderOptions.Profile
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.H264EncoderOptions.Profile
+  nameWithType: H264EncoderOptions.Profile
+- uid: Egami.Video.Codecs.H264EntropyCoder
+  name: H264EntropyCoder
+  href: api/Egami.Video.Codecs.H264EntropyCoder.html
+  commentId: T:Egami.Video.Codecs.H264EntropyCoder
+  fullName: Egami.Video.Codecs.H264EntropyCoder
+  nameWithType: H264EntropyCoder
+- uid: Egami.Video.Codecs.H264EntropyCoder.Cabac
+  name: Cabac
+  href: api/Egami.Video.Codecs.H264EntropyCoder.html#Egami_Video_Codecs_H264EntropyCoder_Cabac
+  commentId: F:Egami.Video.Codecs.H264EntropyCoder.Cabac
+  fullName: Egami.Video.Codecs.H264EntropyCoder.Cabac
+  nameWithType: H264EntropyCoder.Cabac
+- uid: Egami.Video.Codecs.H264EntropyCoder.Cavlc
+  name: Cavlc
+  href: api/Egami.Video.Codecs.H264EntropyCoder.html#Egami_Video_Codecs_H264EntropyCoder_Cavlc
+  commentId: F:Egami.Video.Codecs.H264EntropyCoder.Cavlc
+  fullName: Egami.Video.Codecs.H264EntropyCoder.Cavlc
+  nameWithType: H264EntropyCoder.Cavlc
+- uid: Egami.Video.Codecs.H264Profile
+  name: H264Profile
+  href: api/Egami.Video.Codecs.H264Profile.html
+  commentId: T:Egami.Video.Codecs.H264Profile
+  fullName: Egami.Video.Codecs.H264Profile
+  nameWithType: H264Profile
+- uid: Egami.Video.Codecs.H264Profile.ConstrainedBaseline
+  name: ConstrainedBaseline
+  href: api/Egami.Video.Codecs.H264Profile.html#Egami_Video_Codecs_H264Profile_ConstrainedBaseline
+  commentId: F:Egami.Video.Codecs.H264Profile.ConstrainedBaseline
+  fullName: Egami.Video.Codecs.H264Profile.ConstrainedBaseline
+  nameWithType: H264Profile.ConstrainedBaseline
+- uid: Egami.Video.Codecs.H264Profile.High
+  name: High
+  href: api/Egami.Video.Codecs.H264Profile.html#Egami_Video_Codecs_H264Profile_High
+  commentId: F:Egami.Video.Codecs.H264Profile.High
+  fullName: Egami.Video.Codecs.H264Profile.High
+  nameWithType: H264Profile.High
+- uid: Egami.Video.Codecs.H264Profile.Main
+  name: Main
+  href: api/Egami.Video.Codecs.H264Profile.html#Egami_Video_Codecs_H264Profile_Main
+  commentId: F:Egami.Video.Codecs.H264Profile.Main
+  fullName: Egami.Video.Codecs.H264Profile.Main
+  nameWithType: H264Profile.Main
 - uid: Egami.Video.Codecs.IVideoDecoder
   name: IVideoDecoder
   href: api/Egami.Video.Codecs.IVideoDecoder.html
@@ -124871,6 +125010,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.VideoEncoderOptions.FrameRate
   nameWithType: VideoEncoderOptions.FrameRate
+- uid: Egami.Video.Codecs.VideoEncoderOptions.H264
+  name: H264
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_H264
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.H264
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.H264
+  nameWithType: VideoEncoderOptions.H264
+- uid: Egami.Video.Codecs.VideoEncoderOptions.H264*
+  name: H264
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_H264_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.H264
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.H264
+  nameWithType: VideoEncoderOptions.H264
 - uid: Egami.Video.Codecs.VideoEncoderOptions.Height
   name: Height
   href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Height
@@ -137472,6 +137624,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.VideoWriterOptions.FrameRate
   nameWithType: VideoWriterOptions.FrameRate
+- uid: Egami.Video.VideoWriterOptions.H264
+  name: H264
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_H264
+  commentId: P:Egami.Video.VideoWriterOptions.H264
+  fullName: Egami.Video.VideoWriterOptions.H264
+  nameWithType: VideoWriterOptions.H264
+- uid: Egami.Video.VideoWriterOptions.H264*
+  name: H264
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_H264_
+  commentId: Overload:Egami.Video.VideoWriterOptions.H264
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.H264
+  nameWithType: VideoWriterOptions.H264
 - uid: Egami.Video.VideoWriterOptions.KeyframeInterval
   name: KeyframeInterval
   href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_KeyframeInterval

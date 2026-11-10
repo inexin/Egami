@@ -140,7 +140,7 @@ settings, safety limits and registered formats a call uses.
 - [Encoding video](https://inexin.github.io/Egami/v1/articles/guides/video-encoding.html): Egami.Video encodes VP8 and VP9 into WebM, Matroska and IVF (VP9 into MP4 too), with alpha in WebM and Matroska, and AV1 into WebM, Matroska, MP4, IVF, raw OBU and Annex B files.
 - [Video editing](https://inexin.github.io/Egami/v1/articles/guides/video-editing.html): Egami.Video's editing library, in `Egami.Video.Editing`, joins clips with transitions, draws clips over clips, keys out green screens, lays clips side by side and runs Egami operations on the result …
 - [Lossless archiving with FFV1](https://inexin.github.io/Egami/v1/articles/guides/lossless-archiving.html): FFV1 (RFC 9043) is the lossless video codec memory institutions archive with.
-- [H.264](https://inexin.github.io/Egami/v1/articles/guides/h264.html): Egami.Video.H264 decodes H.264 (AVC), the codec of most MP4 and MOV files from phones, cameras and the web.
+- [H.264](https://inexin.github.io/Egami/v1/articles/guides/h264.html): Egami.Video.H264 decodes and encodes H.264 (AVC), the codec of most MP4 and MOV files from phones, cameras and the web.
 - [HEVC](https://inexin.github.io/Egami/v1/articles/guides/hevc.html): Egami.Video.Hevc decodes HEVC (H.265), the codec of iPhone and Android video, GoPro footage, 4K streaming and HDR10.
 - [Audio](https://inexin.github.io/Egami/v1/articles/guides/audio.html): Egami.Video decodes and encodes audio with the same send and receive loop as video.
 - [Audio filters](https://inexin.github.io/Egami/v1/articles/guides/audio-filters.html): Egami.Video's audio filters change level, time, tone and placement of decoded audio as it streams.
