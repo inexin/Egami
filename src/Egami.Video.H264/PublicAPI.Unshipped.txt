@@ -1,1 +1,3 @@
 #nullable enable
+override Egami.Video.Codecs.H264Codec.CanEncode.get -> bool
+override Egami.Video.Codecs.H264Codec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Codecs.IVideoEncoder!

@@ -181,6 +181,12 @@ public sealed record VideoEncoderOptions
     public Ffv1EncoderOptions? Ffv1 { get; init; }
 
     /// <summary>
+    /// Gets the H.264 expert settings, or <see langword="null"/> for <see cref="H264EncoderOptions.Default"/>. The encoder is in
+    /// the Egami.Video.H264 package.
+    /// </summary>
+    public H264EncoderOptions? H264 { get; init; }
+
+    /// <summary>
     /// Gets the largest packet size in bytes to aim for, or <see langword="null"/> for none. Motion JPEG then picks, per frame,
     /// the highest quality up to <see cref="Quality"/> (100 when unset) whose frame fits, by a binary search of about seven
     /// encodes; a frame that does not fit even at quality 1 is written at quality 1.

@@ -1,1 +1,32 @@
 #nullable enable
+Egami.Video.Codecs.H264EncoderOptions
+Egami.Video.Codecs.H264EncoderOptions.<Clone>$() -> Egami.Video.Codecs.H264EncoderOptions!
+Egami.Video.Codecs.H264EncoderOptions.AnnexB.get -> bool
+Egami.Video.Codecs.H264EncoderOptions.AnnexB.init -> void
+Egami.Video.Codecs.H264EncoderOptions.Entropy.get -> Egami.Video.Codecs.H264EntropyCoder?
+Egami.Video.Codecs.H264EncoderOptions.Entropy.init -> void
+Egami.Video.Codecs.H264EncoderOptions.Equals(Egami.Video.Codecs.H264EncoderOptions? other) -> bool
+Egami.Video.Codecs.H264EncoderOptions.H264EncoderOptions() -> void
+Egami.Video.Codecs.H264EncoderOptions.Level.get -> int?
+Egami.Video.Codecs.H264EncoderOptions.Level.init -> void
+Egami.Video.Codecs.H264EncoderOptions.MaxQuantizer.get -> int
+Egami.Video.Codecs.H264EncoderOptions.MaxQuantizer.init -> void
+Egami.Video.Codecs.H264EncoderOptions.MinQuantizer.get -> int
+Egami.Video.Codecs.H264EncoderOptions.MinQuantizer.init -> void
+Egami.Video.Codecs.H264EncoderOptions.Profile.get -> Egami.Video.Codecs.H264Profile
+Egami.Video.Codecs.H264EncoderOptions.Profile.init -> void
+Egami.Video.Codecs.H264EntropyCoder
+Egami.Video.Codecs.H264EntropyCoder.Cabac = 0 -> Egami.Video.Codecs.H264EntropyCoder
+Egami.Video.Codecs.H264EntropyCoder.Cavlc = 1 -> Egami.Video.Codecs.H264EntropyCoder
+Egami.Video.Codecs.H264Profile
+Egami.Video.Codecs.H264Profile.ConstrainedBaseline = 0 -> Egami.Video.Codecs.H264Profile
+Egami.Video.Codecs.H264Profile.High = 2 -> Egami.Video.Codecs.H264Profile
+Egami.Video.Codecs.H264Profile.Main = 1 -> Egami.Video.Codecs.H264Profile
+Egami.Video.Codecs.VideoEncoderOptions.H264.get -> Egami.Video.Codecs.H264EncoderOptions?
+Egami.Video.Codecs.VideoEncoderOptions.H264.init -> void
+override Egami.Video.Codecs.H264EncoderOptions.Equals(object? obj) -> bool
+override Egami.Video.Codecs.H264EncoderOptions.GetHashCode() -> int
+override Egami.Video.Codecs.H264EncoderOptions.ToString() -> string!
+static Egami.Video.Codecs.H264EncoderOptions.Default.get -> Egami.Video.Codecs.H264EncoderOptions!
+static Egami.Video.Codecs.H264EncoderOptions.operator !=(Egami.Video.Codecs.H264EncoderOptions? left, Egami.Video.Codecs.H264EncoderOptions? right) -> bool
+static Egami.Video.Codecs.H264EncoderOptions.operator ==(Egami.Video.Codecs.H264EncoderOptions? left, Egami.Video.Codecs.H264EncoderOptions? right) -> bool
