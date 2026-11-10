@@ -30,3 +30,5 @@ override Egami.Video.Codecs.H264EncoderOptions.ToString() -> string!
 static Egami.Video.Codecs.H264EncoderOptions.Default.get -> Egami.Video.Codecs.H264EncoderOptions!
 static Egami.Video.Codecs.H264EncoderOptions.operator !=(Egami.Video.Codecs.H264EncoderOptions? left, Egami.Video.Codecs.H264EncoderOptions? right) -> bool
 static Egami.Video.Codecs.H264EncoderOptions.operator ==(Egami.Video.Codecs.H264EncoderOptions? left, Egami.Video.Codecs.H264EncoderOptions? right) -> bool
+Egami.Video.VideoWriterOptions.H264.get -> Egami.Video.Codecs.H264EncoderOptions?
+Egami.Video.VideoWriterOptions.H264.init -> void

@@ -5,6 +5,18 @@ changes that break code come only in a new major version.
 
 ## Egami (unreleased)
 
+An H.264 encoder (Egami.Video.H264), first stage: intra pictures. Additive.
+
+- `H264Codec.CanEncode` is true and `CreateEncoder` encodes 8-bit 4:2:0 progressive frames in the Constrained Baseline, Main
+  and High profiles, with CABAC or CAVLC, 4x4, 8x8 and 16x16 intra prediction, RDOQ and deblocking. Every frame is an I picture
+  for now; P and B pictures follow.
+- `H264EncoderOptions` (`VideoEncoderOptions.H264`, `VideoWriterOptions.H264`): `Profile`, `Level` (picked from the frame
+  size and rate when unset, and checked), `Entropy`, `MinQuantizer`, `MaxQuantizer` and `AnnexB`. Tracks carry an avcC record,
+  or Annex B packets with the parameter sets in band; HDR metadata goes into mastering display and content light level SEI.
+- Every picture decodes in Egami's decoder and FFmpeg's to the encoder's reconstruction, sample for sample. On two photos at
+  QP 22 to 37 intra coding takes 2–3 % fewer bits than x264's medium preset at equal PSNR.
+- The encoder core learned B-frames (planning only; Egami's VP8, VP9 and AV1 streams are unchanged byte for byte).
+
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 
 - `Typeface.Math` reads a face's OpenType `MATH` table: `MathConstants`, italics corrections, top accent attachments, extended

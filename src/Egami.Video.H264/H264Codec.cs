@@ -101,6 +101,9 @@ public sealed class H264Codec : VideoCodec
     /// length-prefixed with the parameter sets in the track's avcC record, or Annex B with <see cref="H264EncoderOptions.AnnexB"/>.
     /// </remarks>
     /// <exception cref="ArgumentException">The options do not make a valid stream, such as an odd size or a level too small for it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/VideoH264.cs" region="encode"/>
+    /// </example>
     public override IVideoEncoder CreateEncoder(VideoEncoderOptions options, MediaContext context)
     {
         ArgumentNullException.ThrowIfNull(options);

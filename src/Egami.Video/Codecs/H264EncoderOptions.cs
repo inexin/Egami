@@ -5,6 +5,9 @@ namespace Egami.Video.Codecs;
 /// and level, the entropy coder, quantizer limits and the framing of the packets. Every one has a default that suits most uses.
 /// The encoder lives in the Egami.Video.H264 package.
 /// </summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoH264.cs" region="encode"/>
+/// </example>
 public sealed record H264EncoderOptions
 {
     private readonly int? _level;
@@ -64,6 +67,9 @@ public sealed record H264EncoderOptions
 }
 
 /// <summary>The H.264 profiles Egami encodes: which coding tools a stream may use, and so which decoders play it.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoH264.cs" region="encode"/>
+/// </example>
 public enum H264Profile
 {
     /// <summary>Constrained Baseline: CAVLC, no B-frames and no 8x8 transform; for the simplest decoders, such as older phones and WebRTC.</summary>
@@ -77,6 +83,9 @@ public enum H264Profile
 }
 
 /// <summary>The entropy coder of an H.264 stream.</summary>
+/// <example>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/VideoH264.cs" region="encode"/>
+/// </example>
 public enum H264EntropyCoder
 {
     /// <summary>Context-adaptive binary arithmetic coding: about a tenth smaller (Main and High).</summary>
