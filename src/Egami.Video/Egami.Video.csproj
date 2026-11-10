@@ -26,6 +26,8 @@
     <InternalsVisibleTo Include="Egami.Video.Tests" />
     <InternalsVisibleTo Include="Egami.Video.Benchmarks" />
     <InternalsVisibleTo Include="Egami.Video.Fuzz" />
+    <!-- The H.264 encoder runs on the encoder core (H.264 Encoder Design, Q2); the two ship on one version. -->
+    <InternalsVisibleTo Include="Egami.Video.H264" />
   </ItemGroup>
 
 </Project>

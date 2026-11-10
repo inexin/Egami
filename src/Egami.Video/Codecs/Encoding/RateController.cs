@@ -20,6 +20,12 @@ internal enum FrameType
 
     /// <summary>A hidden frame of a pyramid below its alternate reference, coded unfiltered ahead of its place (AV1).</summary>
     Hidden,
+
+    /// <summary>
+    /// A shown frame coded after the later frame it sits before in display order, predicted from both sides (an H.264 B-frame);
+    /// see <see cref="CoreSettings.BFrames"/>.
+    /// </summary>
+    Bidirectional,
 }
 
 /// <summary>A frame of a group as rate control plans it: its type, how hard it is to code, and its step against an inter frame's (0 for the type's usual).</summary>
@@ -51,7 +57,10 @@ internal sealed record RateSettings
     /// <summary>The quantizer index's step sizes, lowest index first; their ratios are what the bit model scales by.</summary>
     public required short[] Steps { get; init; }
 
-    /// <summary>Each frame type's step against an inter frame's in constant quality, or null for VP8's (0.7, 1, 0.8, 0.7, 1).</summary>
+    /// <summary>
+    /// Each frame type's step against an inter frame's in constant quality, or null for VP8's (0.7, 1, 0.8, 0.7, 1, 0.85) and
+    /// 1.3 for bidirectional frames; a shorter list takes the rest from those.
+    /// </summary>
     public double[]? StepFactors { get; init; }
 
     /// <summary>
@@ -89,11 +98,11 @@ internal sealed record RateSettings
 internal sealed class RateController
 {
     /// <summary>Each type's step size relative to an inter frame's in constant quality.</summary>
-    private static readonly double[] StepFactors = [0.70, 1.0, 0.80, 0.70, 1.0, 0.85];
+    private static readonly double[] StepFactors = [0.70, 1.0, 0.80, 0.70, 1.0, 0.85, 1.3];
 
     private readonly RateSettings _settings;
-    private readonly double[] _correction = [2.0, 0.25, 0.4, 0.5, 0.25, 0.4];
-    private readonly int[] _corrected = new int[6];
+    private readonly double[] _correction = [2.0, 0.25, 0.4, 0.5, 0.25, 0.4, 0.15];
+    private readonly int[] _corrected = new int[7];
     private readonly double _frameBits;
     private readonly List<GroupFrame> _plan = [];
     private double _step;
@@ -140,6 +149,7 @@ internal sealed class RateController
             _correction[(int)FrameType.AltRef] = inter * 2;
             _correction[(int)FrameType.Overlay] = inter;
             _correction[(int)FrameType.Hidden] = inter * 1.5;
+            _correction[(int)FrameType.Bidirectional] = inter * 0.6;
         }
         else if (_settings.InterFromKeyProbe)
         {
@@ -149,6 +159,7 @@ internal sealed class RateController
             _correction[(int)FrameType.AltRef] = key;
             _correction[(int)FrameType.Overlay] = key;
             _correction[(int)FrameType.Hidden] = key;
+            _correction[(int)FrameType.Bidirectional] = key * 0.6;
         }
     }
 
@@ -335,7 +346,7 @@ internal sealed class RateController
 
     private double Factor(FrameType type, double stepFactor) => stepFactor > 0 ? stepFactor : TypeFactor(type);
 
-    private double TypeFactor(FrameType type) => (_settings.StepFactors ?? StepFactors)[(int)type];
+    private double TypeFactor(FrameType type) => _settings.StepFactors is { } factors && (int)type < factors.Length ? factors[(int)type] : StepFactors[(int)type];
 
     /// <summary>A complexity with a floor: even a frame equal to the one before costs some bits.</summary>
     private double Effective(long complexity) => Math.Max(1, complexity) + (_settings.Pixels / 16.0);
