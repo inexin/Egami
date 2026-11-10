@@ -3,8 +3,8 @@
   <PropertyGroup>
     <RootNamespace>Egami.Video</RootNamespace>
     <PackageId>Egami.Video.H264</PackageId>
-    <!-- Egami.Video.H264 ships at Egami.Video's version and depends on it through its public API only (H.264 and HEVC design,
-         question 4). -->
+    <!-- Egami.Video.H264 ships at Egami.Video's version and depends on it through its public API (H.264 and HEVC design,
+         question 4), except that its encoder runs on Egami.Video's internal encoder core (H.264 Encoder Design, Q2). -->
     <Version>$(EgamiVideoVersion)</Version>
     <Description>H.264 (AVC) decoding for Egami.Video, in managed code: progressive Constrained Baseline, Main, High, High 10 and High 4:2:2 streams in MP4, MOV, Matroska, AVI and raw .h264 files. H.264 is covered by patents; Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial products may need one from the AVC patent pools or holders. Egami.Video itself contains no H.264 decoder and does not depend on this package.</Description>
     <PackageTags>$(EgamiPackageTags);video;h264;avc;mp4</PackageTags>

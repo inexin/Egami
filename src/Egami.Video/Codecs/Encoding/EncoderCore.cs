@@ -12,7 +12,7 @@ namespace Egami.Video.Codecs.Encoding;
 /// overlay's that of the hidden frame it shows.
 /// </param>
 /// <param name="Layer">The frame's layer in its group's pyramid: 0 for keyframes and the group's alternate reference, more for each level below.</param>
-/// <param name="Referenced">Whether later frames predict from the frame; false for a pyramid's leaves.</param>
+/// <param name="Referenced">Whether later frames predict from the frame; false for a pyramid's leaves and for B-frames outside a B-pyramid.</param>
 internal readonly record struct FrameDecision(FrameType Type, int Quantizer, bool AltRefAhead, bool RefreshGolden, int Index = 0, int Layer = 0, bool Referenced = true);
 
 /// <summary>A frame a codec coded.</summary>
@@ -163,14 +163,43 @@ internal sealed record CoreSettings
 
     /// <summary>The coarsest step the temporal model gives an alternate reference or keyframe, against a leaf's.</summary>
     public double ImportanceStepMax { get; init; } = 0.8;
+
+    /// <summary>
+    /// The most bidirectional frames (B-frames) between two reference frames, 0 (the default) for none. With more than 0 and a
+    /// lookahead, the core codes each run of frames in a different order from the one they are shown in: the run's last frame
+    /// first as an ordinary inter frame (the anchor), then the frames before it as <see cref="FrameType.Bidirectional"/>
+    /// frames, which predict from the reference frames on both sides. Packets then carry decode timestamps
+    /// (<see cref="EncodedPacket.DecodeTimestamp"/>) <see cref="EncoderCore.ReorderDelay"/> frames behind their presentation
+    /// timestamps. Alternate references, golden frames and the pyramid of hidden frames are not planned in this mode.
+    /// </summary>
+    public int BFrames { get; init; }
+
+    /// <summary>
+    /// Whether runs of two or more B-frames are coded as a pyramid: the B-frame halfway through the run first, as a reference
+    /// for the others (<see cref="FrameDecision.Referenced"/>), then the frames on either side of it, each half the same way.
+    /// </summary>
+    public bool BPyramid { get; init; }
+
+    /// <summary>
+    /// Whether the number of B-frames in each run follows the content: a run stops before the first frame that its first frame
+    /// does not predict well (<see cref="BReach"/>), so motion and changes get fewer B-frames and still pictures the most.
+    /// </summary>
+    public bool AdaptiveBFrames { get; init; } = true;
+
+    /// <summary>How much better than intra a run's first frame must predict its anchor, for <see cref="AdaptiveBFrames"/>.</summary>
+    public double BReach { get; init; } = 2;
+
+    /// <summary>A B-frame's step against an inter frame's in constant quality when other frames predict from it (a pyramid's middle).</summary>
+    public double BReferenceStep { get; init; } = 1.15;
 }
 
 /// <summary>
 /// The encoder core every codec shares: a lookahead that analyzes each frame as it arrives and places keyframes (scene cuts,
 /// the interval, the caller's flag), groups of frames between golden frames with a hidden alternate reference at their end in
 /// <see cref="LatencyMode.Quality"/>, rate control per frame, and packets out in decode order with presentation timestamps.
-/// A hidden frame's packet carries the timestamp of the shown frame after it. Every decision depends only on the frames and
-/// options, so the output is the same at any thread count (Design Q9).
+/// A hidden frame's packet carries the timestamp of the shown frame after it. With B-frames (<see cref="CoreSettings.BFrames"/>)
+/// frames are coded out of display order instead and packets carry decode timestamps. Every decision depends only on the frames
+/// and options, so the output is the same at any thread count (Design Q9).
 /// </summary>
 internal sealed class EncoderCore : IDisposable
 {
@@ -204,6 +233,12 @@ internal sealed class EncoderCore : IDisposable
     private double _altRefFactor = 0.7;
     private double _keyFactor;
     private double _goldenFactor = 0.8;
+    private readonly List<BStep> _bSteps = [];
+    private int _bStepNext;
+    private int _lastAnchor = -1;
+    private readonly Queue<MediaTime> _shownTimes = new();
+    private MediaTime _firstTime;
+    private long _packets;
 
     public EncoderCore(CoreSettings settings, IFrameCoder coder, EncoderPictures pictures, bool alpha)
     {
@@ -215,7 +250,16 @@ internal sealed class EncoderCore : IDisposable
         _rate = new RateController(settings.Rate);
         _timeBase = settings.FrameRate.Reciprocal();
         _depth = settings.LatencyMode == LatencyMode.Quality ? settings.Lookahead : 0;
+        ArgumentOutOfRangeException.ThrowIfNegative(settings.BFrames);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(settings.BFrames, 16);
+        ReorderDelay = settings.BFrames > 0 && _depth > 0 ? settings.BFrames : 0;
     }
+
+    /// <summary>
+    /// Gets how many frames a packet's decode timestamp may run ahead of its presentation timestamp, which is also the most
+    /// frames a decoder must hold back before it shows one: <see cref="CoreSettings.BFrames"/> when frames are reordered, else 0.
+    /// </summary>
+    public int ReorderDelay { get; }
 
     /// <summary>Gets or sets where each coded frame's type, quantizer and size go, for tuning.</summary>
     internal static Action<string>? Trace { get; set; }
@@ -247,6 +291,16 @@ internal sealed class EncoderCore : IDisposable
 
         _previousRatio = ratio;
         MediaTime timestamp = frame.Timestamp.Rescale(_timeBase);
+        if (ReorderDelay > 0)
+        {
+            if (index == 0)
+            {
+                _firstTime = timestamp;
+            }
+
+            _shownTimes.Enqueue(timestamp);
+        }
+
         MediaTime duration = frame.Duration is { } d ? d.Rescale(_timeBase) : new MediaTime(1, _timeBase);
         _queue.Add(new Pending(picture, half, index, timestamp, duration, key, stats) { Full = full });
         while (_queue.Count > _depth)
@@ -275,6 +329,12 @@ internal sealed class EncoderCore : IDisposable
             Pending? second = _queue.Count > 1 ? _queue[1] : null;
             (long key, long next) = _coder.Probe(frame.Picture, second?.Picture, RateController.ProbeQuantizer);
             _rate.Calibrate(frame.Stats.Intra, key, second?.Stats.Inter ?? 0, next);
+        }
+
+        if (ReorderDelay > 0)
+        {
+            CodeNextReordered();
+            return;
         }
 
         if (frame.Index > _groupEnd || (frame.Key && frame.Index != _groupStart))
@@ -325,6 +385,13 @@ internal sealed class EncoderCore : IDisposable
         bool refreshGolden = frame.Index == _groupEnd && _refreshGoldenAtEnd;
         bool ahead = _altRef > frame.Index && _altRefCoded;
         FrameDecision decision = new(type, quantizer, ahead, refreshGolden, frame.Index, layer, referenced);
+        CodeShown(frame, decision, complexity);
+    }
+
+    /// <summary>Codes a shown frame of the lookahead, queues its packet and lets the frame go.</summary>
+    private void CodeShown(Pending frame, FrameDecision decision, long complexity)
+    {
+        FrameType type = decision.Type;
         CodedFrame coded;
         if (type == FrameType.Key && _settings.FilterKeyframes && frame.Full is null && _depth > 0)
         {
@@ -339,7 +406,7 @@ internal sealed class EncoderCore : IDisposable
             }
 
             YuvRaster<byte> filtered = _pictures.Rent(false);
-            Filter(0, quantizer, filtered);
+            Filter(0, decision.Quantizer, filtered);
             coded = _coder.Code(filtered, decision);
             _pictures.Return(filtered);
         }
@@ -347,17 +414,23 @@ internal sealed class EncoderCore : IDisposable
         {
             coded = frame.Full is null ? _coder.Code(frame.Picture, decision) : _coder.Code(frame.Picture, frame.Full, decision);
         }
+
         _rate.Done(type, coded.Quantizer, coded.Bits ?? ((coded.Data.Length - coded.HiddenLength) * 8L), complexity);
         Trace?.Invoke($"{frame.Index} {type} q{coded.Quantizer} {coded.Data.Length - coded.HiddenLength}B c{complexity}");
         EncodedPacket packet = Packet(coded.Data, frame.Timestamp, frame.Key);
         packet.Duration = frame.Duration;
+        if (ReorderDelay > 0)
+        {
+            packet.DecodeTimestamp = NextDecodeTimestamp();
+        }
+
         if (coded.Alpha is { } alpha)
         {
             packet.Additions = [new PacketAddition(1, alpha)];
         }
 
         _ready.Enqueue(packet);
-        _queue.RemoveAt(0);
+        _queue.RemoveAt(_queue.FindIndex(p => ReferenceEquals(p, frame)));
         _pictures.Return(frame.Picture);
         if (frame.Full is not null)
         {
@@ -365,6 +438,114 @@ internal sealed class EncoderCore : IDisposable
         }
 
         _halves.Push(frame.Half);
+    }
+
+    /// <summary>
+    /// The decode timestamp of the next packet: the presentation timestamp of the frame shown <see cref="ReorderDelay"/> places
+    /// earlier, and before the first frame one tick of the frame rate per place. Decode timestamps so rise with every packet and
+    /// never pass the presentation timestamps, as no frame is coded more than <see cref="ReorderDelay"/> places ahead.
+    /// </summary>
+    private MediaTime NextDecodeTimestamp()
+    {
+        long k = _packets++;
+        return k < ReorderDelay ? new MediaTime(_firstTime.Ticks - (ReorderDelay - k), _timeBase) : _shownTimes.Dequeue();
+    }
+
+    /// <summary>
+    /// Codes the next frame in B-frame order: a keyframe on its own; else the run's anchor (its last frame, predicted from the
+    /// reference before the run), then its B-frames, a pyramid's middle first.
+    /// </summary>
+    private void CodeNextReordered()
+    {
+        if (_bStepNext >= _bSteps.Count)
+        {
+            PlanRun();
+        }
+
+        BStep step = _bSteps[_bStepNext++];
+        Pending frame = Find(step.Index) ?? throw new InvalidOperationException($"Frame {step.Index} is no longer held.");
+        int quantizer = _rate.Next(step.Type, step.Complexity, BFactor(step));
+        FrameDecision decision = new(step.Type, quantizer, AltRefAhead: false, RefreshGolden: false, step.Index, step.Layer, step.Referenced);
+        CodeShown(frame, decision, step.Complexity);
+    }
+
+    /// <summary>A run's frame's step against an inter frame's, or 0 for its type's usual.</summary>
+    private double BFactor(BStep step) => step.Type == FrameType.Bidirectional && step.Referenced ? _settings.BReferenceStep : 0;
+
+    /// <summary>Plans the next run of frames from the head of the lookahead, in coding order, and its bit budget.</summary>
+    private void PlanRun()
+    {
+        _bSteps.Clear();
+        _bStepNext = 0;
+        Pending head = _queue[0];
+        if (head.Key)
+        {
+            _bSteps.Add(new BStep(head.Index, FrameType.Key, 0, true, head.Stats.Intra));
+            _lastAnchor = head.Index;
+        }
+        else
+        {
+            Pending anchor = _queue[BCount()];
+
+            // The anchor predicts across the whole run: what the frames up to it change, but no more than coding it alone.
+            _bSteps.Add(new BStep(anchor.Index, FrameType.Inter, 0, true, HiddenComplexity(_lastAnchor, anchor.Index)));
+            AddBFrames(_lastAnchor, anchor.Index, 1);
+            _lastAnchor = anchor.Index;
+        }
+
+        int count = 0;
+        foreach (BStep step in _bSteps)
+        {
+            _group[count++] = new GroupFrame(step.Type, step.Complexity, BFactor(step));
+        }
+
+        _rate.StartGroup(_group.AsSpan(0, count));
+    }
+
+    /// <summary>
+    /// How many B-frames go before the next anchor: up to <see cref="CoreSettings.BFrames"/>, never past a keyframe (no B-frame
+    /// predicts across one) or the frames held, and with <see cref="CoreSettings.AdaptiveBFrames"/> only as far as the run's
+    /// first frame still predicts the anchor well.
+    /// </summary>
+    private int BCount()
+    {
+        int max = Math.Min(_settings.BFrames, _queue.Count - 1);
+        int n = 0;
+        for (int k = 1; k <= max; k++)
+        {
+            if (_queue[k].Key || (_settings.AdaptiveBFrames && !Reachable(_queue[0], _queue[k], _settings.BReach)))
+            {
+                break;
+            }
+
+            n = k;
+        }
+
+        return n;
+    }
+
+    /// <summary>Adds the B-frames between the references <paramref name="from"/> and <paramref name="to"/> in coding order.</summary>
+    private void AddBFrames(int from, int to, int layer)
+    {
+        int count = to - from - 1;
+        if (count <= 0)
+        {
+            return;
+        }
+
+        if (_settings.BPyramid && count >= 2)
+        {
+            int middle = (from + to) / 2;
+            _bSteps.Add(new BStep(middle, FrameType.Bidirectional, layer, true, Stats(middle).Inter));
+            AddBFrames(from, middle, layer + 1);
+            AddBFrames(middle, to, layer + 1);
+            return;
+        }
+
+        for (int i = from + 1; i < to; i++)
+        {
+            _bSteps.Add(new BStep(i, FrameType.Bidirectional, layer, false, Stats(i).Inter));
+        }
     }
 
     private void PlanGroup(Pending first)
@@ -670,11 +851,14 @@ internal sealed class EncoderCore : IDisposable
     /// <summary>An overlay's complexity: a quarter of its frame's, or none when the coder shows the hidden frame again.</summary>
     private long OverlayComplexity(FrameStats stats) => _settings.FreeOverlays ? 0 : stats.Inter / 4;
 
-    /// <summary>Whether <paramref name="to"/>'s coarse picture predicts from <paramref name="from"/>'s with at most a quarter of its intra error.</summary>
-    private bool Reachable(Pending from, Pending to)
+    /// <summary>
+    /// Whether <paramref name="to"/>'s coarse picture predicts from <paramref name="from"/>'s with at most 1 / <paramref name="reach"/>
+    /// of its intra error (<see cref="CoreSettings.AltRefReach"/> unless given).
+    /// </summary>
+    private bool Reachable(Pending from, Pending to, double reach = 0)
     {
         (long inter, long intra) = _analyzer.Distance(from.Half, to.Half);
-        return inter * _settings.AltRefReach <= intra;
+        return inter * (reach > 0 ? reach : _settings.AltRefReach) <= intra;
     }
 
     /// <summary>A frame type's step against an inter frame's in this group, or 0 for rate control's own.</summary>
@@ -847,6 +1031,9 @@ internal sealed class EncoderCore : IDisposable
     /// of the group starts from, and the hidden frame after it (−1 for none).
     /// </summary>
     private readonly record struct Step(int Index, StepKind Kind, int Layer, int From, int To);
+
+    /// <summary>One frame of a B-frame run in coding order: its type, its layer in a B-pyramid, whether frames predict from it, and its complexity.</summary>
+    private readonly record struct BStep(int Index, FrameType Type, int Layer, bool Referenced, long Complexity);
 
     private sealed record Pending(YuvRaster<byte> Picture, byte[] Half, int Index, MediaTime Timestamp, MediaTime Duration, bool Key, FrameStats Stats)
     {
