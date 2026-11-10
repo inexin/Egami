@@ -16715,6 +16715,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Audio.Codecs.AacCodec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Audio.Codecs.AacCodec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Audio.Codecs.AacCodec",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Audio.Codecs.AacCodec.yml\" sourcestartlinenumber=\"1\">AAC (MPEG-4 Audio, ISO/IEC 14496-3), decode only: AAC LC from 8 to 96 kHz, mono to 7.1 (channel configurations 1 to 7), with\nblock switching, TNS, mid/side and intensity stereo and perceptual noise substitution. Frames come out as planar float, 1024\nsamples each, in Egami.Video's channel order: a 5.1 stream as front left, front right, center, LFE, back left, back right.\nHE-AAC (v1 and v2) decodes its AAC LC core only, without SBR or parametric stereo, at twice the core rate and with a\n&quot;aac-sbr-ignored&quot; warning; it sounds band-limited. AAC Main, LTP, SSR, the low-delay and error-resilient types, coupling\nchannel elements and channel maps set by a program config element are not decoded. Read from .aac (ADTS) files and from AAC\ntracks in MP4, Matroska, AVI and CAF.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Audio.Codecs.Ac3Codec.yml",
       "output": {
         ".html": {

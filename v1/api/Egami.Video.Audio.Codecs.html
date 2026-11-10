@@ -95,6 +95,17 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Codecs.AacCodec.html">AacCodec</a></dt>
+      <dd><p>AAC (MPEG-4 Audio, ISO/IEC 14496-3), decode only: AAC LC from 8 to 96 kHz, mono to 7.1 (channel configurations 1 to 7), with
+block switching, TNS, mid/side and intensity stereo and perceptual noise substitution. Frames come out as planar float, 1024
+samples each, in Egami.Video's channel order: a 5.1 stream as front left, front right, center, LFE, back left, back right.
+HE-AAC (v1 and v2) decodes its AAC LC core only, without SBR or parametric stereo, at twice the core rate and with a
+&quot;aac-sbr-ignored&quot; warning; it sounds band-limited. AAC Main, LTP, SSR, the low-delay and error-resilient types, coupling
+channel elements and channel maps set by a program config element are not decoded. Read from .aac (ADTS) files and from AAC
+tracks in MP4, Matroska, AVI and CAF.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Codecs.Ac3Codec.html">Ac3Codec</a></dt>
       <dd><p>AC-3 (Dolby Digital, ATSC A/52:2018), decode only: every channel mode from 1/0 to 3/2 and dual mono, with or without the LFE,
 at 32, 44.1 and 48 kHz and 32 to 640 kbit/s, with coupling, rematrixing, block switching and both frame CRCs. Frames come

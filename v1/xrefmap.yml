@@ -117657,6 +117657,67 @@ references:
   commentId: N:Egami.Video.Audio.Codecs
   fullName: Egami.Video.Audio.Codecs
   nameWithType: Egami.Video.Audio.Codecs
+- uid: Egami.Video.Audio.Codecs.AacCodec
+  name: AacCodec
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html
+  commentId: T:Egami.Video.Audio.Codecs.AacCodec
+  fullName: Egami.Video.Audio.Codecs.AacCodec
+  nameWithType: AacCodec
+- uid: Egami.Video.Audio.Codecs.AacCodec.CodecId
+  name: CodecId
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_CodecId
+  commentId: P:Egami.Video.Audio.Codecs.AacCodec.CodecId
+  fullName: Egami.Video.Audio.Codecs.AacCodec.CodecId
+  nameWithType: AacCodec.CodecId
+- uid: Egami.Video.Audio.Codecs.AacCodec.CodecId*
+  name: CodecId
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_CodecId_
+  commentId: Overload:Egami.Video.Audio.Codecs.AacCodec.CodecId
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AacCodec.CodecId
+  nameWithType: AacCodec.CodecId
+- uid: Egami.Video.Audio.Codecs.AacCodec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
+  name: CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_CreateDecoder_Egami_Video_AudioTrackInfo_Egami_Video_Audio_AudioDecoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Audio.Codecs.AacCodec.CreateDecoder(Egami.Video.AudioTrackInfo,Egami.Video.Audio.AudioDecoderOptions,Egami.Video.MediaContext)
+  name.vb: CreateDecoder(AudioTrackInfo, AudioDecoderOptions, MediaContext)
+  fullName: Egami.Video.Audio.Codecs.AacCodec.CreateDecoder(Egami.Video.AudioTrackInfo, Egami.Video.Audio.AudioDecoderOptions?, Egami.Video.MediaContext)
+  fullName.vb: Egami.Video.Audio.Codecs.AacCodec.CreateDecoder(Egami.Video.AudioTrackInfo, Egami.Video.Audio.AudioDecoderOptions, Egami.Video.MediaContext)
+  nameWithType: AacCodec.CreateDecoder(AudioTrackInfo, AudioDecoderOptions?, MediaContext)
+  nameWithType.vb: AacCodec.CreateDecoder(AudioTrackInfo, AudioDecoderOptions, MediaContext)
+- uid: Egami.Video.Audio.Codecs.AacCodec.CreateDecoder*
+  name: CreateDecoder
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_CreateDecoder_
+  commentId: Overload:Egami.Video.Audio.Codecs.AacCodec.CreateDecoder
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AacCodec.CreateDecoder
+  nameWithType: AacCodec.CreateDecoder
+- uid: Egami.Video.Audio.Codecs.AacCodec.Instance
+  name: Instance
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_Instance
+  commentId: P:Egami.Video.Audio.Codecs.AacCodec.Instance
+  fullName: Egami.Video.Audio.Codecs.AacCodec.Instance
+  nameWithType: AacCodec.Instance
+- uid: Egami.Video.Audio.Codecs.AacCodec.Instance*
+  name: Instance
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_Instance_
+  commentId: Overload:Egami.Video.Audio.Codecs.AacCodec.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AacCodec.Instance
+  nameWithType: AacCodec.Instance
+- uid: Egami.Video.Audio.Codecs.AacCodec.Name
+  name: Name
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_Name
+  commentId: P:Egami.Video.Audio.Codecs.AacCodec.Name
+  fullName: Egami.Video.Audio.Codecs.AacCodec.Name
+  nameWithType: AacCodec.Name
+- uid: Egami.Video.Audio.Codecs.AacCodec.Name*
+  name: Name
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_Name_
+  commentId: Overload:Egami.Video.Audio.Codecs.AacCodec.Name
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AacCodec.Name
+  nameWithType: AacCodec.Name
 - uid: Egami.Video.Audio.Codecs.Ac3Codec
   name: Ac3Codec
   href: api/Egami.Video.Audio.Codecs.Ac3Codec.html

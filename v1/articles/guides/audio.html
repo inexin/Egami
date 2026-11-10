@@ -90,15 +90,15 @@
 <p>Egami.Video decodes and encodes audio with the same send and receive loop as video. It is fully managed and ships:</p>
 <ul>
 <li>Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and encode, Apple Lossless
-(ALAC) decode and encode, Vorbis I decode, MPEG audio (MP3, MP2 and MP1) decode, Dolby AC-3 (ATSC A/52) decode and G.711
-μ-law and A-law decode.</li>
+(ALAC) decode and encode, Vorbis I decode, MPEG audio (MP3, MP2 and MP1) decode, Dolby AC-3 (ATSC A/52) decode, AAC LC
+(ISO/IEC 14496-3) decode and G.711 μ-law and A-law decode.</li>
 <li>Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC, Ogg, MP3, AIFF and AIFF-C, Apple CAF
 and raw AC-3 and E-AC-3, read and written; these codecs in Matroska, WebM and MP4 too.</li>
 <li>A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.</li>
 <li>Streaming filters for gain, fades and crossfades, mixing and panning, delay and trimming, and tempo and speed: see
 <a href="audio-filters.html">Audio filters</a>.</li>
 </ul>
-<p>Other audio tracks, such as AAC and E-AC-3, are copied through untouched.</p>
+<p>Other audio tracks, such as E-AC-3, are copied through untouched.</p>
 <h2 id="frames">Frames</h2>
 <p>An <code>AudioFrame</code> holds <code>SampleCount</code> samples for every channel of its <code>Layout</code>, its <code>SampleRate</code>, its <code>Format</code> (a
 <code>SampleFormat</code>) and the <code>Timestamp</code> of its first sample. Frame memory comes from the context's memory source; dispose each
@@ -389,7 +389,7 @@ it. Each packet is one frame's raw data block, without the ADTS header and CRC, 
 track's AudioSpecificConfig (<code>CodecPrivate</code>) is built from the first header, and ID3v2 tags at the start are read into the
 tags. HE-AAC in ADTS signals its SBR and parametric stereo only inside the audio, so the track reports the AAC LC core's rate
 and channels. Writing gives every packet a header without a CRC, so an AAC track goes from MP4, Matroska, CAF or AVI to .aac
-without decoding. Egami.Video does not decode AAC yet.</p>
+without decoding.</p>
 <pre><code class="lang-csharp">// Raw AAC in ADTS frames: each packet is one raw data block, as MP4 stores it.
 MediaInfo info = MediaFile.Probe(&quot;song.aac&quot;);
 AudioTrackInfo track = (AudioTrackInfo)info.Tracks[0];
@@ -398,6 +398,23 @@ Console.WriteLine($&quot;{track.CodecId}: {track.SampleRate} Hz, {track.Channels
 // Out of an .m4a into a raw .aac file, and back into Matroska, without decoding.
 MediaFile.Remux(&quot;song.m4a&quot;, &quot;copy.aac&quot;);
 MediaFile.Remux(&quot;song.aac&quot;, &quot;song.mka&quot;);
+</code></pre>
+<p><code>AacCodec</code> decodes AAC LC at 8 to 96 kHz, mono to 7.1 (channel configurations 1 to 7), with block switching, TNS, mid/side
+and intensity stereo and perceptual noise substitution, from .aac files and from AAC tracks in MP4, Matroska, AVI and CAF.
+Frames are 1024 samples of planar float in Egami.Video's channel order, and a damaged block is reported as <code>Aac.CorruptBlock</code>
+and handled as <code>Errors</code> says. HE-AAC (v1 and v2) decodes its AAC LC core only, at twice the core rate, with one
+<code>aac-sbr-ignored</code> warning: the SBR and parametric stereo data are skipped, so it sounds band-limited, and mono comes out as
+two equal channels. As ADTS cannot say a stream carries SBR, an <code>AudioReader</code> on an HE-AAC .aac file gives the core's rate.
+AAC Main, LTP, the low-delay and error-resilient types, coupling channel elements and channel maps from a program config
+element are not decoded.</p>
+<pre><code class="lang-csharp">// AAC LC decodes to planar float, 1024 samples a frame; the MP4 edit list trims the encoder's priming and padding.
+using (AudioReader reader = AudioReader.Open(&quot;song.m4a&quot;))
+{
+    Console.WriteLine($&quot;{reader.Layout}, {reader.SampleRate} Hz&quot;);
+}
+
+// Decoded and encoded again as FLAC.
+MediaFile.Transcode(&quot;song.m4a&quot;, &quot;song.flac&quot;, audio: FlacCodec.Instance);
 </code></pre>
 <p><code>Ac3Codec</code> decodes AC-3 (ATSC A/52) in every channel mode, 1/0 to 3/2 and dual mono, with or without the LFE, at 32, 44.1 and
 48 kHz and 32 to 640 kbit/s, from raw .ac3 files and from AC-3 tracks in MP4, Matroska, AVI and CAF. Frames are 1536 samples of
