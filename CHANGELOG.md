@@ -18,14 +18,23 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   B_Direct with spatial direct prediction, and temporal where it codes smaller (effort 8 and up). From effort 4 runs of two or
   three are B-pyramids: the middle B picture is a reference, and the next P picture marks it unused (MMCO).
 - `H264EncoderOptions` (`VideoEncoderOptions.H264`, `VideoWriterOptions.H264`): `Profile`, `Level` (picked from the frame
-  size and rate when unset, and checked), `Entropy`, `BFrames`, `MinQuantizer`, `MaxQuantizer`, `AdaptiveQuantization` (on by default:
-  busy macroblocks get coarser steps, flat ones finer) and `AnnexB`. Tracks carry an avcC record, or Annex B packets with the
+  size and rate when unset, and for the bitrate modes the peak bitrate and buffer too, and checked), `Entropy`, `BFrames`,
+  `Slices`, `MinQuantizer`, `MaxQuantizer`, `AdaptiveQuantization` (on by default: busy macroblocks get coarser steps, flat
+  ones finer) and `AnnexB`.
+- Rate control: `Quality` 50 is about x264's CRF 23 (QP 23, equal PSNR on three clips within a few quality points); one- and
+  two-pass average bitrate and constant bitrate land within 5 % of the target on 640×360 clips, and constant bitrate never runs
+  the decoder buffer dry. B-frame groups plan bits by their average cost, and the H.264 probe codes at QP 26.
+- Slices: each picture is cut into bands of macroblock rows (`H264EncoderOptions.Slices`, by default one per 1800 macroblocks:
+  one below 1280×720, four at 1920×1080, up to eight) coded on `EgamiContext.MaxParallelism` threads. The stream depends only on
+  the slice count, never on the thread count. Tracks carry an avcC record, or Annex B packets with the
   parameter sets in band; HDR metadata goes into mastering display and content light level SEI.
 - Every picture decodes in Egami's decoder and FFmpeg's to the encoder's reconstruction, sample for sample. On two photos at
   QP 22 to 37 intra coding takes 2–3 % fewer bits than x264's medium preset at equal PSNR; on three 640×360 clips without
   B-frames, P coding takes 0.4–3.2 % fewer bits than x264's medium preset with `-bf 0`; with B-frames at effort 4, from 1.4 %
-  fewer to 15.2 % more than x264's medium preset (rate control has no macroblock tree yet). The encoder is not yet tuned for
-  speed.
+  fewer to 15.3 % more than x264's medium preset (rate control has no macroblock tree yet).
+- Speed: SSE2 SAD, SATD, squared error and averaging, an AVX2 8x8 forward transform, a cheaper hexagon search and cached RDOQ
+  tables take one-thread encoding at effort 4 from about 540 to about 100 ms a 640×360 frame, with the same output; x264's
+  medium preset takes 8 to 13, so the speed goal of twice x264's time is not met yet.
 - The encoder core learned B-frames (planning only; Egami's VP8, VP9 and AV1 streams are unchanged byte for byte).
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).

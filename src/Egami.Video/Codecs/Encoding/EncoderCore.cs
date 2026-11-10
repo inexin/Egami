@@ -327,7 +327,7 @@ internal sealed class EncoderCore : IDisposable
         if (frame.Index == 0 && _rate.WantsProbe)
         {
             Pending? second = _queue.Count > 1 ? _queue[1] : null;
-            (long key, long next) = _coder.Probe(frame.Picture, second?.Picture, RateController.ProbeQuantizer);
+            (long key, long next) = _coder.Probe(frame.Picture, second?.Picture, _rate.ProbeQuantizer);
             _rate.Calibrate(frame.Stats.Intra, key, second?.Stats.Inter ?? 0, next);
         }
 

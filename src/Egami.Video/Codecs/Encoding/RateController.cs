@@ -73,10 +73,17 @@ internal sealed record RateSettings
     public long[]? FirstPass { get; init; }
 
     /// <summary>
-    /// Whether the frames past the current group are planned like the whole group, hidden frames included, rather than like its
-    /// inter frames: right when hidden frames cost as much as the shown ones, as AV1's pyramid does.
+    /// Whether the frames past the current group are planned like the whole group, hidden and B-frames included, rather than
+    /// like its inter frames: right when those cost as much as the shown ones, as AV1's pyramid does, or much less than an inter
+    /// frame several frames on from its reference, as H.264's B-frames do.
     /// </summary>
-    public bool PlanHiddenAhead { get; init; }
+    public bool PlanWholeGroupAhead { get; init; }
+
+    /// <summary>
+    /// Gets the quantizer the first frames are probed at for the bit model, mid-range on the codec's scale: 40 of VP8's, VP9's
+    /// and AV1's 0 to 127 or 255 by default; an H.264 QP of 40 is so coarse that its bits say little about finer steps.
+    /// </summary>
+    public int ProbeQuantizer { get; init; } = 40;
 
     /// <summary>
     /// Whether a probe of a keyframe alone (real time, where no second frame is in yet) also sets the inter frames' model, at the
@@ -127,8 +134,8 @@ internal sealed class RateController
         }
     }
 
-    /// <summary>The quantizer the content probe codes at, mid-range.</summary>
-    public const int ProbeQuantizer = 40;
+    /// <summary>Gets the quantizer the content probe codes at, mid-range.</summary>
+    public int ProbeQuantizer => _settings.ProbeQuantizer;
 
     /// <summary>Gets whether a bitrate mode wants the first frames probed before it plans them.</summary>
     public bool WantsProbe => _settings.Mode is RateControlMode.Bitrate or RateControlMode.ConstantBitrate && _corrected[0] == 0;
@@ -139,7 +146,7 @@ internal sealed class RateController
     /// </summary>
     public void Calibrate(long keyComplexity, long keyBits, long interComplexity, long interBits)
     {
-        double step = _settings.Steps[ProbeQuantizer];
+        double step = _settings.Steps[_settings.ProbeQuantizer];
         _correction[(int)FrameType.Key] = Math.Clamp(keyBits / (Effective(keyComplexity) / Power(step)), 0.01, 1e6);
         if (interBits > 0)
         {
@@ -232,7 +239,7 @@ internal sealed class RateController
 
         int horizon = Math.Max(shown, s.HorizonFrames ?? (int)(2 * s.FrameRate));
         double perInter = inter > 0 ? interNeed / inter : _correction[(int)FrameType.Inter] * Effective(complexity);
-        if (s.PlanHiddenAhead && GroupNeedPerShown() is > 0 and var perShown)
+        if (s.PlanWholeGroupAhead && GroupNeedPerShown() is > 0 and var perShown)
         {
             perInter = perShown;
         }

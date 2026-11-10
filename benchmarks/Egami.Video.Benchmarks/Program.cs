@@ -23,6 +23,13 @@ if (args is ["--encode-ffv1", .. string[] ffv1Encode])
     return;
 }
 
+// Time H.264 encoding (V7.2 gates): -- --encode-h264 <clip.y4m> [options]
+if (args is ["--encode-h264", .. string[] h264Encode])
+{
+    H264EncodeTiming.Run(h264Encode);
+    return;
+}
+
 // Time H.264 decoding (V7 speed gate): -- --time-h264 <file.h264>...
 if (args is ["--time-h264", .. string[] h264])
 {

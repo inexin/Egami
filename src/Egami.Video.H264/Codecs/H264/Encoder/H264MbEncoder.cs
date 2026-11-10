@@ -128,6 +128,43 @@ internal sealed partial class H264MbEncoder
         return bestCost + _chromaSse;
     }
 
+    /// <summary>
+    /// Whether an inter macroblock whose best partitioning costs <paramref name="interSatd"/> (SATD and vector bits) is worth
+    /// coding as intra too: always from effort 7, else when intra 16x16 prediction comes near it by SATD.
+    /// </summary>
+    private bool TryIntra(long interSatd)
+    {
+        if (_effort >= 7)
+        {
+            return true;
+        }
+
+        if (_effort == 0)
+        {
+            return interSatd > 16 * 16 * 4;
+        }
+
+        int[] t = _t, l = _l;
+        H264IntraPredict.Gather(_y, _lumaAt, _stride, 16, _top, false, _left, _topLeft, t, l);
+        long limit = interSatd * IntraMargin / 16;
+        for (int mode = 0; mode < 4; mode++)
+        {
+            if (H264IntraPredict.Allowed16x16(mode, _top, _left, _topLeft))
+            {
+                H264IntraPredict.Predict16x16(_pred, 16, mode, t, l, _top, _left);
+                if (Satd(_srcY, _lumaAt, _stride, _pred, 0, 16, 16, 16) < limit)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>How far above the inter cost, in sixteenths, an intra 16x16 SATD still tries intra.</summary>
+    internal static int IntraMargin { get; set; } = 24;
+
     private void Setup(int mbX, int mbY, int qp)
     {
         _mbX = mbX;
@@ -770,52 +807,10 @@ internal sealed partial class H264MbEncoder
         }
     }
 
-    /// <summary>The sum of absolute 4x4 Hadamard-transformed differences over a width by height area, halved.</summary>
-    internal static long Satd(byte[] src, int at, int stride, byte[] pred, int predAt, int predStride, int width, int height)
-    {
-        long sum = 0;
-        Span<int> d = stackalloc int[16];
-        for (int by = 0; by < height; by += 4)
-        {
-            for (int bx = 0; bx < width; bx += 4)
-            {
-                for (int y = 0; y < 4; y++)
-                {
-                    int s = at + ((by + y) * stride) + bx, p = predAt + ((by + y) * predStride) + bx;
-                    int a0 = src[s] - pred[p], a1 = src[s + 1] - pred[p + 1], a2 = src[s + 2] - pred[p + 2], a3 = src[s + 3] - pred[p + 3];
-                    int s01 = a0 + a1, d01 = a0 - a1, s23 = a2 + a3, d23 = a2 - a3;
-                    d[(y * 4) + 0] = s01 + s23;
-                    d[(y * 4) + 1] = s01 - s23;
-                    d[(y * 4) + 2] = d01 - d23;
-                    d[(y * 4) + 3] = d01 + d23;
-                }
-
-                for (int x = 0; x < 4; x++)
-                {
-                    int a0 = d[x], a1 = d[4 + x], a2 = d[8 + x], a3 = d[12 + x];
-                    int s01 = a0 + a1, d01 = a0 - a1, s23 = a2 + a3, d23 = a2 - a3;
-                    sum += Math.Abs(s01 + s23) + Math.Abs(s01 - s23) + Math.Abs(d01 - d23) + Math.Abs(d01 + d23);
-                }
-            }
-        }
-
-        return sum >> 1;
-    }
+    /// <summary>The SATD of a block against a prediction (<see cref="H264EncodeSimd.Satd"/>).</summary>
+    internal static long Satd(byte[] src, int at, int stride, byte[] pred, int predAt, int predStride, int width, int height) =>
+        H264EncodeSimd.Satd(src, at, stride, pred, predAt, predStride, width, height);
 
     /// <summary>The sum of squared differences of two planes over an area.</summary>
-    internal static long Sse(byte[] a, byte[] b, int at, int stride, int width, int height)
-    {
-        long sum = 0;
-        for (int y = 0; y < height; y++)
-        {
-            int row = at + (y * stride);
-            for (int x = 0; x < width; x++)
-            {
-                int e = a[row + x] - b[row + x];
-                sum += e * e;
-            }
-        }
-
-        return sum;
-    }
+    internal static long Sse(byte[] a, byte[] b, int at, int stride, int width, int height) => H264EncodeSimd.Sse(a, b, at, stride, width, height);
 }

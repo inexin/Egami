@@ -67,8 +67,8 @@ public sealed class EncoderIntraTests
         {
             using YuvRaster<byte> picture = Picture(width, height, frame);
             encoder.Load(picture);
-            byte[] nal = encoder.EncodeIntra(true, frame, 0, 0, qp);
-            byte[] data = H264StreamWriter.AccessUnit([nal], annexB: false);
+            byte[][] nals = encoder.EncodeIntra(true, frame, 0, 0, qp);
+            byte[] data = H264StreamWriter.AccessUnit(nals, annexB: false);
             decoder.Send(new EncodedPacket(1, data, new MediaTime(frame, track.TimeBase)) { IsKeyframe = true });
             decoder.Flush();
             Assert.True(decoder.TryReceive(out YuvVideoFrame? decoded));

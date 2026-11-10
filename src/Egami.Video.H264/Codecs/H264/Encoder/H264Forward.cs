@@ -1,3 +1,8 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+
 namespace Egami.Video.Codecs.H264;
 
 /// <summary>
@@ -133,9 +138,32 @@ internal static class H264Forward
         }
     }
 
-    /// <summary>The forward 8x8 transform of a residual (raster order) in place.</summary>
+    /// <summary>
+    /// The forward 8x8 transform of a residual (raster order) in place: C8 · X · C8ᵀ, as an even/odd butterfly down the columns,
+    /// then down the columns of the transpose. Integer and exact, so any order of the two passes gives the same coefficients.
+    /// </summary>
     internal static void Transform8x8(Span<int> block)
     {
+        if (Avx2.IsSupported)
+        {
+            ref int b = ref MemoryMarshal.GetReference(block);
+            Vector256<int> r0 = Vector256.LoadUnsafe(ref b), r1 = Vector256.LoadUnsafe(ref b, 8), r2 = Vector256.LoadUnsafe(ref b, 16), r3 = Vector256.LoadUnsafe(ref b, 24);
+            Vector256<int> r4 = Vector256.LoadUnsafe(ref b, 32), r5 = Vector256.LoadUnsafe(ref b, 40), r6 = Vector256.LoadUnsafe(ref b, 48), r7 = Vector256.LoadUnsafe(ref b, 56);
+            Butterfly8(ref r0, ref r1, ref r2, ref r3, ref r4, ref r5, ref r6, ref r7);
+            Transpose8(ref r0, ref r1, ref r2, ref r3, ref r4, ref r5, ref r6, ref r7);
+            Butterfly8(ref r0, ref r1, ref r2, ref r3, ref r4, ref r5, ref r6, ref r7);
+            Transpose8(ref r0, ref r1, ref r2, ref r3, ref r4, ref r5, ref r6, ref r7);
+            r0.StoreUnsafe(ref b);
+            r1.StoreUnsafe(ref b, 8);
+            r2.StoreUnsafe(ref b, 16);
+            r3.StoreUnsafe(ref b, 24);
+            r4.StoreUnsafe(ref b, 32);
+            r5.StoreUnsafe(ref b, 40);
+            r6.StoreUnsafe(ref b, 48);
+            r7.StoreUnsafe(ref b, 56);
+            return;
+        }
+
         Span<int> t = stackalloc int[64];
         ReadOnlySpan<int> c8 = C8;
         for (int i = 0; i < 8; i++)
@@ -165,6 +193,45 @@ internal static class H264Forward
                 block[(k * 8) + j] = sum;
             }
         }
+    }
+
+    /// <summary>One pass of the 8-point forward transform (the rows of <see cref="C8"/>) down eight columns at once.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Butterfly8(ref Vector256<int> r0, ref Vector256<int> r1, ref Vector256<int> r2, ref Vector256<int> r3,
+        ref Vector256<int> r4, ref Vector256<int> r5, ref Vector256<int> r6, ref Vector256<int> r7)
+    {
+        Vector256<int> a0 = r0 + r7, a1 = r1 + r6, a2 = r2 + r5, a3 = r3 + r4;
+        Vector256<int> b0 = r0 - r7, b1 = r1 - r6, b2 = r2 - r5, b3 = r3 - r4;
+        Vector256<int> s03 = a0 + a3, d03 = a0 - a3, s12 = a1 + a2, d12 = a1 - a2;
+        r0 = (s03 + s12) << 3;
+        r4 = (s03 - s12) << 3;
+        r2 = (d03 << 3) + (d12 << 2);
+        r6 = (d03 << 2) - (d12 << 3);
+        r1 = (b0 * 12) + (b1 * 10) + (b2 * 6) + (b3 * 3);
+        r3 = (b0 * 10) - (b1 * 3) - (b2 * 12) - (b3 * 6);
+        r5 = (b0 * 6) - (b1 * 12) + (b2 * 3) + (b3 * 10);
+        r7 = (b0 * 3) - (b1 * 6) + (b2 * 10) - (b3 * 12);
+    }
+
+    /// <summary>Transposes eight rows of eight ints.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Transpose8(ref Vector256<int> r0, ref Vector256<int> r1, ref Vector256<int> r2, ref Vector256<int> r3,
+        ref Vector256<int> r4, ref Vector256<int> r5, ref Vector256<int> r6, ref Vector256<int> r7)
+    {
+        Vector256<int> t0 = Avx2.UnpackLow(r0, r1), t1 = Avx2.UnpackHigh(r0, r1), t2 = Avx2.UnpackLow(r2, r3), t3 = Avx2.UnpackHigh(r2, r3);
+        Vector256<int> t4 = Avx2.UnpackLow(r4, r5), t5 = Avx2.UnpackHigh(r4, r5), t6 = Avx2.UnpackLow(r6, r7), t7 = Avx2.UnpackHigh(r6, r7);
+        Vector256<int> u0 = Avx2.UnpackLow(t0.AsInt64(), t2.AsInt64()).AsInt32(), u1 = Avx2.UnpackHigh(t0.AsInt64(), t2.AsInt64()).AsInt32();
+        Vector256<int> u2 = Avx2.UnpackLow(t1.AsInt64(), t3.AsInt64()).AsInt32(), u3 = Avx2.UnpackHigh(t1.AsInt64(), t3.AsInt64()).AsInt32();
+        Vector256<int> u4 = Avx2.UnpackLow(t4.AsInt64(), t6.AsInt64()).AsInt32(), u5 = Avx2.UnpackHigh(t4.AsInt64(), t6.AsInt64()).AsInt32();
+        Vector256<int> u6 = Avx2.UnpackLow(t5.AsInt64(), t7.AsInt64()).AsInt32(), u7 = Avx2.UnpackHigh(t5.AsInt64(), t7.AsInt64()).AsInt32();
+        r0 = Avx2.Permute2x128(u0, u4, 0x20);
+        r4 = Avx2.Permute2x128(u0, u4, 0x31);
+        r1 = Avx2.Permute2x128(u1, u5, 0x20);
+        r5 = Avx2.Permute2x128(u1, u5, 0x31);
+        r2 = Avx2.Permute2x128(u2, u6, 0x20);
+        r6 = Avx2.Permute2x128(u2, u6, 0x31);
+        r3 = Avx2.Permute2x128(u3, u7, 0x20);
+        r7 = Avx2.Permute2x128(u3, u7, 0x31);
     }
 
     /// <summary>The 4x4 Hadamard of the Intra16x16 DC coefficients (raster order, row i column j is block (j, i)) in place.</summary>
@@ -202,10 +269,14 @@ internal static class H264Forward
     }
 
     /// <summary>The step of a level in W units at a raster position of a 4x4 block: 2^qbits / MF.</summary>
-    internal static double Step4(int qp, int pos) => Math.ScaleB(1.0, Shift4 + (qp / 6)) / Mf4[((qp % 6) * 16) + pos];
+    internal static double Step4(int qp, int pos) => Steps4[(qp * 16) + pos];
 
     /// <summary>The step of a level in W units at a raster position of an 8x8 block.</summary>
-    internal static double Step8(int qp, int pos) => Math.ScaleB(1.0, Shift8 + (qp / 6)) / Mf8[((qp % 6) * 64) + pos];
+    internal static double Step8(int qp, int pos) => Steps8[(qp * 64) + pos];
+
+    // The steps of every QP and position, worked out once (they are read for each coefficient RDOQ weighs).
+    private static readonly double[] Steps4 = [.. Enumerable.Range(0, 52 * 16).Select(i => Math.ScaleB(1.0, Shift4 + (i / 16 / 6)) / Mf4[((i / 16 % 6) * 16) + (i % 16)])];
+    private static readonly double[] Steps8 = [.. Enumerable.Range(0, 52 * 64).Select(i => Math.ScaleB(1.0, Shift8 + (i / 64 / 6)) / Mf8[((i / 64 % 6) * 64) + (i % 64)])];
 
     /// <summary>The Lagrange multiplier of squared sample error against bits at a QP (the H.264 reference model's 0.85 · 2^((QP − 12) / 3)).</summary>
     /// <remarks>2^(1/3) and 2^(2/3) are constants and the rest a power of two, so every machine gets the same value.</remarks>

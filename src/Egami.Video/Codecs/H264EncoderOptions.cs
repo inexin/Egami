@@ -12,6 +12,7 @@ public sealed record H264EncoderOptions
 {
     private readonly int? _level;
     private readonly int? _bFrames;
+    private readonly int? _slices;
     private readonly int _minQuantizer;
     private readonly int _maxQuantizer = 51;
 
@@ -23,7 +24,9 @@ public sealed record H264EncoderOptions
 
     /// <summary>
     /// Gets the level as level_idc, ten times the level number (31 for level 3.1), 10 to 62, or <see langword="null"/> (the
-    /// default) for the lowest level that the frame size and rate fit.
+    /// default) for the lowest level that the frame size and rate fit, and for <see cref="RateControlMode.Bitrate"/> and
+    /// <see cref="RateControlMode.ConstantBitrate"/> the peak bitrate and buffer too. A stream that does not fit the level given
+    /// is refused when the encoder is made.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is not a level of H.264's Table A-1.</exception>
     public int? Level
@@ -73,6 +76,19 @@ public sealed record H264EncoderOptions
     {
         get => _bFrames;
         init => _bFrames = value is int v ? InRange(v, 0, 16) : null;
+    }
+
+    /// <summary>
+    /// Gets the slices of each picture, 1 to 32, or <see langword="null"/> (the default) to follow the frame size: one below
+    /// about 1280x720, two there, four at 1920x1080 and up to eight above. Slices are bands of macroblock rows coded in parallel
+    /// (up to <see cref="EgamiContext.MaxParallelism"/>); each costs a little compression, as nothing is predicted across them.
+    /// The stream depends only on this count, never on the number of threads. A picture with fewer macroblock rows has fewer.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is outside 1 to 32.</exception>
+    public int? Slices
+    {
+        get => _slices;
+        init => _slices = value is int v ? InRange(v, 1, 32) : null;
     }
 
     /// <summary>
