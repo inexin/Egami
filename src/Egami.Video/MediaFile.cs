@@ -484,6 +484,11 @@ public static partial class MediaFile
             {
                 using (frame)
                 {
+                    if (!TrimBeforeZero(frame))
+                    {
+                        continue;
+                    }
+
                     if (filter is null)
                     {
                         encoder.Send(frame);
@@ -497,6 +502,25 @@ public static partial class MediaFile
             }
 
             Encoded(muxer, number, encoder);
+        }
+
+        // The codec's priming delay (samples before time zero, such as AAC's in an MP4 edit list) is dropped, as AudioReader drops
+        // it: the new encoder adds its own. False when the whole frame is priming.
+        static bool TrimBeforeZero(AudioFrame frame)
+        {
+            if (frame.Timestamp >= MediaTime.Zero)
+            {
+                return true;
+            }
+
+            long skip = -frame.Timestamp.Rescale(new Rational(1, frame.SampleRate)).Ticks;
+            if (skip >= frame.SampleCount)
+            {
+                return false;
+            }
+
+            frame.Trim((int)skip, frame.SampleCount - (int)skip);
+            return true;
         }
 
         static void Filtered(IAudioFilter filter, IAudioEncoder encoder)
