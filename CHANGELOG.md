@@ -34,7 +34,8 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   fewer to 15.3 % more than x264's medium preset (rate control has no macroblock tree yet).
 - Speed: SSE2 SAD, SATD, squared error and averaging, an AVX2 8x8 forward transform, a cheaper hexagon search and cached RDOQ
   tables take one-thread encoding at effort 4 from about 540 to about 100 ms a 640×360 frame, with the same output; x264's
-  medium preset takes 8 to 13, so the speed goal of twice x264's time is not met yet.
+  medium preset takes 8 to 13, so the speed goal of twice x264's time is not met yet. AVX2 SATD on four blocks at once, SIMD
+  half-sample planes and an all-zero quantization shortcut then take 9 % fewer cycles, with the same output.
 - The encoder core learned B-frames (planning only; Egami's VP8, VP9 and AV1 streams are unchanged byte for byte).
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
