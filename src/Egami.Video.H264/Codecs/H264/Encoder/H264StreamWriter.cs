@@ -27,6 +27,9 @@ internal sealed record H264StreamConfig
     /// <summary>Gets max_num_ref_frames.</summary>
     public int MaxRefFrames { get; init; } = 1;
 
+    /// <summary>Gets whether P slices carry explicit weights (weighted_pred_flag): every profile but Constrained Baseline.</summary>
+    public bool WeightedPred => ProfileIdc != 66;
+
     /// <summary>Gets max_num_reorder_frames: how many frames come before one they are shown after.</summary>
     public int ReorderFrames { get; init; }
 
@@ -159,7 +162,7 @@ internal static class H264StreamWriter
         w.Ue(0); // num_slice_groups_minus1
         w.Ue(0); // num_ref_idx_l0_default_active_minus1
         w.Ue(0); // num_ref_idx_l1_default_active_minus1
-        w.Flag(false); // weighted_pred_flag
+        w.Flag(c.WeightedPred);
         w.U(2, 0); // weighted_bipred_idc
         w.Se(InitQp - 26);
         w.Se(0); // pic_init_qs_minus26
@@ -232,7 +235,7 @@ internal static class H264StreamWriter
     /// has it); an IDR picture's marking keeps its picture as a short-term reference.
     /// </summary>
     internal static void SliceHeader(NalBitWriter w, H264StreamConfig c, int firstMb, H264SliceType type, bool idr, int idrPicId, int frameNum, int pocLsb, int qp,
-        int cabacInitIdc = 0)
+        int cabacInitIdc = 0, ReadOnlySpan<H264RefPlanes> refs = default)
     {
         w.Ue((uint)firstMb);
         w.Ue((uint)type + 5);
@@ -251,12 +254,23 @@ internal static class H264StreamWriter
 
         if (type is H264SliceType.P or H264SliceType.B)
         {
-            w.Flag(false); // num_ref_idx_active_override_flag
+            // num_ref_idx_active_override_flag: the picture parameter set's default is one reference.
+            w.Flag(refs.Length > 1);
+            if (refs.Length > 1)
+            {
+                w.Ue((uint)(refs.Length - 1));
+            }
+
             w.Flag(false); // ref_pic_list_modification_flag_l0
             if (type == H264SliceType.B)
             {
                 w.Flag(false); // ref_pic_list_modification_flag_l1
             }
+        }
+
+        if (type == H264SliceType.P && c.WeightedPred)
+        {
+            PredWeightTable(w, refs);
         }
 
         if (idr)
@@ -278,6 +292,34 @@ internal static class H264StreamWriter
         w.Ue(0); // disable_deblocking_filter_idc
         w.Se(0); // slice_alpha_c0_offset_div2
         w.Se(0); // slice_beta_offset_div2
+    }
+
+    /// <summary>pred_weight_table (7.3.3.2) of list 0: each reference's luma and chroma weights where they are not the default.</summary>
+    private static void PredWeightTable(NalBitWriter w, ReadOnlySpan<H264RefPlanes> refs)
+    {
+        w.Ue((uint)H264RefPlanes.Denominator); // luma_log2_weight_denom
+        w.Ue((uint)H264RefPlanes.Denominator); // chroma_log2_weight_denom
+        (int, int) unit = (1 << H264RefPlanes.Denominator, 0);
+        foreach (H264RefPlanes r in refs)
+        {
+            bool luma = r.Weighted && r.LumaWeight != unit;
+            w.Flag(luma);
+            if (luma)
+            {
+                w.Se(r.LumaWeight.Weight);
+                w.Se(r.LumaWeight.Offset);
+            }
+
+            bool chroma = r.Weighted && (r.CbWeight != unit || r.CrWeight != unit);
+            w.Flag(chroma);
+            if (chroma)
+            {
+                w.Se(r.CbWeight.Weight);
+                w.Se(r.CbWeight.Offset);
+                w.Se(r.CrWeight.Weight);
+                w.Se(r.CrWeight.Offset);
+            }
+        }
     }
 
     /// <summary>The AVCDecoderConfigurationRecord of a stream's parameter sets.</summary>

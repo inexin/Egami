@@ -176,7 +176,7 @@ public sealed class H264EncoderTests
     }
 
     /// <summary>A reconstruction's visible samples, Y then Cb then Cr.</summary>
-    private static byte[] Planes(H264Picture pic, int width, int height)
+    internal static byte[] Planes(H264Picture pic, int width, int height)
     {
         List<byte> bytes = [];
         for (int y = 0; y < height; y++)
@@ -195,7 +195,7 @@ public sealed class H264EncoderTests
         return [.. bytes];
     }
 
-    private static byte[] Planes(YuvRaster<byte> raster)
+    internal static byte[] Planes(YuvRaster<byte> raster)
     {
         List<byte> bytes = [];
         foreach (YuvPlane<byte> plane in (YuvPlane<byte>[])[raster.Y, raster.U!, raster.V!])

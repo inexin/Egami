@@ -54,6 +54,13 @@ public sealed record H264EncoderOptions
     }
 
     /// <summary>
+    /// Gets whether each macroblock's quantizer follows how busy it is (adaptive quantization): detail and texture, where errors
+    /// show less, are coded coarser and flat areas finer, which looks better at the same size. Default on; turn it off to
+    /// measure PSNR, which it lowers.
+    /// </summary>
+    public bool AdaptiveQuantization { get; init; } = true;
+
+    /// <summary>
     /// Gets whether packets are Annex B byte streams (start codes, with the parameter sets in every keyframe's packet), as raw
     /// .h264 files, MPEG-TS and RTP senders want. Default off: packets are length-prefixed and the parameter sets go in the
     /// track's avcC record (<see cref="TrackInfo.CodecPrivate"/>), as MP4 and Matroska store them.

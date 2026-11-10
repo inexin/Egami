@@ -3,11 +3,11 @@ using Egami.Nal;
 namespace Egami.Video.Codecs.H264;
 
 /// <summary>
-/// Writes macroblock_layer() (7.3.5) of intra macroblocks with CABAC (9.3) or CAVLC (9.2), the inverse of the decoder's reading:
+/// Writes macroblock_layer() (7.3.5) of intra and P macroblocks with CABAC (9.3) or CAVLC (9.2), the inverse of the decoder's reading:
 /// context selection reads the same <see cref="H264MbState"/> fields, which <see cref="Begin"/> fills for the macroblock first,
 /// so a pass with a counting sink gives a candidate's rate and a pass with the writers codes it.
 /// </summary>
-internal sealed class H264MbSyntax
+internal sealed partial class H264MbSyntax
 {
     private static readonly byte[] CbfOffset = [0, 4, 8, 12, 16];
     private static readonly byte[] SigOffset = [0, 15, 29, 44, 47];
@@ -29,6 +29,8 @@ internal sealed class H264MbSyntax
     private int _top;
     private bool _availableLeft;
     private bool _availableTop;
+    private bool _availableTopRight;
+    private bool _availableTopLeft;
     private int _slice;
     private bool _intra;
 
@@ -58,6 +60,15 @@ internal sealed class H264MbSyntax
 
     /// <summary>Gets or sets chroma_qp_index_offset.</summary>
     public int ChromaQpOffset { get; set; }
+
+    /// <summary>Gets or sets the picture whose motion arrays <see cref="Begin"/> fills, which motion vector prediction reads.</summary>
+    public H264Picture? Motion { get; set; }
+
+    /// <summary>Gets or sets the <see cref="H264Picture.Id"/> of each reference in list 0, which the deblocking filter compares.</summary>
+    public int[] RefIds { get; set; } = [];
+
+    /// <summary>Gets or sets num_ref_idx_l0_active: with more than one, ref_idx_l0 is coded.</summary>
+    public int RefCount { get; set; } = 1;
 
     /// <summary>Starts a slice at <paramref name="qp"/> (SliceQPY): CABAC contexts initialised for it (9.3.1.1).</summary>
     public void StartSlice(int slice, H264SliceType type, int qp, int cabacInitIdc)
@@ -94,6 +105,8 @@ internal sealed class H264MbSyntax
         _top = _addr - _mb.WidthMbs;
         _availableLeft = mbX > 0 && _mb.Slice[_left] == _slice;
         _availableTop = mbY > 0 && _mb.Slice[_top] == _slice;
+        _availableTopRight = mbY > 0 && mbX < _mb.WidthMbs - 1 && _mb.Slice[_top + 1] == _slice;
+        _availableTopLeft = mbY > 0 && mbX > 0 && _mb.Slice[_top - 1] == _slice;
     }
 
     /// <summary>
@@ -107,7 +120,7 @@ internal sealed class H264MbSyntax
         int addr = _addr;
         _mb.Slice[addr] = _slice;
         _mb.Kind[addr] = code.Kind;
-        _mb.Transform8x8[addr] = code.Kind == H264MbKind.I8x8;
+        _mb.Transform8x8[addr] = code.Eight;
         _mb.Cbp[addr] = (byte)code.Cbp;
         _mb.ChromaPredMode[addr] = (byte)(_intra ? code.ChromaMode : 0);
         _mb.Direct8x8[addr] = 0;
@@ -128,9 +141,11 @@ internal sealed class H264MbSyntax
             int xy = H264Tables.BlockXY[blk];
             int b = _b0 + ((xy >> 2) * _w4) + (xy & 3);
             int i8 = blk >> 2;
-            int count = (code.Cbp & (1 << i8)) == 0 ? 0 : code.Kind == H264MbKind.I8x8 ? code.Luma8Count[i8] : code.LumaCount[blk];
+            int count = (code.Cbp & (1 << i8)) == 0 ? 0 : code.Eight ? code.Luma8Count[i8] : code.LumaCount[blk];
             _mb.IntraModes[b] = (sbyte)(code.Kind == H264MbKind.I4x4 ? code.Modes[blk] : code.Kind == H264MbKind.I8x8 ? code.Modes[i8] : -1);
-            _mb.Mvd[0][2 * b] = _mb.Mvd[0][(2 * b) + 1] = 0;
+            int mvd = _intra ? 0 : code.Mvd[xy];
+            _mb.Mvd[0][2 * b] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvX(mvd)), 255);
+            _mb.Mvd[0][(2 * b) + 1] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvY(mvd)), 255);
             _mb.Mvd[1][2 * b] = _mb.Mvd[1][(2 * b) + 1] = 0;
             _mb.NzLuma[b] = (byte)count;
             _mb.Nonzero[b] = (byte)(count > 0 ? 1 : 0);
@@ -148,7 +163,42 @@ internal sealed class H264MbSyntax
 
         _mb.FlatInside[addr] = false;
         SetCavlc8x8Counts(code);
+        if (Motion is { } pic)
+        {
+            SetMotion(pic, code);
+        }
     }
+
+    /// <summary>Writes the macroblock's references and vectors to the motion arrays, as the decoder will have them.</summary>
+    private void SetMotion(H264Picture pic, H264MbCode code)
+    {
+        bool flat = !_intra && (code.Kind == H264MbKind.PSkip || code.Partition == 0);
+        for (int xy = 0; xy < 16; xy++)
+        {
+            int bx = xy & 3, by = xy >> 2;
+            int b = _b0 + (by * _w4) + bx;
+            int refIdx = _intra ? -1 : BlockRef(code, bx, by);
+            pic.RefIdx[0][b] = (sbyte)refIdx;
+            pic.RefPicId[0][b] = refIdx >= 0 ? RefIds[refIdx] : -1;
+            pic.Mv[0][b] = refIdx >= 0 ? code.Mv[xy] : 0;
+            pic.RefIdx[1][b] = -1;
+            pic.RefPicId[1][b] = -1;
+            pic.Mv[1][b] = 0;
+            flat &= _mb.Nonzero[b] == 0;
+        }
+
+        pic.MbIntra[_addr] = _intra;
+        _mb.FlatInside[_addr] = flat;
+    }
+
+    /// <summary>The reference index of the 4x4 block at (bx, by) of an inter macroblock.</summary>
+    internal static int BlockRef(H264MbCode code, int bx, int by) => code.Kind == H264MbKind.PSkip ? 0 : code.Partition switch
+    {
+        0 => code.RefIdx[0],
+        1 => code.RefIdx[by >> 1],
+        2 => code.RefIdx[bx >> 1],
+        _ => code.RefIdx[((by >> 1) * 2) + (bx >> 1)],
+    };
 
     private static bool HasQpDelta(H264MbCode code) => code.Cbp != 0 || code.Kind == H264MbKind.I16x16;
 
@@ -175,10 +225,24 @@ internal sealed class H264MbSyntax
 
     // ---- CABAC ----
 
-    /// <summary>Writes an intra macroblock_layer with CABAC.</summary>
+    /// <summary>Writes mb_skip_flag of the macroblock at the last <see cref="Locate"/> (9.3.3.1.1.1).</summary>
+    public void SkipFlagCabac<T>(ref T sink, bool skip)
+        where T : struct, ICabacSink
+    {
+        int inc = (_availableLeft && !H264MbState.IsSkip(_mb.Kind[_left]) ? 1 : 0) + (_availableTop && !H264MbState.IsSkip(_mb.Kind[_top]) ? 1 : 0);
+        sink.Encode(ref Contexts[(SliceType == H264SliceType.B ? 24 : 11) + inc], skip ? 1 : 0);
+    }
+
+    /// <summary>Writes a macroblock_layer with CABAC (a skipped macroblock has only its mb_skip_flag).</summary>
     public void WriteCabac<T>(H264MbCode code, ref T sink)
         where T : struct, ICabacSink
     {
+        if (code.Kind == H264MbKind.Inter)
+        {
+            WriteInterCabac(code, ref sink);
+            return;
+        }
+
         byte[] ctx = Contexts;
         int type = IntraType(code);
         switch (SliceType)
@@ -428,7 +492,7 @@ internal sealed class H264MbSyntax
                 continue;
             }
 
-            if (code.Kind == H264MbKind.I8x8)
+            if (code.Eight)
             {
                 BlockCabac(ref sink, 5, -1, 64, code.Luma8, i8 * 64, code.Luma8Count[i8]);
                 continue;
@@ -614,10 +678,16 @@ internal sealed class H264MbSyntax
 
     // ---- CAVLC ----
 
-    /// <summary>Writes an intra macroblock_layer with CAVLC.</summary>
+    /// <summary>Writes a macroblock_layer with CAVLC (skipped macroblocks are counted in mb_skip_run by the slice writer).</summary>
     public void WriteCavlc<T>(H264MbCode code, ref T sink)
         where T : struct, IBitSink
     {
+        if (code.Kind == H264MbKind.Inter)
+        {
+            WriteInterCavlc(code, ref sink);
+            return;
+        }
+
         int typeOffset = SliceType switch { H264SliceType.I => 0, H264SliceType.P => 5, _ => 23 };
         BitSinkCodes.Ue(ref sink, (uint)(IntraType(code) + typeOffset));
         if (code.Kind != H264MbKind.I16x16)
@@ -665,7 +735,7 @@ internal sealed class H264MbSyntax
                 int blk = (i8 * 4) + i4;
                 int xy = H264Tables.BlockXY[blk];
                 int bx = xy & 3, by = xy >> 2;
-                if (code.Kind == H264MbKind.I8x8)
+                if (code.Eight)
                 {
                     // The 8x8 block's levels as four interleaved lists (7.3.5.3.2).
                     for (int k = 0; k < 16; k++)
@@ -710,7 +780,7 @@ internal sealed class H264MbSyntax
     /// </summary>
     private void SetCavlc8x8Counts(H264MbCode code)
     {
-        if (Cabac || code.Kind != H264MbKind.I8x8)
+        if (Cabac || !code.Eight)
         {
             return;
         }

@@ -8,16 +8,16 @@ namespace Egami.Video.Codecs.H264;
 /// λ times their CABAC or CAVLC bits. Reconstruction runs the decoder's own scaling and inverse transforms on the levels coded, so
 /// the picture built here is the one a decoder builds.
 /// </summary>
-internal sealed class H264MbEncoder
+internal sealed partial class H264MbEncoder
 {
     /// <summary>The rounding offset of intra levels, in 1/256 of a step.</summary>
     internal const int IntraRound = 85;
 
     private readonly H264MbState _mb;
     private readonly H264MbSyntax _syntax;
-    private readonly byte[] _y;
-    private readonly byte[] _cb;
-    private readonly byte[] _cr;
+    private byte[] _y;
+    private byte[] _cb;
+    private byte[] _cr;
     private readonly byte[] _srcY;
     private readonly byte[] _srcCb;
     private readonly byte[] _srcCr;
@@ -53,6 +53,12 @@ internal sealed class H264MbEncoder
     private int _lumaAt;
     private int _chromaAt;
 
+    // The rounding offset of levels without RDOQ, in 1/256 of a step: intra's or inter's.
+    private int _round = IntraRound;
+
+    // The squared error of the intra chroma last coded.
+    private long _chromaSse;
+
     public H264MbEncoder(H264Picture pic, H264MbState mb, H264MbSyntax syntax, byte[] srcY, byte[] srcCb, byte[] srcCr, bool allow8x8, int effort)
     {
         _mb = mb;
@@ -74,27 +80,25 @@ internal sealed class H264MbEncoder
         _effort = effort;
     }
 
-    /// <summary>Gets the macroblock chosen by the last <see cref="Encode"/>, its reconstruction in the picture.</summary>
+    /// <summary>Gets the macroblock chosen by the last <see cref="Encode"/> or <see cref="EncodeP"/>, its reconstruction in the picture.</summary>
     public H264MbCode Best { get; private set; } = new();
 
-    /// <summary>Chooses, codes and reconstructs the macroblock at (mbX, mbY) at <paramref name="qp"/>.</summary>
-    public void Encode(int mbX, int mbY, int qp)
+    /// <summary>Points the encoder at the picture to reconstruct into, laid out as the one it was made with.</summary>
+    public void Target(H264Picture pic)
     {
-        _mbX = mbX;
-        _mbY = mbY;
-        _qp = qp;
-        _qpc = H264Tables.ChromaQp[Math.Clamp(qp + _syntax.ChromaQpOffset, 0, 51)];
-        _lambda = H264Forward.Lambda(qp);
-        _sadLambda = Math.Sqrt(_lambda);
-        int slice = _syntax.Slice, w = _mb.WidthMbs, addr = (mbY * w) + mbX;
-        _left = mbX > 0 && _mb.Slice[addr - 1] == slice;
-        _top = mbY > 0 && _mb.Slice[addr - w] == slice;
-        _topLeft = mbX > 0 && mbY > 0 && _mb.Slice[addr - w - 1] == slice;
-        _topRight = mbX < w - 1 && mbY > 0 && _mb.Slice[addr - w + 1] == slice;
-        _lumaAt = _origin + (mbY * 16 * _stride) + (mbX * 16);
-        _chromaAt = _corigin + (mbY * 8 * _cstride) + (mbX * 8);
-        _syntax.Locate(mbX, mbY);
+        _y = pic.Y<byte>();
+        _cb = pic.Cb<byte>();
+        _cr = pic.Cr<byte>();
+    }
 
+    /// <summary>
+    /// Chooses, codes and reconstructs the intra macroblock at (mbX, mbY) at <paramref name="qp"/>; returns its cost, squared
+    /// error plus λ times its bits.
+    /// </summary>
+    public double Encode(int mbX, int mbY, int qp)
+    {
+        Setup(mbX, mbY, qp);
+        _round = IntraRound;
         CodeChroma();
 
         int count = _allow8x8 && _effort >= 1 ? 3 : 2;
@@ -121,24 +125,63 @@ internal sealed class H264MbEncoder
 
         Restore(_recon[best]);
         Best = _candidates[best];
+        return bestCost + _chromaSse;
+    }
+
+    private void Setup(int mbX, int mbY, int qp)
+    {
+        _mbX = mbX;
+        _mbY = mbY;
+        _qp = qp;
+        _qpc = H264Tables.ChromaQp[Math.Clamp(qp + _syntax.ChromaQpOffset, 0, 51)];
+        _lambda = H264Forward.Lambda(qp);
+        _sadLambda = Math.Sqrt(_lambda);
+        int slice = _syntax.Slice, w = _mb.WidthMbs, addr = (mbY * w) + mbX;
+        _left = mbX > 0 && _mb.Slice[addr - 1] == slice;
+        _top = mbY > 0 && _mb.Slice[addr - w] == slice;
+        _topLeft = mbX > 0 && mbY > 0 && _mb.Slice[addr - w - 1] == slice;
+        _topRight = mbX < w - 1 && mbY > 0 && _mb.Slice[addr - w + 1] == slice;
+        _lumaAt = _origin + (mbY * 16 * _stride) + (mbX * 16);
+        _chromaAt = _corigin + (mbY * 8 * _cstride) + (mbX * 8);
+        _syntax.Locate(mbX, mbY);
     }
 
     /// <summary>The bits of a macroblock (in 1/32768 bit) as the syntax writer would code it, the CABAC states left as they were.</summary>
     private long Rate(H264MbCode code)
     {
-        _syntax.Begin(_mbX, _mbY, code);
+        bool skippable = _syntax.SliceType != H264SliceType.I;
+        _syntax.Locate(_mbX, _mbY);
         if (_syntax.Cabac)
         {
             Array.Copy(_syntax.Contexts, _ctx, _ctx.Length);
             CabacCountSink sink = default;
-            _syntax.WriteCabac(code, ref sink);
+            if (skippable)
+            {
+                // mb_skip_flag's context reads the neighbours only, so it is counted before Begin marks this macroblock.
+                _syntax.SkipFlagCabac(ref sink, code.Kind == H264MbKind.PSkip);
+            }
+
+            _syntax.Begin(_mbX, _mbY, code);
+            if (code.Kind != H264MbKind.PSkip)
+            {
+                _syntax.WriteCabac(code, ref sink);
+            }
+
             Array.Copy(_ctx, _syntax.Contexts, _ctx.Length);
             return sink.Cost;
         }
 
+        _syntax.Begin(_mbX, _mbY, code);
+        if (code.Kind == H264MbKind.PSkip)
+        {
+            return 0;
+        }
+
         BitCountSink bits = default;
         _syntax.WriteCavlc(code, ref bits);
-        return bits.Bits * CabacCost.Bit;
+
+        // The mb_skip_run before a coded macroblock of a P slice: one bit when it is 0.
+        return (bits.Bits + (skippable ? 1 : 0)) * CabacCost.Bit;
     }
 
     private void Save(byte[] recon)
@@ -474,6 +517,7 @@ internal sealed class H264MbEncoder
         }
 
         code.Cbp = ac ? 0x20 : dc ? 0x10 : 0;
+        _chromaSse = Sse(_srcCb, _cb, _chromaAt, _cstride, 8, 8) + Sse(_srcCr, _cr, _chromaAt, _cstride, 8, 8);
     }
 
     /// <summary>Codes one chroma plane's residual against the prediction in <see cref="_pred"/> and reconstructs it.</summary>
@@ -497,7 +541,7 @@ internal sealed class H264MbEncoder
         int dcCount = 0;
         for (int k = 0; k < 4; k++)
         {
-            int level = H264Forward.Quantize(f[k], H264Forward.Mf4[m * 16], H264Forward.Shift4 + 1 + q6, IntraRound);
+            int level = H264Forward.Quantize(f[k], H264Forward.Mf4[m * 16], H264Forward.Shift4 + 1 + q6, _round);
             code.ChromaDc[(c * 4) + k] = level;
             dcCount += level != 0 ? 1 : 0;
         }
@@ -569,7 +613,7 @@ internal sealed class H264MbEncoder
         int m = qp % 6, q6 = qp / 6;
         byte[] scan = eight ? H264ScalingLists.Zigzag8x8 : H264ScalingLists.Zigzag4x4;
         bool rdoq = _effort >= 3;
-        int round = rdoq ? 128 : IntraRound;
+        int round = rdoq ? 128 : _round;
         int n = 0;
         for (int k = 0; k < max; k++)
         {

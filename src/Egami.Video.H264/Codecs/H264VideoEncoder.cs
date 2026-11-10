@@ -79,11 +79,17 @@ internal sealed class H264VideoEncoder : IVideoEncoder
         double fps = (double)options.FrameRate.Numerator / options.FrameRate.Denominator;
         int keyInterval = options.KeyframeInterval is int k ? Check(k, 1, int.MaxValue, "KeyframeInterval") : Math.Max(1, (int)Math.Ceiling(fps * 10));
         int widthMbs = (options.Width + 15) >> 4, heightMbs = (options.Height + 15) >> 4;
-        const int refFrames = 1;
-        int level = h264.Level ?? H264Levels.Choose(widthMbs, heightMbs, fps, refFrames);
-        if (H264Levels.Misfit(H264Levels.Of(level), widthMbs, heightMbs, fps, refFrames) is { } why)
+        int refFrames = RefFrames(effort);
+        int level = h264.Level ?? H264Levels.Choose(widthMbs, heightMbs, fps, 1);
+        if (H264Levels.Misfit(H264Levels.Of(level), widthMbs, heightMbs, fps, 1) is { } why)
         {
             throw new ArgumentException($"The stream does not fit its level: {why}.", nameof(options));
+        }
+
+        // More references where the level's buffer holds them.
+        while (refFrames > 1 && H264Levels.Misfit(H264Levels.Of(level), widthMbs, heightMbs, fps, refFrames) is not null)
+        {
+            refFrames--;
         }
 
         _options = options;
@@ -137,6 +143,9 @@ internal sealed class H264VideoEncoder : IVideoEncoder
     /// <summary>The color of frames converted to the coded format, and of tracks before the first frame: BT.601 limited range.</summary>
     internal static readonly ColorCodePoints H264Color = new(2, 2, 6, false);
 
+    /// <summary>The reference frames P pictures search at an effort: one, two from effort 2, three from 4.</summary>
+    internal static int RefFrames(int effort) => effort >= 4 ? 3 : effort >= 2 ? 2 : 1;
+
     /// <summary>The QP for a quality of 0 to 100: 51 at 0, 23 (x264's default CRF) at 50, 0 at 100 or so.</summary>
     internal static int QualityToQp(int quality) => Math.Clamp((int)Math.Round(51 - (0.56 * quality)), 0, 51);
 
@@ -161,7 +170,7 @@ internal sealed class H264VideoEncoder : IVideoEncoder
         {
             ColorCodePoints color = ColorOf(frame);
             H264StreamConfig config = _config with { Color = color };
-            _coder = new H264FrameCoder(config, _options.Effort ?? DefaultEffort, _h264.AnnexB, frame.Hdr);
+            _coder = new H264FrameCoder(config, _options.Effort ?? DefaultEffort, _h264, frame.Hdr);
             Track = MakeTrack(config, frame.Hdr);
             _pictures = new EncoderPictures(_options.Width, _options.Height, EncoderPictures.Vp8Color, _context.Egami);
             _core = new EncoderCore(_settings, _coder, _pictures, alpha: false);
@@ -254,7 +263,7 @@ internal sealed class H264VideoEncoder : IVideoEncoder
 
 /// <summary>
 /// Codes the core's decisions as H.264 access units: a keyframe is an IDR picture (with the parameter sets in Annex B streams,
-/// and the HDR SEI when the frames have HDR metadata), every other frame a reference I picture.
+/// and the HDR SEI when the frames have HDR metadata), every other frame a reference P picture.
 /// </summary>
 internal sealed class H264FrameCoder : IFrameCoder
 {
@@ -264,6 +273,7 @@ internal sealed class H264FrameCoder : IFrameCoder
     private readonly H264StreamConfig _config;
     private readonly int _effort;
     private readonly bool _annexB;
+    private readonly H264EncoderOptions _options;
     private readonly H264PictureEncoder _encoder;
     private readonly byte[] _sps;
     private readonly byte[] _pps;
@@ -272,18 +282,26 @@ internal sealed class H264FrameCoder : IFrameCoder
     private int _idrPicId = -1;
     private int _idrIndex;
 
-    public H264FrameCoder(H264StreamConfig config, int effort, bool annexB, HdrMetadata? hdr)
+    public H264FrameCoder(H264StreamConfig config, int effort, H264EncoderOptions options, HdrMetadata? hdr)
     {
         _config = config;
         _effort = effort;
-        _annexB = annexB;
-        _encoder = new H264PictureEncoder(config, effort);
+        _annexB = options.AnnexB;
+        _options = options;
+        _encoder = NewEncoder();
         _sps = H264StreamWriter.Sps(config);
         _pps = H264StreamWriter.Pps(config);
         _sei = H264StreamWriter.HdrSei(hdr);
     }
 
     public short[] Steps => QpSteps;
+
+    private H264PictureEncoder NewEncoder() => new(_config, _effort)
+    {
+        AdaptiveQuantization = _options.AdaptiveQuantization,
+        MinQp = _options.MinQuantizer,
+        MaxQp = _options.MaxQuantizer,
+    };
 
     /// <summary>Gets the reconstruction of the last frame coded, for tests.</summary>
     internal H264Picture Recon => _encoder.Recon;
@@ -302,8 +320,11 @@ internal sealed class H264FrameCoder : IFrameCoder
         }
 
         int qp = Math.Clamp(decision.Quantizer, 0, 51);
+        int poc = 2 * (decision.Index - _idrIndex);
         _encoder.Load(picture);
-        byte[] slice = _encoder.EncodeIntra(idr, _idrPicId, _frameNum, 2 * (decision.Index - _idrIndex), qp);
+        byte[] slice = idr || _encoder.References == 0
+            ? _encoder.EncodeIntra(idr, _idrPicId, _frameNum, poc, qp, decision.Referenced)
+            : _encoder.EncodePredicted(_frameNum, poc, qp, _config.MaxRefFrames, decision.Referenced);
         if (decision.Referenced)
         {
             _frameNum = (_frameNum + 1) & ((1 << H264StreamWriter.FrameNumBits) - 1);
@@ -328,7 +349,7 @@ internal sealed class H264FrameCoder : IFrameCoder
 
     public (long Key, long Next) Probe(YuvRaster<byte> key, YuvRaster<byte>? next, int quantizer)
     {
-        H264PictureEncoder probe = new(_config, _effort);
+        H264PictureEncoder probe = NewEncoder();
         int qp = Math.Clamp(quantizer, 0, 51);
         probe.Load(key);
         long keyBits = probe.EncodeIntra(true, 0, 0, 0, qp).Length * 8L;
@@ -336,7 +357,7 @@ internal sealed class H264FrameCoder : IFrameCoder
         if (next is not null)
         {
             probe.Load(next);
-            nextBits = probe.EncodeIntra(false, 0, 1, 2, qp).Length * 8L;
+            nextBits = probe.EncodePredicted(1, 2, qp, 1).Length * 8L;
         }
 
         return (keyBits, nextBits);

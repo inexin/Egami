@@ -6,8 +6,32 @@ namespace Egami.Video.Codecs.H264;
 /// </summary>
 internal sealed class H264MbCode
 {
-    /// <summary>Gets or sets the macroblock's kind: <see cref="H264MbKind.I4x4"/>, <see cref="H264MbKind.I8x8"/> or <see cref="H264MbKind.I16x16"/>.</summary>
+    /// <summary>
+    /// Gets or sets the macroblock's kind: <see cref="H264MbKind.I4x4"/>, <see cref="H264MbKind.I8x8"/>, <see cref="H264MbKind.I16x16"/>,
+    /// <see cref="H264MbKind.Inter"/> or <see cref="H264MbKind.PSkip"/>.
+    /// </summary>
     public H264MbKind Kind { get; set; }
+
+    /// <summary>Gets or sets whether an inter macroblock's luma uses the 8x8 transform.</summary>
+    public bool Transform8x8 { get; set; }
+
+    /// <summary>Gets whether the luma levels are 8x8 blocks' (<see cref="Luma8"/>).</summary>
+    public bool Eight => Kind == H264MbKind.I8x8 || (Kind == H264MbKind.Inter && Transform8x8);
+
+    /// <summary>Gets or sets an inter macroblock's partitioning: 0 16x16, 1 16x8, 2 8x16, 3 8x8 (mb_type of a P slice).</summary>
+    public int Partition { get; set; }
+
+    /// <summary>Gets each 8x8 partition's sub_mb_type: 0 8x8, 1 8x4, 2 4x8, 3 4x4.</summary>
+    public int[] SubTypes { get; } = new int[4];
+
+    /// <summary>Gets each partition's ref_idx_l0 (one per 8x8 block for P_8x8).</summary>
+    public int[] RefIdx { get; } = new int[4];
+
+    /// <summary>Gets the motion vector of each 4x4 block, raster order in the macroblock, x in the low 16 bits.</summary>
+    public int[] Mv { get; } = new int[16];
+
+    /// <summary>Gets the motion vector difference coded for each 4x4 block's partition, raster order, packed as <see cref="Mv"/>.</summary>
+    public int[] Mvd { get; } = new int[16];
 
     /// <summary>Gets or sets the Intra16x16 prediction mode.</summary>
     public int I16Mode { get; set; }
@@ -58,6 +82,12 @@ internal sealed class H264MbCode
     public void CopyFrom(H264MbCode other)
     {
         Kind = other.Kind;
+        Transform8x8 = other.Transform8x8;
+        Partition = other.Partition;
+        other.SubTypes.CopyTo(SubTypes, 0);
+        other.RefIdx.CopyTo(RefIdx, 0);
+        other.Mv.CopyTo(Mv, 0);
+        other.Mvd.CopyTo(Mvd, 0);
         I16Mode = other.I16Mode;
         ChromaMode = other.ChromaMode;
         Cbp = other.Cbp;

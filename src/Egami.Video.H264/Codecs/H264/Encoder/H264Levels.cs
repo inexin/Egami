@@ -29,6 +29,9 @@ internal static class H264Levels
         new(62, 16711680, 139264, 696320, 800000),
     ];
 
+    /// <summary>The largest vertical motion vector component a level allows (Table A-1 MaxVmvR), in whole samples either way.</summary>
+    internal static int MaxVerticalMv(int idc) => idc switch { <= 10 => 64, <= 20 => 128, <= 30 => 256, _ => 512 };
+
     /// <summary>The limits of a level_idc.</summary>
     internal static Limits Of(int idc) => Array.Find(Table, l => l.Idc == idc);
 

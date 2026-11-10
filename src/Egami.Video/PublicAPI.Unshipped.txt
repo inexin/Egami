@@ -1,6 +1,8 @@
 #nullable enable
 Egami.Video.Codecs.H264EncoderOptions
 Egami.Video.Codecs.H264EncoderOptions.<Clone>$() -> Egami.Video.Codecs.H264EncoderOptions!
+Egami.Video.Codecs.H264EncoderOptions.AdaptiveQuantization.get -> bool
+Egami.Video.Codecs.H264EncoderOptions.AdaptiveQuantization.init -> void
 Egami.Video.Codecs.H264EncoderOptions.AnnexB.get -> bool
 Egami.Video.Codecs.H264EncoderOptions.AnnexB.init -> void
 Egami.Video.Codecs.H264EncoderOptions.Entropy.get -> Egami.Video.Codecs.H264EntropyCoder?
