@@ -47,3 +47,8 @@ override Egami.Video.Containers.AdtsFormat.Name.get -> string!
 override Egami.Video.Containers.AdtsFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
 override Egami.Video.Containers.AdtsFormat.SignatureLength.get -> int
 static Egami.Video.Containers.AdtsFormat.Instance.get -> Egami.Video.Containers.AdtsFormat!
+Egami.Video.Audio.Codecs.AacCodec
+override Egami.Video.Audio.Codecs.AacCodec.CodecId.get -> string!
+override Egami.Video.Audio.Codecs.AacCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
+override Egami.Video.Audio.Codecs.AacCodec.Name.get -> string!
+static Egami.Video.Audio.Codecs.AacCodec.Instance.get -> Egami.Video.Audio.Codecs.AacCodec!

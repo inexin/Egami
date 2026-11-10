@@ -4,7 +4,7 @@
 Egami.Video reads, writes, remuxes, trims and edits video and audio in managed code. Frames are Egami rasters, so Egami's
 operations and drawing work on them. Containers: MP4 and QuickTime, Matroska and WebM, AVI, IVF, Ogg and the audio files.
 Video codecs: AV1, VP9, VP8, FFV1 and Motion JPEG (decode and encode). Audio: PCM, FLAC, Opus, ALAC (decode and encode), Vorbis,
-MP3, AC-3 and G.711 (decode). Royalty-free codecs only: H.264 and HEVC decoding are the separate packages Egami.Video.H264 and
+MP3, AC-3, AAC LC and G.711 (decode). Royalty-free codecs only: H.264 and HEVC decoding are the separate packages Egami.Video.H264 and
 Egami.Video.Hevc.
 
 Namespaces: `Egami.Video` (readers, writers, `MediaFile`, `MediaContext`), `Egami.Video.Codecs`, `Egami.Video.Containers`,

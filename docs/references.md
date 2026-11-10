@@ -198,6 +198,7 @@ LGPL code is never read.
 | Apple Core Audio Format Specification 1.0 (CAF) | CAF files: desc, data, pakt, kuki, chan, info, strg, mark and regn chunks |
 | Apple ALACMagicCookieDescription.txt (ALACSpecificConfig, ALACChannelLayoutInfo) | The ALAC config in MP4 (`alac` box), QuickTime (`wave` atom), Matroska and CAF, and ALAC's channel layouts |
 | ATSC A/52 (Digital Audio Compression, AC-3 and E-AC-3), syncinfo, bsi and Annex E's E-AC-3 bit stream header; ETSI TS 102 366 Annex F | AC-3 and E-AC-3 frame headers in raw streams; the dac3 and dec3 boxes in MP4 |
+| ISO/IEC 14496-3:2009 (MPEG-4 Audio): 1.6 (AudioSpecificConfig), 1.A (ADTS) and subpart 4 (General Audio, AAC) | AAC tracks and .aac files; the AAC LC decoder, its tables and syntax checked clause by clause |
 | Matroska subtitle codec mapping; WebM WebVTT mapping | `S_TEXT/*` and `D_WEBVTT/*` tracks |
 | ISO/IEC 14496-30; 3GPP TS 26.245 | WebVTT (`wvtt`) and timed text (`tx3g`) in MP4 |
 
@@ -209,6 +210,7 @@ LGPL code is never read.
 | libwebp, libvpx (the VP8 encoder: mode decision, loop filter deltas), dav1d, libaom | BSD |
 | libass (how ASS override tags behave), pysubs2 (subtitle edge cases) | ISC, MIT |
 | OpenH264 (Cisco), libavc (Android) | BSD-2, Apache-2.0 |
+| libxaac (Android, commit 2fbadd5): a second reading of the AAC LC decoder, and its encoder's Huffman tables to check ours | Apache-2.0 |
 | go-ffv1, rust-av ffv1 (FFV1 decoders) | ISC, MIT |
 
 ### Translated code (notice in THIRD-PARTY-NOTICES.md)
@@ -220,6 +222,7 @@ LGPL code is never read.
 | OpenH264 2.4.1 (Cisco) | BSD-2 | Egami.Video.H264's CABAC context initialisation values and CAVLC code tables (`H264Tables.Data.cs`, made by `tools/video/make-h264-tables.py`); the decoder itself is written from ITU-T H.264 |
 | Apple ALAC (macosforge/alac, commit c38887c) | Apache-2.0 | The ALAC decoder and encoder (`src/Egami.Video/Audio/Codecs/Alac`), so packets equal Apple's encoder's byte for byte; `tools/video/alacref` builds Apple's code as the reference |
 | minimp3 (lieff) | CC0 1.0 | The MPEG audio decoder (`src/Egami.Video/Audio/Codecs/Mp3`): frame decoding, tables, synthesis and frame search; its copies of the ISO compliance streams and references test it |
+| oxideav-aac (Karpelès Lab, commit ff39596) | MIT | The AAC LC decoder (`src/Egami.Video/Audio/Codecs/Aac`): syntax parsing, tables, inverse quantization, stereo tools, noise substitution, TNS and the filterbank, rewritten over float buffers |
 
 ### Tools run as black boxes only (never read)
 
@@ -227,6 +230,7 @@ LGPL code is never read.
 | --- | --- | --- |
 | ImageMagick (Magick.NET) | ImageMagick License, Apache 2.0 | Compare FITS values, orientation and speed |
 | FFmpeg, ffprobe | LGPL/GPL | Make test clips, decode and probe for comparison, in Docker |
+| Fraunhofer FDK AAC (libfdk_aac, through FFmpeg) | FDK AAC license | Make AAC LC and HE-AAC test clips, in Docker (`tools/video/make-audio-corpus.py --aac`) |
 | ImageMagick (Magick.NET) | ImageMagick License, Apache 2.0 | Make DPX and Cineon test files and compare their code values and speed |
 | Adobe DNG SDK's dng_validate (1.7.1, built from Adobe's download outside the repository) | Adobe DNG SDK license | Validate the DNGs Egami writes in egami-compare's DNG writing gates (Lars's decision, 2026-11-01); its source is never read |
 | libvpx vpxenc and vpxdec | BSD-3 | Make VP8 and VP9 clips and give the expected frames, and decode the VP8 encoder's streams, in Docker (`tools/vp8ref`, `tools/video/vp9ref`) |

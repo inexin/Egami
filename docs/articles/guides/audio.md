@@ -3,15 +3,15 @@
 Egami.Video decodes and encodes audio with the same send and receive loop as video. It is fully managed and ships:
 
 - Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and encode, Apple Lossless
-  (ALAC) decode and encode, Vorbis I decode, MPEG audio (MP3, MP2 and MP1) decode, Dolby AC-3 (ATSC A/52) decode and G.711
-  μ-law and A-law decode.
+  (ALAC) decode and encode, Vorbis I decode, MPEG audio (MP3, MP2 and MP1) decode, Dolby AC-3 (ATSC A/52) decode, AAC LC
+  (ISO/IEC 14496-3) decode and G.711 μ-law and A-law decode.
 - Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC, Ogg, MP3, AIFF and AIFF-C, Apple CAF
   and raw AC-3 and E-AC-3, read and written; these codecs in Matroska, WebM and MP4 too.
 - A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.
 - Streaming filters for gain, fades and crossfades, mixing and panning, delay and trimming, and tempo and speed: see
   [Audio filters](audio-filters.md).
 
-Other audio tracks, such as AAC and E-AC-3, are copied through untouched.
+Other audio tracks, such as E-AC-3, are copied through untouched.
 
 ## Frames
 
@@ -176,9 +176,20 @@ it. Each packet is one frame's raw data block, without the ADTS header and CRC, 
 track's AudioSpecificConfig (`CodecPrivate`) is built from the first header, and ID3v2 tags at the start are read into the
 tags. HE-AAC in ADTS signals its SBR and parametric stereo only inside the audio, so the track reports the AAC LC core's rate
 and channels. Writing gives every packet a header without a CRC, so an AAC track goes from MP4, Matroska, CAF or AVI to .aac
-without decoding. Egami.Video does not decode AAC yet.
+without decoding.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-adts)]
+
+`AacCodec` decodes AAC LC at 8 to 96 kHz, mono to 7.1 (channel configurations 1 to 7), with block switching, TNS, mid/side
+and intensity stereo and perceptual noise substitution, from .aac files and from AAC tracks in MP4, Matroska, AVI and CAF.
+Frames are 1024 samples of planar float in Egami.Video's channel order, and a damaged block is reported as `Aac.CorruptBlock`
+and handled as `Errors` says. HE-AAC (v1 and v2) decodes its AAC LC core only, at twice the core rate, with one
+`aac-sbr-ignored` warning: the SBR and parametric stereo data are skipped, so it sounds band-limited, and mono comes out as
+two equal channels. As ADTS cannot say a stream carries SBR, an `AudioReader` on an HE-AAC .aac file gives the core's rate.
+AAC Main, LTP, the low-delay and error-resilient types, coupling channel elements and channel maps from a program config
+element are not decoded.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-aac-decode)]
 
 `Ac3Codec` decodes AC-3 (ATSC A/52) in every channel mode, 1/0 to 3/2 and dual mono, with or without the LFE, at 32, 44.1 and
 48 kHz and 32 to 640 kbit/s, from raw .ac3 files and from AC-3 tracks in MP4, Matroska, AVI and CAF. Frames are 1536 samples of

@@ -395,6 +395,25 @@ public class Audio
     }
 
     [Fact]
+    public void AacDecode()
+    {
+        using SampleFiles files = new();
+
+        #region audio-aac-decode
+        // AAC LC decodes to planar float, 1024 samples a frame; the MP4 edit list trims the encoder's priming and padding.
+        using (AudioReader reader = AudioReader.Open("song.m4a"))
+        {
+            Console.WriteLine($"{reader.Layout}, {reader.SampleRate} Hz");
+        }
+
+        // Decoded and encoded again as FLAC.
+        MediaFile.Transcode("song.m4a", "song.flac", audio: FlacCodec.Instance);
+        #endregion
+
+        Assert.Equal(13230, ((AudioTrackInfo)MediaFile.Probe("song.flac").Tracks[0]).Duration?.Rescale(new Rational(1, 44100)).Ticks);
+    }
+
+    [Fact]
     public void VideoWithAudio()
     {
         using SampleFiles files = new();
