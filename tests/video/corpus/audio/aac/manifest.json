@@ -299,6 +299,18 @@
     "blocks": 16,
     "blocksMd5": "285d86176e716cbc5049886e1ae80bc8"
   },
+  "ff-lc-itunsmpb.m4a": {
+    "profile": "LC",
+    "rate": 44100,
+    "channels": 2,
+    "layout": "stereo",
+    "decodedRate": 44100,
+    "decodedChannels": 2,
+    "samples": 13312,
+    "packets": 14,
+    "blocks": 14,
+    "blocksMd5": "6ffd064007f7c7088cdba6c0f29a8623"
+  },
   "fdk-lc-mono-16k.aac": {
     "profile": "LC",
     "rate": 16000,

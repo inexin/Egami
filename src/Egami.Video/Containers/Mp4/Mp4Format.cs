@@ -37,7 +37,9 @@ public sealed class Mp4Format : ContainerFormat
     /// <summary>
     /// Gets whether readers ignore edit lists (V4.1 Design Q5). By default an edit list is applied: packet timestamps follow it,
     /// an empty edit delays the track, and packets wholly outside the edit are marked <see cref="EncodedPacket.IsDiscardable"/>.
-    /// Ignored, timestamps are the media's own. Register a format with this set through <see cref="MediaContext.WithContainer"/>.
+    /// An audio track with no edit list takes the same window from iTunes's gapless tag (iTunSMPB) when the file has one, as Apple's
+    /// AAC encoders write it. Ignored, timestamps are the media's own. Register a format with this set through
+    /// <see cref="MediaContext.WithContainer"/>.
     /// </summary>
     public bool IgnoreEditLists { get; init; }
 

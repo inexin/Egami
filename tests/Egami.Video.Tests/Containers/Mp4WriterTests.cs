@@ -109,7 +109,8 @@ public class Mp4WriterTests
     {
         MediaInfo before = MediaFile.Probe(PathOf(clip));
         MediaInfo after = MediaFile.Probe(new MemoryStream(Remux(PathOf(clip))));
-        Assert.Equal(before.Tags.Where(t => t.Key != "MAJOR_BRAND").OrderBy(t => t.Key), after.Tags.Where(t => t.Key != "MAJOR_BRAND").OrderBy(t => t.Key));
+        // The writer adds iTunes's gapless tag (iTunSMPB) for an AAC track with priming.
+        Assert.Equal(before.Tags.Where(t => t.Key is not ("MAJOR_BRAND" or "iTunSMPB")).OrderBy(t => t.Key), after.Tags.Where(t => t.Key is not ("MAJOR_BRAND" or "iTunSMPB")).OrderBy(t => t.Key));
         Assert.Equal(before.Chapters.Select(c => (c.Start.ToTimeSpan(), c.Title)), after.Chapters.Select(c => (c.Start.ToTimeSpan(), c.Title)));
         Assert.Equal(before.Attachments.Select(a => (a.MediaType, a.Data.ToArray())), after.Attachments.Select(a => (a.MediaType, a.Data.ToArray())));
     }

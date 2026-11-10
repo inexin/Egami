@@ -588,6 +588,11 @@ AAC_CLIPS = {
     "ff-lc-stereo.m4a": (f"{FF} -b:a 128k {{out}}", 44100, 2),
     "ff-lc-51.mp4": (f"{FF} -b:a 384k {{out}}", 48000, 6),
     "ff-lc-stereo.mka": (f"{FF} -b:a 128k {{out}}", 48000, 2),
+    # No edit list, but iTunes's gapless tag as Apple's encoders write it: 1024 samples of priming (FFmpeg's), 82 of padding
+    # after the 13230 real ones (0.3 s at 44.1 kHz in 14 frames).
+    "ff-lc-itunsmpb.m4a": (f"{FF} -b:a 128k -use_editlist 0 {{out}} && AtomicParsley {{out}} --overWrite --rDNSatom"
+                           " ' 00000000 00000400 00000052 00000000000033AE 00000000 00000000 00000000 00000000 00000000 00000000"
+                           " 00000000 00000000' name=iTunSMPB domain=com.apple.iTunes > /dev/null", 44100, 2),
     "fdk-lc-mono-16k.aac": (f"{FDK} -r 32000 /tmp/in.wav {{out}}", 16000, 1),
     "fdk-lc-stereo-44k.aac": (f"{FDK} -r 128000 /tmp/in.wav {{out}}", 44100, 2),
     "fdk-lc-stereo-48k-vbr.aac": (f"{FDK} -v 4 /tmp/in.wav {{out}}", 48000, 2),
