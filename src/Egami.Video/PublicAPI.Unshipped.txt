@@ -32,3 +32,12 @@ static Egami.Video.Codecs.H264EncoderOptions.operator !=(Egami.Video.Codecs.H264
 static Egami.Video.Codecs.H264EncoderOptions.operator ==(Egami.Video.Codecs.H264EncoderOptions? left, Egami.Video.Codecs.H264EncoderOptions? right) -> bool
 Egami.Video.VideoWriterOptions.H264.get -> Egami.Video.Codecs.H264EncoderOptions?
 Egami.Video.VideoWriterOptions.H264.init -> void
+Egami.Video.Containers.AdtsFormat
+override Egami.Video.Containers.AdtsFormat.CanMux.get -> bool
+override Egami.Video.Containers.AdtsFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+override Egami.Video.Containers.AdtsFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.AdtsFormat.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.AdtsFormat.Name.get -> string!
+override Egami.Video.Containers.AdtsFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.AdtsFormat.SignatureLength.get -> int
+static Egami.Video.Containers.AdtsFormat.Instance.get -> Egami.Video.Containers.AdtsFormat!
