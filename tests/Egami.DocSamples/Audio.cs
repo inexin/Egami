@@ -373,6 +373,28 @@ public class Audio
     }
 
     [Fact]
+    public void Adts()
+    {
+        using SampleFiles files = new();
+
+        #region audio-adts
+        // Raw AAC in ADTS frames: each packet is one raw data block, as MP4 stores it.
+        MediaInfo info = MediaFile.Probe("song.aac");
+        AudioTrackInfo track = (AudioTrackInfo)info.Tracks[0];
+        Console.WriteLine($"{track.CodecId}: {track.SampleRate} Hz, {track.Channels} channels, {info.Duration}");
+
+        // Out of an .m4a into a raw .aac file, and back into Matroska, without decoding.
+        MediaFile.Remux("song.m4a", "copy.aac");
+        MediaFile.Remux("song.aac", "song.mka");
+        #endregion
+
+        Assert.Equal(CodecIds.Aac, track.CodecId);
+        Assert.Equal(44100, track.SampleRate);
+        Assert.Equal(File.ReadAllBytes("song.aac"), File.ReadAllBytes("copy.aac"));
+        Assert.Equal(CodecIds.Aac, MediaFile.Probe("song.mka").Tracks[0].CodecId);
+    }
+
+    [Fact]
     public void VideoWithAudio()
     {
         using SampleFiles files = new();

@@ -74,7 +74,7 @@ Fuzzer.OutOfProcess.Run(run);
 
 static Action<Stream> Target(string name) => name switch
 {
-    "avi" or "mkv" or "y4m" or "ivf" or "webm" or "mp4" or "obu" or "ac3" => Demux,
+    "avi" or "mkv" or "y4m" or "ivf" or "webm" or "mp4" or "obu" or "ac3" or "adts" => Demux,
     "mp4mux" => RemuxMp4,
     "mjpeg" => DecodeMotionJpeg,
     "vp8" => ReadVp8,
@@ -103,7 +103,7 @@ static Action<Stream> Target(string name) => name switch
     "ffv1enc" => EncodeFfv1,
     "afilters" => FilterAudio,
     "deinterlace" => Deinterlace,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, hevc, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, afilters, deinterlace."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, adts, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, hevc, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, afilters, deinterlace."),
 };
 
 static MediaContext Context() => MediaContext.Default with

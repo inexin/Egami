@@ -28,6 +28,11 @@ Usage, from the repo root:
                                                        tests/video/corpus/audio/ac3-decode (checked in), each with FFmpeg's float
                                                        decode (.f32.gz) of the stream with its dither flags
                                                        cleared. Add --local to run FFmpeg from the PATH.
+  docker build -t egami-aacref:v5.10 tools/video/aacref
+  python tools/video/make-audio-corpus.py --aac        V5.10: AAC clips from FFmpeg's aac encoder and the FDK AAC library's aac-enc
+                                                       (LC mono to 7.1 at 8 to 96 kHz, HE-AAC v1 and v2) as ADTS, MP4 and
+                                                       Matroska, into tests/video/corpus/audio/aac (checked in), each with
+                                                       FFmpeg's float decode (.f32.gz) and the MD5 of its raw data blocks.
   python tools/video/make-audio-corpus.py --caf        V5.9: CAF clips (PCM, G.711, FLAC, ALAC, Opus, MP3, AC-3) into
                                                        tests/video/corpus/audio/caf (checked in) with FFmpeg's decode MD5 for the
                                                        lossless ones and ffprobe's packet count for every clip. Add --local to run
@@ -549,6 +554,115 @@ def make_ac3_decode(local):
         f.write("\n")
 
 
+# V5.10 AAC clips. name: (shell command making {out} from /tmp/in.wav, rate, channels). FFmpeg's native aac encoder and aac-enc
+# (the FDK AAC library's example frontend) run as black boxes in egami-aacref; aac-enc writes ADTS, so its LC, HE-AAC and
+# HE-AAC v2 clips are raw .aac. The source has tones, decaying bursts (for short windows and TNS) and a little noise (PNS).
+AAC_IMAGE = "egami-aacref:v5.10"
+AAC_OUT = os.path.join(OUT, "aac")
+AAC_LAYOUTS = {1: "mono", 2: "stereo", 3: "3.0", 4: "4.0", 5: "5.0", 6: "5.1", 8: "7.1"}
+FF = "ffmpeg -v error -y -i /tmp/in.wav -c:a aac"
+FDK = "aac-enc"
+AAC_CLIPS = {
+    "ff-lc-mono-8k.aac": (f"{FF} -b:a 16k {{out}}", 8000, 1),
+    "ff-lc-mono-11k.aac": (f"{FF} -b:a 24k {{out}}", 11025, 1),
+    "ff-lc-stereo-12k.aac": (f"{FF} -b:a 32k {{out}}", 12000, 2),
+    "ff-lc-stereo-16k.aac": (f"{FF} -b:a 48k {{out}}", 16000, 2),
+    "ff-lc-mono-22k.aac": (f"{FF} -b:a 48k {{out}}", 22050, 1),
+    "ff-lc-stereo-24k.aac": (f"{FF} -b:a 64k {{out}}", 24000, 2),
+    "ff-lc-stereo-32k.aac": (f"{FF} -b:a 96k {{out}}", 32000, 2),
+    "ff-lc-stereo-44k.aac": (f"{FF} -b:a 128k {{out}}", 44100, 2),
+    "ff-lc-stereo-48k.aac": (f"{FF} -b:a 192k {{out}}", 48000, 2),
+    "ff-lc-stereo-64k.aac": (f"{FF} -b:a 192k {{out}}", 64000, 2),
+    "ff-lc-stereo-88k.aac": (f"{FF} -b:a 256k {{out}}", 88200, 2),
+    "ff-lc-stereo-96k.aac": (f"{FF} -b:a 256k {{out}}", 96000, 2),
+    "ff-lc-30-48k.aac": (f"{FF} -b:a 192k {{out}}", 48000, 3),
+    "ff-lc-40-48k.aac": (f"{FF} -b:a 256k {{out}}", 48000, 4),
+    "ff-lc-50-48k.aac": (f"{FF} -b:a 320k {{out}}", 48000, 5),
+    "ff-lc-51-48k.aac": (f"{FF} -b:a 384k {{out}}", 48000, 6),
+    "ff-lc-71-48k.aac": (f"{FF} -b:a 512k {{out}}", 48000, 8),
+    "ff-lc-low-is-pns.aac": (f"{FF} -b:a 32k -aac_is 1 -aac_pns 1 -aac_tns 1 {{out}}", 44100, 2),
+    "ff-lc-fast-coder.aac": (f"{FF} -b:a 128k -aac_coder fast {{out}}", 44100, 2),
+    "ff-lc-vbr.aac": (f"{FF} -q:a 1.5 {{out}}", 44100, 2),
+    "ff-lc-mpeg2.aac": (f"{FF} -b:a 96k -write_mpeg2 1 {{out}}", 32000, 2),
+    "ff-lc-id3.aac": (f"{FF} -b:a 64k -write_id3v2 1 -metadata title='Corpus tone' -metadata artist=Egami {{out}}", 22050, 2),
+    "ff-lc-stereo.m4a": (f"{FF} -b:a 128k {{out}}", 44100, 2),
+    "ff-lc-51.mp4": (f"{FF} -b:a 384k {{out}}", 48000, 6),
+    "ff-lc-stereo.mka": (f"{FF} -b:a 128k {{out}}", 48000, 2),
+    "fdk-lc-mono-16k.aac": (f"{FDK} -r 32000 /tmp/in.wav {{out}}", 16000, 1),
+    "fdk-lc-stereo-44k.aac": (f"{FDK} -r 128000 /tmp/in.wav {{out}}", 44100, 2),
+    "fdk-lc-stereo-48k-vbr.aac": (f"{FDK} -v 4 /tmp/in.wav {{out}}", 48000, 2),
+    "fdk-lc-stereo-32k-low.aac": (f"{FDK} -r 40000 /tmp/in.wav {{out}}", 32000, 2),
+    "fdk-lc-51-48k.aac": (f"{FDK} -r 320000 /tmp/in.wav {{out}}", 48000, 6),
+    "fdk-lc-stereo-96k.aac": (f"{FDK} -r 256000 /tmp/in.wav {{out}}", 96000, 2),
+    "fdk-he-stereo-44k.aac": (f"{FDK} -t 5 -r 48000 /tmp/in.wav {{out}}", 44100, 2),
+    "fdk-he-mono-32k.aac": (f"{FDK} -t 5 -r 24000 /tmp/in.wav {{out}}", 32000, 1),
+    "fdk-hev2-stereo-44k.aac": (f"{FDK} -t 29 -r 32000 /tmp/in.wav {{out}}", 44100, 2),
+    "fdk-hev2-stereo-48k.aac": (f"{FDK} -t 29 -r 24000 /tmp/in.wav {{out}}", 48000, 2),
+}
+
+
+def aac_source(rate, channels, seconds=0.3):
+    """Each channel: a tone and its third harmonic, a burst every 150 ms decaying fast (shifted per channel), and quiet noise."""
+    tones = [220, 277, 330, 440, 554, 659, 880, 1100]
+    inputs = "".join(f"-f lavfi -i \"aevalsrc='0.35*sin(2*PI*{tones[c]}*t)+0.3*sin(2*PI*{3 * tones[c]}*t)*exp(-40*mod(t+{c * 0.02},0.15))"
+                     f"+0.03*(random({c})-0.5)':s={rate}:d={seconds}\" " for c in range(channels))
+    layout = AAC_LAYOUTS[channels]
+    if channels == 1:
+        return inputs + f"-af aformat=channel_layouts={layout}"
+    pads = "".join(f"[{c}]" for c in range(channels))
+    return inputs + f"-filter_complex \"{pads}amerge=inputs={channels},aformat=channel_layouts={layout}[out]\" -map \"[out]\""
+
+
+def adts_payloads(data):
+    """Splits ADTS frames into their raw data blocks (header and CRC stripped), as Egami.Video's ADTS reader gives packets."""
+    blocks, at = [], 0
+    if data[:3] == b"ID3":
+        at = 10 + ((data[6] & 0x7F) << 21 | (data[7] & 0x7F) << 14 | (data[8] & 0x7F) << 7 | (data[9] & 0x7F))
+    while at + 7 <= len(data):
+        assert data[at] == 0xFF and data[at + 1] & 0xF6 == 0xF0, f"no ADTS sync at {at}"
+        length = (data[at + 3] & 3) << 11 | data[at + 4] << 3 | data[at + 5] >> 5
+        header = 7 if data[at + 1] & 1 else 9
+        blocks.append(data[at + header:at + length])
+        at += length
+    return blocks
+
+
+def make_aac(local):
+    os.makedirs(AAC_OUT, exist_ok=True)
+
+    def output(command):
+        if local:
+            return subprocess.run(["sh", "-c", command.replace("/work/", AAC_OUT + "/")], check=True, capture_output=True).stdout
+        return subprocess.run(["docker", "run", "--rm", "-v", f"{AAC_OUT}:/work", AAC_IMAGE, "sh", "-c", command], check=True,
+                              capture_output=True).stdout
+
+    manifest = {}
+    for name, (command, rate, channels) in AAC_CLIPS.items():
+        path = os.path.join(AAC_OUT, name)
+        if os.path.exists(path):
+            os.remove(path)
+        output(f"ffmpeg -v error -y {aac_source(rate, channels)} -c:a pcm_s16le /tmp/in.wav && " + command.format(out=f"/work/{name}"))
+        # The packets as raw data blocks: FFmpeg copies MP4 and Matroska tracks out to ADTS first.
+        with open(path, "rb") as f:
+            stream = f.read() if name.endswith(".aac") else output(f"ffmpeg -v error -i /work/{name} -c:a copy -f adts -")
+        blocks = adts_payloads(stream)
+        # FFmpeg's float decode (its gapless trimming for MP4 edit lists; ADTS keeps the encoder's priming).
+        raw = output(f"ffmpeg -v error -i /work/{name} -map 0:a -c:a pcm_f32le -f f32le -")
+        with gzip.GzipFile(path + ".f32.gz", "wb", 9, mtime=0) as f:
+            f.write(raw)
+        info = json.loads(output(f"ffprobe -v error -count_packets -select_streams a -show_entries "
+                                 f"stream=profile,channels,channel_layout,sample_rate,nb_read_packets -of json /work/{name}"))["streams"][0]
+        decoded = int(info["channels"])
+        manifest[name] = {"profile": info.get("profile"), "rate": rate, "channels": channels, "layout": info.get("channel_layout"),
+                          "decodedRate": int(info["sample_rate"]), "decodedChannels": decoded, "samples": len(raw) // 4 // decoded,
+                          "packets": int(info["nb_read_packets"]), "blocks": len(blocks),
+                          "blocksMd5": hashlib.md5(b"".join(blocks)).hexdigest()}
+        print(name, os.path.getsize(path), manifest[name])
+    with open(os.path.join(AAC_OUT, "manifest.json"), "w", newline="\n") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+
+
 def gates():
     """Compares .cache/audio/gates/L<n> (Egami.Video's FLAC) with libFLAC at the same level; prints sizes and flac -d's time."""
     gates_dir = os.path.join(CACHE, "gates")
@@ -581,6 +695,9 @@ if __name__ == "__main__":
         sys.exit(0)
     if "--caf" in sys.argv:
         make_caf("--local" in sys.argv)
+        sys.exit(0)
+    if "--aac" in sys.argv:
+        make_aac("--local" in sys.argv)
         sys.exit(0)
     if "--ac3-decode" in sys.argv:
         make_ac3_decode("--local" in sys.argv)

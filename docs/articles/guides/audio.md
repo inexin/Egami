@@ -171,6 +171,15 @@ or dec3 box from the first frame), Matroska and CAF unchanged.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-ac3)]
 
+`AdtsFormat` reads and writes raw AAC in ADTS frames (.aac, .adts), as radio streams, podcasts and MPEG-TS extractions carry
+it. Each packet is one frame's raw data block, without the ADTS header and CRC, which is how MP4 and Matroska store AAC; the
+track's AudioSpecificConfig (`CodecPrivate`) is built from the first header, and ID3v2 tags at the start are read into the
+tags. HE-AAC in ADTS signals its SBR and parametric stereo only inside the audio, so the track reports the AAC LC core's rate
+and channels. Writing gives every packet a header without a CRC, so an AAC track goes from MP4, Matroska, CAF or AVI to .aac
+without decoding. Egami.Video does not decode AAC yet.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-adts)]
+
 `Ac3Codec` decodes AC-3 (ATSC A/52) in every channel mode, 1/0 to 3/2 and dual mono, with or without the LFE, at 32, 44.1 and
 48 kHz and 32 to 640 kbit/s, from raw .ac3 files and from AC-3 tracks in MP4, Matroska, AVI and CAF. Frames are 1536 samples of
 planar float in Egami.Video's channel order. Both frame CRCs are checked unless `VerifyChecksums` is off; a damaged frame is
