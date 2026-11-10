@@ -954,6 +954,11 @@ AAC (V5.10), in progress.
 - MP4 audio tracks without an edit list take their priming and length from iTunes's `iTunSMPB` tag, so AAC from Apple's
   encoders and tools starts and ends at the source samples; `Mp4Format.IgnoreEditLists` skips the tag too. Writing an AAC track
   that starts with priming adds the tag beside the edit list, for players that read only one of them.
+- `AacCodec` decodes AAC LC (ISO/IEC 14496-3) at 8 to 96 kHz, mono to 7.1, with block switching, TNS, mid/side and
+  intensity stereo and noise substitution, into planar float in Egami.Video's channel order; translated from oxideav-aac
+  (MIT). HE-AAC decodes its AAC LC core at twice the core rate, without SBR or parametric stereo, with an `aac-sbr-ignored`
+  warning. AAC Main, LTP, SSR, the low-delay and error-resilient types, coupling channel elements and program config element
+  channel maps are not decoded.
 - Internal: a shared MDCT with sine and Kaiser-Bessel-derived windows for the AAC codec to come; the AC-3 decoder now uses its
   complex FFT and window, at the same speed.
 

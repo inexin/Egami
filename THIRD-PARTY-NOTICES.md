@@ -978,6 +978,37 @@ software to the public domain worldwide. This software is distributed without an
 See <http://creativecommons.org/publicdomain/zero/1.0/>.
 ```
 
+## oxideav-aac
+
+Egami.Video's AAC LC decoder (`src/Egami.Video/Audio/Codecs/Aac`: `AacFrameDecoder.cs` and `AacTables.cs`) is translated from
+oxideav-aac (commit ff39596): its parsing of ics_info, section, scalefactor, pulse, TNS and spectral data, inverse quantization,
+M/S and intensity stereo, perceptual noise substitution, TNS synthesis and the filterbank, and its Huffman, scalefactor band
+and TNS tables, rewritten as one decoder over float buffers. oxideav-aac is distributed under the MIT license:
+
+```
+MIT License
+
+Copyright (c) 2026 Karpelès Lab Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## OpenH264
 
 Egami.Video.H264's CABAC context initialisation values and CAVLC code tables (`src/Egami.Video.H264/Codecs/H264/H264Tables.Data.cs`)

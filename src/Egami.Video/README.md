@@ -7,7 +7,7 @@ Egami rasters, so resizing, color conversion and drawing from Egami work on vide
   audio files WAV, FLAC, MP3, AIFF and CAF.
 - Video codecs: AV1, VP9 and VP8 decode and encode (AV1 decodes equal to libaom, VP9 to libvpx), FFV1 for lossless
   archives and Motion JPEG. H.264 and HEVC decode through the opt-in packages Egami.Video.H264 and Egami.Video.Hevc.
-- Audio codecs: PCM, FLAC, Opus and ALAC decode and encode; Vorbis, MP3, AC-3 and G.711 decode; audio filters.
+- Audio codecs: PCM, FLAC, Opus and ALAC decode and encode; Vorbis, MP3, AC-3, AAC LC and G.711 decode; audio filters.
 - Remuxing, trimming with smart cut and seeking without decoding what need not be; SRT, WebVTT and ASS subtitles.
 - Editing (`VideoEdit`, `Clip`): joins, transitions, overlays, keying, layouts and titles, rendered to a file.
 - Deinterlacing (`Deinterlacer`), HDR metadata, scene detection, waveforms and spectrograms.

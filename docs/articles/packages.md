@@ -40,7 +40,7 @@ one version and release together; the other packages have versions of their own.
 
 | Package | Version | What it does | Needs | Docs |
 | --- | --- | --- | --- | --- |
-| [Egami.Video](https://github.com/inexin/Egami/tree/main/src/Egami.Video) | 1.2 | Reads and writes video and audio with Egami rasters as frames: MP4, WebM, Matroska, AVI, IVF, YUV4MPEG2, Ogg, WAV, FLAC, MP3, AIFF and CAF; AV1, VP9 and VP8 decode and encode, Motion JPEG, Opus, Vorbis, FLAC, MP3, AC-3 and ALAC; subtitles, smart cut and scene detection | Egami | [Video](guides/video.md) |
+| [Egami.Video](https://github.com/inexin/Egami/tree/main/src/Egami.Video) | 1.2 | Reads and writes video and audio with Egami rasters as frames: MP4, WebM, Matroska, AVI, IVF, YUV4MPEG2, Ogg, WAV, FLAC, MP3, AIFF and CAF; AV1, VP9 and VP8 decode and encode, Motion JPEG, Opus, Vorbis, FLAC, MP3, AC-3, AAC LC and ALAC; subtitles, smart cut and scene detection | Egami | [Video](guides/video.md) |
 | [Egami.Video.H264](https://github.com/inexin/Egami/tree/main/src/Egami.Video.H264) | 1.2 | H.264 (AVC) decoding for Egami.Video: Constrained Baseline, Main, High, High 10 and High 4:2:2, progressive and interlaced (PAFF and MBAFF), in MP4, MOV, Matroska, AVI and raw .h264 files. Opt-in because H.264 is covered by patents | Egami.Video, the same version | [H.264](guides/h264.md) |
 | [Egami.Video.Hevc](https://github.com/inexin/Egami/tree/main/src/Egami.Video.Hevc) | 1.2 | HEVC (H.265) decoding for Egami.Video: Main, Main 10, Main 12 and the range extensions to 12 bits in MP4, MOV, Matroska and raw .h265 files, through Egami.Heic's decoder. Opt-in because HEVC is covered by patents | Egami.Video, the same version, and Egami.Heic | [HEVC](guides/hevc.md) |
 
