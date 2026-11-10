@@ -232,10 +232,12 @@ internal static class H264StreamWriter
 
     /// <summary>
     /// Writes slice_header (7.3.3) of a frame slice: <paramref name="type"/> is coded with 5 added (every slice of the picture
-    /// has it); an IDR picture's marking keeps its picture as a short-term reference.
+    /// has it); <paramref name="refs"/> are list 0's active references and <paramref name="refs1"/> counts list 1's. A
+    /// reference picture's marking keeps it as a short-term reference: an IDR picture's, by the sliding window, or, with
+    /// <paramref name="unmark"/>, by marking those pictures (difference_of_pic_nums_minus1 each) unused first.
     /// </summary>
     internal static void SliceHeader(NalBitWriter w, H264StreamConfig c, int firstMb, H264SliceType type, bool idr, int idrPicId, int frameNum, int pocLsb, int qp,
-        int cabacInitIdc = 0, ReadOnlySpan<H264RefPlanes> refs = default)
+        int cabacInitIdc = 0, ReadOnlySpan<H264RefPlanes> refs = default, int refs1 = 1, bool directSpatial = true, bool referenced = true, ReadOnlySpan<int> unmark = default)
     {
         w.Ue((uint)firstMb);
         w.Ue((uint)type + 5);
@@ -249,16 +251,22 @@ internal static class H264StreamWriter
         w.U(PocBits, (uint)(pocLsb & ((1 << PocBits) - 1)));
         if (type == H264SliceType.B)
         {
-            w.Flag(true); // direct_spatial_mv_pred_flag
+            w.Flag(directSpatial);
         }
 
         if (type is H264SliceType.P or H264SliceType.B)
         {
-            // num_ref_idx_active_override_flag: the picture parameter set's default is one reference.
-            w.Flag(refs.Length > 1);
-            if (refs.Length > 1)
+            // num_ref_idx_active_override_flag: the picture parameter set's default is one reference in each list.
+            bool b = type == H264SliceType.B;
+            bool active = refs.Length > 1 || (b && refs1 > 1);
+            w.Flag(active);
+            if (active)
             {
                 w.Ue((uint)(refs.Length - 1));
+                if (b)
+                {
+                    w.Ue((uint)(refs1 - 1));
+                }
             }
 
             w.Flag(false); // ref_pic_list_modification_flag_l0
@@ -278,9 +286,19 @@ internal static class H264StreamWriter
             w.Flag(false); // no_output_of_prior_pics_flag
             w.Flag(false); // long_term_reference_flag
         }
-        else
+        else if (referenced)
         {
-            w.Flag(false); // adaptive_ref_pic_marking_mode_flag
+            w.Flag(!unmark.IsEmpty); // adaptive_ref_pic_marking_mode_flag
+            foreach (int difference in unmark)
+            {
+                w.Ue(1); // memory_management_control_operation: a short-term picture unused
+                w.Ue((uint)difference);
+            }
+
+            if (!unmark.IsEmpty)
+            {
+                w.Ue(0);
+            }
         }
 
         if (c.Cabac && type != H264SliceType.I)

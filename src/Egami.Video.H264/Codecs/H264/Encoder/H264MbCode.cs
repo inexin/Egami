@@ -8,7 +8,8 @@ internal sealed class H264MbCode
 {
     /// <summary>
     /// Gets or sets the macroblock's kind: <see cref="H264MbKind.I4x4"/>, <see cref="H264MbKind.I8x8"/>, <see cref="H264MbKind.I16x16"/>,
-    /// <see cref="H264MbKind.Inter"/> or <see cref="H264MbKind.PSkip"/>.
+    /// <see cref="H264MbKind.Inter"/>, <see cref="H264MbKind.PSkip"/>, <see cref="H264MbKind.BDirect"/> or
+    /// <see cref="H264MbKind.BSkip"/>.
     /// </summary>
     public H264MbKind Kind { get; set; }
 
@@ -16,22 +17,40 @@ internal sealed class H264MbCode
     public bool Transform8x8 { get; set; }
 
     /// <summary>Gets whether the luma levels are 8x8 blocks' (<see cref="Luma8"/>).</summary>
-    public bool Eight => Kind == H264MbKind.I8x8 || (Kind == H264MbKind.Inter && Transform8x8);
+    public bool Eight => Kind == H264MbKind.I8x8 || (Kind is H264MbKind.Inter or H264MbKind.BDirect && Transform8x8);
 
-    /// <summary>Gets or sets an inter macroblock's partitioning: 0 16x16, 1 16x8, 2 8x16, 3 8x8 (mb_type of a P slice).</summary>
+    /// <summary>Gets whether the macroblock is B_Skip or B_Direct_16x16, its motion all direct prediction.</summary>
+    public bool Direct => Kind is H264MbKind.BSkip or H264MbKind.BDirect;
+
+    /// <summary>
+    /// Gets or sets an inter macroblock's partitioning: 0 16x16, 1 16x8, 2 8x16, 3 8x8 (B_Skip and B_Direct_16x16 keep their
+    /// motion as four direct 8x8 blocks).
+    /// </summary>
     public int Partition { get; set; }
 
-    /// <summary>Gets each 8x8 partition's sub_mb_type: 0 8x8, 1 8x4, 2 4x8, 3 4x4.</summary>
+    /// <summary>
+    /// Gets each 8x8 partition's sub_mb_type: in a P slice 0 8x8, 1 8x4, 2 4x8, 3 4x4; in a B slice 0 direct, 1 L0, 2 L1 and
+    /// 3 Bi, all 8x8.
+    /// </summary>
     public int[] SubTypes { get; } = new int[4];
 
-    /// <summary>Gets each partition's ref_idx_l0 (one per 8x8 block for P_8x8).</summary>
+    /// <summary>Gets each partition's ref_idx_l0 (one per 8x8 block for 8x8 partitions), -1 where the partition does not use list 0.</summary>
     public int[] RefIdx { get; } = new int[4];
 
-    /// <summary>Gets the motion vector of each 4x4 block, raster order in the macroblock, x in the low 16 bits.</summary>
+    /// <summary>Gets each partition's ref_idx_l1, -1 where the partition does not use list 1 (always in P slices).</summary>
+    public int[] RefIdx1 { get; } = new int[4];
+
+    /// <summary>Gets the list 0 motion vector of each 4x4 block, raster order in the macroblock, x in the low 16 bits.</summary>
     public int[] Mv { get; } = new int[16];
 
-    /// <summary>Gets the motion vector difference coded for each 4x4 block's partition, raster order, packed as <see cref="Mv"/>.</summary>
+    /// <summary>Gets the list 1 motion vector of each 4x4 block, packed as <see cref="Mv"/>.</summary>
+    public int[] Mv1 { get; } = new int[16];
+
+    /// <summary>Gets the list 0 motion vector difference coded for each 4x4 block's partition, raster order, packed as <see cref="Mv"/>.</summary>
     public int[] Mvd { get; } = new int[16];
+
+    /// <summary>Gets the list 1 motion vector difference of each 4x4 block's partition.</summary>
+    public int[] Mvd1 { get; } = new int[16];
 
     /// <summary>Gets or sets the Intra16x16 prediction mode.</summary>
     public int I16Mode { get; set; }
@@ -86,8 +105,11 @@ internal sealed class H264MbCode
         Partition = other.Partition;
         other.SubTypes.CopyTo(SubTypes, 0);
         other.RefIdx.CopyTo(RefIdx, 0);
+        other.RefIdx1.CopyTo(RefIdx1, 0);
         other.Mv.CopyTo(Mv, 0);
+        other.Mv1.CopyTo(Mv1, 0);
         other.Mvd.CopyTo(Mvd, 0);
+        other.Mvd1.CopyTo(Mvd1, 0);
         I16Mode = other.I16Mode;
         ChromaMode = other.ChromaMode;
         Cbp = other.Cbp;

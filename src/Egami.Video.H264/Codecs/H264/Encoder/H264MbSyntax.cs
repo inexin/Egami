@@ -70,6 +70,12 @@ internal sealed partial class H264MbSyntax
     /// <summary>Gets or sets num_ref_idx_l0_active: with more than one, ref_idx_l0 is coded.</summary>
     public int RefCount { get; set; } = 1;
 
+    /// <summary>Gets or sets the <see cref="H264Picture.Id"/> of each reference in list 1.</summary>
+    public int[] RefIds1 { get; set; } = [];
+
+    /// <summary>Gets or sets num_ref_idx_l1_active.</summary>
+    public int RefCount1 { get; set; } = 1;
+
     /// <summary>Starts a slice at <paramref name="qp"/> (SliceQPY): CABAC contexts initialised for it (9.3.1.1).</summary>
     public void StartSlice(int slice, H264SliceType type, int qp, int cabacInitIdc)
     {
@@ -123,7 +129,7 @@ internal sealed partial class H264MbSyntax
         _mb.Transform8x8[addr] = code.Eight;
         _mb.Cbp[addr] = (byte)code.Cbp;
         _mb.ChromaPredMode[addr] = (byte)(_intra ? code.ChromaMode : 0);
-        _mb.Direct8x8[addr] = 0;
+        _mb.Direct8x8[addr] = (byte)DirectMask(code);
         if (!HasQpDelta(code))
         {
             code.Qp = LastQp;
@@ -143,10 +149,11 @@ internal sealed partial class H264MbSyntax
             int i8 = blk >> 2;
             int count = (code.Cbp & (1 << i8)) == 0 ? 0 : code.Eight ? code.Luma8Count[i8] : code.LumaCount[blk];
             _mb.IntraModes[b] = (sbyte)(code.Kind == H264MbKind.I4x4 ? code.Modes[blk] : code.Kind == H264MbKind.I8x8 ? code.Modes[i8] : -1);
-            int mvd = _intra ? 0 : code.Mvd[xy];
+            int mvd = _intra ? 0 : code.Mvd[xy], mvd1 = _intra ? 0 : code.Mvd1[xy];
             _mb.Mvd[0][2 * b] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvX(mvd)), 255);
             _mb.Mvd[0][(2 * b) + 1] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvY(mvd)), 255);
-            _mb.Mvd[1][2 * b] = _mb.Mvd[1][(2 * b) + 1] = 0;
+            _mb.Mvd[1][2 * b] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvX(mvd1)), 255);
+            _mb.Mvd[1][(2 * b) + 1] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvY(mvd1)), 255);
             _mb.NzLuma[b] = (byte)count;
             _mb.Nonzero[b] = (byte)(count > 0 ? 1 : 0);
         }
@@ -172,33 +179,62 @@ internal sealed partial class H264MbSyntax
     /// <summary>Writes the macroblock's references and vectors to the motion arrays, as the decoder will have them.</summary>
     private void SetMotion(H264Picture pic, H264MbCode code)
     {
-        bool flat = !_intra && (code.Kind == H264MbKind.PSkip || code.Partition == 0);
+        bool flat = !_intra;
         for (int xy = 0; xy < 16; xy++)
         {
             int bx = xy & 3, by = xy >> 2;
             int b = _b0 + (by * _w4) + bx;
-            int refIdx = _intra ? -1 : BlockRef(code, bx, by);
+            int refIdx = _intra ? -1 : BlockRef(code, 0, bx, by), refIdx1 = _intra ? -1 : BlockRef(code, 1, bx, by);
             pic.RefIdx[0][b] = (sbyte)refIdx;
             pic.RefPicId[0][b] = refIdx >= 0 ? RefIds[refIdx] : -1;
             pic.Mv[0][b] = refIdx >= 0 ? code.Mv[xy] : 0;
-            pic.RefIdx[1][b] = -1;
-            pic.RefPicId[1][b] = -1;
-            pic.Mv[1][b] = 0;
-            flat &= _mb.Nonzero[b] == 0;
+            pic.RefIdx[1][b] = (sbyte)refIdx1;
+            pic.RefPicId[1][b] = refIdx1 >= 0 ? RefIds1[refIdx1] : -1;
+            pic.Mv[1][b] = refIdx1 >= 0 ? code.Mv1[xy] : 0;
+            flat &= _mb.Nonzero[b] == 0 && pic.RefPicId[0][b] == pic.RefPicId[0][_b0] && pic.Mv[0][b] == pic.Mv[0][_b0]
+                && pic.RefPicId[1][b] == pic.RefPicId[1][_b0] && pic.Mv[1][b] == pic.Mv[1][_b0];
         }
 
         pic.MbIntra[_addr] = _intra;
         _mb.FlatInside[_addr] = flat;
     }
 
-    /// <summary>The reference index of the 4x4 block at (bx, by) of an inter macroblock.</summary>
-    internal static int BlockRef(H264MbCode code, int bx, int by) => code.Kind == H264MbKind.PSkip ? 0 : code.Partition switch
+    /// <summary>The list 0 reference index of the 4x4 block at (bx, by) of an inter macroblock.</summary>
+    internal static int BlockRef(H264MbCode code, int bx, int by) => BlockRef(code, 0, bx, by);
+
+    /// <summary>The reference index in a list of the 4x4 block at (bx, by) of an inter macroblock, -1 where the list is unused.</summary>
+    internal static int BlockRef(H264MbCode code, int list, int bx, int by)
     {
-        0 => code.RefIdx[0],
-        1 => code.RefIdx[by >> 1],
-        2 => code.RefIdx[bx >> 1],
-        _ => code.RefIdx[((by >> 1) * 2) + (bx >> 1)],
-    };
+        if (code.Kind == H264MbKind.PSkip)
+        {
+            return list == 0 ? 0 : -1;
+        }
+
+        int[] refs = list == 0 ? code.RefIdx : code.RefIdx1;
+        return code.Partition switch
+        {
+            0 => refs[0],
+            1 => refs[by >> 1],
+            2 => refs[bx >> 1],
+            _ => refs[((by >> 1) * 2) + (bx >> 1)],
+        };
+    }
+
+    /// <summary>The 8x8 blocks of a B macroblock whose motion is direct prediction, bit i8 each.</summary>
+    private int DirectMask(H264MbCode code)
+    {
+        if (code.Direct)
+        {
+            return 15;
+        }
+
+        if (SliceType != H264SliceType.B || code.Kind != H264MbKind.Inter || code.Partition != 3)
+        {
+            return 0;
+        }
+
+        return (code.SubTypes[0] == 0 ? 1 : 0) | (code.SubTypes[1] == 0 ? 2 : 0) | (code.SubTypes[2] == 0 ? 4 : 0) | (code.SubTypes[3] == 0 ? 8 : 0);
+    }
 
     private static bool HasQpDelta(H264MbCode code) => code.Cbp != 0 || code.Kind == H264MbKind.I16x16;
 
@@ -237,7 +273,7 @@ internal sealed partial class H264MbSyntax
     public void WriteCabac<T>(H264MbCode code, ref T sink)
         where T : struct, ICabacSink
     {
-        if (code.Kind == H264MbKind.Inter)
+        if (code.Kind is H264MbKind.Inter or H264MbKind.BDirect)
         {
             WriteInterCabac(code, ref sink);
             return;
@@ -682,7 +718,7 @@ internal sealed partial class H264MbSyntax
     public void WriteCavlc<T>(H264MbCode code, ref T sink)
         where T : struct, IBitSink
     {
-        if (code.Kind == H264MbKind.Inter)
+        if (code.Kind is H264MbKind.Inter or H264MbKind.BDirect)
         {
             WriteInterCavlc(code, ref sink);
             return;

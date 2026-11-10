@@ -158,11 +158,11 @@ internal sealed partial class H264MbEncoder
             if (skippable)
             {
                 // mb_skip_flag's context reads the neighbours only, so it is counted before Begin marks this macroblock.
-                _syntax.SkipFlagCabac(ref sink, code.Kind == H264MbKind.PSkip);
+                _syntax.SkipFlagCabac(ref sink, H264MbState.IsSkip(code.Kind));
             }
 
             _syntax.Begin(_mbX, _mbY, code);
-            if (code.Kind != H264MbKind.PSkip)
+            if (!H264MbState.IsSkip(code.Kind))
             {
                 _syntax.WriteCabac(code, ref sink);
             }
@@ -172,7 +172,7 @@ internal sealed partial class H264MbEncoder
         }
 
         _syntax.Begin(_mbX, _mbY, code);
-        if (code.Kind == H264MbKind.PSkip)
+        if (H264MbState.IsSkip(code.Kind))
         {
             return 0;
         }

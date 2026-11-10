@@ -60,6 +60,11 @@ internal sealed class H264VideoEncoder : IVideoEncoder
             throw new ArgumentException("Constrained Baseline codes with CAVLC only.", nameof(options));
         }
 
+        if (h264.Profile == H264Profile.ConstrainedBaseline && h264.BFrames > 0)
+        {
+            throw new ArgumentException("Constrained Baseline has no B-frames.", nameof(options));
+        }
+
         int qp = options.Quantizer is int q ? Check(q, 0, 51, "Quantizer") : QualityToQp(quality);
         long bitrate = 0;
         if (options.RateControl is RateControlMode.Bitrate or RateControlMode.ConstantBitrate)
@@ -79,15 +84,24 @@ internal sealed class H264VideoEncoder : IVideoEncoder
         double fps = (double)options.FrameRate.Numerator / options.FrameRate.Denominator;
         int keyInterval = options.KeyframeInterval is int k ? Check(k, 1, int.MaxValue, "KeyframeInterval") : Math.Max(1, (int)Math.Ceiling(fps * 10));
         int widthMbs = (options.Width + 15) >> 4, heightMbs = (options.Height + 15) >> 4;
-        int refFrames = RefFrames(effort);
         int level = h264.Level ?? H264Levels.Choose(widthMbs, heightMbs, fps, 1);
         if (H264Levels.Misfit(H264Levels.Of(level), widthMbs, heightMbs, fps, 1) is { } why)
         {
             throw new ArgumentException($"The stream does not fit its level: {why}.", nameof(options));
         }
 
-        // More references where the level's buffer holds them.
-        while (refFrames > 1 && H264Levels.Misfit(H264Levels.Of(level), widthMbs, heightMbs, fps, refFrames) is not null)
+        // B-frames predict from a reference on each side, a pyramid's middle B-frame from a third; more references where the
+        // level's buffer holds them, and fewer B-frames where it does not.
+        bool Fits(int refs) => H264Levels.Misfit(H264Levels.Of(level), widthMbs, heightMbs, fps, refs) is null;
+        int bFrames = h264.Profile == H264Profile.ConstrainedBaseline || options.LatencyMode != LatencyMode.Quality ? 0 : h264.BFrames ?? (effort >= 1 ? 3 : 0);
+        bool pyramid = bFrames is 2 or 3 && effort >= 4 && Fits(3);
+        if (bFrames > 0 && !Fits(2))
+        {
+            bFrames = 0;
+        }
+
+        int refFrames = Math.Max(RefFrames(effort), pyramid ? 3 : bFrames > 0 ? 2 : 1);
+        while (refFrames > 1 && !Fits(refFrames))
         {
             refFrames--;
         }
@@ -105,6 +119,7 @@ internal sealed class H264VideoEncoder : IVideoEncoder
             Cabac = cabac,
             Transform8x8 = h264.Profile == H264Profile.High,
             MaxRefFrames = refFrames,
+            ReorderFrames = bFrames,
             FrameRate = options.FrameRate,
             Color = H264Color,
         };
@@ -117,6 +132,8 @@ internal sealed class H264VideoEncoder : IVideoEncoder
             KeyframeInterval = keyInterval,
             SceneCuts = options.SceneCutKeyframes,
             Parallelism = context.Egami.MaxParallelism,
+            BFrames = bFrames,
+            BPyramid = pyramid,
             Rate = new RateSettings
             {
                 Mode = options.RateControl,
@@ -263,7 +280,8 @@ internal sealed class H264VideoEncoder : IVideoEncoder
 
 /// <summary>
 /// Codes the core's decisions as H.264 access units: a keyframe is an IDR picture (with the parameter sets in Annex B streams,
-/// and the HDR SEI when the frames have HDR metadata), every other frame a reference P picture.
+/// and the HDR SEI when the frames have HDR metadata), a bidirectional frame a B picture (a reference one in a pyramid's
+/// middle), every other frame a reference P picture.
 /// </summary>
 internal sealed class H264FrameCoder : IFrameCoder
 {
@@ -307,7 +325,20 @@ internal sealed class H264FrameCoder : IFrameCoder
     internal H264Picture Recon => _encoder.Recon;
 
     /// <summary>Gets or sets what runs after each frame is coded, with its reconstruction, for tests.</summary>
-    internal Action<H264Picture>? Coded { get; set; }
+    internal Action<H264Picture, int>? Coded { get; set; }
+
+    /// <summary>Gets or sets the direct prediction B pictures are forced to, temporal or spatial, for tests.</summary>
+    internal bool? TemporalDirect
+    {
+        get => _encoder.TemporalDirect;
+        set => _encoder.TemporalDirect = value;
+    }
+
+    /// <summary>Gets how many B pictures were coded, for tests.</summary>
+    internal int BPictures { get; private set; }
+
+    /// <summary>Gets how many B pictures predicted direct blocks temporally, for tests.</summary>
+    internal int TemporalPictures { get; private set; }
 
     public CodedFrame Code(YuvRaster<byte> picture, FrameDecision decision)
     {
@@ -324,6 +355,8 @@ internal sealed class H264FrameCoder : IFrameCoder
         _encoder.Load(picture);
         byte[] slice = idr || _encoder.References == 0
             ? _encoder.EncodeIntra(idr, _idrPicId, _frameNum, poc, qp, decision.Referenced)
+            : decision.Type == FrameType.Bidirectional
+            ? EncodeB(poc, qp, decision.Referenced)
             : _encoder.EncodePredicted(_frameNum, poc, qp, _config.MaxRefFrames, decision.Referenced);
         if (decision.Referenced)
         {
@@ -343,8 +376,16 @@ internal sealed class H264FrameCoder : IFrameCoder
         }
 
         nals.Add(slice);
-        Coded?.Invoke(_encoder.Recon);
+        Coded?.Invoke(_encoder.Recon, decision.Index);
         return new CodedFrame(H264StreamWriter.AccessUnit(nals, _annexB), null, qp);
+    }
+
+    private byte[] EncodeB(int poc, int qp, bool referenced)
+    {
+        byte[] slice = _encoder.EncodeBidirectional(_frameNum, poc, qp, referenced);
+        BPictures++;
+        TemporalPictures += _encoder.LastTemporal ? 1 : 0;
+        return slice;
     }
 
     public (long Key, long Next) Probe(YuvRaster<byte> key, YuvRaster<byte>? next, int quantizer)

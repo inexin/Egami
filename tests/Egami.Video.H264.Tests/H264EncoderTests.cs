@@ -131,13 +131,13 @@ public sealed class H264EncoderTests
     {
         using H264VideoEncoder encoder = (H264VideoEncoder)H264Codec.Instance.CreateEncoder(options, MediaContext.Default);
         List<EncodedPacket> packets = [];
-        List<byte[]> recon = [];
+        List<byte[]> recon = [.. Enumerable.Repeat(Array.Empty<byte>(), frames)];
         Rational timeBase = options.FrameRate.Reciprocal();
         for (int i = 0; i < frames; i++)
         {
             using YuvRaster<byte> picture = EncoderIntraTests.Picture(options.Width, options.Height, i);
             encoder.Send(new YuvVideoFrame(picture, new MediaTime(i, timeBase)));
-            encoder.Coder!.Coded ??= pic => recon.Add(Planes(pic, options.Width, options.Height));
+            encoder.Coder!.Coded ??= (pic, index) => recon[index] = Planes(pic, options.Width, options.Height);
             while (encoder.TryReceive(out EncodedPacket? packet))
             {
                 packets.Add(packet);
