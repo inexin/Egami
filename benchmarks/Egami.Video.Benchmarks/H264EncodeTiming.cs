@@ -9,7 +9,7 @@ namespace Egami.Video.Benchmarks;
 /// The H.264 encoder gates' Egami side: encodes a YUV4MPEG2 clip to a raw Annex B stream with the options given and prints the
 /// encode time (frames read into memory first, best of --runs; wall clock and the process's CPU time, which a busy machine
 /// skews less with one thread), the output size and the bitrate, for comparing with x264.
-/// Options: --out=file.h264 --quality=Q --quantizer=Q --effort=E --threads=N --bitrate=BITS --cbr --two-pass --realtime
+/// Options: --out=file.h264 --quality=Q --quantizer=Q --effort=E --threads=N (--one-thread for 1) --bitrate=BITS --cbr --two-pass --realtime
 /// --bframes=N --profile=baseline|main|high --cavlc --no-aq --frames=N --runs=N.
 /// </summary>
 internal static class H264EncodeTiming
@@ -39,7 +39,7 @@ internal static class H264EncodeTiming
             }
         }
 
-        int threads = Number("threads") ?? Environment.ProcessorCount;
+        int threads = Flag("one-thread") ? 1 : Number("threads") ?? Environment.ProcessorCount;
         long? bitrate = Value("bitrate") is { } b ? long.Parse(b, CultureInfo.InvariantCulture) : null;
         VideoEncoderOptions options = new()
         {

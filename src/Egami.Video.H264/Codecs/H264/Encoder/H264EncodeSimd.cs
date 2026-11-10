@@ -70,6 +70,26 @@ internal static class H264EncodeSimd
 
         ref byte rs = ref MemoryMarshal.GetArrayDataReference(src);
         ref byte rp = ref MemoryMarshal.GetArrayDataReference(pred);
+        if (Avx2.IsSupported && (width & 15) == 0)
+        {
+            // Four 4x4 blocks side by side: each 128-bit lane holds two, as below.
+            Vector256<int> wide = Vector256<int>.Zero;
+            for (int by = 0; by < height; by += 4)
+            {
+                for (int bx = 0; bx < width; bx += 16)
+                {
+                    int s = at + (by * stride) + bx, p = predAt + (by * predStride) + bx;
+                    Vector256<short> r0 = Diff16(ref rs, s, ref rp, p);
+                    Vector256<short> r1 = Diff16(ref rs, s + stride, ref rp, p + predStride);
+                    Vector256<short> r2 = Diff16(ref rs, s + (2 * stride), ref rp, p + (2 * predStride));
+                    Vector256<short> r3 = Diff16(ref rs, s + (3 * stride), ref rp, p + (3 * predStride));
+                    wide += Hadamard4(r0, r1, r2, r3);
+                }
+            }
+
+            return Vector256.Sum(wide) >> 1;
+        }
+
         Vector128<int> sum = Vector128<int>.Zero;
         for (int by = 0; by < height; by += 4)
         {
@@ -158,6 +178,30 @@ internal static class H264EncodeSimd
         }
     }
 
+    /// <summary>The largest absolute value of a span.</summary>
+    public static int MaxAbs(ReadOnlySpan<int> values)
+    {
+        int i = 0, max = 0;
+        if (Vector256.IsHardwareAccelerated && values.Length >= 8)
+        {
+            Vector256<int> m = Vector256<int>.Zero;
+            ref int start = ref MemoryMarshal.GetReference(values);
+            for (; i + 8 <= values.Length; i += 8)
+            {
+                m = Vector256.Max(m, Vector256.Abs(Vector256.LoadUnsafe(ref start, (nuint)i)));
+            }
+
+            max = Math.Max(Math.Max(Math.Max(m[0], m[1]), Math.Max(m[2], m[3])), Math.Max(Math.Max(m[4], m[5]), Math.Max(m[6], m[7])));
+        }
+
+        for (; i < values.Length; i++)
+        {
+            max = Math.Max(max, Math.Abs(values[i]));
+        }
+
+        return max;
+    }
+
     internal static long SatdScalar(byte[] src, int at, int stride, byte[] pred, int predAt, int predStride, int width, int height)
     {
         long sum = 0;
@@ -206,6 +250,30 @@ internal static class H264EncodeSimd
         Vector128<short> col01B = Sse2.UnpackLow(c.AsInt32(), d.AsInt32()).AsInt16(), col23B = Sse2.UnpackHigh(c.AsInt32(), d.AsInt32()).AsInt16();
         return Across(col01A, col23A) + Across(col01B, col23B);
     }
+
+    /// <summary><see cref="Hadamard2"/> on four blocks, two in each 128-bit lane.</summary>
+    private static Vector256<int> Hadamard4(Vector256<short> r0, Vector256<short> r1, Vector256<short> r2, Vector256<short> r3)
+    {
+        Vector256<short> s01 = r0 + r1, d01 = r0 - r1, s23 = r2 + r3, d23 = r2 - r3;
+        Vector256<short> v0 = s01 + s23, v1 = s01 - s23, v2 = d01 - d23, v3 = d01 + d23;
+        Vector256<short> a = Avx2.UnpackLow(v0, v1), b = Avx2.UnpackLow(v2, v3);
+        Vector256<short> c = Avx2.UnpackHigh(v0, v1), d = Avx2.UnpackHigh(v2, v3);
+        Vector256<short> col01A = Avx2.UnpackLow(a.AsInt32(), b.AsInt32()).AsInt16(), col23A = Avx2.UnpackHigh(a.AsInt32(), b.AsInt32()).AsInt16();
+        Vector256<short> col01B = Avx2.UnpackLow(c.AsInt32(), d.AsInt32()).AsInt16(), col23B = Avx2.UnpackHigh(c.AsInt32(), d.AsInt32()).AsInt16();
+        return Across4(col01A, col23A) + Across4(col01B, col23B);
+    }
+
+    private static Vector256<int> Across4(Vector256<short> c01, Vector256<short> c23)
+    {
+        Vector256<short> s = c01 + c23, t = c01 - c23;
+        Vector256<short> u0 = Avx2.UnpackLow(s.AsInt64(), t.AsInt64()).AsInt16(), u1 = Avx2.UnpackHigh(s.AsInt64(), t.AsInt64()).AsInt16();
+        Vector256<short> e = Vector256.Abs(u0 + u1), f = Vector256.Abs(u0 - u1);
+        return Avx2.MultiplyAddAdjacent(e, Vector256<short>.One) + Avx2.MultiplyAddAdjacent(f, Vector256<short>.One);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Diff16(ref byte s, int at, ref byte p, int pAt) =>
+        Avx2.Subtract(Avx2.ConvertToVector256Int16(Vector128.LoadUnsafe(ref s, (nuint)at)), Avx2.ConvertToVector256Int16(Vector128.LoadUnsafe(ref p, (nuint)pAt)));
 
     /// <summary>Across the rows of one block, given its columns 0|1 and 2|3; the absolute coefficients summed in pairs.</summary>
     private static Vector128<int> Across(Vector128<short> c01, Vector128<short> c23)

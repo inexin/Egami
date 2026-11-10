@@ -651,6 +651,16 @@ internal sealed partial class H264MbEncoder
         byte[] scan = eight ? H264ScalingLists.Zigzag8x8 : H264ScalingLists.Zigzag4x4;
         bool rdoq = _effort >= 3;
         int round = rdoq ? 128 : _round;
+
+        // Most blocks quantize to nothing: when the largest coefficient does, every one does.
+        int qbits = (eight ? H264Forward.Shift8 : H264Forward.Shift4) + q6;
+        long largest = (long)H264EncodeSimd.MaxAbs(first == 0 ? w : w[1..]) * (eight ? H264Forward.MaxMf8[m] : H264Forward.MaxMf4[m]);
+        if (largest + ((long)round << (qbits - 8)) < 1L << qbits)
+        {
+            levels.AsSpan(at, max).Clear();
+            return 0;
+        }
+
         int n = 0;
         for (int k = 0; k < max; k++)
         {

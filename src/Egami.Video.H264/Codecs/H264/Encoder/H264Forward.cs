@@ -55,6 +55,12 @@ internal static class H264Forward
     /// <summary>MF for 8x8 blocks, [m * 64 + raster position]: 2^30 d_i d_j / v with d = 8 / n.</summary>
     internal static readonly int[] Mf8 = MakeMf8();
 
+    /// <summary>The largest 4x4 and 8x8 MF of each QP%6: a block whose largest |W| times it rounds to zero quantizes to all zeros.</summary>
+    internal static readonly int[] MaxMf4 = [.. Enumerable.Range(0, 6).Select(m => Mf4.AsSpan(m * 16, 16).ToArray().Max())];
+
+    /// <inheritdoc cref="MaxMf4"/>
+    internal static readonly int[] MaxMf8 = [.. Enumerable.Range(0, 6).Select(m => Mf8.AsSpan(m * 64, 64).ToArray().Max())];
+
     /// <summary>The sample-domain weight of a squared error in each 4x4 coefficient, 1 / (n_i n_j).</summary>
     internal static readonly double[] Weight4 = [.. Enumerable.Range(0, 16).Select(p => 1.0 / (Norm4[p >> 2] * Norm4[p & 3]))];
 
