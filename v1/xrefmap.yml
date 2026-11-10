@@ -125624,6 +125624,125 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Containers.Ac3Format.SignatureLength
   nameWithType: Ac3Format.SignatureLength
+- uid: Egami.Video.Containers.AdtsFormat
+  name: AdtsFormat
+  href: api/Egami.Video.Containers.AdtsFormat.html
+  commentId: T:Egami.Video.Containers.AdtsFormat
+  fullName: Egami.Video.Containers.AdtsFormat
+  nameWithType: AdtsFormat
+- uid: Egami.Video.Containers.AdtsFormat.CanMux
+  name: CanMux
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_CanMux
+  commentId: P:Egami.Video.Containers.AdtsFormat.CanMux
+  fullName: Egami.Video.Containers.AdtsFormat.CanMux
+  nameWithType: AdtsFormat.CanMux
+- uid: Egami.Video.Containers.AdtsFormat.CanMux*
+  name: CanMux
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_CanMux_
+  commentId: Overload:Egami.Video.Containers.AdtsFormat.CanMux
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AdtsFormat.CanMux
+  nameWithType: AdtsFormat.CanMux
+- uid: Egami.Video.Containers.AdtsFormat.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name: CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.AdtsFormat.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)
+  name.vb: CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.AdtsFormat.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo>, Egami.Video.MediaMetadata, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.AdtsFormat.CreateMuxer(System.IO.Stream, System.Collections.Generic.IReadOnlyList(Of Egami.Video.TrackInfo), Egami.Video.MediaMetadata, Egami.Video.MediaContext, Boolean)
+  nameWithType: AdtsFormat.CreateMuxer(Stream, IReadOnlyList<TrackInfo>, MediaMetadata, MediaContext, bool)
+  nameWithType.vb: AdtsFormat.CreateMuxer(Stream, IReadOnlyList(Of TrackInfo), MediaMetadata, MediaContext, Boolean)
+- uid: Egami.Video.Containers.AdtsFormat.CreateMuxer*
+  name: CreateMuxer
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_CreateMuxer_
+  commentId: Overload:Egami.Video.Containers.AdtsFormat.CreateMuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AdtsFormat.CreateMuxer
+  nameWithType: AdtsFormat.CreateMuxer
+- uid: Egami.Video.Containers.AdtsFormat.Extensions
+  name: Extensions
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_Extensions
+  commentId: P:Egami.Video.Containers.AdtsFormat.Extensions
+  fullName: Egami.Video.Containers.AdtsFormat.Extensions
+  nameWithType: AdtsFormat.Extensions
+- uid: Egami.Video.Containers.AdtsFormat.Extensions*
+  name: Extensions
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_Extensions_
+  commentId: Overload:Egami.Video.Containers.AdtsFormat.Extensions
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AdtsFormat.Extensions
+  nameWithType: AdtsFormat.Extensions
+- uid: Egami.Video.Containers.AdtsFormat.Instance
+  name: Instance
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_Instance
+  commentId: P:Egami.Video.Containers.AdtsFormat.Instance
+  fullName: Egami.Video.Containers.AdtsFormat.Instance
+  nameWithType: AdtsFormat.Instance
+- uid: Egami.Video.Containers.AdtsFormat.Instance*
+  name: Instance
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_Instance_
+  commentId: Overload:Egami.Video.Containers.AdtsFormat.Instance
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AdtsFormat.Instance
+  nameWithType: AdtsFormat.Instance
+- uid: Egami.Video.Containers.AdtsFormat.IsMatch(System.ReadOnlySpan{System.Byte})
+  name: IsMatch(ReadOnlySpan<byte>)
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_IsMatch_System_ReadOnlySpan_System_Byte__
+  commentId: M:Egami.Video.Containers.AdtsFormat.IsMatch(System.ReadOnlySpan{System.Byte})
+  name.vb: IsMatch(ReadOnlySpan(Of Byte))
+  fullName: Egami.Video.Containers.AdtsFormat.IsMatch(System.ReadOnlySpan<byte>)
+  fullName.vb: Egami.Video.Containers.AdtsFormat.IsMatch(System.ReadOnlySpan(Of Byte))
+  nameWithType: AdtsFormat.IsMatch(ReadOnlySpan<byte>)
+  nameWithType.vb: AdtsFormat.IsMatch(ReadOnlySpan(Of Byte))
+- uid: Egami.Video.Containers.AdtsFormat.IsMatch*
+  name: IsMatch
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_IsMatch_
+  commentId: Overload:Egami.Video.Containers.AdtsFormat.IsMatch
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AdtsFormat.IsMatch
+  nameWithType: AdtsFormat.IsMatch
+- uid: Egami.Video.Containers.AdtsFormat.Name
+  name: Name
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_Name
+  commentId: P:Egami.Video.Containers.AdtsFormat.Name
+  fullName: Egami.Video.Containers.AdtsFormat.Name
+  nameWithType: AdtsFormat.Name
+- uid: Egami.Video.Containers.AdtsFormat.Name*
+  name: Name
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_Name_
+  commentId: Overload:Egami.Video.Containers.AdtsFormat.Name
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AdtsFormat.Name
+  nameWithType: AdtsFormat.Name
+- uid: Egami.Video.Containers.AdtsFormat.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name: OpenDemuxer(Stream, MediaContext, bool)
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_OpenDemuxer_System_IO_Stream_Egami_Video_MediaContext_System_Boolean_
+  commentId: M:Egami.Video.Containers.AdtsFormat.OpenDemuxer(System.IO.Stream,Egami.Video.MediaContext,System.Boolean)
+  name.vb: OpenDemuxer(Stream, MediaContext, Boolean)
+  fullName: Egami.Video.Containers.AdtsFormat.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, bool)
+  fullName.vb: Egami.Video.Containers.AdtsFormat.OpenDemuxer(System.IO.Stream, Egami.Video.MediaContext, Boolean)
+  nameWithType: AdtsFormat.OpenDemuxer(Stream, MediaContext, bool)
+  nameWithType.vb: AdtsFormat.OpenDemuxer(Stream, MediaContext, Boolean)
+- uid: Egami.Video.Containers.AdtsFormat.OpenDemuxer*
+  name: OpenDemuxer
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_OpenDemuxer_
+  commentId: Overload:Egami.Video.Containers.AdtsFormat.OpenDemuxer
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AdtsFormat.OpenDemuxer
+  nameWithType: AdtsFormat.OpenDemuxer
+- uid: Egami.Video.Containers.AdtsFormat.SignatureLength
+  name: SignatureLength
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_SignatureLength
+  commentId: P:Egami.Video.Containers.AdtsFormat.SignatureLength
+  fullName: Egami.Video.Containers.AdtsFormat.SignatureLength
+  nameWithType: AdtsFormat.SignatureLength
+- uid: Egami.Video.Containers.AdtsFormat.SignatureLength*
+  name: SignatureLength
+  href: api/Egami.Video.Containers.AdtsFormat.html#Egami_Video_Containers_AdtsFormat_SignatureLength_
+  commentId: Overload:Egami.Video.Containers.AdtsFormat.SignatureLength
+  isSpec: "True"
+  fullName: Egami.Video.Containers.AdtsFormat.SignatureLength
+  nameWithType: AdtsFormat.SignatureLength
 - uid: Egami.Video.Containers.AiffFormat
   name: AiffFormat
   href: api/Egami.Video.Containers.AiffFormat.html

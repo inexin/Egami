@@ -18101,6 +18101,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Containers.AdtsFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Containers.AdtsFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Containers.AdtsFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Containers.AdtsFormat.yml\" sourcestartlinenumber=\"1\">Raw AAC in ADTS frames (.aac, .adts; ISO/IEC 13818-7 and 14496-3 Annex 1.A): each frame a short header and one raw data\nblock, with no container around them. Reading gives one <xref href=\"Egami.Video.CodecIds.Aac\" data-throw-if-not-resolved=\"false\"></xref> packet per frame, the header and CRC\nstripped as MP4 and Matroska store AAC, and the AudioSpecificConfig built from the first header; ID3v2 tags at the start are\nread into the tags. Writing adds a header without a CRC to each packet, so an AAC track from MP4, Matroska, CAF or AVI can\nbe extracted without decoding. Seeking builds a frame index in one pass.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Containers.AiffFormat.yml",
       "output": {
         ".html": {
