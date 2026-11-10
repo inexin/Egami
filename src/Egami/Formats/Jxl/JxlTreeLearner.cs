@@ -47,9 +47,8 @@ internal sealed class JxlTreeLearner
     private readonly byte[][] _nbits;
     private readonly int[][] _static;
     private readonly byte[][] _props;
-    private ushort[] _counts;
+    private readonly ushort[] _counts;
     private int _n;
-    private int[] _table = [];
 
     // Each sample's tokens, static properties (two bytes each) and other properties packed in 16 bytes, when they fit, for
     // hashing and comparing while samples are added; the raw bit counts follow from the tokens. Rented, and given back once
@@ -59,7 +58,10 @@ internal sealed class JxlTreeLearner
     private ushort[][] _staticMapping = [];
     private byte[][] _mapping = [];
 
-    /// <summary>Creates a learner for the candidate predictors and the properties a split may test (static ones, 0 and 1, first).</summary>
+    /// <summary>
+    /// Creates a learner for the candidate predictors and the properties a split may test (static ones, 0 and 1, first), with
+    /// room for <paramref name="capacity"/> samples.
+    /// </summary>
     internal JxlTreeLearner(int[] predictors, int[] properties, int capacity)
     {
         _predictors = predictors;
@@ -72,7 +74,6 @@ internal sealed class JxlTreeLearner
         _props = [.. Enumerable.Range(0, properties.Length - _staticCount).Select(_ => new byte[capacity])];
         _counts = new ushort[capacity];
         _keys = predictors.Length + (2 * _staticCount) + _props.Length <= 16 ? ArrayPool<UInt128>.Shared.Rent(capacity) : null;
-        Rehash(BitOperations.RoundUpToPowerOf2((uint)capacity * 2));
     }
 
     /// <summary>Gets the number of samples added, duplicates included.</summary>
@@ -118,33 +119,27 @@ internal sealed class JxlTreeLearner
     }
 
     /// <summary>
-    /// Adds a sample: its value, its properties (all 16, indexed by property) and the predictions, indexed by predictor, of at
-    /// least the learner's predictors.
+    /// Stores sample <paramref name="at"/>: its value, its properties in the learner's property order and its predictions in the
+    /// learner's predictor order. Samples at different places may be stored at the same time; <see cref="AddAll"/> then keeps them.
     /// </summary>
-    internal void Add(long pixel, ReadOnlySpan<int> properties, ReadOnlySpan<long> predictions)
+    internal void Set(int at, long pixel, ReadOnlySpan<int> properties, ReadOnlySpan<long> predictions)
     {
-        if (_n == _counts.Length)
-        {
-            Grow();
-        }
-
-        int a = _n;
         for (int i = 0; i < _predictors.Length; i++)
         {
-            uint v = PackSigned(unchecked((int)(pixel - predictions[_predictors[i]])));
+            uint v = PackSigned(unchecked((int)(pixel - predictions[i])));
             (byte tok, byte nbits) = ResidualToken(v);
-            _tokens[i][a] = tok;
-            _nbits[i][a] = nbits;
+            _tokens[i][at] = tok;
+            _nbits[i][at] = nbits;
         }
 
         for (int i = 0; i < _staticCount; i++)
         {
-            _static[i][a] = _staticMapping[i][Math.Clamp(properties[_properties[i]], -PropertyRange, PropertyRange) + PropertyRange];
+            _static[i][at] = _staticMapping[i][Math.Clamp(properties[i], -PropertyRange, PropertyRange) + PropertyRange];
         }
 
         for (int i = _staticCount; i < _properties.Length; i++)
         {
-            _props[i - _staticCount][a] = _mapping[i - _staticCount][Math.Clamp(properties[_properties[i]], -PropertyRange, PropertyRange) + PropertyRange];
+            _props[i - _staticCount][at] = _mapping[i - _staticCount][Math.Clamp(properties[i], -PropertyRange, PropertyRange) + PropertyRange];
         }
 
         if (_keys is not null)
@@ -153,56 +148,124 @@ internal sealed class JxlTreeLearner
             int k = 0;
             for (int i = 0; i < _predictors.Length; i++)
             {
-                key[k++] = _tokens[i][a];
+                key[k++] = _tokens[i][at];
             }
 
             for (int i = 0; i < _staticCount; i++)
             {
-                key[k++] = (byte)_static[i][a];
-                key[k++] = (byte)(_static[i][a] >> 8);
+                key[k++] = (byte)_static[i][at];
+                key[k++] = (byte)(_static[i][at] >> 8);
             }
 
             for (int i = 0; i < _props.Length; i++)
             {
-                key[k++] = _props[i][a];
+                key[k++] = _props[i][at];
             }
 
-            _keys[a] = MemoryMarshal.Read<UInt128>(key);
-        }
-
-        SampleCount++;
-        int mask = _table.Length - 1;
-        int slot = Hash(a) & mask;
-        while (true)
-        {
-            int e = _table[slot];
-            if (e == -1)
-            {
-                break;
-            }
-
-            if (e >= 0 && Same(a, e))
-            {
-                // A duplicate: counted on the sample kept, which leaves the table once its count saturates.
-                if (++_counts[e] == ushort.MaxValue)
-                {
-                    _table[slot] = -2;
-                }
-
-                return;
-            }
-
-            slot = (slot + 1) & mask;
-        }
-
-        _table[slot] = a;
-        _counts[a] = 1;
-        _n++;
-        if (_n * 2 > _table.Length)
-        {
-            Rehash(_table.Length * 2);
+            _keys[at] = MemoryMarshal.Read<UInt128>(key);
         }
     }
+
+    /// <summary>
+    /// Keeps the first <paramref name="count"/> samples stored by <see cref="Set"/> as adding them one by one would: equal
+    /// samples once, with a count, in order of first use, and a sample whose count saturates left alone so the next equal one
+    /// starts a new count. Equal samples hash alike, so each slice of the hash range is deduplicated on a thread of its own, in
+    /// sample order, which decides the same on any number of threads; the samples kept are then moved together in order.
+    /// </summary>
+    internal void AddAll(int count, ParallelOptions parallel)
+    {
+        SampleCount += count;
+        int[] hashes = new int[count];
+        Parallel.For(0, (count + HashBlock - 1) / HashBlock, parallel, blk =>
+        {
+            for (int i = blk * HashBlock; i < Math.Min(count, (blk + 1) * HashBlock); i++)
+            {
+                hashes[i] = Hash(i);
+            }
+        });
+
+        int threads = parallel.MaxDegreeOfParallelism > 0 ? parallel.MaxDegreeOfParallelism : Environment.ProcessorCount;
+        int shards = Math.Clamp(count / MinShard, 1, threads);
+        Parallel.For(0, shards, parallel, shard =>
+        {
+            int members = 0;
+            for (int i = 0; i < count; i++)
+            {
+                members += Shard(hashes[i], shards) == shard ? 1 : 0;
+            }
+
+            int[] table = new int[BitOperations.RoundUpToPowerOf2((uint)Math.Max(members, 1) * 2)];
+            Array.Fill(table, -1);
+            int mask = table.Length - 1;
+            for (int i = 0; i < count; i++)
+            {
+                if (Shard(hashes[i], shards) != shard)
+                {
+                    continue;
+                }
+
+                int slot = hashes[i] & mask;
+                bool duplicate = false;
+                while (true)
+                {
+                    int e = table[slot];
+                    if (e == -1)
+                    {
+                        break;
+                    }
+
+                    if (e >= 0 && Same(i, e))
+                    {
+                        // A duplicate: counted on the sample kept, which leaves the table once its count saturates.
+                        if (++_counts[e] == ushort.MaxValue)
+                        {
+                            table[slot] = -2;
+                        }
+
+                        duplicate = true;
+                        break;
+                    }
+
+                    slot = (slot + 1) & mask;
+                }
+
+                if (!duplicate)
+                {
+                    table[slot] = i;
+                    _counts[i] = 1;
+                }
+            }
+        });
+
+        // The samples kept, moved together in order, each array on a thread of its own and the counts last: each place written
+        // is at or before the one read, and duplicates have no count.
+        List<Action> columns = [];
+        foreach (byte[] column in _tokens.Concat(_nbits).Concat(_props))
+        {
+            columns.Add(() => Compact(column, _counts, count));
+        }
+
+        foreach (int[] column in _static)
+        {
+            columns.Add(() => Compact(column, _counts, count));
+        }
+
+        if (_keys is not null)
+        {
+            columns.Add(() => Compact(_keys, _counts, count));
+        }
+
+        Parallel.For(0, columns.Count, parallel, c => columns[c]());
+        _n = Compact(_counts, _counts, count);
+
+    }
+
+    // Samples hashed per task, and the fewest samples to a slice of the hash range.
+    private const int HashBlock = 1 << 14;
+    private const int MinShard = 1 << 15;
+
+    // The slice of the hash range a hash falls in (by its high bits; the table slot takes the low ones).
+    private static int Shard(int hash, int shards) => (int)(((ulong)(uint)hash << 1) * (ulong)shards >> 32);
 
     /// <summary>
     /// Learns the tree: a leaf with the first predictor, split greedily while a split saves more than
@@ -211,7 +274,6 @@ internal sealed class JxlTreeLearner
     internal List<JxlTreeNode> Learn(float threshold, float fastDecodeMultiplier, int parallelism)
     {
         List<JxlTreeNode> tree = [JxlTreeNode.Leaf(_predictors[0])];
-        _table = [];
         if (_keys is not null)
         {
             ArrayPool<UInt128>.Shared.Return(_keys);
@@ -409,55 +471,19 @@ internal sealed class JxlTreeLearner
         }
     }
 
-    private void Grow()
+    // Moves the kept samples' values of one array (those with a count) to the front, in order, and gives how many there are.
+    private static int Compact<T>(T[] column, ushort[] counts, int count)
     {
-        int size = _counts.Length * 2;
-        for (int i = 0; i < _tokens.Length; i++)
+        int n = 0;
+        for (int i = 0; i < count; i++)
         {
-            Array.Resize(ref _tokens[i], size);
-            Array.Resize(ref _nbits[i], size);
-        }
-
-        for (int i = 0; i < _static.Length; i++)
-        {
-            Array.Resize(ref _static[i], size);
-        }
-
-        for (int i = 0; i < _props.Length; i++)
-        {
-            Array.Resize(ref _props[i], size);
-        }
-
-        Array.Resize(ref _counts, size);
-        if (_keys is not null)
-        {
-            UInt128[] keys = ArrayPool<UInt128>.Shared.Rent(size);
-            _keys.AsSpan(0, _n).CopyTo(keys);
-            ArrayPool<UInt128>.Shared.Return(_keys);
-            _keys = keys;
-        }
-    }
-
-    private void Rehash(long size)
-    {
-        _table = new int[size];
-        Array.Fill(_table, -1);
-        int mask = _table.Length - 1;
-        for (int a = 0; a < _n; a++)
-        {
-            if (_counts[a] == ushort.MaxValue)
+            if (counts[i] != 0)
             {
-                continue;
+                column[n++] = column[i];
             }
-
-            int slot = Hash(a) & mask;
-            while (_table[slot] != -1)
-            {
-                slot = (slot + 1) & mask;
-            }
-
-            _table[slot] = a;
         }
+
+        return n;
     }
 
     private int Hash(int a)

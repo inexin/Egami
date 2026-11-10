@@ -1,3 +1,5 @@
+using System.Buffers;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -226,7 +228,7 @@ internal sealed class JxlModularEncoder
             widths[st] = Math.Max(widths[st], _streams[st].Channels[ch].Width);
         }
 
-        JxlHistogramParams p = JxlHistogramParams.ForModular(_effort);
+        JxlHistogramParams p = JxlHistogramParams.ForModular(_effort) with { Parallel = _parallel };
         JxlBitWriter global = new();
         global.WriteBool(_lfDequant is null);
         foreach (float m in _lfDequant ?? [])
@@ -593,9 +595,10 @@ internal sealed class JxlModularEncoder
             TryPalettes(gi, channelColors);
         }
 
+
         if (_effort <= 4 && _color && gi.Channels.Count - gi.Meta >= 3 && maxBitDepth + 1 < 32)
         {
-            ForwardRct(gi, gi.Meta, 6);
+            ForwardRct(gi, gi.Meta, 6, _parallel);
         }
 
         for (int i = 0; i < _streams.Length; i++)
@@ -616,6 +619,7 @@ internal sealed class JxlModularEncoder
             {
                 PrepareLfGroup(gi, lf, prefixBefore);
             }
+
 
         }
 
@@ -665,7 +669,7 @@ internal sealed class JxlModularEncoder
             widths[st] = Math.Max(widths[st], _streams[st].Channels[ch].Width);
         }
 
-        JxlHistogramParams p = JxlHistogramParams.ForModular(_effort);
+        JxlHistogramParams p = JxlHistogramParams.ForModular(_effort) with { Parallel = _parallel };
 
         // LF global: the LF dequantization, the global tree and the data distributions, then the global stream.
         JxlBitWriter global = new();
@@ -1100,7 +1104,7 @@ internal sealed class JxlModularEncoder
 
     private static JxlChannel Wrap(JxlChannel shape, int[] data) => new(shape.Width, shape.Height, shape.HShift, shape.VShift) { Data = data };
 
-    private static void ForwardRct(JxlEncodeImage gi, int begin, int type)
+    private static void ForwardRct(JxlEncodeImage gi, int begin, int type, ParallelOptions? parallel = null)
     {
         JxlChannel[] input = [gi.Channels[begin], gi.Channels[begin + 1], gi.Channels[begin + 2]];
         if (!input[0].SameShape(input[1]) || !input[0].SameShape(input[2]))
@@ -1108,7 +1112,7 @@ internal sealed class JxlModularEncoder
             return;
         }
 
-        (int[] a, int[] b, int[] c) = ApplyRct(input, type);
+        (int[] a, int[] b, int[] c) = ApplyRct(input, type, parallel);
         JxlChannel shape = input[0];
         gi.Channels[begin] = new JxlChannel(shape.Width, shape.Height, shape.HShift, shape.VShift) { Data = a };
         gi.Channels[begin + 1] = new JxlChannel(shape.Width, shape.Height, shape.HShift, shape.VShift) { Data = b };
@@ -1124,13 +1128,13 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>The forward RCT (enc_rct.cc): a channel order, then one of six lifting steps or YCoCg.</summary>
-    private static (int[] A, int[] B, int[] C) ApplyRct(JxlChannel[] input, int type) => ApplyRct(input, type, false)!;
+    private static (int[] A, int[] B, int[] C) ApplyRct(JxlChannel[] input, int type, ParallelOptions? parallel = null) => ApplyRct(input, type, false, parallel)!;
 
     /// <summary>
     /// The forward RCT; with <paramref name="changedOnly"/>, an output that is only its input moved comes back
     /// <see langword="null"/>.
     /// </summary>
-    private static (int[]? A, int[]? B, int[]? C) ApplyRct(JxlChannel[] input, int type, bool changedOnly)
+    private static (int[]? A, int[]? B, int[]? C) ApplyRct(JxlChannel[] input, int type, bool changedOnly, ParallelOptions? parallel = null)
     {
         int transform = type % 7;
         (int i0, int i1, int i2) = RctInputs(type);
@@ -1168,7 +1172,22 @@ internal sealed class JxlModularEncoder
         int[] o0 = new int[n];
         int[] o1 = new int[n];
         int[] o2 = new int[n];
-        for (int i = 0; i < n; i++)
+        int blocks = Blocks(n, parallel);
+        if (blocks > 1)
+        {
+            Parallel.For(0, blocks, parallel!, blk => RctBlock(p0, p1, p2, o0, o1, o2, (int)((long)n * blk / blocks), (int)((long)n * (blk + 1) / blocks), transform, second, third));
+        }
+        else
+        {
+            RctBlock(p0, p1, p2, o0, o1, o2, 0, n, transform, second, third);
+        }
+
+        return (o0, o1, o2);
+    }
+
+    private static void RctBlock(int[] p0, int[] p1, int[] p2, int[] o0, int[] o1, int[] o2, int start, int end, int transform, int second, bool third)
+    {
+        for (int i = start; i < end; i++)
         {
             unchecked
             {
@@ -1200,12 +1219,10 @@ internal sealed class JxlModularEncoder
                 o2[i] = t;
             }
         }
-
-        return (o0, o1, o2);
     }
 
     /// <summary>libjxl's EstimateCost: gradient residuals in 18 contexts by the neighbours' spread, entropy plus raw bits.</summary>
-    private static float EstimateCost(JxlEncodeImage img) => Combine([.. img.Channels.Select(ChannelCost)]);
+    private static float EstimateCost(JxlEncodeImage img, ParallelOptions? parallel = null) => Combine([.. img.Channels.Select(ch => ChannelCost(ch, parallel))]);
 
     /// <summary>Adds up channel costs as EstimateCost does: whole bits, fractions and raw bits apart, in channel order.</summary>
     private static float Combine((long Histo, float Frac, long Extra)[] costs)
@@ -1224,12 +1241,71 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>One channel's part of <see cref="EstimateCost"/>.</summary>
-    private static (long Histo, float Frac, long Extra) ChannelCost(JxlChannel ch)
+    private static (long Histo, float Frac, long Extra) ChannelCost(JxlChannel ch) => ChannelCost(ch, null);
+
+    /// <summary>
+    /// One channel's part of <see cref="EstimateCost"/>; with <paramref name="parallel"/>, a large channel's rows are counted in
+    /// blocks on all threads and the counts added up after, which gives the same counts.
+    /// </summary>
+    private static (long Histo, float Frac, long Extra) ChannelCost(JxlChannel ch, ParallelOptions? parallel)
     {
-        // The context is the number of cutoffs (0, 1, 3, 5, ..., 500) the spread is below, looked up for spreads up to 500;
-        // entry 501 stands for every larger spread.
+        const int Tokens = 256;
+        const int Size = 18 * Tokens;
+        int w = ch.Width;
+        int h = ch.Height;
+        int threads = parallel is null ? 1 : parallel.MaxDegreeOfParallelism > 0 ? parallel.MaxDegreeOfParallelism : Environment.ProcessorCount;
+        int blocks = threads > 1 && w > 1 && (long)w * h >= 1 << 18 ? Math.Min(2 * threads, h / 16) : 1;
+        long extra = 0;
+        int[] histo = ArrayPool<int>.Shared.Rent(Size);
+        Array.Clear(histo, 0, Size);
+        if (blocks <= 1)
+        {
+            extra = CountRows(ch.Data, w, 0, h, histo);
+        }
+        else
+        {
+            int[][] parts = new int[blocks][];
+            long[] extras = new long[blocks];
+            Parallel.For(0, blocks, parallel!, b =>
+            {
+                int[] part = parts[b] = ArrayPool<int>.Shared.Rent(Size);
+                Array.Clear(part, 0, Size);
+                extras[b] = CountRows(ch.Data, w, (int)((long)h * b / blocks), (int)((long)h * (b + 1) / blocks), part);
+            });
+            for (int b = 0; b < blocks; b++)
+            {
+                for (int i = 0; i < Size; i++)
+                {
+                    histo[i] += parts[b][i];
+                }
+
+                extra += extras[b];
+                ArrayPool<int>.Shared.Return(parts[b]);
+            }
+        }
+
+        long histoCost = 0;
+        float frac = 0;
+        for (int c = 0; c < 18; c++)
+        {
+            float f = Entropy(histo.AsSpan(c * Tokens, Tokens));
+            long i = (long)f;
+            histoCost += i;
+            frac += f - i;
+        }
+
+        ArrayPool<int>.Shared.Return(histo);
+        return (histoCost, frac, extra);
+    }
+
+    // The context of a spread: the number of cutoffs (0, 1, 3, 5, ..., 500) it is below, for spreads up to 500; entry 501 stands
+    // for every larger spread.
+    private static readonly byte[] SpreadContext = MakeSpreadContext();
+
+    private static byte[] MakeSpreadContext()
+    {
         ReadOnlySpan<uint> cutoffs = [0, 1, 3, 5, 7, 11, 15, 23, 31, 47, 63, 95, 127, 191, 255, 392, 500];
-        Span<byte> contextOf = stackalloc byte[502];
+        byte[] contextOf = new byte[502];
         for (int v = 0; v <= 500; v++)
         {
             int ctx = 0;
@@ -1241,69 +1317,59 @@ internal sealed class JxlModularEncoder
             contextOf[v] = (byte)ctx;
         }
 
-        contextOf[501] = 0;
+        return contextOf;
+    }
 
+    /// <summary>Counts rows <paramref name="y0"/> to <paramref name="y1"/> of a channel into the histograms and gives their raw bits.</summary>
+    private static long CountRows(int[] d, int w, int y0, int y1, int[] histo)
+    {
         const int Tokens = 256;
-        long histoCost = 0;
-        float frac = 0;
+        ReadOnlySpan<byte> contextOf = SpreadContext;
         long extra = 0;
-        int[] histo = new int[18 * Tokens];
+        for (int y = y0; y < y1; y++)
         {
-            int w = ch.Width;
-            int[] d = ch.Data;
-            for (int y = 0; y < ch.Height; y++)
+            int row = y * w;
+            if (y > 0 && w > 1)
             {
-                int row = y * w;
-                if (y > 0 && w > 1)
-                {
-                    extra += CostRow(d, row, w, contextOf, histo);
-                    continue;
-                }
-
-                for (int x = 0; x < w; x++)
-                {
-                    int at = row + x;
-                    long left = x > 0 ? d[at - 1] : y > 0 ? d[at - w] : 0;
-                    long top = y > 0 ? d[at - w] : left;
-                    long topleft = x > 0 && y > 0 ? d[at - 1 - w] : left;
-                    long max = Math.Max(left, Math.Max(top, topleft));
-                    long min = Math.Min(left, Math.Min(top, topleft));
-                    ulong spread = (ulong)(max - min);
-                    int ctx = spread <= 500 ? contextOf[(int)spread] : 0;
-                    long grad = Math.Clamp(top + left - topleft, min, max);
-                    uint v = JxlTreeLearner.PackSigned(unchecked(d[at] - (int)grad));
-
-                    // The 4, 2, 0 hybrid integer token and raw bits.
-                    uint tok;
-                    if (v < 16)
-                    {
-                        tok = v;
-                    }
-                    else
-                    {
-                        int n = System.Numerics.BitOperations.Log2(v);
-                        tok = (uint)(16 + ((n - 4) << 2) + ((v - (1u << n)) >> (n - 2)));
-                        extra += n - 2;
-                    }
-
-                    histo[(ctx * Tokens) + tok]++;
-                }
+                extra += CostRow(d, row, w, contextOf, histo);
+                continue;
             }
 
-            for (int c = 0; c < 18; c++)
+            for (int x = 0; x < w; x++)
             {
-                float f = Entropy(histo.AsSpan(c * Tokens, Tokens));
-                long i = (long)f;
-                histoCost += i;
-                frac += f - i;
+                int at = row + x;
+                long left = x > 0 ? d[at - 1] : y > 0 ? d[at - w] : 0;
+                long top = y > 0 ? d[at - w] : left;
+                long topleft = x > 0 && y > 0 ? d[at - 1 - w] : left;
+                long max = Math.Max(left, Math.Max(top, topleft));
+                long min = Math.Min(left, Math.Min(top, topleft));
+                ulong spread = (ulong)(max - min);
+                int ctx = spread <= 500 ? contextOf[(int)spread] : 0;
+                long grad = Math.Clamp(top + left - topleft, min, max);
+                uint v = JxlTreeLearner.PackSigned(unchecked(d[at] - (int)grad));
+
+                // The 4, 2, 0 hybrid integer token and raw bits.
+                uint tok;
+                if (v < 16)
+                {
+                    tok = v;
+                }
+                else
+                {
+                    int n = System.Numerics.BitOperations.Log2(v);
+                    tok = (uint)(16 + ((n - 4) << 2) + ((v - (1u << n)) >> (n - 2)));
+                    extra += n - 2;
+                }
+
+                histo[(ctx * Tokens) + tok]++;
             }
         }
 
-        return (histoCost, frac, extra);
+        return extra;
     }
 
     /// <summary>
-    /// Counts a row below the first into <see cref="ChannelCost"/>'s histograms, without branches the data would mispredict,
+    /// Counts a row below the first into <see cref="ChannelCost(JxlChannel, ParallelOptions?)"/>'s histograms, without branches the data would mispredict,
     /// and gives back its raw bits.
     /// </summary>
     private static long CostRow(int[] data, int row, int width, ReadOnlySpan<byte> contextOf, int[] histo)
@@ -1375,7 +1441,7 @@ internal sealed class JxlModularEncoder
         }
 
         float pixels = (float)gi.Channels[gi.Meta].Width * gi.Channels[gi.Meta].Height;
-        float costBefore = _effort >= 7 ? EstimateCost(gi) : pixels * 0.2f * gi.BitDepth * nbChans;
+        float costBefore = _effort >= 7 ? EstimateCost(gi, _parallel) : pixels * 0.2f * gi.BitDepth * nbChans;
         int maxColors = Math.Min((int)((costBefore * 0.0005f) + (pixels / 128) + 128), 1024);
         bool did = false;
         if (nbChans > 1)
@@ -1398,11 +1464,48 @@ internal sealed class JxlModularEncoder
         for (int i = start; i < remaining + start; i++)
         {
             JxlChannel ch = gi.Channels[gi.Meta + i];
-            (int min, int max) = MinMax(ch.Data);
+            (int min, int max) = MinMax(ch.Data, _parallel);
             long colors = (long)max - min + 1;
             int limit = (int)Math.Min(pixels / 16, channelColorsPercent / 100.0 * colors);
             Palette(gi, gi.Meta + i, 1, limit, 0);
         }
+    }
+
+    /// <summary>The smallest and largest values; a large array in blocks on all threads.</summary>
+    private static (int Min, int Max) MinMax(int[] data, ParallelOptions? parallel)
+    {
+        int blocks = Blocks(data.Length, parallel);
+        if (blocks <= 1)
+        {
+            return MinMax(data);
+        }
+
+        (int Min, int Max)[] parts = new (int, int)[blocks];
+        Parallel.For(0, blocks, parallel!, b =>
+        {
+            int start = (int)((long)data.Length * b / blocks), end = (int)((long)data.Length * (b + 1) / blocks);
+            int min = int.MaxValue, max = int.MinValue;
+            foreach (int v in data.AsSpan(start, end - start))
+            {
+                min = Math.Min(min, v);
+                max = Math.Max(max, v);
+            }
+
+            parts[b] = (min, max);
+        });
+        return (parts.Min(m => m.Min), parts.Max(m => m.Max));
+    }
+
+    // How many blocks to split n samples into for the threads of parallel: one when it is null or n is small.
+    private static int Blocks(int n, ParallelOptions? parallel)
+    {
+        if (parallel is null || n < 1 << 17)
+        {
+            return 1;
+        }
+
+        int threads = parallel.MaxDegreeOfParallelism > 0 ? parallel.MaxDegreeOfParallelism : Environment.ProcessorCount;
+        return Math.Max(1, Math.Min(2 * threads, n >> 16));
     }
 
     private static (int Min, int Max) MinMax(int[] data)
@@ -1450,13 +1553,13 @@ internal sealed class JxlModularEncoder
 
         List<JxlChannel> before = [.. gi.Channels];
         int metaBefore = gi.Meta;
-        bool done = count == 1 ? ChannelPalette(gi, begin, colors) : ColorPalette(gi, begin, count, colors);
+        bool done = count == 1 ? ChannelPalette(gi, begin, colors, _parallel) : PackedColorPalette(gi, begin, count, colors, _parallel) ?? ColorPalette(gi, begin, count, colors);
         if (!done)
         {
             return false;
         }
 
-        if (_effort >= 8 && EstimateCost(gi) > costBefore)
+        if (_effort >= 8 && EstimateCost(gi, _parallel) > costBefore)
         {
             gi.Channels.Clear();
             gi.Channels.AddRange(before);
@@ -1469,24 +1572,77 @@ internal sealed class JxlModularEncoder
     }
 
     /// <summary>A one-channel palette: the values that occur, in increasing order, and each sample's index among them.</summary>
-    private static bool ChannelPalette(JxlEncodeImage gi, int begin, int colors)
+    private static bool ChannelPalette(JxlEncodeImage gi, int begin, int colors, ParallelOptions? parallel)
     {
         JxlChannel ch = gi.Channels[begin];
-        (int min, int max) = MinMax(ch.Data);
+        (int min, int max) = MinMax(ch.Data, parallel);
         long range = (long)max - min + 1;
         SortedSet<int> values = [];
+        int blocks = Blocks(ch.Data.Length, parallel);
         if (range <= 1 << 16)
         {
             bool[] seen = new bool[range];
-            int found = 0;
-            foreach (int v in ch.Data)
+            if (blocks > 1)
             {
-                if (!seen[v - min])
+                // Each block marks the values it holds; one with too many has the image's answer, and so has the union.
+                bool[][] parts = new bool[blocks][];
+                int tooMany = 0;
+                Parallel.For(0, blocks, parallel!, b =>
                 {
-                    seen[v - min] = true;
-                    if (++found > colors)
+                    bool[] mine = parts[b] = ArrayPool<bool>.Shared.Rent((int)range);
+                    Array.Clear(mine, 0, (int)range);
+                    int start = (int)((long)ch.Data.Length * b / blocks), end = (int)((long)ch.Data.Length * (b + 1) / blocks);
+                    int found = 0;
+                    for (int i = start; i < end; i++)
                     {
-                        return false;
+                        ref bool marked = ref mine[ch.Data[i] - min];
+                        if (!marked)
+                        {
+                            marked = true;
+                            if (++found > colors)
+                            {
+                                Volatile.Write(ref tooMany, 1);
+                                return;
+                            }
+                        }
+                    }
+                });
+                int union = 0;
+                for (int i = 0; i < range; i++)
+                {
+                    foreach (bool[] part in parts)
+                    {
+                        if (part[i])
+                        {
+                            seen[i] = true;
+                            union++;
+                            break;
+                        }
+                    }
+                }
+
+                foreach (bool[] part in parts)
+                {
+                    ArrayPool<bool>.Shared.Return(part);
+                }
+
+                if (tooMany != 0 || union > colors)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                int found = 0;
+                foreach (int v in ch.Data)
+                {
+                    if (!seen[v - min])
+                    {
+                        seen[v - min] = true;
+                        if (++found > colors)
+                        {
+                            return false;
+                        }
                     }
                 }
             }
@@ -1511,16 +1667,46 @@ internal sealed class JxlModularEncoder
         }
 
         int[] palette = [.. values];
-        Dictionary<int, int> index = [];
-        for (int i = 0; i < palette.Length; i++)
-        {
-            index[palette[i]] = i;
-        }
-
         int[] indices = new int[ch.Data.Length];
-        for (int i = 0; i < indices.Length; i++)
+        if (range <= 1 << 16)
         {
-            indices[i] = index[ch.Data[i]];
+            int[] lookup = new int[range];
+            for (int i = 0; i < palette.Length; i++)
+            {
+                lookup[palette[i] - min] = i;
+            }
+
+            if (blocks > 1)
+            {
+                Parallel.For(0, blocks, parallel!, b =>
+                {
+                    int start = (int)((long)indices.Length * b / blocks), end = (int)((long)indices.Length * (b + 1) / blocks);
+                    for (int i = start; i < end; i++)
+                    {
+                        indices[i] = lookup[ch.Data[i] - min];
+                    }
+                });
+            }
+            else
+            {
+                for (int i = 0; i < indices.Length; i++)
+                {
+                    indices[i] = lookup[ch.Data[i] - min];
+                }
+            }
+        }
+        else
+        {
+            Dictionary<int, int> index = [];
+            for (int i = 0; i < palette.Length; i++)
+            {
+                index[palette[i]] = i;
+            }
+
+            for (int i = 0; i < indices.Length; i++)
+            {
+                indices[i] = index[ch.Data[i]];
+            }
         }
 
         JxlChannel pch = new(palette.Length, 1, -1, -1) { Data = palette };
@@ -1643,6 +1829,260 @@ internal sealed class JxlModularEncoder
 
             indices[i] = inverse[new ColorKey(scratch)];
         }
+
+        JxlChannel pch = new(nbColors, count, -1, -1) { Data = palette };
+        gi.Channels.RemoveRange(begin + 1, count - 1);
+        gi.Channels[begin] = new JxlChannel(first.Width, first.Height, first.HShift, first.VShift) { Data = indices };
+        gi.Channels.Insert(0, pch);
+        gi.Meta++;
+        gi.Transforms.Add(new JxlPalette(begin, count, nbColors, 0, 0, new JxlWpParams()));
+        return true;
+    }
+
+    /// <summary>
+    /// <see cref="ColorPalette"/> with each color packed into one <see langword="long"/> and the image scanned in blocks on all
+    /// threads, the blocks' colors then joined in block order, which is image order; <see langword="null"/> when the colors don't
+    /// fit in 63 bits.
+    /// </summary>
+    private static bool? PackedColorPalette(JxlEncodeImage gi, int begin, int count, int colors, ParallelOptions parallel)
+    {
+        JxlChannel first = gi.Channels[begin];
+        int n = first.Data.Length;
+        int[][] planes = [.. Enumerable.Range(0, count).Select(c => gi.Channels[begin + c].Data)];
+        int[] mins = new int[count];
+        int[] shifts = new int[count + 1];
+        for (int c = 0; c < count; c++)
+        {
+            (int min, int max) = MinMax(planes[c]);
+            mins[c] = min;
+            long range = (long)max - min;
+            shifts[c + 1] = shifts[c] + (range == 0 ? 0 : 64 - BitOperations.LeadingZeroCount((ulong)range));
+            if (shifts[c + 1] > 63)
+            {
+                return null;
+            }
+        }
+
+        // Whether a color lies in the image's ranges (no other can occur in it), and its key.
+        bool Fits(ReadOnlySpan<int> color)
+        {
+            for (int c = 0; c < count; c++)
+            {
+                long v = (long)color[c] - mins[c];
+                if (v < 0 || v >= 1L << (shifts[c + 1] - shifts[c]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        long Pack(ReadOnlySpan<int> color)
+        {
+            long key = 0;
+            for (int c = 0; c < count; c++)
+            {
+                key |= ((long)color[c] - mins[c]) << shifts[c];
+            }
+
+            return key;
+        }
+
+        // The implicit colors, as the decoder makes them.
+        HashSet<long> implicitColors = [];
+        List<int[]> implicitList = [];
+        for (int k = 0; k < 64 + 125; k++)
+        {
+            int[] color = [.. Enumerable.Range(0, count).Select(c => ImplicitColor(k, c, gi.BitDepth))];
+            if (Fits(color))
+            {
+                implicitColors.Add(Pack(color));
+            }
+
+            implicitList.Add(color);
+        }
+
+        // Each block's colors in order of first use and how often each occurs; a block with too many explicit colors ends them all.
+        // The first block goes alone, so that an image with too many colors ends there, as it would on one thread.
+        const int MinBlock = 1 << 16;
+        int head = Math.Min(n, MinBlock);
+        int rest = Math.Max(0, Math.Min(Math.Max(1, parallel.MaxDegreeOfParallelism) * 2, (n - head) / MinBlock));
+        if (rest == 0 && head < n)
+        {
+            rest = 1;
+        }
+
+        int blocks = 1 + rest;
+        int[] bounds = new int[blocks + 1];
+        bounds[1] = head;
+        for (int b = 1; b <= rest; b++)
+        {
+            bounds[b + 1] = head + (int)((long)(n - head) * b / rest);
+        }
+
+        List<long>[] orders = new List<long>[blocks];
+        Dictionary<long, int>[] counts = new Dictionary<long, int>[blocks];
+        int tooMany = 0;
+        void ScanBlock(int b)
+        {
+            int start = bounds[b], end = bounds[b + 1];
+            List<long> order = [];
+            Dictionary<long, int> freq = [];
+            int explicitColors = 0;
+            for (int i = start; i < end; i++)
+            {
+                long key = 0;
+                for (int c = 0; c < count; c++)
+                {
+                    key |= ((long)planes[c][i] - mins[c]) << shifts[c];
+                }
+
+                ref int f = ref CollectionsMarshal.GetValueRefOrAddDefault(freq, key, out bool exists);
+                f++;
+                if (!exists)
+                {
+                    order.Add(key);
+                    if (!implicitColors.Contains(key) && ++explicitColors > colors)
+                    {
+                        Volatile.Write(ref tooMany, 1);
+                        return;
+                    }
+
+                    if ((order.Count & 255) == 0 && Volatile.Read(ref tooMany) != 0)
+                    {
+                        return;
+                    }
+                }
+            }
+
+            orders[b] = order;
+            counts[b] = freq;
+        }
+
+        ScanBlock(0);
+        if (tooMany == 0 && rest > 0)
+        {
+            Parallel.For(1, blocks, parallel, ScanBlock);
+        }
+
+        if (tooMany != 0)
+        {
+            return false;
+        }
+
+        List<long> imageOrder = [];
+        Dictionary<long, int> frequency = [];
+        int implicitUsed = 0;
+        for (int b = 0; b < blocks; b++)
+        {
+            foreach (long key in orders[b])
+            {
+                ref int f = ref CollectionsMarshal.GetValueRefOrAddDefault(frequency, key, out bool exists);
+                f += counts[b][key];
+                if (exists)
+                {
+                    continue;
+                }
+
+                if (implicitColors.Contains(key))
+                {
+                    implicitUsed++;
+                }
+                else
+                {
+                    imageOrder.Add(key);
+                    if (imageOrder.Count > colors)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        int nbColors = imageOrder.Count;
+        if (nbColors + implicitUsed == 1)
+        {
+            return false;
+        }
+
+        int[] Unpack(long key)
+        {
+            int[] color = new int[count];
+            for (int c = 0; c < count; c++)
+            {
+                color[c] = (int)(((key >> shifts[c]) & ((1L << (shifts[c + 1] - shifts[c])) - 1)) + mins[c]);
+            }
+
+            return color;
+        }
+
+        int Frequency(int[] color) => Fits(color) ? frequency.GetValueOrDefault(Pack(color)) : 0;
+
+        List<int[]> ordered = [.. imageOrder.Select(Unpack)];
+
+        // Frequent implicit colors still join the explicit palette.
+        foreach (int[] color in implicitList)
+        {
+            if (Frequency(color) > 10)
+            {
+                nbColors++;
+                ordered.Add(color);
+            }
+        }
+
+        if (count >= 3)
+        {
+            const float FreqThreshold = 4;
+            float Luma(int[] p)
+            {
+                float y = (0.299f * p[0]) + (0.587f * p[1]) + (0.114f * p[2]) + 0.1f;
+                if (p.Length > 3)
+                {
+                    y *= 1f + p[3];
+                }
+
+                return Frequency(p) > FreqThreshold ? -y : y;
+            }
+
+            ordered = [.. ordered.OrderBy(Luma)];
+        }
+
+        // Implicit color k is index nbColors + k (the last k of a repeated color), unless it is explicit.
+        Dictionary<long, int> inverse = [];
+        for (int k = 0; k < implicitList.Count; k++)
+        {
+            if (Fits(implicitList[k]))
+            {
+                inverse[Pack(implicitList[k])] = nbColors + k;
+            }
+        }
+
+        int[] palette = new int[nbColors * count];
+        for (int k = 0; k < ordered.Count; k++)
+        {
+            for (int c = 0; c < count; c++)
+            {
+                palette[(c * nbColors) + k] = ordered[k][c];
+            }
+
+            inverse[Pack(ordered[k])] = k;
+        }
+
+        int[] indices = new int[n];
+        Parallel.For(0, blocks, parallel, b =>
+        {
+            for (int i = bounds[b]; i < bounds[b + 1]; i++)
+            {
+                long key = 0;
+                for (int c = 0; c < count; c++)
+                {
+                    key |= ((long)planes[c][i] - mins[c]) << shifts[c];
+                }
+
+                indices[i] = inverse[key];
+            }
+        });
 
         JxlChannel pch = new(nbColors, count, -1, -1) { Data = palette };
         gi.Channels.RemoveRange(begin + 1, count - 1);
@@ -1793,26 +2233,22 @@ internal sealed class JxlModularEncoder
         // The learner sized for every sample, so it never grows.
         JxlTreeLearner learner = new(predictors, properties, Math.Max(1 << 10, buffers.Sum(b => b.Count)));
         learner.Quantize(groupPixels, channelPixels, pixelSamples, diffSamples, maxValues);
-        Span<int> props = stackalloc int[16];
-        Span<long> preds = stackalloc long[14];
-        foreach (SampleBuffer b in buffers)
+        int[] at = new int[buffers.Length + 1];
+        for (int u = 0; u < buffers.Length; u++)
         {
-            totalPixels += b.Pixels;
+            totalPixels += buffers[u].Pixels;
+            at[u + 1] = at[u] + buffers[u].Count;
+        }
+
+        Parallel.For(0, buffers.Length, parallel, u =>
+        {
+            SampleBuffer b = buffers[u];
             for (int i = 0; i < b.Count; i++)
             {
-                for (int k = 0; k < properties.Length; k++)
-                {
-                    props[properties[k]] = b.Properties[(i * properties.Length) + k];
-                }
-
-                for (int k = 0; k < predictors.Length; k++)
-                {
-                    preds[predictors[k]] = b.Predictions[(i * predictors.Length) + k];
-                }
-
-                learner.Add(b.Values[i], props, preds);
+                learner.Set(at[u] + i, b.Values[i], b.Properties.AsSpan(i * properties.Length, properties.Length), b.Predictions.AsSpan(i * predictors.Length, predictors.Length));
             }
-        }
+        });
+        learner.AddAll(at[^1], parallel);
 
         if (learner.SampleCount == 0)
         {
