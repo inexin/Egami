@@ -173,11 +173,45 @@ VideoWriterOptions baseline = options with { H264 = new H264EncoderOptions { Pro
 </h2>
 
 
+  <a id="Egami_Video_Codecs_H264EncoderOptions_AdaptiveQuantization_" data-uid="Egami.Video.Codecs.H264EncoderOptions.AdaptiveQuantization*"></a>
+
+  <h3 id="Egami_Video_Codecs_H264EncoderOptions_AdaptiveQuantization" data-uid="Egami.Video.Codecs.H264EncoderOptions.AdaptiveQuantization">
+  AdaptiveQuantization
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/H264EncoderOptions.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether each macroblock's quantizer follows how busy it is (adaptive quantization): detail and texture, where errors
+show less, are coded coarser and flat areas finer, which looks better at the same size. Default on; turn it off to
+measure PSNR, which it lowers.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool AdaptiveQuantization { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Video_Codecs_H264EncoderOptions_AnnexB_" data-uid="Egami.Video.Codecs.H264EncoderOptions.AnnexB*"></a>
 
   <h3 id="Egami_Video_Codecs_H264EncoderOptions_AnnexB" data-uid="Egami.Video.Codecs.H264EncoderOptions.AnnexB">
   AnnexB
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/H264EncoderOptions.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/H264EncoderOptions.cs/#L68"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether packets are Annex B byte streams (start codes, with the parameter sets in every keyframe's packet), as raw

@@ -124030,6 +124030,19 @@ references:
   commentId: T:Egami.Video.Codecs.H264EncoderOptions
   fullName: Egami.Video.Codecs.H264EncoderOptions
   nameWithType: H264EncoderOptions
+- uid: Egami.Video.Codecs.H264EncoderOptions.AdaptiveQuantization
+  name: AdaptiveQuantization
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_AdaptiveQuantization
+  commentId: P:Egami.Video.Codecs.H264EncoderOptions.AdaptiveQuantization
+  fullName: Egami.Video.Codecs.H264EncoderOptions.AdaptiveQuantization
+  nameWithType: H264EncoderOptions.AdaptiveQuantization
+- uid: Egami.Video.Codecs.H264EncoderOptions.AdaptiveQuantization*
+  name: AdaptiveQuantization
+  href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_AdaptiveQuantization_
+  commentId: Overload:Egami.Video.Codecs.H264EncoderOptions.AdaptiveQuantization
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.H264EncoderOptions.AdaptiveQuantization
+  nameWithType: H264EncoderOptions.AdaptiveQuantization
 - uid: Egami.Video.Codecs.H264EncoderOptions.AnnexB
   name: AnnexB
   href: api/Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_AnnexB
