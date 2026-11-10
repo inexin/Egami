@@ -88,6 +88,25 @@ public sealed class EncoderInterTests
         }
     }
 
+    [Theory]
+    [InlineData(true, 2)]
+    [InlineData(true, 6)]
+    [InlineData(false, 2)]
+    public void FastPansAtTheEdgesDecodeToTheReconstruction(bool across, int effort)
+    {
+        // Inner macroblocks find vectors longer than a macroblock at the right or bottom edge may search, so the P_Skip vector
+        // there, predicted from them, points further out than the reference planes reach.
+        VideoEncoderOptions options = new()
+        {
+            Width = 160,
+            Height = 96,
+            Effort = effort,
+            KeyframeInterval = 100,
+            H264 = new H264EncoderOptions { AdaptiveQuantization = false },
+        };
+        Check(options, 10, (w, h, i) => Pan(w, h, i, across));
+    }
+
     [Fact]
     public void ProbeCodesAKeyAndAPFrame()
     {
@@ -179,6 +198,31 @@ public sealed class EncoderInterTests
                 cb[x] = (byte)Math.Clamp((int)Math.Round(128 + (30 * Math.Sin(u * 0.13))), 0, 255);
                 cr[x] = (byte)Math.Clamp((int)Math.Round(128 + (30 * Math.Cos(v * 0.17))), 0, 255);
             }
+        }
+
+        return picture;
+    }
+
+    /// <summary>A smooth grey texture moving 34 samples a frame toward the left or the top.</summary>
+    internal static YuvRaster<byte> Pan(int width, int height, int frame, bool across)
+    {
+        YuvRaster<byte> picture = YuvRaster.Create(width, height, ChromaFormat.Yuv420, YuvColor.Bt601Limited);
+        for (int y = 0; y < height; y++)
+        {
+            Span<byte> row = picture.Y.Row(y);
+            for (int x = 0; x < width; x++)
+            {
+                double u = x + (across ? 34 * frame : 0), v = y + (across ? 0 : 34 * frame);
+                double value = 128 + (35 * Math.Sin((u * 0.061) + (v * 0.023))) + (30 * Math.Sin((u * -0.017) + (v * 0.071) + 1))
+                    + (25 * Math.Sin((u * 0.043) - (v * 0.039) + 2));
+                row[x] = (byte)Math.Clamp((int)Math.Round(value), 0, 255);
+            }
+        }
+
+        for (int y = 0; y < height / 2; y++)
+        {
+            picture.U!.Row(y).Fill(128);
+            picture.V!.Row(y).Fill(128);
         }
 
         return picture;

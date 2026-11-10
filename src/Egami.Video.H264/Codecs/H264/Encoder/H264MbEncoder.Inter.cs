@@ -62,20 +62,26 @@ internal sealed partial class H264MbEncoder
         _round = InterRound;
         int addr = (mbY * _mb.WidthMbs) + mbX;
 
-        // P_Skip: reference 0 and the predicted vector, no residual.
+        // P_Skip: reference 0 and the predicted vector, no residual. The vector comes from the neighbours, which may reach
+        // further than this macroblock may: then P_Skip is not a candidate.
         H264MbCode skip = _skip;
         int skipMv = _syntax.SkipMv();
         ClearInter(skip, H264MbKind.PSkip);
         skip.Mv.AsSpan().Fill(skipMv);
         _syntax.SetBlocks(0, 0, 4, 4, 0, skipMv);
-        _refs[0].Luma(mbX * 16, mbY * 16, 16, 16, skipMv, _ip, 0, 16, true);
-        _refs[0].Chroma(mbX * 8, mbY * 8, 8, 8, skipMv, _ipCb, _ipCr, 0, 8, true);
-        WritePrediction();
-        long skipSse = Sse(_srcY, _y, _lumaAt, _stride, 16, 16) + Sse(_srcCb, _cb, _chromaAt, _cstride, 8, 8) + Sse(_srcCr, _cr, _chromaAt, _cstride, 8, 8);
-        double bestCost = skipSse + (_lambda * Rate(skip) / CabacCost.Bit);
-        H264MbCode best = skip;
+        double bestCost = double.MaxValue;
+        H264MbCode? best = null;
         int bestSlot = 0;
-        SaveMb(0);
+        if (Reachable(0, 0, 4, 4, skipMv))
+        {
+            _refs[0].Luma(mbX * 16, mbY * 16, 16, 16, skipMv, _ip, 0, 16, true);
+            _refs[0].Chroma(mbX * 8, mbY * 8, 8, 8, skipMv, _ipCb, _ipCr, 0, 8, true);
+            WritePrediction();
+            long skipSse = Sse(_srcY, _y, _lumaAt, _stride, 16, 16) + Sse(_srcCb, _cb, _chromaAt, _cstride, 8, 8) + Sse(_srcCr, _cr, _chromaAt, _cstride, 8, 8);
+            bestCost = skipSse + (_lambda * Rate(skip) / CabacCost.Bit);
+            best = skip;
+            SaveMb(0);
+        }
 
         // Motion search: the partitionings worth coding, by SATD and vector bits.
         Span<int> starts = stackalloc int[10];
@@ -136,8 +142,28 @@ internal sealed partial class H264MbEncoder
         }
 
         RestoreMb(bestSlot);
-        Best = best;
+        Best = best!;
         return bestCost;
+    }
+
+    /// <summary>
+    /// The bounds of a w by h block's vector at 4x4 block (bx, by) of the macroblock, in quarter samples: its top-left corner
+    /// within <see cref="H264RefPlanes.Reach"/> of the picture, which the reference planes cover, and the level's vertical range.
+    /// </summary>
+    private (int MinX, int MaxX, int MinY, int MaxY) Bounds(int bx, int by, int w, int h)
+    {
+        int px = (_mbX * 16) + (bx * 4), py = (_mbY * 16) + (by * 4), pw = w * 4, ph = h * 4;
+        int width = _mb.WidthMbs * 16, height = _mb.HeightMbs * 16;
+        return (Math.Max(-H264RefPlanes.Reach - px, -2048), Math.Min(width + H264RefPlanes.Reach - pw - px, 2047),
+            Math.Max(-H264RefPlanes.Reach - py, -(_maxMvY >> 2)), Math.Min(height + H264RefPlanes.Reach - ph - py, (_maxMvY >> 2) - 1));
+    }
+
+    /// <summary>Whether a vector the encoder did not search (a predicted one) keeps the block within <see cref="Bounds"/>.</summary>
+    private bool Reachable(int bx, int by, int w, int h, int mv)
+    {
+        (int minX, int maxX, int minY, int maxY) = Bounds(bx, by, w, h);
+        int x = H264SliceDecoder.MvX(mv), y = H264SliceDecoder.MvY(mv);
+        return x >= minX * 4 && x <= maxX * 4 && y >= minY * 4 && y <= maxY * 4;
     }
 
     private static void ClearInter(H264MbCode code, H264MbKind kind)
@@ -359,9 +385,7 @@ internal sealed partial class H264MbEncoder
     {
         H264RefPlanes rp = _refs[r];
         int px = (_mbX * 16) + (bx * 4), py = (_mbY * 16) + (by * 4), pw = w * 4, ph = h * 4;
-        int width = _mb.WidthMbs * 16, height = _mb.HeightMbs * 16;
-        int minX = Math.Max(-H264RefPlanes.Reach - px, -2048), maxX = Math.Min(width + H264RefPlanes.Reach - pw - px, 2047);
-        int minY = Math.Max(-H264RefPlanes.Reach - py, -(_maxMvY >> 2)), maxY = Math.Min(height + H264RefPlanes.Reach - ph - py, (_maxMvY >> 2) - 1);
+        (int minX, int maxX, int minY, int maxY) = Bounds(bx, by, w, h);
         int srcAt = _origin + (py * _stride) + px;
         long refCost = RefCost(r);
 
