@@ -12,9 +12,10 @@ namespace Egami.Video.Cli.Commands;
 
 /// <summary>
 /// <c>egami-video audio</c> (Video CLI design Q8, Build Plan task 18): decodes an audio track and writes it to an audio file
-/// (WAV, Wave64, FLAC, Ogg FLAC, Opus, AIFF, CAF), or copies a video file's other tracks unchanged and encodes its audio tracks again
+/// (WAV, Wave64, FLAC, Ogg FLAC, Opus, AIFF, CAF, AAC in .aac), or copies a video file's other tracks unchanged and encodes its audio tracks again
 /// (Matroska, WebM, MP4 and M4A, AVI), resampling, remixing and changing the sample format on the way. Like <c>ffmpeg -i in.mkv -vn out.flac</c>,
-/// <c>ffmpeg -i in.webm -c:v copy -c:a flac out.mkv</c> and <c>ffmpeg -i in.flac -c:a libopus -b:a 96k out.opus</c>.
+/// <c>ffmpeg -i in.webm -c:v copy -c:a flac out.mkv</c>, <c>ffmpeg -i in.flac -c:a libopus -b:a 96k out.opus</c> and
+/// <c>ffmpeg -i in.flac -c:a aac -b:a 128k out.m4a</c>.
 /// </summary>
 internal static class AudioCommand
 {
@@ -38,15 +39,16 @@ internal static class AudioCommand
     public static Command Create(VideoSession session)
     {
         MediaOptions options = new();
-        Option<string?> codec = new("--codec", "-c") { Description = "The audio codec to write: flac, pcm, opus or alac (Apple Lossless); by default Opus in .opus and WebM, PCM in WAV, Wave64, AVI, AIFF and CAF, ALAC in .m4a, and FLAC otherwise.", HelpName = "flac|pcm|opus|alac" };
-        Option<string?> bitrate = new("--bitrate", "-b") { Description = "Opus's bitrate for all channels together, such as 96k; 64k a channel by default.", HelpName = "bits/s" };
+        Option<string?> codec = new("--codec", "-c") { Description = "The audio codec to write: flac, pcm, opus, aac (AAC LC) or alac (Apple Lossless); by default Opus in .opus and WebM, AAC in .aac, .m4a, .mp4 and .mov, PCM in WAV, Wave64, AVI, AIFF and CAF, and FLAC otherwise.", HelpName = "flac|pcm|opus|aac|alac" };
+        Option<string?> bitrate = new("--bitrate", "-b") { Description = "Opus's or AAC's bitrate for all channels together, such as 96k; 64k a channel by default.", HelpName = "bits/s" };
+        Option<int?> quality = new("--quality", "-q") { Description = "AAC's variable-bit-rate quality, 1 (smallest) to 5 (best), instead of a --bitrate: about 50, 80, 112, 170 and 235 kbit/s for stereo music.", HelpName = "1-5" };
         Option<int?> rate = new("--rate", "-ar") { Description = "Resample to this many samples per second.", HelpName = "Hz" };
         Option<string?> channels = new("--channels", "-ac") { Description = "Mix to this many channels or this layout: mono, stereo, 2.1, 3.0, quad, 5.0, 5.1, 5.1(side), 6.1, 7.1 or 7.1.4.", HelpName = "count|layout" };
         Option<string?> sampleFormat = new("--sample-format") { Description = "The samples to store: u8, s16, s24, s32, f32 or f64 (float only with pcm); by default the source's depth.", HelpName = "format" };
         Option<int?> level = new("--level") { Description = "FLAC's compression level, from 0 (fastest) to 8 (smallest), 5 by default; ALAC's, 0 (fast) or 1 (the default).", HelpName = "0-8" };
         Option<bool> noVideo = new("--no-video", "-vn") { Description = "Leave out video tracks, keeping only audio (and subtitles) in a Matroska or MP4 output." };
         FilterOptions filters = new();
-        Command command = new("audio", "Decode audio to WAV, FLAC, Ogg FLAC, Opus, AIFF, CAF or ALAC in .m4a, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.");
+        Command command = new("audio", "Decode audio to WAV, FLAC, Ogg FLAC, Opus, AIFF, CAF, AAC or ALAC, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.");
         options.AddTo(command);
         command.Options.Add(codec);
         command.Options.Add(rate);
@@ -54,13 +56,14 @@ internal static class AudioCommand
         command.Options.Add(sampleFormat);
         command.Options.Add(level);
         command.Options.Add(bitrate);
+        command.Options.Add(quality);
         command.Options.Add(noVideo);
         filters.AddTo(command);
         command.SetAction(result =>
         {
             AudioRequest request = new(
                 result.GetValue(codec)?.ToLowerInvariant() is { } name
-                    ? name is "flac" or "pcm" or "opus" or "alac" ? name : throw new UsageException($"--codec '{name}' is not flac, pcm, opus or alac; egami-video encodes FLAC, PCM, Opus and ALAC audio.")
+                    ? name is "flac" or "pcm" or "opus" or "aac" or "alac" ? name : throw new UsageException($"--codec '{name}' is not flac, pcm, opus, aac or alac; egami-video encodes FLAC, PCM, Opus, AAC and ALAC audio.")
                     : null,
                 result.GetValue(rate) is { } hz ? hz is > 0 and <= 768000 ? hz : throw new UsageException($"--rate {hz} is not a sample rate; give a number of Hz from 1 to 768000, such as 48000.") : null,
                 result.GetValue(channels) is { } layout ? ParseLayout(layout) : null,
@@ -69,7 +72,8 @@ internal static class AudioCommand
                 result.GetValue(bitrate) is { } b ? ParseBitrate(b) : null,
                 TrackSelection.Parse(result.GetValue(options.Track), result.GetValue(options.NoAudio), result.GetValue(options.NoSubtitles), result.GetValue(noVideo)),
                 result.GetValue(options.Format),
-                filters.Plan(result));
+                filters.Plan(result),
+                result.GetValue(quality) is { } q ? q is >= 1 and <= 5 ? q : throw new UsageException($"--quality {q} is not 1 to 5.") : null);
             if (result.GetValue(options.NoAudio))
             {
                 throw new UsageException("--no-audio leaves nothing for audio to do; use remux to drop audio tracks.");
@@ -89,8 +93,8 @@ internal static class AudioCommand
         return command;
     }
 
-    /// <summary>What to write: the codec, rate, layout, sample format, level and bitrate, the tracks, and the <c>--format</c> given.</summary>
-    internal sealed record AudioRequest(string? Codec, int? Rate, ChannelLayout? Layout, (SampleFormat Format, int Bits, bool Float)? SampleFormat, int? Level, int? Bitrate, TrackSelection Tracks, string? Format = null, AudioFilterPlan? Filters = null)
+    /// <summary>What to write: the codec, rate, layout, sample format, level, bitrate and quality, the tracks, and the <c>--format</c> given.</summary>
+    internal sealed record AudioRequest(string? Codec, int? Rate, ChannelLayout? Layout, (SampleFormat Format, int Bits, bool Float)? SampleFormat, int? Level, int? Bitrate, TrackSelection Tracks, string? Format = null, AudioFilterPlan? Filters = null, int? Quality = null)
     {
         /// <summary>Gets the filters to run, or <see langword="null"/> for none.</summary>
         public AudioFilterPlan? Filtering => Filters is { IsEmpty: false } plan ? plan : null;
@@ -208,12 +212,36 @@ internal static class AudioCommand
     internal static void Run(VideoSession session, InputFile input, MediaTarget target, AudioRequest request, int count)
     {
         ContainerFormat container = target.Container;
-        bool audioFile = container is WavFormat or FlacFormat or AiffFormat or CafFormat || container == OggFormat.Instance;
+        bool audioFile = container is WavFormat or FlacFormat or AiffFormat or CafFormat or AdtsFormat || container == OggFormat.Instance;
         bool opusFile = container == MatroskaFormat.WebM || IsOpusFile(target, request.Format);
         string codecName = request.Codec ?? (opusFile ? "opus"
             : container is WavFormat or AviFormat or AiffFormat or CafFormat ? "pcm"
-            : IsM4aFile(target, request.Format) ? "alac"
+            : container is AdtsFormat or Mp4Format ? "aac"
             : "flac");
+        if (container is AdtsFormat && codecName != "aac")
+        {
+            throw new UsageException($"{container.Name} holds AAC, not {codecName.ToUpperInvariant()}; drop --codec {codecName} or write .m4a or .mka.");
+        }
+
+        if (codecName == "aac" && (container is WavFormat or FlacFormat || container == OggFormat.Instance))
+        {
+            throw new UsageException($"{container.Name} cannot hold AAC; write .aac, .m4a, .mka or .caf.");
+        }
+
+        if (request.Quality is not null && codecName != "aac")
+        {
+            throw new UsageException($"--quality sets AAC's variable bit rate; give --codec aac, or a --bitrate for Opus.");
+        }
+
+        if (request.Quality is not null && request.Bitrate is not null)
+        {
+            throw new UsageException("--quality and --bitrate both set AAC's rate; give one of them.");
+        }
+
+        if (codecName == "aac" && request.Bitrate is { } aacBits && aacBits is < 8000 or > 1_536_000)
+        {
+            throw new UsageException($"--bitrate {aacBits} is not one AAC codes; give 8k to 1536k bits a second, such as 128k.");
+        }
         if (container == MatroskaFormat.WebM && codecName != "opus")
         {
             throw new UsageException($"WebM holds Opus and Vorbis audio, not {codecName.ToUpperInvariant()}; drop --codec {codecName} or write Matroska (.mkv or .mka).");
@@ -269,19 +297,19 @@ internal static class AudioCommand
             throw new UsageException("--level sets FLAC's and ALAC's compression; PCM has none.");
         }
 
-        if (request.Level is not null && codecName == "opus")
+        if (request.Level is not null && codecName is "opus" or "aac")
         {
-            throw new UsageException("--level sets FLAC's and ALAC's compression; give Opus a --bitrate instead.");
+            throw new UsageException($"--level sets FLAC's and ALAC's compression; give {(codecName == "aac" ? "AAC" : "Opus")} a --bitrate instead.");
         }
 
-        if (request.SampleFormat is not null && codecName == "opus")
+        if (request.SampleFormat is not null && codecName is "opus" or "aac")
         {
-            throw new UsageException("Opus codes its own samples; drop --sample-format.");
+            throw new UsageException($"{(codecName == "aac" ? "AAC" : "Opus")} codes its own samples; drop --sample-format.");
         }
 
-        if (request.Bitrate is not null && codecName != "opus")
+        if (request.Bitrate is not null && codecName is not ("opus" or "aac"))
         {
-            throw new UsageException($"--bitrate sets Opus's bitrate; {codecName.ToUpperInvariant()} is lossless. Give --codec opus.");
+            throw new UsageException($"--bitrate sets Opus's and AAC's bitrate; {codecName.ToUpperInvariant()} is lossless. Give --codec opus or aac.");
         }
 
         if (audioFile)
@@ -295,8 +323,8 @@ internal static class AudioCommand
     }
 
     /// <summary>
-    /// Makes the recoder that filters an audio track another command copies (run's audio): encoded in Opus for WebM, PCM for
-    /// AVI and FLAC otherwise, after a measuring pass when the filters normalize the loudness. Null when the track cannot be decoded.
+    /// Makes the recoder that filters an audio track another command copies (run's audio): encoded in Opus for WebM, AAC for MP4,
+    /// PCM for AVI and FLAC otherwise, after a measuring pass when the filters normalize the loudness. Null when the track cannot be decoded.
     /// </summary>
     internal static AudioRecoder? Filtered(VideoSession session, string display, Func<Stream>? reopen, AudioTrackInfo track, AudioFilterPlan plan, ContainerFormat container)
     {
@@ -306,7 +334,7 @@ internal static class AudioCommand
             return null;
         }
 
-        string name = container == MatroskaFormat.WebM ? "opus" : container is AviFormat ? "pcm" : "flac";
+        string name = container == MatroskaFormat.WebM ? "opus" : container is Mp4Format ? "aac" : container is AviFormat ? "pcm" : "flac";
         AudioRequest request = new(name, null, null, null, null, null, TrackSelection.Parse(null, false, false), null, plan);
         LoudnessReport? measured = null;
         if (plan.Measures && reopen is not null)
@@ -316,7 +344,7 @@ internal static class AudioCommand
         }
 
         AudioCodec codec = Codec(name, request, track);
-        return new AudioRecoder(track, decoder, codec, request, Bits(codec, request, track), OpusOptions(name, request), session.Context, measured);
+        return new AudioRecoder(track, decoder, codec, request, Bits(codec, request, track), OpusOptions(name, request), session.Context, measured, AacOptions(name, request));
     }
 
     /// <summary>Whether the output is a .opus file, by its extension or by <c>--format opus</c>: Ogg that gets Opus by default.</summary>
@@ -325,13 +353,7 @@ internal static class AudioCommand
             ? string.Equals(format?.TrimStart('.'), "opus", StringComparison.OrdinalIgnoreCase)
             : string.Equals(Path.GetExtension(target.Path), ".opus", StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>Whether the output is an .m4a file, by its extension or by <c>--format m4a</c>: MP4 that gets ALAC by default.</summary>
-    private static bool IsM4aFile(MediaTarget target, string? format) =>
-        target.IsStdout
-            ? string.Equals(format?.TrimStart('.'), "m4a", StringComparison.OrdinalIgnoreCase)
-            : string.Equals(Path.GetExtension(target.Path), ".m4a", StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>The codec to encode with: FLAC, Opus, ALAC, or integer or float PCM.</summary>
+    /// <summary>The codec to encode with: FLAC, Opus, AAC, ALAC, or integer or float PCM.</summary>
     private static AudioCodec Codec(string name, AudioRequest request, AudioTrackInfo source)
     {
         if (name == "flac")
@@ -349,6 +371,11 @@ internal static class AudioCommand
             return AlacCodec.Instance;
         }
 
+        if (name == "aac")
+        {
+            return AacCodec.Instance;
+        }
+
         bool asFloat = request.SampleFormat is { } format ? format.Float : source.CodecId == CodecIds.PcmFloat;
         return asFloat ? PcmCodec.FloatingPoint : PcmCodec.Instance;
     }
@@ -362,7 +389,7 @@ internal static class AudioCommand
         }
 
         bool lossless = source.CodecId is CodecIds.Flac or CodecIds.Alac or CodecIds.PcmLittleEndian or CodecIds.PcmBigEndian;
-        if (codec.CodecId == CodecIds.Opus)
+        if (codec.CodecId is CodecIds.Opus or CodecIds.Aac)
         {
             return 16;
         }
@@ -390,6 +417,10 @@ internal static class AudioCommand
     private static OpusEncoderOptions? OpusOptions(string codecName, AudioRequest request) =>
         codecName == "opus" ? new OpusEncoderOptions { Bitrate = request.Bitrate } : null;
 
+    /// <summary>The AAC settings: the bitrate or the quality, if given.</summary>
+    private static AacEncoderOptions? AacOptions(string codecName, AudioRequest request) =>
+        codecName == "aac" ? new AacEncoderOptions { Bitrate = request.Bitrate, Quality = request.Quality } : null;
+
     /// <summary>The rate a track decodes at: 48 kHz for Opus, whose header names the original recording's rate.</summary>
     private static int DecodedRate(AudioTrackInfo track) => track.CodecId == CodecIds.Opus ? 48000 : track.SampleRate;
 
@@ -409,7 +440,7 @@ internal static class AudioCommand
     }
 
     private static UsageException Unsupported(ContainerFormat container, NotSupportedException error, string codec) =>
-        new(codec == "opus"
+        new(codec is "opus" or "aac"
             ? $"{container.Name} cannot hold this ({error.Message.TrimEnd('.')}); try another container."
             : $"{container.Name} cannot hold this audio ({error.Message.TrimEnd('.')}); try --codec {(codec == "pcm" ? "flac" : "pcm")}, another --sample-format or another container.");
 
@@ -463,6 +494,7 @@ internal static class AudioCommand
             BitsPerSample = Bits(Codec(codecName, request, track), request, track),
             Level = request.Level,
             Opus = OpusOptions(codecName, request),
+            Aac = AacOptions(codecName, request),
             Metadata = reader.Info.Metadata,
         };
         MediaIO.Write(session, target.Path, output =>
@@ -529,8 +561,8 @@ internal static class AudioCommand
 
         // Without a rate, layout or sample format to change, Egami.Video's own transcode job does it all. Standard input is read
         // once, so it goes on through the loop below, as does Opus, which the job would encode at the rate of the original
-        // recording that OpusHead names rather than the 48 kHz Opus decodes to, and encoding to Opus, whose bitrate the job does
-        // not take.
+        // recording that OpusHead names rather than the 48 kHz Opus decodes to, and encoding to Opus or AAC, whose bitrates the
+        // job does not take.
         if (request.Filtering is { } plan)
         {
             bool video = kept.Any(t => t.Kind == TrackKind.Video);
@@ -550,7 +582,7 @@ internal static class AudioCommand
             }
         }
 
-        if (request.Filtering is null && request.Rate is null && request.Layout is null && request.SampleFormat is null && !input.IsStdin && codecName != "opus" && !kept.Any(t => t.CodecId == CodecIds.Opus))
+        if (request.Filtering is null && request.Rate is null && request.Layout is null && request.SampleFormat is null && !input.IsStdin && codecName is not ("opus" or "aac") && !kept.Any(t => t.CodecId == CodecIds.Opus))
         {
             HashSet<int> numbers = [.. kept.Select(t => t.Number)];
             foreach (AudioTrackInfo track in kept.OfType<AudioTrackInfo>().Where(t => session.Context.FindAudioCodec(t) is null))
@@ -599,7 +631,7 @@ internal static class AudioCommand
                     measured = measuring.Measure(first.ReadFrames(), first.SampleRate, first.Layout, session.Context, session.Cancellation);
                 }
 
-                AudioRecoder recoder = new(track, decoderCodec, codec, request, Bits(codec, request, track), OpusOptions(codecName, request), session.Context, measured);
+                AudioRecoder recoder = new(track, decoderCodec, codec, request, Bits(codec, request, track), OpusOptions(codecName, request), session.Context, measured, AacOptions(codecName, request));
                 recoders[track.Number] = recoder;
                 kept[i] = recoder.Encoder.Track with { Number = track.Number, Language = track.Language, Name = track.Name, IsDefault = track.IsDefault, Tags = track.Tags };
             }
@@ -664,7 +696,7 @@ internal static class AudioCommand
         private readonly IAudioFilter? _filter;
         private Resampler? _resampler;
 
-        public AudioRecoder(AudioTrackInfo track, AudioCodec decoder, AudioCodec encoder, AudioRequest request, int bits, OpusEncoderOptions? opus, MediaContext context, LoudnessReport? measured = null)
+        public AudioRecoder(AudioTrackInfo track, AudioCodec decoder, AudioCodec encoder, AudioRequest request, int bits, OpusEncoderOptions? opus, MediaContext context, LoudnessReport? measured = null, AacEncoderOptions? aac = null)
         {
             Number = track.Number;
             _context = context;
@@ -674,7 +706,7 @@ internal static class AudioCommand
             _decoder = decoder.CreateDecoder(track, new AudioDecoderOptions { Errors = DecodeErrorMode.Conceal }, context);
             try
             {
-                Encoder = encoder.CreateEncoder(new AudioEncoderOptions { SampleRate = _rate, Layout = _layout, BitsPerSample = bits, Level = request.Level, Opus = opus }, context);
+                Encoder = encoder.CreateEncoder(new AudioEncoderOptions { SampleRate = _rate, Layout = _layout, BitsPerSample = bits, Level = request.Level, Opus = opus, Aac = aac }, context);
             }
             catch
             {

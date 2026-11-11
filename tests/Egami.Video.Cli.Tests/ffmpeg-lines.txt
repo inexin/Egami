@@ -100,6 +100,11 @@
 => audio in.mkv -o out.mkv --codec flac | ffmpeg -i in.mkv -c:v copy -c:a flac out.mkv
 => audio in.flac -o out.opus --codec opus --bitrate 96k | ffmpeg -i in.flac -c:a libopus -b:a 96k out.opus
 => audio in.wav -o out.opus | ffmpeg -i in.wav out.opus
+=> audio in.mp4 -o out.mp4 --codec aac | ffmpeg -i in.mp4 -c:v copy -c:a aac out.mp4
+=> audio in.flac -o out.m4a --codec aac --bitrate 128k | ffmpeg -i in.flac -c:a aac -b:a 128k out.m4a
+=> audio in.wav -o out.m4a --codec aac --quality 5 | ffmpeg -i in.wav -c:a aac -q:a 2 out.m4a
+=> audio in.wav -o out.m4a --codec aac --quality 4 | ffmpeg -i in.wav -c:a libfdk_aac -vbr 4 out.m4a
+=> audio in.wav -o out.aac --codec aac --quality 3 | ffmpeg -i in.wav -c:a libfdk_aac -q:a 3 out.aac
 => audio in.mkv -o out.webm --codec opus | ffmpeg -i in.mkv -c:v copy -c:a libopus out.webm
 => audio in.mkv -o out.ogg --codec opus --bitrate 64k --no-video | ffmpeg -i in.mkv -vn -c:a opus -ab 64k out.ogg
 => audio in.mkv -o out.flac --track a:1 | ffmpeg -i in.mkv -map 0:a:1 out.flac
@@ -168,7 +173,6 @@
 !! showspectrumpic color=rainbow | ffmpeg -i in.flac -lavfi showspectrumpic=color=rainbow spec.png
 !! -b:v | ffmpeg -i in.mp4 -c:v mjpeg -b:v 2M out.mkv
 !! -crf | ffmpeg -i in.mp4 -c:v libx264 -crf 23 out.mp4
-!! -c:a aac | ffmpeg -i in.mp4 -c:v copy -c:a aac out.mp4
 !! -vf eq | ffmpeg -i in.mp4 -vf eq=brightness=0.1 -c:v mjpeg out.mkv
 !! -af volume | ffmpeg -i in.mp4 -af volume=2 out.wav
 !! -preset | ffmpeg -i in.mp4 -preset slow out.mkv

@@ -84,12 +84,30 @@ public class AudioRoundTripTests
     {
         using AudioFrame input = Signal(2, bits);
         string path = OutputPath($"pcm-{bits}{extension}");
-        using (AudioWriter writer = AudioWriter.Create(path))
+        // MP4 gets AAC by default, so PCM is asked for there.
+        AudioWriterOptions? options = extension == ".mp4" ? new AudioWriterOptions { Codec = PcmCodec.Instance } : null;
+        using (AudioWriter writer = AudioWriter.Create(path, options))
         {
             writer.Write(input);
         }
 
         AssertSameSamples(input, path);
+    }
+
+    [Theory]
+    [InlineData(".aac")]
+    [InlineData(".m4a")]
+    [InlineData(".mp4")]
+    public void AacIsTheDefaultInAacAndMp4(string extension)
+    {
+        using AudioFrame input = Signal(2, 16);
+        string path = OutputPath($"default{extension}");
+        using (AudioWriter writer = AudioWriter.Create(path))
+        {
+            writer.Write(input);
+        }
+
+        Assert.Equal(CodecIds.Aac, MediaFile.Probe(path).Tracks.Single().CodecId);
     }
 
     [Theory]

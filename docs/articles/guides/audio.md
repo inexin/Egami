@@ -41,7 +41,7 @@ sample exact.
 ## Writing audio
 
 `AudioWriter` encodes frames into a file or stream; the container comes from the extension. `AudioWriterOptions` sets the
-`Codec` (FLAC for .flac, Opus for Ogg and WebM, PCM elsewhere by default), the `SampleRate` and `Layout` to write (converted when the frames differ),
+`Codec` (FLAC for .flac, Opus for Ogg and WebM, AAC for .aac, .m4a and .mp4, PCM elsewhere by default), the `SampleRate` and `Layout` to write (converted when the frames differ),
 the `BitsPerSample` and the compression `Level`. Frames may have any length and format.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-write)]

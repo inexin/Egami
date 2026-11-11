@@ -30,7 +30,7 @@ public sealed class AudioTests
     }
 
     [Theory]
-    [InlineData("audio/wav-s16-stereo.wav", "out.m4a")]
+    [InlineData("audio/wav-s16-stereo.wav", "out.m4a", "--codec", "alac")]
     [InlineData("audio/wav-s24-51.wav", "out.caf", "--codec", "alac")]
     [InlineData("audio/flac-l8-stereo.flac", "out.mka", "--codec", "alac", "--level", "0")]
     [InlineData("audio/wav-s32-stereo.wav", "out.mov", "--codec", "alac")]
@@ -49,6 +49,43 @@ public sealed class AudioTests
         {
             Ffmpeg.Run(ffmpeg, ["-v", "error", "-xerror", "-i", tool.PathOf(output), "-f", "null", "-"]);
         }
+    }
+
+    [Theory]
+    [InlineData("audio/wav-s16-stereo.wav", "out.m4a")]
+    [InlineData("audio/wav-s16-stereo.wav", "out.aac", "--bitrate", "96k")]
+    [InlineData("audio/flac-l8-stereo.flac", "out.m4a", "--quality", "2")]
+    [InlineData("audio/wav-s24-51.wav", "out.mka", "--codec", "aac")]
+    [InlineData("mkv-mjpeg-pcm.mkv", "out.mp4")]
+    public void AacIsTheDefaultInAacM4aAndMp4(string clip, string output, params string[] options)
+    {
+        using Tool tool = new();
+        string source = Path.Combine(Tool.Corpus, clip);
+        ToolRun run = tool.Run(["audio", source, "-o", output, .. options]);
+        Assert.True(run.Code == 0, run.Error);
+        MediaInfo info = MediaFile.Probe(tool.PathOf(output));
+        AudioTrackInfo track = info.Tracks.OfType<AudioTrackInfo>().Single();
+        Assert.Equal(CodecIds.Aac, track.CodecId);
+        AudioTrackInfo original = MediaFile.Probe(source).Tracks.OfType<AudioTrackInfo>().Single();
+        Assert.Equal(original.Channels, track.Channels);
+        if (MediaFile.Probe(source).Tracks.Any(t => t.Kind == TrackKind.Video))
+        {
+            Assert.Equal(VideoPackets(source), VideoPackets(tool.PathOf(output)));
+        }
+
+        if (Ffmpeg.Find() is { } ffmpeg)
+        {
+            Ffmpeg.Run(ffmpeg, ["-v", "error", "-xerror", "-i", tool.PathOf(output), "-f", "null", "-"]);
+        }
+    }
+
+    [Fact]
+    public void AacTakesQualityOrBitrateNotBoth()
+    {
+        using Tool tool = new();
+        ToolRun run = tool.Run("audio", Path.Combine(Tool.Corpus, "audio/wav-s16-stereo.wav"), "-o", "out.m4a", "--quality", "3", "--bitrate", "96k");
+        Assert.Equal(2, run.Code);
+        Assert.Contains("--quality", run.Error, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -107,7 +144,6 @@ public sealed class AudioTests
     [InlineData("mkv-mjpeg-pcm.mkv", "out.mkv")]
     [InlineData("webm-vp8-opus.webm", "out.mkv")]
     [InlineData("mkv-vorbis-xiph-laced.mkv", "out.mkv")]
-    [InlineData("mkv-mjpeg-pcm.mkv", "out.mp4")]
     public void VideoPacketsStayAndAudioBecomesFlac(string clip, string output)
     {
         using Tool tool = new();
@@ -222,6 +258,13 @@ public sealed class AudioTests
     [InlineData("out.m4a", "--sample-format", "u8")]
     [InlineData("out.m4a", "--level", "5")]
     [InlineData("out.flac", "--codec", "aac")]
+    [InlineData("out.wav", "--codec", "aac")]
+    [InlineData("out.ogg", "--codec", "aac")]
+    [InlineData("out.aac", "--codec", "flac")]
+    [InlineData("out.m4a", "--bitrate", "4k")]
+    [InlineData("out.m4a", "--quality", "6")]
+    [InlineData("out.flac", "--quality", "3")]
+    [InlineData("out.opus", "--quality", "3")]
     public void UsageErrors(string output, string option, string value)
     {
         using Tool tool = new();

@@ -46,7 +46,7 @@ Commands:
   hash <inputs>                 Hash every decoded frame or packet of each track, in the layout of ffmpeg -f framemd5, to check that decoding matches.
   compare <reference> <inputs>  Measure PSNR and SSIM per plane between a reference clip and others, frame by frame in presentation order, as ffmpeg's psnr and ssim filters do.
   verify <inputs>               Check FFV1 files for damage without decoding: every slice's CRC and footer and the configuration CRC. Exit code 1 when a file is damaged.
-  audio <inputs>                Decode audio to WAV, FLAC, Ogg FLAC, Opus, AIFF, CAF or ALAC in .m4a, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
+  audio <inputs>                Decode audio to WAV, FLAC, Ogg FLAC, Opus, AIFF, CAF, AAC or ALAC, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
   join <inputs>                 Join clips of any size, frame rate and audio into one, fitted to one canvas, with an optional transition between them; everything is encoded again. For clips that already match, concat copies without decoding.
   fade <input>                  Fade a clip in from a colour and out to it, picture and sound together; like ffmpeg's fade and afade.
   overlay <main> <over>         Draw one clip over another, such as a logo or a keyed presenter, with an opacity and a time window; like ffmpeg's overlay (with chromakey and despill for --key).
@@ -949,7 +949,7 @@ Options:
 
 ```text
 Description:
-  Decode audio to WAV, FLAC, Ogg FLAC, Opus, AIFF, CAF or ALAC in .m4a, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
+  Decode audio to WAV, FLAC, Ogg FLAC, Opus, AIFF, CAF, AAC or ALAC, or encode a video file's audio again while copying its video unchanged: resample, remix and change the sample format.
 
 Usage:
   egami-video audio <inputs>... [options]
@@ -958,29 +958,30 @@ Arguments:
   <inputs>  Media files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
 
 Options:
-  -o, --output <path>               Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
-  -f, --format <container>          The output container by name or extension (mkv, webm, mp4, m4a, avi, ivf, y4m, wav, flac, ogg, aiff, caf, ac3), when -o's extension does not say; always for -o -.
-  -t, --track <track>               Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
-  -an, --no-audio                   Leave out audio tracks.
-  -sn, --no-subtitles               Leave out subtitle tracks.
-  -r, --recursive                   Take every media file in folders given as inputs, at any depth.
-  -j, --jobs <count>                How many files to work on at once; 0 (the default) for one per processor.
-  --in-place                        Allow outputs to replace their inputs.
-  --fail-fast                       Stop at the first file that fails.
-  -c, --codec <flac|pcm|opus|alac>  The audio codec to write: flac, pcm, opus or alac (Apple Lossless); by default Opus in .opus and WebM, PCM in WAV, Wave64, AVI, AIFF and CAF, ALAC in .m4a, and FLAC otherwise.
-  -ar, --rate <Hz>                  Resample to this many samples per second.
-  -ac, --channels <count|layout>    Mix to this many channels or this layout: mono, stereo, 2.1, 3.0, quad, 5.0, 5.1, 5.1(side), 6.1, 7.1 or 7.1.4.
-  --sample-format <format>          The samples to store: u8, s16, s24, s32, f32 or f64 (float only with pcm); by default the source's depth.
-  --level <0-8>                     FLAC's compression level, from 0 (fastest) to 8 (smallest), 5 by default; ALAC's, 0 (fast) or 1 (the default).
-  -b, --bitrate <bits/s>            Opus's bitrate for all channels together, such as 96k; 64k a channel by default.
-  -vn, --no-video                   Leave out video tracks, keeping only audio (and subtitles) in a Matroska or MP4 output.
-  --gain <dB>                       Change the level by this many decibels, such as -3 or 6.
-  --fade-in <time>                  Fade the sound in over this long from its start, such as 2 or 500ms.
-  --fade-out <time>                 Fade the sound out over this long to its end.
-  --tempo <factor>                  Play the sound faster or slower, from 0.25 to 4, keeping the pitch.
-  --normalize <target>              Bring the loudness to a target in two passes: ebu (-23 LUFS), atsc (-24), streaming (-14), podcast (-16) or a number of LUFS.
-  --trim-silence                    Cut the silence at the start and the end (audio files only: it would put the sound out of step with video).
-  --af <filters>                    Audio filters in ffmpeg's -af syntax: volume, afade, atempo, adelay, apad, atrim, asetpts, highpass, lowpass, bandpass, bandreject, allpass, equalizer, bass, lowshelf, treble, highshelf, acompressor, agate, alimiter, loudnorm, silenceremove.
+  -o, --output <path>                   Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output (with --format).
+  -f, --format <container>              The output container by name or extension (mkv, webm, mp4, m4a, avi, ivf, y4m, wav, flac, ogg, aiff, caf, ac3), when -o's extension does not say; always for -o -.
+  -t, --track <track>                   Which tracks: v, a, s or d with an optional :index or :language (a:1, s:eng), or a track number as info shows it. Repeat it or separate with commas; all tracks by default.
+  -an, --no-audio                       Leave out audio tracks.
+  -sn, --no-subtitles                   Leave out subtitle tracks.
+  -r, --recursive                       Take every media file in folders given as inputs, at any depth.
+  -j, --jobs <count>                    How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                            Allow outputs to replace their inputs.
+  --fail-fast                           Stop at the first file that fails.
+  -c, --codec <flac|pcm|opus|aac|alac>  The audio codec to write: flac, pcm, opus, aac (AAC LC) or alac (Apple Lossless); by default Opus in .opus and WebM, AAC in .aac, .m4a, .mp4 and .mov, PCM in WAV, Wave64, AVI, AIFF and CAF, and FLAC otherwise.
+  -ar, --rate <Hz>                      Resample to this many samples per second.
+  -ac, --channels <count|layout>        Mix to this many channels or this layout: mono, stereo, 2.1, 3.0, quad, 5.0, 5.1, 5.1(side), 6.1, 7.1 or 7.1.4.
+  --sample-format <format>              The samples to store: u8, s16, s24, s32, f32 or f64 (float only with pcm); by default the source's depth.
+  --level <0-8>                         FLAC's compression level, from 0 (fastest) to 8 (smallest), 5 by default; ALAC's, 0 (fast) or 1 (the default).
+  -b, --bitrate <bits/s>                Opus's or AAC's bitrate for all channels together, such as 96k; 64k a channel by default.
+  -q, --quality <1-5>                   AAC's variable-bit-rate quality, 1 (smallest) to 5 (best), instead of a --bitrate: about 50, 80, 112, 170 and 235 kbit/s for stereo music.
+  -vn, --no-video                       Leave out video tracks, keeping only audio (and subtitles) in a Matroska or MP4 output.
+  --gain <dB>                           Change the level by this many decibels, such as -3 or 6.
+  --fade-in <time>                      Fade the sound in over this long from its start, such as 2 or 500ms.
+  --fade-out <time>                     Fade the sound out over this long to its end.
+  --tempo <factor>                      Play the sound faster or slower, from 0.25 to 4, keeping the pitch.
+  --normalize <target>                  Bring the loudness to a target in two passes: ebu (-23 LUFS), atsc (-24), streaming (-14), podcast (-16) or a number of LUFS.
+  --trim-silence                        Cut the silence at the start and the end (audio files only: it would put the sound out of step with video).
+  --af <filters>                        Audio filters in ffmpeg's -af syntax: volume, afade, atempo, adelay, apad, atrim, asetpts, highpass, lowpass, bandpass, bandreject, allpass, equalizer, bass, lowshelf, treble, highshelf, acompressor, agate, alimiter, loudnorm, silenceremove.
 ```
 
 ## join

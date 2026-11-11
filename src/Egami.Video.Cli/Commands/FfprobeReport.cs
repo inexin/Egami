@@ -129,12 +129,34 @@ internal static class FfprobeReport
         return report;
     }
 
+    /// <summary>An AAC track's profile as ffprobe names it, from the object type at the start of its AudioSpecificConfig.</summary>
+    internal static string? AacProfile(TrackInfo track)
+    {
+        ReadOnlySpan<byte> config = track.CodecPrivate.Span;
+        if (track.CodecId != CodecIds.Aac || config.Length < 1)
+        {
+            return null;
+        }
+
+        return (config[0] >> 3) switch
+        {
+            1 => "Main",
+            2 => "LC",
+            3 => "SSR",
+            4 => "LTP",
+            5 => "HE-AAC",
+            29 => "HE-AACv2",
+            _ => null,
+        };
+    }
+
     private static ReportObject Stream(TrackInfo track, int index, InfoCommand.InfoData data)
     {
         ReportObject stream = new();
         stream.Add("index", index);
         stream.AddIf("codec_name", CodecNames.FfprobeName(track));
         stream.AddIf("codec_long_name", CodecNames.FfprobeLongName(track));
+        stream.AddIf("profile", AacProfile(track));
         stream.Add("codec_type", CodecType(track.Kind));
         if (track is VideoTrackInfo video)
         {
