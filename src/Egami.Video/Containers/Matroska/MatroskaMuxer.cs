@@ -275,7 +275,7 @@ internal sealed class MatroskaMuxer : IMuxer
         _endTime = Math.Max(_endTime, end - track.DelayMilliseconds);
     }
 
-    /// <summary>The nanoseconds an Opus or Vorbis packet decodes past its stated duration, written as DiscardPadding; 0 for others.</summary>
+    /// <summary>The nanoseconds an Opus, Vorbis or AAC packet decodes past its stated duration, written as DiscardPadding; 0 for others.</summary>
     private static long DiscardPadding(TrackWriter track, EncodedPacket packet, ReadOnlySpan<byte> data)
     {
         int samples, rate;
@@ -288,6 +288,12 @@ internal sealed class MatroskaMuxer : IMuxer
             // Every packet goes through the clock, so each one's length follows from the one before.
             track.Vorbis ??= Audio.Codecs.Vorbis.VorbisPacketClock.Create(audio.CodecPrivate.Span);
             (samples, rate) = (track.Vorbis?.Next(data) ?? 0, audio.SampleRate);
+        }
+        else if (track.Input is AudioTrackInfo { CodecId: CodecIds.Aac, SampleRate: > 0 } aac
+            && Audio.Codecs.Aac.AacConfig.TryRead(aac.CodecPrivate.Span, out Audio.Codecs.Aac.AacConfig config) && config.SampleRate == aac.SampleRate)
+        {
+            // An AAC packet decodes one frame; an encoder's last one is cut where its input ends.
+            (samples, rate) = (config.PacketSamples, aac.SampleRate);
         }
         else
         {

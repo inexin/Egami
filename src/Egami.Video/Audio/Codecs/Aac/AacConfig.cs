@@ -22,6 +22,12 @@ internal readonly record struct AacConfig(int ObjectType, int SampleRate, int Ch
     /// <summary>Gets the channels each channel_configuration 1 to 7 holds; 0 means a program config element says.</summary>
     private static ReadOnlySpan<byte> ConfigurationChannels => [0, 1, 2, 3, 4, 5, 6, 8];
 
+    /// <summary>Gets the samples of the core's frame from GASpecificConfig's frameLengthFlag: 1024, or 960.</summary>
+    public int CoreFrameLength { get; init; } = 1024;
+
+    /// <summary>Gets the samples a packet decodes to at <see cref="SampleRate"/>: twice the core's frame with explicit SBR.</summary>
+    public int PacketSamples => CoreSampleRate > 0 ? (int)((long)CoreFrameLength * SampleRate / CoreSampleRate) : 0;
+
     /// <summary>Gets the channels the configuration holds, or 0 when a program config element gives them.</summary>
     public int Channels => ChannelConfiguration is > 0 and < 8 ? ConfigurationChannels[ChannelConfiguration] : 0;
 
@@ -65,7 +71,9 @@ internal readonly record struct AacConfig(int ObjectType, int SampleRate, int Ch
             }
         }
 
-        config = new AacConfig(type, outRate, channels, coreType, coreRate);
+        // GASpecificConfig starts with frameLengthFlag (4.4.1).
+        int frameLength = coreType == LowComplexity && bits.TryRead(1, out int flag) && flag == 1 ? 960 : 1024;
+        config = new AacConfig(type, outRate, channels, coreType, coreRate) { CoreFrameLength = frameLength };
         return true;
     }
 

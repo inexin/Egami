@@ -52,3 +52,25 @@ override Egami.Video.Audio.Codecs.AacCodec.CodecId.get -> string!
 override Egami.Video.Audio.Codecs.AacCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
 override Egami.Video.Audio.Codecs.AacCodec.Name.get -> string!
 static Egami.Video.Audio.Codecs.AacCodec.Instance.get -> Egami.Video.Audio.Codecs.AacCodec!
+Egami.Video.Audio.AudioEncoderOptions.Aac.get -> Egami.Video.Audio.Codecs.AacEncoderOptions?
+Egami.Video.Audio.AudioEncoderOptions.Aac.init -> void
+Egami.Video.Audio.Codecs.AacEncoderOptions
+Egami.Video.Audio.Codecs.AacEncoderOptions.<Clone>$() -> Egami.Video.Audio.Codecs.AacEncoderOptions!
+Egami.Video.Audio.Codecs.AacEncoderOptions.AacEncoderOptions() -> void
+Egami.Video.Audio.Codecs.AacEncoderOptions.Bandwidth.get -> int?
+Egami.Video.Audio.Codecs.AacEncoderOptions.Bandwidth.init -> void
+Egami.Video.Audio.Codecs.AacEncoderOptions.Bitrate.get -> int?
+Egami.Video.Audio.Codecs.AacEncoderOptions.Bitrate.init -> void
+Egami.Video.Audio.Codecs.AacEncoderOptions.Equals(Egami.Video.Audio.Codecs.AacEncoderOptions? other) -> bool
+Egami.Video.Audio.Codecs.AacEncoderOptions.Quality.get -> int?
+Egami.Video.Audio.Codecs.AacEncoderOptions.Quality.init -> void
+Egami.Video.AudioWriterOptions.Aac.get -> Egami.Video.Audio.Codecs.AacEncoderOptions?
+Egami.Video.AudioWriterOptions.Aac.init -> void
+override Egami.Video.Audio.Codecs.AacCodec.CanEncode.get -> bool
+override Egami.Video.Audio.Codecs.AacCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioEncoder!
+override Egami.Video.Audio.Codecs.AacEncoderOptions.Equals(object? obj) -> bool
+override Egami.Video.Audio.Codecs.AacEncoderOptions.GetHashCode() -> int
+override Egami.Video.Audio.Codecs.AacEncoderOptions.ToString() -> string!
+static Egami.Video.Audio.Codecs.AacEncoderOptions.Default.get -> Egami.Video.Audio.Codecs.AacEncoderOptions!
+static Egami.Video.Audio.Codecs.AacEncoderOptions.operator !=(Egami.Video.Audio.Codecs.AacEncoderOptions? left, Egami.Video.Audio.Codecs.AacEncoderOptions? right) -> bool
+static Egami.Video.Audio.Codecs.AacEncoderOptions.operator ==(Egami.Video.Audio.Codecs.AacEncoderOptions? left, Egami.Video.Audio.Codecs.AacEncoderOptions? right) -> bool

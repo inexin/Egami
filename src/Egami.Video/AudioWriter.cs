@@ -208,6 +208,7 @@ public sealed class AudioWriter : IDisposable
                 BitsPerSample = BitsFor(_codec, _options.BitsPerSample, first),
                 Level = _options.Level,
                 Opus = _options.Opus,
+                Aac = _options.Aac,
             },
             _context);
         if (rate != first.SampleRate)
@@ -285,6 +286,12 @@ public sealed record AudioWriterOptions
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Audio.cs" region="audio-opus-encode"/>
     /// </example>
     public OpusEncoderOptions? Opus { get; init; }
+
+    /// <summary>Gets how AAC codes, or <see langword="null"/> for <see cref="AacEncoderOptions.Default"/>.</summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Audio.cs" region="audio-aac-encode"/>
+    /// </example>
+    public AacEncoderOptions? Aac { get; init; }
 
     /// <summary>Gets the resampler's quality, when the rate changes. Default <see cref="ResamplerQuality.Good"/>.</summary>
     public ResamplerQuality Quality { get; init; } = ResamplerQuality.Good;

@@ -414,6 +414,39 @@ public class Audio
     }
 
     [Fact]
+    public void AacEncode()
+    {
+        using AudioFrame tone = Tone();
+
+        #region audio-aac-encode
+        // AAC LC at 128 kbit/s in an .m4a file. The MP4 edit list records the encoder's priming and padding, so the file decodes
+        // to exactly the samples written.
+        using (AudioWriter writer = AudioWriter.Create("tone.m4a", new AudioWriterOptions
+        {
+            Codec = AacCodec.Instance,
+            Aac = new AacEncoderOptions { Bitrate = 128_000 },
+        }))
+        {
+            writer.Write(tone);
+        }
+        #endregion
+
+        AudioTrackInfo track = (AudioTrackInfo)MediaFile.Probe("tone.m4a").Tracks[0];
+        Assert.Equal(CodecIds.Aac, track.CodecId);
+        using AudioReader reader = AudioReader.Open("tone.m4a");
+        long samples = 0;
+        foreach (AudioFrame frame in reader.ReadFrames())
+        {
+            using (frame)
+            {
+                samples += frame.SampleCount;
+            }
+        }
+
+        Assert.Equal(tone.SampleCount, samples);
+    }
+
+    [Fact]
     public void VideoWithAudio()
     {
         using SampleFiles files = new();

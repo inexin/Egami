@@ -4,7 +4,7 @@ Egami.Video decodes and encodes audio with the same send and receive loop as vid
 
 - Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and encode, Apple Lossless
   (ALAC) decode and encode, Vorbis I decode, MPEG audio (MP3, MP2 and MP1) decode, Dolby AC-3 (ATSC A/52) decode, AAC LC
-  (ISO/IEC 14496-3) decode and G.711 μ-law and A-law decode.
+  (ISO/IEC 14496-3) decode and encode and G.711 μ-law and A-law decode.
 - Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC, Ogg, MP3, AIFF and AIFF-C, Apple CAF
   and raw AC-3 and E-AC-3, read and written; these codecs in Matroska, WebM and MP4 too.
 - A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.
@@ -190,6 +190,18 @@ AAC Main, LTP, the low-delay and error-resilient types, coupling channel element
 element are not decoded.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-aac-decode)]
+
+`AacCodec` encodes AAC LC too, at 8 to 96 kHz (other rates are resampled to the next AAC rate up), mono to 5.1 and 7.1 in
+the layouts of channel configurations 1 to 7. It codes at an average bit rate, 64 kbit/s per channel unless
+`AacEncoderOptions.Bitrate` says otherwise, with a bit reservoir that lends bits to hard blocks, or at a variable-bit-rate
+`Quality` from 1 to 5. A psychoacoustic model sets each band's noise; block switching keeps attacks clean, and TNS, mid/side
+and intensity stereo and perceptual noise substitution are used where they save bits: intensity below 40 kbit/s per channel
+and noise substitution below 48. The bandwidth follows the rate (`Bandwidth` sets it). The first packet decodes to 1024
+samples of priming, which MP4 records in its edit list and iTunSMPB tag and Matroska as CodecDelay, and the last packet's
+duration cuts the padding after the input, so both give back exactly the input's length; an .aac file has no place for
+either and keeps both.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-aac-encode)]
 
 `Ac3Codec` decodes AC-3 (ATSC A/52) in every channel mode, 1/0 to 3/2 and dual mono, with or without the LFE, at 32, 44.1 and
 48 kHz and 32 to 640 kbit/s, from raw .ac3 files and from AC-3 tracks in MP4, Matroska, AVI and CAF. Frames are 1536 samples of
