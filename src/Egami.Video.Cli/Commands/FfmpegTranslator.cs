@@ -15,7 +15,13 @@ internal static class FfmpegTranslator
     private static readonly string[] AudioExtensions = [".wav", ".flac", ".w64", ".oga", ".opus"];
 
     /// <summary>Audio files that also hold compressed audio: an audio job unless the line copies the audio (-c:a copy).</summary>
-    private static readonly string[] CopyableAudioExtensions = [".aiff", ".aif", ".aifc", ".caf"];
+    private static readonly string[] CopyableAudioExtensions = [".aiff", ".aif", ".aifc", ".caf", ".m4a", ".aac"];
+
+    /// <summary>
+    /// Video files whose default audio codec egami-video encodes, as FFmpeg picks it: AAC for MP4 and MOV, Opus for WebM. With no
+    /// codec options, a line to one of them encodes the input's audio in it (and copies the video), as FFmpeg encodes the audio.
+    /// </summary>
+    private static readonly string[] EncodedAudioVideoExtensions = [".mp4", ".mov", ".webm"];
 
     /// <summary>The native command lines for an ffmpeg line, in the order they run; <paramref name="explain"/> skips the check that the output is new.</summary>
     public static IReadOnlyList<string[]> Translate(FfmpegLine line, VideoSession session, bool explain = false)
@@ -284,6 +290,29 @@ internal static class FfmpegTranslator
         bool audioJob = filtered is not null || AudioExtensions.Contains(extension) || (CopyableAudioExtensions.Contains(extension) && !copiesAudio) || line.NoVideo || line.SampleRate is not null || line.Channels is not null || line.SampleFormat is not null
             || line.AudioBitrate is not null || line.AudioQuality is not null
             || (line.Codecs.TryGetValue("a", out string? audioCodec) && audioCodec != "copy");
+        if (copiesAudio && line.NoVideo && filtered is null && deinterlace.Count == 0 && steps.Count == 0 && line.SampleRate is null && line.Channels is null
+            && line.SampleFormat is null && line.AudioBitrate is null && line.AudioQuality is null)
+        {
+            // -vn -c:a copy: the audio packets go into the new file unchanged, as ffmpeg copies them.
+            string[] audioTracks = line.Maps.Count == 0 ? ["--track", "a"] : [];
+            bool cutAudio = (line.Start ?? first.Start ?? line.To ?? first.To ?? line.Duration ?? first.Duration) is not null;
+            return cutAudio
+                ? [["trim", input, .. outputWords, .. Range(line, first), .. Streams(line), .. audioTracks, .. common]]
+                : [["remux", input, .. outputWords, .. Streams(line), .. audioTracks, .. common]];
+        }
+
+        bool keepsVideo = steps.Count == 0 && deinterlace.Count == 0 && line.Size is null && line.Quality is null
+            && (!line.Codecs.TryGetValue("v", out string? videoChoice) || videoChoice == "copy");
+        if (!audioJob && !copiesAudio && !line.NoAudio && line.Maps.Count == 0 && keepsVideo && EncodedAudioVideoExtensions.Contains(extension) && HasAudio(first.Path, session))
+        {
+            // FFmpeg encodes the audio in the container's default codec; egami-video does too, and copies the video.
+            audioJob = true;
+            if (!CopiesVideo(line))
+            {
+                session.Warn("the video is copied as -c:v copy would; ffmpeg would encode it again.");
+            }
+        }
+
         if (audioJob && deinterlace.Count == 0)
         {
             List<string> audio = ["audio", input, .. outputWords, .. Streams(line), .. common];
@@ -1263,6 +1292,30 @@ internal static class FfmpegTranslator
             {
                 throw FfmpegMode.Unsupported($"-c{(kind.Length > 0 ? ":" + kind : string.Empty)} {codec}", why: $"{what} copies streams (-c copy)");
             }
+        }
+    }
+
+    /// <summary>Whether an input is a file on disk with an audio track; standard input, URLs and files that do not open count as not.</summary>
+    private static bool HasAudio(string path, VideoSession session)
+    {
+        if (path == "-" || path.Contains("://", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        string full = session.ResolvePath(path);
+        if (!File.Exists(full))
+        {
+            return false;
+        }
+
+        try
+        {
+            return MediaFile.Probe(full).Tracks.Any(t => t.Kind == TrackKind.Audio);
+        }
+        catch (Exception e) when (e is IOException or InvalidDataException or UnsupportedFormatException)
+        {
+            return false;
         }
     }
 

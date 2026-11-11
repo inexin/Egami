@@ -994,6 +994,11 @@ Additive to 1.2, apart from the new defaults (below). See [Encoding AAC](docs/ar
 - Behaviour change: AAC is now the default codec in .aac, .m4a and .mp4 files. `AudioWriter` without a `Codec` writes AAC LC
   to ADTS and MP4 (it wrote PCM to MP4), and `egami-video audio` writes AAC to .aac, .m4a, .mp4 and .mov, where .m4a got ALAC
   and .mp4 and .mov got FLAC. ALAC stays available with `--codec alac` (`AudioWriterOptions.Codec = AlacCodec.Instance`).
+- ffmpeg mode encodes audio in the codec FFmpeg picks for the output, as FFmpeg does, where it remuxed: `ffmpeg -i in.wav
+  out.m4a` writes AAC (it copied the PCM), `.aac` outputs AAC, and `.mp4`, `.mov` and `.webm` outputs with no codec options
+  encode the input's audio in AAC or Opus and copy the video, with a warning that ffmpeg would encode the video too. `-vn -c:a
+  copy` now copies the audio packets (`remux --track a`, or `trim` with a range) instead of encoding them again. Matroska and
+  AVI still copy, as egami-video has no Vorbis or MP3 encoder.
 - CLI: `audio --codec aac` with `--bitrate` (8k to 1536k for all channels) or `--quality` 1 to 5 (variable bit rate); `run`
   re-encodes filtered audio in MP4 as AAC. ffmpeg mode maps `-c:a aac` and `-c:a libfdk_aac` with `-b:a`, `-q:a` (FFmpeg's
   0.1 to 2 spread over 1 to 5) and `-vbr`; `info --format ffprobe` reports an AAC stream's `profile` (LC, Main, HE-AAC, ...).
