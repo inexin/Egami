@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Egami.Video.Codecs.H264;
 
 /// <summary>
@@ -118,78 +121,167 @@ internal static class H264IntraPredict
         }
     }
 
-    /// <summary>Predicts an n by n block (n 4 or 8) in an Intra4x4 or Intra8x8 mode into <paramref name="dst"/>.</summary>
-    internal static void PredictNxN(Span<byte> dst, int dstStride, int n, int mode, ReadOnlySpan<int> t, ReadOnlySpan<int> l, bool top, bool left)
+    /// <summary>The size of the edge filters <see cref="Edges"/> works out for <see cref="PredictNxN"/>.</summary>
+    internal const int EdgeSize = 48;
+
+    // Where the 3-tap filter F(k) and the 2-tap mean A(k) of the edge start, k from −8 on (see Edges).
+    private const int FAt = 8;
+    private const int AAt = 24 + 8;
+
+    /// <summary>
+    /// Works out once per n by n block the filtered edge every directional Intra4x4 and Intra8x8 mode reads (8.3.1.2.4 to
+    /// 8.3.1.2.9, 8.3.2.2.4 to 8.3.2.2.9): along the edge e(k), which is p[k − 1, −1] for k ≥ 0 and p[−1, −k − 1] for k ≤ 0
+    /// (so e(0) is the corner), F(k) = (e(k − 1) + 2e(k) + e(k + 1) + 2) >> 2 and A(k) = (e(k) + e(k + 1) + 1) >> 1. Samples a
+    /// mode cannot use (a missing neighbour) go in too and are never read.
+    /// </summary>
+    [SkipLocalsInit]
+    internal static void Edges(int n, ReadOnlySpan<int> t, ReadOnlySpan<int> l, Span<byte> edges)
     {
-        // T(x) is p[x, -1] and L(y) p[-1, y], both with -1 the corner.
-        int last = (2 * n) - 3;
-        for (int y = 0; y < n; y++)
+        // The edge from e(−n) to e(2n), e(k) at index k + n.
+        Span<int> e = stackalloc int[25];
+        for (int k = 1; k <= n; k++)
         {
-            Span<byte> row = dst.Slice(y * dstStride, n);
-            for (int x = 0; x < n; x++)
+            e[n - k] = l[k];
+        }
+
+        for (int k = 0; k <= 2 * n; k++)
+        {
+            e[n + k] = t[k];
+        }
+
+        for (int k = -n; k < 2 * n; k++)
+        {
+            int at = n + k;
+            if (k > -n)
             {
-                int v;
-                switch (mode)
+                edges[FAt + k] = (byte)((e[at - 1] + (2 * e[at]) + e[at + 1] + 2) >> 2);
+            }
+
+            edges[AAt + k] = (byte)((e[at] + e[at + 1] + 1) >> 1);
+        }
+    }
+
+    /// <summary>
+    /// Predicts an n by n block (n 4 or 8) in an Intra4x4 or Intra8x8 mode into <paramref name="dst"/>, from its neighbours and
+    /// the edge filters <see cref="Edges"/> worked out from them.
+    /// </summary>
+    internal static void PredictNxN(byte[] dst, int dstStride, int n, int mode, ReadOnlySpan<int> t, ReadOnlySpan<int> l, bool top, bool left, ReadOnlySpan<byte> edges)
+    {
+        ReadOnlySpan<byte> f = edges[FAt..], a = edges[AAt..];
+        ReadOnlySpan<byte> fl = edges[(FAt - n)..], al = edges[(AAt - n)..];
+        switch (mode)
+        {
+            case 0:
+                for (int x = 0; x < n; x++)
                 {
-                    case 0:
-                        v = t[x + 1];
-                        break;
-                    case 1:
-                        v = l[y + 1];
-                        break;
-                    case 2:
-                        v = Dc(n, t, l, top, left);
-                        break;
-                    case 3:
-                        v = x == n - 1 && y == n - 1
-                            ? (t[(2 * n) - 1] + (3 * t[2 * n]) + 2) >> 2
-                            : (t[x + y + 1] + (2 * t[x + y + 2]) + t[x + y + 3] + 2) >> 2;
-                        break;
-                    case 4:
-                        v = x > y ? (t[x - y - 1] + (2 * t[x - y]) + t[x - y + 1] + 2) >> 2
-                            : x < y ? (l[y - x - 1] + (2 * l[y - x]) + l[y - x + 1] + 2) >> 2
-                            : (t[1] + (2 * t[0]) + l[1] + 2) >> 2;
-                        break;
-                    case 5:
-                        {
-                            int z = (2 * x) - y, h = x - (y >> 1);
-                            v = z >= 0 && (z & 1) == 0 ? (t[h] + t[h + 1] + 1) >> 1
-                                : z >= 0 ? (t[h - 1] + (2 * t[h]) + t[h + 1] + 2) >> 2
-                                : z == -1 ? (l[1] + (2 * l[0]) + t[1] + 2) >> 2
-                                : (l[y - (2 * x)] + (2 * l[y - (2 * x) - 1]) + l[y - (2 * x) - 2] + 2) >> 2;
-                            break;
-                        }
-
-                    case 6:
-                        {
-                            int z = (2 * y) - x, h = y - (x >> 1);
-                            v = z >= 0 && (z & 1) == 0 ? (l[h] + l[h + 1] + 1) >> 1
-                                : z >= 0 ? (l[h - 1] + (2 * l[h]) + l[h + 1] + 2) >> 2
-                                : z == -1 ? (l[1] + (2 * l[0]) + t[1] + 2) >> 2
-                                : (t[x - (2 * y)] + (2 * t[x - (2 * y) - 1]) + t[x - (2 * y) - 2] + 2) >> 2;
-                            break;
-                        }
-
-                    case 7:
-                        {
-                            int h = x + (y >> 1);
-                            v = (y & 1) == 0 ? (t[h + 1] + t[h + 2] + 1) >> 1 : (t[h + 1] + (2 * t[h + 2]) + t[h + 3] + 2) >> 2;
-                            break;
-                        }
-
-                    default:
-                        {
-                            int z = x + (2 * y), h = y + (x >> 1);
-                            v = z > last ? l[n]
-                                : z == last ? (l[n - 1] + (3 * l[n]) + 2) >> 2
-                                : (z & 1) == 0 ? (l[h + 1] + l[h + 2] + 1) >> 1
-                                : (l[h + 1] + (2 * l[h + 2]) + l[h + 3] + 2) >> 2;
-                            break;
-                        }
+                    dst[x] = (byte)t[x + 1];
                 }
 
-                row[x] = (byte)v;
-            }
+                for (int y = 1; y < n; y++)
+                {
+                    Row(dst, y * dstStride, dst, 0, n);
+                }
+
+                return;
+            case 1:
+                for (int y = 0; y < n; y++)
+                {
+                    dst.AsSpan(y * dstStride, n).Fill((byte)l[y + 1]);
+                }
+
+                return;
+            case 2:
+                {
+                    byte dc = (byte)Dc(n, t, l, top, left);
+                    for (int y = 0; y < n; y++)
+                    {
+                        dst.AsSpan(y * dstStride, n).Fill(dc);
+                    }
+
+                    return;
+                }
+
+            case 3:
+                // Diagonal down left: F(x + y + 2), the last sample (t(2n − 1) + 3t(2n) + 2) >> 2.
+                for (int y = 0; y < n; y++)
+                {
+                    Row(dst, y * dstStride, f, y + 2, n);
+                }
+
+                dst[((n - 1) * dstStride) + n - 1] = (byte)((t[(2 * n) - 1] + (3 * t[2 * n]) + 2) >> 2);
+                return;
+            case 4:
+                // Diagonal down right: F(x − y).
+                for (int y = 0; y < n; y++)
+                {
+                    Row(dst, y * dstStride, fl, n - y, n);
+                }
+
+                return;
+            case 5:
+                // Vertical right, by zVR = 2x − y.
+                for (int y = 0; y < n; y++)
+                {
+                    int row = y * dstStride;
+                    for (int x = 0; x < n; x++)
+                    {
+                        int z = (2 * x) - y, h = x - (y >> 1);
+                        dst[row + x] = z < 0 ? fl[n + z + 1] : (z & 1) == 0 ? a[h] : f[h];
+                    }
+                }
+
+                return;
+            case 6:
+                // Horizontal down, by zHD = 2y − x.
+                for (int y = 0; y < n; y++)
+                {
+                    int row = y * dstStride;
+                    for (int x = 0; x < n; x++)
+                    {
+                        int z = (2 * y) - x, h = y - (x >> 1);
+                        dst[row + x] = z < 0 ? f[-z - 1] : (z & 1) == 0 ? al[n - h - 1] : fl[n - h];
+                    }
+                }
+
+                return;
+            case 7:
+                // Vertical left: A(x + y / 2 + 1) on even rows, F(x + (y − 1) / 2 + 2) on odd ones.
+                for (int y = 0; y < n; y++)
+                {
+                    Row(dst, y * dstStride, (y & 1) == 0 ? a : f, (y >> 1) + 1 + (y & 1), n);
+                }
+
+                return;
+            default:
+                {
+                    // Horizontal up, by zHU = x + 2y.
+                    int last = (2 * n) - 3;
+                    byte end = (byte)l[n], before = (byte)((l[n - 1] + (3 * l[n]) + 2) >> 2);
+                    for (int y = 0; y < n; y++)
+                    {
+                        int row = y * dstStride;
+                        for (int x = 0; x < n; x++)
+                        {
+                            int z = x + (2 * y), h = y + (x >> 1);
+                            dst[row + x] = z > last ? end : z == last ? before : (z & 1) == 0 ? al[n - h - 2] : fl[n - h - 2];
+                        }
+                    }
+
+                    return;
+                }
+        }
+    }
+
+    // Copies n (4 or 8) bytes.
+    private static void Row(byte[] dst, int at, ReadOnlySpan<byte> src, int from, int n)
+    {
+        if (n == 4)
+        {
+            MemoryMarshal.Write(dst.AsSpan(at, 4), MemoryMarshal.Read<uint>(src.Slice(from, 4)));
+        }
+        else
+        {
+            MemoryMarshal.Write(dst.AsSpan(at, 8), MemoryMarshal.Read<ulong>(src.Slice(from, 8)));
         }
     }
 
@@ -225,14 +317,26 @@ internal static class H264IntraPredict
             return;
         }
 
-        int dc = mode == 2 ? Dc(16, t, l, top, left) : 0;
-        for (int y = 0; y < 16; y++)
+        if (mode == 0)
         {
-            Span<byte> row = dst.Slice(y * dstStride, 16);
+            Span<byte> first = dst[..16];
             for (int x = 0; x < 16; x++)
             {
-                row[x] = (byte)(mode == 0 ? t[x + 1] : mode == 1 ? l[y + 1] : dc);
+                first[x] = (byte)t[x + 1];
             }
+
+            for (int y = 1; y < 16; y++)
+            {
+                first.CopyTo(dst.Slice(y * dstStride, 16));
+            }
+
+            return;
+        }
+
+        byte dc = (byte)(mode == 2 ? Dc(16, t, l, top, left) : 0);
+        for (int y = 0; y < 16; y++)
+        {
+            dst.Slice(y * dstStride, 16).Fill(mode == 1 ? (byte)l[y + 1] : dc);
         }
     }
 

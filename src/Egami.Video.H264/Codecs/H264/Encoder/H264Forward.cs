@@ -280,6 +280,12 @@ internal static class H264Forward
     /// <summary>The step of a level in W units at a raster position of an 8x8 block.</summary>
     internal static double Step8(int qp, int pos) => Steps8[(qp * 64) + pos];
 
+    /// <summary>The steps of the 16 raster positions of a 4x4 block at a QP.</summary>
+    internal static ReadOnlySpan<double> Steps4At(int qp) => Steps4.AsSpan(qp * 16, 16);
+
+    /// <summary>The steps of the 64 raster positions of an 8x8 block at a QP.</summary>
+    internal static ReadOnlySpan<double> Steps8At(int qp) => Steps8.AsSpan(qp * 64, 64);
+
     // The steps of every QP and position, worked out once (they are read for each coefficient RDOQ weighs).
     private static readonly double[] Steps4 = [.. Enumerable.Range(0, 52 * 16).Select(i => Math.ScaleB(1.0, Shift4 + (i / 16 / 6)) / Mf4[((i / 16 % 6) * 16) + (i % 16)])];
     private static readonly double[] Steps8 = [.. Enumerable.Range(0, 52 * 64).Select(i => Math.ScaleB(1.0, Shift8 + (i / 64 / 6)) / Mf8[((i / 64 % 6) * 64) + (i % 64)])];
