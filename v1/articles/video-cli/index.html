@@ -458,11 +458,12 @@ egami-video generate bars --tone -t 10 bars.mkv
 egami-video generate sweep -t 5 sweep.flac
 </code></pre>
 <h2 id="audio">Audio</h2>
-<p><code>audio</code> decodes the picked audio track to WAV, Wave64, FLAC, Ogg FLAC, Opus, AIFF or CAF, resampling with <code>--rate</code>, mixing with <code>--channels</code>
+<p><code>audio</code> decodes the picked audio track to WAV, Wave64, FLAC, Ogg FLAC, Opus, AIFF, CAF or AAC, resampling with <code>--rate</code>, mixing with <code>--channels</code>
 and converting with <code>--sample-format</code>. With a video container as output it copies the video unchanged and encodes the audio
-again. <code>--codec</code> picks FLAC, PCM, Opus or ALAC (Apple Lossless); .opus and WebM outputs get Opus, WAV, Wave64, AVI, AIFF
-and CAF get PCM, .m4a gets ALAC, and the rest FLAC. ALAC also goes in .mov, .mka and .caf. <code>--bitrate</code> sets Opus's bitrate
-for all channels together (64k a channel by default); <code>--level</code> sets FLAC's compression (0 to 8) or ALAC's (0 fast, 1 the
+again. <code>--codec</code> picks FLAC, PCM, Opus, AAC (AAC LC) or ALAC (Apple Lossless); .opus and WebM outputs get Opus, WAV,
+Wave64, AVI, AIFF and CAF get PCM, .aac, .m4a, .mp4 and .mov get AAC, and the rest FLAC. ALAC goes in .m4a, .mov, .mka and
+.caf with <code>--codec alac</code>. <code>--bitrate</code> sets Opus's or AAC's bitrate for all channels together (64k a channel by default);
+<code>--quality</code> 1 to 5 gives AAC a variable bit rate instead (about 50 to 235 kbit/s for stereo music); <code>--level</code> sets FLAC's compression (0 to 8) or ALAC's (0 fast, 1 the
 default). <code>extract</code> writes ALAC tracks to .m4a and AC-3 and E-AC-3 tracks to raw .ac3 and .eac3 files.</p>
 <p>The audio filters (see <a href="../guides/audio-filters.html">Audio filters</a>) run on the way: <code>--gain</code> in decibels, <code>--fade-in</code> and
 <code>--fade-out</code> over a time from the start and to the end, <code>--tempo</code> (0.25 to 4, the pitch kept), <code>--normalize</code> to <code>ebu</code>, <code>atsc</code>,

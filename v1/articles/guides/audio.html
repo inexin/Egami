@@ -151,7 +151,7 @@ AudioReaderOptions options = new() { SampleFormat = SampleFormat.S16, SampleRate
 using AudioReader mono = AudioReader.Open(&quot;tone.wav&quot;, options);
 </code></pre><h2 id="writing-audio">Writing audio</h2>
 <p><code>AudioWriter</code> encodes frames into a file or stream; the container comes from the extension. <code>AudioWriterOptions</code> sets the
-<code>Codec</code> (FLAC for .flac, Opus for Ogg and WebM, PCM elsewhere by default), the <code>SampleRate</code> and <code>Layout</code> to write (converted when the frames differ),
+<code>Codec</code> (FLAC for .flac, Opus for Ogg and WebM, AAC for .aac, .m4a and .mp4, PCM elsewhere by default), the <code>SampleRate</code> and <code>Layout</code> to write (converted when the frames differ),
 the <code>BitsPerSample</code> and the compression <code>Level</code>. Frames may have any length and format.</p>
 <pre><code class="lang-csharp">// FLAC for .flac files, PCM for .wav, .w64, .mka and .mp4 unless the options name a codec; FLAC levels run 0 to 8.
 using (AudioWriter writer = AudioWriter.Create(&quot;tone.flac&quot;, new AudioWriterOptions { Level = 8, BitsPerSample = 24 }))
