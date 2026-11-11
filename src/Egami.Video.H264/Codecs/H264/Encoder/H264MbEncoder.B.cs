@@ -46,6 +46,7 @@ internal sealed partial class H264MbEncoder
         double bestCost = double.MaxValue;
         H264MbCode? best = null;
         int bestSlot = 0;
+        long directSatd = long.MaxValue;
 
         // Direct motion, for B_Skip, B_Direct_16x16 and direct 8x8 blocks; an 8x8 block whose direct vectors reach further
         // than the reference planes cannot be direct.
@@ -76,18 +77,15 @@ internal sealed partial class H264MbEncoder
             bestCost = sse + (_lambda * Rate(direct) / CabacCost.Bit);
             best = direct;
             SaveMb(0);
-            if (_effort >= 1)
+            if (ResidualQuantizesAway())
             {
-                H264MbCode coded = _directCoded;
-                coded.CopyFrom(direct);
-                coded.Kind = H264MbKind.BDirect;
-                double cost = CodeInter(coded);
-                SaveMb(4);
-                if (cost < bestCost)
-                {
-                    (bestCost, best, bestSlot) = (cost, coded, 4);
-                }
+                // Task 7: what B_Skip leaves would quantize to nothing, so nothing else is searched or coded.
+                H264EncodeStats.Add(H264EncodeStat.EarlySkips);
+                Best = direct;
+                return bestCost;
             }
+
+            directSatd = Satd(_srcY, _lumaAt, _stride, _ip, 0, 16, 16, 16) + (long)_sadLambda;
         }
 
         Span<int> starts0 = [0, direct.RefIdx[0] >= 0 ? direct.Mv[0] : 0];
@@ -131,21 +129,28 @@ internal sealed partial class H264MbEncoder
             }
         }
 
-        double interCost = CodeInter(first);
+        (bool codeFirst, bool codeSecond) = PickPartitions(first, firstCost, second, secondCost);
+        double interCost = codeFirst ? CodeInter(first) : double.MaxValue;
         SaveMb(1);
         if (interCost < bestCost)
         {
             (bestCost, best, bestSlot) = (interCost, first, 1);
         }
 
-        if (_effort >= 3 && second is not null)
+        if (codeSecond)
         {
-            interCost = CodeInter(second);
+            interCost = CodeInter(second!);
             SaveMb(2);
             if (interCost < bestCost)
             {
                 (bestCost, best, bestSlot) = (interCost, second, 2);
             }
+        }
+
+        // Task 8: B_Direct_16x16 with a residual, RD-coded only when its prediction comes near the best partitioning by SATD.
+        if (_effort >= 1 && directSatd != long.MaxValue && directSatd <= firstCost * DirectShare)
+        {
+            CodeDirect(_direct, ref bestCost, ref best, ref bestSlot);
         }
 
         if (TryIntra(firstCost))
@@ -162,6 +167,19 @@ internal sealed partial class H264MbEncoder
         RestoreMb(bestSlot);
         Best = best!;
         return bestCost;
+    }
+
+    private void CodeDirect(H264MbCode direct, ref double bestCost, ref H264MbCode? best, ref int bestSlot)
+    {
+        H264MbCode coded = _directCoded;
+        coded.CopyFrom(direct);
+        coded.Kind = H264MbKind.BDirect;
+        double cost = CodeInter(coded);
+        SaveMb(4);
+        if (cost < bestCost)
+        {
+            (bestCost, best, bestSlot) = (cost, coded, 4);
+        }
     }
 
     /// <summary>

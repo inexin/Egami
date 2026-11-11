@@ -297,4 +297,56 @@ internal static class H264EncodeSimd
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<byte> Load4(ref byte r, int at) => Vector128.CreateScalar(Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref r, at))).AsByte();
+
+    /// <summary>The SA8D of a 16x16 block: its 8x8 Hadamard coefficients' magnitudes, a quarter of their sum per 8x8 block.</summary>
+    public static long Sa8d(byte[] src, int at, int stride, byte[] pred, int predAt, int predStride, int width, int height)
+    {
+        Span<int> d = stackalloc int[64];
+        long total = 0;
+        for (int by = 0; by < height; by += 8)
+        {
+            for (int bx = 0; bx < width; bx += 8)
+            {
+                for (int y = 0; y < 8; y++)
+                {
+                    int s = at + ((by + y) * stride) + bx, p = predAt + ((by + y) * predStride) + bx;
+                    Span<int> row = d.Slice(y * 8, 8);
+                    for (int x = 0; x < 8; x++)
+                    {
+                        row[x] = src[s + x] - pred[p + x];
+                    }
+
+                    Hadamard8(row, 1);
+                }
+
+                long sum = 0;
+                for (int x = 0; x < 8; x++)
+                {
+                    sum += Hadamard8(d[x..], 8);
+                }
+
+                total += (sum + 2) >> 2;
+            }
+        }
+
+        return total;
+    }
+
+    // An 8-point Hadamard transform in place, of the values step apart; returns the sum of the outputs' magnitudes.
+    private static int Hadamard8(Span<int> v, int step)
+    {
+        int a0 = v[0] + v[step], a1 = v[0] - v[step], a2 = v[2 * step] + v[3 * step], a3 = v[2 * step] - v[3 * step];
+        int a4 = v[4 * step] + v[5 * step], a5 = v[4 * step] - v[5 * step], a6 = v[6 * step] + v[7 * step], a7 = v[6 * step] - v[7 * step];
+        int b0 = a0 + a2, b1 = a1 + a3, b2 = a0 - a2, b3 = a1 - a3, b4 = a4 + a6, b5 = a5 + a7, b6 = a4 - a6, b7 = a5 - a7;
+        v[0] = b0 + b4;
+        v[step] = b1 + b5;
+        v[2 * step] = b2 + b6;
+        v[3 * step] = b3 + b7;
+        v[4 * step] = b0 - b4;
+        v[5 * step] = b1 - b5;
+        v[6 * step] = b2 - b6;
+        v[7 * step] = b3 - b7;
+        return Math.Abs(b0 + b4) + Math.Abs(b1 + b5) + Math.Abs(b2 + b6) + Math.Abs(b3 + b7) + Math.Abs(b0 - b4) + Math.Abs(b1 - b5)
+            + Math.Abs(b2 - b6) + Math.Abs(b3 - b7);
+    }
 }
