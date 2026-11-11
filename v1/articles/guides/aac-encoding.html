@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Encoding AAC | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Encoding AAC | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/aac-encoding.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="encoding-aac">Encoding AAC</h1>
+
+<p>AAC LC (ISO/IEC 14496-3) is the audio codec of MP4, M4A and most streaming, and the one every phone, browser and player
+decodes. Egami.Video encodes it fully managed with its own psychoacoustic model; parts of the bitstream side are translated
+from oxideav-aac (MIT).</p>
+<ul>
+<li>8 to 96 kHz (other rates are resampled to the next AAC rate up), mono to 5.1 and 7.1 in the layouts of channel
+configurations 1 to 7.</li>
+<li>An average bit rate with a bit reservoir, or a variable-bit-rate quality from 1 to 5.</li>
+<li>Block switching for attacks, TNS, mid/side and intensity stereo and perceptual noise substitution, chosen per block.</li>
+<li>AAC LC only: no HE-AAC (SBR) or HE-AACv2 (parametric stereo) yet.</li>
+</ul>
+<h2 id="writing-m4a-and-aac-files">Writing .m4a and .aac files</h2>
+<p><code>AudioWriter</code> writes AAC by default for .m4a, .mp4 and .aac (ADTS) files; set <code>AudioWriterOptions.Codec</code> to
+<code>AudioCodecs.Aac</code> for Matroska (.mka, .mkv) and CAF. <code>AudioWriterOptions.Aac</code> takes an <code>AacEncoderOptions</code>; leave it out for
+64 kbit/s per channel.</p>
+<pre><code class="lang-csharp">// AAC LC at 128 kbit/s in an .m4a file. The MP4 edit list records the encoder's priming and padding, so the file decodes
+// to exactly the samples written.
+using (AudioWriter writer = AudioWriter.Create(&quot;tone.m4a&quot;, new AudioWriterOptions
+{
+    Codec = AacCodec.Instance,
+    Aac = new AacEncoderOptions { Bitrate = 128_000 },
+}))
+{
+    writer.Write(tone);
+}
+</code></pre>
+<p>Every stream starts with 1024 samples of priming, the encoder's delay. MP4 records it in the edit list and an iTunSMPB tag,
+and Matroska as CodecDelay; the last packet's duration cuts the padding after the input, so <code>AudioReader</code> and FFmpeg give
+back exactly the samples written. An .aac file has no place for either, so it keeps the priming and padding, as
+every ADTS encoder's output does.</p>
+<h2 id="settings">Settings</h2>
+<table>
+<thead>
+<tr>
+<th><code>AacEncoderOptions</code></th>
+<th>Default</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Bitrate</code></td>
+<td>64 kbit/s per channel</td>
+<td>Bits per second for all channels together, 8 to 1536 kbit/s. Hard blocks borrow from a reservoir that easy ones fill, so the rate holds over a few seconds; easy audio may come out under it.</td>
+</tr>
+<tr>
+<td><code>Quality</code></td>
+<td>not set</td>
+<td>1 (smallest) to 5 (best) instead of a bitrate: each level holds the noise at one distance from the masking threshold, so the rate follows the audio. Stereo music comes out at roughly 50, 80, 112, 170 and 235 kbit/s.</td>
+</tr>
+<tr>
+<td><code>Bandwidth</code></td>
+<td>from the rate</td>
+<td>The highest frequency coded, 1 to 24 kHz: about 11 kHz at 16 kbit/s per channel, 15 kHz at 24 and 20 kHz from 32, never above half the sample rate.</td>
+</tr>
+</tbody>
+</table>
+<p>Intensity stereo is used only below 40 kbit/s per channel, and noise substitution below 48 kbit/s per channel or at quality 1
+and 2.</p>
+<pre><code class="lang-csharp">// Variable bit rate at quality 4 in a raw .aac (ADTS) file, the band held to 16 kHz.
+using (AudioWriter writer = AudioWriter.Create(&quot;tone.aac&quot;, new AudioWriterOptions
+{
+    Aac = new AacEncoderOptions { Quality = 4, Bandwidth = 16_000 },
+}))
+{
+    writer.Write(tone);
+}
+</code></pre><h2 id="transcoding-to-m4a">Transcoding to M4A</h2>
+<p><code>MediaFile.Transcode</code> with <code>AudioCodecs.Aac</code> encodes every audio track in AAC and copies the video unchanged.</p>
+<pre><code class="lang-csharp">// FLAC to AAC in .m4a at the default 64 kbit/s per channel.
+MediaFile.Transcode(&quot;talk.flac&quot;, &quot;talk.m4a&quot;, AudioCodecs.Aac);
+</code></pre>
+<p>From the command line, <code>egami-video audio in.flac -o out.m4a</code> writes AAC; add <code>--bitrate 128k</code> or <code>--quality 4</code>. ALAC stays
+available with <code>--codec alac</code>.</p>
+<h2 id="compared-with-ffmpeg-and-fraunhofer-fdk-aac">Compared with FFmpeg and Fraunhofer FDK AAC</h2>
+<p>Egami.Video keeps a wider band than the other encoders: about 20 kHz from 32 kbit/s per channel, where Fraunhofer FDK AAC
+keeps 13 to 17 kHz and FFmpeg's own encoder 12 to 20 kHz between 64 and 192 kbit/s in stereo. The rest of the band costs
+bits that a narrower encoder spends below it, so at low rates the coded band is cleaner in theirs; set <code>Bandwidth</code> to match
+them. In ViSQOL on the EBU SQAM recordings, the default scores above both at 64 to 192 kbit/s, and about level with Fraunhofer
+FDK AAC when held to its bandwidth.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/aac-encoding.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

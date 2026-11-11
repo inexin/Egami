@@ -20456,6 +20456,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/guides/aac-encoding.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/aac-encoding.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/guides/analysis.md",
       "output": {
         ".html": {

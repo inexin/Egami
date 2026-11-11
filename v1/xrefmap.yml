@@ -116648,6 +116648,19 @@ references:
   commentId: T:Egami.Video.Audio.AudioCodecs
   fullName: Egami.Video.Audio.AudioCodecs
   nameWithType: AudioCodecs
+- uid: Egami.Video.Audio.AudioCodecs.Aac
+  name: Aac
+  href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Aac
+  commentId: P:Egami.Video.Audio.AudioCodecs.Aac
+  fullName: Egami.Video.Audio.AudioCodecs.Aac
+  nameWithType: AudioCodecs.Aac
+- uid: Egami.Video.Audio.AudioCodecs.Aac*
+  name: Aac
+  href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Aac_
+  commentId: Overload:Egami.Video.Audio.AudioCodecs.Aac
+  isSpec: "True"
+  fullName: Egami.Video.Audio.AudioCodecs.Aac
+  nameWithType: AudioCodecs.Aac
 - uid: Egami.Video.Audio.AudioCodecs.Ac3
   name: Ac3
   href: api/Egami.Video.Audio.AudioCodecs.html#Egami_Video_Audio_AudioCodecs_Ac3

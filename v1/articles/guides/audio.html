@@ -424,7 +424,7 @@ and intensity stereo and perceptual noise substitution are used where they save 
 and noise substitution below 48. The bandwidth follows the rate (<code>Bandwidth</code> sets it). The first packet decodes to 1024
 samples of priming, which MP4 records in its edit list and iTunSMPB tag and Matroska as CodecDelay, and the last packet's
 duration cuts the padding after the input, so both give back exactly the input's length; an .aac file has no place for
-either and keeps both.</p>
+either and keeps both. <a href="aac-encoding.html">Encoding AAC</a> covers the settings.</p>
 <pre><code class="lang-csharp">// AAC LC at 128 kbit/s in an .m4a file. The MP4 edit list records the encoder's priming and padding, so the file decodes
 // to exactly the samples written.
 using (AudioWriter writer = AudioWriter.Create(&quot;tone.m4a&quot;, new AudioWriterOptions
