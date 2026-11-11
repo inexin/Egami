@@ -600,6 +600,44 @@ public class Audio
     }
 
     [Fact]
+    public void AacQuality()
+    {
+        using SampleFiles files = new();
+        using AudioFrame tone = Tone();
+
+        #region audio-aac-quality
+        // Variable bit rate at quality 4 in a raw .aac (ADTS) file, the band held to 16 kHz.
+        using (AudioWriter writer = AudioWriter.Create("tone.aac", new AudioWriterOptions
+        {
+            Aac = new AacEncoderOptions { Quality = 4, Bandwidth = 16_000 },
+        }))
+        {
+            writer.Write(tone);
+        }
+        #endregion
+
+        Assert.Equal(CodecIds.Aac, MediaFile.Probe("tone.aac").Tracks[0].CodecId);
+    }
+
+    [Fact]
+    public void AacTranscode()
+    {
+        using SampleFiles files = new();
+        using AudioFrame tone = Tone();
+        using (AudioWriter writer = AudioWriter.Create("talk.flac"))
+        {
+            writer.Write(tone);
+        }
+
+        #region audio-aac-transcode
+        // FLAC to AAC in .m4a at the default 64 kbit/s per channel.
+        MediaFile.Transcode("talk.flac", "talk.m4a", AudioCodecs.Aac);
+        #endregion
+
+        Assert.Equal(CodecIds.Aac, MediaFile.Probe("talk.m4a").Tracks[0].CodecId);
+    }
+
+    [Fact]
     public void OpusWebM()
     {
         using SampleFiles files = new();

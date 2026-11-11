@@ -145,6 +145,7 @@ settings, safety limits and registered formats a call uses.
 - [Audio](https://inexin.github.io/Egami/v1/articles/guides/audio.html): Egami.Video decodes and encodes audio with the same send and receive loop as video.
 - [Audio filters](https://inexin.github.io/Egami/v1/articles/guides/audio-filters.html): Egami.Video's audio filters change level, time, tone and placement of decoded audio as it streams.
 - [Encoding Opus](https://inexin.github.io/Egami/v1/articles/guides/opus-encoding.html): Opus (RFC 6716) is the audio codec of WebM and of .opus files, and the best general-purpose lossy codec for both speech and music.
+- [Encoding AAC](https://inexin.github.io/Egami/v1/articles/guides/aac-encoding.html): AAC LC (ISO/IEC 14496-3) is the audio codec of MP4, M4A and most streaming, and the one every phone, browser and player decodes.
 - [Subtitles](https://inexin.github.io/Egami/v1/articles/guides/subtitles.html): Egami.Video reads and writes text subtitle files in the `Egami.Video.Subtitles` namespace.
 
 ## Egami.Video.Cli

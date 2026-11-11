@@ -224,6 +224,9 @@ public static class AudioCodecs
     /// <summary>Gets the AC-3 codec (decode only).</summary>
     public static AudioCodec Ac3 => Ac3Codec.Instance;
 
+    /// <summary>Gets the AAC codec: AAC LC decode and encode, and HE-AAC's AAC LC core decode.</summary>
+    public static AudioCodec Aac => AacCodec.Instance;
+
     /// <summary>Creates a decoder for a track.</summary>
     /// <param name="track">The track.</param>
     /// <param name="options">How to decode, or <see langword="null"/> for the defaults.</param>

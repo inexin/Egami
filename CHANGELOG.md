@@ -960,7 +960,8 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
 
 ## Egami.Video 1.3.0 (unreleased)
 
-AAC (V5.10), in progress.
+AAC (V5.10): AAC LC decode and encode, raw .aac (ADTS) files, and AAC as the default codec in .aac, .m4a and .mp4 files.
+Additive to 1.2, apart from the new defaults (below). See [Encoding AAC](docs/articles/guides/aac-encoding.md).
 
 - `AdtsFormat` reads and writes raw AAC in ADTS frames (.aac, .adts): one `CodecIds.Aac` packet per frame with the header and
   CRC stripped, the AudioSpecificConfig built from the first header, ID3v2 tags at the start read into the tags, junk between
@@ -975,7 +976,17 @@ AAC (V5.10), in progress.
   (MIT). HE-AAC decodes its AAC LC core at twice the core rate, without SBR or parametric stereo, with an `aac-sbr-ignored`
   warning. AAC Main, LTP, SSR, the low-delay and error-resilient types, coupling channel elements and program config element
   channel maps are not decoded.
-- Internal: a shared MDCT with sine and Kaiser-Bessel-derived windows for the AAC codec to come; the AC-3 decoder now uses its
+- `AacCodec` encodes AAC LC at 8 to 96 kHz, mono to 5.1 and 7.1, with its own psychoacoustic model, block switching, TNS,
+  mid/side and intensity stereo and noise substitution; parts of the bitstream side are translated from oxideav-aac (MIT).
+  `AacEncoderOptions` (`AudioEncoderOptions.Aac`, `AudioWriterOptions.Aac`): `Bitrate` (average, 64 kbit/s per channel by
+  default, with a bit reservoir), `Quality` 1 to 5 (variable bit rate) and `Bandwidth` (about 20 kHz from 32 kbit/s per
+  channel). MP4 records the 1024 samples of priming in its edit list and iTunSMPB tag, and Matroska as CodecDelay with
+  DiscardPadding at the end, so both decode to the input's exact length. In ViSQOL on the EBU SQAM recordings it scores above
+  FFmpeg's encoder and Fraunhofer FDK AAC at 64 to 192 kbit/s, mostly from its wider band.
+- `AudioCodecs.Aac`, beside the other codec shortcuts.
+- Matroska writes and reads DiscardPadding for AAC, and the AAC decoder puts a track's first packet on its CodecDelay frame
+  grid. `AacConfig` reads the 960-sample frame length flag.
+- Internal: a shared MDCT with sine and Kaiser-Bessel-derived windows for the AAC codec; the AC-3 decoder now uses its
   complex FFT and window, at the same speed.
 - Behaviour change: AAC is now the default codec in .aac, .m4a and .mp4 files. `AudioWriter` without a `Codec` writes AAC LC
   to ADTS and MP4 (it wrote PCM to MP4), and `egami-video audio` writes AAC to .aac, .m4a, .mp4 and .mov, where .m4a got ALAC
