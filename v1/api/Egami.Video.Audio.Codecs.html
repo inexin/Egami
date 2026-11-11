@@ -96,13 +96,22 @@ Classes
 </h3>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Audio.Codecs.AacCodec.html">AacCodec</a></dt>
-      <dd><p>AAC (MPEG-4 Audio, ISO/IEC 14496-3), decode only: AAC LC from 8 to 96 kHz, mono to 7.1 (channel configurations 1 to 7), with
+      <dd><p>AAC (MPEG-4 Audio, ISO/IEC 14496-3): AAC LC decode and encode from 8 to 96 kHz, mono to 7.1 (channel configurations 1 to 7), with
 block switching, TNS, mid/side and intensity stereo and perceptual noise substitution. Frames come out as planar float, 1024
 samples each, in Egami.Video's channel order: a 5.1 stream as front left, front right, center, LFE, back left, back right.
 HE-AAC (v1 and v2) decodes its AAC LC core only, without SBR or parametric stereo, at twice the core rate and with a
 &quot;aac-sbr-ignored&quot; warning; it sounds band-limited. AAC Main, LTP, SSR, the low-delay and error-resilient types, coupling
 channel elements and channel maps set by a program config element are not decoded. Read from .aac (ADTS) files and from AAC
-tracks in MP4, Matroska, AVI and CAF.</p>
+tracks in MP4, Matroska, AVI and CAF. The encoder codes at an average bit rate or a variable-bit-rate quality
+(<a class="xref" href="Egami.Video.Audio.Codecs.AacEncoderOptions.html">AacEncoderOptions</a>), with a psychoacoustic model, block switching, TNS, mid/side and intensity stereo and
+noise substitution; the first packet's 1024 samples of priming go in the container's edit list or CodecDelay.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Audio.Codecs.AacEncoderOptions.html">AacEncoderOptions</a></dt>
+      <dd><p>How the AAC encoder codes: an average bit rate (the default, 64 kbit/s per channel) or a variable-bit-rate quality, and the
+highest frequency it keeps. The encoder picks its tools (block switching, TNS, mid/side, intensity stereo and noise
+substitution) per block from the rate.</p>
 </dd>
     </dl>
     <dl class="jumplist">

@@ -91,7 +91,7 @@
 <ul>
 <li>Codecs: FLAC (RFC 9639) decode and encode, integer and float PCM, Opus (RFC 6716) decode and encode, Apple Lossless
 (ALAC) decode and encode, Vorbis I decode, MPEG audio (MP3, MP2 and MP1) decode, Dolby AC-3 (ATSC A/52) decode, AAC LC
-(ISO/IEC 14496-3) decode and G.711 μ-law and A-law decode.</li>
+(ISO/IEC 14496-3) decode and encode and G.711 μ-law and A-law decode.</li>
 <li>Containers: WAV with RF64 and BW64 for files over 4 GB, Sony Wave64, native FLAC, Ogg, MP3, AIFF and AIFF-C, Apple CAF
 and raw AC-3 and E-AC-3, read and written; these codecs in Matroska, WebM and MP4 too.</li>
 <li>A resampler between any two rates, sample format conversion with dither, and channel layouts with downmix and upmix.</li>
@@ -415,6 +415,26 @@ using (AudioReader reader = AudioReader.Open(&quot;song.m4a&quot;))
 
 // Decoded and encoded again as FLAC.
 MediaFile.Transcode(&quot;song.m4a&quot;, &quot;song.flac&quot;, audio: FlacCodec.Instance);
+</code></pre>
+<p><code>AacCodec</code> encodes AAC LC too, at 8 to 96 kHz (other rates are resampled to the next AAC rate up), mono to 5.1 and 7.1 in
+the layouts of channel configurations 1 to 7. It codes at an average bit rate, 64 kbit/s per channel unless
+<code>AacEncoderOptions.Bitrate</code> says otherwise, with a bit reservoir that lends bits to hard blocks, or at a variable-bit-rate
+<code>Quality</code> from 1 to 5. A psychoacoustic model sets each band's noise; block switching keeps attacks clean, and TNS, mid/side
+and intensity stereo and perceptual noise substitution are used where they save bits: intensity below 40 kbit/s per channel
+and noise substitution below 48. The bandwidth follows the rate (<code>Bandwidth</code> sets it). The first packet decodes to 1024
+samples of priming, which MP4 records in its edit list and iTunSMPB tag and Matroska as CodecDelay, and the last packet's
+duration cuts the padding after the input, so both give back exactly the input's length; an .aac file has no place for
+either and keeps both.</p>
+<pre><code class="lang-csharp">// AAC LC at 128 kbit/s in an .m4a file. The MP4 edit list records the encoder's priming and padding, so the file decodes
+// to exactly the samples written.
+using (AudioWriter writer = AudioWriter.Create(&quot;tone.m4a&quot;, new AudioWriterOptions
+{
+    Codec = AacCodec.Instance,
+    Aac = new AacEncoderOptions { Bitrate = 128_000 },
+}))
+{
+    writer.Write(tone);
+}
 </code></pre>
 <p><code>Ac3Codec</code> decodes AC-3 (ATSC A/52) in every channel mode, 1/0 to 3/2 and dual mono, with or without the LFE, at 32, 44.1 and
 48 kHz and 32 to 640 kbit/s, from raw .ac3 files and from AC-3 tracks in MP4, Matroska, AVI and CAF. Frames are 1536 samples of

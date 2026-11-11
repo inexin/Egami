@@ -116893,6 +116893,19 @@ references:
   commentId: T:Egami.Video.Audio.AudioEncoderOptions
   fullName: Egami.Video.Audio.AudioEncoderOptions
   nameWithType: AudioEncoderOptions
+- uid: Egami.Video.Audio.AudioEncoderOptions.Aac
+  name: Aac
+  href: api/Egami.Video.Audio.AudioEncoderOptions.html#Egami_Video_Audio_AudioEncoderOptions_Aac
+  commentId: P:Egami.Video.Audio.AudioEncoderOptions.Aac
+  fullName: Egami.Video.Audio.AudioEncoderOptions.Aac
+  nameWithType: AudioEncoderOptions.Aac
+- uid: Egami.Video.Audio.AudioEncoderOptions.Aac*
+  name: Aac
+  href: api/Egami.Video.Audio.AudioEncoderOptions.html#Egami_Video_Audio_AudioEncoderOptions_Aac_
+  commentId: Overload:Egami.Video.Audio.AudioEncoderOptions.Aac
+  isSpec: "True"
+  fullName: Egami.Video.Audio.AudioEncoderOptions.Aac
+  nameWithType: AudioEncoderOptions.Aac
 - uid: Egami.Video.Audio.AudioEncoderOptions.BitsPerSample
   name: BitsPerSample
   href: api/Egami.Video.Audio.AudioEncoderOptions.html#Egami_Video_Audio_AudioEncoderOptions_BitsPerSample
@@ -117663,6 +117676,19 @@ references:
   commentId: T:Egami.Video.Audio.Codecs.AacCodec
   fullName: Egami.Video.Audio.Codecs.AacCodec
   nameWithType: AacCodec
+- uid: Egami.Video.Audio.Codecs.AacCodec.CanEncode
+  name: CanEncode
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_CanEncode
+  commentId: P:Egami.Video.Audio.Codecs.AacCodec.CanEncode
+  fullName: Egami.Video.Audio.Codecs.AacCodec.CanEncode
+  nameWithType: AacCodec.CanEncode
+- uid: Egami.Video.Audio.Codecs.AacCodec.CanEncode*
+  name: CanEncode
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_CanEncode_
+  commentId: Overload:Egami.Video.Audio.Codecs.AacCodec.CanEncode
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AacCodec.CanEncode
+  nameWithType: AacCodec.CanEncode
 - uid: Egami.Video.Audio.Codecs.AacCodec.CodecId
   name: CodecId
   href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_CodecId
@@ -117692,6 +117718,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.Codecs.AacCodec.CreateDecoder
   nameWithType: AacCodec.CreateDecoder
+- uid: Egami.Video.Audio.Codecs.AacCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions,Egami.Video.MediaContext)
+  name: CreateEncoder(AudioEncoderOptions, MediaContext)
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_CreateEncoder_Egami_Video_Audio_AudioEncoderOptions_Egami_Video_MediaContext_
+  commentId: M:Egami.Video.Audio.Codecs.AacCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions,Egami.Video.MediaContext)
+  fullName: Egami.Video.Audio.Codecs.AacCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions, Egami.Video.MediaContext)
+  nameWithType: AacCodec.CreateEncoder(AudioEncoderOptions, MediaContext)
+- uid: Egami.Video.Audio.Codecs.AacCodec.CreateEncoder*
+  name: CreateEncoder
+  href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_CreateEncoder_
+  commentId: Overload:Egami.Video.Audio.Codecs.AacCodec.CreateEncoder
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AacCodec.CreateEncoder
+  nameWithType: AacCodec.CreateEncoder
 - uid: Egami.Video.Audio.Codecs.AacCodec.Instance
   name: Instance
   href: api/Egami.Video.Audio.Codecs.AacCodec.html#Egami_Video_Audio_Codecs_AacCodec_Instance
@@ -117718,6 +117757,64 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Audio.Codecs.AacCodec.Name
   nameWithType: AacCodec.Name
+- uid: Egami.Video.Audio.Codecs.AacEncoderOptions
+  name: AacEncoderOptions
+  href: api/Egami.Video.Audio.Codecs.AacEncoderOptions.html
+  commentId: T:Egami.Video.Audio.Codecs.AacEncoderOptions
+  fullName: Egami.Video.Audio.Codecs.AacEncoderOptions
+  nameWithType: AacEncoderOptions
+- uid: Egami.Video.Audio.Codecs.AacEncoderOptions.Bandwidth
+  name: Bandwidth
+  href: api/Egami.Video.Audio.Codecs.AacEncoderOptions.html#Egami_Video_Audio_Codecs_AacEncoderOptions_Bandwidth
+  commentId: P:Egami.Video.Audio.Codecs.AacEncoderOptions.Bandwidth
+  fullName: Egami.Video.Audio.Codecs.AacEncoderOptions.Bandwidth
+  nameWithType: AacEncoderOptions.Bandwidth
+- uid: Egami.Video.Audio.Codecs.AacEncoderOptions.Bandwidth*
+  name: Bandwidth
+  href: api/Egami.Video.Audio.Codecs.AacEncoderOptions.html#Egami_Video_Audio_Codecs_AacEncoderOptions_Bandwidth_
+  commentId: Overload:Egami.Video.Audio.Codecs.AacEncoderOptions.Bandwidth
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AacEncoderOptions.Bandwidth
+  nameWithType: AacEncoderOptions.Bandwidth
+- uid: Egami.Video.Audio.Codecs.AacEncoderOptions.Bitrate
+  name: Bitrate
+  href: api/Egami.Video.Audio.Codecs.AacEncoderOptions.html#Egami_Video_Audio_Codecs_AacEncoderOptions_Bitrate
+  commentId: P:Egami.Video.Audio.Codecs.AacEncoderOptions.Bitrate
+  fullName: Egami.Video.Audio.Codecs.AacEncoderOptions.Bitrate
+  nameWithType: AacEncoderOptions.Bitrate
+- uid: Egami.Video.Audio.Codecs.AacEncoderOptions.Bitrate*
+  name: Bitrate
+  href: api/Egami.Video.Audio.Codecs.AacEncoderOptions.html#Egami_Video_Audio_Codecs_AacEncoderOptions_Bitrate_
+  commentId: Overload:Egami.Video.Audio.Codecs.AacEncoderOptions.Bitrate
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AacEncoderOptions.Bitrate
+  nameWithType: AacEncoderOptions.Bitrate
+- uid: Egami.Video.Audio.Codecs.AacEncoderOptions.Default
+  name: Default
+  href: api/Egami.Video.Audio.Codecs.AacEncoderOptions.html#Egami_Video_Audio_Codecs_AacEncoderOptions_Default
+  commentId: P:Egami.Video.Audio.Codecs.AacEncoderOptions.Default
+  fullName: Egami.Video.Audio.Codecs.AacEncoderOptions.Default
+  nameWithType: AacEncoderOptions.Default
+- uid: Egami.Video.Audio.Codecs.AacEncoderOptions.Default*
+  name: Default
+  href: api/Egami.Video.Audio.Codecs.AacEncoderOptions.html#Egami_Video_Audio_Codecs_AacEncoderOptions_Default_
+  commentId: Overload:Egami.Video.Audio.Codecs.AacEncoderOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AacEncoderOptions.Default
+  nameWithType: AacEncoderOptions.Default
+- uid: Egami.Video.Audio.Codecs.AacEncoderOptions.Quality
+  name: Quality
+  href: api/Egami.Video.Audio.Codecs.AacEncoderOptions.html#Egami_Video_Audio_Codecs_AacEncoderOptions_Quality
+  commentId: P:Egami.Video.Audio.Codecs.AacEncoderOptions.Quality
+  fullName: Egami.Video.Audio.Codecs.AacEncoderOptions.Quality
+  nameWithType: AacEncoderOptions.Quality
+- uid: Egami.Video.Audio.Codecs.AacEncoderOptions.Quality*
+  name: Quality
+  href: api/Egami.Video.Audio.Codecs.AacEncoderOptions.html#Egami_Video_Audio_Codecs_AacEncoderOptions_Quality_
+  commentId: Overload:Egami.Video.Audio.Codecs.AacEncoderOptions.Quality
+  isSpec: "True"
+  fullName: Egami.Video.Audio.Codecs.AacEncoderOptions.Quality
+  nameWithType: AacEncoderOptions.Quality
 - uid: Egami.Video.Audio.Codecs.Ac3Codec
   name: Ac3Codec
   href: api/Egami.Video.Audio.Codecs.Ac3Codec.html
@@ -122693,6 +122790,19 @@ references:
   commentId: T:Egami.Video.AudioWriterOptions
   fullName: Egami.Video.AudioWriterOptions
   nameWithType: AudioWriterOptions
+- uid: Egami.Video.AudioWriterOptions.Aac
+  name: Aac
+  href: api/Egami.Video.AudioWriterOptions.html#Egami_Video_AudioWriterOptions_Aac
+  commentId: P:Egami.Video.AudioWriterOptions.Aac
+  fullName: Egami.Video.AudioWriterOptions.Aac
+  nameWithType: AudioWriterOptions.Aac
+- uid: Egami.Video.AudioWriterOptions.Aac*
+  name: Aac
+  href: api/Egami.Video.AudioWriterOptions.html#Egami_Video_AudioWriterOptions_Aac_
+  commentId: Overload:Egami.Video.AudioWriterOptions.Aac
+  isSpec: "True"
+  fullName: Egami.Video.AudioWriterOptions.Aac
+  nameWithType: AudioWriterOptions.Aac
 - uid: Egami.Video.AudioWriterOptions.BitsPerSample
   name: BitsPerSample
   href: api/Egami.Video.AudioWriterOptions.html#Egami_Video_AudioWriterOptions_BitsPerSample
