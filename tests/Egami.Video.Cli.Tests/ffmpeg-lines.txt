@@ -100,6 +100,14 @@
 => audio in.mkv -o out.mkv --codec flac | ffmpeg -i in.mkv -c:v copy -c:a flac out.mkv
 => audio in.flac -o out.opus --codec opus --bitrate 96k | ffmpeg -i in.flac -c:a libopus -b:a 96k out.opus
 => audio in.wav -o out.opus | ffmpeg -i in.wav out.opus
+=> audio in.wav -o out.m4a | ffmpeg -i in.wav out.m4a
+=> audio in.flac -o out.aac | ffmpeg -i in.flac out.aac
+=> audio in.mp4 -o out.m4a --no-video | ffmpeg -i in.mp4 -vn out.m4a
+=> remux in.mp4 -o out.m4a --track a | ffmpeg -i in.mp4 -vn -c:a copy out.m4a
+=> remux in.mp4 -o out.aac --track a | ffmpeg -i in.mp4 -vn -acodec copy out.aac
+=> remux in.mkv -o out.m4a --track a:1 | ffmpeg -i in.mkv -map 0:a:1 -vn -c:a copy out.m4a
+=> trim in.mp4 -o out.aac | ffmpeg -ss 10 -t 5 -i in.mp4 -vn -c:a copy out.aac
+=> remux in.mp4 -o out.m4a | ffmpeg -i in.mp4 -c:a copy out.m4a
 => audio in.mp4 -o out.mp4 --codec aac | ffmpeg -i in.mp4 -c:v copy -c:a aac out.mp4
 => audio in.flac -o out.m4a --codec aac --bitrate 128k | ffmpeg -i in.flac -c:a aac -b:a 128k out.m4a
 => audio in.wav -o out.m4a --codec aac --quality 5 | ffmpeg -i in.wav -c:a aac -q:a 2 out.m4a

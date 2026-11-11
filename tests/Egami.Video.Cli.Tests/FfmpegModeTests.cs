@@ -115,6 +115,43 @@ public sealed class FfmpegModeTests
     }
 
     [Fact]
+    public void AudioGetsTheContainersDefaultCodecAndCopyStaysACopy()
+    {
+        using Tool tool = new();
+        string clip = Path.Combine(Tool.Corpus, "mkv-mjpeg-pcm.mkv");
+
+        // No codec options: ffmpeg encodes MP4's audio in AAC; egami-video does too and copies the video.
+        ToolRun run = tool.Run("ffmpeg", "-i", clip, "out.mp4");
+        Assert.True(run.Code == 0, run.Error);
+        Assert.Contains("the video is copied", run.Error, StringComparison.Ordinal);
+        MediaInfo mp4 = MediaFile.Probe(tool.PathOf("out.mp4"));
+        Assert.Equal(CodecIds.Aac, mp4.Tracks.Single(t => t.Kind == TrackKind.Audio).CodecId);
+        Assert.Equal(CodecIds.MotionJpeg, mp4.Tracks.Single(t => t.Kind == TrackKind.Video).CodecId);
+
+        // An audio-only .m4a gets AAC too, not the source's PCM.
+        Assert.Equal(0, tool.Run("ffmpeg", "-i", clip, "-vn", "out.m4a").Code);
+        Assert.Equal(CodecIds.Aac, MediaFile.Probe(tool.PathOf("out.m4a")).Tracks.Single().CodecId);
+
+        // -vn -c:a copy takes the AAC packets out unchanged.
+        Assert.Equal(0, tool.Run("ffmpeg", "-i", "out.mp4", "-vn", "-c:a", "copy", "copy.aac").Code);
+        Assert.Equal(AudioPackets(tool.PathOf("out.mp4")), AudioPackets(tool.PathOf("copy.aac")));
+
+        // -c copy still copies every stream, PCM included.
+        Assert.Equal(0, tool.Run("ffmpeg", "-i", clip, "-c", "copy", "copy.mkv").Code);
+        Assert.Equal(CodecIds.PcmLittleEndian, MediaFile.Probe(tool.PathOf("copy.mkv")).Tracks.Single(t => t.Kind == TrackKind.Audio).CodecId);
+
+        // A file without audio is remuxed as before.
+        Assert.Equal(0, tool.Run("ffmpeg", "-i", "out.mp4", "-an", "-c", "copy", "silent.mp4").Code);
+        run = tool.Run("ffmpeg", "-i", "silent.mp4", "silent2.mp4");
+        Assert.True(run.Code == 0, run.Error);
+        Assert.DoesNotContain(MediaFile.Probe(tool.PathOf("silent2.mp4")).Tracks, t => t.Kind == TrackKind.Audio);
+    }
+
+    /// <summary>The audio packets' hashes, in order; the times are left out, as ADTS has no edit list for the priming.</summary>
+    private static List<string> AudioPackets(string path) =>
+        [.. RemuxTests.Packets(path).Where(p => p.StartsWith("Audio ", StringComparison.Ordinal)).Select(p => p.Split(' ')[2]).Order(StringComparer.Ordinal)];
+
+    [Fact]
     public void FfprobeJsonEqualsInfo()
     {
         using Tool tool = new();

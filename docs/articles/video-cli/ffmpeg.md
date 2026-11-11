@@ -37,7 +37,9 @@ prints `egami-video run in.mkv resize 640 + flip horizontal -o out.mkv --codec m
 | `-vf yadif` or `bwdif`, alone or before the filters above | `--deinterlace` on `run`, `encode` or `frames` |
 | `-vf thumbnail`, `select='gt(scene,0.4)'`, `tile=4x4` | `thumbnail`, `scenes`, `sheet` |
 | `.gif`, `.apng` or `.webp` output | `animate` |
-| `-vn`, `-c:a flac`, `-c:a alac`, `-c:a libopus`, `-b:a`, `-ar`, `-ac`, `-sample_fmt`, an .aiff or .caf output | `audio` |
+| `-vn`, `-c:a flac`, `-c:a alac`, `-c:a libopus`, `-c:a aac`, `-c:a libfdk_aac`, `-b:a`, `-q:a`, `-vbr`, `-ar`, `-ac`, `-sample_fmt`, an .aiff, .caf, .m4a or .aac output | `audio` |
+| `-i in out.mp4`, `.mov` or `.webm` with no codec options, from a file with audio | `audio` (AAC, or Opus in WebM; the video copied) |
+| `-vn -c:a copy` (or `-acodec copy`) | `remux --track a`, or `trim` with `-ss`, `-to`, `-t` |
 | `-f framemd5`, `-f framehash` | `hash` |
 | `-i distorted -i reference -lavfi psnr` or `ssim` | `compare` |
 | `-vf blackdetect`, `freezedetect`, `cropdetect`, `idet`, `signalstats`, `blurdetect`, `blockdetect` or `-af silencedetect`, `volumedetect`, `astats`, `ebur128`, with `-f null -` | `analyze --ffmpeg-log` |
@@ -81,8 +83,10 @@ egami-video ffmpeg -i in.mkv -lavfi showspectrumpic=s=1024x512:fscale=log spectr
 showwavespic takes `s`, `split_channels`, `colors` (the first) and `scale` (lin or log); showspectrumpic takes `s`, `mode`,
 `color` (magma), `scale` (log), `fscale` and `legend`, and draws a legend unless `legend=0`, as ffmpeg does.
 
-ffmpeg encodes again by default; egami-video copies streams where ffmpeg would encode with a codec it does not have, and says so
-in a warning. An output that exists needs `-y`, as in ffmpeg.
+ffmpeg encodes again by default. egami-video encodes the audio in the codec ffmpeg picks for the output where it has that codec
+(AAC in .m4a, .aac, .mp4 and .mov, Opus in .opus and WebM, FLAC in .flac and .oga, PCM in WAV, AIFF and CAF), and copies the
+other streams where ffmpeg would encode with a codec it does not have (the video, and audio in Matroska and AVI), saying so in
+a warning; `-c:a copy` copies the audio, as in ffmpeg. An output that exists needs `-y`, as in ffmpeg.
 
 ## Audio filters
 
@@ -137,13 +141,13 @@ egami-video ffmpeg -i broadcast.ts -vf yadif=mode=send_field -c:v ffv1 progressi
 ## The options
 
 ffmpeg mode takes `-i`, `-f`, `-y`, `-n`, `-ss`, `-to`, `-t`, `-itsoffset`, `-framerate`, `-safe`, `-map`, `-c`, `-codec`, `-c:v`,
-`-c:a`, `-c:s`, `-vcodec`, `-acodec`, `-scodec`, `-an`, `-vn`, `-sn`, `-dn`, `-r`, `-s`, `-frames:v`, `-vframes`, `-q:v`,
+`-c:a`, `-c:s`, `-vcodec`, `-acodec`, `-scodec`, `-an`, `-vn`, `-sn`, `-dn`, `-r`, `-s`, `-frames:v`, `-vframes`, `-q:v`, `-q:a`, `-aq`, `-vbr`,
 `-qscale:v`, `-g`, `-level 3`, `-coder`, `-context`, `-slices`, `-slicecrc` (the last five with `-c:v ffv1`), `-ar`, `-b:a`, `-ab`, `-ac`, `-sample_fmt`, `-metadata`, `-map_metadata`, `-map_chapters`, `-vf`, `-filter:v`, `-lavfi` and
 `-filter_complex` (psnr, ssim, showwavespic, showspectrumpic and the editing filters), `-af` and `-filter:a` (detection, audio and editing filters), `-loop 1` before an image, `-segment_time`, `-segment_times`, `-movflags` (faststart, frag_keyframe, empty_moov and default_base_moof), `-frag_duration` (with frag_keyframe), `-update`, `-progress`, `-stats`, `-nostats`,
 `-stats_period`, `-hide_banner`, `-loglevel`, `-v` and `-nostdin`, with `pipe:` and `%d` patterns. The filters are scale, crop,
 pad, transpose, hflip, vflip, fps, thumbnail, select (scene), tile, yadif and bwdif, and with `-f null` the detection filters above; the
 `-f lavfi` sources are testsrc, testsrc2, smptebars, smptehdbars, color, sine, anullsrc and anoisesrc. Codecs: `copy`, `mjpeg`, `ffv1` and `rawvideo` for video, `flac`,
-`alac`, `libopus` (or `opus`) and the `pcm_` codecs for audio.
+`alac`, `libopus` (or `opus`), `aac`, `libfdk_aac` and the `pcm_` codecs for audio.
 
 ffprobe mode takes `-i`, `-show_streams`, `-show_format`, `-show_packets`, `-show_frames`, `-show_chapters`, `-select_streams`,
 `-show_entries`, `-of` (also `-print_format`, `-output_format`) with the json, csv, compact, default, flat and xml writers and
