@@ -602,6 +602,10 @@ internal sealed partial class H264MbSyntax
 
     private int ChromaBlock(int bx, int by) => (((_mbY * 2) + by) * _mb.ChromaW4) + (_mbX * 2) + bx;
 
+    /// <summary>The first significance, last and level context of a residual block category (frame coding).</summary>
+    internal static (int Sig, int Last, int Abs) ResidualContexts(int cat) =>
+        cat == 5 ? (402, 417, 426) : (105 + SigOffset[cat], 166 + SigOffset[cat], 227 + AbsOffset[cat]);
+
     /// <summary>Writes residual_block_cabac (7.3.5.3.3) of a block's levels: coded_block_flag, significance map, then levels.</summary>
     public void BlockCabac<T>(ref T sink, int cat, int cbfInc, int maxNumCoeff, int[] levels, int at, int count)
         where T : struct, ICabacSink => BlockCabac(Contexts, ref sink, cat, cbfInc, maxNumCoeff, levels, at, count);
