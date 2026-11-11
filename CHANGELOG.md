@@ -52,6 +52,9 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
     (within 4.7 %, buffer never below 10 %) but not at a starved 2.5 Mbit/s, where it overshoots by up to 10 % and the buffer
     runs dry.
 - The encoder core learned B-frames (planning only; Egami's VP8, VP9 and AV1 streams are unchanged byte for byte).
+- Tools: tools/video/profile-h264-encoder.py profiles the encoder by stage, counts cycles a frame with tiered PGO on and off,
+  and reads its work per macroblock from internal counters that only Debug and `-p:EgamiH264Stats=true` builds have (Release
+  output is unchanged). time-h264-encoder.py's cycles mode now measures with tiered PGO on, as users run it (`--no-pgo` for off).
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 
