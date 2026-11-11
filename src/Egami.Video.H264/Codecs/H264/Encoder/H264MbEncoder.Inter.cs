@@ -19,6 +19,19 @@ internal sealed partial class H264MbEncoder
     // The cost of a lone ±1 level after a run of zeros, which decides when a sparse block is dropped.
     private static readonly byte[] RunCost = [3, 2, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
+    // Task 6: the 4x4 and 8x8 transforms are both coded only when SATD and SA8D come within this share of each other.
+    private const double TransformMargin = 0.1;
+
+    // Task 8: the second-best partitioning is coded only when its search cost comes within this share of the best's.
+    private const double SecondMargin = 1.0 / 16;
+
+    // Task 8: B_Direct_16x16 with a residual is coded only when its SATD is at most this share of the best partitioning's cost.
+    private const double DirectShare = 0.8;
+
+    // Task 7: P_Skip and B_Skip end the search when every 4x4 block's squared error is below that of a coefficient this many
+    // quantizer steps large.
+    private const double SkipSteps = 0.4;
+
     private readonly H264MbCode _skip = new();
     private readonly H264MbCode[] _inter = [new(), new(), new(), new()];
     private readonly H264MbCode _inter8 = new();
@@ -82,6 +95,14 @@ internal sealed partial class H264MbEncoder
             bestCost = skipSse + (_lambda * Rate(skip) / CabacCost.Bit);
             best = skip;
             SaveMb(0);
+            if (ResidualQuantizesAway())
+            {
+                // Task 7: what P_Skip leaves would quantize to nothing, so nothing else is searched or coded.
+                H264EncodeStats.Add(H264EncodeStat.EarlySkips);
+                _frameMv[addr] = skipMv;
+                Best = skip;
+                return bestCost;
+            }
         }
 
         // Motion search: the partitionings worth coding, by SATD and vector bits.
@@ -113,17 +134,18 @@ internal sealed partial class H264MbEncoder
             }
         }
 
-        // Rate-distortion: the best partitioning, and the second from effort 3.
-        double interCost = CodeInter(first);
+        // Rate-distortion: the best partitioning, and the second from effort 3 unless the pre-pass sets them far apart.
+        (bool codeFirst, bool codeSecond) = PickPartitions(first, firstCost, second, secondCost);
+        double interCost = codeFirst ? CodeInter(first) : double.MaxValue;
         SaveMb(1);
         if (interCost < bestCost)
         {
             (bestCost, best, bestSlot) = (interCost, first, 1);
         }
 
-        if (_effort >= 3 && second is not null)
+        if (codeSecond)
         {
-            interCost = CodeInter(second);
+            interCost = CodeInter(second!);
             SaveMb(2);
             if (interCost < bestCost)
             {
@@ -611,9 +633,21 @@ internal sealed partial class H264MbEncoder
 
         code.Cbp = chroma << 4;
         long chromaSse = Sse(_srcCb, _cb, _chromaAt, _cstride, 8, 8) + Sse(_srcCr, _cr, _chromaAt, _cstride, 8, 8);
+        bool can8 = _allow8x8 && _effort >= 2 && H264MbSyntax.NoSub8x8(code, b);
+        if (can8)
+        {
+            // Task 6: when the Hadamard costs of the residual, 4x4 (SATD) and 8x8 (SA8D), are far apart, code only the lower.
+            long satd4 = Satd(_srcY, _lumaAt, _stride, _ip, 0, 16, 16, 16), satd8 = Sa8d(_srcY, _lumaAt, _stride, _ip, 0, 16, 16, 16);
+            if (satd8 > satd4 * (1 + TransformMargin) || satd4 > satd8 * (1 + TransformMargin))
+            {
+                long sseT = CodeInterLuma(code, satd8 < satd4);
+                return sseT + chromaSse + (_lambda * Rate(code) / CabacCost.Bit);
+            }
+        }
+
         long sse = CodeInterLuma(code, eight: false);
         double cost = sse + chromaSse + (_lambda * Rate(code) / CabacCost.Bit);
-        if (_allow8x8 && _effort >= 2 && H264MbSyntax.NoSub8x8(code, b))
+        if (can8)
         {
             Save(_recon[0]);
             H264MbCode eight = _inter8;
@@ -777,6 +811,43 @@ internal sealed partial class H264MbEncoder
             _ipCr.AsSpan(y * 8, 8).CopyTo(_cr.AsSpan(_chromaAt + (y * _cstride), 8));
         }
     }
+
+    /// <summary>
+    /// Whether the residual of the prediction now in the picture is too small to code (task 7): each 4x4 block's squared error
+    /// is below that of one coefficient <see cref="SkipSteps"/> quantizer steps large (the step being 0.625 · 2^(QP / 6)), which
+    /// bounds every coefficient of the block well inside the dead zone.
+    /// </summary>
+    private bool ResidualQuantizesAway()
+    {
+        double stepY = SkipSteps * 0.625 * Math.Pow(2, _qp / 6.0), stepC = SkipSteps * 0.625 * Math.Pow(2, _qpc / 6.0);
+        long limitY = (long)(stepY * stepY), limitC = (long)(stepC * stepC);
+        for (int blk = 0; blk < 16; blk++)
+        {
+            int at = _lumaAt + ((blk >> 2) * 4 * _stride) + ((blk & 3) * 4);
+            if (Sse(_srcY, _y, at, _stride, 4, 4) >= limitY)
+            {
+                return false;
+            }
+        }
+
+        for (int blk = 0; blk < 4; blk++)
+        {
+            int at = _chromaAt + ((blk >> 1) * 4 * _cstride) + ((blk & 1) * 4);
+            if (Sse(_srcCb, _cb, at, _cstride, 4, 4) >= limitC || Sse(_srcCr, _cr, at, _cstride, 4, 4) >= limitC)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Which of the best two partitionings to RD-code (task 8): the best, and from effort 3 the second when its search cost
+    /// (SATD and vector bits) comes within <see cref="SecondMargin"/> of the best's.
+    /// </summary>
+    private (bool First, bool Second) PickPartitions(H264MbCode first, long firstCost, H264MbCode? second, long secondCost) =>
+        (true, _effort >= 3 && second is not null && secondCost - firstCost <= firstCost * SecondMargin);
 
     private void SaveMb(int slot)
     {

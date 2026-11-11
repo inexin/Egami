@@ -37,10 +37,11 @@ public sealed class EncoderStatsTests
             Assert.True(At(counts, t, H264EncodeStat.InterLumaCodings) >= At(counts, t, H264EncodeStat.InterCandidates));
         }
 
-        // An I picture has no inter work, and each of its macroblocks is one intra pass of three RD codings (I16, I4, I8).
+        // An I picture has no inter work, and each of its macroblocks is one intra pass that RD-codes the best of I16, I4 and
+        // I8 by SATD, and the next when it comes close.
         Assert.Equal(0, At(counts, 2, H264EncodeStat.BlockSearches));
         Assert.Equal(Mbs, At(counts, 2, H264EncodeStat.IntraPasses));
-        Assert.Equal(3 * Mbs, At(counts, 2, H264EncodeStat.RdCodings));
+        Assert.InRange(At(counts, 2, H264EncodeStat.RdCodings), Mbs, 2 * Mbs);
         Assert.True(At(counts, 1, H264EncodeStat.PartCosts) > 0);
         Assert.True(At(counts, 0, H264EncodeStat.RdoqBlocks) > 0);
         Assert.True(At(counts, 0, H264EncodeStat.RdoqRateCounts) >= At(counts, 0, H264EncodeStat.RdoqBlocks));

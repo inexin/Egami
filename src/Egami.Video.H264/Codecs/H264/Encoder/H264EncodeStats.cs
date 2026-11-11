@@ -43,6 +43,12 @@ internal enum H264EncodeStat
 
     /// <summary>The samples those SATD calls cover.</summary>
     SatdSamples,
+
+    /// <summary>P_Skip and B_Skip macroblocks taken before any search, their residual too small to code.</summary>
+    EarlySkips,
+
+    /// <summary>SA8D calls (the 8x8 Hadamard cost that, against SATD, picks an inter transform size).</summary>
+    Sa8dCalls,
 }
 
 /// <summary>

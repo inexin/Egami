@@ -104,10 +104,29 @@ internal sealed partial class H264MbEncoder
         CodeChroma();
 
         int count = _allow8x8 && _effort >= 1 ? 3 : 2;
-        int best = 0;
-        double bestCost = double.MaxValue;
+
+        // Task 8: rank I16, I4 and I8 by SATD and mode bits, and code the best (and the next when it comes close).
+        Span<long> estimate = stackalloc long[3];
+        Span<int> order = [0, 1, 2];
         for (int c = 0; c < count; c++)
         {
+            estimate[c] = c == 0 ? EstimateI16() : EstimateNxN(c == 1 ? 4 : 8);
+        }
+
+        for (int i = 1; i < count; i++)
+        {
+            for (int j = i; j > 0 && estimate[order[j]] < estimate[order[j - 1]]; j--)
+            {
+                (order[j], order[j - 1]) = (order[j - 1], order[j]);
+            }
+        }
+
+        int coded = estimate[order[1]] - estimate[order[0]] <= estimate[order[0]] * IntraRankMargin ? 2 : 1;
+        int best = order[0];
+        double bestCost = double.MaxValue;
+        for (int o = 0; o < coded; o++)
+        {
+            int c = order[o];
             H264MbCode code = _candidates[c];
             code.CopyFrom(_chroma);
             long sse = c switch
@@ -163,6 +182,9 @@ internal sealed partial class H264MbEncoder
 
         return false;
     }
+
+    // Task 8: the second-best intra kind by SATD and mode bits is RD-coded too when it comes within this share of the best.
+    private const double IntraRankMargin = 0.25;
 
     /// <summary>How far above the inter cost, in sixteenths, an intra 16x16 SATD still tries intra.</summary>
     internal static int IntraMargin { get; set; } = 24;
@@ -242,6 +264,69 @@ internal sealed partial class H264MbEncoder
     }
 
     // ---- Luma ----
+
+    // The SATD and mode bits of the best 16x16 prediction, as CodeI16 chooses it.
+    private long EstimateI16()
+    {
+        int[] t = _t, l = _l;
+        H264IntraPredict.Gather(_y, _lumaAt, _stride, 16, _top, false, _left, _topLeft, t, l);
+        long bestCost = long.MaxValue;
+        for (int mode = 0; mode < 4; mode++)
+        {
+            if (H264IntraPredict.Allowed16x16(mode, _top, _left, _topLeft))
+            {
+                H264IntraPredict.Predict16x16(_pred, 16, mode, t, l, _top, _left);
+                bestCost = Math.Min(bestCost, Satd(_srcY, _lumaAt, _stride, _pred, 0, 16, 16, 16) + (long)(_sadLambda * (mode == 2 ? 1 : 3)));
+            }
+        }
+
+        return bestCost;
+    }
+
+    // The SATD and mode bits of the best n by n predictions (4 or 8) as CodeI4 and CodeI8 choose them, predicted from the
+    // source's samples instead of the reconstruction's, so nothing has to be coded first.
+    private long EstimateNxN(int n)
+    {
+        int[] t = _t, l = _l;
+        long total = 0;
+        int blocks = n == 4 ? 16 : 4;
+        for (int i = 0; i < blocks; i++)
+        {
+            int bx, by, blk;
+            if (n == 4)
+            {
+                int xy = H264Tables.BlockXY[i];
+                (bx, by, blk) = (xy & 3, xy >> 2, i);
+            }
+            else
+            {
+                (bx, by, blk) = ((i & 1) * 2, (i >> 1) * 2, i * 4);
+            }
+
+            int at = _lumaAt + (by * 4 * _stride) + (bx * 4);
+            (bool top, bool left, bool corner, bool topRight) = Neighbors(bx * 4, by * 4, n, blk);
+            H264IntraPredict.Gather(_srcY, at, _stride, n, top, topRight, left, corner, t, l);
+            if (n == 8)
+            {
+                H264IntraPredict.Filter8x8(t, l, top, left, corner);
+            }
+
+            int predicted = _syntax.PredictedIntraMode(bx, by);
+            long bestCost = long.MaxValue;
+            for (int mode = 0; mode < 9; mode++)
+            {
+                if (H264IntraPredict.NxNAllowed(mode, top, left, corner))
+                {
+                    H264IntraPredict.PredictNxN(_pred, n, n, mode, t, l, top, left);
+                    bestCost = Math.Min(bestCost, Satd(_srcY, at, _stride, _pred, 0, n, n, n) + (long)(_sadLambda * (mode == predicted ? 1 : 4)));
+                }
+            }
+
+            total += bestCost;
+        }
+
+        return total;
+    }
 
     private long CodeI16(H264MbCode code)
     {
@@ -850,6 +935,13 @@ internal sealed partial class H264MbEncoder
         H264EncodeStats.Add(H264EncodeStat.SatdCalls);
         H264EncodeStats.Add(H264EncodeStat.SatdSamples, width * height);
         return H264EncodeSimd.Satd(src, at, stride, pred, predAt, predStride, width, height);
+    }
+
+    /// <summary>The SA8D of a block against a prediction (<see cref="H264EncodeSimd.Sa8d"/>).</summary>
+    internal static long Sa8d(byte[] src, int at, int stride, byte[] pred, int predAt, int predStride, int width, int height)
+    {
+        H264EncodeStats.Add(H264EncodeStat.Sa8dCalls);
+        return H264EncodeSimd.Sa8d(src, at, stride, pred, predAt, predStride, width, height);
     }
 
     /// <summary>The sum of squared differences of two planes over an area.</summary>

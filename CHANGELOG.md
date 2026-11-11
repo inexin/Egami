@@ -62,6 +62,14 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   moved instead of copying all 460 in and out. Effort 4 takes 22 to 45 % fewer cycles a frame at 720p (1.8 to 2.1 G against
   2.3 to 3.9 G with tiered PGO), effort 7 31 to 54 % fewer; BD-rate moves by +0.04 to +0.17 % at effort 4, +0.06 to +0.14 %
   at effort 7 and not at all at effort 2. The stream is still coded exactly by the CABAC writer.
+- Speed (H.264 Encoder Speed Build Plan, tasks 6 to 8): fewer candidates are RD-coded per macroblock. An inter candidate codes
+  only the 4x4 or the 8x8 transform when SATD and an 8x8 Hadamard cost (SA8D) of its residual are more than 10 % apart; the
+  second-best partitioning is coded only within 1/16 of the best's search cost; B_Direct_16x16 with a residual only when its
+  SATD is at most 0.8 of the best partitioning's cost; intra codes the best of I16, I4 and I8 by SATD and mode bits (and the
+  next within 25 %); P_Skip and B_Skip end the search when every 4x4 block's error is far inside the dead zone. Full codings
+  fall from 6.3–7.5 to 4.7–5.7 a macroblock at effort 4 (8.1–9.2 to 6.0–6.6 at effort 7), effort 4 takes 2 to 16 % fewer
+  cycles a frame at 720p and effort 7 2 to 13 % fewer, for +0.25 to +0.69 % BD-rate at efforts 4 and 7 and +0.06 to +0.53 % at
+  effort 2 (within the +1 % this step was allowed).
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 
