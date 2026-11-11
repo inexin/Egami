@@ -55,6 +55,13 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
 - Tools: tools/video/profile-h264-encoder.py profiles the encoder by stage, counts cycles a frame with tiered PGO on and off,
   and reads its work per macroblock from internal counters that only Debug and `-p:EgamiH264Stats=true` builds have (Release
   output is unchanged). time-h264-encoder.py's cycles mode now measures with tiered PGO on, as users run it (`--no-pgo` for off).
+- Speed (H.264 Encoder Speed Build Plan, tasks 3 to 5): RDOQ prices each lowered level from the slice's CABAC states without
+  copying or moving them (the bins of a level's unary prefix adapt within the level; adaptation between levels and between 8x8
+  positions that share a context is left out) and looks up the cost of the levels after it, so a try costs about the same
+  however long the block is. Mode decision still counts each candidate's bits exactly, but puts back only the states the count
+  moved instead of copying all 460 in and out. Effort 4 takes 22 to 45 % fewer cycles a frame at 720p (1.8 to 2.1 G against
+  2.3 to 3.9 G with tiered PGO), effort 7 31 to 54 % fewer; BD-rate moves by +0.04 to +0.17 % at effort 4, +0.06 to +0.14 %
+  at effort 7 and not at all at effort 2. The stream is still coded exactly by the CABAC writer.
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 

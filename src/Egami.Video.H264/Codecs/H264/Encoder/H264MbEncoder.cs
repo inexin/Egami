@@ -33,8 +33,9 @@ internal sealed partial class H264MbEncoder
     private readonly H264MbCode[] _candidates = [new(), new(), new()];
     private readonly byte[][] _recon = [new byte[256], new byte[256], new byte[256]];
     private readonly byte[] _pred = new byte[256];
-    private readonly byte[] _ctx = new byte[460];
-    private readonly byte[] _rdoqCtx = new byte[460];
+    private readonly H264BlockPricer _pricer = new();
+    private readonly CabacUndoLog _undo = new(460);
+    private readonly int[] _rdoqRows = new int[64];
     private readonly int[] _t = new int[33];
     private readonly int[] _l = new int[17];
     private readonly int[] _w = new int[256];
@@ -192,8 +193,9 @@ internal sealed partial class H264MbEncoder
         _syntax.Locate(_mbX, _mbY);
         if (_syntax.Cabac)
         {
-            Array.Copy(_syntax.Contexts, _ctx, _ctx.Length);
-            CabacCountSink sink = default;
+            // Counted exactly; only the states the count moved are put back, not all 460 copied in and out.
+            _undo.Begin(_syntax.Contexts);
+            CabacUndoSink sink = new(_undo);
             if (skippable)
             {
                 // mb_skip_flag's context reads the neighbours only, so it is counted before Begin marks this macroblock.
@@ -206,7 +208,7 @@ internal sealed partial class H264MbEncoder
                 _syntax.WriteCabac(code, ref sink);
             }
 
-            Array.Copy(_ctx, _syntax.Contexts, _ctx.Length);
+            _undo.Restore();
             return sink.Cost;
         }
 
@@ -664,6 +666,7 @@ internal sealed partial class H264MbEncoder
         }
 
         int n = 0;
+        int[] rows = _rdoqRows;
         for (int k = 0; k < max; k++)
         {
             int pos = scan[k + first];
@@ -671,7 +674,10 @@ internal sealed partial class H264MbEncoder
                 ? H264Forward.Quantize(w[pos], H264Forward.Mf8[(m * 64) + pos], H264Forward.Shift8 + q6, round)
                 : H264Forward.Quantize(w[pos], H264Forward.Mf4[(m * 16) + pos], H264Forward.Shift4 + q6, round);
             levels[at + k] = level;
-            n += level != 0 ? 1 : 0;
+
+            // RDOQ's list of the non-zero levels' scan positions, made without a branch: which levels are 0 is hard to predict.
+            rows[n] = k;
+            n += (level | -level) >>> 31;
         }
 
         return rdoq && n > 0 ? Rdoq(w, levels, at, first, max, eight, qp, cat, n) : n;
@@ -682,44 +688,56 @@ internal sealed partial class H264MbEncoder
         H264EncodeStats.Add(H264EncodeStat.RdoqBlocks);
         byte[] scan = eight ? H264ScalingLists.Zigzag8x8 : H264ScalingLists.Zigzag4x4;
         double lambda = _lambda / CabacCost.Bit;
-        double distortion = 0, zero = 0;
-        for (int k = 0; k < max; k++)
+        // The error of the block as zeros, then as quantized: a level of 0 leaves its coefficient's error as it is.
+        double[] weights = eight ? H264Forward.Weight8 : H264Forward.Weight4;
+        double zero = ZeroError(w, weights, first);
+        double distortion = zero;
+        int[] rows = _rdoqRows;
+        int count = n;
+        for (int row = 0; row < count; row++)
         {
+            int k = rows[row];
             int pos = scan[k + first];
             double step = eight ? H264Forward.Step8(qp, pos) : H264Forward.Step4(qp, pos);
-            double weight = eight ? H264Forward.Weight8[pos] : H264Forward.Weight4[pos];
             double e = w[pos] - (levels[at + k] * step);
-            distortion += e * e * weight;
-            zero += (double)w[pos] * w[pos] * weight;
+            distortion += ((e * e) - ((double)w[pos] * w[pos])) * weights[pos];
         }
 
-        long rate = BlockRate(levels, at, max, cat, n);
-        for (int k = max - 1; k >= 0; k--)
+        bool cabac = _syntax.Cabac;
+        long rate = cabac ? _pricer.Begin(_syntax.Contexts, cat, max, levels, at, rows, count) : BlockRate(levels, at, max, cat, n);
+        H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts);
+        for (int row = count - 1; row >= 0; row--)
         {
+            int k = rows[row];
             int level = levels[at + k];
-            if (level == 0)
-            {
-                continue;
-            }
-
             int pos = scan[k + first];
             double step = eight ? H264Forward.Step8(qp, pos) : H264Forward.Step4(qp, pos);
-            double weight = eight ? H264Forward.Weight8[pos] : H264Forward.Weight4[pos];
+            double weight = weights[pos];
             int lower = level - Math.Sign(level);
             double before = w[pos] - (level * step), after = w[pos] - (lower * step);
             double dd = ((after * after) - (before * before)) * weight;
             levels[at + k] = lower;
             int n2 = lower == 0 ? n - 1 : n;
-            long rate2 = BlockRate(levels, at, max, cat, n2);
+            long rate2 = !cabac ? BlockRate(levels, at, max, cat, n2) : n2 == 0 ? 0 : _pricer.Price(k, level);
+            H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts, n2 == 0 ? 0 : 1);
             if (dd + (lambda * (rate2 - rate)) < 0)
             {
                 distortion += dd;
                 rate = rate2;
                 n = n2;
+                if (cabac)
+                {
+                    _pricer.Accept();
+                }
             }
             else
             {
                 levels[at + k] = level;
+            }
+
+            if (cabac)
+            {
+                _pricer.Advance(k);
             }
         }
 
@@ -733,24 +751,29 @@ internal sealed partial class H264MbEncoder
         return n;
     }
 
-    /// <summary>
-    /// The bits of a block's levels in 1/32768 bit: CABAC from the slice's current states, with one bit standing for the
-    /// coded_block_flag (its context depends on the neighbours), or CAVLC with nC 0.
-    /// </summary>
-    private long BlockRate(int[] levels, int at, int max, int cat, int n)
+    // The weighted squared error of a block's coefficients (raster order) from first on, all quantized to 0. The scan order
+    // reaches every position from the second on, so only the DC's place depends on first; four sums keep the adds apart.
+    private static double ZeroError(ReadOnlySpan<int> w, double[] weights, int first)
+    {
+        double a = 0, b = 0, c = 0, d = 0;
+        for (int i = 0; i < weights.Length; i += 4)
+        {
+            a += (double)w[i] * w[i] * weights[i];
+            b += (double)w[i + 1] * w[i + 1] * weights[i + 1];
+            c += (double)w[i + 2] * w[i + 2] * weights[i + 2];
+            d += (double)w[i + 3] * w[i + 3] * weights[i + 3];
+        }
+
+        double all = (a + b) + (c + d);
+        return first == 0 ? all : all - ((double)w[0] * w[0] * weights[0]);
+    }
+
+    /// <summary>The CAVLC bits of a block's levels with nC 0, in 1/32768 bit (CABAC blocks go to <see cref="H264BlockPricer"/>).</summary>
+    private static long BlockRate(int[] levels, int at, int max, int cat, int n)
     {
         if (n == 0)
         {
             return 0;
-        }
-
-        H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts);
-        if (_syntax.Cabac)
-        {
-            Array.Copy(_syntax.Contexts, _rdoqCtx, _rdoqCtx.Length);
-            CabacCountSink sink = default;
-            H264MbSyntax.BlockCabac(_rdoqCtx, ref sink, cat, -1, max, levels, at, n);
-            return sink.Cost + CabacCost.Bit;
         }
 
         BitCountSink bits = default;
