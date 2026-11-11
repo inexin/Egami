@@ -242,6 +242,7 @@ internal sealed partial class H264MbEncoder
     /// <summary>The SATD of a block's prediction from list 0, list 1 or both (a reference index of -1 leaves its list out).</summary>
     private long PartSatd(int bx, int by, int w, int h, int r0, int mv0, int r1, int mv1)
     {
+        H264EncodeStats.Add(H264EncodeStat.PartCosts);
         int px = (_mbX * 16) + (bx * 4), py = (_mbY * 16) + (by * 4), pw = w * 4, ph = h * 4;
         if (r0 >= 0)
         {

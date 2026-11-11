@@ -469,6 +469,7 @@ internal sealed class H264PictureEncoder
         int mbX = addr % _config.WidthMbs, mbY = addr / _config.WidthMbs;
         int mbQp = Math.Clamp(qp + _qpOffsets[addr], MinQp, MaxQp);
         H264MbEncoder encoder = slice.Encoder;
+        H264EncodeStats.Macroblock(slice.Syntax.SliceType);
         slice.Cost += !predicted ? encoder.Encode(mbX, mbY, mbQp)
             : slice.Syntax.SliceType == H264SliceType.B ? encoder.EncodeB(mbX, mbY, mbQp) : encoder.EncodeP(mbX, mbY, mbQp);
 

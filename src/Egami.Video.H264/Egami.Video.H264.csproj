@@ -15,6 +15,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <!-- The encoder's work counters (H264EncodeStats): in Debug builds, and in a Release build with -p:EgamiH264Stats=true, which
+       tools/video/profile-h264-encoder.py makes in its own artifacts folder. Other Release builds compile the counting away. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug' Or '$(EgamiH264Stats)' == 'true'">
+    <DefineConstants>$(DefineConstants);EGAMI_H264_STATS</DefineConstants>
+  </PropertyGroup>
+
   <!-- Build-time analyzer only; ships nothing. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />

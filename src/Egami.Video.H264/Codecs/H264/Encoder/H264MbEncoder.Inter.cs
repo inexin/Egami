@@ -356,8 +356,11 @@ internal sealed partial class H264MbEncoder
         Search(0, r, bx, by, w, h, mvp, starts, out cost);
 
     /// <summary>Searches the block in reference r of a list.</summary>
-    private int Search(int list, int r, int bx, int by, int w, int h, int mvp, ReadOnlySpan<int> starts, out long cost) =>
-        Refine(list, r, bx, by, w, h, mvp, SearchWhole(list, r, bx, by, w, h, mvp, starts, out _), out cost);
+    private int Search(int list, int r, int bx, int by, int w, int h, int mvp, ReadOnlySpan<int> starts, out long cost)
+    {
+        H264EncodeStats.Add(H264EncodeStat.BlockSearches);
+        return Refine(list, r, bx, by, w, h, mvp, SearchWhole(list, r, bx, by, w, h, mvp, starts, out _), out cost);
+    }
 
     /// <summary>
     /// Searches a block in each active reference of a list; returns the best vector and sets its reference, its predicted vector
@@ -392,8 +395,12 @@ internal sealed partial class H264MbEncoder
         (int minX, int maxX, int minY, int maxY) = Bounds(bx, by, w, h);
         int srcAt = _origin + (py * _stride) + px;
 
-        long IntCost(int x, int y) => (rp.Weighted && _weighted ? Satd(rp, px, py, pw, ph, H264SliceDecoder.PackMv(x * 4, y * 4), srcAt) : Sad(srcAt, rp.Picture.Y<byte>(), _origin + ((py + y) * _stride) + px + x, pw, ph))
-            + MvCost(x * 4, y * 4, mvp);
+        long IntCost(int x, int y)
+        {
+            H264EncodeStats.Add(H264EncodeStat.IntegerCosts);
+            return (rp.Weighted && _weighted ? Satd(rp, px, py, pw, ph, H264SliceDecoder.PackMv(x * 4, y * 4), srcAt) : Sad(srcAt, rp.Picture.Y<byte>(), _origin + ((py + y) * _stride) + px + x, pw, ph))
+                + MvCost(x * 4, y * 4, mvp);
+        }
 
         int ix = Math.Clamp((H264SliceDecoder.MvX(mvp) + 2) >> 2, minX, maxX), iy = Math.Clamp((H264SliceDecoder.MvY(mvp) + 2) >> 2, minY, maxY);
         long best = IntCost(ix, iy);
@@ -505,6 +512,7 @@ internal sealed partial class H264MbEncoder
         int srcAt = _origin + (py * _stride) + px;
         long refCost = RefCost(r, list == 0 ? _refCount : _refCount1);
         int bxq = H264SliceDecoder.MvX(mv), byq = H264SliceDecoder.MvY(mv);
+        H264EncodeStats.Add(H264EncodeStat.SubpelCosts);
         long bestSatd = Satd(rp, px, py, pw, ph, H264SliceDecoder.PackMv(bxq, byq), srcAt) + MvCost(bxq, byq, mvp);
         int rounds = _effort >= 5 ? 3 : 2;
         for (int round = 0; round < rounds; round++)
@@ -519,6 +527,7 @@ internal sealed partial class H264MbEncoder
                     continue;
                 }
 
+                H264EncodeStats.Add(H264EncodeStat.SubpelCosts);
                 long c = Satd(rp, px, py, pw, ph, H264SliceDecoder.PackMv(x, y), srcAt) + MvCost(x, y, mvp);
                 if (c < bestSatd)
                 {
@@ -547,6 +556,7 @@ internal sealed partial class H264MbEncoder
     /// </summary>
     private double CodeInter(H264MbCode code)
     {
+        H264EncodeStats.Add(H264EncodeStat.InterCandidates);
         bool b = _syntax.SliceType == H264SliceType.B;
         if (!code.Direct)
         {
@@ -625,6 +635,7 @@ internal sealed partial class H264MbEncoder
     /// <summary>Codes the luma residual against the prediction in <see cref="_ip"/> and reconstructs it; returns its squared error.</summary>
     private long CodeInterLuma(H264MbCode code, bool eight)
     {
+        H264EncodeStats.Add(H264EncodeStat.InterLumaCodings);
         // The rate count of a candidate without levels sets its QP to the predicted one; levels are quantized at this one.
         code.Qp = _qp;
         code.Transform8x8 = eight;
