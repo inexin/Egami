@@ -14,6 +14,7 @@ namespace Egami.Video.Codecs.H264;
 /// MF = 2^qbits · 64 d_i d_j / (LevelScale · 2^(qP/6)) (written out per table below), and an error e in W costs e² / (n_i n_j)
 /// in the samples. Every quantity is an integer or a double of basic operations, so every machine quantizes alike.
 /// </summary>
+[SkipLocalsInit]
 internal static class H264Forward
 {
     /// <summary>normAdjust4x4 v[m][0..2] (8-315), as <see cref="H264Dequant"/> has them.</summary>
@@ -239,6 +240,122 @@ internal static class H264Forward
         r3 = Avx2.Permute2x128(u3, u7, 0x20);
         r7 = Avx2.Permute2x128(u3, u7, 0x31);
     }
+
+    /// <summary>
+    /// The residuals (source minus prediction) of the 4x4 blocks of a <paramref name="width"/> (8 or 16) by
+    /// <paramref name="height"/> area and their forward 4x4 transforms, as <see cref="Transform4x4"/> gives them: block (bx, by)
+    /// in raster order at <c>coeffs[((by * width / 4) + bx) * 16]</c>. A coefficient is at most 36 · 255, so the AVX2 path works
+    /// in shorts, four blocks at a time.
+    /// </summary>
+    internal static void ResidualTransform4x4(byte[] src, int at, int stride, byte[] pred, int predAt, int predStride, int width, int height, Span<int> coeffs)
+    {
+        if (Avx2.IsSupported)
+        {
+            ref byte rs = ref MemoryMarshal.GetArrayDataReference(src);
+            ref byte rp = ref MemoryMarshal.GetArrayDataReference(pred);
+            ref int rc = ref MemoryMarshal.GetReference(coeffs);
+            int blocks = width / 4;
+            for (int by = 0; by < height; by += width == 16 ? 4 : 8)
+            {
+                // Width 16: the four rows of a strip, blocks 0 and 1 in the low lane and 2 and 3 in the high one. Width 8: rows
+                // y and y + 4 side by side, blocks (0, 0) and (1, 0) low, (0, 1) and (1, 1) high.
+                Vector256<short> r0, r1, r2, r3;
+                int s = at + (by * stride), p = predAt + (by * predStride);
+                if (width == 16)
+                {
+                    r0 = Diff16(ref rs, s, ref rp, p);
+                    r1 = Diff16(ref rs, s + stride, ref rp, p + predStride);
+                    r2 = Diff16(ref rs, s + (2 * stride), ref rp, p + (2 * predStride));
+                    r3 = Diff16(ref rs, s + (3 * stride), ref rp, p + (3 * predStride));
+                }
+                else
+                {
+                    int s4 = 4 * stride, p4 = 4 * predStride;
+                    r0 = Diff8x2(ref rs, s, s + s4, ref rp, p, p + p4);
+                    r1 = Diff8x2(ref rs, s + stride, s + stride + s4, ref rp, p + predStride, p + predStride + p4);
+                    r2 = Diff8x2(ref rs, s + (2 * stride), s + (2 * stride) + s4, ref rp, p + (2 * predStride), p + (2 * predStride) + p4);
+                    r3 = Diff8x2(ref rs, s + (3 * stride), s + (3 * stride) + s4, ref rp, p + (3 * predStride), p + (3 * predStride) + p4);
+                }
+
+                // Down the columns.
+                Core4(ref r0, ref r1, ref r2, ref r3);
+
+                // Each block's columns into vectors: x0 holds column 0 of two blocks per lane (rows 0 to 3 each), and so on.
+                Vector256<int> a = Avx2.UnpackLow(r0, r1).AsInt32(), b = Avx2.UnpackLow(r2, r3).AsInt32();
+                Vector256<int> c = Avx2.UnpackHigh(r0, r1).AsInt32(), d = Avx2.UnpackHigh(r2, r3).AsInt32();
+                Vector256<long> col01A = Avx2.UnpackLow(a, b).AsInt64(), col23A = Avx2.UnpackHigh(a, b).AsInt64();
+                Vector256<long> col01B = Avx2.UnpackLow(c, d).AsInt64(), col23B = Avx2.UnpackHigh(c, d).AsInt64();
+                Vector256<short> x0 = Avx2.UnpackLow(col01A, col01B).AsInt16(), x1 = Avx2.UnpackHigh(col01A, col01B).AsInt16();
+                Vector256<short> x2 = Avx2.UnpackLow(col23A, col23B).AsInt16(), x3 = Avx2.UnpackHigh(col23A, col23B).AsInt16();
+
+                // Across the rows: x(j) now holds coefficient (i, j) for i = 0 to 3.
+                Core4(ref x0, ref x1, ref x2, ref x3);
+
+                // Back to raster order: rows 0 and 1, then 2 and 3, of each block.
+                Vector256<int> e = Avx2.UnpackLow(x0, x1).AsInt32(), f = Avx2.UnpackLow(x2, x3).AsInt32();
+                Vector256<int> g = Avx2.UnpackHigh(x0, x1).AsInt32(), h = Avx2.UnpackHigh(x2, x3).AsInt32();
+                Vector256<short> rowsA01 = Avx2.UnpackLow(e, f).AsInt16(), rowsA23 = Avx2.UnpackHigh(e, f).AsInt16();
+                Vector256<short> rowsB01 = Avx2.UnpackLow(g, h).AsInt16(), rowsB23 = Avx2.UnpackHigh(g, h).AsInt16();
+
+                // Lane 0 holds blocks 0 (A) and 1 (B) of the strip, lane 1 blocks 2 and 3 (width 16) or the next row's (width 8).
+                int first = (by / 4) * blocks;
+                int low = first * 16, high = width == 16 ? low + 32 : low + (blocks * 16);
+                Store(ref rc, low, rowsA01.GetLower(), rowsA23.GetLower());
+                Store(ref rc, low + 16, rowsB01.GetLower(), rowsB23.GetLower());
+                Store(ref rc, high, rowsA01.GetUpper(), rowsA23.GetUpper());
+                Store(ref rc, high + 16, rowsB01.GetUpper(), rowsB23.GetUpper());
+            }
+
+            return;
+        }
+
+        Span<int> block = stackalloc int[16];
+        int perRow = width / 4;
+        for (int by = 0; by < height / 4; by++)
+        {
+            for (int bx = 0; bx < perRow; bx++)
+            {
+                for (int y = 0; y < 4; y++)
+                {
+                    for (int x = 0; x < 4; x++)
+                    {
+                        block[(y * 4) + x] = src[at + (((by * 4) + y) * stride) + (bx * 4) + x] - pred[predAt + (((by * 4) + y) * predStride) + (bx * 4) + x];
+                    }
+                }
+
+                Transform4x4(block);
+                block.CopyTo(coeffs.Slice(((by * perRow) + bx) * 16, 16));
+            }
+        }
+    }
+
+    // The 4-point core transform across four vectors, lane by lane.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Core4(ref Vector256<short> r0, ref Vector256<short> r1, ref Vector256<short> r2, ref Vector256<short> r3)
+    {
+        Vector256<short> s03 = r0 + r3, d03 = r0 - r3, s12 = r1 + r2, d12 = r1 - r2;
+        r0 = s03 + s12;
+        r1 = (d03 + d03) + d12;
+        r2 = s03 - s12;
+        r3 = d03 - (d12 + d12);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Store(ref int to, int at, Vector128<short> rows01, Vector128<short> rows23)
+    {
+        Avx2.ConvertToVector256Int32(rows01).StoreUnsafe(ref to, (nuint)at);
+        Avx2.ConvertToVector256Int32(rows23).StoreUnsafe(ref to, (nuint)(at + 8));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Diff16(ref byte s, int at, ref byte p, int pAt) =>
+        Avx2.Subtract(Avx2.ConvertToVector256Int16(Vector128.LoadUnsafe(ref s, (nuint)at)), Avx2.ConvertToVector256Int16(Vector128.LoadUnsafe(ref p, (nuint)pAt)));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Diff8x2(ref byte s, int at0, int at1, ref byte p, int pAt0, int pAt1) =>
+        Avx2.Subtract(
+            Avx2.ConvertToVector256Int16(Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref s, at0)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref s, at1))).AsByte()),
+            Avx2.ConvertToVector256Int16(Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref p, pAt0)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref p, pAt1))).AsByte()));
 
     /// <summary>The 4x4 Hadamard of the Intra16x16 DC coefficients (raster order, row i column j is block (j, i)) in place.</summary>
     internal static void Hadamard4x4(Span<int> c)

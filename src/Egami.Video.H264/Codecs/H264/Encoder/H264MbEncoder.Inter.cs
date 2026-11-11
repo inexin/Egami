@@ -689,13 +689,11 @@ internal sealed partial class H264MbEncoder
         else
         {
             score.Clear();
+            H264Forward.ResidualTransform4x4(_srcY, _lumaAt, _stride, _ip, 0, 16, 16, 16, _w);
             for (int blk = 0; blk < 16; blk++)
             {
                 int xy = H264Tables.BlockXY[blk];
-                int bx = xy & 3, by = xy >> 2;
-                Residual(_srcY, _lumaAt + (by * 4 * _stride) + (bx * 4), _stride, _ip, (by * 64) + (bx * 4), 16, 4, block);
-                H264Forward.Transform4x4(block);
-                code.LumaCount[blk] = QuantizeBlock(block, code.Luma, blk * 16, 0, 16, false, _qp, 2);
+                code.LumaCount[blk] = QuantizeBlock(_w.AsSpan((((xy >> 2) * 4) + (xy & 3)) * 16, 16), code.Luma, blk * 16, 0, 16, false, _qp, 2);
                 score[blk >> 2] = Math.Min(score[blk >> 2] + Score(code.Luma, blk * 16, 16, 1), 1000);
             }
         }

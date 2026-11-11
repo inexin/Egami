@@ -103,6 +103,7 @@ internal sealed partial class H264MbEncoder
     /// Chooses, codes and reconstructs the intra macroblock at (mbX, mbY) at <paramref name="qp"/>; returns its cost, squared
     /// error plus λ times its bits.
     /// </summary>
+    [SkipLocalsInit]
     public double Encode(int mbX, int mbY, int qp)
     {
         H264EncodeStats.Add(H264EncodeStat.IntraPasses);
@@ -383,6 +384,7 @@ internal sealed partial class H264MbEncoder
         return total;
     }
 
+    [SkipLocalsInit]
     private long CodeI16(H264MbCode code)
     {
         code.Kind = H264MbKind.I16x16;
@@ -395,17 +397,12 @@ internal sealed partial class H264MbEncoder
         code.I16Mode = bestMode;
         H264IntraPredict.Predict16x16(_pred, 16, bestMode, t, l, _top, _left);
 
-        // Forward transforms of the 16 blocks; their DCs go through the Hadamard.
+        // Forward transforms of the 16 blocks (in raster order of blocks); their DCs go through the Hadamard.
         int m = _qp % 6, q6 = _qp / 6;
-        Span<int> block = stackalloc int[16];
-        for (int blk = 0; blk < 16; blk++)
+        H264Forward.ResidualTransform4x4(_srcY, _lumaAt, _stride, _pred, 0, 16, 16, 16, _w);
+        for (int r = 0; r < 16; r++)
         {
-            int xy = H264Tables.BlockXY[blk];
-            int bx = xy & 3, by = xy >> 2;
-            Residual(_srcY, _lumaAt + (by * 4 * _stride) + (bx * 4), _stride, _pred, (by * 64) + (bx * 4), 16, 4, block);
-            H264Forward.Transform4x4(block);
-            block.CopyTo(_w.AsSpan(blk * 16, 16));
-            _dc[(by * 4) + bx] = block[0];
+            _dc[r] = _w[r * 16];
         }
 
         H264Forward.Hadamard4x4(_dc);
@@ -424,7 +421,8 @@ internal sealed partial class H264MbEncoder
         bool anyAc = false;
         for (int blk = 0; blk < 16; blk++)
         {
-            int n = QuantizeBlock(_w.AsSpan(blk * 16, 16), code.Luma, blk * 16, 1, 15, false, _qp, 1);
+            int xy = H264Tables.BlockXY[blk];
+            int n = QuantizeBlock(_w.AsSpan((((xy >> 2) * 4) + (xy & 3)) * 16, 16), code.Luma, blk * 16, 1, 15, false, _qp, 1);
             code.Luma[(blk * 16) + 15] = 0;
             code.LumaCount[blk] = n;
             anyAc |= n > 0;
@@ -475,6 +473,7 @@ internal sealed partial class H264MbEncoder
     }
 
     /// <summary>The Intra16x16 DC levels (raster, row by) scaled into each block's coefficient 0 (raster by block position).</summary>
+    [SkipLocalsInit]
     private void InverseLumaDc(ReadOnlySpan<int> c, Span<int> dcY)
     {
         Span<int> t = stackalloc int[16];
@@ -500,6 +499,7 @@ internal sealed partial class H264MbEncoder
         }
     }
 
+    [SkipLocalsInit]
     private long CodeI4(H264MbCode code)
     {
         code.Kind = H264MbKind.I4x4;
@@ -558,6 +558,7 @@ internal sealed partial class H264MbEncoder
         return Sse(_srcY, _y, _lumaAt, _stride, 16, 16);
     }
 
+    [SkipLocalsInit]
     private long CodeI8(H264MbCode code)
     {
         code.Kind = H264MbKind.I8x8;
@@ -689,19 +690,16 @@ internal sealed partial class H264MbEncoder
     }
 
     /// <summary>Codes one chroma plane's residual against the prediction in <see cref="_pred"/> and reconstructs it.</summary>
+    [SkipLocalsInit]
     private (bool Dc, bool Ac) CodeChromaPlane(H264MbCode code, int c, byte[] src, byte[] plane)
     {
         int m = _qpc % 6, q6 = _qpc / 6;
-        Span<int> block = stackalloc int[16];
         Span<int> w = _w.AsSpan(0, 64);
         Span<int> dc = stackalloc int[4];
+        H264Forward.ResidualTransform4x4(src, _chromaAt, _cstride, _pred, 0, 8, 8, 8, w);
         for (int blk = 0; blk < 4; blk++)
         {
-            int bx = blk & 1, by = blk >> 1;
-            Residual(src, _chromaAt + (by * 4 * _cstride) + (bx * 4), _cstride, _pred, (by * 32) + (bx * 4), 8, 4, block);
-            H264Forward.Transform4x4(block);
-            block.CopyTo(w.Slice(blk * 16, 16));
-            dc[blk] = block[0];
+            dc[blk] = w[blk * 16];
         }
 
         // The 2x2 Hadamard of the DCs, quantized one bit finer than AC (8.5.11).
@@ -854,29 +852,38 @@ internal sealed partial class H264MbEncoder
             int lower = level - ((level >> 31) | 1);
             double before = w[pos] - (level * step), after = w[pos] - (lower * step);
             double dd = ((after * after) - (before * before)) * weight;
-            levels[at + k] = lower;
             int n2 = lower == 0 ? n - 1 : n;
-            long rate2 = !cabac ? BlockRate(levels, at, max, cat, n2) : n2 == 0 ? 0 : _pricer.Price(k, level);
-            H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts, n2 == 0 ? 0 : 1);
-            if (dd + (lambda * (rate2 - rate)) < 0)
+            if (!cabac)
             {
-                distortion += dd;
-                rate = rate2;
-                n = n2;
-                if (cabac)
+                levels[at + k] = lower;
+                long cavlc = BlockRate(levels, at, max, cat, n2);
+                H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts, n2 == 0 ? 0 : 1);
+                if (dd + (lambda * (cavlc - rate)) < 0)
                 {
-                    _pricer.Accept();
+                    distortion += dd;
+                    rate = cavlc;
+                    n = n2;
                 }
-            }
-            else
-            {
-                levels[at + k] = level;
+                else
+                {
+                    levels[at + k] = level;
+                }
+
+                continue;
             }
 
-            if (cabac)
-            {
-                _pricer.Advance(k);
-            }
+            // CABAC: the choice taken without a branch, as whether RDOQ lowers a level is hard to predict.
+            levels[at + k] = lower;
+            long rate2 = n2 == 0 ? 0 : _pricer.Price(k, level);
+            H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts, n2 == 0 ? 0 : 1);
+            bool take = dd + (lambda * (rate2 - rate)) < 0;
+            int taken = take ? 1 : 0;
+            distortion += dd * taken;
+            rate = take ? rate2 : rate;
+            n = take ? n2 : n;
+            levels[at + k] = take ? lower : level;
+            _pricer.Accept(take);
+            _pricer.Advance(k);
         }
 
         // The whole block as zeros: coded_block_flag 0 instead of the levels.

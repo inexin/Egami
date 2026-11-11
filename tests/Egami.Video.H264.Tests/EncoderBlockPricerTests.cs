@@ -52,7 +52,7 @@ public sealed class EncoderBlockPricerTests
                 Assert.Equal(expected, priced);
                 if (random.Next(2) == 0)
                 {
-                    pricer.Accept();
+                    pricer.Accept(true);
                 }
                 else
                 {

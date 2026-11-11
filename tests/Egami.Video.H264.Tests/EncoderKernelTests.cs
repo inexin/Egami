@@ -101,6 +101,33 @@ public sealed class EncoderKernelTests
     }
 
     [Theory]
+    [InlineData(16, 16)]
+    [InlineData(8, 8)]
+    public void ResidualTransformMatchesTransform4x4(int w, int h)
+    {
+        int[] coeffs = new int[256];
+        Span<int> block = stackalloc int[16];
+        foreach ((byte[] a, byte[] b) in Planes(w + h))
+        {
+            H264Forward.ResidualTransform4x4(a, 5, Stride, b, 3, Stride, w, h, coeffs);
+            for (int by = 0; by < h / 4; by++)
+            {
+                for (int bx = 0; bx < w / 4; bx++)
+                {
+                    for (int i = 0; i < 16; i++)
+                    {
+                        int at = ((by * 4) + (i >> 2)) * Stride, x = (bx * 4) + (i & 3);
+                        block[i] = a[5 + at + x] - b[3 + at + x];
+                    }
+
+                    H264Forward.Transform4x4(block);
+                    Assert.True(block.SequenceEqual(coeffs.AsSpan(((by * (w / 4)) + bx) * 16, 16)), $"block {bx}, {by}");
+                }
+            }
+        }
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void QuantizersMatchScalar(bool eight)
