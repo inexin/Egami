@@ -82,7 +82,8 @@ internal sealed class CabacUndoLog
     private byte[] _states = [];
     private int _epoch, _count;
 
-    public CabacUndoLog(int size) => (_stamp, _index, _old) = (new int[size], new int[size], new byte[size]);
+    // One more entry than states: a note writes its entry before it knows whether to keep it.
+    public CabacUndoLog(int size) => (_stamp, _index, _old) = (new int[size], new int[size + 1], new byte[size + 1]);
 
     /// <summary>Starts noting moves of <paramref name="states"/>.</summary>
     public void Begin(byte[] states)
@@ -100,13 +101,14 @@ internal sealed class CabacUndoLog
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Note(ref byte state)
     {
+        // Written every time and kept only the first time, without a branch: which states a count moves first is hard to predict.
         int i = (int)Unsafe.ByteOffset(ref MemoryMarshal.GetArrayDataReference(_states), ref state);
-        if (_stamp[i] != _epoch)
-        {
-            _stamp[i] = _epoch;
-            _index[_count] = i;
-            _old[_count++] = state;
-        }
+        ref int stamp = ref _stamp[i];
+        int count = _count;
+        _index[count] = i;
+        _old[count] = state;
+        _count = count + (stamp != _epoch ? 1 : 0);
+        stamp = _epoch;
     }
 
     /// <summary>Puts every moved state back.</summary>
