@@ -304,7 +304,7 @@ internal static class FfmpegTranslator
 
             if (line.AudioQuality is { } audioQuality)
             {
-                audio.AddRange(["--quality", AacQuality(audioQuality)]);
+                audio.AddRange(["--quality", AacQuality(audioQuality, line.Codecs.GetValueOrDefault("a") == "libfdk_aac")]);
             }
 
             if (line.Channels is { } channels)
@@ -1350,17 +1350,18 @@ internal static class FfmpegTranslator
     };
 
     /// <summary>
-    /// FFmpeg's native AAC <c>-q:a</c> (0.1 to 2, about 64 to 256 kbit/s for stereo) or libfdk_aac's VBR mode (1 to 5) as AAC's
-    /// --quality, 1 to 5.
+    /// An AAC <c>-q:a</c> as egami-video's --quality, 1 to 5: libfdk_aac's VBR mode is the same scale, and FFmpeg's own aac
+    /// scale, 0.1 to 2, is spread over it.
     /// </summary>
-    internal static string AacQuality(string q)
+    internal static string AacQuality(string q, bool fdk)
     {
-        if (!double.TryParse(q, NumberStyles.Float, CultureInfo.InvariantCulture, out double value) || value <= 0 || value > 5)
+        double high = fdk ? 5 : 2;
+        if (!double.TryParse(q, NumberStyles.Float, CultureInfo.InvariantCulture, out double value) || value < (fdk ? 1 : 0.1) || value > high)
         {
-            throw FfmpegMode.Unsupported($"-q:a {q}", why: "give 0.1 to 2 (FFmpeg's aac) or 1 to 5 (libfdk_aac's VBR)");
+            throw FfmpegMode.Unsupported($"-q:a {q}", why: fdk ? "libfdk_aac's VBR mode is 1 to 5" : "FFmpeg's aac quality is 0.1 to 2");
         }
 
-        double level = value <= 2 && value != Math.Floor(value) || value < 1 ? 1 + ((value - 0.1) / 1.9 * 4) : value;
+        double level = fdk ? value : 1 + ((value - 0.1) / 1.9 * 4);
         return ((int)Math.Clamp(Math.Round(level), 1, 5)).ToString(CultureInfo.InvariantCulture);
     }
 

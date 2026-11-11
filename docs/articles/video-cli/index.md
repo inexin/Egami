@@ -251,11 +251,12 @@ egami-video generate sweep -t 5 sweep.flac
 
 ## Audio
 
-`audio` decodes the picked audio track to WAV, Wave64, FLAC, Ogg FLAC, Opus, AIFF or CAF, resampling with `--rate`, mixing with `--channels`
+`audio` decodes the picked audio track to WAV, Wave64, FLAC, Ogg FLAC, Opus, AIFF, CAF or AAC, resampling with `--rate`, mixing with `--channels`
 and converting with `--sample-format`. With a video container as output it copies the video unchanged and encodes the audio
-again. `--codec` picks FLAC, PCM, Opus or ALAC (Apple Lossless); .opus and WebM outputs get Opus, WAV, Wave64, AVI, AIFF
-and CAF get PCM, .m4a gets ALAC, and the rest FLAC. ALAC also goes in .mov, .mka and .caf. `--bitrate` sets Opus's bitrate
-for all channels together (64k a channel by default); `--level` sets FLAC's compression (0 to 8) or ALAC's (0 fast, 1 the
+again. `--codec` picks FLAC, PCM, Opus, AAC (AAC LC) or ALAC (Apple Lossless); .opus and WebM outputs get Opus, WAV,
+Wave64, AVI, AIFF and CAF get PCM, .aac, .m4a, .mp4 and .mov get AAC, and the rest FLAC. ALAC goes in .m4a, .mov, .mka and
+.caf with `--codec alac`. `--bitrate` sets Opus's or AAC's bitrate for all channels together (64k a channel by default);
+`--quality` 1 to 5 gives AAC a variable bit rate instead (about 50 to 235 kbit/s for stereo music); `--level` sets FLAC's compression (0 to 8) or ALAC's (0 fast, 1 the
 default). `extract` writes ALAC tracks to .m4a and AC-3 and E-AC-3 tracks to raw .ac3 and .eac3 files.
 
 The audio filters (see [Audio filters](../guides/audio-filters.md)) run on the way: `--gain` in decibels, `--fade-in` and

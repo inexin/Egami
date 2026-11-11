@@ -977,6 +977,12 @@ AAC (V5.10), in progress.
   channel maps are not decoded.
 - Internal: a shared MDCT with sine and Kaiser-Bessel-derived windows for the AAC codec to come; the AC-3 decoder now uses its
   complex FFT and window, at the same speed.
+- Behaviour change: AAC is now the default codec in .aac, .m4a and .mp4 files. `AudioWriter` without a `Codec` writes AAC LC
+  to ADTS and MP4 (it wrote PCM to MP4), and `egami-video audio` writes AAC to .aac, .m4a, .mp4 and .mov, where .m4a got ALAC
+  and .mp4 and .mov got FLAC. ALAC stays available with `--codec alac` (`AudioWriterOptions.Codec = AlacCodec.Instance`).
+- CLI: `audio --codec aac` with `--bitrate` (8k to 1536k for all channels) or `--quality` 1 to 5 (variable bit rate); `run`
+  re-encodes filtered audio in MP4 as AAC. ffmpeg mode maps `-c:a aac` and `-c:a libfdk_aac` with `-b:a`, `-q:a` (FFmpeg's
+  0.1 to 2 spread over 1 to 5) and `-vbr`; `info --format ffprobe` reports an AAC stream's `profile` (LC, Main, HE-AAC, ...).
 
 ## Egami.Video 1.2.1 and Egami.Video.Cli 1.2.1 (unreleased)
 

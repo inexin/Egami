@@ -165,6 +165,18 @@ public sealed class InfoTests
     }
 
     [Theory]
+    [InlineData(new byte[] { 0x12, 0x10 }, "LC")]
+    [InlineData(new byte[] { 0x0A, 0x10 }, "Main")]
+    [InlineData(new byte[] { 0x2B, 0x8A }, "HE-AAC")]
+    [InlineData(new byte[] { 0xEB, 0x8A }, "HE-AACv2")]
+    [InlineData(new byte[] { 0xF8, 0x00 }, null)]
+    public void AacProfile(byte[] config, string? profile)
+    {
+        AudioTrackInfo track = new() { Number = 1, Kind = TrackKind.Audio, CodecId = CodecIds.Aac, TimeBase = new Rational(1, 44100), SampleRate = 44100, Channels = 2, CodecPrivate = config };
+        Assert.Equal(profile, FfprobeReport.AacProfile(track));
+    }
+
+    [Theory]
     [InlineData(CodecIds.Mp3, "MP3", "mp3")]
     [InlineData(CodecIds.Mp2, "MP2", "mp2")]
     [InlineData(CodecIds.Mp1, "MP1", "mp1")]
