@@ -199,7 +199,7 @@ and intensity stereo and perceptual noise substitution are used where they save 
 and noise substitution below 48. The bandwidth follows the rate (`Bandwidth` sets it). The first packet decodes to 1024
 samples of priming, which MP4 records in its edit list and iTunSMPB tag and Matroska as CodecDelay, and the last packet's
 duration cuts the padding after the input, so both give back exactly the input's length; an .aac file has no place for
-either and keeps both.
+either and keeps both. [Encoding AAC](aac-encoding.md) covers the settings.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Audio.cs#audio-aac-encode)]
 

@@ -74,3 +74,4 @@ override Egami.Video.Audio.Codecs.AacEncoderOptions.ToString() -> string!
 static Egami.Video.Audio.Codecs.AacEncoderOptions.Default.get -> Egami.Video.Audio.Codecs.AacEncoderOptions!
 static Egami.Video.Audio.Codecs.AacEncoderOptions.operator !=(Egami.Video.Audio.Codecs.AacEncoderOptions? left, Egami.Video.Audio.Codecs.AacEncoderOptions? right) -> bool
 static Egami.Video.Audio.Codecs.AacEncoderOptions.operator ==(Egami.Video.Audio.Codecs.AacEncoderOptions? left, Egami.Video.Audio.Codecs.AacEncoderOptions? right) -> bool
+static Egami.Video.Audio.AudioCodecs.Aac.get -> Egami.Video.Audio.AudioCodec!

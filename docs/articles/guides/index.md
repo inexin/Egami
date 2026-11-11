@@ -116,6 +116,7 @@ Operations that run on a raster through `Apply` and `Derive`.
 - [Streaming MP4](streaming-mp4.md): fragmented MP4 for forward-only streams, and HLS and DASH segments.
 - [Audio](audio.md): decode, encode, resample and mix audio.
 - [Encoding Opus](opus-encoding.md): Opus files, settings and WebM audio.
+- [Encoding AAC](aac-encoding.md): .m4a and .aac files, bitrate, quality and bandwidth, and transcoding to M4A.
 - [Subtitles](subtitles.md): read, edit, retime and convert SRT, WebVTT and ASS subtitle files.
 
 ## Egami.Barcodes
