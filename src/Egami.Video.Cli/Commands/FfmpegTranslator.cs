@@ -282,7 +282,7 @@ internal static class FfmpegTranslator
 
         bool copiesAudio = (line.Codecs.TryGetValue("a", out string? audioCopy) ? audioCopy : line.Codecs.GetValueOrDefault(string.Empty)) == "copy";
         bool audioJob = filtered is not null || AudioExtensions.Contains(extension) || (CopyableAudioExtensions.Contains(extension) && !copiesAudio) || line.NoVideo || line.SampleRate is not null || line.Channels is not null || line.SampleFormat is not null
-            || line.AudioBitrate is not null
+            || line.AudioBitrate is not null || line.AudioQuality is not null
             || (line.Codecs.TryGetValue("a", out string? audioCodec) && audioCodec != "copy");
         if (audioJob && deinterlace.Count == 0)
         {
@@ -300,6 +300,11 @@ internal static class FfmpegTranslator
             if (line.AudioBitrate is { } bitrate)
             {
                 audio.AddRange(["--bitrate", bitrate]);
+            }
+
+            if (line.AudioQuality is { } audioQuality)
+            {
+                audio.AddRange(["--quality", AacQuality(audioQuality)]);
             }
 
             if (line.Channels is { } channels)
@@ -1340,8 +1345,24 @@ internal static class FfmpegTranslator
         "alac" => "alac",
         "pcm_s16le" or "pcm_s24le" or "pcm_s32le" or "pcm_f32le" or "pcm_u8" or "pcm_s16be" or "pcm_s24be" or "pcm_s32be" => "pcm",
         "libopus" or "opus" => "opus",
-        _ => throw FfmpegMode.Unsupported($"-c:a {codec}", why: "egami-video encodes flac, alac, PCM and libopus, and copies"),
+        "aac" or "libfdk_aac" => "aac",
+        _ => throw FfmpegMode.Unsupported($"-c:a {codec}", why: "egami-video encodes flac, alac, PCM, libopus and aac, and copies"),
     };
+
+    /// <summary>
+    /// FFmpeg's native AAC <c>-q:a</c> (0.1 to 2, about 64 to 256 kbit/s for stereo) or libfdk_aac's VBR mode (1 to 5) as AAC's
+    /// --quality, 1 to 5.
+    /// </summary>
+    internal static string AacQuality(string q)
+    {
+        if (!double.TryParse(q, NumberStyles.Float, CultureInfo.InvariantCulture, out double value) || value <= 0 || value > 5)
+        {
+            throw FfmpegMode.Unsupported($"-q:a {q}", why: "give 0.1 to 2 (FFmpeg's aac) or 1 to 5 (libfdk_aac's VBR)");
+        }
+
+        double level = value <= 2 && value != Math.Floor(value) || value < 1 ? 1 + ((value - 0.1) / 1.9 * 4) : value;
+        return ((int)Math.Clamp(Math.Round(level), 1, 5)).ToString(CultureInfo.InvariantCulture);
+    }
 
     private static string SampleFormat(string format) => format switch
     {

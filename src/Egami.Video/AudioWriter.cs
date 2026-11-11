@@ -171,6 +171,7 @@ public sealed class AudioWriter : IDisposable
         format == FlacFormat.Instance ? FlacCodec.Instance
         : format == OggFormat.Instance || format == MatroskaFormat.WebM ? OpusCodec.Instance
         : format == AiffFormat.Instance ? PcmCodec.BigEndian
+        : format == AdtsFormat.Instance || format == Mp4Format.Instance ? AacCodec.Instance
         : PcmCodec.Instance;
 
     /// <summary>Picks the stored bit depth: the option, else the first frame's valid bits where the codec stores them.</summary>
@@ -260,7 +261,10 @@ public sealed class AudioWriter : IDisposable
 /// </example>
 public sealed record AudioWriterOptions
 {
-    /// <summary>Gets the codec, or <see langword="null"/> for FLAC in .flac files, Opus in Ogg and WebM files and PCM elsewhere.</summary>
+    /// <summary>
+    /// Gets the codec, or <see langword="null"/> for FLAC in .flac files, Opus in Ogg and WebM files, AAC in .aac, .m4a and .mp4
+    /// files and PCM elsewhere.
+    /// </summary>
     public AudioCodec? Codec { get; init; }
 
     /// <summary>
