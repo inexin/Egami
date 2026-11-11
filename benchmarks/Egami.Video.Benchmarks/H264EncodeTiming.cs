@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 
 using Egami.Video.Codecs;
+using Egami.Video.Codecs.H264;
 
 namespace Egami.Video.Benchmarks;
 
@@ -11,6 +12,8 @@ namespace Egami.Video.Benchmarks;
 /// skews less with one thread), the output size and the bitrate, for comparing with x264.
 /// Options: --out=file.h264 --quality=Q --quantizer=Q --effort=E --threads=N (--one-thread for 1) --bitrate=BITS --cbr --two-pass --realtime
 /// --bframes=N --profile=baseline|main|high --cavlc --no-aq --frames=N --runs=N.
+/// In a build that counts (<see cref="H264EncodeStats.Enabled"/>), the JSON also carries the first run's work counters by
+/// picture type ("stats").
 /// </summary>
 internal static class H264EncodeTiming
 {
@@ -68,6 +71,8 @@ internal static class H264EncodeTiming
         int runs = Number("runs") ?? 1;
         double best = double.MaxValue, bestCpu = double.MaxValue;
         long bytes = 0;
+        string stats = "";
+        H264EncodeStats.Reset();
         for (int run = 0; run < runs; run++)
         {
             long start = Stopwatch.GetTimestamp();
@@ -97,12 +102,25 @@ internal static class H264EncodeTiming
             {
                 File.WriteAllBytes(path, output.ToArray());
             }
+
+            if (run == 0 && H264EncodeStats.Enabled)
+            {
+                stats = StatsJson(H264EncodeStats.Snapshot());
+            }
         }
 
         double seconds = frames.Count * (double)rate.Denominator / rate.Numerator;
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
-            $"{{\"frames\": {frames.Count}, \"bytes\": {bytes}, \"kbps\": {bytes * 8 / seconds / 1000:F1}, \"ms\": {best:F1}, \"msPerFrame\": {best / frames.Count:F2}, \"cpuMsPerFrame\": {bestCpu / frames.Count:F2}, \"threads\": {threads}}}"));
+            $"{{\"frames\": {frames.Count}, \"bytes\": {bytes}, \"kbps\": {bytes * 8 / seconds / 1000:F1}, \"ms\": {best:F1}, \"msPerFrame\": {best / frames.Count:F2}, \"cpuMsPerFrame\": {bestCpu / frames.Count:F2}, \"threads\": {threads}{stats}}}"));
         frames.ForEach(f => f.Dispose());
+    }
+
+    private static string StatsJson(long[,] counts)
+    {
+        string[] names = Enum.GetNames<H264EncodeStat>();
+        IEnumerable<string> types = H264EncodeStats.Types.Select((type, t) =>
+            $"\"{type}\": {{{string.Join(", ", names.Select((name, s) => string.Create(CultureInfo.InvariantCulture, $"\"{name}\": {counts[t, s]}")))}}}");
+        return $", \"stats\": {{{string.Join(", ", types)}}}";
     }
 
     private static void Drain(IVideoEncoder encoder, MemoryStream output)

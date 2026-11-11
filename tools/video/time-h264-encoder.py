@@ -16,7 +16,8 @@ which costs little next to encoding); x264 encodes at the bitrate Egami's qualit
 the best of --rounds counts, as other work on the shared machine slows both alike. Cycles are user-mode hardware counts from
 Linux perf, which barely move when the machine is busy: Egami's at --runs 1 and 3 (egami-perf-counters:2, the image
 tools/video/count-instructions.py builds), x264's at --frames N and 2N, and the difference over the extra frames, so start-up and
-the JIT drop out.
+the JIT drop out. Egami runs on the default runtime, tiered PGO on, as users get it; --no-pgo turns it off (DOTNET_TieredPGO=0),
+as this mode did before the H.264 Encoder Speed Build Plan (decision Q4).
 
 The clips are Xiph's derf clips (crowd_run, ducks_take_off, park_joy, old_town_cross; 50 fps), copied to .cache/h264enc/clips
 as <name>-<size>.y4m from .cache/video/derf (egami-compare's video/native/vp8-encode-gate.py fetches them) or --clips-from.
@@ -25,7 +26,7 @@ Usage, from the repo root with Docker running and the benchmarks built in Releas
 (dotnet build -c Release benchmarks/Egami.Video.Benchmarks):
   python tools/video/time-h264-encoder.py bd [--size 720] [--frames 60] [--effort 4] [--presets ultrafast,...,slow] [--clips a,b]
   python tools/video/time-h264-encoder.py time [--size 720] [--frames 30] [--effort 4] [--presets medium] [--threads 1,24]
-  python tools/video/time-h264-encoder.py cycles [--size 720] [--frames 20] [--effort 4] [--presets medium]
+  python tools/video/time-h264-encoder.py cycles [--size 720] [--frames 20] [--effort 4] [--presets medium] [--no-pgo]
   python tools/video/time-h264-encoder.py rc [--size 720] [--frames 120] [--effort 2] [--kbps 2500]   (one file per target)
   python tools/video/time-h264-encoder.py report     (the gate table from the last bd, time, cycles and rc runs)
 """
@@ -302,7 +303,7 @@ def run_cycles(args):
         src = clip_path(clip, args.size)
         fps = y4m_info(src)[2]
         base = f"dotnet {BENCH} --encode-h264 {src} --frames={args.frames} --quality={args.quality} --effort={args.effort} --threads=1"
-        a, b = (counters(PERF_IMAGE, f"{base} --runs={r}", "export DOTNET_TieredPGO=0; ") for r in (1, 3))
+        a, b = (counters(PERF_IMAGE, f"{base} --runs={r}", "export DOTNET_TieredPGO=0; " if args.no_pgo else "") for r in (1, 3))
         row = {"egami": {k: (b[k] - a[k]) / (2 * args.frames) for k in a}}
         _, _, size = egami(src, args.frames, args.quality, args.effort, 1, f"cycles-{clip}", "")
         kbps = size * 8 * fps / args.frames / 1000
@@ -313,7 +314,7 @@ def run_cycles(args):
         rows[clip] = row
         print(f"  {clip}: " + ", ".join(f"{k} {v['cycles'] / 1e6:.1f}M cycles {v['instructions'] / 1e6:.1f}M instructions" for k, v in row.items()), flush=True)
     with open(f"{OUT}/cycles-{args.size}-e{args.effort}.json", "w") as f:
-        json.dump({"size": args.size, "frames": args.frames, "effort": args.effort, "rows": rows}, f, indent=1)
+        json.dump({"size": args.size, "frames": args.frames, "effort": args.effort, "pgo": not args.no_pgo, "rows": rows}, f, indent=1)
     report_cycles(args.size, args.effort)
 
 
@@ -323,7 +324,8 @@ def report_cycles(size, effort):
         return
     with open(path) as f:
         data = json.load(f)
-    print(f"Cycles a frame at one thread, {data['size']}p, Egami effort {data['effort']} (user mode, perf):")
+    pgo = "on" if data.get("pgo", False) else "off"
+    print(f"Cycles a frame at one thread, {data['size']}p, Egami effort {data['effort']}, tiered PGO {pgo} (user mode, perf):")
     for clip, row in data["rows"].items():
         egami_c = row["egami"]["cycles"]
         others = ", ".join(f"x264 {k} {v['cycles'] / 1e6:.1f}M (Egami / x264 {egami_c / v['cycles']:.1f})" for k, v in row.items() if k != "egami")
@@ -423,6 +425,7 @@ def main():
     parser.add_argument("--rounds", type=int, default=2)
     parser.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 4) // 3))
     parser.add_argument("--reuse", action="store_true", help="keep the runs already in the bd file and add only what is missing")
+    parser.add_argument("--no-pgo", action="store_true", help="cycles: Egami with tiered PGO off (the default runtime has it on)")
     parser.add_argument("--clips-from", default=".cache/video/derf")
     parser.add_argument("--out", default=OUT, help="where runs and results go (clips stay in .cache/h264enc/clips)")
     parser.add_argument("--bench", default=BENCH, help="the benchmark build to time Egami with, inside the repo")

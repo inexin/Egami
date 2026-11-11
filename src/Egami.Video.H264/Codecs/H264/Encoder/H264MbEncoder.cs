@@ -97,6 +97,7 @@ internal sealed partial class H264MbEncoder
     /// </summary>
     public double Encode(int mbX, int mbY, int qp)
     {
+        H264EncodeStats.Add(H264EncodeStat.IntraPasses);
         Setup(mbX, mbY, qp);
         _round = IntraRound;
         CodeChroma();
@@ -186,6 +187,7 @@ internal sealed partial class H264MbEncoder
     /// <summary>The bits of a macroblock (in 1/32768 bit) as the syntax writer would code it, the CABAC states left as they were.</summary>
     private long Rate(H264MbCode code)
     {
+        H264EncodeStats.Add(H264EncodeStat.RdCodings);
         bool skippable = _syntax.SliceType != H264SliceType.I;
         _syntax.Locate(_mbX, _mbY);
         if (_syntax.Cabac)
@@ -677,6 +679,7 @@ internal sealed partial class H264MbEncoder
 
     private int Rdoq(ReadOnlySpan<int> w, int[] levels, int at, int first, int max, bool eight, int qp, int cat, int n)
     {
+        H264EncodeStats.Add(H264EncodeStat.RdoqBlocks);
         byte[] scan = eight ? H264ScalingLists.Zigzag8x8 : H264ScalingLists.Zigzag4x4;
         double lambda = _lambda / CabacCost.Bit;
         double distortion = 0, zero = 0;
@@ -741,6 +744,7 @@ internal sealed partial class H264MbEncoder
             return 0;
         }
 
+        H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts);
         if (_syntax.Cabac)
         {
             Array.Copy(_syntax.Contexts, _rdoqCtx, _rdoqCtx.Length);
@@ -818,8 +822,12 @@ internal sealed partial class H264MbEncoder
     }
 
     /// <summary>The SATD of a block against a prediction (<see cref="H264EncodeSimd.Satd"/>).</summary>
-    internal static long Satd(byte[] src, int at, int stride, byte[] pred, int predAt, int predStride, int width, int height) =>
-        H264EncodeSimd.Satd(src, at, stride, pred, predAt, predStride, width, height);
+    internal static long Satd(byte[] src, int at, int stride, byte[] pred, int predAt, int predStride, int width, int height)
+    {
+        H264EncodeStats.Add(H264EncodeStat.SatdCalls);
+        H264EncodeStats.Add(H264EncodeStat.SatdSamples, width * height);
+        return H264EncodeSimd.Satd(src, at, stride, pred, predAt, predStride, width, height);
+    }
 
     /// <summary>The sum of squared differences of two planes over an area.</summary>
     internal static long Sse(byte[] a, byte[] b, int at, int stride, int width, int height) => H264EncodeSimd.Sse(a, b, at, stride, width, height);
