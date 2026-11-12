@@ -89,15 +89,155 @@ public sealed class EncoderKernelTests
             }
 
             l[0] = t[0];
-            H264IntraPredict.Edges(n, t, l, edges);
             for (int mode = 0; mode < 9; mode++)
             {
                 bool top = (round & 4) == 0 || mode is not (0 or 2), left = (round & 8) == 0 || mode is not (1 or 2);
                 ReferenceNxN(expected, n, n, mode, t, l, top, left);
-                H264IntraPredict.PredictNxN(fast, n, n, mode, t, l, top, left, edges);
+                H264IntraPredict.Edges(n, t, l, top, left, edges);
+                H264IntraPredict.PredictNxN(fast, n, n, mode, edges);
                 Assert.True(expected.AsSpan(0, n * n).SequenceEqual(fast.AsSpan(0, n * n)), $"mode {mode}");
             }
         }
+    }
+
+    [Theory]
+    [InlineData(4)]
+    [InlineData(8)]
+    public void IntraModeSatdsMatchSatd(int n)
+    {
+        // The nine modes' SATDs at once against predicting each and SatdScalar, on random neighbours and sources.
+        Random random = new(n + 1);
+        int[] t = new int[33], l = new int[17];
+        byte[] edges = new byte[H264IntraPredict.EdgeSize], pred = new byte[64], scratch = new byte[64];
+        int[] satd = new int[9];
+        foreach ((byte[] src, _) in Planes(n))
+        {
+            for (int round = 0; round < 20; round++)
+            {
+                for (int i = 0; i < t.Length; i++)
+                {
+                    t[i] = round < 2 ? round * 255 : random.Next(256);
+                }
+
+                for (int i = 0; i < l.Length; i++)
+                {
+                    l[i] = round < 2 ? 255 - (round * 255) : random.Next(256);
+                }
+
+                l[0] = t[0];
+                H264IntraPredict.Edges(n, t, l, (round & 1) == 0, (round & 2) == 0, edges);
+                H264IntraPredict.SatdNxN(n, src, 5 + Stride, Stride, edges, scratch, satd);
+                for (int mode = 0; mode < 9; mode++)
+                {
+                    H264IntraPredict.PredictNxN(pred, n, n, mode, edges);
+                    Assert.Equal(H264EncodeSimd.SatdScalar(src, 5 + Stride, Stride, pred, 0, n, n, n), satd[mode]);
+                }
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LargeIntraPredictionMatchesTheFormulas(bool chroma)
+    {
+        // Intra16x16 and chroma prediction against the standard's per-sample formulas (8.3.3, 8.3.4), extremes first.
+        Random random = new(chroma ? 3 : 16);
+        int n = chroma ? 8 : 16;
+        int[] t = new int[33], l = new int[17];
+        byte[] fast = new byte[256], expected = new byte[256];
+        for (int round = 0; round < 2000; round++)
+        {
+            for (int i = 0; i < t.Length; i++)
+            {
+                t[i] = round < 4 ? ((round & 1) == 0 ? 0 : 255) * (i < 9 == (round < 2) ? 1 : 0) : random.Next(256);
+            }
+
+            for (int i = 0; i < l.Length; i++)
+            {
+                l[i] = round < 4 ? ((round & 1) == 0 ? 255 : 0) * (i < 9 == (round < 2) ? 0 : 1) : random.Next(256);
+            }
+
+            l[0] = t[0];
+            bool top = (round & 16) == 0, left = (round & 32) == 0;
+            for (int mode = 0; mode < 4; mode++)
+            {
+                if (chroma)
+                {
+                    H264IntraPredict.PredictChroma(fast, n, mode, t, l, top, left);
+                }
+                else
+                {
+                    H264IntraPredict.Predict16x16(fast, n, mode, t, l, top, left);
+                }
+
+                for (int y = 0; y < n; y++)
+                {
+                    for (int x = 0; x < n; x++)
+                    {
+                        expected[(y * n) + x] = (byte)ReferenceLarge(chroma, mode, x, y, t, l, top, left);
+                    }
+                }
+
+                Assert.True(expected.AsSpan(0, n * n).SequenceEqual(fast.AsSpan(0, n * n)), $"mode {mode}, round {round}");
+            }
+        }
+    }
+
+    private static int ReferenceLarge(bool chroma, int mode, int x, int y, int[] t, int[] l, bool top, bool left)
+    {
+        int n = chroma ? 8 : 16;
+        int vertical = chroma ? 2 : 0, horizontal = 1, dc = chroma ? 0 : 2;
+        if (mode == vertical)
+        {
+            return t[x + 1];
+        }
+
+        if (mode == horizontal)
+        {
+            return l[y + 1];
+        }
+
+        if (mode == dc)
+        {
+            if (!chroma)
+            {
+                int st = 0, sl = 0;
+                for (int i = 1; i <= 16; i++)
+                {
+                    st += t[i];
+                    sl += l[i];
+                }
+
+                return top && left ? (st + sl + 16) >> 5 : left ? (sl + 8) >> 4 : top ? (st + 8) >> 4 : 128;
+            }
+
+            int bx = x >> 2, by = y >> 2, sumT = 0, sumL = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                sumT += t[(bx * 4) + i + 1];
+                sumL += l[(by * 4) + i + 1];
+            }
+
+            int both = (sumT + sumL + 4) >> 3, fromT = (sumT + 2) >> 2, fromL = (sumL + 2) >> 2;
+            if (bx == by)
+            {
+                return top && left ? both : left ? fromL : top ? fromT : 128;
+            }
+
+            return bx > 0 ? (top ? fromT : left ? fromL : 128) : (left ? fromL : top ? fromT : 128);
+        }
+
+        int half = n / 2, h = 0, v = 0;
+        for (int i = 0; i < half; i++)
+        {
+            h += (i + 1) * (t[half + 1 + i] - t[half - 1 - i]);
+            v += (i + 1) * (l[half + 1 + i] - l[half - 1 - i]);
+        }
+
+        int scale = chroma ? 34 : 5, c = half - 1;
+        int a = 16 * (l[n] + t[n]), b = ((scale * h) + 32) >> 6, cc = ((scale * v) + 32) >> 6;
+        return Math.Clamp((a + (b * (x - c)) + (cc * (y - c)) + 16) >> 5, 0, 255);
     }
 
     [Theory]

@@ -1,3 +1,8 @@
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
 using Egami.Nal;
 
 namespace Egami.Video.Codecs.H264;
@@ -40,8 +45,44 @@ internal sealed partial class H264MbSyntax
         _w4 = mb.W4;
     }
 
-    /// <summary>Gets the CABAC contexts of the slice being coded.</summary>
-    public byte[] Contexts { get; } = new byte[460];
+    /// <summary>The CABAC contexts of an H.264 slice (ctxIdx 0 to 459).</summary>
+    private const int ContextCount = 460;
+
+    /// <summary>
+    /// The cost of a coeff_abs_level_minus1 prefix after its first bin by (state &lt;&lt; 4) | n, with n = Min(abs - 1, 14): n - 1
+    /// bins of 1 then a 0 when n &lt; 14, all in one context; 0 for n = 0, the level 1 that has no more bins.
+    /// </summary>
+    private static readonly int[] PrefixCost = new int[128 * 16];
+
+    /// <summary>The context's state after the prefix bins of <see cref="PrefixCost"/>.</summary>
+    private static readonly byte[] PrefixNext = new byte[128 * 16];
+
+    static H264MbSyntax()
+    {
+        for (int state = 0; state < 128; state++)
+        {
+            for (int n = 0; n <= 14; n++)
+            {
+                byte s = (byte)state;
+                int cost = 0;
+                for (int p = 1; p < n; p++)
+                {
+                    cost += CabacCost.Update(ref s, 1);
+                }
+
+                if (n is > 0 and < 14)
+                {
+                    cost += CabacCost.Update(ref s, 0);
+                }
+
+                PrefixCost[(state << 4) | n] = cost;
+                PrefixNext[(state << 4) | n] = s;
+            }
+        }
+    }
+
+    /// <summary>Gets the CABAC contexts of the slice being coded (padded to a multiple of 8 for <see cref="CabacUndoLog"/>).</summary>
+    public byte[] Contexts { get; } = new byte[(ContextCount + 7) & ~7];
 
     /// <summary>Gets or sets whether the slice is coded with CABAC.</summary>
     public bool Cabac { get; set; }
@@ -86,7 +127,7 @@ internal sealed partial class H264MbSyntax
         int column = type == H264SliceType.I ? 0 : 1 + cabacInitIdc;
         ReadOnlySpan<sbyte> init = H264Tables.CabacInit;
         byte[] ctx = Contexts;
-        for (int i = 0; i < ctx.Length; i++)
+        for (int i = 0; i < ContextCount; i++)
         {
             int m = init[(i * 8) + (column * 2)], n = init[(i * 8) + (column * 2) + 1];
             int pre = Math.Clamp(((m * qp) >> 4) + n, 1, 126);
@@ -516,6 +557,12 @@ internal sealed partial class H264MbSyntax
     private void ResidualCabac<T>(H264MbCode code, ref T sink)
         where T : struct, ICabacSink
     {
+        if (typeof(T) == typeof(CabacUndoSink))
+        {
+            CountResidual(code, ref Unsafe.As<T, CabacUndoSink>(ref sink));
+            return;
+        }
+
         if (code.Kind == H264MbKind.I16x16)
         {
             BlockCabac(ref sink, 0, CbfInc(DcCond(_availableLeft, _left, 1), DcCond(_availableTop, _top, 1)), 16, code.LumaDc, 0, code.LumaDcCount);
@@ -564,6 +611,145 @@ internal sealed partial class H264MbSyntax
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Counts the macroblock's residual as <see cref="ResidualCabac{T}"/> codes it into a <see cref="CabacUndoSink"/> (H.264
+    /// Encoder Speed Build Plan, task 19): the coded_block_flag conditions from masks of the coded blocks and their neighbours,
+    /// each flag one table step, and each coded block from <see cref="CountLevels"/>.
+    /// </summary>
+    private void CountResidual(H264MbCode code, ref CabacUndoSink sink)
+    {
+        byte[] ctx = Contexts;
+        CabacUndoLog log = sink.Log;
+        log.NoteRange(85, 104);
+        ref byte states = ref MemoryMarshal.GetArrayDataReference(ctx);
+        ref int costs = ref MemoryMarshal.GetArrayDataReference(CabacCost.Costs);
+        ref byte next = ref MemoryMarshal.GetArrayDataReference(CabacCost.Next);
+        long cost = 0;
+        int cbp = code.Cbp;
+        bool i16 = code.Kind == H264MbKind.I16x16;
+        if (i16)
+        {
+            int count = code.LumaDcCount;
+            int inc = CbfInc(DcCond(_availableLeft, _left, 1), DcCond(_availableTop, _top, 1));
+            cost += Bin(ref Unsafe.Add(ref states, 85 + inc), count > 0 ? 1 : 0, ref costs, ref next);
+            if (count > 0)
+            {
+                cost += CountLevels(ctx, log, 0, 16, code.LumaDc, 0);
+            }
+        }
+
+        if ((cbp & 15) != 0)
+        {
+            if (code.Eight)
+            {
+                for (int i8 = 0; i8 < 4; i8++)
+                {
+                    if ((cbp & (1 << i8)) != 0 && code.Luma8Count[i8] > 0)
+                    {
+                        cost += CountLevels(ctx, log, 5, 64, code.Luma8, i8 * 64);
+                    }
+                }
+            }
+            else
+            {
+                // Bit (by + 1) * 5 + bx + 1: whether block (bx, by) has levels, with the left column and top row the neighbours'.
+                uint grid = LumaCbfGrid();
+                int cat = i16 ? 1 : 2, max = i16 ? 15 : 16;
+                ref byte cbf = ref Unsafe.Add(ref states, 85 + CbfOffset[cat]);
+                int[] counts = code.LumaCount;
+                ReadOnlySpan<byte> blockXY = H264Tables.BlockXY;
+                for (int blk = 0; blk < 16; blk++)
+                {
+                    if ((cbp & (1 << (blk >> 2))) == 0)
+                    {
+                        blk |= 3;
+                        continue;
+                    }
+
+                    int xy = blockXY[blk];
+                    int bx = xy & 3, by = xy >> 2;
+                    int inc = (int)((grid >> (((by + 1) * 5) + bx)) & 1) + (2 * (int)((grid >> ((by * 5) + bx + 1)) & 1));
+                    int count = counts[blk];
+                    cost += Bin(ref Unsafe.Add(ref cbf, inc), count > 0 ? 1 : 0, ref costs, ref next);
+                    if (count > 0)
+                    {
+                        cost += CountLevels(ctx, log, cat, max, code.Luma, blk * 16);
+                    }
+                }
+            }
+        }
+
+        if ((cbp & 0x30) != 0)
+        {
+            for (int c = 0; c < 2; c++)
+            {
+                int count = code.ChromaDcCount[c];
+                int inc = CbfInc(DcCond(_availableLeft, _left, 2 << c), DcCond(_availableTop, _top, 2 << c));
+                cost += Bin(ref Unsafe.Add(ref states, 85 + 12 + inc), count > 0 ? 1 : 0, ref costs, ref next);
+                if (count > 0)
+                {
+                    cost += CountLevels(ctx, log, 3, 4, code.ChromaDc, c * 4);
+                }
+            }
+        }
+
+        if ((cbp & 0x20) != 0)
+        {
+            ref byte cbf = ref Unsafe.Add(ref states, 85 + 16);
+            int[] counts = code.ChromaAcCount;
+            for (int c = 0; c < 2; c++)
+            {
+                // Bit (by + 1) * 3 + bx + 1, as the luma grid.
+                uint grid = ChromaCbfGrid(c == 0 ? _mb.NzCb : _mb.NzCr);
+                for (int blk = 0; blk < 4; blk++)
+                {
+                    int bx = blk & 1, by = blk >> 1;
+                    int inc = (int)((grid >> (((by + 1) * 3) + bx)) & 1) + (2 * (int)((grid >> ((by * 3) + bx + 1)) & 1));
+                    int count = counts[(c * 4) + blk];
+                    cost += Bin(ref Unsafe.Add(ref cbf, inc), count > 0 ? 1 : 0, ref costs, ref next);
+                    if (count > 0)
+                    {
+                        cost += CountLevels(ctx, log, 4, 15, code.ChromaAc, ((c * 4) + blk) * 16);
+                    }
+                }
+            }
+        }
+
+        sink.Cost += cost;
+    }
+
+    /// <summary>The coded_block_flag conditions of the luma blocks as <see cref="LumaCbfCond"/> gives them, on a 5x5 grid.</summary>
+    private uint LumaCbfGrid()
+    {
+        byte[] nz = _mb.NzLuma;
+        uint unavailable = _intra ? 1u : 0u;
+        uint grid = 0;
+        for (int by = 0; by < 4; by++)
+        {
+            int b = _b0 + (by * _w4);
+            uint left = _availableLeft ? (nz[b - 1] != 0 ? 1u : 0u) : unavailable;
+            uint row = (nz[b] != 0 ? 1u : 0u) | (nz[b + 1] != 0 ? 2u : 0u) | (nz[b + 2] != 0 ? 4u : 0u) | (nz[b + 3] != 0 ? 8u : 0u);
+            grid |= (left | (row << 1)) << ((by + 1) * 5);
+        }
+
+        int t = _b0 - _w4;
+        uint top = _availableTop
+            ? (nz[t] != 0 ? 1u : 0u) | (nz[t + 1] != 0 ? 2u : 0u) | (nz[t + 2] != 0 ? 4u : 0u) | (nz[t + 3] != 0 ? 8u : 0u)
+            : unavailable * 15;
+        return grid | (top << 1);
+    }
+
+    /// <summary>The coded_block_flag conditions of a chroma component's AC blocks as <see cref="ChromaCbfCond"/> gives them, on a 3x3 grid.</summary>
+    private uint ChromaCbfGrid(byte[] nz)
+    {
+        uint unavailable = _intra ? 1u : 0u;
+        int cw = _mb.ChromaW4, c0 = ChromaBlock(0, 0);
+        uint grid = (nz[c0] != 0 ? 1u << 4 : 0) | (nz[c0 + 1] != 0 ? 1u << 5 : 0) | (nz[c0 + cw] != 0 ? 1u << 7 : 0) | (nz[c0 + cw + 1] != 0 ? 1u << 8 : 0);
+        uint left = _availableLeft ? (nz[c0 - 1] != 0 ? 1u : 0) | (nz[c0 + cw - 1] != 0 ? 2u : 0) : unavailable * 3;
+        uint top = _availableTop ? (nz[c0 - cw] != 0 ? 1u : 0) | (nz[c0 - cw + 1] != 0 ? 2u : 0) : unavailable * 3;
+        return grid | ((left & 1) << 3) | ((left >> 1) << 6) | (top << 1);
     }
 
     private static int CbfInc(int condA, int condB) => condA + (2 * condB);
@@ -621,6 +807,13 @@ internal sealed partial class H264MbSyntax
 
         if (count == 0)
         {
+            return;
+        }
+
+        if (typeof(T) == typeof(CabacUndoSink))
+        {
+            ref CabacUndoSink counter = ref Unsafe.As<T, CabacUndoSink>(ref sink);
+            counter.Cost += CountLevels(ctx, counter.Log, cat, maxNumCoeff, levels, at);
             return;
         }
 
@@ -714,6 +907,147 @@ internal sealed partial class H264MbSyntax
 
             sink.Bypass(level < 0 ? 1 : 0);
         }
+    }
+
+    /// <summary>
+    /// Counts the significance map and levels of a block with non-zero levels exactly as <see cref="BlockCabac{T}(byte[], ref T,
+    /// int, int, int, int[], int, int)"/> codes them into a <see cref="CabacUndoSink"/>, moving the same states (H.264 Encoder
+    /// Speed Build Plan, task 19): one pass over a mask of the non-zero levels, without a branch on each level's value, and each
+    /// level's prefix from <see cref="PrefixCost"/>; the block's context ranges are noted in <paramref name="log"/> once.
+    /// </summary>
+    private static long CountLevels(byte[] ctx, CabacUndoLog log, int cat, int maxNumCoeff, int[] levels, int at)
+    {
+        ulong mask = NonZeroMask(levels, at, maxNumCoeff);
+        int last = 63 - BitOperations.LeadingZeroCount(mask);
+        ref byte states = ref MemoryMarshal.GetArrayDataReference(ctx);
+        ref int costs = ref MemoryMarshal.GetArrayDataReference(CabacCost.Costs);
+        ref byte next = ref MemoryMarshal.GetArrayDataReference(CabacCost.Next);
+        long cost = 0;
+        int absBase;
+        if (cat == 5)
+        {
+            // Significance 402-416, last 417-425 and levels 426-435 in one range.
+            log.NoteRange(402, 435);
+            absBase = 426;
+            ref byte sig = ref Unsafe.Add(ref states, 402);
+            ref byte lastCtx = ref Unsafe.Add(ref states, 417);
+            ref byte sig8 = ref MemoryMarshal.GetReference(H264Tables.Significant8x8);
+            ref byte last8 = ref MemoryMarshal.GetReference(H264Tables.Last8x8);
+            for (int i = 0; i < last; i++)
+            {
+                int s = (int)(mask >> i) & 1;
+                cost += Significant(ref Unsafe.Add(ref sig, Unsafe.Add(ref sig8, i)), ref Unsafe.Add(ref lastCtx, Unsafe.Add(ref last8, i)), s, ref costs, ref next);
+            }
+
+            if (last < 63)
+            {
+                cost += Bin(ref Unsafe.Add(ref sig, Unsafe.Add(ref sig8, last)), 1, ref costs, ref next)
+                    + Bin(ref Unsafe.Add(ref lastCtx, Unsafe.Add(ref last8, last)), 1, ref costs, ref next);
+            }
+        }
+        else
+        {
+            // Coded positions run to Min(last, maxNumCoeff - 2); chroma DC's increment Min(i, 2) is i at those.
+            int sigBase = 105 + SigOffset[cat], lastBase = 166 + SigOffset[cat];
+            int top = Math.Min(last, maxNumCoeff - 2);
+            log.NoteRange(sigBase, sigBase + top);
+            log.NoteRange(lastBase, lastBase + top);
+            absBase = 227 + AbsOffset[cat];
+            log.NoteRange(absBase, absBase + 9);
+            ref byte sig = ref Unsafe.Add(ref states, sigBase);
+            ref byte lastCtx = ref Unsafe.Add(ref states, lastBase);
+            for (int i = 0; i < last; i++)
+            {
+                int s = (int)(mask >> i) & 1;
+                cost += Significant(ref Unsafe.Add(ref sig, i), ref Unsafe.Add(ref lastCtx, i), s, ref costs, ref next);
+            }
+
+            if (last < maxNumCoeff - 1)
+            {
+                cost += Bin(ref Unsafe.Add(ref sig, last), 1, ref costs, ref next) + Bin(ref Unsafe.Add(ref lastCtx, last), 1, ref costs, ref next);
+            }
+        }
+
+        // Levels from the last: coeff_abs_level_minus1's first bin, its prefix from the run tables, the escape and the sign.
+        ref byte abs0 = ref Unsafe.Add(ref states, absBase);
+        ref byte prefix0 = ref Unsafe.Add(ref abs0, 5);
+        ref int prefixCost = ref MemoryMarshal.GetArrayDataReference(PrefixCost);
+        ref byte prefixNext = ref MemoryMarshal.GetArrayDataReference(PrefixNext);
+        ref int level0 = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(levels), at);
+        int maxGt1Inc = cat == 3 ? 3 : 4;
+        int eq1 = 0, gt1 = 0;
+        long escapes = 0;
+        ulong left = mask;
+        do
+        {
+            int i = 63 - BitOperations.LeadingZeroCount(left);
+            left ^= 1UL << i;
+            int abs = Math.Abs(Unsafe.Add(ref level0, i));
+            int g = abs > 1 ? 1 : 0;
+            cost += Bin(ref Unsafe.Add(ref abs0, gt1 != 0 ? 0 : Math.Min(4, 1 + eq1)), g, ref costs, ref next);
+            ref byte p = ref Unsafe.Add(ref prefix0, Math.Min(maxGt1Inc, gt1));
+            int k = (p << 4) | Math.Min(abs - 1, 14);
+            cost += Unsafe.Add(ref prefixCost, k);
+            p = Unsafe.Add(ref prefixNext, k);
+            if (abs >= 15)
+            {
+                // Exp-Golomb (k = 0) suffix of abs - 15: 2 Log2(abs - 14) + 1 bypass bins.
+                escapes += (2 * BitOperations.Log2((uint)(abs - 14))) + 1;
+            }
+
+            gt1 += g;
+            eq1 += g ^ 1;
+        }
+        while (left != 0);
+
+        // A bypass sign each.
+        return cost + ((escapes + BitOperations.PopCount(mask)) * CabacCost.Bit);
+    }
+
+    /// <summary>significant_coeff_flag s, then last_significant_coeff_flag 0 when s is 1, without a branch on s.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Significant(ref byte sig, ref byte last, int s, ref int costs, ref byte next)
+    {
+        int st = sig;
+        int cost = Unsafe.Add(ref costs, st ^ s);
+        sig = Unsafe.Add(ref next, (st << 1) | s);
+        int lt = last, nl = Unsafe.Add(ref next, lt << 1);
+        last = (byte)(lt ^ ((lt ^ nl) & -s));
+        return cost + (Unsafe.Add(ref costs, lt) & -s);
+    }
+
+    /// <summary>Codes one bin in a context, returning its cost.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Bin(ref byte state, int bin, ref int costs, ref byte next)
+    {
+        int st = state;
+        state = Unsafe.Add(ref next, (st << 1) | bin);
+        return Unsafe.Add(ref costs, st ^ bin);
+    }
+
+    /// <summary>Bit i set for each non-zero level i of the block's first <paramref name="count"/>.</summary>
+    private static ulong NonZeroMask(int[] levels, int at, int count)
+    {
+        ulong mask = 0;
+        int groups = (count + 3) >> 2;
+        if ((uint)at <= (uint)levels.Length && levels.Length - at >= groups * 4)
+        {
+            ref int first = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(levels), at);
+            for (int g = 0; g < groups; g++)
+            {
+                Vector128<int> v = Vector128.LoadUnsafe(ref first, (nuint)(g * 4));
+                mask |= (ulong)(~Vector128.Equals(v, Vector128<int>.Zero)).ExtractMostSignificantBits() << (g * 4);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < count; i++)
+            {
+                mask |= (levels[at + i] != 0 ? 1UL : 0) << i;
+            }
+        }
+
+        return count == 64 ? mask : mask & ((1UL << count) - 1);
     }
 
     // ---- CAVLC ----

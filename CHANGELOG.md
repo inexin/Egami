@@ -94,6 +94,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   all eight coding states at once (AVX2), and the 4x4 and 8x8 scans gather the levels and their non-zero mask in vectors.
   The output is byte-identical. At effort 4 on the four 720p clips: 11 to 16 % fewer cycles a macroblock with PGO (mean
   347k to 302k) and 11 to 13 % without (373k to 328k).
+- Speed (H.264 Encoder Speed Build Plan, task 20): Intra4x4 and Intra8x8 work out once per block the lines every mode copies
+  its rows from, so a prediction is a row copy, and price all nine modes' SATDs in one AVX2 kernel without writing them out;
+  plane prediction (16x16 and chroma) and chroma DC run in vectors. The output is byte-identical. At effort 4 on the four
+  720p clips intra decisions take 31.5k cycles a macroblock instead of 54.6k, and the encoder 6 to 13 % fewer instructions
+  (mean 317k to 290k cycles a macroblock with PGO, 343k to 315k without).
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 
