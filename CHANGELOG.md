@@ -106,6 +106,19 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   byte-identical. On the four 720p clips: 4.7 to 6.9 % fewer instructions at effort 4 (mean 382k to 373k cycles a
   macroblock with PGO, 414k to 400k without), 5.4 to 9.6 % at effort 7 (490k to 464k, 523k to 497k), 5.5 to 8.2 % at
   effort 2 (212k to 198k, 221k to 214k).
+- Efforts (H.264 Encoder Speed Build Plan, tasks 15 and 16): efforts 6 to 10 are retuned so that each costs more cycles and
+  needs fewer bits than the one below it on the four 720p clips; efforts 0 to 5, the default 4 among them, code exactly as
+  before. Effort 6 searches 16x8 and 8x16 in every macroblock (0.7 % fewer bits than before, about 7 % more cycles), so effort
+  7 does too; effort 8 always RD-codes the second-best partitioning; effort 9, which coded as 8, searches four references;
+  effort 10, which also coded as 8, RD-codes every intra kind, B_Direct_16x16 and both inter transforms. Measured with
+  profile-h264-encoder.py on an idle machine, at one thread, quality 50, 720p (cycles a macroblock with PGO, times x264 medium,
+  and BD-rate against x264 medium, mean of the clips):
+  effort 0 119k, 1.8×, +67.0 %; effort 2 175k, 2.6×, +22.3 %; effort 3 251k, 3.7×, +12.3 %; effort 4 263k, 4.0×, +11.6 %;
+  effort 6 313k, 4.7×, +10.8 %; effort 8 489k, 7.4×, +10.5 %; effort 10 594k, 8.9×, +10.0 %. The design's speed goal, twice
+  x264 medium's time at effort 4, is not met: effort 4 takes 4.0 times x264 medium's cycles (3.5 to 5.2 by clip). The H.264
+  guide has the table for every effort. Per-task cycle figures above were measured under load and run higher.
+- Tools: time-h264-encoder.py records the speed against x264 medium instead of gating it at 2 times, and gates the cycles at
+  effort 4 against regressions instead: each clip at most 10 % above the ratio measured after the speed plan.
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 
