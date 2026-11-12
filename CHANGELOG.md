@@ -89,6 +89,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   of the four 720p clips is −0.49 % against the encoder before the tree (worst clip +0.52 %) for 5 to 19 % fewer cycles than
   with the tree alone (4.5 to 7.6 times x264 medium's cycles); effort 7 −0.49 % (worst +0.53 %) for 6 to 18 % fewer; effort 2
   −1.07 % (worst +0.30 %).
+- Speed (H.264 Encoder Speed Build Plan, task 17): RDOQ's block pricer looks up per-macroblock tables of the significance,
+  last and level bin costs instead of working them out from the CABAC states, prices the levels below the one it lowers for
+  all eight coding states at once (AVX2), and the 4x4 and 8x8 scans gather the levels and their non-zero mask in vectors.
+  The output is byte-identical. At effort 4 on the four 720p clips: 11 to 16 % fewer cycles a macroblock with PGO (mean
+  347k to 302k) and 11 to 13 % without (373k to 328k).
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 
