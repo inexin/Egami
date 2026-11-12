@@ -149,7 +149,7 @@ internal sealed partial class H264MbEncoder
             }
         }
 
-        int coded = estimate[order[1]] - estimate[order[0]] <= estimate[order[0]] * IntraRankMargin ? 2 : 1;
+        int coded = _effort >= 10 ? count : estimate[order[1]] - estimate[order[0]] <= estimate[order[0]] * IntraRankMargin ? 2 : 1;
         int best = order[0];
         double bestCost = double.MaxValue;
         for (int o = 0; o < coded; o++)
@@ -221,7 +221,8 @@ internal sealed partial class H264MbEncoder
     private bool _i16Pending;
     private int _i16Mode;
 
-    // Task 8: the second-best intra kind by SATD and mode bits is RD-coded too when it comes within this share of the best.
+    // Task 8: the second-best intra kind by SATD and mode bits is RD-coded too when it comes within this share of the best; at
+    // effort 10 every kind is.
     private const double IntraRankMargin = 0.25;
 
     /// <summary>How far above the inter cost, in sixteenths, an intra 16x16 SATD still tries intra.</summary>

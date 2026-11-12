@@ -34,14 +34,16 @@ internal sealed partial class H264MbEncoder
     internal H264SearchShortcuts Shortcuts { get; set; }
 
     /// <summary>
-    /// The shortcuts an effort takes: both, quick sub-samples everywhere, up to effort 3; from 4 to 7 the 16x8/8x16 gate and
-    /// quick sub-samples in B pictures only; none from effort 8. The macroblock tree's gain pays for them: on the four 720p
-    /// clips the mean BD-rate stays below what it was before the tree, and no clip loses more than 1 %.
+    /// The shortcuts an effort takes: both, quick sub-samples everywhere, up to effort 3; at 4 and 5 the 16x8/8x16 gate and
+    /// quick sub-samples in B pictures only; at 6 and 7 quick sub-samples in B pictures only; none from effort 8. The macroblock
+    /// tree's gain pays for them: on the four 720p clips the mean BD-rate stays below what it was before the tree, and no clip
+    /// loses more than 1 %. Without the gate effort 6 takes 0.57 % fewer bits than with it, for 6 to 20 % more instructions.
     /// </summary>
     internal static H264SearchShortcuts DefaultShortcuts(int effort) => effort switch
     {
         <= 3 => H264SearchShortcuts.QuickSubpel | H264SearchShortcuts.PruneHalves,
-        <= 7 => H264SearchShortcuts.QuickSubpelB | H264SearchShortcuts.PruneHalves,
+        <= 5 => H264SearchShortcuts.QuickSubpelB | H264SearchShortcuts.PruneHalves,
+        <= 7 => H264SearchShortcuts.QuickSubpelB,
         _ => H264SearchShortcuts.None,
     };
 
@@ -50,13 +52,16 @@ internal sealed partial class H264MbEncoder
     // The cost of a lone ±1 level after a run of zeros, which decides when a sparse block is dropped.
     private static readonly byte[] RunCost = [3, 2, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-    // Task 6: the 4x4 and 8x8 transforms are both coded only when SATD and SA8D come within this share of each other.
+    // Task 6: the 4x4 and 8x8 transforms are both coded only when SATD and SA8D come within this share of each other (always at
+    // effort 10).
     private const double TransformMargin = 0.1;
 
-    // Task 8: the second-best partitioning is coded only when its search cost comes within this share of the best's.
+    // Task 8: the second-best partitioning is coded only when its search cost comes within this share of the best's (always from
+    // effort 8).
     private const double SecondMargin = 1.0 / 16;
 
-    // Task 8: B_Direct_16x16 with a residual is coded only when its SATD is at most this share of the best partitioning's cost.
+    // Task 8: B_Direct_16x16 with a residual is coded only when its SATD is at most this share of the best partitioning's cost
+    // (always at effort 10).
     private const double DirectShare = 0.8;
 
     // Task 7: P_Skip and B_Skip end the search when every 4x4 block's squared error is below that of a coefficient this many
@@ -951,7 +956,7 @@ internal sealed partial class H264MbEncoder
         {
             // Task 6: when the Hadamard costs of the residual, 4x4 (SATD) and 8x8 (SA8D), are far apart, code only the lower.
             long satd4 = Satd(_srcY, _lumaAt, _stride, _ip, 0, 16, 16, 16), satd8 = Sa8d(_srcY, _lumaAt, _stride, _ip, 0, 16, 16, 16);
-            if (satd8 > satd4 * (1 + TransformMargin) || satd4 > satd8 * (1 + TransformMargin))
+            if (_effort < 10 && (satd8 > satd4 * (1 + TransformMargin) || satd4 > satd8 * (1 + TransformMargin)))
             {
                 long sseT = CodeInterLuma(code, satd8 < satd4);
                 return sseT + chromaSse + (_lambda * Rate(code) / CabacCost.Bit);
@@ -1155,11 +1160,11 @@ internal sealed partial class H264MbEncoder
 
     /// <summary>
     /// Which of the best two partitionings to RD-code (task 8): the best, and from effort 3 the second when its search cost
-    /// (SATD and vector bits) comes within <see cref="SecondMargin"/> of the best's.
+    /// (SATD and vector bits) comes within <see cref="SecondMargin"/> of the best's, from effort 8 always.
     /// </summary>
     private (bool First, bool Second) PickPartitions(H264MbCode first, long firstCost, H264MbCode? second, long secondCost)
     {
-        bool codeSecond = _effort >= 3 && second is not null && secondCost - firstCost <= firstCost * SecondMargin;
+        bool codeSecond = _effort >= 3 && second is not null && (_effort >= 8 || secondCost - firstCost <= firstCost * SecondMargin);
         if (codeSecond && first == _inter[0] && SameAs16(second!))
         {
             // The second repeats the 16x16 prediction with more header bits: coding it cannot win.

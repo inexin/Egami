@@ -166,8 +166,9 @@ internal sealed partial class H264MbEncoder
             }
         }
 
-        // Task 8: B_Direct_16x16 with a residual, RD-coded only when its prediction comes near the best partitioning by SATD.
-        if (_effort >= 1 && directSatd != long.MaxValue && directSatd <= firstCost * DirectShare)
+        // Task 8: B_Direct_16x16 with a residual, RD-coded only when its prediction comes near the best partitioning by SATD (at
+        // effort 10 always).
+        if (_effort >= 1 && directSatd != long.MaxValue && (_effort >= 10 || directSatd <= firstCost * DirectShare))
         {
             CodeDirect(_direct, ref bestCost, ref best, ref bestSlot);
         }

@@ -182,8 +182,8 @@ internal sealed class H264VideoEncoder : IVideoEncoder
     /// <summary>The slices a picture of a size is cut into when the options leave it open: one per 1800 macroblocks, up to eight.</summary>
     internal static int AutoSlices(int widthMbs, int heightMbs) => Math.Clamp(widthMbs * heightMbs / 1800, 1, 8);
 
-    /// <summary>The reference frames P pictures search at an effort: one, two from effort 2, three from 4.</summary>
-    internal static int RefFrames(int effort) => effort >= 4 ? 3 : effort >= 2 ? 2 : 1;
+    /// <summary>The reference frames P pictures search at an effort: one, two from effort 2, three from 4, four from 9.</summary>
+    internal static int RefFrames(int effort) => effort >= 9 ? 4 : effort >= 4 ? 3 : effort >= 2 ? 2 : 1;
 
     /// <summary>
     /// The macroblock tree's strength (<see cref="CoreSettings.MacroblockTree"/>): a frame's step falls by 2^(-0.25) for each
