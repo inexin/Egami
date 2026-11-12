@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
 using Egami.Nal;
 
 namespace Egami.Video.Codecs.H264;
