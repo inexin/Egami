@@ -1,8 +1,9 @@
 namespace Egami.Video.Codecs.H264;
 
 /// <summary>
-/// Motion search shortcuts that save cycles for some compression, off by default (task 12). Measured on the four 720p
-/// clips at effort 4 against the full search: the worst clip's BD-rate and the cycle change with profile-guided optimization.
+/// Motion search shortcuts that save cycles for some compression (task 12); <see cref="H264MbEncoder.DefaultShortcuts"/> says
+/// which an effort takes. Measured on the four 720p clips at effort 4 against the full search, before the macroblock tree:
+/// the worst clip's BD-rate and the cycle change with profile-guided optimization.
 /// </summary>
 [Flags]
 internal enum H264SearchShortcuts
@@ -22,4 +23,7 @@ internal enum H264SearchShortcuts
     /// fewer cycles; both shortcuts together +1.71 % for 9 to 16 % fewer.
     /// </summary>
     PruneHalves = 2,
+
+    /// <summary><see cref="QuickSubpel"/> in B pictures only, where no picture or few predict from the result.</summary>
+    QuickSubpelB = 4,
 }
