@@ -88,6 +88,8 @@ public sealed class EncoderBlockPricerTests
 
     private static long Begin(H264BlockPricer pricer, byte[] ctx, int cat, int max, int[] levels)
     {
+        // The states changed since the last block, as they do once a macroblock is coded.
+        pricer.Invalidate();
         int[] rows = [.. Enumerable.Range(0, max).Where(i => levels[i] != 0)];
         return pricer.Begin(ctx, cat, max, levels, 0, [.. rows, .. new int[64 - rows.Length]], rows.Length);
     }

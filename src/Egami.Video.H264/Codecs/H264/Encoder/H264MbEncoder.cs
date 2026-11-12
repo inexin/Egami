@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -42,6 +43,7 @@ internal sealed partial class H264MbEncoder
     private readonly H264BlockPricer _pricer = new();
     private readonly CabacUndoLog _undo = new(460);
     private readonly int[] _rdoqRows = new int[64];
+    private readonly double[] _rdoqGains = new double[64];
     private readonly int[] _quant = new int[64];
     private readonly int[] _t = new int[33];
     private readonly int[] _l = new int[17];
@@ -226,6 +228,7 @@ internal sealed partial class H264MbEncoder
         _mbX = mbX;
         _mbY = mbY;
         _qp = qp;
+        _pricer.Invalidate();
         _qpc = H264Tables.ChromaQp[Math.Clamp(qp + _syntax.ChromaQpOffset, 0, 51)];
         _lambda = H264Forward.Lambda(qp);
         _sadLambda = Math.Sqrt(_lambda);
@@ -804,20 +807,84 @@ internal sealed partial class H264MbEncoder
 
         int n = 0;
         int[] rows = _rdoqRows;
-        ref byte scanAt = ref MemoryMarshal.GetArrayDataReference(scan);
-        ref int qAt = ref MemoryMarshal.GetArrayDataReference(q);
         Span<int> dst = levels.AsSpan(at, max);
-        for (int k = 0; k < dst.Length; k++)
+        if (Avx2.IsSupported && max == (eight ? 64 : 16) - first && (!eight || first == 0))
         {
-            int level = Unsafe.Add(ref qAt, Unsafe.Add(ref scanAt, k + first));
-            dst[k] = level;
+            // The levels in scan order and a mask of the non-zero ones, whose positions are RDOQ's list.
+            ulong mask = eight ? Scan8(q, dst) : Scan4(q, first, dst);
+            while (mask != 0)
+            {
+                rows[n++] = BitOperations.TrailingZeroCount(mask);
+                mask &= mask - 1;
+            }
+        }
+        else
+        {
+            ref byte scanAt = ref MemoryMarshal.GetArrayDataReference(scan);
+            ref int qAt = ref MemoryMarshal.GetArrayDataReference(q);
+            for (int k = 0; k < dst.Length; k++)
+            {
+                int level = Unsafe.Add(ref qAt, Unsafe.Add(ref scanAt, k + first));
+                dst[k] = level;
 
-            // RDOQ's list of the non-zero levels' scan positions, made without a branch: which levels are 0 is hard to predict.
-            rows[n] = k;
-            n += (level | -level) >>> 31;
+                // RDOQ's list of the non-zero levels' scan positions, made without a branch: which levels are 0 is hard to predict.
+                rows[n] = k;
+                n += (level | -level) >>> 31;
+            }
         }
 
         return rdoq && n > 0 ? Rdoq(w, levels, at, first, max, eight, qp, cat, n) : n;
+    }
+
+    // The 4x4 zigzag scan as lane permutations of the two halves of a raster block: the lanes of each half of the scan, and
+    // which of them come from the second half of the block.
+    private static readonly Vector256<int> ScanLow = Vector256.Create(0, 1, 4, 0, 5, 2, 3, 6);
+    private static readonly Vector256<int> ScanLowHigh = Vector256.Create(0, 0, 0, -1, 0, 0, 0, 0);
+    private static readonly Vector256<int> ScanHigh = Vector256.Create(1, 4, 5, 2, 7, 3, 6, 7);
+    private static readonly Vector256<int> ScanHighHigh = Vector256.Create(-1, -1, -1, -1, 0, -1, -1, -1);
+
+    // The 8x8 zigzag scan's raster positions.
+    private static readonly int[] Scan8x8 = Array.ConvertAll(H264ScalingLists.Zigzag8x8, p => (int)p);
+
+    /// <summary>
+    /// Puts a 4x4 block's quantized levels (raster order) into <paramref name="dst"/> in scan order from <paramref name="first"/>
+    /// on, and returns the mask of the non-zero ones by position in <paramref name="dst"/>.
+    /// </summary>
+    private static ulong Scan4(int[] q, int first, Span<int> dst)
+    {
+        Vector256<int> low = Vector256.Create(q, 0), high = Vector256.Create(q, 8);
+        Vector256<int> a = Vector256.ConditionalSelect(ScanLowHigh, Avx2.PermuteVar8x32(high, ScanLow), Avx2.PermuteVar8x32(low, ScanLow));
+        Vector256<int> b = Vector256.ConditionalSelect(ScanHighHigh, Avx2.PermuteVar8x32(high, ScanHigh), Avx2.PermuteVar8x32(low, ScanHigh));
+        uint mask = ~(Vector256.Equals(a, Vector256<int>.Zero).ExtractMostSignificantBits() | (Vector256.Equals(b, Vector256<int>.Zero).ExtractMostSignificantBits() << 8)) & 0xFFFF;
+        if (first == 0)
+        {
+            a.CopyTo(dst);
+            b.CopyTo(dst[8..]);
+            return mask;
+        }
+
+        Span<int> all = stackalloc int[16];
+        a.CopyTo(all);
+        b.CopyTo(all[8..]);
+        all[first..].CopyTo(dst);
+        return mask >> first;
+    }
+
+    /// <summary>Puts an 8x8 block's quantized levels (raster order) into <paramref name="dst"/> in scan order and returns the mask of the non-zero ones.</summary>
+    private static unsafe ulong Scan8(int[] q, Span<int> dst)
+    {
+        ulong mask = 0;
+        fixed (int* qAt = q)
+        {
+            for (int i = 0; i < 64; i += 8)
+            {
+                Vector256<int> v = Avx2.GatherVector256(qAt, Vector256.Create(Scan8x8, i), 4);
+                v.CopyTo(dst[i..]);
+                mask |= (ulong)(~Vector256.Equals(v, Vector256<int>.Zero).ExtractMostSignificantBits() & 0xFF) << i;
+            }
+        }
+
+        return mask;
     }
 
     private int Rdoq(ReadOnlySpan<int> w, int[] levels, int at, int first, int max, bool eight, int qp, int cat, int n)
@@ -831,31 +898,35 @@ internal sealed partial class H264MbEncoder
         double zero = ZeroError(w, weights, first);
         double distortion = zero;
         int[] rows = _rdoqRows;
+        double[] gains = _rdoqGains;
         int count = n;
         for (int row = 0; row < count; row++)
         {
+            // The error as quantized, and how it changes when the level is lowered one step (which the other levels' choices
+            // leave as it is).
             int k = rows[row];
             int pos = scan[k];
-            double e = w[pos] - (levels[at + k] * steps[pos]);
-            distortion += ((e * e) - ((double)w[pos] * w[pos])) * weights[pos];
-        }
-
-        bool cabac = _syntax.Cabac;
-        long rate = cabac ? _pricer.Begin(_syntax.Contexts, cat, max, levels, at, rows, count) : BlockRate(levels, at, max, cat, n);
-        H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts);
-        for (int row = count - 1; row >= 0; row--)
-        {
-            int k = rows[row];
             int level = levels[at + k];
-            int pos = scan[k];
             double step = steps[pos];
             double weight = weights[pos];
             int lower = level - ((level >> 31) | 1);
             double before = w[pos] - (level * step), after = w[pos] - (lower * step);
-            double dd = ((after * after) - (before * before)) * weight;
-            int n2 = lower == 0 ? n - 1 : n;
-            if (!cabac)
+            distortion += ((before * before) - ((double)w[pos] * w[pos])) * weight;
+            gains[row] = ((after * after) - (before * before)) * weight;
+        }
+
+        long rate;
+        if (!_syntax.Cabac)
+        {
+            rate = BlockRate(levels, at, max, cat, n);
+            H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts);
+            for (int row = count - 1; row >= 0; row--)
             {
+                int k = rows[row];
+                int level = levels[at + k];
+                int lower = level - ((level >> 31) | 1);
+                int n2 = lower == 0 ? n - 1 : n;
+                double dd = gains[row];
                 levels[at + k] = lower;
                 long cavlc = BlockRate(levels, at, max, cat, n2);
                 H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts, n2 == 0 ? 0 : 1);
@@ -869,22 +940,35 @@ internal sealed partial class H264MbEncoder
                 {
                     levels[at + k] = level;
                 }
-
-                continue;
             }
-
-            // CABAC: the choice taken without a branch, as whether RDOQ lowers a level is hard to predict.
-            levels[at + k] = lower;
-            long rate2 = n2 == 0 ? 0 : _pricer.Price(k, level);
-            H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts, n2 == 0 ? 0 : 1);
-            bool take = dd + (lambda * (rate2 - rate)) < 0;
-            int taken = take ? 1 : 0;
-            distortion += dd * taken;
-            rate = take ? rate2 : rate;
-            n = take ? n2 : n;
-            levels[at + k] = take ? lower : level;
-            _pricer.Accept(take);
-            _pricer.Advance(k);
+        }
+        else
+        {
+            H264BlockPricer pricer = _pricer;
+            rate = pricer.Begin(_syntax.Contexts, cat, max, levels, at, rows, count);
+            H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts);
+            ref int levelAt = ref levels[at];
+            for (int row = count - 1; row >= 0; row--)
+            {
+                // The choice taken without a branch, as whether RDOQ lowers a level is hard to predict.
+                int k = rows[row];
+                ref int slot = ref Unsafe.Add(ref levelAt, k);
+                int level = slot;
+                int lower = level - ((level >> 31) | 1);
+                int n2 = lower == 0 ? n - 1 : n;
+                double dd = gains[row];
+                slot = lower;
+                long rate2 = n2 == 0 ? 0 : pricer.Price(k, level);
+                H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts, n2 == 0 ? 0 : 1);
+                bool take = dd + (lambda * (rate2 - rate)) < 0;
+                int taken = take ? 1 : 0;
+                distortion += dd * taken;
+                rate = take ? rate2 : rate;
+                n = take ? n2 : n;
+                slot = take ? lower : level;
+                pricer.Accept(take);
+                pricer.Advance(k);
+            }
         }
 
         // The whole block as zeros: coded_block_flag 0 instead of the levels.
