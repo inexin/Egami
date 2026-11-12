@@ -44,6 +44,23 @@ public sealed class EncoderBTests
         Assert.True(coder!.TemporalPictures > 0, "No B pictures predicted temporally.");
     }
 
+    [Theory]
+    [InlineData(1, 4)]
+    [InlineData(2, 4)]
+    [InlineData(3, 7)]
+    public void SearchShortcutsDecodeToTheReconstruction(int flags, int effort)
+    {
+        H264SearchShortcuts shortcuts = (H264SearchShortcuts)flags;
+        H264FrameCoder? coder = null;
+        EncoderInterTests.Check(Options(H264Profile.High, null, effort, 3), 13, EncoderInterTests.Moving, c =>
+        {
+            coder = c;
+            c.SearchShortcuts = shortcuts;
+        });
+        Assert.Equal(shortcuts, coder!.SearchShortcuts);
+        Assert.True(coder.BPictures > 0, "No B pictures were coded.");
+    }
+
     [Fact]
     public void FadesWithBFramesDecodeToTheReconstruction()
     {

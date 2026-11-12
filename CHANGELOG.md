@@ -70,6 +70,13 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   fall from 6.3–7.5 to 4.7–5.7 a macroblock at effort 4 (8.1–9.2 to 6.0–6.6 at effort 7), effort 4 takes 2 to 16 % fewer
   cycles a frame at 720p and effort 7 2 to 13 % fewer, for +0.25 to +0.69 % BD-rate at efforts 4 and 7 and +0.06 to +0.53 % at
   effort 2 (within the +1 % this step was allowed).
+- Speed (H.264 Encoder Speed Build Plan, tasks 12 and 13): motion search reads half- and quarter-sample costs straight from
+  each reference's half-sample planes instead of copying the prediction, costs up to four whole-sample points of the hexagon
+  and square steps in one SAD pass, starts B partitions from the vectors the 16x16 search found, and skips a second candidate
+  that repeats the 16x16 prediction. Effort 4 takes 4 to 8 % fewer cycles a frame at 720p (7 to 9 % without PGO) and effort 7
+  7 to 12 % fewer, for BD-rate within ±0.16 % at efforts 2, 4 and 7. Two shortcuts stay off by default: a SAD/SATD diamond
+  sub-sample search with an early stop for later references (+0.65 % BD-rate, 4 to 9 % fewer cycles) and 16x8/8x16 only when
+  8x8 beats 16x16 (+0.94 %, 4 to 13 % fewer).
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 

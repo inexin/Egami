@@ -38,6 +38,9 @@ internal sealed partial class H264MbEncoder
         }
     }
 
+    // The vectors the last SearchBPart found in each list, used or not.
+    private int _lastMv0, _lastMv1;
+
     /// <summary>Chooses, codes and reconstructs the macroblock at (mbX, mbY) of a B slice at <paramref name="qp"/>; returns its cost.</summary>
     public double EncodeB(int mbX, int mbY, int qp)
     {
@@ -88,21 +91,36 @@ internal sealed partial class H264MbEncoder
             directSatd = Satd(_srcY, _lumaAt, _stride, _ip, 0, 16, 16, 16) + (long)_sadLambda;
         }
 
-        Span<int> starts0 = [0, direct.RefIdx[0] >= 0 ? direct.Mv[0] : 0];
-        Span<int> starts1 = [0, direct.RefIdx1[0] >= 0 ? direct.Mv1[0] : 0];
+        Span<int> starts0 = [0, direct.RefIdx[0] >= 0 ? direct.Mv[0] : 0, 0];
+        Span<int> starts1 = [0, direct.RefIdx1[0] >= 0 ? direct.Mv1[0] : 0, 0];
+        int startCount = 2;
 
         // Motion search: 16x16, then 16x8 and 8x16 from effort 1 and 8x8 from effort 2, each partition from list 0, list 1
         // or both.
         H264MbCode p16 = _inter[0];
         ClearInter(p16, H264MbKind.Inter);
-        long firstCost = SearchBPart(p16, 0, 0, 0, 4, 4, 0, starts0, starts1) + (long)(2 * _sadLambda);
+        long firstCost = SearchBPart(p16, 0, 0, 0, 4, 4, 0, starts0[..startCount], starts1[..startCount]) + (long)(2 * _sadLambda);
+        long firstCost16 = firstCost;
+        // Task 13: the partitions also start from the vectors the 16x16 search found in each list.
+        (starts0[2], starts1[2], startCount) = (_lastMv0, _lastMv1, 3);
+
+        starts0 = starts0[..startCount];
+        starts1 = starts1[..startCount];
         H264MbCode first = p16;
         H264MbCode? second = null;
         long secondCost = long.MaxValue;
         if (_effort >= 1)
         {
-            for (int partition = 1; partition <= (_effort >= 2 ? 3 : 2); partition++)
+            bool prune = _effort >= 2 && (Shortcuts & H264SearchShortcuts.PruneHalves) != 0;
+            long cost8 = long.MaxValue;
+            foreach (int partition in prune ? (ReadOnlySpan<int>)[3, 1, 2] : _effort >= 2 ? [1, 2, 3] : [1, 2])
             {
+                if (prune && partition < 3 && cost8 >= firstCost16)
+                {
+                    // Task 12: 16x8 and 8x16 only where 8x8 already finds motion 16x16 cannot follow.
+                    continue;
+                }
+
                 H264MbCode code = _inter[partition];
                 ClearInter(code, H264MbKind.Inter);
                 code.Partition = partition;
@@ -117,6 +135,7 @@ internal sealed partial class H264MbEncoder
                     }
                 }
 
+                cost8 = partition == 3 ? cost : cost8;
                 if (cost < firstCost)
                 {
                     (second, secondCost) = (first, firstCost);
@@ -232,6 +251,7 @@ internal sealed partial class H264MbEncoder
     {
         int mv0 = SearchRefs(0, bx, by, w, h, mask, starts0, out int r0, out int mvp0, out long cost0);
         int mv1 = SearchRefs(1, bx, by, w, h, mask, starts1, out int r1, out int mvp1, out long cost1);
+        (_lastMv0, _lastMv1) = (mv0, mv1);
 
         long costBi = PartSatd(bx, by, w, h, r0, mv0, r1, mv1)
             + MvCost(H264SliceDecoder.MvX(mv0), H264SliceDecoder.MvY(mv0), mvp0) + MvCost(H264SliceDecoder.MvX(mv1), H264SliceDecoder.MvY(mv1), mvp1)
