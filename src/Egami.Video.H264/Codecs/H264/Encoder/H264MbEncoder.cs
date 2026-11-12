@@ -40,6 +40,10 @@ internal sealed partial class H264MbEncoder
     private readonly byte[][] _recon = [new byte[256], new byte[256], new byte[256]];
     private readonly byte[] _pred = new byte[256];
     private readonly byte[] _edges = new byte[H264IntraPredict.EdgeSize];
+    private readonly int[] _modeSatd = new int[9];
+
+    // The SATD-scale cost of an Intra4x4 or Intra8x8 mode's bits: the predicted mode (1 bit) and any other (4).
+    private long _modeBits1, _modeBits4;
     private readonly H264BlockPricer _pricer = new();
     private readonly CabacUndoLog _undo = new(460);
     private readonly int[] _rdoqRows = new int[64];
@@ -232,6 +236,7 @@ internal sealed partial class H264MbEncoder
         _qpc = H264Tables.ChromaQp[Math.Clamp(qp + _syntax.ChromaQpOffset, 0, 51)];
         _lambda = H264Forward.Lambda(qp);
         _sadLambda = Math.Sqrt(_lambda);
+        (_modeBits1, _modeBits4) = ((long)(_sadLambda * 1), (long)(_sadLambda * 4));
         int slice = _syntax.Slice, w = _mb.WidthMbs, addr = (mbY * w) + mbX;
         _left = mbX > 0 && _mb.Slice[addr - 1] == slice;
         _top = mbY > 0 && _mb.Slice[addr - w] == slice;
@@ -365,16 +370,15 @@ internal sealed partial class H264MbEncoder
                 H264IntraPredict.Filter8x8(t, l, top, left, corner);
             }
 
-            H264IntraPredict.Edges(n, t, l, _edges);
-
+            H264IntraPredict.Edges(n, t, l, top, left, _edges);
+            Span<int> satd = ModeSatds(n, at);
             int predicted = _syntax.PredictedIntraMode(bx, by);
             long bestCost = long.MaxValue;
             for (int mode = 0; mode < 9; mode++)
             {
                 if (H264IntraPredict.NxNAllowed(mode, top, left, corner))
                 {
-                    H264IntraPredict.PredictNxN(_pred, n, n, mode, t, l, top, left, _edges);
-                    bestCost = Math.Min(bestCost, Satd(_srcY, at, _stride, _pred, 0, n, n, n) + (long)(_sadLambda * (mode == predicted ? 1 : 4)));
+                    bestCost = Math.Min(bestCost, satd[mode] + (mode == predicted ? _modeBits1 : _modeBits4));
                 }
             }
 
@@ -519,7 +523,8 @@ internal sealed partial class H264MbEncoder
             int at = _lumaAt + (by * 4 * _stride) + (bx * 4);
             (bool top, bool left, bool corner, bool topRight) = Neighbors(bx * 4, by * 4, 4, blk);
             H264IntraPredict.Gather(_y, at, _stride, 4, top, topRight, left, corner, t, l);
-            H264IntraPredict.Edges(4, t, l, _edges);
+            H264IntraPredict.Edges(4, t, l, top, left, _edges);
+            Span<int> satd = ModeSatds(4, at);
             int predicted = _syntax.PredictedIntraMode(bx, by);
             int bestMode = 2;
             long bestCost = long.MaxValue;
@@ -530,8 +535,7 @@ internal sealed partial class H264MbEncoder
                     continue;
                 }
 
-                H264IntraPredict.PredictNxN(_pred, 4, 4, mode, t, l, top, left, _edges);
-                long cost = Satd(_srcY, at, _stride, _pred, 0, 4, 4, 4) + (long)(_sadLambda * (mode == predicted ? 1 : 4));
+                long cost = satd[mode] + (mode == predicted ? _modeBits1 : _modeBits4);
                 if (cost < bestCost)
                 {
                     bestCost = cost;
@@ -541,7 +545,7 @@ internal sealed partial class H264MbEncoder
 
             code.Modes[blk] = bestMode;
             _mb.IntraModes[(((_mbY * 4) + by) * _mb.W4) + (_mbX * 4) + bx] = (sbyte)bestMode;
-            H264IntraPredict.PredictNxN(_pred, 4, 4, bestMode, t, l, top, left, _edges);
+            H264IntraPredict.PredictNxN(_pred, 4, 4, bestMode, _edges);
             Residual(_srcY, at, _stride, _pred, 0, 4, 4, block);
             H264Forward.Transform4x4(block);
             int n = QuantizeBlock(block, code.Luma, blk * 16, 0, 16, false, _qp, 2);
@@ -578,7 +582,8 @@ internal sealed partial class H264MbEncoder
             (bool top, bool left, bool corner, bool topRight) = Neighbors(bx * 4, by * 4, 8, i8 * 4);
             H264IntraPredict.Gather(_y, at, _stride, 8, top, topRight, left, corner, t, l);
             H264IntraPredict.Filter8x8(t, l, top, left, corner);
-            H264IntraPredict.Edges(8, t, l, _edges);
+            H264IntraPredict.Edges(8, t, l, top, left, _edges);
+            Span<int> satd = ModeSatds(8, at);
             int predicted = _syntax.PredictedIntraMode(bx, by);
             int bestMode = 2;
             long bestCost = long.MaxValue;
@@ -589,8 +594,7 @@ internal sealed partial class H264MbEncoder
                     continue;
                 }
 
-                H264IntraPredict.PredictNxN(_pred, 8, 8, mode, t, l, top, left, _edges);
-                long cost = Satd(_srcY, at, _stride, _pred, 0, 8, 8, 8) + (long)(_sadLambda * (mode == predicted ? 1 : 4));
+                long cost = satd[mode] + (mode == predicted ? _modeBits1 : _modeBits4);
                 if (cost < bestCost)
                 {
                     bestCost = cost;
@@ -601,7 +605,7 @@ internal sealed partial class H264MbEncoder
             code.Modes[i8] = bestMode;
             int b = (((_mbY * 4) + by) * _mb.W4) + (_mbX * 4) + bx;
             _mb.IntraModes[b] = _mb.IntraModes[b + 1] = _mb.IntraModes[b + _mb.W4] = _mb.IntraModes[b + _mb.W4 + 1] = (sbyte)bestMode;
-            H264IntraPredict.PredictNxN(_pred, 8, 8, bestMode, t, l, top, left, _edges);
+            H264IntraPredict.PredictNxN(_pred, 8, 8, bestMode, _edges);
             Residual(_srcY, at, _stride, _pred, 0, 8, 8, block);
             H264Forward.Transform8x8(block);
             int n = QuantizeBlock(block, code.Luma8, i8 * 64, 0, 64, true, _qp, 5);
@@ -1166,6 +1170,15 @@ internal sealed partial class H264MbEncoder
                 r[(y * n) + x] = src[at + (y * stride) + x] - pred[predAt + (y * predStride) + x];
             }
         }
+    }
+
+    /// <summary>The SATDs of the nine Intra4x4 or Intra8x8 modes' predictions from the lines in _edges of the n by n block at <paramref name="at"/>.</summary>
+    private Span<int> ModeSatds(int n, int at)
+    {
+        H264EncodeStats.Add(H264EncodeStat.SatdCalls, 9);
+        H264EncodeStats.Add(H264EncodeStat.SatdSamples, 9 * n * n);
+        H264IntraPredict.SatdNxN(n, _srcY, at, _stride, _edges, _pred, _modeSatd);
+        return _modeSatd;
     }
 
     /// <summary>The SATD of a block against a prediction (<see cref="H264EncodeSimd.Satd"/>).</summary>
