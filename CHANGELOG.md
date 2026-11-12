@@ -99,6 +99,13 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   plane prediction (16x16 and chroma) and chroma DC run in vectors. The output is byte-identical. At effort 4 on the four
   720p clips intra decisions take 31.5k cycles a macroblock instead of 54.6k, and the encoder 6 to 13 % fewer instructions
   (mean 317k to 290k cycles a macroblock with PGO, 343k to 315k without).
+- Speed (H.264 Encoder Speed Build Plan, task 18): motion search prices vector bits from a table for each QP, costs its
+  whole-sample starts and half-sample diamond four at a time, scores quarter samples with a fused mean-and-SATD kernel
+  (mean-and-SAD for sub-sample SADs), stops a candidate's SATD once it cannot win, skips quarter-sample points the last
+  round costed, and drops the 4x4 Hadamard's last stage (|a + b| + |a − b| is 2 max(|a|, |b|)). The output is
+  byte-identical. On the four 720p clips: 4.7 to 6.9 % fewer instructions at effort 4 (mean 382k to 373k cycles a
+  macroblock with PGO, 414k to 400k without), 5.4 to 9.6 % at effort 7 (490k to 464k, 523k to 497k), 5.5 to 8.2 % at
+  effort 2 (212k to 198k, 221k to 214k).
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 

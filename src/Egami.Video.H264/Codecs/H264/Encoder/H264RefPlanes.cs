@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
@@ -25,6 +26,9 @@ internal sealed class H264RefPlanes
     private readonly int _height;
     private readonly short[] _mid;
 
+    // f, b, h and j, then none: the planes of Sources.
+    private readonly byte[]?[] _planes;
+
     public H264RefPlanes(int widthMbs, int heightMbs)
     {
         Picture = new H264Picture(widthMbs, heightMbs, 1, narrow: true);
@@ -37,6 +41,7 @@ internal sealed class H264RefPlanes
         Down = new byte[size];
         Center = new byte[size];
         _mid = new short[size];
+        _planes = [Picture.Y<byte>(), Half, Down, Center, null];
     }
 
     /// <summary>Gets the reconstructed picture, its borders extended.</summary>
@@ -199,28 +204,25 @@ internal sealed class H264RefPlanes
     /// </summary>
     public (byte[] A, int AtA, byte[]? B, int AtB) Sources(int at, int fx, int fy)
     {
-        byte[] f = Picture.Y<byte>();
+        // A table look-up for what is, by phase: (0, 0) f; (2, 0) b; (0, 2) h; (2, 2) j; (1, 0) f and b; (3, 0) b and f one
+        // right; (0, 1) f and h; (0, 3) h and f one down; (2, 1) b and j; (2, 3) j and b one down; (1, 2) h and j; (3, 2) j and
+        // h one right; (1, 1) b and h; (3, 1) b and h one right; (1, 3) h and b one down; (3, 3) h one right and b one down.
+        ref byte e = ref Unsafe.Add(ref MemoryMarshal.GetReference(Phases), ((fy * 4) + fx) * 3);
+        ref byte[]? planes = ref MemoryMarshal.GetArrayDataReference(_planes);
+        int a = e, b = Unsafe.Add(ref e, 1), shift = Unsafe.Add(ref e, 2);
         int s = _stride;
-        return (fx, fy) switch
-        {
-            (0, 0) => (f, at, null, 0),
-            (2, 0) => (Half, at, null, 0),
-            (0, 2) => (Down, at, null, 0),
-            (2, 2) => (Center, at, null, 0),
-            (1, 0) => (f, at, Half, at),
-            (3, 0) => (Half, at, f, at + 1),
-            (0, 1) => (f, at, Down, at),
-            (0, 3) => (Down, at, f, at + s),
-            (2, 1) => (Half, at, Center, at),
-            (2, 3) => (Center, at, Half, at + s),
-            (1, 2) => (Down, at, Center, at),
-            (3, 2) => (Center, at, Down, at + 1),
-            (1, 1) => (Half, at, Down, at),
-            (3, 1) => (Half, at, Down, at + 1),
-            (1, 3) => (Down, at, Half, at + s),
-            _ => (Down, at + 1, Half, at + s),
-        };
+        return (Unsafe.Add(ref planes, a)!, at + (shift & 1), Unsafe.Add(ref planes, b), at + ((shift >> 1) & 1) + ((shift >> 2) * s));
     }
+
+    // Each phase fy · 4 + fx: plane A and plane B (indexes of _planes; 4 for none), then bit 0 A one sample right, bit 1 B one
+    // sample right, bit 2 B one row down.
+    private static ReadOnlySpan<byte> Phases =>
+    [
+        0, 4, 0,  0, 1, 0,  1, 4, 0,  1, 0, 2,
+        0, 2, 0,  1, 2, 0,  1, 3, 0,  1, 2, 2,
+        2, 4, 0,  2, 3, 0,  3, 4, 0,  3, 2, 2,
+        2, 0, 4,  2, 1, 4,  3, 1, 4,  2, 1, 5,
+    ];
 
     /// <summary>The planes and offsets of the luma block at (x, y) with the quarter-sample vector mv (see <see cref="Sources"/>).</summary>
     public (byte[] A, int AtA, byte[]? B, int AtB) Locate(int x, int y, int mv)
