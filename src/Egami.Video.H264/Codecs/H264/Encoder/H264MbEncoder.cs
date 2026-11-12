@@ -86,6 +86,7 @@ internal sealed partial class H264MbEncoder
         _scale8 = dequant.Scale8x8[0];
         _allow8x8 = allow8x8;
         _effort = effort;
+        Shortcuts = DefaultShortcuts(effort);
     }
 
     /// <summary>Gets the macroblock chosen by the last <see cref="Encode"/> or <see cref="EncodeP"/>, its reconstruction in the picture.</summary>
