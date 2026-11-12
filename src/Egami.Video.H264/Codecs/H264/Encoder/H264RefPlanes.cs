@@ -222,6 +222,13 @@ internal sealed class H264RefPlanes
         };
     }
 
+    /// <summary>The planes and offsets of the luma block at (x, y) with the quarter-sample vector mv (see <see cref="Sources"/>).</summary>
+    public (byte[] A, int AtA, byte[]? B, int AtB) Locate(int x, int y, int mv)
+    {
+        int qx = (x * 4) + H264SliceDecoder.MvX(mv), qy = (y * 4) + H264SliceDecoder.MvY(mv);
+        return Sources(_origin + ((qy >> 2) * _stride) + (qx >> 2), qx & 3, qy & 3);
+    }
+
     /// <summary>
     /// Predicts a w by h luma block whose top-left sample is (x, y) with the quarter-sample vector mv into dst (row length
     /// dstStride), weighted when <paramref name="weighted"/>.

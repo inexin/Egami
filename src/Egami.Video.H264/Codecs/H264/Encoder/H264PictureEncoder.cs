@@ -72,6 +72,19 @@ internal sealed class H264PictureEncoder
     /// <summary>Gets or sets how B slices predict direct blocks: null to choose (spatial, or the cheaper of both from effort 8), else temporal or not.</summary>
     internal bool? TemporalDirect { get; set; }
 
+    /// <summary>Gets or sets the motion search shortcuts every slice uses (see <see cref="H264SearchShortcuts"/>).</summary>
+    internal H264SearchShortcuts SearchShortcuts
+    {
+        get => _slices[0].Encoder.Shortcuts;
+        set
+        {
+            foreach (SliceCoder slice in _slices)
+            {
+                slice.Encoder.Shortcuts = value;
+            }
+        }
+    }
+
     /// <summary>Gets whether the last B picture predicted direct blocks temporally.</summary>
     internal bool LastTemporal { get; private set; }
 

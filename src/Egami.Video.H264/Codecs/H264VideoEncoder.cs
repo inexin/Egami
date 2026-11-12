@@ -355,6 +355,13 @@ internal sealed class H264FrameCoder : IFrameCoder
         set => _encoder.TemporalDirect = value;
     }
 
+    /// <summary>Gets or sets the motion search shortcuts in use, none by default, for tests and measurements.</summary>
+    internal H264SearchShortcuts SearchShortcuts
+    {
+        get => _encoder.SearchShortcuts;
+        set => _encoder.SearchShortcuts = value;
+    }
+
     /// <summary>Gets how many B pictures were coded, for tests.</summary>
     internal int BPictures { get; private set; }
 

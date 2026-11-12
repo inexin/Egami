@@ -49,6 +49,9 @@ internal enum H264EncodeStat
 
     /// <summary>SA8D calls (the 8x8 Hadamard cost that, against SATD, picks an inter transform size).</summary>
     Sa8dCalls,
+
+    /// <summary>Second candidates that repeat the 16x16 prediction (every part the same references and vectors).</summary>
+    DupCandidates,
 }
 
 /// <summary>

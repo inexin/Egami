@@ -60,6 +60,66 @@ internal static class H264EncodeSimd
     }
 
     /// <summary>
+    /// The SADs of one w by h block (w a multiple of 4) against four blocks of one plane at once, each source row loaded once;
+    /// each sum is what <see cref="Sad"/> gives.
+    /// </summary>
+    public static void Sad4(byte[] a, int atA, int strideA, byte[] b, int b0, int b1, int b2, int b3, int strideB, int w, int h, Span<long> sums)
+    {
+        if (!Sse2.IsSupported)
+        {
+            sums[0] = Sad(a, atA, strideA, b, b0, strideB, w, h);
+            sums[1] = Sad(a, atA, strideA, b, b1, strideB, w, h);
+            sums[2] = Sad(a, atA, strideA, b, b2, strideB, w, h);
+            sums[3] = Sad(a, atA, strideA, b, b3, strideB, w, h);
+            return;
+        }
+
+        ref byte ra = ref MemoryMarshal.GetArrayDataReference(a);
+        ref byte rb = ref MemoryMarshal.GetArrayDataReference(b);
+        Vector128<ulong> s0 = Vector128<ulong>.Zero, s1 = s0, s2 = s0, s3 = s0;
+        for (int y = 0; y < h; y++)
+        {
+            int pa = atA + (y * strideA), pb = y * strideB;
+            for (int x = 0; x < w;)
+            {
+                int o = pb + x;
+                if (w - x >= 16)
+                {
+                    Vector128<byte> v = Vector128.LoadUnsafe(ref ra, (nuint)(pa + x));
+                    s0 += Sse2.SumAbsoluteDifferences(v, Vector128.LoadUnsafe(ref rb, (nuint)(b0 + o))).AsUInt64();
+                    s1 += Sse2.SumAbsoluteDifferences(v, Vector128.LoadUnsafe(ref rb, (nuint)(b1 + o))).AsUInt64();
+                    s2 += Sse2.SumAbsoluteDifferences(v, Vector128.LoadUnsafe(ref rb, (nuint)(b2 + o))).AsUInt64();
+                    s3 += Sse2.SumAbsoluteDifferences(v, Vector128.LoadUnsafe(ref rb, (nuint)(b3 + o))).AsUInt64();
+                    x += 16;
+                }
+                else if (w - x >= 8)
+                {
+                    Vector128<byte> v = Load8(ref ra, pa + x);
+                    s0 += Sse2.SumAbsoluteDifferences(v, Load8(ref rb, b0 + o)).AsUInt64();
+                    s1 += Sse2.SumAbsoluteDifferences(v, Load8(ref rb, b1 + o)).AsUInt64();
+                    s2 += Sse2.SumAbsoluteDifferences(v, Load8(ref rb, b2 + o)).AsUInt64();
+                    s3 += Sse2.SumAbsoluteDifferences(v, Load8(ref rb, b3 + o)).AsUInt64();
+                    x += 8;
+                }
+                else
+                {
+                    Vector128<byte> v = Load4(ref ra, pa + x);
+                    s0 += Sse2.SumAbsoluteDifferences(v, Load4(ref rb, b0 + o)).AsUInt64();
+                    s1 += Sse2.SumAbsoluteDifferences(v, Load4(ref rb, b1 + o)).AsUInt64();
+                    s2 += Sse2.SumAbsoluteDifferences(v, Load4(ref rb, b2 + o)).AsUInt64();
+                    s3 += Sse2.SumAbsoluteDifferences(v, Load4(ref rb, b3 + o)).AsUInt64();
+                    x += 4;
+                }
+            }
+        }
+
+        sums[0] = (long)(s0.GetElement(0) + s0.GetElement(1));
+        sums[1] = (long)(s1.GetElement(0) + s1.GetElement(1));
+        sums[2] = (long)(s2.GetElement(0) + s2.GetElement(1));
+        sums[3] = (long)(s3.GetElement(0) + s3.GetElement(1));
+    }
+
+    /// <summary>
     /// The SATD of a w by h block (multiples of 4): the sum of the absolute 4x4 Hadamard coefficients of the differences, halved.
     /// </summary>
     public static long Satd(byte[] src, int at, int stride, byte[] pred, int predAt, int predStride, int width, int height)
