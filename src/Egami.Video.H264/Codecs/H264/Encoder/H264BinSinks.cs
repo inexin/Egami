@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -59,6 +60,9 @@ internal struct CabacUndoSink(CabacUndoLog log) : ICabacSink
     /// <summary>The cost so far.</summary>
     public long Cost;
 
+    /// <summary>Gets the log the moves are noted in.</summary>
+    public readonly CabacUndoLog Log => log;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Encode(ref byte state, int bin)
     {
@@ -73,51 +77,77 @@ internal struct CabacUndoSink(CabacUndoLog log) : ICabacSink
     public void Terminate(int bin) => Cost += bin == 0 ? 0 : 7 * CabacCost.Bit;
 }
 
-/// <summary>The states a <see cref="CabacUndoSink"/> moved, each with its value before the first move.</summary>
+/// <summary>
+/// The states a <see cref="CabacUndoSink"/> moved, kept by chunks of 8 (H.264 Encoder Speed Build Plan, task 19): the first
+/// move in a chunk saves the chunk's 8 states, one bit a chunk marks it saved, so a residual counter notes a block's context
+/// ranges once and <see cref="Restore"/> writes back a few words.
+/// </summary>
 internal sealed class CabacUndoLog
 {
-    private readonly int[] _stamp;
-    private readonly int[] _index;
-    private readonly byte[] _old;
+    private readonly ulong[] _saved;
     private byte[] _states = [];
-    private int _epoch, _count;
+    private ulong _noted;
 
-    // One more entry than states: a note writes its entry before it knows whether to keep it.
-    public CabacUndoLog(int size) => (_stamp, _index, _old) = (new int[size], new int[size + 1], new byte[size + 1]);
+    /// <summary>Initialises a log for up to 512 states; the states it notes must be an array of a multiple of 8.</summary>
+    public CabacUndoLog(int size)
+    {
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(size, 512);
+        _saved = new ulong[64];
+    }
 
-    /// <summary>Starts noting moves of <paramref name="states"/>.</summary>
+    /// <summary>Starts noting moves of <paramref name="states"/>, whose length is a multiple of 8.</summary>
     public void Begin(byte[] states)
     {
         _states = states;
-        _count = 0;
-        if (++_epoch == int.MaxValue)
-        {
-            Array.Clear(_stamp);
-            _epoch = 1;
-        }
+        _noted = 0;
     }
 
-    /// <summary>Notes the state about to move, unless it moved already.</summary>
+    /// <summary>Notes the state about to move, unless its chunk was saved already.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Note(ref byte state)
     {
-        // Written every time and kept only the first time, without a branch: which states a count moves first is hard to predict.
-        int i = (int)Unsafe.ByteOffset(ref MemoryMarshal.GetArrayDataReference(_states), ref state);
-        ref int stamp = ref _stamp[i];
-        int count = _count;
-        _index[count] = i;
-        _old[count] = state;
-        _count = count + (stamp != _epoch ? 1 : 0);
-        stamp = _epoch;
+        ref byte origin = ref MemoryMarshal.GetArrayDataReference(_states);
+        int c = (int)Unsafe.ByteOffset(ref origin, ref state) >> 3;
+        if ((_noted & (1UL << c)) == 0)
+        {
+            _noted |= 1UL << c;
+            Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_saved), c) = Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref origin, c << 3));
+        }
+    }
+
+    /// <summary>Notes the states <paramref name="first"/> to <paramref name="last"/> (inclusive) before they move.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void NoteRange(int first, int last)
+    {
+        int lo = first >> 3, hi = last >> 3;
+        ulong fresh = (((2UL << hi) - 1) ^ ((1UL << lo) - 1)) & ~_noted;
+        if (fresh == 0)
+        {
+            return;
+        }
+
+        _noted |= fresh;
+        ref byte states = ref MemoryMarshal.GetArrayDataReference(_states);
+        ref ulong saved = ref MemoryMarshal.GetArrayDataReference(_saved);
+        do
+        {
+            int c = BitOperations.TrailingZeroCount(fresh);
+            Unsafe.Add(ref saved, c) = Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref states, c << 3));
+            fresh &= fresh - 1;
+        }
+        while (fresh != 0);
     }
 
     /// <summary>Puts every moved state back.</summary>
     public void Restore()
     {
-        byte[] states = _states;
-        for (int k = 0; k < _count; k++)
+        ulong noted = _noted;
+        ref byte states = ref MemoryMarshal.GetArrayDataReference(_states);
+        while (noted != 0)
         {
-            states[_index[k]] = _old[k];
+            int c = BitOperations.TrailingZeroCount(noted);
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref states, c << 3), _saved[c]);
+            noted &= noted - 1;
         }
     }
 }
