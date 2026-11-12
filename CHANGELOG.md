@@ -77,6 +77,12 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   7 to 12 % fewer, for BD-rate within ±0.16 % at efforts 2, 4 and 7. Two shortcuts stay off by default: a SAD/SATD diamond
   sub-sample search with an early stop for later references (+0.65 % BD-rate, 4 to 9 % fewer cycles) and 16x8/8x16 only when
   8x8 beats 16x16 (+0.94 %, 4 to 13 % fewer).
+- Macroblock tree (H.264 Encoder Speed Build Plan): with B-frames and a lookahead, the encoder core walks each frame's
+  half-size block costs back through the frames held, so the content later frames predict from passes its worth on to the
+  blocks it came from, and a referenced frame's step falls by 2^-0.25 for each doubling of that worth (about 1.5 QP). Rate
+  control plans each run with these steps. BD-rate on the four 720p clips: −0.04 to −2.59 % at effort 4, −0.42 to −3.36 % at
+  effort 2 and −0.08 to −2.59 % at effort 7, for −1 to +7 % cycles a frame. Quantizer offsets per macroblock from the same
+  tree measured worse (up to +4.9 %) and are not used.
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 
