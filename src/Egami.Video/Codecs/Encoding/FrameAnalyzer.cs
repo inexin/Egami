@@ -32,6 +32,9 @@ internal sealed class FrameAnalyzer
     private byte[] _current;
     private byte[] _previous;
     private readonly short[] _vectors;
+    private readonly int[] _intraCosts;
+    private readonly int[] _interCosts;
+    private readonly int[] _detail;
     private bool _hasPrevious;
 
     public FrameAnalyzer(int width, int height)
@@ -45,6 +48,31 @@ internal sealed class FrameAnalyzer
         _current = new byte[_stride * _height];
         _previous = new byte[_stride * _height];
         _vectors = new short[_cols * _rows * 2];
+        _intraCosts = new int[_cols * _rows];
+        _interCosts = new int[_cols * _rows];
+        _detail = new int[_cols * _rows];
+    }
+
+    /// <summary>Gets the columns of blocks: 8x8 on the half-size copy, 16x16 in the frame.</summary>
+    public int Columns => _cols;
+
+    /// <summary>Gets the rows of blocks.</summary>
+    public int Rows => _rows;
+
+    /// <summary>Copies the last analyzed frame's block costs and vectors, for <see cref="MacroblockTree"/>.</summary>
+    /// <remarks>
+    /// The costs are in frame samples, as <see cref="FrameStats"/>'s are: four times the half-size error plus the block's detail
+    /// the half-size copy averaged away, which costs bits however the block is predicted.
+    /// </remarks>
+    public void CopyBlocks(BlockCosts target)
+    {
+        for (int i = 0; i < _intraCosts.Length; i++)
+        {
+            target.Intra[i] = (_intraCosts[i] * 4) + _detail[i];
+            target.Inter[i] = (_interCosts[i] * 4) + _detail[i];
+        }
+
+        _vectors.CopyTo(target.Vectors, 0);
     }
 
     /// <summary>Gets the size of the half-size copy <see cref="CopyHalf"/> writes.</summary>
@@ -117,6 +145,8 @@ internal sealed class FrameAnalyzer
 
                 intra += intraCost;
                 inter += best;
+                _intraCosts[index / 2] = intraCost;
+                _interCosts[index / 2] = best;
             }
         }
 
@@ -132,8 +162,10 @@ internal sealed class FrameAnalyzer
     {
         int lw = luma.Width, lh = luma.Height;
         long detail = 0;
+        Array.Clear(_detail);
         for (int y = 0; y < _height; y++)
         {
+            int blockRow = (y >> 3) * _cols;
             int y0 = Math.Min(2 * y, lh - 1), y1 = Math.Min((2 * y) + 1, lh - 1);
             ReadOnlySpan<byte> r0 = luma.Row(y0), r1 = luma.Row(y1);
             Span<byte> row = target.AsSpan(y * _stride, _width);
@@ -143,7 +175,9 @@ internal sealed class FrameAnalyzer
                 int a = r0[x0], b = r0[x1], c = r1[x0], d = r1[x1];
                 int mean = (a + b + c + d + 2) >> 2;
                 row[x] = (byte)mean;
-                detail += Math.Abs(a - mean) + Math.Abs(b - mean) + Math.Abs(c - mean) + Math.Abs(d - mean);
+                int d4 = Math.Abs(a - mean) + Math.Abs(b - mean) + Math.Abs(c - mean) + Math.Abs(d - mean);
+                detail += d4;
+                _detail[blockRow + (x >> 3)] += d4;
             }
         }
 

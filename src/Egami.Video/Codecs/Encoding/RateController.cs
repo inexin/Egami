@@ -372,6 +372,9 @@ internal sealed class RateController
 
     private double Factor(FrameType type, double stepFactor) => stepFactor > 0 ? stepFactor : TypeFactor(type);
 
+    /// <summary>A frame type's step against an inter frame's in constant quality, as rate control uses it.</summary>
+    public double TypeStep(FrameType type) => TypeFactor(type);
+
     private double TypeFactor(FrameType type) => _settings.StepFactors is { } factors && (int)type < factors.Length ? factors[(int)type] : StepFactors[(int)type];
 
     /// <summary>A complexity with a floor: even a frame equal to the one before costs some bits.</summary>

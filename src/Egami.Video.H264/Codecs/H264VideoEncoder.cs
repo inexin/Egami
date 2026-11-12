@@ -144,6 +144,7 @@ internal sealed class H264VideoEncoder : IVideoEncoder
             Parallelism = context.Egami.MaxParallelism,
             BFrames = bFrames,
             BPyramid = pyramid,
+            MacroblockTree = TreeStrength,
             Rate = new RateSettings
             {
                 Mode = options.RateControl,
@@ -183,6 +184,12 @@ internal sealed class H264VideoEncoder : IVideoEncoder
 
     /// <summary>The reference frames P pictures search at an effort: one, two from effort 2, three from 4.</summary>
     internal static int RefFrames(int effort) => effort >= 4 ? 3 : effort >= 2 ? 2 : 1;
+
+    /// <summary>
+    /// The macroblock tree's strength (<see cref="CoreSettings.MacroblockTree"/>): a frame's step falls by 2^(-0.25) for each
+    /// doubling of its content's worth through reuse, 1.5 QP.
+    /// </summary>
+    internal const double TreeStrength = 0.25;
 
     /// <summary>The QP for a quality of 0 to 100: 51 at 0, 23 (x264's default CRF) at 50, 0 at 100 or so.</summary>
     internal static int QualityToQp(int quality) => Math.Clamp((int)Math.Round(51 - (0.56 * quality)), 0, 51);

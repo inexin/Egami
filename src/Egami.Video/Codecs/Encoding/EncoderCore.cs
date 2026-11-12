@@ -140,6 +140,13 @@ internal sealed record CoreSettings
     /// <summary>The frames <see cref="LatencyMode.Quality"/> looks ahead.</summary>
     public int Lookahead { get; init; } = EncoderCore.Lookahead;
 
+    /// <summary>
+    /// Gets the macroblock tree's strength (<see cref="MacroblockTree"/>): a referenced frame's step is multiplied by 2 to the
+    /// power of minus this times its reuse, so frames whose content later frames take more get finer steps; 0 for none. Only
+    /// the B-frame order (<see cref="BFrames"/>) uses it, where rate control plans each run with the frames' steps.
+    /// </summary>
+    public double MacroblockTree { get; init; }
+
     /// <summary>Whether keyframes are coded temporally filtered with the frames after them, as alternate references are.</summary>
     public bool FilterKeyframes { get; init; }
 
@@ -213,6 +220,10 @@ internal sealed class EncoderCore : IDisposable
     private readonly RateController _rate;
     private readonly List<Pending> _queue = [];
     private readonly Stack<byte[]> _halves = new();
+    private readonly Stack<BlockCosts> _blockPool = new();
+    private readonly Dictionary<int, double> _treeSteps = [];
+    private readonly List<BlockCosts> _treeFrames = [];
+    private readonly List<bool> _treeKeys = [];
     private readonly Queue<EncodedPacket> _ready = new();
     private readonly List<YuvRaster<byte>> _filterFrames = [];
     private readonly GroupFrame[] _group = new GroupFrame[80];
@@ -302,7 +313,14 @@ internal sealed class EncoderCore : IDisposable
         }
 
         MediaTime duration = frame.Duration is { } d ? d.Rescale(_timeBase) : new MediaTime(1, _timeBase);
-        _queue.Add(new Pending(picture, half, index, timestamp, duration, key, stats) { Full = full });
+        BlockCosts? blocks = null;
+        if (_settings.MacroblockTree > 0 && _depth > 0 && _settings.BFrames > 0)
+        {
+            blocks = _blockPool.TryPop(out BlockCosts? b) ? b : new BlockCosts(_analyzer.Columns * _analyzer.Rows);
+            _analyzer.CopyBlocks(blocks);
+        }
+
+        _queue.Add(new Pending(picture, half, index, timestamp, duration, key, stats) { Full = full, Blocks = blocks });
         while (_queue.Count > _depth)
         {
             CodeNext();
@@ -438,6 +456,10 @@ internal sealed class EncoderCore : IDisposable
         }
 
         _halves.Push(frame.Half);
+        if (frame.Blocks is not null)
+        {
+            _blockPool.Push(frame.Blocks);
+        }
     }
 
     /// <summary>
@@ -464,13 +486,56 @@ internal sealed class EncoderCore : IDisposable
 
         BStep step = _bSteps[_bStepNext++];
         Pending frame = Find(step.Index) ?? throw new InvalidOperationException($"Frame {step.Index} is no longer held.");
-        int quantizer = _rate.Next(step.Type, step.Complexity, BFactor(step));
+        int quantizer = _rate.Next(step.Type, step.Complexity, StepOf(step));
         FrameDecision decision = new(step.Type, quantizer, AltRefAhead: false, RefreshGolden: false, step.Index, step.Layer, step.Referenced);
         CodeShown(frame, decision, step.Complexity);
     }
 
     /// <summary>A run's frame's step against an inter frame's, or 0 for its type's usual.</summary>
     private double BFactor(BStep step) => step.Type == FrameType.Bidirectional && step.Referenced ? _settings.BReferenceStep : 0;
+
+    /// <summary>A run's frame's step against an inter frame's with the macroblock tree's, or 0 for its type's usual.</summary>
+    private double StepOf(BStep step) => Steered(step.Type, BFactor(step), step.Referenced ? TreeStep(step.Index) : 1);
+
+    /// <summary>A step factor (0 for the type's usual) times the macroblock tree's step, or 0 when the tree leaves it alone.</summary>
+    private double Steered(FrameType type, double factor, double tree) => tree == 1 ? factor : (factor > 0 ? factor : _rate.TypeStep(type)) * tree;
+
+    /// <summary>
+    /// Runs the macroblock tree over the frames held (consecutive in display order from the head of the queue) and keeps each
+    /// one's step for <see cref="TreeStep"/>.
+    /// </summary>
+    private void PlanTree()
+    {
+        _treeSteps.Clear();
+        if (_settings.MacroblockTree <= 0 || _queue.Count < 2 || _queue[0].Blocks is null)
+        {
+            return;
+        }
+
+        _treeFrames.Clear();
+        _treeKeys.Clear();
+        int first = _queue[0].Index;
+        foreach (Pending p in _queue)
+        {
+            if (p.Index != first + _treeFrames.Count || p.Blocks is null)
+            {
+                break;
+            }
+
+            _treeFrames.Add(p.Blocks);
+            _treeKeys.Add(p.Key);
+        }
+
+        Span<double> reuse = stackalloc double[_treeFrames.Count];
+        MacroblockTree.Reuse(_treeFrames, _treeKeys, _analyzer.Columns, _analyzer.Rows, reuse);
+        for (int k = 0; k < reuse.Length; k++)
+        {
+            _treeSteps[first + k] = Math.Pow(2, -_settings.MacroblockTree * reuse[k]);
+        }
+    }
+
+    /// <summary>The macroblock tree's step for a frame from the last <see cref="PlanTree"/>, or 1.</summary>
+    private double TreeStep(int index) => _treeSteps.TryGetValue(index, out double step) ? step : 1;
 
     /// <summary>Plans the next run of frames from the head of the lookahead, in coding order, and its bit budget.</summary>
     private void PlanRun()
@@ -493,10 +558,11 @@ internal sealed class EncoderCore : IDisposable
             _lastAnchor = anchor.Index;
         }
 
+        PlanTree();
         int count = 0;
         foreach (BStep step in _bSteps)
         {
-            _group[count++] = new GroupFrame(step.Type, step.Complexity, BFactor(step));
+            _group[count++] = new GroupFrame(step.Type, step.Complexity, StepOf(step));
         }
 
         _rate.StartGroup(_group.AsSpan(0, count));
@@ -1039,5 +1105,8 @@ internal sealed class EncoderCore : IDisposable
     {
         /// <summary>Gets the frame in the stream's own format, when the core keeps it.</summary>
         public YuvRaster? Full { get; init; }
+
+        /// <summary>Gets the frame's block costs for the macroblock tree, when it runs.</summary>
+        public BlockCosts? Blocks { get; init; }
     }
 }
