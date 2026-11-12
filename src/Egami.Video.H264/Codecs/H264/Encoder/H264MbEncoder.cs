@@ -1,3 +1,8 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+
 using Egami.Nal;
 
 namespace Egami.Video.Codecs.H264;
@@ -33,9 +38,11 @@ internal sealed partial class H264MbEncoder
     private readonly H264MbCode[] _candidates = [new(), new(), new()];
     private readonly byte[][] _recon = [new byte[256], new byte[256], new byte[256]];
     private readonly byte[] _pred = new byte[256];
+    private readonly byte[] _edges = new byte[H264IntraPredict.EdgeSize];
     private readonly H264BlockPricer _pricer = new();
     private readonly CabacUndoLog _undo = new(460);
     private readonly int[] _rdoqRows = new int[64];
+    private readonly int[] _quant = new int[64];
     private readonly int[] _t = new int[33];
     private readonly int[] _l = new int[17];
     private readonly int[] _w = new int[256];
@@ -96,21 +103,35 @@ internal sealed partial class H264MbEncoder
     /// Chooses, codes and reconstructs the intra macroblock at (mbX, mbY) at <paramref name="qp"/>; returns its cost, squared
     /// error plus λ times its bits.
     /// </summary>
+    [SkipLocalsInit]
     public double Encode(int mbX, int mbY, int qp)
     {
         H264EncodeStats.Add(H264EncodeStat.IntraPasses);
+
+        // The 16x16 SATDs TryIntra worked out just before, for this macroblock, still hold: its neighbours have not changed.
+        if (!_i16Pending)
+        {
+            _i16Satd.AsSpan().Fill(-1);
+        }
+
+        _i16Pending = false;
         Setup(mbX, mbY, qp);
         _round = IntraRound;
         CodeChroma();
 
         int count = _allow8x8 && _effort >= 1 ? 3 : 2;
 
-        // Task 8: rank I16, I4 and I8 by SATD and mode bits, and code the best (and the next when it comes close).
+        // Task 8: rank I16, I4 and I8 by SATD and mode bits, and code the best (and the next when it comes close). I16 is
+        // estimated first, then I8, then I4; an estimate stops once it is past the margin of the best so far, as it can then be
+        // neither the best nor the second coded (its partial sum stands in, already past that margin of the final best too).
         Span<long> estimate = stackalloc long[3];
         Span<int> order = [0, 1, 2];
-        for (int c = 0; c < count; c++)
+        estimate[0] = EstimateI16();
+        long least = estimate[0];
+        for (int c = count - 1; c >= 1; c--)
         {
-            estimate[c] = c == 0 ? EstimateI16() : EstimateNxN(c == 1 ? 4 : 8);
+            estimate[c] = EstimateNxN(c == 1 ? 4 : 8, least);
+            least = Math.Min(least, estimate[c]);
         }
 
         for (int i = 1; i < count; i++)
@@ -167,14 +188,18 @@ internal sealed partial class H264MbEncoder
 
         int[] t = _t, l = _l;
         H264IntraPredict.Gather(_y, _lumaAt, _stride, 16, _top, false, _left, _topLeft, t, l);
+        _i16Satd.AsSpan().Fill(-1);
         long limit = interSatd * IntraMargin / 16;
         for (int mode = 0; mode < 4; mode++)
         {
             if (H264IntraPredict.Allowed16x16(mode, _top, _left, _topLeft))
             {
                 H264IntraPredict.Predict16x16(_pred, 16, mode, t, l, _top, _left);
-                if (Satd(_srcY, _lumaAt, _stride, _pred, 0, 16, 16, 16) < limit)
+                long satd = _i16Satd[mode] = Satd(_srcY, _lumaAt, _stride, _pred, 0, 16, 16, 16);
+                if (satd < limit)
                 {
+                    // Encode follows at once for this macroblock and takes these SATDs over.
+                    _i16Pending = true;
                     return true;
                 }
             }
@@ -182,6 +207,12 @@ internal sealed partial class H264MbEncoder
 
         return false;
     }
+
+    // The SATD of each Intra16x16 mode's prediction of this macroblock (-1 until worked out), and its best mode by SATD and mode
+    // bits; worked out once for TryIntra, EstimateI16 and CodeI16. Pending: TryIntra filled them and Encode follows.
+    private readonly long[] _i16Satd = [-1, -1, -1, -1];
+    private bool _i16Pending;
+    private int _i16Mode;
 
     // Task 8: the second-best intra kind by SATD and mode bits is RD-coded too when it comes within this share of the best.
     private const double IntraRankMargin = 0.25;
@@ -269,23 +300,42 @@ internal sealed partial class H264MbEncoder
     private long EstimateI16()
     {
         int[] t = _t, l = _l;
-        H264IntraPredict.Gather(_y, _lumaAt, _stride, 16, _top, false, _left, _topLeft, t, l);
+        bool gathered = false;
         long bestCost = long.MaxValue;
+        int bestMode = 2;
         for (int mode = 0; mode < 4; mode++)
         {
             if (H264IntraPredict.Allowed16x16(mode, _top, _left, _topLeft))
             {
-                H264IntraPredict.Predict16x16(_pred, 16, mode, t, l, _top, _left);
-                bestCost = Math.Min(bestCost, Satd(_srcY, _lumaAt, _stride, _pred, 0, 16, 16, 16) + (long)(_sadLambda * (mode == 2 ? 1 : 3)));
+                long satd = _i16Satd[mode];
+                if (satd < 0)
+                {
+                    if (!gathered)
+                    {
+                        H264IntraPredict.Gather(_y, _lumaAt, _stride, 16, _top, false, _left, _topLeft, t, l);
+                        gathered = true;
+                    }
+
+                    H264IntraPredict.Predict16x16(_pred, 16, mode, t, l, _top, _left);
+                    satd = _i16Satd[mode] = Satd(_srcY, _lumaAt, _stride, _pred, 0, 16, 16, 16);
+                }
+
+                long cost = satd + (long)(_sadLambda * (mode == 2 ? 1 : 3));
+                if (cost < bestCost)
+                {
+                    bestCost = cost;
+                    bestMode = mode;
+                }
             }
         }
 
+        _i16Mode = bestMode;
         return bestCost;
     }
 
     // The SATD and mode bits of the best n by n predictions (4 or 8) as CodeI4 and CodeI8 choose them, predicted from the
     // source's samples instead of the reconstruction's, so nothing has to be coded first.
-    private long EstimateNxN(int n)
+    private long EstimateNxN(int n, long least)
     {
         int[] t = _t, l = _l;
         long total = 0;
@@ -311,61 +361,48 @@ internal sealed partial class H264MbEncoder
                 H264IntraPredict.Filter8x8(t, l, top, left, corner);
             }
 
+            H264IntraPredict.Edges(n, t, l, _edges);
+
             int predicted = _syntax.PredictedIntraMode(bx, by);
             long bestCost = long.MaxValue;
             for (int mode = 0; mode < 9; mode++)
             {
                 if (H264IntraPredict.NxNAllowed(mode, top, left, corner))
                 {
-                    H264IntraPredict.PredictNxN(_pred, n, n, mode, t, l, top, left);
+                    H264IntraPredict.PredictNxN(_pred, n, n, mode, t, l, top, left, _edges);
                     bestCost = Math.Min(bestCost, Satd(_srcY, at, _stride, _pred, 0, n, n, n) + (long)(_sadLambda * (mode == predicted ? 1 : 4)));
                 }
             }
 
             total += bestCost;
+            if (total - least > least * IntraRankMargin)
+            {
+                return total;
+            }
         }
 
         return total;
     }
 
+    [SkipLocalsInit]
     private long CodeI16(H264MbCode code)
     {
         code.Kind = H264MbKind.I16x16;
         code.Qp = _qp;
         int[] t = _t, l = _l;
         H264IntraPredict.Gather(_y, _lumaAt, _stride, 16, _top, false, _left, _topLeft, t, l);
-        int bestMode = 2;
-        long bestCost = long.MaxValue;
-        for (int mode = 0; mode < 4; mode++)
-        {
-            if (!H264IntraPredict.Allowed16x16(mode, _top, _left, _topLeft))
-            {
-                continue;
-            }
 
-            H264IntraPredict.Predict16x16(_pred, 16, mode, t, l, _top, _left);
-            long cost = Satd(_srcY, _lumaAt, _stride, _pred, 0, 16, 16, 16) + (long)(_sadLambda * (mode == 2 ? 1 : 3));
-            if (cost < bestCost)
-            {
-                bestCost = cost;
-                bestMode = mode;
-            }
-        }
-
+        // The mode EstimateI16 chose for this macroblock (Encode always estimates before it codes).
+        int bestMode = _i16Mode;
         code.I16Mode = bestMode;
         H264IntraPredict.Predict16x16(_pred, 16, bestMode, t, l, _top, _left);
 
-        // Forward transforms of the 16 blocks; their DCs go through the Hadamard.
+        // Forward transforms of the 16 blocks (in raster order of blocks); their DCs go through the Hadamard.
         int m = _qp % 6, q6 = _qp / 6;
-        Span<int> block = stackalloc int[16];
-        for (int blk = 0; blk < 16; blk++)
+        H264Forward.ResidualTransform4x4(_srcY, _lumaAt, _stride, _pred, 0, 16, 16, 16, _w);
+        for (int r = 0; r < 16; r++)
         {
-            int xy = H264Tables.BlockXY[blk];
-            int bx = xy & 3, by = xy >> 2;
-            Residual(_srcY, _lumaAt + (by * 4 * _stride) + (bx * 4), _stride, _pred, (by * 64) + (bx * 4), 16, 4, block);
-            H264Forward.Transform4x4(block);
-            block.CopyTo(_w.AsSpan(blk * 16, 16));
-            _dc[(by * 4) + bx] = block[0];
+            _dc[r] = _w[r * 16];
         }
 
         H264Forward.Hadamard4x4(_dc);
@@ -384,7 +421,8 @@ internal sealed partial class H264MbEncoder
         bool anyAc = false;
         for (int blk = 0; blk < 16; blk++)
         {
-            int n = QuantizeBlock(_w.AsSpan(blk * 16, 16), code.Luma, blk * 16, 1, 15, false, _qp, 1);
+            int xy = H264Tables.BlockXY[blk];
+            int n = QuantizeBlock(_w.AsSpan((((xy >> 2) * 4) + (xy & 3)) * 16, 16), code.Luma, blk * 16, 1, 15, false, _qp, 1);
             code.Luma[(blk * 16) + 15] = 0;
             code.LumaCount[blk] = n;
             anyAc |= n > 0;
@@ -435,6 +473,7 @@ internal sealed partial class H264MbEncoder
     }
 
     /// <summary>The Intra16x16 DC levels (raster, row by) scaled into each block's coefficient 0 (raster by block position).</summary>
+    [SkipLocalsInit]
     private void InverseLumaDc(ReadOnlySpan<int> c, Span<int> dcY)
     {
         Span<int> t = stackalloc int[16];
@@ -460,6 +499,7 @@ internal sealed partial class H264MbEncoder
         }
     }
 
+    [SkipLocalsInit]
     private long CodeI4(H264MbCode code)
     {
         code.Kind = H264MbKind.I4x4;
@@ -475,6 +515,7 @@ internal sealed partial class H264MbEncoder
             int at = _lumaAt + (by * 4 * _stride) + (bx * 4);
             (bool top, bool left, bool corner, bool topRight) = Neighbors(bx * 4, by * 4, 4, blk);
             H264IntraPredict.Gather(_y, at, _stride, 4, top, topRight, left, corner, t, l);
+            H264IntraPredict.Edges(4, t, l, _edges);
             int predicted = _syntax.PredictedIntraMode(bx, by);
             int bestMode = 2;
             long bestCost = long.MaxValue;
@@ -485,7 +526,7 @@ internal sealed partial class H264MbEncoder
                     continue;
                 }
 
-                H264IntraPredict.PredictNxN(_pred, 4, 4, mode, t, l, top, left);
+                H264IntraPredict.PredictNxN(_pred, 4, 4, mode, t, l, top, left, _edges);
                 long cost = Satd(_srcY, at, _stride, _pred, 0, 4, 4, 4) + (long)(_sadLambda * (mode == predicted ? 1 : 4));
                 if (cost < bestCost)
                 {
@@ -496,7 +537,7 @@ internal sealed partial class H264MbEncoder
 
             code.Modes[blk] = bestMode;
             _mb.IntraModes[(((_mbY * 4) + by) * _mb.W4) + (_mbX * 4) + bx] = (sbyte)bestMode;
-            H264IntraPredict.PredictNxN(_pred, 4, 4, bestMode, t, l, top, left);
+            H264IntraPredict.PredictNxN(_pred, 4, 4, bestMode, t, l, top, left, _edges);
             Residual(_srcY, at, _stride, _pred, 0, 4, 4, block);
             H264Forward.Transform4x4(block);
             int n = QuantizeBlock(block, code.Luma, blk * 16, 0, 16, false, _qp, 2);
@@ -517,6 +558,7 @@ internal sealed partial class H264MbEncoder
         return Sse(_srcY, _y, _lumaAt, _stride, 16, 16);
     }
 
+    [SkipLocalsInit]
     private long CodeI8(H264MbCode code)
     {
         code.Kind = H264MbKind.I8x8;
@@ -532,6 +574,7 @@ internal sealed partial class H264MbEncoder
             (bool top, bool left, bool corner, bool topRight) = Neighbors(bx * 4, by * 4, 8, i8 * 4);
             H264IntraPredict.Gather(_y, at, _stride, 8, top, topRight, left, corner, t, l);
             H264IntraPredict.Filter8x8(t, l, top, left, corner);
+            H264IntraPredict.Edges(8, t, l, _edges);
             int predicted = _syntax.PredictedIntraMode(bx, by);
             int bestMode = 2;
             long bestCost = long.MaxValue;
@@ -542,7 +585,7 @@ internal sealed partial class H264MbEncoder
                     continue;
                 }
 
-                H264IntraPredict.PredictNxN(_pred, 8, 8, mode, t, l, top, left);
+                H264IntraPredict.PredictNxN(_pred, 8, 8, mode, t, l, top, left, _edges);
                 long cost = Satd(_srcY, at, _stride, _pred, 0, 8, 8, 8) + (long)(_sadLambda * (mode == predicted ? 1 : 4));
                 if (cost < bestCost)
                 {
@@ -554,7 +597,7 @@ internal sealed partial class H264MbEncoder
             code.Modes[i8] = bestMode;
             int b = (((_mbY * 4) + by) * _mb.W4) + (_mbX * 4) + bx;
             _mb.IntraModes[b] = _mb.IntraModes[b + 1] = _mb.IntraModes[b + _mb.W4] = _mb.IntraModes[b + _mb.W4 + 1] = (sbyte)bestMode;
-            H264IntraPredict.PredictNxN(_pred, 8, 8, bestMode, t, l, top, left);
+            H264IntraPredict.PredictNxN(_pred, 8, 8, bestMode, t, l, top, left, _edges);
             Residual(_srcY, at, _stride, _pred, 0, 8, 8, block);
             H264Forward.Transform8x8(block);
             int n = QuantizeBlock(block, code.Luma8, i8 * 64, 0, 64, true, _qp, 5);
@@ -647,19 +690,16 @@ internal sealed partial class H264MbEncoder
     }
 
     /// <summary>Codes one chroma plane's residual against the prediction in <see cref="_pred"/> and reconstructs it.</summary>
+    [SkipLocalsInit]
     private (bool Dc, bool Ac) CodeChromaPlane(H264MbCode code, int c, byte[] src, byte[] plane)
     {
         int m = _qpc % 6, q6 = _qpc / 6;
-        Span<int> block = stackalloc int[16];
         Span<int> w = _w.AsSpan(0, 64);
         Span<int> dc = stackalloc int[4];
+        H264Forward.ResidualTransform4x4(src, _chromaAt, _cstride, _pred, 0, 8, 8, 8, w);
         for (int blk = 0; blk < 4; blk++)
         {
-            int bx = blk & 1, by = blk >> 1;
-            Residual(src, _chromaAt + (by * 4 * _cstride) + (bx * 4), _cstride, _pred, (by * 32) + (bx * 4), 8, 4, block);
-            H264Forward.Transform4x4(block);
-            block.CopyTo(w.Slice(blk * 16, 16));
-            dc[blk] = block[0];
+            dc[blk] = w[blk * 16];
         }
 
         // The 2x2 Hadamard of the DCs, quantized one bit finer than AC (8.5.11).
@@ -750,15 +790,26 @@ internal sealed partial class H264MbEncoder
             return 0;
         }
 
+        // Every coefficient quantized at once (raster order), then read out in scan order.
+        int[] q = _quant;
+        if (eight)
+        {
+            Quantize8(w, H264Forward.Mf8.AsSpan(m * 64, 64), qbits, round, q);
+        }
+        else
+        {
+            Quantize4(w, H264Forward.Mf4.AsSpan(m * 16, 16), qbits, round, q);
+        }
+
         int n = 0;
         int[] rows = _rdoqRows;
-        for (int k = 0; k < max; k++)
+        ref byte scanAt = ref MemoryMarshal.GetArrayDataReference(scan);
+        ref int qAt = ref MemoryMarshal.GetArrayDataReference(q);
+        Span<int> dst = levels.AsSpan(at, max);
+        for (int k = 0; k < dst.Length; k++)
         {
-            int pos = scan[k + first];
-            int level = eight
-                ? H264Forward.Quantize(w[pos], H264Forward.Mf8[(m * 64) + pos], H264Forward.Shift8 + q6, round)
-                : H264Forward.Quantize(w[pos], H264Forward.Mf4[(m * 16) + pos], H264Forward.Shift4 + q6, round);
-            levels[at + k] = level;
+            int level = Unsafe.Add(ref qAt, Unsafe.Add(ref scanAt, k + first));
+            dst[k] = level;
 
             // RDOQ's list of the non-zero levels' scan positions, made without a branch: which levels are 0 is hard to predict.
             rows[n] = k;
@@ -771,7 +822,8 @@ internal sealed partial class H264MbEncoder
     private int Rdoq(ReadOnlySpan<int> w, int[] levels, int at, int first, int max, bool eight, int qp, int cat, int n)
     {
         H264EncodeStats.Add(H264EncodeStat.RdoqBlocks);
-        byte[] scan = eight ? H264ScalingLists.Zigzag8x8 : H264ScalingLists.Zigzag4x4;
+        ReadOnlySpan<byte> scan = (eight ? H264ScalingLists.Zigzag8x8 : H264ScalingLists.Zigzag4x4).AsSpan(first);
+        ReadOnlySpan<double> steps = eight ? H264Forward.Steps8At(qp) : H264Forward.Steps4At(qp);
         double lambda = _lambda / CabacCost.Bit;
         // The error of the block as zeros, then as quantized: a level of 0 leaves its coefficient's error as it is.
         double[] weights = eight ? H264Forward.Weight8 : H264Forward.Weight4;
@@ -782,9 +834,8 @@ internal sealed partial class H264MbEncoder
         for (int row = 0; row < count; row++)
         {
             int k = rows[row];
-            int pos = scan[k + first];
-            double step = eight ? H264Forward.Step8(qp, pos) : H264Forward.Step4(qp, pos);
-            double e = w[pos] - (levels[at + k] * step);
+            int pos = scan[k];
+            double e = w[pos] - (levels[at + k] * steps[pos]);
             distortion += ((e * e) - ((double)w[pos] * w[pos])) * weights[pos];
         }
 
@@ -795,35 +846,44 @@ internal sealed partial class H264MbEncoder
         {
             int k = rows[row];
             int level = levels[at + k];
-            int pos = scan[k + first];
-            double step = eight ? H264Forward.Step8(qp, pos) : H264Forward.Step4(qp, pos);
+            int pos = scan[k];
+            double step = steps[pos];
             double weight = weights[pos];
-            int lower = level - Math.Sign(level);
+            int lower = level - ((level >> 31) | 1);
             double before = w[pos] - (level * step), after = w[pos] - (lower * step);
             double dd = ((after * after) - (before * before)) * weight;
-            levels[at + k] = lower;
             int n2 = lower == 0 ? n - 1 : n;
-            long rate2 = !cabac ? BlockRate(levels, at, max, cat, n2) : n2 == 0 ? 0 : _pricer.Price(k, level);
-            H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts, n2 == 0 ? 0 : 1);
-            if (dd + (lambda * (rate2 - rate)) < 0)
+            if (!cabac)
             {
-                distortion += dd;
-                rate = rate2;
-                n = n2;
-                if (cabac)
+                levels[at + k] = lower;
+                long cavlc = BlockRate(levels, at, max, cat, n2);
+                H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts, n2 == 0 ? 0 : 1);
+                if (dd + (lambda * (cavlc - rate)) < 0)
                 {
-                    _pricer.Accept();
+                    distortion += dd;
+                    rate = cavlc;
+                    n = n2;
                 }
-            }
-            else
-            {
-                levels[at + k] = level;
+                else
+                {
+                    levels[at + k] = level;
+                }
+
+                continue;
             }
 
-            if (cabac)
-            {
-                _pricer.Advance(k);
-            }
+            // CABAC: the choice taken without a branch, as whether RDOQ lowers a level is hard to predict.
+            levels[at + k] = lower;
+            long rate2 = n2 == 0 ? 0 : _pricer.Price(k, level);
+            H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts, n2 == 0 ? 0 : 1);
+            bool take = dd + (lambda * (rate2 - rate)) < 0;
+            int taken = take ? 1 : 0;
+            distortion += dd * taken;
+            rate = take ? rate2 : rate;
+            n = take ? n2 : n;
+            levels[at + k] = take ? lower : level;
+            _pricer.Accept(take);
+            _pricer.Advance(k);
         }
 
         // The whole block as zeros: coded_block_flag 0 instead of the levels.
@@ -840,6 +900,22 @@ internal sealed partial class H264MbEncoder
     // reaches every position from the second on, so only the DC's place depends on first; four sums keep the adds apart.
     private static double ZeroError(ReadOnlySpan<int> w, double[] weights, int first)
     {
+        if (Avx.IsSupported)
+        {
+            // The same four sums, one per lane, each term rounded as below.
+            ref int wAt = ref MemoryMarshal.GetReference(w);
+            ref double weightAt = ref MemoryMarshal.GetArrayDataReference(weights);
+            Vector256<double> sum = Vector256<double>.Zero;
+            for (int i = 0; i < weights.Length; i += 4)
+            {
+                Vector256<double> v = Avx.ConvertToVector256Double(Vector128.LoadUnsafe(ref wAt, (nuint)i));
+                sum += v * v * Vector256.LoadUnsafe(ref weightAt, (nuint)i);
+            }
+
+            double whole = (sum.GetElement(0) + sum.GetElement(1)) + (sum.GetElement(2) + sum.GetElement(3));
+            return first == 0 ? whole : whole - ((double)w[0] * w[0] * weights[0]);
+        }
+
         double a = 0, b = 0, c = 0, d = 0;
         for (int i = 0; i < weights.Length; i += 4)
         {
@@ -886,20 +962,98 @@ internal sealed partial class H264MbEncoder
     /// <summary>Scales a block's levels (scan order from <paramref name="first"/>) into raster coefficients as the decoder does.</summary>
     private void Dequantize(int[] levels, int at, int first, int max, bool eight, int qp, Span<int> d)
     {
-        d.Clear();
-        byte[] scan = eight ? H264ScalingLists.Zigzag8x8 : H264ScalingLists.Zigzag4x4;
-        for (int k = 0; k < max; k++)
+        // Every position the scan reaches is written (a level of 0 scales to 0 either way), so only the rest is cleared.
+        if (first + max < d.Length || first > 0)
         {
-            int level = levels[at + k];
-            if (level != 0)
+            d.Clear();
+        }
+
+        ReadOnlySpan<byte> scan = (eight ? H264ScalingLists.Zigzag8x8 : H264ScalingLists.Zigzag4x4).AsSpan(first, max);
+        ReadOnlySpan<int> levelsAt = levels.AsSpan(at, max);
+        int shift = qp / 6;
+        int fraction = eight ? 6 : 4;
+        ReadOnlySpan<int> scale = eight ? _scale8.AsSpan((qp % 6) * 64, 64) : _scale4.AsSpan((qp % 6) * 16, 16);
+        if (shift >= fraction)
+        {
+            int up = shift - fraction;
+            for (int k = 0; k < levelsAt.Length; k++)
             {
-                int pos = scan[k + first];
-                d[pos] = eight ? Scale8x8(level, qp, _scale8, pos) : Scale4x4(level, qp, _scale4, pos);
+                int pos = scan[k];
+                d[pos] = (levelsAt[k] * scale[pos]) << up;
+            }
+        }
+        else
+        {
+            int down = fraction - shift, half = 1 << (down - 1);
+            for (int k = 0; k < levelsAt.Length; k++)
+            {
+                int pos = scan[k];
+                d[pos] = ((levelsAt[k] * scale[pos]) + half) >> down;
             }
         }
     }
 
     // ---- Shared ----
+
+    /// <summary>
+    /// <see cref="H264Forward.Quantize"/> of the 16 coefficients of a 4x4 block (raster order) into <paramref name="q"/>. A 4x4
+    /// coefficient is at most 36 · 255 and an MF at most 13107, so the products and the rounding offset fit an int.
+    /// </summary>
+    internal static void Quantize4(ReadOnlySpan<int> w, ReadOnlySpan<int> mf, int qbits, int round, int[] q)
+    {
+        int offset = round << (qbits - 8);
+        if (Vector256.IsHardwareAccelerated)
+        {
+            ref int wAt = ref MemoryMarshal.GetReference(w);
+            ref int mfAt = ref MemoryMarshal.GetReference(mf);
+            ref int qAt = ref MemoryMarshal.GetArrayDataReference(q);
+            Vector256<int> add = Vector256.Create(offset);
+            for (int i = 0; i < 16; i += 8)
+            {
+                Vector256<int> v = Vector256.LoadUnsafe(ref wAt, (nuint)i);
+                Vector256<int> level = Vector256.ShiftRightLogical((Vector256.Abs(v) * Vector256.LoadUnsafe(ref mfAt, (nuint)i)) + add, qbits);
+                Vector256<int> sign = Vector256.ShiftRightArithmetic(v, 31);
+                ((level ^ sign) - sign).StoreUnsafe(ref qAt, (nuint)i);
+            }
+
+            return;
+        }
+
+        for (int i = 0; i < 16; i++)
+        {
+            q[i] = H264Forward.Quantize(w[i], mf[i], qbits, round);
+        }
+    }
+
+    /// <summary><see cref="H264Forward.Quantize"/> of the 64 coefficients of an 8x8 block (raster order), whose products need 64 bits.</summary>
+    internal static void Quantize8(ReadOnlySpan<int> w, ReadOnlySpan<int> mf, int qbits, int round, int[] q)
+    {
+        if (Avx2.IsSupported)
+        {
+            ref int wAt = ref MemoryMarshal.GetReference(w);
+            ref int mfAt = ref MemoryMarshal.GetReference(mf);
+            ref int qAt = ref MemoryMarshal.GetArrayDataReference(q);
+            Vector256<ulong> add = Vector256.Create((ulong)round << (qbits - 8));
+            for (int i = 0; i < 64; i += 8)
+            {
+                // The even lanes' products, then the odd lanes', each in 64 bits; the levels fit the low halves.
+                Vector256<int> v = Vector256.LoadUnsafe(ref wAt, (nuint)i);
+                Vector256<uint> a = Vector256.Abs(v).AsUInt32(), f = Vector256.LoadUnsafe(ref mfAt, (nuint)i).AsUInt32();
+                Vector256<ulong> even = (Avx2.Multiply(a, f) + add) >>> qbits;
+                Vector256<ulong> odd = (Avx2.Multiply((a.AsUInt64() >>> 32).AsUInt32(), (f.AsUInt64() >>> 32).AsUInt32()) + add) >>> qbits;
+                Vector256<int> level = even.AsInt32() | (odd << 32).AsInt32();
+                Vector256<int> sign = Vector256.ShiftRightArithmetic(v, 31);
+                ((level ^ sign) - sign).StoreUnsafe(ref qAt, (nuint)i);
+            }
+
+            return;
+        }
+
+        for (int i = 0; i < 64; i++)
+        {
+            q[i] = H264Forward.Quantize(w[i], mf[i], qbits, round);
+        }
+    }
 
     /// <summary>LevelScale scaling of a 4x4 level (8.5.12.1), as the decoder's.</summary>
     internal static int Scale4x4(int level, int qp, int[] scale, int pos)

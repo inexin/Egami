@@ -154,20 +154,21 @@ internal sealed class H264BlockPricer
         return _trySig + _prefix + cost + (_row > 0 ? Tail(_row - 1, state) : 0) + CabacCost.Bit;
     }
 
-    /// <summary>Keeps the change of the last <see cref="Price"/>, which RDOQ took.</summary>
-    public void Accept() => (_sig, _last) = (_trySig, _tryLast);
+    /// <summary>Keeps the change of the last <see cref="Price"/> when RDOQ took it.</summary>
+    public void Accept(bool take)
+    {
+        _sig = take ? _trySig : _sig;
+        _last = take ? _tryLast : _last;
+    }
 
     /// <summary>Moves the final level at scan position <paramref name="k"/> into the levels coded before the next one tried.</summary>
     public void Advance(int k)
     {
         Debug.Assert(_rows[_row] == k, "RDOQ tries the quantized levels from the last one back.");
         int level = _levels[_at + k];
-        if (level != 0)
-        {
-            _prefix += LevelCost(level, _state);
-            _state = Next(level, _state);
-        }
-
+        int coded = (level | -level) >> 31;
+        _prefix += LevelCost(level, _state) & coded;
+        _state = coded != 0 ? Next(level, _state) : _state;
         _row--;
     }
 

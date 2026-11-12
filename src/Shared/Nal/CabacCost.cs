@@ -19,6 +19,9 @@ internal static class CabacCost
     /// <summary>The next state after the less probable symbol, by state.</summary>
     internal static readonly byte[] NextLps = new byte[128];
 
+    /// <summary>The next state by (state &lt;&lt; 1) | bin: one lookup, without branching on whether the bin was the more probable symbol.</summary>
+    internal static readonly byte[] Next = new byte[256];
+
     /// <summary>The cost of a bin by state ^ bin: even entries are the more probable symbol's, odd ones the less probable one's.</summary>
     internal static readonly int[] Costs = new int[128];
 
@@ -34,6 +37,12 @@ internal static class CabacCost
             Costs[(p << 1) | 0] = (int)Math.Round(-Math.Log2(1 - lps) * Bit);
             Costs[(p << 1) | 1] = (int)Math.Round(-Math.Log2(lps) * Bit);
         }
+
+        for (int s = 0; s < 128; s++)
+        {
+            Next[(s << 1) | (s & 1)] = NextMps[s];
+            Next[(s << 1) | ((s & 1) ^ 1)] = NextLps[s];
+        }
     }
 
     /// <summary>Gets the cost of coding <paramref name="bin"/> in <paramref name="state"/>.</summary>
@@ -45,7 +54,7 @@ internal static class CabacCost
     internal static int Update(ref byte state, int bin)
     {
         int cost = Costs[state ^ bin];
-        state = bin == (state & 1) ? NextMps[state] : NextLps[state];
+        state = Next[(state << 1) | bin];
         return cost;
     }
 }
