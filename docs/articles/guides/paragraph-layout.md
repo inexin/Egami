@@ -30,6 +30,23 @@ The rules are Unicode's line breaking algorithm (UAX #14) from Egami's own Unico
 Thai, Lao, Khmer and Myanmar text breaks only at spaces and zero width spaces: Egami has no dictionaries. An object
 replacement character (U+FFFC, as placeholders use) breaks before and after.
 
+### Hyphenation points
+
+A `Hyphenator` finds where a word may break with a hyphen, by Liang's pattern algorithm as TeX, LibreOffice and browsers use
+it. `Hyphenator.Load` (with a `HyphenationFormat`, or `Auto` to tell it from the data) reads hyph-utf8's `hyph-xx.tex` files
+(with the minimums from their `hyphenmins` header), plain `.pat.txt` pattern lists, LibreOffice's `hyph_xx_YY.dic` files
+(their spelling-change rules are not supported yet and throw `NotSupportedException`) and Egami's compiled `.ehyp` form,
+which `Save` writes and which loads in about a millisecond.
+`Hyphenator.FromPatterns` takes patterns and `hy-phen-ate` exceptions as text, and `WithExceptions` adds more.
+
+`GetPoints` writes UTF-16 offsets, ascending, and allocates nothing for ordinary words. Exceptions win over the patterns;
+no break leaves fewer than `MinBefore` characters before it or `MinAfter` after it, and none falls inside a surrogate pair or
+before a combining mark.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#hyphenation)]
+
+Paragraph layout does not hyphenate on its own yet; for now, soft hyphens (U+00AD) in the text mark the breaks.
+
 ## Rich text and paragraphs
 
 A `RichText` is a string with `StyleSpan`s over it (start and length in UTF-16 units, never overlapping) and a `Placeholder`
