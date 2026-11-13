@@ -169,6 +169,9 @@ jobs:
       - name: Create the release
         env:
           GH_TOKEN: ${{ github.token }}
+        # A preview tag (v1.5.0-preview.1) makes a prerelease, so the newest stable release stays GitHub's latest.
         run: |
-          gh release create "$GITHUB_REF_NAME" release/* --repo "$GITHUB_REPOSITORY" --title "Egami ${GITHUB_REF_NAME#v}" \
+          prerelease=
+          case "$GITHUB_REF_NAME" in *-*) prerelease=--prerelease ;; esac
+          gh release create "$GITHUB_REF_NAME" release/* --repo "$GITHUB_REPOSITORY" --title "Egami ${GITHUB_REF_NAME#v}" $prerelease \
             --notes "Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli ${GITHUB_REF_NAME#v} are on NuGet. The files here are the egami command as a native program that needs no .NET runtime: unpack it and run egami --help. CHANGELOG.md lists what changed."

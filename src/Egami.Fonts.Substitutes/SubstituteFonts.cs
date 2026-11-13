@@ -7,7 +7,7 @@ namespace Egami.Fonts.Substitutes;
 /// font it replaces, so text keeps its line breaks: Liberation Sans for Helvetica and Arial, Liberation Serif for Times and
 /// Times New Roman, Liberation Mono for Courier and Courier New, Carlito for Calibri and Caladea for Cambria, each in
 /// regular, bold, italic and bold italic, and STIX Two Math for Cambria Math, a single face with an OpenType <c>MATH</c> table
-/// (see <see cref="Typeface.Math"/>) for laying out equations. All are under the SIL Open Font License 1.1 and ship inside this assembly, so they
+/// (<c>Typeface.Math</c> in Egami.Fonts 1.5 reads it) for laying out equations. All are under the SIL Open Font License 1.1 and ship inside this assembly, so they
 /// work whatever fonts are installed; a face is loaded the first time it is asked for.
 /// </summary>
 /// <example>

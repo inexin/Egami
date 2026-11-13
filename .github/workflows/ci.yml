@@ -117,6 +117,9 @@ jobs:
       # fails when it starts to need something newer than those, before a release would ship a package that cannot load.
       - name: Egami.Barcodes against the released packages
         run: dotnet build src/Egami.Barcodes -c Release -p:UseReleasedDependencies=true
+      # Egami.Fonts.Substitutes is packed against the released Egami.Fonts in the same way.
+      - name: Egami.Fonts.Substitutes against the released packages
+        run: dotnet build src/Egami.Fonts.Substitutes -c Release -p:UseReleasedDependencies=true
 
   libpng:
     # Checks Egami's PNG reader and writer against libpng, the reference PNG library. libpng is a CI test tool only.

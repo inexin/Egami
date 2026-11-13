@@ -3,7 +3,7 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Egami (unreleased)
+## Egami.Video.H264 (unreleased)
 
 An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
 
@@ -149,6 +149,26 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
 - Tools: time-h264-encoder.py gates the instruction ratio against x264 medium at effort 4 instead of the cycles ratio, which
   swings by up to a third between runs on a busy machine: each clip at quality 50 and 34 at most 10 % above the ratio after
   round 3 (4.0 and 3.6 times on the mean). The H.264 guide's effort table is re-measured with x264 matched by quality.
+
+## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
+
+A preview of the next release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic,
+Egami.Formats.Extended and Egami.Cli), so the work since 1.4.0 can be tried before 1.5.0. It adds API and removes none. The
+sections below list the changes: faster JPEG and JPEG XL encoding and decoding, KTX and KTX 2 textures, more RAW cameras (CR3,
+Panasonic, SRW), PSD flattening extras, JPEG-LS, High-Throughput JPEG 2000, DPX, Cineon and FITS, DICOM in preview, math
+layout data for equations and automatic hyphenation. Egami.Svg and Egami.Css have no changes and ship as 1.5.0-preview.1 to
+keep the train together.
+
+- NuGet installs a preview only when asked: `dotnet add package Egami --prerelease`, or the exact version
+  (`--version 1.5.0-preview.1`). 1.4.0 stays the default.
+- API added since 1.4.0 may still change before 1.5.0. Code built against 1.4.0 keeps working.
+- DICOM is `[Experimental]` (EGAMIX001); the `egami` command reads and writes it only with `--preview-formats`.
+- `Hyphens.Auto` hyphenates only with patterns the caller loads (`Hyphenator.Load`); the built-in dictionaries and optimal
+  (Knuth-Plass) line breaking come in a later preview.
+- Egami.Fonts.Substitutes 1.1.0 adds STIX Two Math for Cambria Math. It is a stable release that needs Egami.Fonts 1.4.0 or
+  later, so it installs without the preview.
+
+## Egami 1.5.0-preview.1 (2026-11-13)
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 
@@ -584,7 +604,7 @@ KTX stage D (writing and whole textures; roadmap 2.3.11). Additive.
   better and about twice as fast, within 0.25 dB of astcenc `-medium` at 0.5 times its speed or better; ETC1S 1.8 dB better
   and 3.3 times faster; UASTC fills the BC1 and ETC1 bias transcoder hints.
 
-## Egami.Fonts (unreleased)
+## Egami.Fonts 1.5.0-preview.1 (2026-11-13)
 
 Hyphenation patterns and automatic hyphens. Additive.
 
