@@ -129,6 +129,12 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   cycles fall 8.7 % at quality 50 and 15.4 % at quality 34 on the four 720p clips (3.67 and 3.66 times x264 medium) for no
   loss: BD-rate −0.04 % on them, +0.11 % on eight clips (worst
   +0.77 %, pedestrian_area). Two P references instead of three, also planned, cost up to 0.8 % on pedestrian_area and stays out.
+- Effort 4 (speed round 3, task 24): early stop after the 16x16 search. A 16x16 candidate whose search cost is below 32 times
+  the square root of λ a 4x4 block is RD-coded right after its search; when it leaves no residual, no other partitioning,
+  second candidate or B_Direct_16x16 is searched or coded, only intra is still tried, and otherwise its coding is kept as a
+  candidate. Egami's own cycles fall 8 % at quality 50 and 16 % at quality 34 on the four 720p clips (17.9 % and 29.0 %
+  fewer instructions than before round 3), 3.7 and 3.2 times x264 medium; BD-rate −0.17 % on eight clips (worst park_joy
+  +0.10 %).
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 

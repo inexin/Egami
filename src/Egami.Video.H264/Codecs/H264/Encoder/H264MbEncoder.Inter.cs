@@ -75,8 +75,12 @@ internal sealed partial class H264MbEncoder
     private readonly byte[] _ipCb = new byte[64];
     private readonly byte[] _ipCr = new byte[64];
     private readonly byte[] _mc = new byte[256];
-    private readonly byte[][] _saveY = [new byte[256], new byte[256], new byte[256], new byte[256], new byte[256]];
-    private readonly byte[][] _saveC = [new byte[128], new byte[128], new byte[128], new byte[128], new byte[128]];
+    private readonly byte[][] _saveY = [new byte[256], new byte[256], new byte[256], new byte[256], new byte[256], new byte[256]];
+    private readonly byte[][] _saveC = [new byte[128], new byte[128], new byte[128], new byte[128], new byte[128], new byte[128]];
+
+    // Round 3 task 24: the slot of the 16x16 candidate coded right after its search, and its cost (NaN when it was not).
+    private const int EarlySlot = 5;
+    private double _early16 = double.NaN;
     private H264RefPlanes[] _refs = [];
     private int _refCount;
     private int _maxMvY;
@@ -151,6 +155,12 @@ internal sealed partial class H264MbEncoder
         long secondCost = long.MaxValue;
         H264MbCode first = p16;
         long firstCost = cost16;
+        if (EarlyCode16(p16, cost16, ref bestCost, ref best, ref bestSlot))
+        {
+            // Task 24: the 16x16 candidate leaves no residual, so no other partitioning is searched or coded.
+            return FinishInter(mbX, mbY, qp, firstCost, bestCost, best, bestSlot);
+        }
+
         if (_effort >= 1)
         {
             starts[count++] = p16.Mv[0];
@@ -181,24 +191,24 @@ internal sealed partial class H264MbEncoder
 
         // Rate-distortion: the best partitioning, and the second from effort 3 unless the pre-pass sets them far apart.
         (bool codeFirst, bool codeSecond) = PickPartitions(first, firstCost, second, secondCost);
-        double interCost = codeFirst ? CodeInter(first) : double.MaxValue;
-        SaveMb(1);
-        if (interCost < bestCost)
+        if (codeFirst)
         {
-            (bestCost, best, bestSlot) = (interCost, first, 1);
+            CodeCandidate(first, 1, ref bestCost, ref best, ref bestSlot);
         }
 
         if (codeSecond)
         {
-            interCost = CodeInter(second!);
-            SaveMb(2);
-            if (interCost < bestCost)
-            {
-                (bestCost, best, bestSlot) = (interCost, second, 2);
-            }
+            CodeCandidate(second!, 2, ref bestCost, ref best, ref bestSlot);
         }
 
-        if (TryIntra(firstCost, IntraMargin))
+        return FinishInter(mbX, mbY, qp, firstCost, bestCost, best, bestSlot);
+    }
+
+    /// <summary>Tries intra where <see cref="TryIntra"/> says so, then restores and returns the best candidate.</summary>
+    private double FinishInter(int mbX, int mbY, int qp, long firstCost, double bestCost, H264MbCode? best, int bestSlot)
+    {
+        bool b = _syntax.SliceType == H264SliceType.B;
+        if (TryIntra(firstCost, b && _effort == 4 ? BIntraMargin : IntraMargin))
         {
             double cost = Encode(mbX, mbY, qp);
             _round = InterRound;
@@ -213,6 +223,58 @@ internal sealed partial class H264MbEncoder
         Best = best!;
         return bestCost;
     }
+
+    /// <summary>
+    /// RD-codes an inter candidate into save slot <paramref name="slot"/>, keeping it when it is the best so far; the 16x16
+    /// candidate that <see cref="EarlyCode16"/> already coded keeps that coding.
+    /// </summary>
+    private void CodeCandidate(H264MbCode code, int slot, ref double bestCost, ref H264MbCode? best, ref int bestSlot)
+    {
+        if (code == _inter[0] && !double.IsNaN(_early16))
+        {
+            return;
+        }
+
+        double cost = CodeInter(code);
+        SaveMb(slot);
+        if (cost < bestCost)
+        {
+            (bestCost, best, bestSlot) = (cost, code, slot);
+        }
+    }
+
+    /// <summary>
+    /// Task 24 (round 3): at effort 4, a 16x16 candidate whose search cost is low for the QP is RD-coded right after its search;
+    /// returns whether it came out without any residual, when nothing else but intra is worth trying.
+    /// </summary>
+    private bool EarlyCode16(H264MbCode p16, long cost16, ref double bestCost, ref H264MbCode? best, ref int bestSlot)
+    {
+        _early16 = double.NaN;
+        if (_effort != 4 || cost16 >= EarlyShare * 16 * _sadLambda)
+        {
+            return false;
+        }
+
+        _early16 = CodeInter(p16);
+        SaveMb(EarlySlot);
+        if (_early16 < bestCost)
+        {
+            (bestCost, best, bestSlot) = (_early16, p16, EarlySlot);
+        }
+
+        if (p16.Cbp != 0)
+        {
+            return false;
+        }
+
+        H264EncodeStats.Add(H264EncodeStat.EarlySkips);
+        return true;
+    }
+
+    // Task 24: the 16x16 search cost (SATD and vector bits), in square roots of λ a 4x4 block, below which the candidate is
+    // coded right after its search. Tuned on the four 720p clips at effort 4: 16 saves fewer instructions, 64 and more code too
+    // many busy macroblocks for nothing; every threshold kept the BD-rate within 0.1 % of not stopping.
+    private const double EarlyShare = 32;
 
     /// <summary>
     /// The bounds of a w by h block's vector at 4x4 block (bx, by) of the macroblock, in quarter samples: its top-left corner

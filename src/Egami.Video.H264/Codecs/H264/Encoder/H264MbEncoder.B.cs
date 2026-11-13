@@ -101,6 +101,12 @@ internal sealed partial class H264MbEncoder
         ClearInter(p16, H264MbKind.Inter);
         long firstCost = SearchBPart(p16, 0, 0, 0, 4, 4, 0, starts0[..startCount], starts1[..startCount]) + (long)(2 * _sadLambda);
         long firstCost16 = firstCost;
+        if (EarlyCode16(p16, firstCost, ref bestCost, ref best, ref bestSlot))
+        {
+            // Task 24: the 16x16 candidate leaves no residual, so no other partitioning or direct is searched or coded.
+            return FinishInter(mbX, mbY, qp, firstCost, bestCost, best, bestSlot);
+        }
+
         // Task 13: the partitions also start from the vectors the 16x16 search found in each list.
         (starts0[2], starts1[2], startCount) = (_lastMv0, _lastMv1, 3);
 
@@ -149,21 +155,14 @@ internal sealed partial class H264MbEncoder
         }
 
         (bool codeFirst, bool codeSecond) = PickPartitions(first, firstCost, second, secondCost);
-        double interCost = codeFirst ? CodeInter(first) : double.MaxValue;
-        SaveMb(1);
-        if (interCost < bestCost)
+        if (codeFirst)
         {
-            (bestCost, best, bestSlot) = (interCost, first, 1);
+            CodeCandidate(first, 1, ref bestCost, ref best, ref bestSlot);
         }
 
         if (codeSecond)
         {
-            interCost = CodeInter(second!);
-            SaveMb(2);
-            if (interCost < bestCost)
-            {
-                (bestCost, best, bestSlot) = (interCost, second, 2);
-            }
+            CodeCandidate(second!, 2, ref bestCost, ref best, ref bestSlot);
         }
 
         // Task 8: B_Direct_16x16 with a residual, RD-coded only when its prediction comes near the best partitioning by SATD (at
@@ -173,20 +172,7 @@ internal sealed partial class H264MbEncoder
             CodeDirect(_direct, ref bestCost, ref best, ref bestSlot);
         }
 
-        if (TryIntra(firstCost, _effort == 4 ? BIntraMargin : IntraMargin))
-        {
-            double cost = Encode(mbX, mbY, qp);
-            _round = InterRound;
-            SaveMb(3);
-            if (cost < bestCost)
-            {
-                (bestCost, best, bestSlot) = (cost, Best, 3);
-            }
-        }
-
-        RestoreMb(bestSlot);
-        Best = best!;
-        return bestCost;
+        return FinishInter(mbX, mbY, qp, firstCost, bestCost, best, bestSlot);
     }
 
     private void CodeDirect(H264MbCode direct, ref double bestCost, ref H264MbCode? best, ref int bestSlot)
