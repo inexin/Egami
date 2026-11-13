@@ -3,10 +3,10 @@
   <PropertyGroup>
     <RootNamespace>Egami.Fonts.Substitutes</RootNamespace>
     <PackageId>Egami.Fonts.Substitutes</PackageId>
-    <Version>1.0.0</Version>
-    <!-- 1.0 froze the API (PublicAPI.Shipped.txt). Later 1.x versions set PackageValidationBaselineVersion to 1.0.0 once that
-         package is on a feed the build can reach, so package validation also checks binary compatibility with it. -->
+    <Version>1.1.0</Version>
+    <!-- 1.0 froze the API (PublicAPI.Shipped.txt). Package validation also checks binary compatibility with 1.0.0 on nuget.org. -->
     <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>1.0.0</PackageValidationBaselineVersion>
     <Description>Open, metric-compatible substitutes for the fonts documents name most, for Egami.Fonts: Liberation Sans, Serif and Mono for Helvetica, Arial, Times, Times New Roman, Courier and Courier New, Carlito for Calibri, Caladea for Cambria and STIX Two Math for Cambria Math (SIL OFL 1.1).</Description>
     <PackageTags>$(EgamiPackageTags);fonts;liberation;carlito;caladea;stix;math;metric-compatible</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -19,9 +19,18 @@
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
   </ItemGroup>
 
-  <!-- Egami.Fonts ships no font files; this opt-in package holds the bundled ones. -->
-  <ItemGroup>
+  <!--
+    Egami.Fonts ships no font files; this opt-in package holds the bundled ones. It uses only Egami.Fonts API that 1.4.0 has, so
+    the package is built against the released Egami.Fonts (UseReleasedDependencies=true, which release.yml packs with and
+    ci.yml checks): a stable Egami.Fonts.Substitutes then installs without an Egami preview. Day to day it builds against the
+    project.
+  -->
+  <ItemGroup Condition="'$(UseReleasedDependencies)' != 'true'">
     <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseReleasedDependencies)' == 'true'">
+    <PackageReference Include="Egami.Fonts" VersionOverride="1.4.0" />
   </ItemGroup>
 
   <!-- The fonts and their licences, unchanged (SIL OFL 1.1; THIRD-PARTY-NOTICES.md). The licences ship with the fonts. -->
