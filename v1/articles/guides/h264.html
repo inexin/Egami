@@ -302,7 +302,9 @@ no residual, intra in B pictures only below the inter cost, sub-block searches o
 <li><strong>4</strong> (default): B pyramids, three references, the full sub-sample search in P pictures; B pictures search one list 0
 reference and try intra only where its 16x16 prediction comes below the inter cost by SATD. A 16x16 candidate whose search
 cost is low for the QP is coded at once, and when it leaves no residual nothing else but intra is searched or coded. The
-8x8, 16x8 and 8x16 parts search only the references whose 16x16 search came within 12.5 % of the best one's.</li>
+8x8, 16x8 and 8x16 parts search only the references whose 16x16 search came within 12.5 % of the best one's. Skip ends
+the search when no 4x4 block's error reaches 0.6 (B) or 0.5 (P) quantizer steps, and a B macroblock that stops early tries
+no intra.</li>
 <li><strong>5</strong>: two list 0 references in B pictures, intra in B pictures where it comes within 1.5 times the inter cost (as in P
 pictures), sub-block searches in every reference, 16x8 and 8x16 searched in every macroblock (not only where 8x8 beats
 16x16), and one more sub-sample refinement round; the early stop after 16x16 stays.</li>
