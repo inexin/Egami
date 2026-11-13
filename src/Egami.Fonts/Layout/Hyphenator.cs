@@ -15,7 +15,7 @@ namespace Egami.Fonts.Layout;
 /// compiled form <see cref="Save"/> writes, or give them as text to <see cref="FromPatterns"/>. A word in the exception list
 /// breaks exactly where the list says; any other word breaks where the patterns' highest value between two letters is odd.
 /// Either way no break leaves fewer than <see cref="MinBefore"/> characters before it or <see cref="MinAfter"/> after it.</para>
-/// <para>A hyphenator is immutable and safe to share between threads; <see cref="GetPoints"/> allocates nothing for words up
+/// <para>A hyphenator is immutable and safe to share between threads; <see cref="GetPoints(ReadOnlySpan{char}, Span{int})"/> allocates nothing for words up
 /// to about 60 characters.</para>
 /// </remarks>
 /// <example>
@@ -119,7 +119,10 @@ public sealed class Hyphenator
     /// each break, ascending. <c>word.Length - 1</c> entries always suffice.</param>
     /// <returns>The number of points written.</returns>
     /// <exception cref="ArgumentException"><paramref name="points"/> is too short for every point.</exception>
-    public int GetPoints(ReadOnlySpan<char> word, Span<int> points)
+    public int GetPoints(ReadOnlySpan<char> word, Span<int> points) => GetPoints(word, points, MinBefore, MinAfter);
+
+    /// <summary>As <see cref="GetPoints(ReadOnlySpan{char}, Span{int})"/>, with other minimums.</summary>
+    internal int GetPoints(ReadOnlySpan<char> word, Span<int> points, int minBefore, int minAfter)
     {
         int n = word.Length;
         if (n < 2)
@@ -136,7 +139,7 @@ public sealed class Hyphenator
             }
         }
 
-        if (letters < MinBefore + MinAfter)
+        if (letters < minBefore + minAfter)
         {
             return 0;
         }
@@ -177,7 +180,7 @@ public sealed class Hyphenator
             for (int p = 1; p < n; p++)
             {
                 bool trail = IsTrailSurrogate(word, p);
-                if ((levels[p + 1] & 1) != 0 && !trail && before >= MinBefore && letters - before >= MinAfter
+                if ((levels[p + 1] & 1) != 0 && !trail && before >= minBefore && letters - before >= minAfter
                     && !IsMark(word, p) && !NextToNoHyphen(lower, p))
                 {
                     if (count == points.Length)

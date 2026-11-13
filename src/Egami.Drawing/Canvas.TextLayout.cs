@@ -40,8 +40,9 @@ public abstract partial class Canvas
     /// then line-throughs. Each run uses its style's <see cref="TextStyle.Paint"/> or <see cref="TextStyle.Color"/> (black when
     /// neither is set), each decoration its own paint or color. Lines outside <paramref name="visibleRect"/> and the clip are
     /// skipped. An ellipsis is drawn as marked content whose ActualText is the text it stands for on its line, and a soft
-    /// hyphen's hyphen as one whose ActualText is the soft hyphen, and the tatweels <see cref="TextJustify.Kashida"/> put in as one
-    /// whose ActualText is empty, so text extracted from a PDF stays the paragraph's.
+    /// hyphen's hyphen as one whose ActualText is the soft hyphen; an automatic hyphen (<see cref="Hyphens.Auto"/>) and the
+    /// tatweels <see cref="TextJustify.Kashida"/> put in as one whose ActualText is empty, so text extracted from a PDF stays
+    /// the paragraph's.
     /// </summary>
     /// <param name="layout">The layout.</param>
     /// <param name="origin">Where the layout's top-left corner goes, in local coordinates.</param>
@@ -212,10 +213,10 @@ public abstract partial class Canvas
                 OnDrawGlyphRun(glyphs, origin, paint);
                 EndMarkedContent();
             }
-            else if ((SoftHyphenGlyphs(paragraph.Text, line, glyphs), KashidaGlyphs(paragraph, run, glyphs)) is var (hyphen, tatweels)
-                && (hyphen.Count > 0 || tatweels.Count > 0))
+            else if ((SoftHyphenGlyphs(paragraph.Text, line, glyphs), AutoHyphenGlyphs(paragraph, line, run, glyphs), KashidaGlyphs(paragraph, run, glyphs)) is var (hyphen, auto, tatweels)
+                && (hyphen.Count > 0 || auto.Count > 0 || tatweels.Count > 0))
             {
-                List<int> rest = [.. Enumerable.Range(0, glyphs.Count).Except(hyphen).Except(tatweels)];
+                List<int> rest = [.. Enumerable.Range(0, glyphs.Count).Except(hyphen).Except(auto).Except(tatweels)];
                 if (rest.Count > 0)
                 {
                     OnDrawGlyphRun(Subrun(glyphs, rest), origin, paint);
@@ -225,6 +226,14 @@ public abstract partial class Canvas
                 {
                     BeginMarkedContent(new MarkedContent("Span") { ActualText = "\u00AD" });
                     OnDrawGlyphRun(Subrun(glyphs, hyphen), origin, paint);
+                    EndMarkedContent();
+                }
+
+                if (auto.Count > 0)
+                {
+                    // An automatic hyphen stands for no text, so the word reads whole.
+                    BeginMarkedContent(new MarkedContent("Span") { ActualText = string.Empty });
+                    OnDrawGlyphRun(Subrun(glyphs, auto), origin, paint);
                     EndMarkedContent();
                 }
 
@@ -267,6 +276,20 @@ public abstract partial class Canvas
         }
 
         return indices;
+    }
+
+    /// <summary>The glyphs of the hyphen a line ending at an automatic hyphenation point added (not at a soft hyphen).</summary>
+    private static List<int> AutoHyphenGlyphs(Paragraph paragraph, TextLine line, LayoutRun run, GlyphRun glyphs)
+    {
+        // The hyphen sits after the glyphs of the line's last character: at the run's end, or its start when it runs right
+        // to left.
+        if (!line.AutoHyphen || run.Start + run.Length != line.Start + line.Length)
+        {
+            return [];
+        }
+
+        int count = Math.Min(paragraph.HyphenGlyphCount(glyphs.Font), glyphs.Count);
+        return [.. Enumerable.Range((run.BidiLevel & 1) != 0 ? 0 : glyphs.Count - count, count)];
     }
 
     /// <summary>The tatweels <see cref="TextJustify.Kashida"/> put into a run: U+0640 glyphs in clusters whose text has no U+0640.</summary>

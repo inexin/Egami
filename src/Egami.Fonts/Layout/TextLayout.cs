@@ -245,6 +245,9 @@ public sealed class TextLine
 
     /// <summary>Gets the runs in visual order, left to right.</summary>
     public IReadOnlyList<LayoutRun> Runs { get; }
+
+    /// <summary>Whether the line ends inside a word at an automatic hyphenation point, with a hyphen that stands for no text.</summary>
+    internal bool AutoHyphen { get; init; }
 }
 
 /// <summary>What a <see cref="LayoutRun"/> holds.</summary>
