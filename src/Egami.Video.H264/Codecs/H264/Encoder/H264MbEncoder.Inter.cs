@@ -69,6 +69,12 @@ internal sealed partial class H264MbEncoder
     // quantizer steps large.
     private const double SkipSteps = 0.4;
 
+    // Speed round 4, tasks 1 and 2: the same test at effort 4, looser: B_Skip at 0.6 steps, P_Skip at 0.5. The review's 1 and
+    // 0.7 held on the four busy 720p gate clips but cost 2.3 % and 1.1 % on rush_hour, whose clean, slow content keeps detail
+    // below a step; B at 0.8 still cost 1.4 % there.
+    private const double SkipStepsB = 0.6;
+    private const double SkipStepsP = 0.5;
+
     private readonly H264MbCode _skip = new();
     private readonly H264MbCode[] _inter = [new(), new(), new(), new()];
     private readonly H264MbCode _inter8 = new();
@@ -136,7 +142,7 @@ internal sealed partial class H264MbEncoder
             bestCost = skipSse + (_lambda * Rate(skip) / CabacCost.Bit);
             best = skip;
             SaveMb(0);
-            if (ResidualQuantizesAway())
+            if (ResidualQuantizesAway(_effort == 4 ? SkipStepsP : SkipSteps))
             {
                 // Task 7: what P_Skip leaves would quantize to nothing, so nothing else is searched or coded.
                 H264EncodeStats.Add(H264EncodeStat.EarlySkips);
@@ -206,13 +212,21 @@ internal sealed partial class H264MbEncoder
     }
 
     /// <summary>Tries intra where <see cref="TryIntra"/> says so, then restores and returns the best candidate.</summary>
-    private double FinishInter(int mbX, int mbY, int qp, long firstCost, double bestCost, H264MbCode? best, int bestSlot)
+    private double FinishInter(int mbX, int mbY, int qp, long firstCost, double bestCost, H264MbCode? best, int bestSlot, bool intra = true)
     {
         bool b = _syntax.SliceType == H264SliceType.B;
-        if (TryIntra(firstCost, b && _effort is >= 1 and <= 4 ? BIntraMargin : IntraMargin))
+        if (intra && TryIntra(firstCost, b && _effort is >= 1 and <= 4 ? BIntraMargin : IntraMargin))
         {
             double cost = Encode(mbX, mbY, qp);
             _round = InterRound;
+            if (cost == double.MaxValue)
+            {
+                // Speed round 4, task 4: Encode gave up on intra after its estimates.
+                RestoreMb(bestSlot);
+                Best = best!;
+                return bestCost;
+            }
+
             SaveMb(3);
             if (cost < bestCost)
             {
@@ -1219,12 +1233,12 @@ internal sealed partial class H264MbEncoder
 
     /// <summary>
     /// Whether the residual of the prediction now in the picture is too small to code (task 7): each 4x4 block's squared error
-    /// is below that of one coefficient <see cref="SkipSteps"/> quantizer steps large (the step being 0.625 · 2^(QP / 6)), which
+    /// is below that of one coefficient <paramref name="steps"/> quantizer steps large (the step being 0.625 · 2^(QP / 6)), which
     /// bounds every coefficient of the block well inside the dead zone.
     /// </summary>
-    private bool ResidualQuantizesAway()
+    private bool ResidualQuantizesAway(double steps)
     {
-        double stepY = SkipSteps * 0.625 * Math.Pow(2, _qp / 6.0), stepC = SkipSteps * 0.625 * Math.Pow(2, _qpc / 6.0);
+        double stepY = steps * 0.625 * Math.Pow(2, _qp / 6.0), stepC = steps * 0.625 * Math.Pow(2, _qpc / 6.0);
         long limitY = (long)(stepY * stepY), limitC = (long)(stepC * stepC);
         for (int blk = 0; blk < 16; blk++)
         {
