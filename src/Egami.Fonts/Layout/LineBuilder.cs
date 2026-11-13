@@ -188,12 +188,8 @@ internal sealed class LineBuilder
     private readonly AdvanceTable _m;
     private readonly Dictionary<(int, int), GlyphBuffer> _reshaped = [];
     private readonly Dictionary<Font, (GlyphBuffer Ltr, GlyphBuffer Rtl)?> _hyphens = [];
-    private Dictionary<Font, (ushort Glyph, float Advance)?>? _tatweels;
-    private bool[]? _safeForTatweel;
     private float _tabInterval = -1;
-    private Dictionary<int, int>? _hyphenatedLines;
-    private Dictionary<string, Hyphenator?>? _hyphenators;
-    private HashSet<int>? _forcedUnsafe;
+    private LazyState? _lazy;
 
     public LineBuilder(Paragraph paragraph)
     {
@@ -231,9 +227,9 @@ internal sealed class LineBuilder
         int hyphenatedBefore = 0;
         if (auto is not null)
         {
-            if (auto.MaxConsecutiveLines > 0 && _hyphenatedLines is not null)
+            if (auto.MaxConsecutiveLines > 0 && _lazy?.HyphenatedLines is { } lines)
             {
-                _hyphenatedLines.TryGetValue(start, out hyphenatedBefore);
+                lines.TryGetValue(start, out hyphenatedBefore);
             }
 
             if (over >= 0 && (auto.MaxConsecutiveLines == 0 || hyphenatedBefore < auto.MaxConsecutiveLines)
@@ -302,7 +298,7 @@ internal sealed class LineBuilder
     {
         if (auto.MaxConsecutiveLines > 0)
         {
-            (_hyphenatedLines ??= [])[end] = hyphen ? hyphenatedBefore + 1 : 0;
+            ((_lazy ??= new()).HyphenatedLines ??= [])[end] = hyphen ? hyphenatedBefore + 1 : 0;
         }
 
         return Build(start, end, hard, hyphen, automatic);
@@ -373,7 +369,7 @@ internal sealed class LineBuilder
                 if (!IsClusterStart(point))
                 {
                     // A break inside a glyph cluster (a ligature) shapes both pieces again.
-                    (_forcedUnsafe ??= []).Add(point);
+                    ((_lazy ??= new()).ForcedUnsafe ??= []).Add(point);
                 }
 
                 if (Measure(start, point) + HyphenWidth(point) <= width + Epsilon)
@@ -430,11 +426,11 @@ internal sealed class LineBuilder
             return null;
         }
 
-        _hyphenators ??= new Dictionary<string, Hyphenator?>(StringComparer.OrdinalIgnoreCase);
-        if (!_hyphenators.TryGetValue(language, out Hyphenator? hyphenator))
+        Dictionary<string, Hyphenator?> cache = (_lazy ??= new()).Hyphenators ??= new(StringComparer.OrdinalIgnoreCase);
+        if (!cache.TryGetValue(language, out Hyphenator? hyphenator))
         {
             hyphenator = auto.Dictionaries.TryGet(language, out Hyphenator? found) ? found : null;
-            _hyphenators[language] = hyphenator;
+            cache[language] = hyphenator;
         }
 
         return hyphenator;
@@ -461,7 +457,27 @@ internal sealed class LineBuilder
     }
 
     /// <summary>Whether a line breaking before <paramref name="i"/> must shape its pieces again.</summary>
-    private bool UnsafeAt(int i) => _m.Unsafe[i] || (_forcedUnsafe?.Contains(i) ?? false);
+    private bool UnsafeAt(int i) => _m.Unsafe[i] || (_lazy?.ForcedUnsafe?.Contains(i) ?? false);
+
+    /// <summary>What kashida justification and automatic hyphenation keep, made only when a paragraph uses them, so the
+    /// builder of a plain paragraph stays small.</summary>
+    private sealed class LazyState
+    {
+        /// <summary>Each font's tatweel glyph and advance, or null when it has none.</summary>
+        public Dictionary<Font, (ushort Glyph, float Advance)?>? Tatweels;
+
+        /// <summary>Whether the paragraph's shaping marked each cluster safe for a tatweel before it.</summary>
+        public bool[]? SafeForTatweel;
+
+        /// <summary>The number of lines in a row ending with a hyphen, by the index the next line starts at.</summary>
+        public Dictionary<int, int>? HyphenatedLines;
+
+        /// <summary>The hyphenator of each language, or null for none.</summary>
+        public Dictionary<string, Hyphenator?>? Hyphenators;
+
+        /// <summary>Hyphenation points inside glyph clusters, where both pieces shape again.</summary>
+        public HashSet<int>? ForcedUnsafe;
+    }
 
     /// <summary>
     /// The line ends for <see cref="LineFill.Balanced"/> (CSS <c>text-wrap: balance</c>), or null to fill greedily: between hard
@@ -1355,9 +1371,9 @@ internal sealed class LineBuilder
         }
 
         return new TextLine(draft.Start, draft.End - draft.Start, top, lineAscent, lineDescent, left, contentWidth, draft.HardBreak, draft.Ellipsized, runs)
-            {
-                AutoHyphen = draft.AutoHyphen,
-            };
+        {
+            AutoHyphen = draft.AutoHyphen,
+        };
     }
 
     /// <summary>
@@ -1742,7 +1758,8 @@ internal sealed class LineBuilder
     /// <summary>Whether the paragraph's shaping marked the cluster starting at an index safe for a tatweel before it.</summary>
     private bool SafeForTatweel(int cluster)
     {
-        if (_safeForTatweel is null)
+        _lazy ??= new();
+        if (_lazy.SafeForTatweel is null)
         {
             bool[] safe = new bool[_text.Length];
             foreach (ParagraphRun run in _paragraph.Runs)
@@ -1759,22 +1776,22 @@ internal sealed class LineBuilder
                 }
             }
 
-            _safeForTatweel = safe;
+            _lazy.SafeForTatweel = safe;
         }
 
-        return _safeForTatweel[cluster];
+        return _lazy.SafeForTatweel[cluster];
     }
 
     /// <summary>A font's tatweel glyph and advance, or null when it has none.</summary>
     private (ushort Glyph, float Advance)? TatweelOf(Font font)
     {
-        _tatweels ??= [];
-        if (!_tatweels.TryGetValue(font, out var tatweel))
+        Dictionary<Font, (ushort Glyph, float Advance)?> tatweels = (_lazy ??= new()).Tatweels ??= [];
+        if (!tatweels.TryGetValue(font, out var tatweel))
         {
             ushort glyph = font.Typeface.GetGlyph(Kashida.Tatweel);
             float advance = glyph == 0 ? 0 : font.GetAdvance(glyph);
             tatweel = advance > 0 ? (glyph, advance) : null;
-            _tatweels[font] = tatweel;
+            tatweels[font] = tatweel;
         }
 
         return tatweel;

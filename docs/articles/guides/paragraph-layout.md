@@ -45,7 +45,27 @@ before a combining mark.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#hyphenation)]
 
-Paragraph layout does not hyphenate on its own yet; for now, soft hyphens (U+00AD) in the text mark the breaks.
+### Automatic hyphens
+
+`ParagraphStyle.Hyphens` is CSS's `hyphens`: `Manual` (the default) breaks words only at soft hyphens (U+00AD), `None` not
+even there, and `Auto` also where a dictionary allows. `ParagraphStyle.Hyphenation` gives `Auto` its `HyphenationDictionaries`
+(hyphenators by BCP 47 tag, falling back a subtag at a time) and limits; each run's `TextStyle.Language` picks the dictionary,
+and text in a language without one is not hyphenated, as CSS requires.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#auto-hyphens)]
+
+Greedy filling looks up only the word that crosses each line's end, as browsers do, and takes its last point at which the line
+with its hyphen still fits. `HyphenationOptions` holds the limits word processors and CSS share:
+
+- `MinWordLength` (5 by default) leaves shorter words whole; `MinBefore` and `MinAfter` override the dictionary's minimums.
+- `MaxConsecutiveLines` stops automatic hyphens after that many lines in a row ending with a hyphen (soft hyphens count).
+- `Zone` hyphenates a word only when the line without it would leave more than that much space; Word applies its zone to
+  justified lines too, and so does Egami. A word that does not fit on a line of its own is hyphenated whatever the zone.
+- `HyphenateCapitalized = false` leaves words in capitals whole, as Word's "Hyphenate words in CAPS" switched off.
+
+Words next to a digit or a hyphen, and pieces that have a soft hyphen, keep the breaks they have. A break inside a glyph cluster,
+such as a ligature, shapes both pieces again. The hyphen drawn is `ParagraphStyle.Hyphen`, and `Canvas.DrawTextLayout` marks
+it with an empty ActualText, so text copied from a PDF reads the word whole. Balanced filling breaks only where the text allows.
 
 ## Rich text and paragraphs
 

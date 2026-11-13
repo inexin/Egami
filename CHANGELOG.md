@@ -561,7 +561,7 @@ KTX stage D (writing and whole textures; roadmap 2.3.11). Additive.
 
 ## Egami.Fonts (unreleased)
 
-Hyphenation patterns. Additive.
+Hyphenation patterns and automatic hyphens. Additive.
 
 - `Hyphenator` (`Egami.Fonts.Layout`) finds where a word may break with a hyphen, by Liang's algorithm (TeX's, LibreOffice's
   and browsers'): patterns in a packed trie, an exception list that wins over them, and `MinBefore` and `MinAfter`. `GetPoints`
@@ -572,7 +572,16 @@ Hyphenation patterns. Additive.
   `.pat.txt` lists, LibreOffice `.dic` files (character set, `LEFTHYPHENMIN`, `RIGHTHYPHENMIN`, `NOHYPHEN`, the second
   level after `NEXTLEVEL`; replacement rules throw `NotSupportedException`) and Egami's compiled `.ehyp`, which `Save`
   writes: Norwegian's 27,000 patterns load in about 1 ms from it instead of 100 ms from TeX. `FromPatterns` and
-  `WithExceptions` take patterns and `hy-phen-ate` exceptions as text. Paragraph layout does not use it yet.
+  `WithExceptions` take patterns and `hy-phen-ate` exceptions as text.
+- `ParagraphStyle.Hyphens` (CSS `hyphens`: `Manual`, the default, `None` and `Auto`) and `ParagraphStyle.Hyphenation`
+  (`HyphenationOptions` with `HyphenationDictionaries` by BCP 47 tag). With `Auto`, greedy filling hyphenates the word that
+  crosses a line's end at its last point that fits, in the run's `TextStyle.Language`, within `MinWordLength`, `MinBefore`,
+  `MinAfter`, `MaxConsecutiveLines`, `Zone` (applied to justified lines too, as Word does) and `HyphenateCapitalized`. A
+  break inside a glyph cluster shapes both pieces again. `None` also ignores soft hyphens.
+- Egami.Drawing: `Canvas.DrawTextLayout` draws an automatic hyphen as marked content with an empty ActualText, so text copied
+  from a PDF reads the word whole.
+- Layout with hyphenation off allocates no more than before: kashida justification's lazy state and the hyphenation state
+  share one object made only when used, and a 600-character paragraph's layout allocates 8 bytes less.
 
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
