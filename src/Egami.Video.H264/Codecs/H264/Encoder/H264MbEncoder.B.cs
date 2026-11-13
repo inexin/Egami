@@ -80,7 +80,7 @@ internal sealed partial class H264MbEncoder
             bestCost = sse + (_lambda * Rate(direct) / CabacCost.Bit);
             best = direct;
             SaveMb(0);
-            if (ResidualQuantizesAway())
+            if (ResidualQuantizesAway(_effort == 4 ? SkipStepsB : SkipSteps))
             {
                 // Task 7: what B_Skip leaves would quantize to nothing, so nothing else is searched or coded.
                 H264EncodeStats.Add(H264EncodeStat.EarlySkips);
@@ -103,8 +103,9 @@ internal sealed partial class H264MbEncoder
         long firstCost16 = firstCost;
         if (EarlyCode16(p16, firstCost, ref bestCost, ref best, ref bestSlot))
         {
-            // Task 24: the 16x16 candidate leaves no residual, so no other partitioning or direct is searched or coded.
-            return FinishInter(mbX, mbY, qp, firstCost, bestCost, best, bestSlot);
+            // Task 24: the 16x16 candidate leaves no residual, so no other partitioning or direct is searched or coded; at
+            // effort 4 nor intra (speed round 4, task 3), which such macroblocks of a B picture almost never pick.
+            return FinishInter(mbX, mbY, qp, firstCost, bestCost, best, bestSlot, _effort != 4);
         }
 
         // Task 13: the partitions also start from the vectors the 16x16 search found in each list.

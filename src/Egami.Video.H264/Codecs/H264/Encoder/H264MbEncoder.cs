@@ -149,6 +149,15 @@ internal sealed partial class H264MbEncoder
             }
         }
 
+        long gate = _intraGate;
+        _intraGate = long.MaxValue;
+        if (estimate[order[0]] > gate)
+        {
+            // Speed round 4, task 4: in an inter picture, intra whose best estimate costs more than the inter search is not
+            // coded; the caller keeps its inter candidate.
+            return double.MaxValue;
+        }
+
         int coded = _effort >= 10 ? count : estimate[order[1]] - estimate[order[0]] <= estimate[order[0]] * IntraRankMargin ? 2 : 1;
         int best = order[0];
         double bestCost = double.MaxValue;
@@ -208,6 +217,7 @@ internal sealed partial class H264MbEncoder
                 {
                     // Encode follows at once for this macroblock and takes these SATDs over.
                     _i16Pending = true;
+                    _intraGate = interSatd;
                     return true;
                 }
             }
@@ -219,6 +229,10 @@ internal sealed partial class H264MbEncoder
     // The SATD of each Intra16x16 mode's prediction of this macroblock (-1 until worked out), and its best mode by SATD and mode
     // bits; worked out once for TryIntra, EstimateI16 and CodeI16. Pending: TryIntra filled them and Encode follows.
     private readonly long[] _i16Satd = [-1, -1, -1, -1];
+
+    // Speed round 4, task 4: the inter search cost TryIntra was given, above which Encode's best intra estimate gives up on
+    // intra (effort 1 to 6; long.MaxValue otherwise and in intra pictures). An 0.8 times gate cost 1.5 % on the four clips.
+    private long _intraGate = long.MaxValue;
     private bool _i16Pending;
     private int _i16Mode;
 

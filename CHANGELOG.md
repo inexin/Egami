@@ -149,6 +149,12 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
 - Tools: time-h264-encoder.py gates the instruction ratio against x264 medium at effort 4 instead of the cycles ratio, which
   swings by up to a third between runs on a busy machine: each clip at quality 50 and 34 at most 10 % above the ratio after
   round 3 (4.0 and 3.6 times on the mean). The H.264 guide's effort table is re-measured with x264 matched by quality.
+- Effort 4 (speed round 4, tasks 1 to 4): B_Skip and P_Skip end the search when every 4x4 block's error is below 0.6 and 0.5
+  quantizer steps (was 0.4); a B macroblock whose 16x16 candidate stops early with no residual tries no intra; and from
+  effort 1 to 6 intra is not coded when its best estimate (I16, I4 or I8) costs more than the inter search. Egami's own
+  instructions fall 5 % at quality 50 and 14 % at quality 34 on the four 720p clips, for BD-rate +0.20 % on eight clips (worst
+  rush_hour +0.82 %). The review's looser 1 and 0.7 steps cost +0.93 % (rush_hour +3.6 %): clean, slow content keeps detail
+  below a quantizer step.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
