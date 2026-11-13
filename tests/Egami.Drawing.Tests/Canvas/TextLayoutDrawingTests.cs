@@ -157,6 +157,37 @@ public class TextLayoutDrawingTests
     }
 
     [Fact]
+    public void AutomaticHyphenDrawsAsMarkedContentWithoutText()
+    {
+        // Hyphenation task 4: the hyphen hyphens: auto adds stands for no text, so extracted text reads the word whole.
+        HyphenationDictionaries dictionaries = new();
+        dictionaries.Add("en", Hyphenator.FromPatterns(".hy3ph he2n hena4 hen5at 1na n2at 1tio 2io o2n"));
+        ParagraphStyle style = Style(new TextStyle { Language = "en" }) with
+        {
+            Hyphens = Hyphens.Auto,
+            Hyphenation = new HyphenationOptions { Dictionaries = dictionaries },
+        };
+        TextLayout layout = Paragraph.Create("hyphenation", style).Layout(70);
+        Assert.True(layout.Lines.Count > 1);
+        Assert.InRange(layout.Lines[0].Length, 2, 6);
+
+        RecordingCanvas canvas = new();
+        canvas.DrawTextLayout(layout, Vector2.Zero);
+        Assert.Contains("begin Span ", canvas.Calls);
+
+        // Split or not, the pixels are those of the runs drawn whole.
+        using Raster<Rgba8> drawn = Draw(c => c.DrawTextLayout(layout, new Vector2(10, 10)));
+        using Raster<Rgba8> byHand = Draw(c =>
+        {
+            foreach (LayoutRun run in layout.Lines.SelectMany(l => l.Runs).Where(r => r.Glyphs is { Count: > 0 }))
+            {
+                c.DrawGlyphRun(run.Glyphs!, new Vector2(10, 10), new SolidPaint(new Rgba8(0, 0, 0, 255)));
+            }
+        });
+        Assert.Equal(Count(byHand, p => p.R < 128), Count(drawn, p => p.R < 128));
+    }
+
+    [Fact]
     public void KashidaTatweelsDrawAsMarkedContentWithoutText()
     {
         // 2.8.3: the tatweels kashida justification puts in are drawn like the rest of the run, inside a span whose ActualText is

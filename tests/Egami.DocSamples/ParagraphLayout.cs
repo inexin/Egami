@@ -443,6 +443,43 @@ public class ParagraphLayout
         Assert.Equal(1, tablePoints);
     }
 
+    [Fact]
+    public void AutomaticHyphens()
+    {
+        string folder = AppContext.BaseDirectory;
+        FontCollection fonts = new();
+        fonts.Add(Typeface.FromFile(System.IO.Path.Combine(folder, "fonts", "NotoSans-Regular.ttf")));
+        #region auto-hyphens
+        // One hyphenator per language; "en" also serves en-US and en-GB.
+        HyphenationDictionaries dictionaries = new();
+        using (FileStream patterns = File.OpenRead(System.IO.Path.Combine(folder, "hyphenation", "hyph-en-us.tex")))
+        {
+            dictionaries.Add("en", Hyphenator.Load(patterns));
+        }
+
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 16, Language = "en-US" },
+            Align = TextAlign.Justify,
+            Hyphens = Hyphens.Auto,                    // CSS hyphens: auto
+            Hyphenation = new HyphenationOptions
+            {
+                Dictionaries = dictionaries,
+                MinWordLength = 6,                     // shorter words stay whole
+                MaxConsecutiveLines = 2,               // Word's consecutiveHyphenLimit
+                Zone = 18,                             // Word's hyphenationZone: 0.25 inch in points
+            },
+        };
+
+        TextLayout layout = Paragraph.Create(
+            "Typographers traditionally hyphenate justified paragraphs, because otherwise extraordinarily long words "
+            + "leave conspicuous rivers of whitespace.", style).Layout(150);
+        #endregion
+
+        Assert.Contains(layout.Lines, l => char.IsLetter(layout.Paragraph.Text[l.Start + l.Length - 1])
+            && l.Start + l.Length < layout.Paragraph.Text.Length && char.IsLetter(layout.Paragraph.Text[l.Start + l.Length]));
+    }
+
     private sealed class PathRecorder : IGlyphOutlineSink
     {
         public int Count { get; private set; }

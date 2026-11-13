@@ -65,6 +65,26 @@ public sealed class Paragraph
     /// <summary>The ellipsis shaped in each style, when a line limit and an ellipsis are set.</summary>
     internal (Font Font, GlyphBuffer Glyphs)[]? Ellipses { get; }
 
+    /// <summary>The number of glyphs <see cref="ParagraphStyle.Hyphen"/> shapes to in a font, as a line ending at a hyphenation
+    /// point adds them (U+2010 falls back to U+002D where the font has none).</summary>
+    internal int HyphenGlyphCount(Font font)
+    {
+        string? hyphen = Style.Hyphen;
+        if (string.IsNullOrEmpty(hyphen))
+        {
+            return 0;
+        }
+
+        if (hyphen == "\u2010" && font.Typeface.GetGlyph(0x2010) == 0)
+        {
+            hyphen = "-";
+        }
+
+        GlyphBuffer glyphs = new();
+        TextShaper.ShapeRun(hyphen, 0, hyphen.Length, font, new RunProperties(), glyphs);
+        return glyphs.Count;
+    }
+
     /// <summary>Lays the paragraph out at a width.</summary>
     /// <param name="width">The layout box's width in canvas units; <see cref="float.PositiveInfinity"/> for no wrapping, in
     /// which case the box is as wide as the longest line.</param>
@@ -200,7 +220,7 @@ public sealed class Paragraph
         ShapingGroups.Assign(styles);
 
         string s = text.Text;
-        LineBreak[] breaks = [.. Collect(LineBreaks.Enumerate(s, LineBreakOptionsFor(style, styles[0])))];
+        LineBreak[] breaks = [.. Collect(LineBreaks.Enumerate(s, LineBreakOptionsFor(style, styles[0])), style.Hyphens == Hyphens.None)];
         BidiData bidi = BidiData.Resolve(s, style.WritingMode == WritingMode.HorizontalTb ? style.Direction : TextDirection.LeftToRight);
         ParagraphRun[] runs = Itemizer.Itemize(text, style, styles, bidi, fonts);
         (Font, GlyphBuffer)[]? ellipses = !string.IsNullOrEmpty(style.Ellipsis) && (style.MaxLines is not null || style.MaxHeight is not null) && styles.All(st => st.Primary is not null)
@@ -224,12 +244,16 @@ public sealed class Paragraph
     private static LineBreakOptions LineBreakOptionsFor(ParagraphStyle style, ResolvedStyle defaults) =>
         style.LineBreaking.Language is null && defaults.Language is not null ? style.LineBreaking with { Language = defaults.Language } : style.LineBreaking;
 
-    private static List<LineBreak> Collect(LineBreakEnumerator breaks)
+    // With hyphens: none, a soft hyphen is no break opportunity (CSS Text 3).
+    private static List<LineBreak> Collect(LineBreakEnumerator breaks, bool noSoftHyphens)
     {
         List<LineBreak> list = [];
         foreach (LineBreak b in breaks)
         {
-            list.Add(b);
+            if (!(noSoftHyphens && b.IsSoftHyphen && !b.IsMandatory))
+            {
+                list.Add(b);
+            }
         }
 
         return list;

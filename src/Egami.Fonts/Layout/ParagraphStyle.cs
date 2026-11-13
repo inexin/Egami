@@ -46,9 +46,24 @@ public sealed record class ParagraphStyle
     /// <summary>Gets how lines are filled.</summary>
     public LineFill LineFill { get; init; }
 
-    /// <summary>Gets the text drawn where a line ends at a soft hyphen: U+2010 (U+002D when the font has none), a custom
-    /// string, or null for none.</summary>
+    /// <summary>Gets the text drawn where a line ends at a soft hyphen or an automatic hyphenation point: U+2010 (U+002D when the
+    /// font has none), a custom string, or null for none.</summary>
     public string? Hyphen { get; init; } = "\u2010";
+
+    /// <summary>Gets whether words break with hyphens at line ends: only at soft hyphens (the default), never, or also where
+    /// <see cref="Hyphenation"/>'s dictionaries allow.</summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="auto-hyphens"/>
+    /// </example>
+    public Hyphens Hyphens { get; init; }
+
+    /// <summary>Gets the dictionaries and limits <see cref="Hyphens.Auto"/> uses; without them it hyphenates only at soft
+    /// hyphens. Greedy filling looks up only the word that crosses a line's end; balanced filling breaks only where the text
+    /// allows.</summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="auto-hyphens"/>
+    /// </example>
+    public HyphenationOptions? Hyphenation { get; init; }
 
     /// <summary>Gets the text that ends the last line when <see cref="MaxLines"/> or <see cref="MaxHeight"/> cuts text: U+2026,
     /// a custom string, or null to cut without one.</summary>

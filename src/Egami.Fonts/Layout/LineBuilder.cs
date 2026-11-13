@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Numerics;
+using System.Text;
 
 using Egami.Fonts.Shaping;
 using Egami.Fonts.Unicode;
@@ -133,6 +135,9 @@ internal sealed class LineDraft
 
     /// <summary>Whether the line ends with an ellipsis.</summary>
     public bool Ellipsized { get; init; }
+
+    /// <summary>Whether the line ends inside a word at an automatic hyphenation point, with a hyphen.</summary>
+    public bool AutoHyphen { get; init; }
 }
 
 /// <summary>A run of a draft line: glyphs (with spacing in their advances) or a glyphless box, at an x from the line's start.</summary>
@@ -183,9 +188,8 @@ internal sealed class LineBuilder
     private readonly AdvanceTable _m;
     private readonly Dictionary<(int, int), GlyphBuffer> _reshaped = [];
     private readonly Dictionary<Font, (GlyphBuffer Ltr, GlyphBuffer Rtl)?> _hyphens = [];
-    private Dictionary<Font, (ushort Glyph, float Advance)?>? _tatweels;
-    private bool[]? _safeForTatweel;
     private float _tabInterval = -1;
+    private LazyState? _lazy;
 
     public LineBuilder(Paragraph paragraph)
     {
@@ -200,12 +204,14 @@ internal sealed class LineBuilder
         LineBreak[] breaks = _paragraph.Breaks;
         int k = FirstBreakAfter(start);
         int chosen = -1;
+        int over = -1;
         for (int i = k; i < breaks.Length; i++)
         {
             LineBreak b = breaks[i];
-            float w = Measure(start, ContentEnd(start, b.Index)) + (b.IsSoftHyphen && !b.IsMandatory ? HyphenWidth(b.Index) : 0);
+            float w = LineWidth(start, b);
             if (w > width + Epsilon)
             {
+                over = i;
                 break;
             }
 
@@ -213,6 +219,24 @@ internal sealed class LineBuilder
             if (b.IsMandatory)
             {
                 break;
+            }
+        }
+
+        // Automatic hyphenation: only the piece that crosses the line's end is looked up, as browsers do.
+        HyphenationOptions? auto = _paragraph.Style.Hyphens == Hyphens.Auto ? _paragraph.Style.Hyphenation : null;
+        int hyphenatedBefore = 0;
+        if (auto is not null)
+        {
+            if (auto.MaxConsecutiveLines > 0 && _lazy?.HyphenatedLines is { } lines)
+            {
+                lines.TryGetValue(start, out hyphenatedBefore);
+            }
+
+            if (over >= 0 && (auto.MaxConsecutiveLines == 0 || hyphenatedBefore < auto.MaxConsecutiveLines)
+                && (chosen < 0 || width - LineWidth(start, breaks[chosen]) > auto.Zone)
+                && Hyphenate(start, chosen >= 0 ? breaks[chosen].Index : start, breaks[over].Index, width, auto) is int point)
+            {
+                return Hyphenated(start, point, true, hyphenatedBefore, auto, automatic: true);
             }
         }
 
@@ -256,7 +280,203 @@ internal sealed class LineBuilder
             }
         }
 
+        if (auto is { MaxConsecutiveLines: > 0 })
+        {
+            return Hyphenated(start, end, hyphen, hyphenatedBefore, auto, hard);
+        }
+
         return Build(start, end, hard, hyphen);
+    }
+
+    /// <summary>The width of the line from <paramref name="start"/> to a break: content and a soft hyphen's hyphen.</summary>
+    private float LineWidth(int start, LineBreak b) =>
+        Measure(start, ContentEnd(start, b.Index)) + (b.IsSoftHyphen && !b.IsMandatory ? HyphenWidth(b.Index) : 0);
+
+    /// <summary>Builds a line and keeps count of the lines in a row that end with a hyphen, for
+    /// <see cref="HyphenationOptions.MaxConsecutiveLines"/>.</summary>
+    private LineDraft Hyphenated(int start, int end, bool hyphen, int hyphenatedBefore, HyphenationOptions auto, bool hard = false, bool automatic = false)
+    {
+        if (auto.MaxConsecutiveLines > 0)
+        {
+            ((_lazy ??= new()).HyphenatedLines ??= [])[end] = hyphen ? hyphenatedBefore + 1 : 0;
+        }
+
+        return Build(start, end, hard, hyphen, automatic);
+    }
+
+    /// <summary>
+    /// The furthest automatic hyphenation point in <c>[segmentStart, segmentEnd)</c> (the piece crossing the line's end) at which
+    /// the line from <paramref name="start"/>, with its hyphen, fits, or null. Words are runs of letters and marks (apostrophes
+    /// inside them included) of a language with a dictionary; a piece with a soft hyphen, and words next to a digit or a
+    /// hyphen, keep the breaks they have.
+    /// </summary>
+    private int? Hyphenate(int start, int segmentStart, int segmentEnd, float width, HyphenationOptions auto)
+    {
+        ReadOnlySpan<char> piece = _text.AsSpan(segmentStart, segmentEnd - segmentStart);
+        if (piece.Contains('\u00AD'))
+        {
+            return null;
+        }
+
+        List<(int Start, int End)> words = [];
+        int i = segmentStart;
+        while (i < segmentEnd)
+        {
+            if (!IsWordRune(i, out int length))
+            {
+                i += length;
+                continue;
+            }
+
+            int wordStart = i;
+            while (i < segmentEnd)
+            {
+                if (IsWordRune(i, out length))
+                {
+                    i += length;
+                }
+                else if (_text[i] is '\'' or '\u2019' && i + 1 < segmentEnd && IsWordRune(i + 1, out _))
+                {
+                    i++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            words.Add((wordStart, i));
+        }
+
+        int[] points = new int[Math.Max(1, segmentEnd - segmentStart)];
+        for (int w = words.Count - 1; w >= 0; w--)
+        {
+            (int s, int e) = words[w];
+            if (!Eligible(s, e, auto) || HyphenatorAt(s, auto) is not Hyphenator hyphenator)
+            {
+                continue;
+            }
+
+            int count = hyphenator.GetPoints(_text.AsSpan(s, e - s), points, auto.MinBefore ?? hyphenator.MinBefore, auto.MinAfter ?? hyphenator.MinAfter);
+            for (int p = count - 1; p >= 0; p--)
+            {
+                int point = s + points[p];
+                if (point <= start)
+                {
+                    break;
+                }
+
+                if (!IsClusterStart(point))
+                {
+                    // A break inside a glyph cluster (a ligature) shapes both pieces again.
+                    ((_lazy ??= new()).ForcedUnsafe ??= []).Add(point);
+                }
+
+                if (Measure(start, point) + HyphenWidth(point) <= width + Epsilon)
+                {
+                    return point;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private bool IsWordRune(int i, out int length)
+    {
+        Rune.DecodeFromUtf16(_text.AsSpan(i), out Rune rune, out length);
+        length = Math.Max(1, length);
+        return Rune.IsLetter(rune) || Rune.GetUnicodeCategory(rune) is UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.EnclosingMark;
+    }
+
+    /// <summary>Whether a word may be hyphenated automatically: long enough, not in capitals when they are excluded, and not
+    /// joined to a digit or a hyphen.</summary>
+    private bool Eligible(int start, int end, HyphenationOptions auto)
+    {
+        if ((start > 0 && IsJoiner(_text[start - 1])) || (end < _text.Length && IsJoiner(_text[end])))
+        {
+            return false;
+        }
+
+        int letters = 0;
+        bool lower = false;
+        bool upper = false;
+        for (int i = start; i < end;)
+        {
+            Rune.DecodeFromUtf16(_text.AsSpan(i, end - i), out Rune rune, out int length);
+            i += Math.Max(1, length);
+            if (Rune.IsLetter(rune))
+            {
+                letters++;
+                lower |= Rune.IsLower(rune);
+                upper |= Rune.IsUpper(rune);
+            }
+        }
+
+        return letters >= auto.MinWordLength && (auto.HyphenateCapitalized || lower || !upper);
+
+        static bool IsJoiner(char c) => char.IsAsciiDigit(c) || c is '-' or '\u2010' or '\u2011' or '\u00AD' || char.IsDigit(c);
+    }
+
+    private Hyphenator? HyphenatorAt(int i, HyphenationOptions auto)
+    {
+        string? language = _paragraph.Styles[_paragraph.RichText.SpanAt(i) + 1].Language;
+        if (language is null)
+        {
+            return null;
+        }
+
+        Dictionary<string, Hyphenator?> cache = (_lazy ??= new()).Hyphenators ??= new(StringComparer.OrdinalIgnoreCase);
+        if (!cache.TryGetValue(language, out Hyphenator? hyphenator))
+        {
+            hyphenator = auto.Dictionaries.TryGet(language, out Hyphenator? found) ? found : null;
+            cache[language] = hyphenator;
+        }
+
+        return hyphenator;
+    }
+
+    /// <summary>Whether a glyph cluster of the paragraph's shaping starts at <paramref name="i"/>.</summary>
+    private bool IsClusterStart(int i)
+    {
+        ParagraphRun run = _paragraph.Runs[_m.RunOf[i]];
+        if (run.Kind != RunKind.Text || run.Glyphs is not GlyphBuffer glyphs || i == run.Start)
+        {
+            return true;
+        }
+
+        for (int g = 0; g < glyphs.Count; g++)
+        {
+            if (glyphs.Clusters[g] == i)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Whether a line breaking before <paramref name="i"/> must shape its pieces again.</summary>
+    private bool UnsafeAt(int i) => _m.Unsafe[i] || (_lazy?.ForcedUnsafe?.Contains(i) ?? false);
+
+    /// <summary>What kashida justification and automatic hyphenation keep, made only when a paragraph uses them, so the
+    /// builder of a plain paragraph stays small.</summary>
+    private sealed class LazyState
+    {
+        /// <summary>Each font's tatweel glyph and advance, or null when it has none.</summary>
+        public Dictionary<Font, (ushort Glyph, float Advance)?>? Tatweels;
+
+        /// <summary>Whether the paragraph's shaping marked each cluster safe for a tatweel before it.</summary>
+        public bool[]? SafeForTatweel;
+
+        /// <summary>The number of lines in a row ending with a hyphen, by the index the next line starts at.</summary>
+        public Dictionary<int, int>? HyphenatedLines;
+
+        /// <summary>The hyphenator of each language, or null for none.</summary>
+        public Dictionary<string, Hyphenator?>? Hyphenators;
+
+        /// <summary>Hyphenation points inside glyph clusters, where both pieces shape again.</summary>
+        public HashSet<int>? ForcedUnsafe;
     }
 
     /// <summary>
@@ -440,8 +660,8 @@ internal sealed class LineBuilder
         int[] runOf = _m.RunOf;
         ParagraphRun first = _paragraph.Runs[runOf[start]];
         ParagraphRun last = _paragraph.Runs[runOf[end - 1]];
-        bool unsafeStart = first.Kind == RunKind.Text && start > first.Start && _m.Unsafe[start];
-        bool unsafeEnd = last.Kind == RunKind.Text && end < last.End && _m.Unsafe[end];
+        bool unsafeStart = first.Kind == RunKind.Text && start > first.Start && UnsafeAt(start);
+        bool unsafeEnd = last.Kind == RunKind.Text && end < last.End && UnsafeAt(end);
         if (unsafeStart || unsafeEnd)
         {
             if (first == last)
@@ -623,7 +843,7 @@ internal sealed class LineBuilder
 
     /// <summary>Builds the draft of the line <c>[start, end)</c>: pieces per run and level, glyphs shaped again where a break is
     /// unsafe, the hyphen of a taken soft hyphen, runs reordered (UAX #9 L1 and L2) and placed from x = 0.</summary>
-    private LineDraft Build(int start, int end, bool hard, bool hyphen)
+    private LineDraft Build(int start, int end, bool hard, bool hyphen, bool autoHyphen = false)
     {
         BidiData bidi = _paragraph.Bidi;
         int paragraphLevel = bidi.ParagraphLevelAt(start);
@@ -703,6 +923,7 @@ internal sealed class LineBuilder
             Descent = descent,
             ParagraphLevel = paragraphLevel,
             ContentEnd = contentEnd,
+            AutoHyphen = autoHyphen,
         };
     }
 
@@ -718,7 +939,7 @@ internal sealed class LineBuilder
         {
             case RunKind.Text:
                 {
-                    bool again = (start > run.Start && _m.Unsafe[start]) || (end < run.End && _m.Unsafe[end]);
+                    bool again = (start > run.Start && UnsafeAt(start)) || (end < run.End && UnsafeAt(end));
                     GlyphBuffer buffer = again ? Reshape(start, end) : run.Glyphs!;
                     bool rtl = (run.Level & 1) != 0;
                     List<int> order = [];
@@ -1143,10 +1364,16 @@ internal sealed class LineBuilder
         {
             // In vertical lines the block axis is x: the line's over side is its right edge, its under side its left.
             float over = ToPhysical(top, top, lineAscent + lineDescent, blockSize);
-            return new TextLine(draft.Start, draft.End - draft.Start, over - lineAscent - lineDescent, lineDescent, lineAscent, left, contentWidth, draft.HardBreak, draft.Ellipsized, runs);
+            return new TextLine(draft.Start, draft.End - draft.Start, over - lineAscent - lineDescent, lineDescent, lineAscent, left, contentWidth, draft.HardBreak, draft.Ellipsized, runs)
+            {
+                AutoHyphen = draft.AutoHyphen,
+            };
         }
 
-        return new TextLine(draft.Start, draft.End - draft.Start, top, lineAscent, lineDescent, left, contentWidth, draft.HardBreak, draft.Ellipsized, runs);
+        return new TextLine(draft.Start, draft.End - draft.Start, top, lineAscent, lineDescent, left, contentWidth, draft.HardBreak, draft.Ellipsized, runs)
+        {
+            AutoHyphen = draft.AutoHyphen,
+        };
     }
 
     /// <summary>
@@ -1531,7 +1758,8 @@ internal sealed class LineBuilder
     /// <summary>Whether the paragraph's shaping marked the cluster starting at an index safe for a tatweel before it.</summary>
     private bool SafeForTatweel(int cluster)
     {
-        if (_safeForTatweel is null)
+        _lazy ??= new();
+        if (_lazy.SafeForTatweel is null)
         {
             bool[] safe = new bool[_text.Length];
             foreach (ParagraphRun run in _paragraph.Runs)
@@ -1548,22 +1776,22 @@ internal sealed class LineBuilder
                 }
             }
 
-            _safeForTatweel = safe;
+            _lazy.SafeForTatweel = safe;
         }
 
-        return _safeForTatweel[cluster];
+        return _lazy.SafeForTatweel[cluster];
     }
 
     /// <summary>A font's tatweel glyph and advance, or null when it has none.</summary>
     private (ushort Glyph, float Advance)? TatweelOf(Font font)
     {
-        _tatweels ??= [];
-        if (!_tatweels.TryGetValue(font, out var tatweel))
+        Dictionary<Font, (ushort Glyph, float Advance)?> tatweels = (_lazy ??= new()).Tatweels ??= [];
+        if (!tatweels.TryGetValue(font, out var tatweel))
         {
             ushort glyph = font.Typeface.GetGlyph(Kashida.Tatweel);
             float advance = glyph == 0 ? 0 : font.GetAdvance(glyph);
             tatweel = advance > 0 ? (glyph, advance) : null;
-            _tatweels[font] = tatweel;
+            tatweels[font] = tatweel;
         }
 
         return tatweel;
