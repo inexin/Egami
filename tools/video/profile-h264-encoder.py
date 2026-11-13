@@ -8,8 +8,9 @@ a frame with tiered PGO on (the runtime users get) and off; and the encoder's wo
             quality, the share times the cycles a frame gives each stage's cycles a frame. The top methods by self time follow.
   cycles    user-mode cycles and instructions a frame from perf stat (egami-perf-counters:2): Egami at --runs 1 and 3, the
             difference over the extra frames, so start-up and the JIT drop out; with PGO on (default runtime) and off
-            (DOTNET_TieredPGO=0). x264 --preset medium --tune psnr (egami-h264encref:7.2, black box) at the bitrate effort 4 gives
-            at the same quality, at N and 2N frames, for the ratio.
+            (DOTNET_TieredPGO=0); Egami without adaptive quantization, tuned for PSNR as x264 is. x264 --preset medium --tune psnr
+            (egami-h264encref:7.2, black box) at the CRF that gives effort 4's PSNR-Y at the same quality, at N and 2N frames, for
+            the ratio. Each count is the least of --repeats runs (time-h264-encoder.py's counters).
   counts    the encoder's work counters (H264EncodeStats) by picture type, divided by the macroblocks of that type: full RD codings,
             inter candidates and luma codings, intra passes, RDOQ blocks and RDOQ rate counts, block searches, whole-sample
             costs (SAD), subpel costs (MC + SATD), B partition costs, SATD calls and samples. The counters exist only in a build
@@ -179,7 +180,7 @@ def save(name, data):
 
 def egami_cycles(clip, effort, quality, frames, size, pgo):
     src = th.clip_path(clip, size)
-    base = f"dotnet {th.BENCH} --encode-h264 {src} --frames={frames} --quality={quality} --effort={effort} --threads=1"
+    base = f"dotnet {th.BENCH} --encode-h264 {src} --frames={frames} --quality={quality} --effort={effort} --threads=1 --no-aq"
     env = "" if pgo else "export DOTNET_TieredPGO=0; "
     a, b = (th.counters(th.PERF_IMAGE, f"{base} --runs={r}", env) for r in (1, 3))
     return {k: (b[k] - a[k]) / (2 * frames) for k in a}
@@ -197,18 +198,17 @@ def cycles_job(clip, effort, args):
 
 
 def x264_job(clip, args):
-    """x264 medium's cycles a frame at the bitrate Egami's effort 4 gives at the quality."""
+    """x264 medium's cycles a frame at the CRF that gives the PSNR-Y Egami's effort 4 gives at the quality."""
     name = f"x264-{clip}-q{args.quality}"
     if args.reuse and load(name):
         return clip, load(name)
     src = th.clip_path(clip, args.size)
-    fps = th.y4m_info(src)[2]
-    _, _, size = th.egami(src, args.frames, args.quality, 4, 1, f"x264rate-{clip}", "")
-    kbps = size * 8 * fps / args.frames / 1000
+    stream, _, _ = th.egami(src, args.frames, args.quality, 4, 1, f"x264match-{clip}")
+    crf, psnr = th.matched_crf(src, args.frames, "medium", th.psnr_y(src, stream, args.frames))
     out = f"{OUT}/runs/x264-cycles-{clip}.h264"
-    a, b = (th.counters(th.REF_IMAGE, th.x264_command(src, n, "medium", f"--bitrate {int(kbps)}", 1, out))
+    a, b = (th.counters(th.REF_IMAGE, th.x264_command(src, n, "medium", f"--crf {crf:.2f}", 1, out))
             for n in (args.frames, 2 * args.frames))
-    row = {"kbps": kbps, "medium": {k: (b[k] - a[k]) / args.frames for k in a}}
+    row = {"crf": crf, "psnr": psnr, "medium": {k: (b[k] - a[k]) / args.frames for k in a}}
     save(name, row)
     return clip, row
 
@@ -351,8 +351,10 @@ def main():
     parser.add_argument("--reuse", action="store_true", help="keep results already in .cache/h264prof")
     parser.add_argument("--clips-from", default=".cache/video/derf")
     parser.add_argument("--out", default=OUT, help="where runs and results go (clips stay in .cache/h264enc/clips)")
+    parser.add_argument("--repeats", type=int, default=3, help="cycles, baseline: runs of each count, the least kept")
     args = parser.parse_args()
     OUT = th.OUT = args.out
+    th.REPEATS = args.repeats
     os.makedirs(f"{OUT}/runs", exist_ok=True)
     if args.mode != "report":
         th.ensure_clips(args.clips.split(","), args.size, args.clips_from)
