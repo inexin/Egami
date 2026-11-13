@@ -297,8 +297,10 @@ macroblock (a 720p frame has 3600) at one thread, quality 50, the mean of the cl
 <li><strong>1</strong>: B pictures, 16x8 and 8x16 partitions, Intra8x8.</li>
 <li><strong>2</strong>: two references, 8x8 partitions, a hexagon search and the 8x8 transform for inter blocks.</li>
 <li><strong>3</strong>: RDOQ and the second-best partitioning RD-coded when it comes close.</li>
-<li><strong>4</strong> (default): B pyramids, three references, two list 0 references in B pictures, the full sub-sample search in P pictures.</li>
-<li><strong>5</strong>: one more sub-sample refinement round.</li>
+<li><strong>4</strong> (default): B pyramids, three references, the full sub-sample search in P pictures; B pictures search one list 0
+reference and try intra only where its 16x16 prediction comes below the inter cost by SATD.</li>
+<li><strong>5</strong>: two list 0 references in B pictures, intra in B pictures where it comes within 1.5 times the inter cost (as in P
+pictures), and one more sub-sample refinement round.</li>
 <li><strong>6</strong>: 16x8 and 8x16 searched in every macroblock (not only where 8x8 beats 16x16); a wider search range; 8x4, 4x8 and 4x4 at
 levels up to 3.</li>
 <li><strong>7</strong>: intra tried in every inter macroblock.</li>
