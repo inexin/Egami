@@ -310,7 +310,9 @@ internal sealed partial class LineBuilder
     /// </summary>
     private int? Hyphenate(int start, int segmentStart, int segmentEnd, float width, HyphenationOptions auto)
     {
-        List<int> points = [];
+        // One list per builder: greedy filling looks up a piece for nearly every line.
+        List<int> points = (_lazy ??= new()).Points ??= [];
+        points.Clear();
         WordPoints(segmentStart, segmentEnd, auto, points);
         for (int p = points.Count - 1; p >= 0; p--)
         {
@@ -342,7 +344,8 @@ internal sealed partial class LineBuilder
             return;
         }
 
-        int[]? found = null;
+        // Points of one word at a time: on the stack for ordinary pieces.
+        Span<int> found = segmentEnd - segmentStart <= 64 ? stackalloc int[64] : new int[segmentEnd - segmentStart];
         int i = segmentStart;
         while (i < segmentEnd)
         {
@@ -369,12 +372,12 @@ internal sealed partial class LineBuilder
                 }
             }
 
-            if (!Eligible(wordStart, i, auto) || HyphenatorAt(wordStart, auto) is not Hyphenator hyphenator)
+            // A word of fewer code units than MinWordLength has fewer letters too: skip it before looking closer.
+            if (i - wordStart < auto.MinWordLength || !Eligible(wordStart, i, auto) || HyphenatorAt(wordStart, auto) is not Hyphenator hyphenator)
             {
                 continue;
             }
 
-            found ??= new int[segmentEnd - segmentStart];
             int count = hyphenator.GetPoints(_text.AsSpan(wordStart, i - wordStart), found, auto.MinBefore ?? hyphenator.MinBefore, auto.MinAfter ?? hyphenator.MinAfter);
             for (int p = 0; p < count; p++)
             {
@@ -501,6 +504,9 @@ internal sealed partial class LineBuilder
 
         /// <summary>Hyphenation points inside glyph clusters, where both pieces shape again.</summary>
         public HashSet<int>? ForcedUnsafe;
+
+        /// <summary>A list for the hyphenation points of the piece greedy filling looks up, reused line after line.</summary>
+        public List<int>? Points;
 
         /// <summary>The running sum of word separators' stretch, for <see cref="LineFill.Optimal"/>.</summary>
         public float[]? Stretch;
@@ -690,7 +696,9 @@ internal sealed partial class LineBuilder
             width = pen + p[end] - p[cur];
         }
 
-        // Pieces whose ends fall where shaping must be redone: replace their advances with the reshaped ones.
+        // Pieces whose ends fall where shaping must be redone: replace their advances with the reshaped ones. Only the text
+        // between an unsafe end and the nearest point the shaping marks safe changes, as HarfBuzz describes, so only that window
+        // is shaped again, and lines through the same unsafe point share it.
         int[] runOf = _m.RunOf;
         ParagraphRun first = _paragraph.Runs[runOf[start]];
         ParagraphRun last = _paragraph.Runs[runOf[end - 1]];
@@ -698,7 +706,9 @@ internal sealed partial class LineBuilder
         bool unsafeEnd = last.Kind == RunKind.Text && end < last.End && UnsafeAt(end);
         if (unsafeStart || unsafeEnd)
         {
-            if (first == last)
+            int startWindow = unsafeStart ? SafeAfter(start, first == last ? end : first.End) : start;
+            int endWindow = unsafeEnd ? SafeBefore(end, first == last ? start : last.Start) : end;
+            if (first == last && unsafeStart && unsafeEnd && endWindow <= startWindow)
             {
                 width += Correction(start, end);
             }
@@ -706,17 +716,43 @@ internal sealed partial class LineBuilder
             {
                 if (unsafeStart)
                 {
-                    width += Correction(start, first.End);
+                    width += Correction(start, startWindow);
                 }
 
                 if (unsafeEnd)
                 {
-                    width += Correction(last.Start, end);
+                    width += Correction(endWindow, end);
                 }
             }
         }
 
         return width;
+    }
+
+    /// <summary>The first point after <paramref name="start"/>, and before <paramref name="limit"/>, where the paragraph's
+    /// shaping may break safely; <paramref name="limit"/> when there is none.</summary>
+    private int SafeAfter(int start, int limit)
+    {
+        int i = start + 1;
+        while (i < limit && UnsafeAt(i))
+        {
+            i++;
+        }
+
+        return i;
+    }
+
+    /// <summary>The last point before <paramref name="end"/>, and after <paramref name="limit"/>, where the paragraph's
+    /// shaping may break safely; <paramref name="limit"/> when there is none.</summary>
+    private int SafeBefore(int end, int limit)
+    {
+        int i = end - 1;
+        while (i > limit && UnsafeAt(i))
+        {
+            i--;
+        }
+
+        return i;
     }
 
     /// <summary>The reshaped advance of a piece less the paragraph-shaped one.</summary>
