@@ -230,7 +230,7 @@ internal sealed partial class H264MbEncoder
     internal static int IntraMargin { get; set; } = 24;
 
     /// <summary>
-    /// <see cref="IntraMargin"/> in B pictures at effort 4: intra only below the inter cost, where B pictures rarely pick it.
+    /// <see cref="IntraMargin"/> in B pictures at efforts 1 to 4: intra only below the inter cost, where B pictures rarely pick it.
     /// </summary>
     private const int BIntraMargin = 16;
 

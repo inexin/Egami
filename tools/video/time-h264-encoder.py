@@ -4,10 +4,11 @@ encode time at its default effort against x264 medium, on one thread and on all 
 rate control gate: one and two-pass bitrate within 5 % of the target over a clip, constant bitrate never
 emptying the buffer.
 
-Speed: the design's goal of at most 2 times x264 medium was not met. Matched by quality, effort 4 takes 4.3 times x264
-medium's CPU cycles a frame at 720p at quality 50 on the four clips (3.4 to 6.4 by clip) and 4.4 times at quality 34 (3.7 to
-5.8). The wall times and the ratio are recorded; the gate is a regression gate on the cycles: each clip's ratio at each of the
-two qualities at most GATE_CYCLES, the measured ratio plus a margin for the counts' noise.
+Speed: the design's goal of at most 2 times x264 medium was not met. Matched by quality, after speed round 3 effort 4 takes
+3.4 times x264 medium's CPU cycles a frame at 720p at quality 50 on the four clips (2.5 to 5.3 by clip) and 2.9 times at
+quality 34 (2.6 to 3.4); in instructions 4.0 and 3.6 times (3.3 to 5.5 and 3.3 to 3.7). The wall times and the ratios are recorded; the gate is a
+regression gate on the instructions, which unlike the cycles barely move between runs: each clip's instruction ratio at each
+of the two qualities at most GATE_INSTRUCTIONS, the measured ratio and 10 %.
 
 Everything runs in Docker on the same machine: x264 0.164 (Alpine's binary package, run only as a black-box encoder) and FFmpeg
 6.1 in egami-h264encref:7.2 from tools/video/h264encref/Dockerfile, and Egami through the benchmark project's Release build
@@ -67,11 +68,11 @@ ENV = dict(os.environ, MSYS_NO_PATHCONV="1")
 ROOT = os.path.abspath(".")
 GATE_BD = 15.0
 GATE_TIME_GOAL = 2.0
-# The cycles ratio against x264 medium (matched by PSNR-Y, Egami without adaptive quantization) at effort 4, 720p, 20 frames,
-# PGO on, that each clip may reach at quality 50 and 34: the ratio measured on main 6b94657d (speed round 3, task 22) and 10 %
-# more.
-GATE_CYCLES = {50: {"crowd_run": 4.0, "ducks_take_off": 4.1, "park_joy": 3.8, "old_town_cross": 7.1},
-               34: {"crowd_run": 4.1, "ducks_take_off": 4.9, "park_joy": 4.1, "old_town_cross": 6.4}}
+# The instruction ratio against x264 medium (matched by PSNR-Y, Egami without adaptive quantization) at effort 4, 720p, 20
+# frames, PGO on, that each clip may reach at quality 50 and 34: the ratio measured after speed round 3 (task 26) and 10 %
+# more, rounded up. (Task 22 gated the cycles ratio, which swings by a third on this machine.)
+GATE_INSTRUCTIONS = {50: {"crowd_run": 3.7, "ducks_take_off": 4.3, "park_joy": 3.8, "old_town_cross": 6.1},
+                     34: {"crowd_run": 3.8, "ducks_take_off": 4.1, "park_joy": 4.0, "old_town_cross": 4.3}}
 GATE_RATE = 5.0
 
 
@@ -402,7 +403,7 @@ def report_cycles_file(data, quality, aq):
     pgo = "on" if data.get("pgo", False) else "off"
     print(f"Cycles a frame at one thread, {data['size']}p, Egami effort {data['effort']} quality {quality} adaptive quantization "
           f"{'on (recorded)' if aq else 'off'}, tiered PGO {pgo} (user mode, perf; x264 --tune psnr at Egami's PSNR-Y):")
-    limits = {} if aq else GATE_CYCLES.get(quality, {})
+    limits = {} if aq else GATE_INSTRUCTIONS.get(quality, {})
     gated = data["size"] == "720" and data["effort"] == 4 and data.get("pgo", False) and data["frames"] == 20 and limits
     ok = True
     ratios = []
@@ -414,12 +415,13 @@ def report_cycles_file(data, quality, aq):
             ratios.append((egami_c / row["medium"]["cycles"], row["egami"]["instructions"] / row["medium"]["instructions"]))
         limit = limits.get(clip) if gated and "medium" in row else None
         if limit:
-            ok &= egami_c / row["medium"]["cycles"] <= limit
-        print(f"  {clip}: Egami {egami_c / 1e6:.1f}M at {row['egami']['psnr']:.2f} dB; {others}" + (f" (at most {limit:.1f})" if limit else ""))
+            ok &= row["egami"]["instructions"] / row["medium"]["instructions"] <= limit
+        print(f"  {clip}: Egami {egami_c / 1e6:.1f}M at {row['egami']['psnr']:.2f} dB; {others}"
+              + (f" (instructions at most {limit:.1f})" if limit else ""))
     if ratios:
         print(f"  Mean Egami / x264 medium {np.mean([r[0] for r in ratios]):.2f} in cycles, {np.mean([r[1] for r in ratios]):.2f} in instructions")
     if gated:
-        print(f"  Cycles regression gate (Egami / x264 medium at most the level measured in speed round 3, plus 10 %): "
+        print(f"  Speed regression gate (Egami / x264 medium in instructions at most the level measured after speed round 3, plus 10 %): "
               f"{'met' if ok else 'not met'}; the design's goal of {GATE_TIME_GOAL:.0f} times is not met")
 
 
@@ -496,7 +498,7 @@ def report(args):
         with open(bd) as f:
             report_bd(json.load(f))
     report_time(args.size, args.effort)
-    for quality in GATE_CYCLES:
+    for quality in GATE_INSTRUCTIONS:
         report_cycles(args.size, args.effort, quality)
     for name in sorted(f for f in os.listdir(OUT) if f.startswith(f"rc-{args.size}-") and f.endswith(".json")):
         report_rc(args.size, int(name[len(f"rc-{args.size}-"):-5]))
@@ -542,7 +544,7 @@ def main():
     elif args.mode == "cycles":
         args.frames = args.frames or 20
         args.presets = args.presets or "medium"
-        args.quality = args.quality or ",".join(str(q) for q in GATE_CYCLES)
+        args.quality = args.quality or ",".join(str(q) for q in GATE_INSTRUCTIONS)
         run_cycles(args)
     elif args.mode == "rc":
         args.frames = args.frames or 120
