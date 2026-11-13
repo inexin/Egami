@@ -119,6 +119,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   guide has the table for every effort. Per-task cycle figures above were measured under load and run higher.
 - Tools: time-h264-encoder.py records the speed against x264 medium instead of gating it at 2 times, and gates the cycles at
   effort 4 against regressions instead: each clip at most 10 % above the ratio measured after the speed plan.
+- Tools: time-h264-encoder.py matches x264 to Egami by quality for the speed (a CRF search to Egami's PSNR-Y, Egami without
+  adaptive quantization as x264 runs tuned for PSNR) instead of giving x264 Egami's bitrate, which x264 overshot on 20 frames
+  and so coded at a higher quality; the cycles are gated at quality 34 too, each count the least of three runs. Matched so,
+  effort 4 takes 4.3 times x264 medium's cycles at quality 50 (3.4 to 6.4 by clip) and 4.4 times at quality 34 (3.7 to 5.8);
+  with adaptive quantization, Egami's default, 4.6 and 4.7 times (recorded). profile-h264-encoder.py matches the same way.
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 

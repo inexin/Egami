@@ -4,10 +4,10 @@ encode time at its default effort against x264 medium, on one thread and on all 
 rate control gate: one and two-pass bitrate within 5 % of the target over a clip, constant bitrate never
 emptying the buffer.
 
-Speed: the design's goal of at most 2 times x264 medium was not met. After the H.264 Encoder Speed Build Plan, effort 4 takes
-4.0 times x264 medium's CPU cycles a frame at 720p on the four clips (3.5 to 5.2 by clip). The wall times and the ratio are
-recorded; the gate is now a regression gate on the cycles: each clip's ratio at most GATE_CYCLES, the measured ratio plus a
-margin for the counts' noise.
+Speed: the design's goal of at most 2 times x264 medium was not met. Matched by quality, effort 4 takes 4.3 times x264
+medium's CPU cycles a frame at 720p at quality 50 on the four clips (3.4 to 6.4 by clip) and 4.4 times at quality 34 (3.7 to
+5.8). The wall times and the ratio are recorded; the gate is a regression gate on the cycles: each clip's ratio at each of the
+two qualities at most GATE_CYCLES, the measured ratio plus a margin for the counts' noise.
 
 Everything runs in Docker on the same machine: x264 0.164 (Alpine's binary package, run only as a black-box encoder) and FFmpeg
 6.1 in egami-h264encref:7.2 from tools/video/h264encref/Dockerfile, and Egami through the benchmark project's Release build
@@ -16,12 +16,19 @@ without adaptive quantization) and use their own defaults otherwise; x264 at CRF
 and 25, which cover about the same range. FFmpeg decodes every stream and measures SSIM; PSNR-Y is the mean of the frames' own.
 The BD-rate is a cubic fit of log rate over the metric.
 
+For the time and the cycles x264 is matched to Egami by quality: Egami codes the frames at the quality (without adaptive
+quantization, tuned for PSNR as x264 is; cycles also records Egami with it, its default, beside the gated ratio), and a
+secant search on x264's CRF, which takes fractions, finds the one that gives the same mean PSNR-Y on the same frames, to
+within 0.02 dB. (Until the speed round 3 x264 was given Egami's bitrate as a one-pass target, which on 20 frames it overshot
+by up to 60 %, coding at a higher quality than Egami.)
+
 Times are each encoder's whole run for its frames (Egami's frames are read into memory first, x264 reads the y4m as it goes,
-which costs little next to encoding); x264 encodes at the bitrate Egami's quality gave, runs alternate between the encoders and
-the best of --rounds counts, as other work on the shared machine slows both alike. Cycles are user-mode hardware counts from
-Linux perf, which barely move when the machine is busy: Egami's at --runs 1 and 3 (egami-perf-counters:2, the image
-tools/video/count-instructions.py builds), x264's at --frames N and 2N, and the difference over the extra frames, so start-up and
-the JIT drop out. Egami runs on the default runtime, tiered PGO on, as users get it; --no-pgo turns it off (DOTNET_TieredPGO=0),
+which costs little next to encoding); runs alternate between the encoders and the best of --rounds counts, as other work on the
+shared machine slows both alike. Cycles are user-mode hardware counts from Linux perf: Egami's at --runs 1 and 3
+(egami-perf-counters:2, the image tools/video/count-instructions.py builds), x264's at --frames N and 2N, and the difference
+over the extra frames, so start-up and the JIT drop out. On a busy machine whose cores are of two kinds the same run's cycles
+swing by up to a third while its instructions barely move, so each count is the least of --repeats runs, and the instruction
+ratio is printed beside the cycles'. Egami runs on the default runtime, tiered PGO on, as users get it; --no-pgo turns it off (DOTNET_TieredPGO=0),
 as this mode did before the H.264 Encoder Speed Build Plan (decision Q4).
 
 The clips are Xiph's derf clips (crowd_run, ducks_take_off, park_joy, old_town_cross; 50 fps), copied to .cache/h264enc/clips
@@ -31,7 +38,8 @@ Usage, from the repo root with Docker running and the benchmarks built in Releas
 (dotnet build -c Release benchmarks/Egami.Video.Benchmarks):
   python tools/video/time-h264-encoder.py bd [--size 720] [--frames 60] [--effort 4] [--presets ultrafast,...,slow] [--clips a,b]
   python tools/video/time-h264-encoder.py time [--size 720] [--frames 30] [--effort 4] [--presets medium] [--threads 1,24]
-  python tools/video/time-h264-encoder.py cycles [--size 720] [--frames 20] [--effort 4] [--presets medium] [--no-pgo]
+  python tools/video/time-h264-encoder.py cycles [--size 720] [--frames 20] [--effort 4] [--quality 50,34] [--aq off|on|both]
+                                                [--repeats 3] [--presets medium] [--no-pgo]
   python tools/video/time-h264-encoder.py rc [--size 720] [--frames 120] [--effort 2] [--kbps 2500]   (one file per target)
   python tools/video/time-h264-encoder.py report     (the gate table from the last bd, time, cycles and rc runs)
 """
@@ -59,9 +67,11 @@ ENV = dict(os.environ, MSYS_NO_PATHCONV="1")
 ROOT = os.path.abspath(".")
 GATE_BD = 15.0
 GATE_TIME_GOAL = 2.0
-# The cycles ratio against x264 medium at effort 4, 720p, 20 frames, quality 50, PGO on, that each clip may reach: the ratio
-# measured after the H.264 Encoder Speed Build Plan (PR G) and 10 % more.
-GATE_CYCLES = {"crowd_run": 3.9, "ducks_take_off": 3.9, "park_joy": 4.1, "old_town_cross": 5.7}
+# The cycles ratio against x264 medium (matched by PSNR-Y, Egami without adaptive quantization) at effort 4, 720p, 20 frames,
+# PGO on, that each clip may reach at quality 50 and 34: the ratio measured on main 6b94657d (speed round 3, task 22) and 10 %
+# more.
+GATE_CYCLES = {50: {"crowd_run": 4.0, "ducks_take_off": 4.1, "park_joy": 3.8, "old_town_cross": 7.1},
+               34: {"crowd_run": 4.1, "ducks_take_off": 4.9, "park_joy": 4.1, "old_town_cross": 6.4}}
 GATE_RATE = 5.0
 
 
@@ -149,6 +159,39 @@ def timed(command):
 
 def x264_command(src, frames, preset, rate, threads, out):
     return (f"x264 --quiet --preset {preset} --tune psnr {rate} --threads {threads} --frames {frames} -o {out} {src}")
+
+
+def psnr_y(src, stream, frames):
+    """Mean PSNR-Y of a stream's first frames against the clip's, decoded by FFmpeg."""
+    decoded = decode(stream)
+    w, h, ref = y4m_frames(src, frames)
+    dec = np.fromfile(decoded, np.uint8).reshape(-1, w * h * 3 // 2)[:frames]
+    os.remove(decoded)
+    return float(np.mean([10 * np.log10(255 * 255 / max(((a[:w * h].astype(np.int32) - b[:w * h].astype(np.int32)) ** 2).mean(), 1e-9))
+                          for a, b in zip(ref, dec)]))
+
+
+def x264_psnr(src, frames, preset, crf, threads):
+    """x264's own mean PSNR-Y (the mean of the frames', as psnr_y) at a CRF."""
+    out = f"{OUT}/runs/x264-crf-search.h264"
+    result = checked(docker(REF_IMAGE, x264_command(src, frames, preset, f"--crf {crf:.2f} --psnr", threads, out).replace("--quiet ", "")))
+    line = next(l for l in (result.stdout + result.stderr).splitlines() if "PSNR Mean" in l)
+    return float(line.split("Y:")[1].split()[0])
+
+
+def matched_crf(src, frames, preset, psnr, threads=1):
+    """The CRF at which x264 reaches a PSNR-Y on the frames: a secant search on CRF, which x264 takes in fractions, to within
+    0.02 dB (x264 at Egami's bitrate overshoots it on a short clip, and gives quality Egami does not, so the match is by quality)."""
+    points = [(c, x264_psnr(src, frames, preset, c, threads)) for c in (22.0, 30.0)]
+    for _ in range(8):
+        (c0, p0), (c1, p1) = sorted(points, key=lambda p: abs(p[1] - psnr))[:2]
+        if abs(p0 - psnr) <= 0.02 or p1 == p0:
+            break
+        c = min(51.0, max(0.0, c0 + (psnr - p0) * (c1 - c0) / (p1 - p0)))
+        if any(abs(c - q) < 0.005 for q, _ in points):
+            break
+        points.append((c, x264_psnr(src, frames, preset, c, threads)))
+    return min(points, key=lambda p: abs(p[1] - psnr))
 
 
 def x264(src, frames, preset, rate, threads, tag):
@@ -244,18 +287,18 @@ def run_time(args):
     clips = args.clips.split(",")
     presets = args.presets.split(",")
     threads = [int(t) for t in args.threads.split(",")]
-    best = {}
+    best, crfs = {}, {}
     for _ in range(args.rounds):
         for clip in clips:
             src = clip_path(clip, args.size)
-            fps = y4m_info(src)[2]
             for t in threads:
-                _, ms, size = egami(src, args.frames, args.quality, args.effort, t, f"time-{clip}-e{args.effort}-t{t}", "")
+                out, ms, _ = egami(src, args.frames, args.quality, args.effort, t, f"time-{clip}-e{args.effort}-t{t}")
                 key = f"{clip}|egami|{t}"
                 best[key] = min(best.get(key, float("inf")), ms)
-                kbps = size * 8 * fps / args.frames / 1000
                 for preset in presets:
-                    _, ms, _ = x264(src, args.frames, preset, f"--bitrate {int(kbps)}", t, f"time-{clip}-{preset}-t{t}")
+                    if (clip, preset) not in crfs:
+                        crfs[clip, preset] = matched_crf(src, args.frames, preset, psnr_y(src, out, args.frames), os.cpu_count())[0]
+                    _, ms, _ = x264(src, args.frames, preset, f"--crf {crfs[clip, preset]:.2f}", t, f"time-{clip}-{preset}-t{t}")
                     key = f"{clip}|{preset}|{t}"
                     best[key] = min(best.get(key, float("inf")), ms)
                 print(f"  {clip} {t} thread(s): " + ", ".join(f"{k.split('|')[1]} {v / args.frames:.1f} ms"
@@ -290,61 +333,93 @@ def ensure_perf_image():
         subprocess.run(["docker", "build", "-t", PERF_IMAGE, "-"], input=PERF_DOCKERFILE, text=True, env=ENV, check=True)
 
 
+REPEATS = 1
+
+
 def counters(image, command, env=""):
-    """User-mode cycles and instructions of a command, from perf stat."""
+    """User-mode cycles and instructions of a command, from perf stat: the least of REPEATS runs of each, as the same run's
+    cycles swing by a third on a busy machine with cores of two kinds while its instructions barely move."""
     script = f"{env}perf stat -x, -e cycles:u,instructions:u -o /tmp/s {command} > /dev/null 2>&1; cat /tmp/s"
-    out = checked(docker(image, script, privileged=True)).stdout
     values = {}
-    for line in out.splitlines():
-        parts = line.split(",")
-        if len(parts) > 2 and parts[0].replace(".", "").isdigit():
-            values[parts[2].split(":")[0]] = float(parts[0])
+    for _ in range(REPEATS):
+        out = checked(docker(image, script, privileged=True)).stdout
+        for line in out.splitlines():
+            parts = line.split(",")
+            if len(parts) > 2 and parts[0].replace(".", "").isdigit():
+                key = parts[2].split(":")[0]
+                values[key] = min(values.get(key, float("inf")), float(parts[0]))
     return values
 
 
 def run_cycles(args):
-    """Cycles a frame at one thread: Egami at --runs 1 and 3, x264 at N and 2N frames, the difference over the extra frames."""
+    """Cycles a frame at one thread: Egami at --runs 1 and 3, x264 at N and 2N frames, the difference over the extra frames; x264
+    at the CRF that gives Egami's PSNR-Y on the N frames."""
     os.makedirs(f"{OUT}/runs", exist_ok=True)
     ensure_perf_image()
-    rows = {}
-    for clip in args.clips.split(","):
-        src = clip_path(clip, args.size)
-        fps = y4m_info(src)[2]
-        base = f"dotnet {BENCH} --encode-h264 {src} --frames={args.frames} --quality={args.quality} --effort={args.effort} --threads=1"
-        a, b = (counters(PERF_IMAGE, f"{base} --runs={r}", "export DOTNET_TieredPGO=0; " if args.no_pgo else "") for r in (1, 3))
-        row = {"egami": {k: (b[k] - a[k]) / (2 * args.frames) for k in a}}
-        _, _, size = egami(src, args.frames, args.quality, args.effort, 1, f"cycles-{clip}", "")
-        kbps = size * 8 * fps / args.frames / 1000
-        for preset in args.presets.split(","):
-            out = f"{OUT}/runs/x264-cycles.h264"
-            a, b = (counters(REF_IMAGE, x264_command(src, n, preset, f"--bitrate {int(kbps)}", 1, out)) for n in (args.frames, 2 * args.frames))
-            row[preset] = {k: (b[k] - a[k]) / args.frames for k in a}
-        rows[clip] = row
-        print(f"  {clip}: " + ", ".join(f"{k} {v['cycles'] / 1e6:.1f}M cycles {v['instructions'] / 1e6:.1f}M instructions" for k, v in row.items()), flush=True)
-    with open(f"{OUT}/cycles-{args.size}-e{args.effort}.json", "w") as f:
-        json.dump({"size": args.size, "frames": args.frames, "effort": args.effort, "pgo": not args.no_pgo, "rows": rows}, f, indent=1)
-    report_cycles(args.size, args.effort)
+    global REPEATS
+    REPEATS = args.repeats
+    for aq, quality in ((aq, int(q)) for aq in ({"off": [False], "on": [True]}.get(args.aq, [False, True]))
+                        for q in str(args.quality).split(",")):
+        rows = {}
+        for clip in args.clips.split(","):
+            src = clip_path(clip, args.size)
+            base = (f"dotnet {BENCH} --encode-h264 {src} --frames={args.frames} --quality={quality} --effort={args.effort} --threads=1"
+                    + ("" if aq else " --no-aq"))
+            a, b = (counters(PERF_IMAGE, f"{base} --runs={r}", "export DOTNET_TieredPGO=0; " if args.no_pgo else "") for r in (1, 3))
+            row = {"egami": {k: (b[k] - a[k]) / (2 * args.frames) for k in a}}
+            out, _, _ = egami(src, args.frames, quality, args.effort, 1, f"cycles-{clip}", "" if aq else "--no-aq")
+            row["egami"]["psnr"] = psnr_y(src, out, args.frames)
+            for preset in args.presets.split(","):
+                crf, psnr = matched_crf(src, args.frames, preset, row["egami"]["psnr"])
+                out = f"{OUT}/runs/x264-cycles.h264"
+                a, b = (counters(REF_IMAGE, x264_command(src, n, preset, f"--crf {crf:.2f}", 1, out)) for n in (args.frames, 2 * args.frames))
+                row[preset] = {k: (b[k] - a[k]) / args.frames for k in a}
+                row[preset].update(crf=crf, psnr=psnr)
+            rows[clip] = row
+            print(f"  {clip} q{quality} AQ {'on' if aq else 'off'}: " + ", ".join(f"{k} {v['cycles'] / 1e6:.1f}M cycles {v['instructions'] / 1e6:.1f}M instructions "
+                                                      f"{v['psnr']:.2f} dB" for k, v in row.items()), flush=True)
+        with open(cycles_path(args.size, args.effort, quality, aq), "w") as f:
+            json.dump({"size": args.size, "frames": args.frames, "effort": args.effort, "quality": quality, "pgo": not args.no_pgo,
+                       "aq": aq, "rows": rows}, f, indent=1)
+    for quality in (int(q) for q in str(args.quality).split(",")):
+        report_cycles(args.size, args.effort, quality)
 
 
-def report_cycles(size, effort):
-    path = f"{OUT}/cycles-{size}-e{effort}.json"
-    if not os.path.exists(path):
-        return
-    with open(path) as f:
-        data = json.load(f)
+def cycles_path(size, effort, quality, aq=False):
+    return f"{OUT}/cycles-{size}-e{effort}-q{quality}{'-aq' if aq else ''}.json"
+
+
+def report_cycles(size, effort, quality):
+    """The gated ratio, Egami without adaptive quantization (tuned for PSNR as x264 is), then the one with it recorded."""
+    for aq in (False, True):
+        path = cycles_path(size, effort, quality, aq)
+        if os.path.exists(path):
+            with open(path) as f:
+                report_cycles_file(json.load(f), quality, aq)
+
+
+def report_cycles_file(data, quality, aq):
     pgo = "on" if data.get("pgo", False) else "off"
-    print(f"Cycles a frame at one thread, {data['size']}p, Egami effort {data['effort']}, tiered PGO {pgo} (user mode, perf):")
-    gated = data["size"] == "720" and data["effort"] == 4 and data.get("pgo", False) and data["frames"] == 20
+    print(f"Cycles a frame at one thread, {data['size']}p, Egami effort {data['effort']} quality {quality} adaptive quantization "
+          f"{'on (recorded)' if aq else 'off'}, tiered PGO {pgo} (user mode, perf; x264 --tune psnr at Egami's PSNR-Y):")
+    limits = {} if aq else GATE_CYCLES.get(quality, {})
+    gated = data["size"] == "720" and data["effort"] == 4 and data.get("pgo", False) and data["frames"] == 20 and limits
     ok = True
+    ratios = []
     for clip, row in data["rows"].items():
         egami_c = row["egami"]["cycles"]
-        others = ", ".join(f"x264 {k} {v['cycles'] / 1e6:.1f}M (Egami / x264 {egami_c / v['cycles']:.1f})" for k, v in row.items() if k != "egami")
-        limit = GATE_CYCLES.get(clip) if gated and "medium" in row else None
+        others = ", ".join(f"x264 {k} {v['cycles'] / 1e6:.1f}M at CRF {v['crf']:.2f} (Egami / x264 {egami_c / v['cycles']:.2f}, "
+                           f"instructions {row['egami']['instructions'] / v['instructions']:.2f})" for k, v in row.items() if k != "egami")
+        if "medium" in row:
+            ratios.append((egami_c / row["medium"]["cycles"], row["egami"]["instructions"] / row["medium"]["instructions"]))
+        limit = limits.get(clip) if gated and "medium" in row else None
         if limit:
             ok &= egami_c / row["medium"]["cycles"] <= limit
-        print(f"  {clip}: Egami {egami_c / 1e6:.1f}M; {others}" + (f" (at most {limit:.1f})" if limit else ""))
+        print(f"  {clip}: Egami {egami_c / 1e6:.1f}M at {row['egami']['psnr']:.2f} dB; {others}" + (f" (at most {limit:.1f})" if limit else ""))
+    if ratios:
+        print(f"  Mean Egami / x264 medium {np.mean([r[0] for r in ratios]):.2f} in cycles, {np.mean([r[1] for r in ratios]):.2f} in instructions")
     if gated:
-        print(f"  Cycles regression gate (Egami / x264 medium at most the level measured after the speed plan, plus 10 %): "
+        print(f"  Cycles regression gate (Egami / x264 medium at most the level measured in speed round 3, plus 10 %): "
               f"{'met' if ok else 'not met'}; the design's goal of {GATE_TIME_GOAL:.0f} times is not met")
 
 
@@ -421,7 +496,8 @@ def report(args):
         with open(bd) as f:
             report_bd(json.load(f))
     report_time(args.size, args.effort)
-    report_cycles(args.size, args.effort)
+    for quality in GATE_CYCLES:
+        report_cycles(args.size, args.effort, quality)
     for name in sorted(f for f in os.listdir(OUT) if f.startswith(f"rc-{args.size}-") and f.endswith(".json")):
         report_rc(args.size, int(name[len(f"rc-{args.size}-"):-5]))
 
@@ -433,7 +509,7 @@ def main():
     parser.add_argument("--size", default="720")
     parser.add_argument("--frames", type=int, default=None)
     parser.add_argument("--effort", type=int, default=4)
-    parser.add_argument("--quality", type=int, default=50)
+    parser.add_argument("--quality", default=None, help="time: one quality (50); cycles: a list (50,34)")
     parser.add_argument("--presets", default=None)
     parser.add_argument("--kbps", type=int, default=2500)
     parser.add_argument("--threads", default=f"1,{os.cpu_count()}")
@@ -441,6 +517,10 @@ def main():
     parser.add_argument("--rounds", type=int, default=2)
     parser.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 4) // 3))
     parser.add_argument("--reuse", action="store_true", help="keep the runs already in the bd file and add only what is missing")
+    parser.add_argument("--repeats", type=int, default=3, help="cycles: runs of each count, the least kept")
+    parser.add_argument("--aq", choices=["off", "on", "both"], default="both",
+                        help="cycles: Egami without adaptive quantization (gated: tuned for PSNR as x264 is), with it (its default, "
+                             "recorded) or both")
     parser.add_argument("--no-pgo", action="store_true", help="cycles: Egami with tiered PGO off (the default runtime has it on)")
     parser.add_argument("--clips-from", default=".cache/video/derf")
     parser.add_argument("--out", default=OUT, help="where runs and results go (clips stay in .cache/h264enc/clips)")
@@ -457,10 +537,12 @@ def main():
     elif args.mode == "time":
         args.frames = args.frames or 30
         args.presets = args.presets or "medium"
+        args.quality = int(args.quality or 50)
         run_time(args)
     elif args.mode == "cycles":
         args.frames = args.frames or 20
         args.presets = args.presets or "medium"
+        args.quality = args.quality or ",".join(str(q) for q in GATE_CYCLES)
         run_cycles(args)
     elif args.mode == "rc":
         args.frames = args.frames or 120
