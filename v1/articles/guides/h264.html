@@ -192,9 +192,10 @@ VideoWriterOptions baseline = options with { H264 = new H264EncoderOptions { Pro
 </code></pre><h3 id="compression-and-speed">Compression and speed</h3>
 <p>The encoder is measured against x264 0.164 on four Xiph test clips (crowd_run, ducks_take_off, park_joy and old_town_cross at
 720p, 50 frames a second), both tuned for PSNR. At effort 4 it needs 5 to 18 % more bits than x264's medium preset for the same
-PSNR (11.6 % on average), about what x264's faster preset gives, and it is slower: on one thread 4.0 times x264 medium's CPU
-cycles a frame at 720p (3.5 to 5.2 by clip), on .NET's default runtime with tiered PGO on. The design's goal of twice x264
-medium's time is not met. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as
+PSNR (11.6 % on average), about what x264's faster preset gives, and it is slower: on one thread, with x264 at the CRF that
+gives the same PSNR-Y, 4.3 times x264 medium's CPU cycles a frame at 720p at quality 50 (3.4 to 6.4 by clip) and 4.4 times at
+quality 34 (3.7 to 5.8), on .NET's default runtime with tiered PGO on and without adaptive quantization; with it, the
+default, 4.6 and 4.7 times. The design's goal of twice x264 medium's time is not met. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as
 Egami's own decoder.</p>
 <h4 id="speed-by-effort">Speed by effort</h4>
 <p>Each effort costs more cycles than the one below it and needs fewer bits, on the mean of the four clips. Cycles are a
