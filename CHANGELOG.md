@@ -119,9 +119,15 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   guide has the table for every effort. Per-task cycle figures above were measured under load and run higher.
 - Tools: time-h264-encoder.py records the speed against x264 medium instead of gating it at 2 times, and gates the cycles at
   effort 4 against regressions instead: each clip at most 10 % above the ratio measured after the speed plan.
+- Tools: time-h264-encoder.py matches x264 to Egami by quality for the speed (a CRF search to Egami's PSNR-Y, Egami without
+  adaptive quantization as x264 runs tuned for PSNR) instead of giving x264 Egami's bitrate, which x264 overshot on 20 frames
+  and so coded at a higher quality; the cycles are gated at quality 34 too, each count the least of three runs. Matched so,
+  effort 4 takes 4.3 times x264 medium's cycles at quality 50 (3.4 to 6.4 by clip) and 4.4 times at quality 34 (3.7 to 5.8);
+  with adaptive quantization, Egami's default, 4.6 and 4.7 times (recorded). profile-h264-encoder.py matches the same way.
 - Effort 4 (speed round 3, task 23): B pictures search one list 0 reference instead of two, and try intra only where intra
-  16x16 prediction comes below the inter cost by SATD (not within 1.5 times it); effort 5 keeps both. About 9.5 % fewer
-  instructions at quality 50 and 34 on the four 720p clips for no loss: BD-rate −0.04 % on them, +0.11 % on eight clips (worst
+  16x16 prediction comes below the inter cost by SATD (not within 1.5 times it); effort 5 keeps both. Egami's own
+  cycles fall 8.7 % at quality 50 and 15.4 % at quality 34 on the four 720p clips (3.67 and 3.66 times x264 medium) for no
+  loss: BD-rate −0.04 % on them, +0.11 % on eight clips (worst
   +0.77 %, pedestrian_area). Two P references instead of three, also planned, cost up to 0.8 % on pedestrian_area and stays out.
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
@@ -557,6 +563,21 @@ KTX stage D (writing and whole textures; roadmap 2.3.11). Additive.
   output (effort 0 is a new fast tier, about 30 megapixels a second), EAC searched in vectors; ASTC at effort 4 0.4 to 0.6 dB
   better and about twice as fast, within 0.25 dB of astcenc `-medium` at 0.5 times its speed or better; ETC1S 1.8 dB better
   and 3.3 times faster; UASTC fills the BC1 and ETC1 bias transcoder hints.
+
+## Egami.Fonts (unreleased)
+
+Hyphenation patterns. Additive.
+
+- `Hyphenator` (`Egami.Fonts.Layout`) finds where a word may break with a hyphen, by Liang's algorithm (TeX's, LibreOffice's
+  and browsers'): patterns in a packed trie, an exception list that wins over them, and `MinBefore` and `MinAfter`. `GetPoints`
+  writes UTF-16 offsets and allocates nothing for words up to about 60 characters; no point falls inside a surrogate pair or
+  before a combining mark. With hyph-utf8's patterns it breaks "hy-phen-ation" and "al-go-rithm" as TeX does, and every word
+  of the English and Norwegian exception lists exactly.
+- `Hyphenator.Load` reads hyph-utf8 `.tex` files (`\patterns`, `\hyphenation`, `^^` escapes, the `hyphenmins` header),
+  `.pat.txt` lists, LibreOffice `.dic` files (character set, `LEFTHYPHENMIN`, `RIGHTHYPHENMIN`, `NOHYPHEN`, the second
+  level after `NEXTLEVEL`; replacement rules throw `NotSupportedException`) and Egami's compiled `.ehyp`, which `Save`
+  writes: Norwegian's 27,000 patterns load in about 1 ms from it instead of 100 ms from TeX. `FromPatterns` and
+  `WithExceptions` take patterns and `hy-phen-ate` exceptions as text. Paragraph layout does not use it yet.
 
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
