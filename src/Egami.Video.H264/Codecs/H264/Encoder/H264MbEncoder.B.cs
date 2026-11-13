@@ -173,7 +173,7 @@ internal sealed partial class H264MbEncoder
             CodeDirect(_direct, ref bestCost, ref best, ref bestSlot);
         }
 
-        if (TryIntra(firstCost))
+        if (TryIntra(firstCost, _effort == 4 ? BIntraMargin : IntraMargin))
         {
             double cost = Encode(mbX, mbY, qp);
             _round = InterRound;

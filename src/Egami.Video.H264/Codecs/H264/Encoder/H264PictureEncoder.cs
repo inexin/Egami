@@ -202,7 +202,8 @@ internal sealed class H264PictureEncoder
             (list1[0], list1[1]) = (list1[1], list1[0]);
         }
 
-        int count0 = Math.Min(list0.Count, _effort >= 4 ? 2 : 1);
+        // Round 3 task 23: a second list 0 reference from effort 5; at 4 it cost 7 to 9 % of the time for no measurable gain.
+        int count0 = Math.Min(list0.Count, _effort >= 5 ? 2 : 1);
         H264RefPlanes[] refs0 = [.. list0.Take(count0)], refs1 = [list1[0]];
         foreach (H264RefPlanes r in _refs)
         {

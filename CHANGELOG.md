@@ -119,6 +119,10 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   guide has the table for every effort. Per-task cycle figures above were measured under load and run higher.
 - Tools: time-h264-encoder.py records the speed against x264 medium instead of gating it at 2 times, and gates the cycles at
   effort 4 against regressions instead: each clip at most 10 % above the ratio measured after the speed plan.
+- Effort 4 (speed round 3, task 23): B pictures search one list 0 reference instead of two, and try intra only where intra
+  16x16 prediction comes below the inter cost by SATD (not within 1.5 times it); effort 5 keeps both. About 9.5 % fewer
+  instructions at quality 50 and 34 on the four 720p clips for no loss: BD-rate −0.04 % on them, +0.11 % on eight clips (worst
+  +0.77 %, pedestrian_area). Two P references instead of three, also planned, cost up to 0.8 % on pedestrian_area and stays out.
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 
