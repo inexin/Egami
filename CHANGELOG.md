@@ -559,6 +559,21 @@ KTX stage D (writing and whole textures; roadmap 2.3.11). Additive.
   better and about twice as fast, within 0.25 dB of astcenc `-medium` at 0.5 times its speed or better; ETC1S 1.8 dB better
   and 3.3 times faster; UASTC fills the BC1 and ETC1 bias transcoder hints.
 
+## Egami.Fonts (unreleased)
+
+Hyphenation patterns. Additive.
+
+- `Hyphenator` (`Egami.Fonts.Layout`) finds where a word may break with a hyphen, by Liang's algorithm (TeX's, LibreOffice's
+  and browsers'): patterns in a packed trie, an exception list that wins over them, and `MinBefore` and `MinAfter`. `GetPoints`
+  writes UTF-16 offsets and allocates nothing for words up to about 60 characters; no point falls inside a surrogate pair or
+  before a combining mark. With hyph-utf8's patterns it breaks "hy-phen-ation" and "al-go-rithm" as TeX does, and every word
+  of the English and Norwegian exception lists exactly.
+- `Hyphenator.Load` reads hyph-utf8 `.tex` files (`\patterns`, `\hyphenation`, `^^` escapes, the `hyphenmins` header),
+  `.pat.txt` lists, LibreOffice `.dic` files (character set, `LEFTHYPHENMIN`, `RIGHTHYPHENMIN`, `NOHYPHEN`, the second
+  level after `NEXTLEVEL`; replacement rules throw `NotSupportedException`) and Egami's compiled `.ehyp`, which `Save`
+  writes: Norwegian's 27,000 patterns load in about 1 ms from it instead of 100 ms from TeX. `FromPatterns` and
+  `WithExceptions` take patterns and `hy-phen-ate` exceptions as text. Paragraph layout does not use it yet.
+
 ## Egami train 1.4.0, Egami.SystemDrawing 1.0.0-preview.3 and Egami.Metafiles 1.0.2 (2026-11-01)
 
 The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli)

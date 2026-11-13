@@ -1,4 +1,16 @@
 #nullable enable
+Egami.Fonts.Layout.HyphenationFormat
+Egami.Fonts.Layout.HyphenationFormat.Auto = 0 -> Egami.Fonts.Layout.HyphenationFormat
+Egami.Fonts.Layout.HyphenationFormat.Compiled = 4 -> Egami.Fonts.Layout.HyphenationFormat
+Egami.Fonts.Layout.HyphenationFormat.LibHyphen = 3 -> Egami.Fonts.Layout.HyphenationFormat
+Egami.Fonts.Layout.HyphenationFormat.PatternList = 2 -> Egami.Fonts.Layout.HyphenationFormat
+Egami.Fonts.Layout.HyphenationFormat.TeX = 1 -> Egami.Fonts.Layout.HyphenationFormat
+Egami.Fonts.Layout.Hyphenator
+Egami.Fonts.Layout.Hyphenator.GetPoints(System.ReadOnlySpan<char> word, System.Span<int> points) -> int
+Egami.Fonts.Layout.Hyphenator.MinAfter.get -> int
+Egami.Fonts.Layout.Hyphenator.MinBefore.get -> int
+Egami.Fonts.Layout.Hyphenator.Save(System.IO.Stream! output) -> void
+Egami.Fonts.Layout.Hyphenator.WithExceptions(System.Collections.Generic.IEnumerable<string!>! words) -> Egami.Fonts.Layout.Hyphenator!
 Egami.Fonts.MathConstants
 Egami.Fonts.MathConstants.<Clone>$() -> Egami.Fonts.MathConstants!
 Egami.Fonts.MathConstants.AccentBaseHeight.get -> float
@@ -174,6 +186,8 @@ override Egami.Fonts.MathGlyphAssembly.GetHashCode() -> int
 override Egami.Fonts.MathGlyphAssembly.ToString() -> string!
 override Egami.Fonts.MathGlyphPart.GetHashCode() -> int
 override Egami.Fonts.MathGlyphVariant.GetHashCode() -> int
+static Egami.Fonts.Layout.Hyphenator.FromPatterns(string! patterns, string? exceptions = null, int minBefore = 2, int minAfter = 3) -> Egami.Fonts.Layout.Hyphenator!
+static Egami.Fonts.Layout.Hyphenator.Load(System.IO.Stream! stream, Egami.Fonts.Layout.HyphenationFormat format = Egami.Fonts.Layout.HyphenationFormat.Auto) -> Egami.Fonts.Layout.Hyphenator!
 static Egami.Fonts.MathConstants.operator !=(Egami.Fonts.MathConstants? left, Egami.Fonts.MathConstants? right) -> bool
 static Egami.Fonts.MathConstants.operator ==(Egami.Fonts.MathConstants? left, Egami.Fonts.MathConstants? right) -> bool
 static Egami.Fonts.MathGlyphAssembly.operator !=(Egami.Fonts.MathGlyphAssembly? left, Egami.Fonts.MathGlyphAssembly? right) -> bool

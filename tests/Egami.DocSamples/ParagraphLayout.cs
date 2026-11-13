@@ -417,6 +417,32 @@ public class ParagraphLayout
         Assert.True(flow.IsComplete);
     }
 
+    [Fact]
+    public void HyphenationPoints()
+    {
+        #region hyphenation
+        // Liang's patterns, as hyph-utf8's .pat.txt lists them; a .tex, .dic or .ehyp file loads with Hyphenator.Load.
+        Hyphenator hyphenator = Hyphenator.FromPatterns(
+            ".hy3ph he2n hena4 hen5at 1na n2at 1tio 2io o2n",
+            exceptions: "ta-ble",                      // exceptions break exactly where their hyphens are
+            minBefore: 2, minAfter: 3);
+
+        Span<int> points = stackalloc int[16];
+        int count = hyphenator.GetPoints("Hyphenation", points);   // 2: offsets 2 and 6, "Hy-phen-ation"
+
+        // Compile once, load fast: the .ehyp form skips parsing the pattern text.
+        using MemoryStream compiled = new();
+        hyphenator.Save(compiled);
+        compiled.Position = 0;
+        Hyphenator loaded = Hyphenator.Load(compiled);
+        int tablePoints = loaded.GetPoints("table", points);       // 1: offset 2, "ta-ble"
+        #endregion
+
+        Assert.Equal(2, count);
+        Assert.Equal(2, points[0]);
+        Assert.Equal(1, tablePoints);
+    }
+
     private sealed class PathRecorder : IGlyphOutlineSink
     {
         public int Count { get; private set; }
