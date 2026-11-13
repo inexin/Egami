@@ -102,6 +102,19 @@ underline or overline when <a class="xref" href="Egami.Fonts.Layout.TextDecorati
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.HyphenationDictionaries.html">HyphenationDictionaries</a></dt>
+      <dd><p>Hyphenators by BCP 47 language tag. A lookup falls back a subtag at a time, as CSS matches languages: <code>de-CH-1901</code>,
+then <code>de-CH</code>, then <code>de</code>. Tags compare without regard to case, and <code>_</code> counts as <code>-</code>. Add the hyphenators
+before laying text out; reading from several threads is safe while nothing is added.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.HyphenationOptions.html">HyphenationOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Fonts.Layout.Hyphens.html#Egami_Fonts_Layout_Hyphens_Auto">Auto</a> hyphenates: the dictionaries by language and the limits word processors and CSS put on
+hyphenation.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Fonts.Layout.Hyphenator.html">Hyphenator</a></dt>
       <dd><p>One language's hyphenation patterns and exceptions: finds where a word may break with a hyphen, by Liang's algorithm
 (F. M. Liang, &quot;Word Hy-phen-a-tion by Com-put-er&quot;, Stanford, 1983) as TeX, LibreOffice and browsers use it.</p>
@@ -273,6 +286,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Fonts.Layout.HyphenationFormat.html">HyphenationFormat</a></dt>
       <dd><p>The file formats <a class="xref" href="Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_Load_System_IO_Stream_Egami_Fonts_Layout_HyphenationFormat_">Load(Stream, HyphenationFormat)</a> reads hyphenation patterns from.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.Hyphens.html">Hyphens</a></dt>
+      <dd><p>Whether words break with hyphens at line ends (CSS <code>hyphens</code>).</p>
 </dd>
     </dl>
     <dl class="jumplist">

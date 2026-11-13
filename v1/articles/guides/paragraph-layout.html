@@ -151,8 +151,48 @@ hyphenator.Save(compiled);
 compiled.Position = 0;
 Hyphenator loaded = Hyphenator.Load(compiled);
 int tablePoints = loaded.GetPoints(&quot;table&quot;, points);       // 1: offset 2, &quot;ta-ble&quot;
+</code></pre><h3 id="automatic-hyphens">Automatic hyphens</h3>
+<p><code>ParagraphStyle.Hyphens</code> is CSS's <code>hyphens</code>: <code>Manual</code> (the default) breaks words only at soft hyphens (U+00AD), <code>None</code> not
+even there, and <code>Auto</code> also where a dictionary allows. <code>ParagraphStyle.Hyphenation</code> gives <code>Auto</code> its <code>HyphenationDictionaries</code>
+(hyphenators by BCP 47 tag, falling back a subtag at a time) and limits; each run's <code>TextStyle.Language</code> picks the dictionary,
+and text in a language without one is not hyphenated, as CSS requires.</p>
+<pre><code class="lang-csharp">// One hyphenator per language; &quot;en&quot; also serves en-US and en-GB.
+HyphenationDictionaries dictionaries = new();
+using (FileStream patterns = File.OpenRead(System.IO.Path.Combine(folder, &quot;hyphenation&quot;, &quot;hyph-en-us.tex&quot;)))
+{
+    dictionaries.Add(&quot;en&quot;, Hyphenator.Load(patterns));
+}
+
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 16, Language = &quot;en-US&quot; },
+    Align = TextAlign.Justify,
+    Hyphens = Hyphens.Auto,                    // CSS hyphens: auto
+    Hyphenation = new HyphenationOptions
+    {
+        Dictionaries = dictionaries,
+        MinWordLength = 6,                     // shorter words stay whole
+        MaxConsecutiveLines = 2,               // Word's consecutiveHyphenLimit
+        Zone = 18,                             // Word's hyphenationZone: 0.25 inch in points
+    },
+};
+
+TextLayout layout = Paragraph.Create(
+    &quot;Typographers traditionally hyphenate justified paragraphs, because otherwise extraordinarily long words &quot;
+    + &quot;leave conspicuous rivers of whitespace.&quot;, style).Layout(150);
 </code></pre>
-<p>Paragraph layout does not hyphenate on its own yet; for now, soft hyphens (U+00AD) in the text mark the breaks.</p>
+<p>Greedy filling looks up only the word that crosses each line's end, as browsers do, and takes its last point at which the line
+with its hyphen still fits. <code>HyphenationOptions</code> holds the limits word processors and CSS share:</p>
+<ul>
+<li><code>MinWordLength</code> (5 by default) leaves shorter words whole; <code>MinBefore</code> and <code>MinAfter</code> override the dictionary's minimums.</li>
+<li><code>MaxConsecutiveLines</code> stops automatic hyphens after that many lines in a row ending with a hyphen (soft hyphens count).</li>
+<li><code>Zone</code> hyphenates a word only when the line without it would leave more than that much space; Word applies its zone to
+justified lines too, and so does Egami. A word that does not fit on a line of its own is hyphenated whatever the zone.</li>
+<li><code>HyphenateCapitalized = false</code> leaves words in capitals whole, as Word's &quot;Hyphenate words in CAPS&quot; switched off.</li>
+</ul>
+<p>Words next to a digit or a hyphen, and pieces that have a soft hyphen, keep the breaks they have. A break inside a glyph cluster,
+such as a ligature, shapes both pieces again. The hyphen drawn is <code>ParagraphStyle.Hyphen</code>, and <code>Canvas.DrawTextLayout</code> marks
+it with an empty ActualText, so text copied from a PDF reads the word whole. Balanced filling breaks only where the text allows.</p>
 <h2 id="rich-text-and-paragraphs">Rich text and paragraphs</h2>
 <p>A <code>RichText</code> is a string with <code>StyleSpan</code>s over it (start and length in UTF-16 units, never overlapping) and a <code>Placeholder</code>
 for each object replacement character (U+FFFC). <code>RichTextBuilder</code> builds one: <code>Push</code> a <code>TextStyle</code>, <code>Append</code> text,

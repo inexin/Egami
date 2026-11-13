@@ -27856,6 +27856,44 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.DecorationShape.Top
   nameWithType: DecorationShape.Top
+- uid: Egami.Fonts.Layout.HyphenationDictionaries
+  name: HyphenationDictionaries
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html
+  commentId: T:Egami.Fonts.Layout.HyphenationDictionaries
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries
+  nameWithType: HyphenationDictionaries
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.Add(System.String,Egami.Fonts.Layout.Hyphenator)
+  name: Add(string, Hyphenator)
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_Add_System_String_Egami_Fonts_Layout_Hyphenator_
+  commentId: M:Egami.Fonts.Layout.HyphenationDictionaries.Add(System.String,Egami.Fonts.Layout.Hyphenator)
+  name.vb: Add(String, Hyphenator)
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.Add(string, Egami.Fonts.Layout.Hyphenator)
+  fullName.vb: Egami.Fonts.Layout.HyphenationDictionaries.Add(String, Egami.Fonts.Layout.Hyphenator)
+  nameWithType: HyphenationDictionaries.Add(string, Hyphenator)
+  nameWithType.vb: HyphenationDictionaries.Add(String, Hyphenator)
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.Add*
+  name: Add
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_Add_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationDictionaries.Add
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.Add
+  nameWithType: HyphenationDictionaries.Add
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.TryGet(System.String,Egami.Fonts.Layout.Hyphenator@)
+  name: TryGet(string?, out Hyphenator?)
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_TryGet_System_String_Egami_Fonts_Layout_Hyphenator__
+  commentId: M:Egami.Fonts.Layout.HyphenationDictionaries.TryGet(System.String,Egami.Fonts.Layout.Hyphenator@)
+  name.vb: TryGet(String, Hyphenator)
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.TryGet(string?, out Egami.Fonts.Layout.Hyphenator?)
+  fullName.vb: Egami.Fonts.Layout.HyphenationDictionaries.TryGet(String, Egami.Fonts.Layout.Hyphenator)
+  nameWithType: HyphenationDictionaries.TryGet(string?, out Hyphenator?)
+  nameWithType.vb: HyphenationDictionaries.TryGet(String, Hyphenator)
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.TryGet*
+  name: TryGet
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_TryGet_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationDictionaries.TryGet
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.TryGet
+  nameWithType: HyphenationDictionaries.TryGet
 - uid: Egami.Fonts.Layout.HyphenationFormat
   name: HyphenationFormat
   href: api/Egami.Fonts.Layout.HyphenationFormat.html
@@ -27892,6 +27930,103 @@ references:
   commentId: F:Egami.Fonts.Layout.HyphenationFormat.TeX
   fullName: Egami.Fonts.Layout.HyphenationFormat.TeX
   nameWithType: HyphenationFormat.TeX
+- uid: Egami.Fonts.Layout.HyphenationOptions
+  name: HyphenationOptions
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html
+  commentId: T:Egami.Fonts.Layout.HyphenationOptions
+  fullName: Egami.Fonts.Layout.HyphenationOptions
+  nameWithType: HyphenationOptions
+- uid: Egami.Fonts.Layout.HyphenationOptions.Dictionaries
+  name: Dictionaries
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_Dictionaries
+  commentId: P:Egami.Fonts.Layout.HyphenationOptions.Dictionaries
+  fullName: Egami.Fonts.Layout.HyphenationOptions.Dictionaries
+  nameWithType: HyphenationOptions.Dictionaries
+- uid: Egami.Fonts.Layout.HyphenationOptions.Dictionaries*
+  name: Dictionaries
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_Dictionaries_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationOptions.Dictionaries
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.HyphenationOptions.Dictionaries
+  nameWithType: HyphenationOptions.Dictionaries
+- uid: Egami.Fonts.Layout.HyphenationOptions.HyphenateCapitalized
+  name: HyphenateCapitalized
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_HyphenateCapitalized
+  commentId: P:Egami.Fonts.Layout.HyphenationOptions.HyphenateCapitalized
+  fullName: Egami.Fonts.Layout.HyphenationOptions.HyphenateCapitalized
+  nameWithType: HyphenationOptions.HyphenateCapitalized
+- uid: Egami.Fonts.Layout.HyphenationOptions.HyphenateCapitalized*
+  name: HyphenateCapitalized
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_HyphenateCapitalized_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationOptions.HyphenateCapitalized
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.HyphenationOptions.HyphenateCapitalized
+  nameWithType: HyphenationOptions.HyphenateCapitalized
+- uid: Egami.Fonts.Layout.HyphenationOptions.MaxConsecutiveLines
+  name: MaxConsecutiveLines
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_MaxConsecutiveLines
+  commentId: P:Egami.Fonts.Layout.HyphenationOptions.MaxConsecutiveLines
+  fullName: Egami.Fonts.Layout.HyphenationOptions.MaxConsecutiveLines
+  nameWithType: HyphenationOptions.MaxConsecutiveLines
+- uid: Egami.Fonts.Layout.HyphenationOptions.MaxConsecutiveLines*
+  name: MaxConsecutiveLines
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_MaxConsecutiveLines_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationOptions.MaxConsecutiveLines
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.HyphenationOptions.MaxConsecutiveLines
+  nameWithType: HyphenationOptions.MaxConsecutiveLines
+- uid: Egami.Fonts.Layout.HyphenationOptions.MinAfter
+  name: MinAfter
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_MinAfter
+  commentId: P:Egami.Fonts.Layout.HyphenationOptions.MinAfter
+  fullName: Egami.Fonts.Layout.HyphenationOptions.MinAfter
+  nameWithType: HyphenationOptions.MinAfter
+- uid: Egami.Fonts.Layout.HyphenationOptions.MinAfter*
+  name: MinAfter
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_MinAfter_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationOptions.MinAfter
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.HyphenationOptions.MinAfter
+  nameWithType: HyphenationOptions.MinAfter
+- uid: Egami.Fonts.Layout.HyphenationOptions.MinBefore
+  name: MinBefore
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_MinBefore
+  commentId: P:Egami.Fonts.Layout.HyphenationOptions.MinBefore
+  fullName: Egami.Fonts.Layout.HyphenationOptions.MinBefore
+  nameWithType: HyphenationOptions.MinBefore
+- uid: Egami.Fonts.Layout.HyphenationOptions.MinBefore*
+  name: MinBefore
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_MinBefore_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationOptions.MinBefore
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.HyphenationOptions.MinBefore
+  nameWithType: HyphenationOptions.MinBefore
+- uid: Egami.Fonts.Layout.HyphenationOptions.MinWordLength
+  name: MinWordLength
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_MinWordLength
+  commentId: P:Egami.Fonts.Layout.HyphenationOptions.MinWordLength
+  fullName: Egami.Fonts.Layout.HyphenationOptions.MinWordLength
+  nameWithType: HyphenationOptions.MinWordLength
+- uid: Egami.Fonts.Layout.HyphenationOptions.MinWordLength*
+  name: MinWordLength
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_MinWordLength_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationOptions.MinWordLength
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.HyphenationOptions.MinWordLength
+  nameWithType: HyphenationOptions.MinWordLength
+- uid: Egami.Fonts.Layout.HyphenationOptions.Zone
+  name: Zone
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_Zone
+  commentId: P:Egami.Fonts.Layout.HyphenationOptions.Zone
+  fullName: Egami.Fonts.Layout.HyphenationOptions.Zone
+  nameWithType: HyphenationOptions.Zone
+- uid: Egami.Fonts.Layout.HyphenationOptions.Zone*
+  name: Zone
+  href: api/Egami.Fonts.Layout.HyphenationOptions.html#Egami_Fonts_Layout_HyphenationOptions_Zone_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationOptions.Zone
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.HyphenationOptions.Zone
+  nameWithType: HyphenationOptions.Zone
 - uid: Egami.Fonts.Layout.Hyphenator
   name: Hyphenator
   href: api/Egami.Fonts.Layout.Hyphenator.html
@@ -27998,6 +28133,30 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.Hyphenator.WithExceptions
   nameWithType: Hyphenator.WithExceptions
+- uid: Egami.Fonts.Layout.Hyphens
+  name: Hyphens
+  href: api/Egami.Fonts.Layout.Hyphens.html
+  commentId: T:Egami.Fonts.Layout.Hyphens
+  fullName: Egami.Fonts.Layout.Hyphens
+  nameWithType: Hyphens
+- uid: Egami.Fonts.Layout.Hyphens.Auto
+  name: Auto
+  href: api/Egami.Fonts.Layout.Hyphens.html#Egami_Fonts_Layout_Hyphens_Auto
+  commentId: F:Egami.Fonts.Layout.Hyphens.Auto
+  fullName: Egami.Fonts.Layout.Hyphens.Auto
+  nameWithType: Hyphens.Auto
+- uid: Egami.Fonts.Layout.Hyphens.Manual
+  name: Manual
+  href: api/Egami.Fonts.Layout.Hyphens.html#Egami_Fonts_Layout_Hyphens_Manual
+  commentId: F:Egami.Fonts.Layout.Hyphens.Manual
+  fullName: Egami.Fonts.Layout.Hyphens.Manual
+  nameWithType: Hyphens.Manual
+- uid: Egami.Fonts.Layout.Hyphens.None
+  name: None
+  href: api/Egami.Fonts.Layout.Hyphens.html#Egami_Fonts_Layout_Hyphens_None
+  commentId: F:Egami.Fonts.Layout.Hyphens.None
+  fullName: Egami.Fonts.Layout.Hyphens.None
+  nameWithType: Hyphens.None
 - uid: Egami.Fonts.Layout.ITextPaint
   name: ITextPaint
   href: api/Egami.Fonts.Layout.ITextPaint.html
@@ -28880,6 +29039,32 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.ParagraphStyle.Hyphen
   nameWithType: ParagraphStyle.Hyphen
+- uid: Egami.Fonts.Layout.ParagraphStyle.Hyphenation
+  name: Hyphenation
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Hyphenation
+  commentId: P:Egami.Fonts.Layout.ParagraphStyle.Hyphenation
+  fullName: Egami.Fonts.Layout.ParagraphStyle.Hyphenation
+  nameWithType: ParagraphStyle.Hyphenation
+- uid: Egami.Fonts.Layout.ParagraphStyle.Hyphenation*
+  name: Hyphenation
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Hyphenation_
+  commentId: Overload:Egami.Fonts.Layout.ParagraphStyle.Hyphenation
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.ParagraphStyle.Hyphenation
+  nameWithType: ParagraphStyle.Hyphenation
+- uid: Egami.Fonts.Layout.ParagraphStyle.Hyphens
+  name: Hyphens
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Hyphens
+  commentId: P:Egami.Fonts.Layout.ParagraphStyle.Hyphens
+  fullName: Egami.Fonts.Layout.ParagraphStyle.Hyphens
+  nameWithType: ParagraphStyle.Hyphens
+- uid: Egami.Fonts.Layout.ParagraphStyle.Hyphens*
+  name: Hyphens
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Hyphens_
+  commentId: Overload:Egami.Fonts.Layout.ParagraphStyle.Hyphens
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.ParagraphStyle.Hyphens
+  nameWithType: ParagraphStyle.Hyphens
 - uid: Egami.Fonts.Layout.ParagraphStyle.Justify
   name: Justify
   href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Justify
