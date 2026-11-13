@@ -326,6 +326,19 @@ internal sealed partial class LineBuilder
 
             if (last >= 0)
             {
+                // The tolerance passes trade a little cost for speed, as in TeX: a pass may settle for breaks that cost more
+                // than greedy filling's, which may have a line past the tolerance. Then the greedy breaks win.
+                List<int> greedy = [];
+                if (Greedy(start, candidates, first, following, options, maxHyphens, greedy) < nodes[last].Total)
+                {
+                    foreach (int c in greedy)
+                    {
+                        ends.Add(new OptimalBreak(candidates[c].Index, candidates[c].Auto));
+                    }
+
+                    return;
+                }
+
                 int at = ends.Count;
                 for (int n = last; nodes[n].Candidate >= 0; n = nodes[n].Previous)
                 {
@@ -339,6 +352,64 @@ internal sealed partial class LineBuilder
 
         // Unreachable: the last pass always reaches the mandatory break. Fall back to one line per candidate run.
         ends.Add(new OptimalBreak(candidates[^1].Index, false));
+    }
+
+    /// <summary>
+    /// The breaks greedy filling would choose in the run (each line to the furthest candidate that fits, or the first when none
+    /// does), added to <paramref name="picks"/>, and their total demerits, an overfull line costing nothing.
+    /// </summary>
+    private double Greedy(int start, List<Candidate> candidates, float first, float following, OptimalLineOptions options, int maxHyphens, List<int> picks)
+    {
+        Node from = new() { Position = start, Candidate = -1, Fitness = Fitness.Decent };
+        double total = 0;
+        int c = 0;
+        while (c < candidates.Count)
+        {
+            float width = from.Candidate < 0 ? first : following;
+            int chosen = -1;
+            double chosenRatio = 0;
+            bool chosenRagged = false;
+            for (int k = c; k < candidates.Count; k++)
+            {
+                if (candidates[k].Auto && maxHyphens > 0 && from.Hyphens >= maxHyphens)
+                {
+                    continue;
+                }
+
+                double ratio = Ratio(from.Position, candidates[k], width, options, out bool ragged);
+                if (ratio < -1)
+                {
+                    break;
+                }
+
+                (chosen, chosenRatio, chosenRagged) = (k, ratio, ragged);
+                if (candidates[k].Forced)
+                {
+                    break;
+                }
+            }
+
+            Candidate candidate;
+            Fitness fitness = Fitness.Decent;
+            if (chosen < 0)
+            {
+                chosen = c;
+                candidate = candidates[c];
+            }
+            else
+            {
+                candidate = candidates[chosen];
+                fitness = FitnessOf(chosenRatio);
+                total += Demerits(from, candidate, Badness(chosenRatio, chosenRagged), fitness, options);
+            }
+
+            picks.Add(chosen);
+            int hyphens = candidate.Flagged && maxHyphens > 0 ? Math.Min(from.Hyphens + 1, maxHyphens) : 0;
+            from = new Node { Position = candidate.Index, Candidate = chosen, Fitness = fitness, Hyphens = (byte)hyphens, Flagged = candidate.Flagged };
+            c = chosen + 1;
+        }
+
+        return total;
     }
 
     private static void Offer(Node from, int fromIndex, Candidate candidate, double demerits, Fitness fitness, int maxHyphens, double[] best, int[] bestFrom, double[] least, bool artificial = false)
