@@ -150,7 +150,7 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   swings by up to a third between runs on a busy machine: each clip at quality 50 and 34 at most 10 % above the ratio after
   round 3 (4.0 and 3.6 times on the mean). The H.264 guide's effort table is re-measured with x264 matched by quality.
 
-## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (unreleased)
+## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
 A preview of the next release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic,
 Egami.Formats.Extended and Egami.Cli), so the work since 1.4.0 can be tried before 1.5.0. It adds API and removes none. The
@@ -168,7 +168,7 @@ keep the train together.
 - Egami.Fonts.Substitutes 1.1.0 adds STIX Two Math for Cambria Math. It is a stable release that needs Egami.Fonts 1.4.0 or
   later, so it installs without the preview.
 
-## Egami 1.5.0-preview.1 (unreleased)
+## Egami 1.5.0-preview.1 (2026-11-13)
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 
@@ -604,7 +604,7 @@ KTX stage D (writing and whole textures; roadmap 2.3.11). Additive.
   better and about twice as fast, within 0.25 dB of astcenc `-medium` at 0.5 times its speed or better; ETC1S 1.8 dB better
   and 3.3 times faster; UASTC fills the BC1 and ETC1 bias transcoder hints.
 
-## Egami.Fonts 1.5.0-preview.1 (unreleased)
+## Egami.Fonts 1.5.0-preview.1 (2026-11-13)
 
 Hyphenation patterns and automatic hyphens. Additive.
 
