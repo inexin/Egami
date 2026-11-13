@@ -4,10 +4,10 @@ encode time at its default effort against x264 medium, on one thread and on all 
 rate control gate: one and two-pass bitrate within 5 % of the target over a clip, constant bitrate never
 emptying the buffer.
 
-Speed: the design's goal of at most 2 times x264 medium was not met. Matched by quality, after speed round 3 effort 4 takes
-3.4 times x264 medium's CPU cycles a frame at 720p at quality 50 on the four clips (2.5 to 5.3 by clip) and 2.9 times at
-quality 34 (2.6 to 3.4); in instructions 4.0 and 3.6 times (3.3 to 5.5 and 3.3 to 3.7). The wall times and the ratios are recorded; the gate is a
-regression gate on the instructions, which unlike the cycles barely move between runs: each clip's instruction ratio at each
+Speed: the design's goal of at most 2 times x264 medium was not met. Matched by quality, after speed round 4 effort 4 takes
+2.9 times x264 medium's CPU cycles a frame at 720p at quality 50 on the four clips (2.4 to 3.9 by clip) and 2.5 times at
+quality 34 (2.4 to 2.6); in instructions 3.5 and 3.0 times (3.0 to 4.6 and 2.9 to 3.3). The wall times and the ratios are
+recorded; the gate is a regression gate on the instructions, which unlike the cycles barely move between runs: each clip's instruction ratio at each
 of the two qualities at most GATE_INSTRUCTIONS, the measured ratio and 10 %.
 
 Everything runs in Docker on the same machine: x264 0.164 (Alpine's binary package, run only as a black-box encoder) and FFmpeg
@@ -69,10 +69,10 @@ ROOT = os.path.abspath(".")
 GATE_BD = 15.0
 GATE_TIME_GOAL = 2.0
 # The instruction ratio against x264 medium (matched by PSNR-Y, Egami without adaptive quantization) at effort 4, 720p, 20
-# frames, PGO on, that each clip may reach at quality 50 and 34: the ratio measured after speed round 3 (task 26) and 10 %
-# more, rounded up. (Task 22 gated the cycles ratio, which swings by a third on this machine.)
-GATE_INSTRUCTIONS = {50: {"crowd_run": 3.7, "ducks_take_off": 4.3, "park_joy": 3.8, "old_town_cross": 6.1},
-                     34: {"crowd_run": 3.8, "ducks_take_off": 4.1, "park_joy": 4.0, "old_town_cross": 4.3}}
+# frames, PGO on, that each clip may reach at quality 50 and 34: the ratio measured after speed round 4 (PR B) and 10 %
+# more, rounded up. (Round 3 task 22 gated the cycles ratio, which swings by a third on this machine.)
+GATE_INSTRUCTIONS = {50: {"crowd_run": 3.4, "ducks_take_off": 3.8, "park_joy": 3.4, "old_town_cross": 5.1},
+                     34: {"crowd_run": 3.2, "ducks_take_off": 3.7, "park_joy": 3.4, "old_town_cross": 3.2}}
 GATE_RATE = 5.0
 
 
@@ -421,7 +421,7 @@ def report_cycles_file(data, quality, aq):
     if ratios:
         print(f"  Mean Egami / x264 medium {np.mean([r[0] for r in ratios]):.2f} in cycles, {np.mean([r[1] for r in ratios]):.2f} in instructions")
     if gated:
-        print(f"  Speed regression gate (Egami / x264 medium in instructions at most the level measured after speed round 3, plus 10 %): "
+        print(f"  Speed regression gate (Egami / x264 medium in instructions at most the level measured after speed round 4, plus 10 %): "
               f"{'met' if ok else 'not met'}; the design's goal of {GATE_TIME_GOAL:.0f} times is not met")
 
 
