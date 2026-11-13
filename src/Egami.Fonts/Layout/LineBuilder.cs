@@ -179,7 +179,7 @@ internal sealed class DraftRun
 
 /// <summary>Fills lines greedily at break opportunities, shapes pieces again where a break is unsafe, reorders each line's bidi
 /// runs and places them (design stage C).</summary>
-internal sealed class LineBuilder
+internal sealed partial class LineBuilder
 {
     private const float Epsilon = 1e-4f;
 
@@ -306,19 +306,43 @@ internal sealed class LineBuilder
 
     /// <summary>
     /// The furthest automatic hyphenation point in <c>[segmentStart, segmentEnd)</c> (the piece crossing the line's end) at which
-    /// the line from <paramref name="start"/>, with its hyphen, fits, or null. Words are runs of letters and marks (apostrophes
-    /// inside them included) of a language with a dictionary; a piece with a soft hyphen, and words next to a digit or a
-    /// hyphen, keep the breaks they have.
+    /// the line from <paramref name="start"/>, with its hyphen, fits, or null.
     /// </summary>
     private int? Hyphenate(int start, int segmentStart, int segmentEnd, float width, HyphenationOptions auto)
+    {
+        List<int> points = [];
+        WordPoints(segmentStart, segmentEnd, auto, points);
+        for (int p = points.Count - 1; p >= 0; p--)
+        {
+            int point = points[p];
+            if (point <= start)
+            {
+                break;
+            }
+
+            if (Measure(start, point) + HyphenWidth(point) <= width + Epsilon)
+            {
+                return point;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Adds the automatic hyphenation points of the piece <c>[segmentStart, segmentEnd)</c> between two break opportunities to
+    /// <paramref name="points"/>, in order. Words are runs of letters and marks (apostrophes inside them included) of a language
+    /// with a dictionary; a piece with a soft hyphen, and words next to a digit or a hyphen, keep the breaks they have.
+    /// </summary>
+    private void WordPoints(int segmentStart, int segmentEnd, HyphenationOptions auto, List<int> points)
     {
         ReadOnlySpan<char> piece = _text.AsSpan(segmentStart, segmentEnd - segmentStart);
         if (piece.Contains('\u00AD'))
         {
-            return null;
+            return;
         }
 
-        List<(int Start, int End)> words = [];
+        int[]? found = null;
         int i = segmentStart;
         while (i < segmentEnd)
         {
@@ -345,41 +369,25 @@ internal sealed class LineBuilder
                 }
             }
 
-            words.Add((wordStart, i));
-        }
-
-        int[] points = new int[Math.Max(1, segmentEnd - segmentStart)];
-        for (int w = words.Count - 1; w >= 0; w--)
-        {
-            (int s, int e) = words[w];
-            if (!Eligible(s, e, auto) || HyphenatorAt(s, auto) is not Hyphenator hyphenator)
+            if (!Eligible(wordStart, i, auto) || HyphenatorAt(wordStart, auto) is not Hyphenator hyphenator)
             {
                 continue;
             }
 
-            int count = hyphenator.GetPoints(_text.AsSpan(s, e - s), points, auto.MinBefore ?? hyphenator.MinBefore, auto.MinAfter ?? hyphenator.MinAfter);
-            for (int p = count - 1; p >= 0; p--)
+            found ??= new int[segmentEnd - segmentStart];
+            int count = hyphenator.GetPoints(_text.AsSpan(wordStart, i - wordStart), found, auto.MinBefore ?? hyphenator.MinBefore, auto.MinAfter ?? hyphenator.MinAfter);
+            for (int p = 0; p < count; p++)
             {
-                int point = s + points[p];
-                if (point <= start)
-                {
-                    break;
-                }
-
+                int point = wordStart + found[p];
                 if (!IsClusterStart(point))
                 {
                     // A break inside a glyph cluster (a ligature) shapes both pieces again.
                     ((_lazy ??= new()).ForcedUnsafe ??= []).Add(point);
                 }
 
-                if (Measure(start, point) + HyphenWidth(point) <= width + Epsilon)
-                {
-                    return point;
-                }
+                points.Add(point);
             }
         }
-
-        return null;
     }
 
     private bool IsWordRune(int i, out int length)
@@ -477,6 +485,12 @@ internal sealed class LineBuilder
 
         /// <summary>Hyphenation points inside glyph clusters, where both pieces shape again.</summary>
         public HashSet<int>? ForcedUnsafe;
+
+        /// <summary>The running sum of word separators' stretch, for <see cref="LineFill.Optimal"/>.</summary>
+        public float[]? Stretch;
+
+        /// <summary>The <see cref="LineFlow"/>'s plan for <see cref="LineFill.Optimal"/>.</summary>
+        public OptimalPlan? Plan;
     }
 
     /// <summary>
@@ -568,6 +582,10 @@ internal sealed class LineBuilder
         bool hyphen = b.Index == end && b.IsSoftHyphen && !b.IsMandatory;
         return Build(start, end, hard, hyphen);
     }
+
+    /// <summary>Decides the line from <paramref name="start"/> to a chosen end, which may be an automatic hyphenation point.</summary>
+    public LineDraft FillTo(int start, OptimalBreak end) =>
+        end.AutoHyphen ? Build(start, end.End, false, true, autoHyphen: true) : FillTo(start, end.End);
 
     private int CountLines(float width)
     {
@@ -1265,7 +1283,9 @@ internal sealed class LineBuilder
         Dictionary<DraftRun, List<Tatweels>>? tatweels = null;
         float contentWidth = draft.ContentWidth;
         float free = boxWidth - draft.ContentWidth;
-        if (alignment == TextAlignLast.Justify && free > 0 && float.IsFinite(width))
+        // Optimal filling may have chosen a justified line whose spaces shrink (OptimalLineOptions.ShrinkSpaces).
+        bool shrink = free < -Epsilon && _paragraph.Style.LineFill == LineFill.Optimal && _paragraph.Style.OptimalLines is { ShrinkSpaces: true };
+        if (alignment == TextAlignLast.Justify && (free > 0 || shrink) && float.IsFinite(width))
         {
             expansion = Justify(draft, free, out tatweels);
             if (expansion is not null)
@@ -1560,6 +1580,12 @@ internal sealed class LineBuilder
             return null;
         }
 
+        // A line too wide shrinks its word spaces only.
+        if (free < 0)
+        {
+            mode = TextJustify.InterWord;
+        }
+
         // Each content cluster's logically last glyph (or a placeholder's box), in logical order.
         List<(int Cluster, DraftRun Piece, int Glyph)> clusters = [];
         foreach (DraftRun piece in draft.Runs)
@@ -1641,7 +1667,7 @@ internal sealed class LineBuilder
             return tatweels is null ? null : [];
         }
 
-        float each = Math.Max(0, remaining) / opportunities.Count;
+        float each = (free < 0 ? remaining : Math.Max(0, remaining)) / opportunities.Count;
         Dictionary<(DraftRun, int), float> result = [];
         foreach ((DraftRun piece, int glyph) in opportunities)
         {

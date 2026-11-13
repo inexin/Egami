@@ -334,4 +334,27 @@ public sealed class HyphenatorTests
             }
         }
     }
+
+    [Fact]
+    public void CompiledFormIsCompactAndKeepsEveryAnswer()
+    {
+        // Version 2 stores no edge targets (breadth-first numbering makes them implicit) and packs the rest in varints.
+        byte[] compiled = Compile(s_norwegian.Value);
+        Assert.True(compiled.Length < 200_000, $"{compiled.Length} bytes");
+        Hyphenator back = FromBytes(compiled, HyphenationFormat.Compiled);
+        foreach (string word in Words())
+        {
+            Assert.Equal(Hyphenate(s_norwegian.Value, word), Hyphenate(back, word));
+        }
+    }
+
+    [Fact]
+    public void CompiledVersion1IsRejected()
+    {
+        byte[] compiled = Compile(s_english.Value);
+        compiled[4] = 1;
+        compiled[5] = 0;
+        InvalidDataException e = Assert.Throws<InvalidDataException>(() => FromBytes(compiled, HyphenationFormat.Compiled));
+        Assert.Contains("version 1", e.Message, StringComparison.Ordinal);
+    }
 }

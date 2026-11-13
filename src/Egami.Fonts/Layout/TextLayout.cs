@@ -345,6 +345,23 @@ public sealed class LineFlow
     /// <summary>Gets the UTF-16 index the next line starts at.</summary>
     public int Position => _next;
 
+    /// <summary>
+    /// Gets or sets the width lines after the next one are expected to have, for <see cref="LineFill.Optimal"/>, which plans the
+    /// rest of the paragraph at once: the width after a first-line indent, say. Null, the default, expects the next line's
+    /// width. A call to <see cref="NextLine(float)"/> with a width the plan did not expect plans again from there.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is negative or not finite.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="optimal-flow"/>
+    /// </example>
+    public float? FollowingWidth
+    {
+        get => _builder.FollowingWidth;
+        set => _builder.Plan.FollowingWidth = value is null || (float.IsFinite(value.Value) && value.Value >= 0)
+            ? value
+            : throw new ArgumentOutOfRangeException(nameof(value), value, "A finite width, 0 or more.");
+    }
+
     /// <summary>Gets whether every line has been laid out. An empty paragraph has no lines, and a final hard break adds none,
     /// as CSS lays text out.</summary>
     public bool IsComplete => _next >= Paragraph.Text.Length;
@@ -364,7 +381,7 @@ public sealed class LineFlow
         return draft is null ? null : _builder.Finish(draft, availableWidth, 0);
     }
 
-    /// <summary>Starts again from the paragraph's first line.</summary>
+    /// <summary>Starts again from the paragraph's first line. A <see cref="LineFill.Optimal"/> plan is kept.</summary>
     public void Reset()
     {
         _next = 0;
@@ -372,7 +389,8 @@ public sealed class LineFlow
 
     /// <summary>
     /// Takes back the lines from <paramref name="position"/> on, so the next <see cref="NextLine(float)"/> lays out from there
-    /// again: a line that did not fit at the foot of a column goes back to start the next one (<see cref="TextLine.Start"/>).
+    /// again: a line that did not fit at the foot of a column goes back to start the next one (<see cref="TextLine.Start"/>). A
+    /// <see cref="LineFill.Optimal"/> plan is kept, so the line comes back the same at the same width.
     /// </summary>
     /// <param name="position">A line's start, at most <see cref="Position"/>.</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="position"/> is negative or past <see cref="Position"/>.</exception>
@@ -393,8 +411,39 @@ public sealed class LineFlow
             return null;
         }
 
-        LineDraft draft = _builder.Fill(_next, width);
+        LineDraft draft = Paragraph.Style.LineFill == LineFill.Optimal && float.IsFinite(width) ? Planned(width) : _builder.Fill(_next, width);
         _next = draft.End;
+        return draft;
+    }
+
+    /// <summary>The planned line from the current position, after planning again when the plan has no line starting here or
+    /// expected other widths.</summary>
+    private LineDraft Planned(float width)
+    {
+        OptimalPlan plan = _builder.Plan;
+        float following = plan.FollowingWidth ?? width;
+        int k = plan.Starts.BinarySearch(_next);
+        if (k < 0 || (k == 0 ? plan.First : plan.Following) != width || plan.Following != following)
+        {
+            plan.Ends = _builder.OptimalEnds(_next, width, following);
+            plan.Starts.Clear();
+            int start = _next;
+            foreach (OptimalBreak end in plan.Ends)
+            {
+                plan.Starts.Add(start);
+                start = end.End;
+            }
+
+            (plan.First, plan.Following, k) = (width, following, 0);
+        }
+
+        LineDraft draft = _builder.FillTo(_next, plan.Ends[k]);
+        if (draft.ContentWidth > width + 1e-4f && Paragraph.Style.LineBreaking.OverflowWrap != OverflowWrap.Normal)
+        {
+            // A piece too wide for any line: break it as greedy filling does, and plan again after it.
+            draft = _builder.Fill(_next, width);
+        }
+
         return draft;
     }
 
