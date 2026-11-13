@@ -1,36 +1,38 @@
 namespace Egami.Fonts.Layout.Hyphenation;
 
 /// <summary>
-/// Liang's patterns as a packed trie (F. M. Liang, "Word Hy-phen-a-tion by Com-put-er", Stanford, 1983): every state keeps its
-/// edges as a sorted run of UTF-16 code units with their target states, and a state that ends a pattern points at that
-/// pattern's values (one per gap, from before its first letter to after its last) in a shared pool.
+/// Liang's patterns as a packed trie (F. M. Liang, "Word Hy-phen-a-tion by Com-put-er", Stanford, 1983). States are numbered
+/// breadth first, so edge e (in order of parent, then character) leads to state e + 1 and needs no stored target: a state keeps
+/// where its edges start, and each edge its UTF-16 code unit. A state that ends a pattern names that pattern's values (one per
+/// gap, from before its first letter) among the distinct value strings, which many patterns share.
 /// </summary>
 internal sealed class PatternTrie
 {
     /// <summary>The most letters a pattern may have, so its values (one more) fit a byte length.</summary>
     public const int MaxPatternLength = 254;
 
-    // Edges of state s: indexes EdgeStart[s] to EdgeStart[s + 1] - 1, sorted by EdgeChars.
+    // Edges of state s: indexes EdgeStart[s] to EdgeStart[s + 1] - 1, sorted by EdgeChars; edge e leads to state e + 1.
     internal readonly int[] EdgeStart;
     internal readonly char[] EdgeChars;
-    internal readonly int[] EdgeTargets;
 
-    // Values of state s: ValuePool[ValueStart[s] .. + ValueLength[s]], or none when ValueLength[s] is 0.
-    internal readonly int[] ValueStart;
-    internal readonly byte[] ValueLength;
+    // Values of state s: none when ValueId[s] is 0, else ValuePool[ValueOffset[id - 1] .. ValueOffset[id]].
+    internal readonly ushort[] ValueId;
+    internal readonly int[] ValueOffset;
     internal readonly byte[] ValuePool;
 
-    internal PatternTrie(int[] edgeStart, char[] edgeChars, int[] edgeTargets, int[] valueStart, byte[] valueLength, byte[] valuePool)
+    internal PatternTrie(int[] edgeStart, char[] edgeChars, ushort[] valueId, int[] valueOffset, byte[] valuePool)
     {
         EdgeStart = edgeStart;
         EdgeChars = edgeChars;
-        EdgeTargets = edgeTargets;
-        ValueStart = valueStart;
-        ValueLength = valueLength;
+        ValueId = valueId;
+        ValueOffset = valueOffset;
         ValuePool = valuePool;
     }
 
-    public int StateCount => ValueStart.Length;
+    public int StateCount => ValueId.Length;
+
+    /// <summary>Gets the number of distinct value strings.</summary>
+    public int ValueCount => ValueOffset.Length - 1;
 
     /// <summary>
     /// Raises <paramref name="levels"/> (one per gap of <paramref name="dotted"/>, which is the lower-cased word between two
@@ -49,11 +51,12 @@ internal sealed class PatternTrie
                     break;
                 }
 
-                int length = ValueLength[state];
-                if (length != 0)
+                int id = ValueId[state];
+                if (id != 0)
                 {
-                    ReadOnlySpan<byte> values = ValuePool.AsSpan(ValueStart[state], length);
-                    Span<byte> target = levels.Slice(start, length);
+                    int from = ValueOffset[id - 1];
+                    ReadOnlySpan<byte> values = ValuePool.AsSpan(from, ValueOffset[id] - from);
+                    Span<byte> target = levels.Slice(start, values.Length);
                     for (int k = 0; k < values.Length; k++)
                     {
                         if (values[k] > target[k])
@@ -76,7 +79,7 @@ internal sealed class PatternTrie
             char m = EdgeChars[mid];
             if (m == c)
             {
-                return EdgeTargets[mid];
+                return mid + 1;
             }
 
             if (m < c)
@@ -93,54 +96,55 @@ internal sealed class PatternTrie
     }
 
     /// <summary>Checks the arrays of a loaded trie, so a lookup never reads outside them or loops.</summary>
-    public static PatternTrie Validated(int[] edgeStart, char[] edgeChars, int[] edgeTargets, int[] valueStart, byte[] valueLength, byte[] valuePool)
+    public static PatternTrie Validated(int[] edgeStart, char[] edgeChars, ushort[] valueId, int[] valueOffset, byte[] valuePool)
     {
-        int states = valueStart.Length;
-        if (states == 0 || edgeStart.Length != states + 1 || valueLength.Length != states || edgeChars.Length != edgeTargets.Length
-            || edgeStart[0] != 0 || edgeStart[states] != edgeChars.Length)
+        int states = valueId.Length;
+        if (states == 0 || edgeStart.Length != states + 1 || edgeChars.Length != states - 1 || edgeStart[0] != 0
+            || edgeStart[states] != edgeChars.Length || valueOffset.Length == 0 || valueOffset[0] != 0
+            || valueOffset[^1] != valuePool.Length)
         {
             throw new InvalidDataException("The hyphenation trie's tables do not fit together.");
         }
 
-        // The fewest letters on a path to each state: a state's values may not reach past the end of its pattern.
-        int[] depth = new int[states];
-        Array.Fill(depth, int.MaxValue);
-        depth[0] = 0;
+        for (int v = 1; v < valueOffset.Length; v++)
+        {
+            int length = valueOffset[v] - valueOffset[v - 1];
+            if (length <= 0 || length > MaxPatternLength + 1)
+            {
+                throw new InvalidDataException("The hyphenation trie's values are out of order.");
+            }
+        }
+
+        // Edge e leads to state e + 1, which must come after its parent s (so no walk loops); depth counts the letters on the
+        // way to a state, and a state's values may not reach past the end of its pattern.
+        byte[] depth = new byte[states];
         for (int s = 0; s < states; s++)
         {
             int from = edgeStart[s];
             int to = edgeStart[s + 1];
-            if (to < from || to > edgeChars.Length)
+            if (to < from || from < s)
             {
                 throw new InvalidDataException("The hyphenation trie's edge table is out of order.");
             }
 
             for (int e = from; e < to; e++)
             {
-                // Targets point forward, as the builder numbers states breadth first, so no walk can loop.
-                if (edgeTargets[e] <= s || edgeTargets[e] >= states || (e > from && edgeChars[e] <= edgeChars[e - 1]))
+                if (e > from && edgeChars[e] <= edgeChars[e - 1])
                 {
                     throw new InvalidDataException("The hyphenation trie has a bad edge.");
                 }
 
-                if (depth[s] != int.MaxValue)
-                {
-                    depth[edgeTargets[e]] = Math.Min(depth[edgeTargets[e]], depth[s] + 1);
-                }
+                depth[e + 1] = (byte)Math.Min(depth[s] + 1, byte.MaxValue);
             }
 
-            if (valueLength[s] > depth[s] + 1L)
+            int id = valueId[s];
+            if (id >= valueOffset.Length || (id != 0 && valueOffset[id] - valueOffset[id - 1] > depth[s] + 1))
             {
-                throw new InvalidDataException("A hyphenation pattern has more values than gaps.");
-            }
-
-            if (valueLength[s] != 0 && ((uint)valueStart[s] > (uint)valuePool.Length || valuePool.Length - valueStart[s] < valueLength[s]))
-            {
-                throw new InvalidDataException("The hyphenation trie's values are out of range.");
+                throw new InvalidDataException("A hyphenation pattern's values are out of range.");
             }
         }
 
-        return new PatternTrie(edgeStart, edgeChars, edgeTargets, valueStart, valueLength, valuePool);
+        return new PatternTrie(edgeStart, edgeChars, valueId, valueOffset, valuePool);
     }
 }
 
@@ -228,7 +232,7 @@ internal sealed class PatternTrieBuilder
 
     public PatternTrie Build()
     {
-        // Number the states breadth first, so every edge points to a later state (the loader relies on it).
+        // Number the states breadth first: edge e then leads to state e + 1, which the trie and the loader rely on.
         List<Node> order = [_root];
         for (int i = 0; i < order.Count; i++)
         {
@@ -238,49 +242,47 @@ internal sealed class PatternTrieBuilder
             }
         }
 
-        Dictionary<Node, int> index = new(order.Count, ReferenceEqualityComparer.Instance);
-        for (int i = 0; i < order.Count; i++)
-        {
-            index[order[i]] = i;
-        }
-
         int[] edgeStart = new int[order.Count + 1];
-        List<char> edgeChars = [];
-        List<int> edgeTargets = [];
-        int[] valueStart = new int[order.Count];
-        byte[] valueLength = new byte[order.Count];
+        char[] edgeChars = new char[order.Count - 1];
+        ushort[] valueId = new ushort[order.Count];
+        List<int> valueOffset = [0];
         List<byte> pool = [];
-        Dictionary<string, int> shared = new(StringComparer.Ordinal);
+        Dictionary<string, ushort> shared = new(StringComparer.Ordinal);
+        int edges = 0;
         for (int s = 0; s < order.Count; s++)
         {
             Node node = order[s];
-            edgeStart[s] = edgeChars.Count;
+            edgeStart[s] = edges;
             if (node.Children is { } children)
             {
-                foreach ((char c, Node child) in children)
+                foreach (char c in children.Keys)
                 {
-                    edgeChars.Add(c);
-                    edgeTargets.Add(index[child]);
+                    edgeChars[edges++] = c;
                 }
             }
 
             if (node.Values is { Length: > 0 } values)
             {
-                // Many patterns share their values; store each distinct run once.
+                // Many patterns share their values; store each distinct string once.
                 string key = Convert.ToHexString(values);
-                if (!shared.TryGetValue(key, out int at))
+                if (!shared.TryGetValue(key, out ushort id))
                 {
-                    at = pool.Count;
+                    if (valueOffset.Count > ushort.MaxValue)
+                    {
+                        throw new InvalidDataException($"The patterns have more than {ushort.MaxValue} distinct value strings.");
+                    }
+
                     pool.AddRange(values);
-                    shared.Add(key, at);
+                    valueOffset.Add(pool.Count);
+                    id = (ushort)(valueOffset.Count - 1);
+                    shared.Add(key, id);
                 }
 
-                valueStart[s] = at;
-                valueLength[s] = (byte)values.Length;
+                valueId[s] = id;
             }
         }
 
-        edgeStart[order.Count] = edgeChars.Count;
-        return new PatternTrie(edgeStart, [.. edgeChars], [.. edgeTargets], valueStart, valueLength, [.. pool]);
+        edgeStart[order.Count] = edges;
+        return new PatternTrie(edgeStart, edgeChars, valueId, [.. valueOffset], [.. pool]);
     }
 }
