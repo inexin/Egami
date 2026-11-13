@@ -34,15 +34,16 @@ internal sealed partial class H264MbEncoder
     internal H264SearchShortcuts Shortcuts { get; set; }
 
     /// <summary>
-    /// The shortcuts an effort takes: both, quick sub-samples everywhere, up to effort 3; at 4 and 5 the 16x8/8x16 gate and
-    /// quick sub-samples in B pictures only; at 6 and 7 quick sub-samples in B pictures only; none from effort 8. The macroblock
+    /// The shortcuts an effort takes: both, quick sub-samples everywhere, up to effort 3; at 4 the 16x8/8x16 gate and quick
+    /// sub-samples in B pictures only; at 5 to 7 quick sub-samples in B pictures only (task 26: at 5 the gate's absence takes
+    /// 0.5 % fewer bits than effort 4 on every clip); none from effort 8. The macroblock
     /// tree's gain pays for them: on the four 720p clips the mean BD-rate stays below what it was before the tree, and no clip
     /// loses more than 1 %. Without the gate effort 6 takes 0.57 % fewer bits than with it, for 6 to 20 % more instructions.
     /// </summary>
     internal static H264SearchShortcuts DefaultShortcuts(int effort) => effort switch
     {
         <= 3 => H264SearchShortcuts.QuickSubpel | H264SearchShortcuts.PruneHalves,
-        <= 5 => H264SearchShortcuts.QuickSubpelB | H264SearchShortcuts.PruneHalves,
+        4 => H264SearchShortcuts.QuickSubpelB | H264SearchShortcuts.PruneHalves,
         <= 7 => H264SearchShortcuts.QuickSubpelB,
         _ => H264SearchShortcuts.None,
     };
@@ -208,7 +209,7 @@ internal sealed partial class H264MbEncoder
     private double FinishInter(int mbX, int mbY, int qp, long firstCost, double bestCost, H264MbCode? best, int bestSlot)
     {
         bool b = _syntax.SliceType == H264SliceType.B;
-        if (TryIntra(firstCost, b && _effort == 4 ? BIntraMargin : IntraMargin))
+        if (TryIntra(firstCost, b && _effort is >= 1 and <= 4 ? BIntraMargin : IntraMargin))
         {
             double cost = Encode(mbX, mbY, qp);
             _round = InterRound;
@@ -244,13 +245,13 @@ internal sealed partial class H264MbEncoder
     }
 
     /// <summary>
-    /// Task 24 (round 3): at effort 4, a 16x16 candidate whose search cost is low for the QP is RD-coded right after its search;
+    /// Task 24 (round 3): at efforts 1 to 5, a 16x16 candidate whose search cost is low for the QP is RD-coded right after its search;
     /// returns whether it came out without any residual, when nothing else but intra is worth trying.
     /// </summary>
     private bool EarlyCode16(H264MbCode p16, long cost16, ref double bestCost, ref H264MbCode? best, ref int bestSlot)
     {
         _early16 = double.NaN;
-        if (_effort != 4 || cost16 >= EarlyShare * 16 * _sadLambda)
+        if (_effort is < 1 or > 5 || cost16 >= EarlyShare * 16 * _sadLambda)
         {
             return false;
         }
@@ -521,7 +522,7 @@ internal sealed partial class H264MbEncoder
         int count = list == 0 ? _refCount : _refCount1;
         bool whole = w == 4 && h == 4;
         long[] costs16 = _refCost16[list];
-        long keep = whole || _effort != 4 ? long.MaxValue : _bestCost16[list] + (_bestCost16[list] * RefPruneShare / 16);
+        long keep = whole || _effort is < 1 or > 4 ? long.MaxValue : _bestCost16[list] + (_bestCost16[list] * RefPruneShare / 16);
         int bestMv = 0;
         (bestRef, bestMvp, bestCost) = (0, 0, long.MaxValue);
         for (int r = 0; r < count; r++)
@@ -554,7 +555,7 @@ internal sealed partial class H264MbEncoder
     }
 
     // Task 25 (round 3): each reference's 16x16 search cost in each list, and the best of them, for the macroblock searched last.
-    // At effort 4 the 8x8, 16x8 and 8x16 parts search a reference only when its 16x16 cost came within RefPruneShare sixteenths
+    // At efforts 1 to 4 the 8x8, 16x8 and 8x16 parts search a reference only when its 16x16 cost came within RefPruneShare sixteenths
     // (12.5 %) of the best; the search early-outs above the best, so the costs of references that lost are lower bounds.
     private readonly long[][] _refCost16 = [new long[16], new long[16]];
     private readonly long[] _bestCost16 = new long[2];

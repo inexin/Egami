@@ -293,7 +293,7 @@ COUNT_COLUMNS = [("RD codings", "RdCodings"), ("RDOQ rate counts", "RdoqRateCoun
 def report(args):
     clips = args.clips.split(",")
     lines = [f"Cycles a frame are user-mode perf counts at one thread, {args.size}p, quality {args.quality}, {args.frames} frames, "
-             "the mean of the clips; x is against x264 medium at effort 4's bitrate. BD-rate is PSNR-Y against x264 medium "
+             "the mean of the clips; x is against x264 medium at the CRF that gives effort 4's PSNR-Y. BD-rate is PSNR-Y against x264 medium "
              "(60 frames, four qualities): the mean of the clips and the worst. Work counts are per macroblock over all picture types.",
              "",
              "| effort | G cycles PGO on | x264 medium x | G cycles PGO off | BD mean | BD worst | "

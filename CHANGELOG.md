@@ -140,6 +140,15 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   BD-rate +0.12 % on eight clips (worst Johnny +0.34 %). After round 3 effort 4 takes 3.3 times x264 medium's cycles at
   quality 50 and 3.0 times at quality 34 (3.6 and 3.1 with adaptive quantization), 23 % and 33 % fewer than before it, for
   BD-rate +0.06 % against effort 4 before round 3 on eight clips (worst pedestrian_area +0.40 %).
+- Efforts 1 to 5 (speed round 3, task 26): the ladder is in order again, each effort costing more and needing no more bits
+  than the one below it. Efforts 1 to 3 take round 3's effort 4 shortcuts (early stop after 16x16 and B intra below the inter
+  cost; reference pruning from 2), so effort 3 no longer costs more than effort 4: 192k cycles a macroblock (was 251k), effort
+  2 133k (175k), effort 1 108k (139k), with the BD-rate against x264 medium within 0.4 % of before. Effort 5 keeps the early
+  stop, searches every reference for sub-blocks and drops the 16x8/8x16 gate: 253k cycles (288k), BD-rate 0.5 % below effort
+  4's on every clip (it was level with it). Effort 4 is unchanged.
+- Tools: time-h264-encoder.py gates the instruction ratio against x264 medium at effort 4 instead of the cycles ratio, which
+  swings by up to a third between runs on a busy machine: each clip at quality 50 and 34 at most 10 % above the ratio after
+  round 3 (4.0 and 3.6 times on the mean). The H.264 guide's effort table is re-measured with x264 matched by quality.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (unreleased)
 
