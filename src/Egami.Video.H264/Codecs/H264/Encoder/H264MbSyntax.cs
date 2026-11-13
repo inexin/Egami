@@ -183,20 +183,58 @@ internal sealed partial class H264MbSyntax
         _mb.CbfDc[addr] = (byte)((code.Kind == H264MbKind.I16x16 && code.LumaDcCount > 0 ? 1 : 0)
             | ((code.Cbp & 0x30) != 0 && code.ChromaDcCount[0] > 0 ? 2 : 0)
             | ((code.Cbp & 0x30) != 0 && code.ChromaDcCount[1] > 0 ? 4 : 0));
-        for (int blk = 0; blk < 16; blk++)
+        // Speed round 4: a row of four blocks at a time, filling what is the same for every block (no intra modes, no vector
+        // differences, no luma levels) and working out the rest a block at a time; BlockXY is its own inverse.
+        bool modes = code.Kind is H264MbKind.I4x4 or H264MbKind.I8x8, levels = (code.Cbp & 15) != 0;
+        for (int by = 0; by < 4; by++)
         {
-            int xy = H264Tables.BlockXY[blk];
-            int b = _b0 + ((xy >> 2) * _w4) + (xy & 3);
-            int i8 = blk >> 2;
-            int count = (code.Cbp & (1 << i8)) == 0 ? 0 : code.Eight ? code.Luma8Count[i8] : code.LumaCount[blk];
-            _mb.IntraModes[b] = (sbyte)(code.Kind == H264MbKind.I4x4 ? code.Modes[blk] : code.Kind == H264MbKind.I8x8 ? code.Modes[i8] : -1);
-            int mvd = _intra ? 0 : code.Mvd[xy], mvd1 = _intra ? 0 : code.Mvd1[xy];
-            _mb.Mvd[0][2 * b] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvX(mvd)), 255);
-            _mb.Mvd[0][(2 * b) + 1] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvY(mvd)), 255);
-            _mb.Mvd[1][2 * b] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvX(mvd1)), 255);
-            _mb.Mvd[1][(2 * b) + 1] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvY(mvd1)), 255);
-            _mb.NzLuma[b] = (byte)count;
-            _mb.Nonzero[b] = (byte)(count > 0 ? 1 : 0);
+            int row = _b0 + (by * _w4);
+            if (!modes)
+            {
+                _mb.IntraModes.AsSpan(row, 4).Fill(-1);
+            }
+
+            if (_intra)
+            {
+                _mb.Mvd[0].AsSpan(2 * row, 8).Clear();
+                _mb.Mvd[1].AsSpan(2 * row, 8).Clear();
+            }
+
+            if (!levels)
+            {
+                _mb.NzLuma.AsSpan(row, 4).Clear();
+                _mb.Nonzero.AsSpan(row, 4).Clear();
+            }
+
+            if (!modes && _intra && !levels)
+            {
+                continue;
+            }
+
+            for (int bx = 0; bx < 4; bx++)
+            {
+                int xy = (by * 4) + bx, blk = H264Tables.BlockXY[xy], i8 = blk >> 2, b = row + bx;
+                if (modes)
+                {
+                    _mb.IntraModes[b] = (sbyte)(code.Kind == H264MbKind.I4x4 ? code.Modes[blk] : code.Modes[i8]);
+                }
+
+                if (!_intra)
+                {
+                    int mvd = code.Mvd[xy], mvd1 = code.Mvd1[xy];
+                    _mb.Mvd[0][2 * b] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvX(mvd)), 255);
+                    _mb.Mvd[0][(2 * b) + 1] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvY(mvd)), 255);
+                    _mb.Mvd[1][2 * b] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvX(mvd1)), 255);
+                    _mb.Mvd[1][(2 * b) + 1] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvY(mvd1)), 255);
+                }
+
+                if (levels)
+                {
+                    int count = (code.Cbp & (1 << i8)) == 0 ? 0 : code.Eight ? code.Luma8Count[i8] : code.LumaCount[blk];
+                    _mb.NzLuma[b] = (byte)count;
+                    _mb.Nonzero[b] = (byte)(count > 0 ? 1 : 0);
+                }
+            }
         }
 
         int cw = _mb.ChromaW4;
@@ -220,6 +258,16 @@ internal sealed partial class H264MbSyntax
     /// <summary>Writes the macroblock's references and vectors to the motion arrays, as the decoder will have them.</summary>
     private void SetMotion(H264Picture pic, H264MbCode code)
     {
+        if (_intra || ((code.Kind == H264MbKind.PSkip || (code.Partition == 0 && !code.Direct))
+            && (BlockRef(code, 0, 0, 0) < 0 || code.Mv.AsSpan(0, 16).IndexOfAnyExcept(code.Mv[0]) < 0)
+            && (BlockRef(code, 1, 0, 0) < 0 || code.Mv1.AsSpan(0, 16).IndexOfAnyExcept(code.Mv1[0]) < 0)))
+        {
+            // Speed round 4: one reference and one vector a list for the whole macroblock (intra, P_Skip, 16x16), written a row
+            // at a time; the same values the loop below writes.
+            SetMotionWhole(pic, code);
+            return;
+        }
+
         bool flat = !_intra;
         for (int xy = 0; xy < 16; xy++)
         {
@@ -234,6 +282,29 @@ internal sealed partial class H264MbSyntax
             pic.Mv[1][b] = refIdx1 >= 0 ? code.Mv1[xy] : 0;
             flat &= _mb.Nonzero[b] == 0 && pic.RefPicId[0][b] == pic.RefPicId[0][_b0] && pic.Mv[0][b] == pic.Mv[0][_b0]
                 && pic.RefPicId[1][b] == pic.RefPicId[1][_b0] && pic.Mv[1][b] == pic.Mv[1][_b0];
+        }
+
+        pic.MbIntra[_addr] = _intra;
+        _mb.FlatInside[_addr] = flat;
+    }
+
+    /// <summary>SetMotion for a macroblock whose sixteen blocks share each list's reference and vector.</summary>
+    private void SetMotionWhole(H264Picture pic, H264MbCode code)
+    {
+        int refIdx = _intra ? -1 : BlockRef(code, 0, 0, 0), refIdx1 = _intra ? -1 : BlockRef(code, 1, 0, 0);
+        int id = refIdx >= 0 ? RefIds[refIdx] : -1, id1 = refIdx1 >= 0 ? RefIds1[refIdx1] : -1;
+        int mv = refIdx >= 0 ? code.Mv[0] : 0, mv1 = refIdx1 >= 0 ? code.Mv1[0] : 0;
+        bool flat = !_intra;
+        for (int by = 0; by < 4; by++)
+        {
+            int b = _b0 + (by * _w4);
+            pic.RefIdx[0].AsSpan(b, 4).Fill((sbyte)refIdx);
+            pic.RefPicId[0].AsSpan(b, 4).Fill(id);
+            pic.Mv[0].AsSpan(b, 4).Fill(mv);
+            pic.RefIdx[1].AsSpan(b, 4).Fill((sbyte)refIdx1);
+            pic.RefPicId[1].AsSpan(b, 4).Fill(id1);
+            pic.Mv[1].AsSpan(b, 4).Fill(mv1);
+            flat &= _mb.Nonzero.AsSpan(b, 4).IndexOfAnyExcept((byte)0) < 0;
         }
 
         pic.MbIntra[_addr] = _intra;

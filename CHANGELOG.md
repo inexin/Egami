@@ -155,6 +155,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   instructions fall 5 % at quality 50 and 14 % at quality 34 on the four 720p clips, for BD-rate +0.20 % on eight clips (worst
   rush_hour +0.82 %). The review's looser 1 and 0.7 steps cost +0.93 % (rush_hour +3.6 %): clean, slow content keeps detail
   below a quantizer step.
+- H.264 encoder speed round 4, PR C (output unchanged, byte for byte): the lookahead's half-size copy takes eight samples at a
+  time; the motion arrays of a macroblock with one reference and vector a list (intra, P_Skip, 16x16) are written a row at a
+  time; each candidate's syntax state is set a row at a time, filling the parts every block shares; and the RDOQ price tables
+  of a block category are kept from one macroblock to the next while its contexts have not changed (after a skip, say).
+  Egami's own instructions fall 4.3 % at quality 50 and 6.3 % at quality 34 on the four 720p clips (old_town_cross 12 %).
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 

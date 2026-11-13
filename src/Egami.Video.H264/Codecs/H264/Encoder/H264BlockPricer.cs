@@ -59,6 +59,12 @@ internal sealed class H264BlockPricer
     private readonly int[] _levelCosts = new int[Categories * States * 16];
     private byte[]? _tablesOf;
     private int _made;
+
+    // The context states each category's tables were last made from (significance, last, level: 16, 16 and 10 bytes), and which
+    // categories have tables at all.
+    private const int StateBytes = 42;
+    private readonly byte[] _states = new byte[Categories * StateBytes];
+    private int _built;
     private int _sigAt, _levelAt;
 
     // The next coding state as lanes of the state before: after a level of 1, after a level greater than 1, for blocks with 4
@@ -110,13 +116,26 @@ internal sealed class H264BlockPricer
         (_sigAt, _levelAt) = (cat * Positions, cat * States * 16);
         if (!ReferenceEquals(ctx, _tablesOf))
         {
-            (_tablesOf, _made) = (ctx, 0);
+            (_tablesOf, _made, _built) = (ctx, 0, 0);
         }
 
         if ((_made & (1 << cat)) == 0)
         {
-            ctx.AsSpan(absBase, 10).CopyTo(_abs);
-            MakeTables();
+            // Speed round 4: the tables depend only on the category's significance, last and level contexts; after a macroblock
+            // that coded no residual of this category (a skip, say) they are unchanged, and the tables still hold.
+            Span<byte> was = _states.AsSpan(cat * StateBytes, StateBytes);
+            int span = cat == 5 ? 15 : 16, lastSpan = cat == 5 ? 9 : 16;
+            if ((_built & (1 << cat)) == 0 || !ctx.AsSpan(_sigBase, span).SequenceEqual(was[..span])
+                || !ctx.AsSpan(_lastBase, lastSpan).SequenceEqual(was.Slice(16, lastSpan)) || !ctx.AsSpan(absBase, 10).SequenceEqual(was.Slice(32, 10)))
+            {
+                ctx.AsSpan(absBase, 10).CopyTo(_abs);
+                MakeTables();
+                ctx.AsSpan(_sigBase, span).CopyTo(was);
+                ctx.AsSpan(_lastBase, lastSpan).CopyTo(was[16..]);
+                ctx.AsSpan(absBase, 10).CopyTo(was[32..]);
+                _built |= 1 << cat;
+            }
+
             _made |= 1 << cat;
         }
 
