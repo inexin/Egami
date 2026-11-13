@@ -133,7 +133,9 @@ are candidates, and `MaxConsecutiveLines` still holds; `Zone` is for greedy fill
 `ShrinkSpaces`, which lets justified spaces shrink to two thirds, as TeX does; Word and browsers only stretch them, so it is
 off by default. If no set of breaks keeps every line within the tolerance (badness 200, then 2000), the last pass takes any
 line that is not overfull, and a word too wide for any line gets a line of its own, as with greedy filling. Mandatory breaks
-split the paragraph into parts broken on their own. Planning a paragraph costs a few greedy fills.
+split the paragraph into parts broken on their own. Where a pass settles for breaks that cost more than greedy filling's (whose
+lines may pass the tolerance), the greedy breaks are taken, so optimal filling never costs more. Planning a paragraph costs a
+few greedy fills.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#optimal-lines)]
 

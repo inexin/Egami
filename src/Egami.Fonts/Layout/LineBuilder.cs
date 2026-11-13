@@ -453,15 +453,31 @@ internal sealed partial class LineBuilder
             return true;
         }
 
-        for (int g = 0; g < glyphs.Count; g++)
+        // Clusters run up in left-to-right runs and down in right-to-left ones (at the monotone levels): search the way they run.
+        ReadOnlySpan<int> clusters = glyphs.Clusters;
+        int lo = 0, hi = clusters.Length - 1;
+        bool rising = clusters.Length == 0 || clusters[0] <= clusters[^1];
+        while (lo <= hi)
         {
-            if (glyphs.Clusters[g] == i)
+            int mid = (lo + hi) >>> 1;
+            int c = clusters[mid];
+            if (c == i)
             {
                 return true;
             }
+
+            if ((c < i) == rising)
+            {
+                lo = mid + 1;
+            }
+            else
+            {
+                hi = mid - 1;
+            }
         }
 
-        return false;
+        // Clusters that may go down keep no order to search.
+        return run.Properties.ClusterLevel == ClusterLevel.Characters && clusters.Contains(i);
     }
 
     /// <summary>Whether a line breaking before <paramref name="i"/> must shape its pieces again.</summary>

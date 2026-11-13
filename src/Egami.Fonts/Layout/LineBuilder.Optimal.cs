@@ -43,8 +43,9 @@ internal sealed partial class LineBuilder
         Tight = 3,
     }
 
-    /// <summary>A break the search may choose: the end of a line, its penalty and whether it ends with a hyphen.</summary>
-    private readonly record struct Candidate(int Index, int Penalty, bool Flagged, bool Auto, bool SoftHyphen)
+    /// <summary>A break the search may choose: the end of a line, its penalty, whether it ends with a hyphen, where the line's
+    /// content ends (before trailing spaces, for a line starting at or before it) and the width of the hyphen it adds.</summary>
+    private readonly record struct Candidate(int Index, int Penalty, bool Flagged, bool Auto, bool SoftHyphen, int ContentEnd = 0, float Hyphen = 0)
     {
         public bool Forced => Penalty <= ForcedPenalty;
     }
@@ -182,7 +183,7 @@ internal sealed partial class LineBuilder
         Node from = previous is { } p
             ? new Node { Fitness = FitnessOf(p.Ratio), Flagged = p.Flagged }
             : new Node { Fitness = Fitness.Decent };
-        Candidate c = new(1, line.Penalty, line.Flagged, false, false);
+        Candidate c = new(1, line.Penalty, line.Flagged, false, false, 1);
         return Demerits(from, c, line.Badness, FitnessOf(line.Ratio), options);
     }
 
@@ -205,28 +206,29 @@ internal sealed partial class LineBuilder
                 {
                     if (point > start)
                     {
-                        candidates.Add(new Candidate(point, options.HyphenPenalty, true, true, false));
+                        candidates.Add(new Candidate(point, options.HyphenPenalty, true, true, false, point, HyphenWidth(point)));
                     }
                 }
             }
 
+            int contentEnd = ContentEnd(0, b.Index);
             if (b.IsMandatory || b.Index >= _text.Length)
             {
-                candidates.Add(new Candidate(b.Index, ForcedPenalty, false, false, false));
+                candidates.Add(new Candidate(b.Index, ForcedPenalty, false, false, false, contentEnd));
                 return;
             }
 
             if (b.IsSoftHyphen)
             {
-                candidates.Add(new Candidate(b.Index, options.HyphenPenalty, true, false, true));
+                candidates.Add(new Candidate(b.Index, options.HyphenPenalty, true, false, true, contentEnd, HyphenWidth(b.Index)));
             }
             else if (b.Index > 0 && _text[b.Index - 1] is '-' or (char)0x2010)
             {
-                candidates.Add(new Candidate(b.Index, options.ExplicitHyphenPenalty, true, false, false));
+                candidates.Add(new Candidate(b.Index, options.ExplicitHyphenPenalty, true, false, false, contentEnd));
             }
             else
             {
-                candidates.Add(new Candidate(b.Index, 0, false, false, false));
+                candidates.Add(new Candidate(b.Index, 0, false, false, false, contentEnd));
             }
 
             previous = b.Index;
@@ -435,8 +437,8 @@ internal sealed partial class LineBuilder
     private double Ratio(int start, Candidate candidate, float width, OptimalLineOptions options, out bool ragged)
     {
         ragged = false;
-        int end = candidate.Auto ? candidate.Index : ContentEnd(start, candidate.Index);
-        float natural = Measure(start, end) + (candidate.Auto || candidate.SoftHyphen ? HyphenWidth(candidate.Index) : 0);
+        int end = Math.Max(start, candidate.ContentEnd);
+        float natural = Measure(start, end) + candidate.Hyphen;
         bool justified = _paragraph.Style.Align == TextAlign.Justify && _paragraph.Style.Justify != TextJustify.None;
         float[]? stretch = justified ? Stretch() : null;
         double spaces = stretch is null ? 0 : stretch[end] - stretch[start];
