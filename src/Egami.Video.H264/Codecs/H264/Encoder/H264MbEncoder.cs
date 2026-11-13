@@ -179,9 +179,10 @@ internal sealed partial class H264MbEncoder
 
     /// <summary>
     /// Whether an inter macroblock whose best partitioning costs <paramref name="interSatd"/> (SATD and vector bits) is worth
-    /// coding as intra too: always from effort 7, else when intra 16x16 prediction comes near it by SATD.
+    /// coding as intra too: always from effort 7, else when intra 16x16 prediction comes within <paramref name="margin"/>
+    /// sixteenths of it by SATD.
     /// </summary>
-    private bool TryIntra(long interSatd)
+    private bool TryIntra(long interSatd, int margin)
     {
         if (_effort >= 7)
         {
@@ -196,7 +197,7 @@ internal sealed partial class H264MbEncoder
         int[] t = _t, l = _l;
         H264IntraPredict.Gather(_y, _lumaAt, _stride, 16, _top, false, _left, _topLeft, t, l);
         _i16Satd.AsSpan().Fill(-1);
-        long limit = interSatd * IntraMargin / 16;
+        long limit = interSatd * margin / 16;
         for (int mode = 0; mode < 4; mode++)
         {
             if (H264IntraPredict.Allowed16x16(mode, _top, _left, _topLeft))
@@ -227,6 +228,11 @@ internal sealed partial class H264MbEncoder
 
     /// <summary>How far above the inter cost, in sixteenths, an intra 16x16 SATD still tries intra.</summary>
     internal static int IntraMargin { get; set; } = 24;
+
+    /// <summary>
+    /// <see cref="IntraMargin"/> in B pictures at effort 4: intra only below the inter cost, where B pictures rarely pick it.
+    /// </summary>
+    private const int BIntraMargin = 16;
 
     private void Setup(int mbX, int mbY, int qp)
     {

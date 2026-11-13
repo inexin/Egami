@@ -198,7 +198,7 @@ internal sealed partial class H264MbEncoder
             }
         }
 
-        if (TryIntra(firstCost))
+        if (TryIntra(firstCost, IntraMargin))
         {
             double cost = Encode(mbX, mbY, qp);
             _round = InterRound;

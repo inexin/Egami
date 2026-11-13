@@ -124,6 +124,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   and so coded at a higher quality; the cycles are gated at quality 34 too, each count the least of three runs. Matched so,
   effort 4 takes 4.3 times x264 medium's cycles at quality 50 (3.4 to 6.4 by clip) and 4.4 times at quality 34 (3.7 to 5.8);
   with adaptive quantization, Egami's default, 4.6 and 4.7 times (recorded). profile-h264-encoder.py matches the same way.
+- Effort 4 (speed round 3, task 23): B pictures search one list 0 reference instead of two, and try intra only where intra
+  16x16 prediction comes below the inter cost by SATD (not within 1.5 times it); effort 5 keeps both. Egami's own
+  cycles fall 8.7 % at quality 50 and 15.4 % at quality 34 on the four 720p clips (3.67 and 3.66 times x264 medium) for no
+  loss: BD-rate −0.04 % on them, +0.11 % on eight clips (worst
+  +0.77 %, pedestrian_area). Two P references instead of three, also planned, cost up to 0.8 % on pedestrian_area and stays out.
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 
