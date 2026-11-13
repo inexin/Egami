@@ -135,6 +135,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   candidate. Egami's own cycles fall 8 % at quality 50 and 16 % at quality 34 on the four 720p clips (17.9 % and 29.0 %
   fewer instructions than before round 3), 3.7 and 3.2 times x264 medium; BD-rate −0.17 % on eight clips (worst park_joy
   +0.10 %).
+- Effort 4 (speed round 3, task 25): the 8x8, 16x8 and 8x16 parts search only the references whose 16x16 search came within
+  12.5 % of the best one's. Egami's own cycles fall 7.5 % at quality 50 and 6.3 % at quality 34 on the four 720p clips, for
+  BD-rate +0.12 % on eight clips (worst Johnny +0.34 %). After round 3 effort 4 takes 3.3 times x264 medium's cycles at
+  quality 50 and 3.0 times at quality 34 (3.6 and 3.1 with adaptive quantization), 23 % and 33 % fewer than before it, for
+  BD-rate +0.06 % against effort 4 before round 3 on eight clips (worst pedestrian_area +0.40 %).
 
 Math layout data for equations (Egami.Fonts) and a Cambria Math stand-in (Egami.Fonts.Substitutes).
 

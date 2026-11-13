@@ -519,20 +519,46 @@ internal sealed partial class H264MbEncoder
     private int SearchRefs(int list, int bx, int by, int w, int h, int mask, ReadOnlySpan<int> starts, out int bestRef, out int bestMvp, out long bestCost)
     {
         int count = list == 0 ? _refCount : _refCount1;
+        bool whole = w == 4 && h == 4;
+        long[] costs16 = _refCost16[list];
+        long keep = whole || _effort != 4 ? long.MaxValue : _bestCost16[list] + (_bestCost16[list] * RefPruneShare / 16);
         int bestMv = 0;
         (bestRef, bestMvp, bestCost) = (0, 0, long.MaxValue);
         for (int r = 0; r < count; r++)
         {
+            if (costs16[r] > keep)
+            {
+                // Task 25: a part searches only the references whose 16x16 search came near the best one's.
+                continue;
+            }
+
             int mvp = _syntax.PredictMv(list, bx, by, w, h, r, mask);
             int mv = Search(list, r, bx, by, w, h, mvp, starts, out long cost, r > 0 ? bestCost : long.MaxValue);
+            if (whole)
+            {
+                costs16[r] = cost;
+            }
+
             if (cost < bestCost)
             {
                 (bestCost, bestRef, bestMv, bestMvp) = (cost, r, mv, mvp);
             }
         }
 
+        if (whole)
+        {
+            _bestCost16[list] = bestCost;
+        }
+
         return bestMv;
     }
+
+    // Task 25 (round 3): each reference's 16x16 search cost in each list, and the best of them, for the macroblock searched last.
+    // At effort 4 the 8x8, 16x8 and 8x16 parts search a reference only when its 16x16 cost came within RefPruneShare sixteenths
+    // (12.5 %) of the best; the search early-outs above the best, so the costs of references that lost are lower bounds.
+    private readonly long[][] _refCost16 = [new long[16], new long[16]];
+    private readonly long[] _bestCost16 = new long[2];
+    private const int RefPruneShare = 2;
 
     /// <summary>
     /// The cost of whole-sample vector (x, y) of the pw by ph block at (px, py), whose source starts at srcAt: its SAD (SATD
