@@ -192,15 +192,16 @@ VideoWriterOptions baseline = options with { H264 = new H264EncoderOptions { Pro
 </code></pre><h3 id="compression-and-speed">Compression and speed</h3>
 <p>The encoder is measured against x264 0.164 on four Xiph test clips (crowd_run, ducks_take_off, park_joy and old_town_cross at
 720p, 50 frames a second), both tuned for PSNR. At effort 4 it needs 5 to 18 % more bits than x264's medium preset for the same
-PSNR (11.6 % on average), about what x264's faster preset gives, and it is slower: on one thread, with x264 at the CRF that
-gives the same PSNR-Y, 4.3 times x264 medium's CPU cycles a frame at 720p at quality 50 (3.4 to 6.4 by clip) and 4.4 times at
-quality 34 (3.7 to 5.8), on .NET's default runtime with tiered PGO on and without adaptive quantization; with it, the
-default, 4.6 and 4.7 times. The design's goal of twice x264 medium's time is not met. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as
+PSNR (11.5 % on average), about what x264's faster preset gives, and it is slower: on one thread, with x264 at the CRF that
+gives the same PSNR-Y, 3.4 times x264 medium's CPU cycles a frame at 720p at quality 50 (2.5 to 5.3 by clip) and 2.9 times at
+quality 34 (2.6 to 3.4), on .NET's default runtime with tiered PGO on and without adaptive quantization; with it, the
+default, 3.8 and 3.3 times. Cycles vary by up to a third between runs on a busy machine; in instructions, which barely vary,
+effort 4 takes 4.0 and 3.6 times x264 medium's. The design's goal of twice x264 medium's time is not met. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as
 Egami's own decoder.</p>
 <h4 id="speed-by-effort">Speed by effort</h4>
 <p>Each effort costs more cycles than the one below it and needs fewer bits, on the mean of the four clips. Cycles are a
-macroblock (a 720p frame has 3600) at one thread, quality 50, the mean of the clips; x264 medium is timed at the bitrate effort
-4 gives. BD-rate is PSNR-Y against x264 medium over four qualities and 60 frames: the mean of the clips and the worst clip.</p>
+macroblock (a 720p frame has 3600) at one thread, quality 50, the mean of the clips; x264 medium is timed at the CRF that gives
+effort 4's PSNR-Y. BD-rate is PSNR-Y against x264 medium over four qualities and 60 frames: the mean of the clips and the worst clip.</p>
 <table>
 <thead>
 <tr>
@@ -214,78 +215,78 @@ macroblock (a 720p frame has 3600) at one thread, quality 50, the mean of the cl
 <tbody>
 <tr>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">119k</td>
-<td style="text-align: right;">1.8 (1.5–2.6)</td>
+<td style="text-align: right;">106k</td>
+<td style="text-align: right;">1.8 (1.2–2.8)</td>
 <td style="text-align: right;">+67.0 %</td>
 <td style="text-align: right;">+84.6 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">139k</td>
-<td style="text-align: right;">2.1 (1.7–2.9)</td>
-<td style="text-align: right;">+27.4 %</td>
-<td style="text-align: right;">+41.2 %</td>
+<td style="text-align: right;">108k</td>
+<td style="text-align: right;">1.8 (1.4–2.8)</td>
+<td style="text-align: right;">+27.1 %</td>
+<td style="text-align: right;">+40.5 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">2</td>
-<td style="text-align: right;">175k</td>
-<td style="text-align: right;">2.6 (2.2–3.5)</td>
-<td style="text-align: right;">+22.3 %</td>
-<td style="text-align: right;">+30.7 %</td>
+<td style="text-align: right;">133k</td>
+<td style="text-align: right;">2.2 (1.8–3.1)</td>
+<td style="text-align: right;">+22.2 %</td>
+<td style="text-align: right;">+29.7 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">3</td>
-<td style="text-align: right;">251k</td>
-<td style="text-align: right;">3.7 (3.2–4.7)</td>
-<td style="text-align: right;">+12.3 %</td>
-<td style="text-align: right;">+17.9 %</td>
+<td style="text-align: right;">192k</td>
+<td style="text-align: right;">3.1 (2.6–4.0)</td>
+<td style="text-align: right;">+12.5 %</td>
+<td style="text-align: right;">+18.2 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">4 (default)</td>
-<td style="text-align: right;">263k</td>
-<td style="text-align: right;">4.0 (3.5–5.2)</td>
-<td style="text-align: right;">+11.6 %</td>
-<td style="text-align: right;">+17.5 %</td>
+<td style="text-align: right;">203k</td>
+<td style="text-align: right;">3.4 (2.7–4.7)</td>
+<td style="text-align: right;">+11.5 %</td>
+<td style="text-align: right;">+17.9 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">5</td>
-<td style="text-align: right;">288k</td>
-<td style="text-align: right;">4.3 (3.9–5.3)</td>
-<td style="text-align: right;">+11.5 %</td>
-<td style="text-align: right;">+17.5 %</td>
+<td style="text-align: right;">253k</td>
+<td style="text-align: right;">4.1 (3.3–5.5)</td>
+<td style="text-align: right;">+10.8 %</td>
+<td style="text-align: right;">+17.2 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">6</td>
-<td style="text-align: right;">313k</td>
-<td style="text-align: right;">4.7 (4.0–6.2)</td>
+<td style="text-align: right;">294k</td>
+<td style="text-align: right;">5.0 (3.9–7.5)</td>
 <td style="text-align: right;">+10.8 %</td>
 <td style="text-align: right;">+17.0 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">7</td>
-<td style="text-align: right;">393k</td>
-<td style="text-align: right;">5.9 (5.1–7.6)</td>
+<td style="text-align: right;">364k</td>
+<td style="text-align: right;">6.2 (4.9–9.4)</td>
 <td style="text-align: right;">+10.6 %</td>
 <td style="text-align: right;">+16.8 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">8</td>
-<td style="text-align: right;">489k</td>
-<td style="text-align: right;">7.4 (6.2–10.0)</td>
+<td style="text-align: right;">467k</td>
+<td style="text-align: right;">7.9 (6.1–12.2)</td>
 <td style="text-align: right;">+10.5 %</td>
 <td style="text-align: right;">+16.7 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">9</td>
-<td style="text-align: right;">534k</td>
-<td style="text-align: right;">8.0 (7.0–10.5)</td>
+<td style="text-align: right;">489k</td>
+<td style="text-align: right;">8.4 (6.4–13.4)</td>
 <td style="text-align: right;">+10.4 %</td>
 <td style="text-align: right;">+16.7 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">10</td>
 <td style="text-align: right;">594k</td>
-<td style="text-align: right;">8.9 (7.7–11.5)</td>
+<td style="text-align: right;">10.0 (7.7–15.0)</td>
 <td style="text-align: right;">+10.0 %</td>
 <td style="text-align: right;">+16.6 %</td>
 </tr>
@@ -294,7 +295,8 @@ macroblock (a 720p frame has 3600) at one thread, quality 50, the mean of the cl
 <p>What each effort adds:</p>
 <ul>
 <li><strong>0</strong>: one reference, no B pictures, 16x16 partitions only, a diamond search, intra only where inter is poor.</li>
-<li><strong>1</strong>: B pictures, 16x8 and 8x16 partitions, Intra8x8.</li>
+<li><strong>1</strong>: B pictures, 16x8 and 8x16 partitions, Intra8x8, and the shortcuts effort 4 lists (early stop after a 16x16 search with
+no residual, intra in B pictures only below the inter cost, sub-block searches only in references near the best).</li>
 <li><strong>2</strong>: two references, 8x8 partitions, a hexagon search and the 8x8 transform for inter blocks.</li>
 <li><strong>3</strong>: RDOQ and the second-best partitioning RD-coded when it comes close.</li>
 <li><strong>4</strong> (default): B pyramids, three references, the full sub-sample search in P pictures; B pictures search one list 0
@@ -302,9 +304,9 @@ reference and try intra only where its 16x16 prediction comes below the inter co
 cost is low for the QP is coded at once, and when it leaves no residual nothing else but intra is searched or coded. The
 8x8, 16x8 and 8x16 parts search only the references whose 16x16 search came within 12.5 % of the best one's.</li>
 <li><strong>5</strong>: two list 0 references in B pictures, intra in B pictures where it comes within 1.5 times the inter cost (as in P
-pictures), and one more sub-sample refinement round.</li>
-<li><strong>6</strong>: 16x8 and 8x16 searched in every macroblock (not only where 8x8 beats 16x16); a wider search range; 8x4, 4x8 and 4x4 at
-levels up to 3.</li>
+pictures), sub-block searches in every reference, 16x8 and 8x16 searched in every macroblock (not only where 8x8 beats
+16x16), and one more sub-sample refinement round; the early stop after 16x16 stays.</li>
+<li><strong>6</strong>: no early stop after 16x16, a wider search range, and 8x4, 4x8 and 4x4 at levels up to 3.</li>
 <li><strong>7</strong>: intra tried in every inter macroblock.</li>
 <li><strong>8</strong>: the full sub-sample search in B pictures too, temporal direct where it codes smaller, and the second-best partitioning
 always RD-coded.</li>
