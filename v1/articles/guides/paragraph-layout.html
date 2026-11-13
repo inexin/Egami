@@ -126,6 +126,33 @@ breaks between any two grapheme clusters.</li>
 </ul>
 <p>Thai, Lao, Khmer and Myanmar text breaks only at spaces and zero width spaces: Egami has no dictionaries. An object
 replacement character (U+FFFC, as placeholders use) breaks before and after.</p>
+<h3 id="hyphenation-points">Hyphenation points</h3>
+<p>A <code>Hyphenator</code> finds where a word may break with a hyphen, by Liang's pattern algorithm as TeX, LibreOffice and browsers use
+it. <code>Hyphenator.Load</code> (with a <code>HyphenationFormat</code>, or <code>Auto</code> to tell it from the data) reads hyph-utf8's <code>hyph-xx.tex</code> files
+(with the minimums from their <code>hyphenmins</code> header), plain <code>.pat.txt</code> pattern lists, LibreOffice's <code>hyph_xx_YY.dic</code> files
+(their spelling-change rules are not supported yet and throw <code>NotSupportedException</code>) and Egami's compiled <code>.ehyp</code> form,
+which <code>Save</code> writes and which loads in about a millisecond.
+<code>Hyphenator.FromPatterns</code> takes patterns and <code>hy-phen-ate</code> exceptions as text, and <code>WithExceptions</code> adds more.</p>
+<p><code>GetPoints</code> writes UTF-16 offsets, ascending, and allocates nothing for ordinary words. Exceptions win over the patterns;
+no break leaves fewer than <code>MinBefore</code> characters before it or <code>MinAfter</code> after it, and none falls inside a surrogate pair or
+before a combining mark.</p>
+<pre><code class="lang-csharp">// Liang's patterns, as hyph-utf8's .pat.txt lists them; a .tex, .dic or .ehyp file loads with Hyphenator.Load.
+Hyphenator hyphenator = Hyphenator.FromPatterns(
+    &quot;.hy3ph he2n hena4 hen5at 1na n2at 1tio 2io o2n&quot;,
+    exceptions: &quot;ta-ble&quot;,                      // exceptions break exactly where their hyphens are
+    minBefore: 2, minAfter: 3);
+
+Span&lt;int&gt; points = stackalloc int[16];
+int count = hyphenator.GetPoints(&quot;Hyphenation&quot;, points);   // 2: offsets 2 and 6, &quot;Hy-phen-ation&quot;
+
+// Compile once, load fast: the .ehyp form skips parsing the pattern text.
+using MemoryStream compiled = new();
+hyphenator.Save(compiled);
+compiled.Position = 0;
+Hyphenator loaded = Hyphenator.Load(compiled);
+int tablePoints = loaded.GetPoints(&quot;table&quot;, points);       // 1: offset 2, &quot;ta-ble&quot;
+</code></pre>
+<p>Paragraph layout does not hyphenate on its own yet; for now, soft hyphens (U+00AD) in the text mark the breaks.</p>
 <h2 id="rich-text-and-paragraphs">Rich text and paragraphs</h2>
 <p>A <code>RichText</code> is a string with <code>StyleSpan</code>s over it (start and length in UTF-16 units, never overlapping) and a <code>Placeholder</code>
 for each object replacement character (U+FFFC). <code>RichTextBuilder</code> builds one: <code>Push</code> a <code>TextStyle</code>, <code>Append</code> text,

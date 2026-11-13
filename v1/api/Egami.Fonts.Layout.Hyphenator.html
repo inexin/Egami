@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Hyphenator | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Hyphenator | Egami ">
+      
+      <meta name="description" content="One language&#39;s hyphenation patterns and exceptions: finds where a word may break with a hyphen, by Liang&#39;s algorithm (F. M. Liang, &amp;quot;Word Hy-phen-a-tion by Com-put-er&amp;quot;, Stanford, 1983) as TeX, LibreOffice and browsers use it.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_Layout_Hyphenator.md&amp;value=---%0Auid%3A%20Egami.Fonts.Layout.Hyphenator%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.Layout.Hyphenator">
+
+
+
+  <h1 id="Egami_Fonts_Layout_Hyphenator" data-uid="Egami.Fonts.Layout.Hyphenator" class="text-break">
+Class Hyphenator  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Hyphenator.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a>.<a class="xref" href="Egami.Fonts.Layout.html">Layout</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>One language's hyphenation patterns and exceptions: finds where a word may break with a hyphen, by Liang's algorithm
+(F. M. Liang, &quot;Word Hy-phen-a-tion by Com-put-er&quot;, Stanford, 1983) as TeX, LibreOffice and browsers use it.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Hyphenator</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Hyphenator</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Fonts_Layout_Hyphenator_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Liang's patterns, as hyph-utf8's .pat.txt lists them; a .tex, .dic or .ehyp file loads with Hyphenator.Load.
+Hyphenator hyphenator = Hyphenator.FromPatterns(
+    ".hy3ph he2n hena4 hen5at 1na n2at 1tio 2io o2n",
+    exceptions: "ta-ble",                      // exceptions break exactly where their hyphens are
+    minBefore: 2, minAfter: 3);
+
+Span&lt;int&gt; points = stackalloc int[16];
+int count = hyphenator.GetPoints("Hyphenation", points);   // 2: offsets 2 and 6, "Hy-phen-ation"
+
+// Compile once, load fast: the .ehyp form skips parsing the pattern text.
+using MemoryStream compiled = new();
+hyphenator.Save(compiled);
+compiled.Position = 0;
+Hyphenator loaded = Hyphenator.Load(compiled);
+int tablePoints = loaded.GetPoints("table", points);       // 1: offset 2, "ta-ble"</code></pre>
+
+
+  <h2 id="Egami_Fonts_Layout_Hyphenator_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Load the patterns from a hyph-utf8 <code>.tex</code> file, a <code>.pat.txt</code> list, a LibreOffice <code>.dic</code> file or the
+compiled form <a class="xref" href="Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_Save_System_IO_Stream_">Save(Stream)</a> writes, or give them as text to <a class="xref" href="Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_FromPatterns_System_String_System_String_System_Int32_System_Int32_">FromPatterns(string, string?, int, int)</a>. A word in the exception list
+breaks exactly where the list says; any other word breaks where the patterns' highest value between two letters is odd.
+Either way no break leaves fewer than <a class="xref" href="Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_MinBefore">MinBefore</a> characters before it or <a class="xref" href="Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_MinAfter">MinAfter</a> after it.</p>
+<p>A hyphenator is immutable and safe to share between threads; <a class="xref" href="Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_GetPoints_System_ReadOnlySpan_System_Char__System_Span_System_Int32__">GetPoints(ReadOnlySpan&lt;char&gt;, Span&lt;int&gt;)</a> allocates nothing for words up
+to about 60 characters.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_Layout_Hyphenator_MinAfter_" data-uid="Egami.Fonts.Layout.Hyphenator.MinAfter*"></a>
+
+  <h3 id="Egami_Fonts_Layout_Hyphenator_MinAfter" data-uid="Egami.Fonts.Layout.Hyphenator.MinAfter">
+  MinAfter
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Hyphenator.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The fewest characters (Unicode code points) a hyphenated word keeps after a break, TeX's
+<code>\righthyphenmin</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MinAfter { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_Hyphenator_MinBefore_" data-uid="Egami.Fonts.Layout.Hyphenator.MinBefore*"></a>
+
+  <h3 id="Egami_Fonts_Layout_Hyphenator_MinBefore" data-uid="Egami.Fonts.Layout.Hyphenator.MinBefore">
+  MinBefore
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Hyphenator.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The fewest characters (Unicode code points) a hyphenated word keeps before a break, TeX's
+<code>\lefthyphenmin</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MinBefore { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Fonts_Layout_Hyphenator_FromPatterns_" data-uid="Egami.Fonts.Layout.Hyphenator.FromPatterns*"></a>
+
+  <h3 id="Egami_Fonts_Layout_Hyphenator_FromPatterns_System_String_System_String_System_Int32_System_Int32_" data-uid="Egami.Fonts.Layout.Hyphenator.FromPatterns(System.String,System.String,System.Int32,System.Int32)">
+  FromPatterns(string, string?, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Hyphenator.cs/#L105"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a hyphenator from patterns in Liang's notation (such as <code>.hy3ph</code> and <code>hen5at</code>, separated by white space,
+as in hyph-utf8's <code>.pat.txt</code> files) and exceptions in <code>hy-phen-ate</code> form (as in its <code>.hyp.txt</code> files).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Hyphenator FromPatterns(string patterns, string? exceptions = null, int minBefore = 2, int minAfter = 3)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>patterns</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The patterns.</p>
+</dd>
+    <dt><code>exceptions</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The exception words, separated by white space, with a hyphen at every break; or null.</p>
+</dd>
+    <dt><code>minBefore</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The fewest characters kept before a break; at least 1.</p>
+</dd>
+    <dt><code>minAfter</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The fewest characters kept after a break; at least 1.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.Hyphenator.html">Hyphenator</a></dt>
+    <dd><p>The hyphenator.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_Hyphenator_GetPoints_" data-uid="Egami.Fonts.Layout.Hyphenator.GetPoints*"></a>
+
+  <h3 id="Egami_Fonts_Layout_Hyphenator_GetPoints_System_ReadOnlySpan_System_Char__System_Span_System_Int32__" data-uid="Egami.Fonts.Layout.Hyphenator.GetPoints(System.ReadOnlySpan{System.Char},System.Span{System.Int32})">
+  GetPoints(ReadOnlySpan&lt;char&gt;, Span&lt;int&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Hyphenator.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Finds where <code class="paramref">word</code> may break with a hyphen. Letter case does not matter. The caller passes a single
+word: digits, punctuation and spaces are looked up like letters, and patterns rarely match them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int GetPoints(ReadOnlySpan&lt;char&gt; word, Span&lt;int&gt; points)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>word</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The word.</p>
+</dd>
+    <dt><code>points</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.span-1">Span</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd><p>Receives the break offsets: UTF-16 indexes into <code class="paramref">word</code> of the first character after
+each break, ascending. <code>word.Length - 1</code> entries always suffice.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The number of points written.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p><code class="paramref">points</code> is too short for every point.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Layout_Hyphenator_Load_" data-uid="Egami.Fonts.Layout.Hyphenator.Load*"></a>
+
+  <h3 id="Egami_Fonts_Layout_Hyphenator_Load_System_IO_Stream_Egami_Fonts_Layout_HyphenationFormat_" data-uid="Egami.Fonts.Layout.Hyphenator.Load(System.IO.Stream,Egami.Fonts.Layout.HyphenationFormat)">
+  Load(Stream, HyphenationFormat)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Hyphenator.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads patterns, exceptions and minimums from <code class="paramref">stream</code> in one of the
+<a class="xref" href="Egami.Fonts.Layout.HyphenationFormat.html">formats</a>. Without minimums in the file, TeX formats get TeX's defaults (2 and 3) and
+LibreOffice files libhyphen's (2 and 2).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Hyphenator Load(Stream stream, HyphenationFormat format = HyphenationFormat.Auto)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The file, read to its end; the stream is left open.</p>
+</dd>
+    <dt><code>format</code> <a class="xref" href="Egami.Fonts.Layout.HyphenationFormat.html">HyphenationFormat</a></dt>
+    <dd><p>The file's format, or <a class="xref" href="Egami.Fonts.Layout.HyphenationFormat.html#Egami_Fonts_Layout_HyphenationFormat_Auto">Auto</a> to tell it from the data.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.Hyphenator.html">Hyphenator</a></dt>
+    <dd><p>The hyphenator.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.invaliddataexception">InvalidDataException</a></dt>
+    <dd><p>The data is not a valid file of the format.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>A LibreOffice file has replacement rules (patterns with <code>/</code>), or a TeX
+file loads its patterns from another file with <code>\input</code>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Layout_Hyphenator_Save_" data-uid="Egami.Fonts.Layout.Hyphenator.Save*"></a>
+
+  <h3 id="Egami_Fonts_Layout_Hyphenator_Save_System_IO_Stream_" data-uid="Egami.Fonts.Layout.Hyphenator.Save(System.IO.Stream)">
+  Save(Stream)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Hyphenator.cs/#L237"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes the compiled patterns, exceptions and minimums in Egami's own form (<code>.ehyp</code>), which
+<a class="xref" href="Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_Load_System_IO_Stream_Egami_Fonts_Layout_HyphenationFormat_">Load(Stream, HyphenationFormat)</a> reads back far faster than it parses pattern text.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Save(Stream output)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream to write to; it is left open.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_Hyphenator_WithExceptions_" data-uid="Egami.Fonts.Layout.Hyphenator.WithExceptions*"></a>
+
+  <h3 id="Egami_Fonts_Layout_Hyphenator_WithExceptions_System_Collections_Generic_IEnumerable_System_String__" data-uid="Egami.Fonts.Layout.Hyphenator.WithExceptions(System.Collections.Generic.IEnumerable{System.String})">
+  WithExceptions(IEnumerable&lt;string&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Hyphenator.cs/#L219"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a hyphenator with the same patterns and more exceptions, each in <code>hy-phen-ate</code> form: the word with a hyphen
+at every break, or with none to keep it whole. A word already in the list takes the new breaks.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Hyphenator WithExceptions(IEnumerable&lt;string&gt; words)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>words</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>The exception words.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.Hyphenator.html">Hyphenator</a></dt>
+    <dd><p>The new hyphenator; this one is unchanged.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Hyphenator.cs/#L24" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

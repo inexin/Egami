@@ -4367,6 +4367,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.HyphenationFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.HyphenationFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.HyphenationFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.HyphenationFormat.yml\" sourcestartlinenumber=\"1\">The file formats <xref href=\"Egami.Fonts.Layout.Hyphenator.Load(System.IO.Stream%2cEgami.Fonts.Layout.HyphenationFormat)\" data-throw-if-not-resolved=\"false\"></xref> reads hyphenation patterns from.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.Hyphenator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.Hyphenator.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.Hyphenator",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.Hyphenator.yml\" sourcestartlinenumber=\"1\">One language's hyphenation patterns and exceptions: finds where a word may break with a hyphen, by Liang's algorithm\n(F. M. Liang, &quot;Word Hy-phen-a-tion by Com-put-er&quot;, Stanford, 1983) as TeX, LibreOffice and browsers use it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Fonts.Layout.ITextPaint.yml",
       "output": {
         ".html": {

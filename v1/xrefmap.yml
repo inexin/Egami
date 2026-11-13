@@ -27856,6 +27856,148 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.DecorationShape.Top
   nameWithType: DecorationShape.Top
+- uid: Egami.Fonts.Layout.HyphenationFormat
+  name: HyphenationFormat
+  href: api/Egami.Fonts.Layout.HyphenationFormat.html
+  commentId: T:Egami.Fonts.Layout.HyphenationFormat
+  fullName: Egami.Fonts.Layout.HyphenationFormat
+  nameWithType: HyphenationFormat
+- uid: Egami.Fonts.Layout.HyphenationFormat.Auto
+  name: Auto
+  href: api/Egami.Fonts.Layout.HyphenationFormat.html#Egami_Fonts_Layout_HyphenationFormat_Auto
+  commentId: F:Egami.Fonts.Layout.HyphenationFormat.Auto
+  fullName: Egami.Fonts.Layout.HyphenationFormat.Auto
+  nameWithType: HyphenationFormat.Auto
+- uid: Egami.Fonts.Layout.HyphenationFormat.Compiled
+  name: Compiled
+  href: api/Egami.Fonts.Layout.HyphenationFormat.html#Egami_Fonts_Layout_HyphenationFormat_Compiled
+  commentId: F:Egami.Fonts.Layout.HyphenationFormat.Compiled
+  fullName: Egami.Fonts.Layout.HyphenationFormat.Compiled
+  nameWithType: HyphenationFormat.Compiled
+- uid: Egami.Fonts.Layout.HyphenationFormat.LibHyphen
+  name: LibHyphen
+  href: api/Egami.Fonts.Layout.HyphenationFormat.html#Egami_Fonts_Layout_HyphenationFormat_LibHyphen
+  commentId: F:Egami.Fonts.Layout.HyphenationFormat.LibHyphen
+  fullName: Egami.Fonts.Layout.HyphenationFormat.LibHyphen
+  nameWithType: HyphenationFormat.LibHyphen
+- uid: Egami.Fonts.Layout.HyphenationFormat.PatternList
+  name: PatternList
+  href: api/Egami.Fonts.Layout.HyphenationFormat.html#Egami_Fonts_Layout_HyphenationFormat_PatternList
+  commentId: F:Egami.Fonts.Layout.HyphenationFormat.PatternList
+  fullName: Egami.Fonts.Layout.HyphenationFormat.PatternList
+  nameWithType: HyphenationFormat.PatternList
+- uid: Egami.Fonts.Layout.HyphenationFormat.TeX
+  name: TeX
+  href: api/Egami.Fonts.Layout.HyphenationFormat.html#Egami_Fonts_Layout_HyphenationFormat_TeX
+  commentId: F:Egami.Fonts.Layout.HyphenationFormat.TeX
+  fullName: Egami.Fonts.Layout.HyphenationFormat.TeX
+  nameWithType: HyphenationFormat.TeX
+- uid: Egami.Fonts.Layout.Hyphenator
+  name: Hyphenator
+  href: api/Egami.Fonts.Layout.Hyphenator.html
+  commentId: T:Egami.Fonts.Layout.Hyphenator
+  fullName: Egami.Fonts.Layout.Hyphenator
+  nameWithType: Hyphenator
+- uid: Egami.Fonts.Layout.Hyphenator.FromPatterns(System.String,System.String,System.Int32,System.Int32)
+  name: FromPatterns(string, string?, int, int)
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_FromPatterns_System_String_System_String_System_Int32_System_Int32_
+  commentId: M:Egami.Fonts.Layout.Hyphenator.FromPatterns(System.String,System.String,System.Int32,System.Int32)
+  name.vb: FromPatterns(String, String, Integer, Integer)
+  fullName: Egami.Fonts.Layout.Hyphenator.FromPatterns(string, string?, int, int)
+  fullName.vb: Egami.Fonts.Layout.Hyphenator.FromPatterns(String, String, Integer, Integer)
+  nameWithType: Hyphenator.FromPatterns(string, string?, int, int)
+  nameWithType.vb: Hyphenator.FromPatterns(String, String, Integer, Integer)
+- uid: Egami.Fonts.Layout.Hyphenator.FromPatterns*
+  name: FromPatterns
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_FromPatterns_
+  commentId: Overload:Egami.Fonts.Layout.Hyphenator.FromPatterns
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.Hyphenator.FromPatterns
+  nameWithType: Hyphenator.FromPatterns
+- uid: Egami.Fonts.Layout.Hyphenator.GetPoints(System.ReadOnlySpan{System.Char},System.Span{System.Int32})
+  name: GetPoints(ReadOnlySpan<char>, Span<int>)
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_GetPoints_System_ReadOnlySpan_System_Char__System_Span_System_Int32__
+  commentId: M:Egami.Fonts.Layout.Hyphenator.GetPoints(System.ReadOnlySpan{System.Char},System.Span{System.Int32})
+  name.vb: GetPoints(ReadOnlySpan(Of Char), Span(Of Integer))
+  fullName: Egami.Fonts.Layout.Hyphenator.GetPoints(System.ReadOnlySpan<char>, System.Span<int>)
+  fullName.vb: Egami.Fonts.Layout.Hyphenator.GetPoints(System.ReadOnlySpan(Of Char), System.Span(Of Integer))
+  nameWithType: Hyphenator.GetPoints(ReadOnlySpan<char>, Span<int>)
+  nameWithType.vb: Hyphenator.GetPoints(ReadOnlySpan(Of Char), Span(Of Integer))
+- uid: Egami.Fonts.Layout.Hyphenator.GetPoints*
+  name: GetPoints
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_GetPoints_
+  commentId: Overload:Egami.Fonts.Layout.Hyphenator.GetPoints
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.Hyphenator.GetPoints
+  nameWithType: Hyphenator.GetPoints
+- uid: Egami.Fonts.Layout.Hyphenator.Load(System.IO.Stream,Egami.Fonts.Layout.HyphenationFormat)
+  name: Load(Stream, HyphenationFormat)
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_Load_System_IO_Stream_Egami_Fonts_Layout_HyphenationFormat_
+  commentId: M:Egami.Fonts.Layout.Hyphenator.Load(System.IO.Stream,Egami.Fonts.Layout.HyphenationFormat)
+  fullName: Egami.Fonts.Layout.Hyphenator.Load(System.IO.Stream, Egami.Fonts.Layout.HyphenationFormat)
+  nameWithType: Hyphenator.Load(Stream, HyphenationFormat)
+- uid: Egami.Fonts.Layout.Hyphenator.Load*
+  name: Load
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_Load_
+  commentId: Overload:Egami.Fonts.Layout.Hyphenator.Load
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.Hyphenator.Load
+  nameWithType: Hyphenator.Load
+- uid: Egami.Fonts.Layout.Hyphenator.MinAfter
+  name: MinAfter
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_MinAfter
+  commentId: P:Egami.Fonts.Layout.Hyphenator.MinAfter
+  fullName: Egami.Fonts.Layout.Hyphenator.MinAfter
+  nameWithType: Hyphenator.MinAfter
+- uid: Egami.Fonts.Layout.Hyphenator.MinAfter*
+  name: MinAfter
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_MinAfter_
+  commentId: Overload:Egami.Fonts.Layout.Hyphenator.MinAfter
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.Hyphenator.MinAfter
+  nameWithType: Hyphenator.MinAfter
+- uid: Egami.Fonts.Layout.Hyphenator.MinBefore
+  name: MinBefore
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_MinBefore
+  commentId: P:Egami.Fonts.Layout.Hyphenator.MinBefore
+  fullName: Egami.Fonts.Layout.Hyphenator.MinBefore
+  nameWithType: Hyphenator.MinBefore
+- uid: Egami.Fonts.Layout.Hyphenator.MinBefore*
+  name: MinBefore
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_MinBefore_
+  commentId: Overload:Egami.Fonts.Layout.Hyphenator.MinBefore
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.Hyphenator.MinBefore
+  nameWithType: Hyphenator.MinBefore
+- uid: Egami.Fonts.Layout.Hyphenator.Save(System.IO.Stream)
+  name: Save(Stream)
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_Save_System_IO_Stream_
+  commentId: M:Egami.Fonts.Layout.Hyphenator.Save(System.IO.Stream)
+  fullName: Egami.Fonts.Layout.Hyphenator.Save(System.IO.Stream)
+  nameWithType: Hyphenator.Save(Stream)
+- uid: Egami.Fonts.Layout.Hyphenator.Save*
+  name: Save
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_Save_
+  commentId: Overload:Egami.Fonts.Layout.Hyphenator.Save
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.Hyphenator.Save
+  nameWithType: Hyphenator.Save
+- uid: Egami.Fonts.Layout.Hyphenator.WithExceptions(System.Collections.Generic.IEnumerable{System.String})
+  name: WithExceptions(IEnumerable<string>)
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_WithExceptions_System_Collections_Generic_IEnumerable_System_String__
+  commentId: M:Egami.Fonts.Layout.Hyphenator.WithExceptions(System.Collections.Generic.IEnumerable{System.String})
+  name.vb: WithExceptions(IEnumerable(Of String))
+  fullName: Egami.Fonts.Layout.Hyphenator.WithExceptions(System.Collections.Generic.IEnumerable<string>)
+  fullName.vb: Egami.Fonts.Layout.Hyphenator.WithExceptions(System.Collections.Generic.IEnumerable(Of String))
+  nameWithType: Hyphenator.WithExceptions(IEnumerable<string>)
+  nameWithType.vb: Hyphenator.WithExceptions(IEnumerable(Of String))
+- uid: Egami.Fonts.Layout.Hyphenator.WithExceptions*
+  name: WithExceptions
+  href: api/Egami.Fonts.Layout.Hyphenator.html#Egami_Fonts_Layout_Hyphenator_WithExceptions_
+  commentId: Overload:Egami.Fonts.Layout.Hyphenator.WithExceptions
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.Hyphenator.WithExceptions
+  nameWithType: Hyphenator.WithExceptions
 - uid: Egami.Fonts.Layout.ITextPaint
   name: ITextPaint
   href: api/Egami.Fonts.Layout.ITextPaint.html
