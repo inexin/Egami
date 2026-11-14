@@ -5,6 +5,7 @@ Egami.Fonts reads fonts and lays out text in managed code.
 - TrueType, OpenType (CFF), WOFF, WOFF2, variable and color fonts: faces, glyph outlines, metrics, kerning, installed fonts
   and subsetting.
 - OpenType text shaping, bidi, and paragraph layout with wrapping, alignment and hit testing.
+- Automatic hyphenation with built-in patterns for 35 languages, and optimal (Knuth-Plass) line breaking.
 - Font data for PDF writers.
 
 See [Fonts and text](https://inexin.github.io/Egami/v1/articles/guides/text.html), [Unicode text and shaping](https://inexin.github.io/Egami/v1/articles/guides/unicode-text.html) and

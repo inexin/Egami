@@ -96,6 +96,10 @@ internal sealed class PatternTrie
     }
 
     /// <summary>Checks the arrays of a loaded trie, so a lookup never reads outside them or loops.</summary>
+    /// <summary>A trie from tables Egami wrote itself (its built-in patterns), so not checked again.</summary>
+    public static PatternTrie Trusted(int[] edgeStart, char[] edgeChars, ushort[] valueId, int[] valueOffset, byte[] valuePool) =>
+        new(edgeStart, edgeChars, valueId, valueOffset, valuePool);
+
     public static PatternTrie Validated(int[] edgeStart, char[] edgeChars, ushort[] valueId, int[] valueOffset, byte[] valuePool)
     {
         int states = valueId.Length;
@@ -117,7 +121,9 @@ internal sealed class PatternTrie
 
         // Edge e leads to state e + 1, which must come after its parent s (so no walk loops); depth counts the letters on the
         // way to a state, and a state's values may not reach past the end of its pattern.
-        byte[] depth = new byte[states];
+        // Each state's depth is written (by its parent's edge) before it is read; only the root's needs setting.
+        byte[] depth = GC.AllocateUninitializedArray<byte>(states);
+        depth[0] = 0;
         for (int s = 0; s < states; s++)
         {
             int from = edgeStart[s];

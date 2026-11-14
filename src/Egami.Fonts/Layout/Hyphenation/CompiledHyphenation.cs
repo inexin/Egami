@@ -103,7 +103,9 @@ internal static class CompiledHyphenation
         output.Write(w.Written);
     }
 
-    public static Hyphenator Read(byte[] data)
+    /// <summary>Reads a compiled form. <paramref name="trusted"/> data (Egami's own built-in patterns, checked by its tests)
+    /// skips the trie's structure check, nearly half the load time; every other check still runs.</summary>
+    public static Hyphenator Read(byte[] data, bool trusted = false)
     {
         if (!HasSignature(data))
         {
@@ -154,7 +156,7 @@ internal static class CompiledHyphenation
         }
 
         // Every state but the root has one edge into it, and a child count takes at least one byte.
-        int[] edgeStart = new int[r.Fits(states) + 1];
+        int[] edgeStart = GC.AllocateUninitializedArray<int>(r.Fits(states) + 1);
         int edges = 0;
         for (int s = 0; s < states; s++)
         {
@@ -169,7 +171,7 @@ internal static class CompiledHyphenation
         edgeStart[states] = edges;
         bool wide = alphabetSize > 256;
         ReadOnlySpan<byte> indexes = r.Take(checked(edges * (wide ? 2 : 1)));
-        char[] edgeChars = new char[edges];
+        char[] edgeChars = GC.AllocateUninitializedArray<char>(edges);
         for (int e = 0; e < edges; e++)
         {
             int index = wide ? BinaryPrimitives.ReadUInt16LittleEndian(indexes[(e * 2)..]) : indexes[e];
@@ -206,7 +208,7 @@ internal static class CompiledHyphenation
             at += length + 1;
         }
 
-        ushort[] valueId = new ushort[r.Fits(states)];
+        ushort[] valueId = GC.AllocateUninitializedArray<ushort>(r.Fits(states));
         for (int s = 0; s < states; s++)
         {
             int id = r.V();
@@ -218,7 +220,9 @@ internal static class CompiledHyphenation
             valueId[s] = (ushort)id;
         }
 
-        PatternTrie trie = PatternTrie.Validated(edgeStart, edgeChars, valueId, valueOffset, valuePool);
+        PatternTrie trie = trusted
+            ? PatternTrie.Trusted(edgeStart, edgeChars, valueId, valueOffset, valuePool)
+            : PatternTrie.Validated(edgeStart, edgeChars, valueId, valueOffset, valuePool);
 
         int exceptionCount = r.Count();
         Dictionary<string, int[]> exceptions = new(exceptionCount, StringComparer.Ordinal);
@@ -332,10 +336,28 @@ internal static class CompiledHyphenation
 
         public void Skip(int length) => Take(length);
 
-        public byte U8() => Take(1)[0];
+        public byte U8()
+        {
+            if ((uint)_at < (uint)_data.Length)
+            {
+                return _data[_at++];
+            }
 
-        // An unsigned LEB128 number of at most 31 bits.
+            throw new InvalidDataException("The compiled hyphenation data is cut short.");
+        }
+
+        // An unsigned LEB128 number of at most 31 bits. Most are one byte: those take the short way.
         public int V()
+        {
+            if ((uint)_at < (uint)_data.Length && _data[_at] < 0x80)
+            {
+                return _data[_at++];
+            }
+
+            return LongV();
+        }
+
+        private int LongV()
         {
             int value = 0;
             for (int shift = 0; shift < 35; shift += 7)

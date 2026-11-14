@@ -95,21 +95,77 @@ public sealed record class HyphenationOptions
 /// then <c>de-CH</c>, then <c>de</c>. Tags compare without regard to case, and <c>_</c> counts as <c>-</c>. Add the hyphenators
 /// before laying text out; reading from several threads is safe while nothing is added.
 /// </summary>
+/// <remarks>
+/// <see cref="BuiltIn"/> holds the hyph-utf8 patterns Egami.Fonts ships, each loaded the first time a lookup finds it. To add
+/// languages to them, copy them with <see cref="HyphenationDictionaries(HyphenationDictionaries)"/>.
+/// </remarks>
 /// <example>
-/// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="auto-hyphens"/>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="built-in-hyphenation"/>
 /// </example>
 public sealed class HyphenationDictionaries
 {
-    private readonly Dictionary<string, Hyphenator> _byLanguage = new(StringComparer.OrdinalIgnoreCase);
+    private const string ResourcePrefix = "Egami.Fonts.Hyphenation.";
+    private const string ResourceSuffix = ".ehyp";
+
+    private static readonly Lazy<HyphenationDictionaries> s_builtIn = new(CreateBuiltIn);
+
+    private readonly Dictionary<string, Lazy<Hyphenator>> _byLanguage;
+    private readonly Dictionary<string, string>? _aliases;
+    private readonly bool _readOnly;
+
+    /// <summary>Makes an empty set of hyphenators.</summary>
+    public HyphenationDictionaries()
+    {
+        _byLanguage = new(StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Makes a set that starts with <paramref name="source"/>'s hyphenators (sharing them, loaded or not) and
+    /// fallbacks, to add to.</summary>
+    /// <param name="source">The hyphenators to start with, such as <see cref="BuiltIn"/>.</param>
+    public HyphenationDictionaries(HyphenationDictionaries source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        _byLanguage = new(source._byLanguage, StringComparer.OrdinalIgnoreCase);
+        _aliases = source._aliases;
+    }
+
+    private HyphenationDictionaries(Dictionary<string, Lazy<Hyphenator>> byLanguage, Dictionary<string, string> aliases)
+    {
+        _byLanguage = byLanguage;
+        _aliases = aliases;
+        _readOnly = true;
+    }
+
+    /// <summary>
+    /// Gets the hyphenators Egami.Fonts ships, compiled from hyph-utf8's patterns under their permissive licences (listed in
+    /// THIRD-PARTY-NOTICES.md): en-US, en-GB, de-1996, de-1901, de-CH-1901, fr, nb, nn, da, es, pt, gl, it, nl, eu, la, ga,
+    /// cy, pl, sk, sl, hr, bg, uk, be, et, lt, sq, el-monoton, af, ka, hi, bn, ta and mn-Cyrl. Each loads the first time a
+    /// lookup needs it. Besides the subtag fallback, <c>en</c> finds en-US, <c>de</c> de-1996, <c>no</c> nb, <c>el</c>
+    /// el-monoton and <c>mn</c> mn-Cyrl. The set is shared and read-only.
+    /// </summary>
+    public static HyphenationDictionaries BuiltIn => s_builtIn.Value;
+
+    /// <summary>Gets the language tags hyphenators were added for.</summary>
+    public IReadOnlyCollection<string> Languages => _byLanguage.Keys;
+
+    /// <summary>Gets whether <see cref="Add"/> throws: true for <see cref="BuiltIn"/>, which is shared.</summary>
+    public bool IsReadOnly => _readOnly;
 
     /// <summary>Adds or replaces the hyphenator for a language.</summary>
     /// <param name="language">A BCP 47 tag, such as <c>en-US</c> or <c>nb</c>.</param>
     /// <param name="hyphenator">The hyphenator.</param>
+    /// <exception cref="InvalidOperationException">The set is <see cref="IsReadOnly">read-only</see>.</exception>
     public void Add(string language, Hyphenator hyphenator)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(language);
         ArgumentNullException.ThrowIfNull(hyphenator);
-        _byLanguage[language.Trim().Replace('_', '-')] = hyphenator;
+        if (_readOnly)
+        {
+            throw new InvalidOperationException(
+                "The built-in hyphenators are shared; add to a copy: new HyphenationDictionaries(HyphenationDictionaries.BuiltIn).");
+        }
+
+        _byLanguage[language.Trim().Replace('_', '-')] = new Lazy<Hyphenator>(hyphenator);
     }
 
     /// <summary>Finds the hyphenator for a language, or for the nearest language it falls back to.</summary>
@@ -127,8 +183,10 @@ public sealed class HyphenationDictionaries
         string tag = language.Trim().Replace('_', '-');
         while (true)
         {
-            if (_byLanguage.TryGetValue(tag, out hyphenator))
+            if (_byLanguage.TryGetValue(tag, out Lazy<Hyphenator>? found)
+                || (_aliases is not null && _aliases.TryGetValue(tag, out string? alias) && _byLanguage.TryGetValue(alias, out found)))
             {
+                hyphenator = found.Value;
                 return true;
             }
 
@@ -140,5 +198,39 @@ public sealed class HyphenationDictionaries
 
             tag = tag[..dash];
         }
+    }
+
+    private static HyphenationDictionaries CreateBuiltIn()
+    {
+        System.Reflection.Assembly assembly = typeof(HyphenationDictionaries).Assembly;
+        Dictionary<string, Lazy<Hyphenator>> byLanguage = new(StringComparer.OrdinalIgnoreCase);
+        foreach (string name in assembly.GetManifestResourceNames())
+        {
+            if (name.StartsWith(ResourcePrefix, StringComparison.Ordinal) && name.EndsWith(ResourceSuffix, StringComparison.Ordinal))
+            {
+                string tag = name[ResourcePrefix.Length..^ResourceSuffix.Length];
+                byLanguage[tag] = new(() => LoadBuiltIn(tag));
+            }
+        }
+
+        Dictionary<string, string> aliases = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["en"] = "en-US",
+            ["de"] = "de-1996",
+            ["no"] = "nb",
+            ["el"] = "el-monoton",
+            ["mn"] = "mn-Cyrl",
+        };
+        return new HyphenationDictionaries(byLanguage, aliases);
+    }
+
+    /// <summary>Reads the built-in hyphenator of <paramref name="tag"/>, exactly as its resource is named.</summary>
+    internal static Hyphenator LoadBuiltIn(string tag)
+    {
+        using Stream stream = typeof(HyphenationDictionaries).Assembly.GetManifestResourceStream(ResourcePrefix + tag + ResourceSuffix)
+            ?? throw new ArgumentException($"No built-in hyphenation patterns for '{tag}'.", nameof(tag));
+        byte[] data = new byte[stream.Length];
+        stream.ReadExactly(data);
+        return Hyphenation.CompiledHyphenation.Read(data, trusted: true);
     }
 }

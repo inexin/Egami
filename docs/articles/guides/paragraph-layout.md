@@ -50,7 +50,8 @@ before a combining mark.
 `ParagraphStyle.Hyphens` is CSS's `hyphens`: `Manual` (the default) breaks words only at soft hyphens (U+00AD), `None` not
 even there, and `Auto` also where a dictionary allows. `ParagraphStyle.Hyphenation` gives `Auto` its `HyphenationDictionaries`
 (hyphenators by BCP 47 tag, falling back a subtag at a time) and limits; each run's `TextStyle.Language` picks the dictionary,
-and text in a language without one is not hyphenated, as CSS requires.
+and text in a language without one is not hyphenated, as CSS requires. `HyphenationDictionaries.BuiltIn` holds the 35
+languages Egami.Fonts ships (see [Hyphenation languages](#hyphenation-languages)).
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#auto-hyphens)]
 
@@ -67,6 +68,66 @@ Words next to a digit or a hyphen, and pieces that have a soft hyphen, keep the 
 such as a ligature, shapes both pieces again. The hyphen drawn is `ParagraphStyle.Hyphen`, and `Canvas.DrawTextLayout` marks
 it with an empty ActualText, so text copied from a PDF reads the word whole. Optimal filling (below) looks up every word once
 and weighs each point against the others; balanced filling breaks only where the text allows.
+
+### Hyphenation languages
+
+`HyphenationDictionaries.BuiltIn` is compiled from the hyph-utf8 package's patterns: the languages whose pattern files grant a
+permissive licence, under MIT where a file offers several (THIRD-PARTY-NOTICES.md lists each notice). Each loads the first time
+a lookup needs it, in well under a millisecond, and the 35 add 1.3 MB to Egami.Fonts. Besides the subtag fallback (`nb-NO`
+finds `nb`), `en` finds en-US, `de` de-1996, `no` nb, `el` el-monoton and `mn` mn-Cyrl.
+
+| Language | Tags | Licence taken |
+| --- | --- | --- |
+| English (US) | en-US, en | Permissive notice (Kuiken) |
+| English (UK) | en-GB | MIT |
+| German, reformed spelling | de-1996, de | MIT |
+| German, traditional spelling | de-1901 | MIT |
+| Swiss German, traditional spelling | de-CH-1901 | MIT |
+| French | fr | MIT |
+| Norwegian Bokmål, Nynorsk | nb, no; nn | Permissive notice (Kleveland, Selberg, Hufthammer) |
+| Danish | da | MIT (or LPPL) |
+| Spanish | es | MIT |
+| Portuguese | pt | BSD 3-clause |
+| Galician | gl | Unlicense |
+| Italian | it | MIT (or LPPL) |
+| Dutch | nl | MIT |
+| Basque | eu | Permissive notice |
+| Latin | la | MIT |
+| Irish | ga | MIT (or GPL) |
+| Welsh | cy | MIT (or LPPL) |
+| Polish | pl | MIT |
+| Slovak | sk | MIT |
+| Slovenian | sl | MIT (or LPPL) |
+| Croatian | hr | Permissive notice (or LPPL) |
+| Bulgarian | bg | Permissive notice |
+| Ukrainian | uk | MIT (or LPPL) |
+| Belarusian | be | MIT |
+| Estonian | et | MIT |
+| Lithuanian | lt | MIT |
+| Albanian | sq | MIT |
+| Greek, monotonic | el-monoton, el | MIT (or LPPL) |
+| Afrikaans | af | MIT |
+| Georgian | ka | MIT |
+| Hindi | hi | MIT |
+| Bengali | bn | MIT |
+| Tamil | ta | MIT |
+| Mongolian, Cyrillic | mn-Cyrl, mn | MIT (or LPPL) |
+
+Other hyph-utf8 languages are not built in because their licences don't allow it in an MIT package. Load them from your
+own copy of the pattern file, as the sample below does:
+
+| Languages | Tags | Licence |
+| --- | --- | --- |
+| Swedish, Russian, Catalan, Icelandic, Turkish, Thai, Serbo-Croatian (Latin and Cyrillic) | sv, ru, ca, is, tr, th, sh-Latn, sh-Cyrl | LPPL only |
+| Hungarian, Latvian, Czech, Serbian (Cyrillic), Armenian | hu, lv, cs, sr-Cyrl, hy | Copyleft (GPL, LGPL or MPL) |
+| Finnish, Romanian | fi, ro | Notices of their own, not cleared for shipping |
+
+`BuiltIn` is shared and read-only; `new HyphenationDictionaries(HyphenationDictionaries.BuiltIn)` copies it, sharing its
+hyphenators, so you can add to it or replace a language with your own patterns. `Hyphenator.Load` reads hyph-utf8 `.tex`
+files, LibreOffice `hyph_xx_YY.dic` files and compiled `.ehyp` files; compile a large `.tex` file once with `Save` to load it
+faster.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#built-in-hyphenation)]
 
 ## Rich text and paragraphs
 
