@@ -11,6 +11,9 @@ internal sealed class BlockCosts(int count)
 
     /// <summary>Gets each block's vector into the frame before, in half-size pixels, x then y; zero where intra is better.</summary>
     public short[] Vectors { get; } = new short[count * 2];
+
+    /// <summary>Gets each block's detail the half-size copy averaged away, in frame samples, which every prediction leaves.</summary>
+    public int[] Detail { get; } = new int[count];
 }
 
 /// <summary>
@@ -86,6 +89,127 @@ internal static class MacroblockTree
                 Add(into, columns, rows, cx + 1, cy + 1, amount * fx * fy / 64);
             }
         }
+    }
+
+    private static void Add(double[] into, int columns, int rows, int x, int y, double amount)
+    {
+        if (amount > 0 && x >= 0 && y >= 0 && x < columns && y < rows)
+        {
+            into[(y * columns) + x] += amount;
+        }
+    }
+}
+
+/// <summary>One picture's block estimates against the references the coded structure gives it, for <see cref="BlockTree"/>.</summary>
+internal sealed class TreeCosts(int count)
+{
+    /// <summary>The mode of a block that intra predicts at least as well.</summary>
+    public const byte IntraMode = 255;
+
+    /// <summary>Gets each block's intra error, in frame samples.</summary>
+    public int[] Intra { get; } = new int[count];
+
+    /// <summary>Gets each block's best inter error (list 0, list 1 or their mean), at most its intra error.</summary>
+    public int[] Inter { get; } = new int[count];
+
+    /// <summary>Gets each block's best prediction: 0 from list 0, 1 from list 1, 2 from both, or <see cref="IntraMode"/>.</summary>
+    public byte[] Modes { get; } = new byte[count];
+
+    /// <summary>Gets each block's vector into the list 0 reference, in half-size pixels, x then y.</summary>
+    public short[] Vectors0 { get; } = new short[count * 2];
+
+    /// <summary>Gets each block's vector into the list 1 reference.</summary>
+    public short[] Vectors1 { get; } = new short[count * 2];
+
+    /// <summary>Gets or sets whether the picture has a list 1 reference (a B picture).</summary>
+    public bool Bi { get; set; }
+}
+
+/// <summary>A picture in a <see cref="BlockTree"/> plan: its display index, references (-1 for none) and estimates (null for a keyframe).</summary>
+internal readonly record struct TreePicture(int Index, int Ref0, int Ref1, TreeCosts? Costs);
+
+/// <summary>
+/// The macroblock tree per block along the coded structure (the published macroblock-tree algorithm: temporal propagation of
+/// prediction dependence). Walking the pictures in reverse coding order, each block passes on to the pictures it predicts
+/// from the share of its content they explain: its intra cost plus what later pictures take from it, times one minus its
+/// inter over its intra cost. A block predicted from both sides gives half to each; each part lands where its vector points,
+/// spread over the blocks it overlaps by area. A picture no other predicts from passes on but takes nothing.
+/// </summary>
+internal static class BlockTree
+{
+    /// <summary>
+    /// Fills <paramref name="carried"/>, by display index, with what the later pictures of <paramref name="pictures"/> (in
+    /// coding order) propagate into each block of each picture; references missing from <paramref name="carried"/> are left out.
+    /// </summary>
+    public static void Propagate(IReadOnlyList<TreePicture> pictures, int columns, int rows, IReadOnlyDictionary<int, double[]> carried)
+    {
+        for (int k = pictures.Count - 1; k >= 0; k--)
+        {
+            TreePicture p = pictures[k];
+            if (p.Costs is not { } costs || !carried.TryGetValue(p.Index, out double[]? own))
+            {
+                continue;
+            }
+
+            carried.TryGetValue(p.Ref0, out double[]? into0);
+            double[]? into1 = p.Ref1 >= 0 && carried.TryGetValue(p.Ref1, out double[]? i1) ? i1 : null;
+            for (int by = 0; by < rows; by++)
+            {
+                for (int bx = 0; bx < columns; bx++)
+                {
+                    int i = (by * columns) + bx;
+                    int intra = costs.Intra[i], inter = costs.Inter[i];
+                    byte mode = costs.Modes[i];
+                    if (intra <= 0 || inter >= intra || mode == TreeCosts.IntraMode)
+                    {
+                        continue;
+                    }
+
+                    double amount = (intra + own[i]) * (intra - inter) / intra;
+                    if (mode == 2)
+                    {
+                        Spread(into0, columns, rows, bx, by, costs.Vectors0, i, amount / 2);
+                        Spread(into1, columns, rows, bx, by, costs.Vectors1, i, amount / 2);
+                    }
+                    else
+                    {
+                        Spread(mode == 0 ? into0 : into1, columns, rows, bx, by, mode == 0 ? costs.Vectors0 : costs.Vectors1, i, amount);
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Writes each block's step offset in base-2 logarithms, minus <paramref name="strength"/> times log2((intra + carried) /
+    /// intra), and returns their mean.
+    /// </summary>
+    public static double Offsets(int[] intraCosts, double[] carried, double strength, Span<double> offsets)
+    {
+        double sum = 0;
+        for (int i = 0; i < offsets.Length; i++)
+        {
+            double intra = Math.Max(intraCosts[i], 1);
+            offsets[i] = -strength * Math.Log2((intra + carried[i]) / intra);
+            sum += offsets[i];
+        }
+
+        return offsets.Length == 0 ? 0 : sum / offsets.Length;
+    }
+
+    private static void Spread(double[]? into, int columns, int rows, int bx, int by, short[] vectors, int i, double amount)
+    {
+        if (into is null || amount <= 0)
+        {
+            return;
+        }
+
+        int x = (bx * 8) + vectors[i * 2], y = (by * 8) + vectors[(i * 2) + 1];
+        int cx = x >> 3, cy = y >> 3, fx = x & 7, fy = y & 7;
+        Add(into, columns, rows, cx, cy, amount * (8 - fx) * (8 - fy) / 64);
+        Add(into, columns, rows, cx + 1, cy, amount * fx * (8 - fy) / 64);
+        Add(into, columns, rows, cx, cy + 1, amount * (8 - fx) * fy / 64);
+        Add(into, columns, rows, cx + 1, cy + 1, amount * fx * fy / 64);
     }
 
     private static void Add(double[] into, int columns, int rows, int x, int y, double amount)

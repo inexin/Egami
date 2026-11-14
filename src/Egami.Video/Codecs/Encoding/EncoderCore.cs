@@ -13,7 +13,11 @@ namespace Egami.Video.Codecs.Encoding;
 /// </param>
 /// <param name="Layer">The frame's layer in its group's pyramid: 0 for keyframes and the group's alternate reference, more for each level below.</param>
 /// <param name="Referenced">Whether later frames predict from the frame; false for a pyramid's leaves and for B-frames outside a B-pyramid.</param>
-internal readonly record struct FrameDecision(FrameType Type, int Quantizer, bool AltRefAhead, bool RefreshGolden, int Index = 0, int Layer = 0, bool Referenced = true);
+/// <param name="BlockOffsets">
+/// The block macroblock tree's step offsets (<see cref="CoreSettings.BlockTree"/>), one per 16×16 block in raster order, in
+/// base-2 logarithms of the step (−1 halves it), centred on the frame's own step; null for none.
+/// </param>
+internal readonly record struct FrameDecision(FrameType Type, int Quantizer, bool AltRefAhead, bool RefreshGolden, int Index = 0, int Layer = 0, bool Referenced = true, double[]? BlockOffsets = null);
 
 /// <summary>A frame a codec coded.</summary>
 /// <param name="Data">The frame's bytes.</param>
@@ -147,6 +151,18 @@ internal sealed record CoreSettings
     /// </summary>
     public double MacroblockTree { get; init; }
 
+    /// <summary>
+    /// Gets the block macroblock tree's strength (<see cref="Encoding.BlockTree"/>), which replaces <see cref="MacroblockTree"/>
+    /// when above 0: each 16×16 block's step is multiplied by 2 to the power of minus this times the base-2 logarithm of
+    /// (its intra cost + what later pictures take from it) over its intra cost, propagated along the coded structure of the
+    /// B-frame order (P pictures from their anchor, B pictures from both sides). The mean of a frame's offsets goes into the
+    /// frame's step, times <see cref="BlockTreeFrame"/>, and the rest to the coder as <see cref="FrameDecision.BlockOffsets"/>.
+    /// </summary>
+    public double BlockTree { get; init; }
+
+    /// <summary>How much of a frame's mean block tree offset goes into the frame's step (rate control plans with it): 0 to 1.</summary>
+    public double BlockTreeFrame { get; init; } = 1;
+
     /// <summary>Whether keyframes are coded temporally filtered with the frames after them, as alternate references are.</summary>
     public bool FilterKeyframes { get; init; }
 
@@ -224,6 +240,13 @@ internal sealed class EncoderCore : IDisposable
     private readonly Dictionary<int, double> _treeSteps = [];
     private readonly List<BlockCosts> _treeFrames = [];
     private readonly List<bool> _treeKeys = [];
+    private readonly Dictionary<int, double[]> _treeOffsets = [];
+    private readonly Dictionary<(int Index, int Ref0, int Ref1), TreeCosts> _treeCosts = [];
+    private readonly Dictionary<int, double[]> _treeCarried = [];
+    private readonly Stack<double[]> _treeArrays = new();
+    private readonly List<TreePicture> _treePictures = [];
+    private byte[]? _anchorHalf;
+    private int _anchorHalfIndex = -1;
     private readonly Queue<EncodedPacket> _ready = new();
     private readonly List<YuvRaster<byte>> _filterFrames = [];
     private readonly GroupFrame[] _group = new GroupFrame[80];
@@ -314,7 +337,7 @@ internal sealed class EncoderCore : IDisposable
 
         MediaTime duration = frame.Duration is { } d ? d.Rescale(_timeBase) : new MediaTime(1, _timeBase);
         BlockCosts? blocks = null;
-        if (_settings.MacroblockTree > 0 && _depth > 0 && _settings.BFrames > 0)
+        if ((_settings.MacroblockTree > 0 || _settings.BlockTree > 0) && _depth > 0 && _settings.BFrames > 0)
         {
             blocks = _blockPool.TryPop(out BlockCosts? b) ? b : new BlockCosts(_analyzer.Columns * _analyzer.Rows);
             _analyzer.CopyBlocks(blocks);
@@ -455,6 +478,14 @@ internal sealed class EncoderCore : IDisposable
             _pictures.ReturnFull(frame.Full);
         }
 
+        if (_settings.BlockTree > 0 && type != FrameType.Bidirectional)
+        {
+            // The block tree's next P picture predicts from this one, after it has left the queue.
+            _anchorHalf ??= new byte[frame.Half.Length];
+            frame.Half.CopyTo(_anchorHalf, 0);
+            _anchorHalfIndex = frame.Index;
+        }
+
         _halves.Push(frame.Half);
         if (frame.Blocks is not null)
         {
@@ -487,7 +518,8 @@ internal sealed class EncoderCore : IDisposable
         BStep step = _bSteps[_bStepNext++];
         Pending frame = Find(step.Index) ?? throw new InvalidOperationException($"Frame {step.Index} is no longer held.");
         int quantizer = _rate.Next(step.Type, step.Complexity, StepOf(step));
-        FrameDecision decision = new(step.Type, quantizer, AltRefAhead: false, RefreshGolden: false, step.Index, step.Layer, step.Referenced);
+        FrameDecision decision = new(step.Type, quantizer, AltRefAhead: false, RefreshGolden: false, step.Index, step.Layer, step.Referenced,
+            _treeOffsets.GetValueOrDefault(step.Index));
         CodeShown(frame, decision, step.Complexity);
     }
 
@@ -534,6 +566,150 @@ internal sealed class EncoderCore : IDisposable
         }
     }
 
+    /// <summary>
+    /// Runs the block macroblock tree (<see cref="CoreSettings.BlockTree"/>) over the frames held, in the coded structure the
+    /// run just planned and the runs after it will have, and keeps each of the run's frames' step and block offsets.
+    /// </summary>
+    private void PlanBlockTree(int previous)
+    {
+        _treeSteps.Clear();
+        _treeOffsets.Clear();
+        _treePictures.Clear();
+        if (_queue.Count < 2 || _queue[0].Blocks is null)
+        {
+            return;
+        }
+
+        // The structure: the run just planned, then runs of up to BFrames B-frames before each anchor, as BCount and
+        // AddBFrames plan them (a keyframe alone), over the consecutive frames held.
+        int first = _queue[0].Index, held = 0;
+        while (held < _queue.Count && _queue[held].Index == first + held && _queue[held].Blocks is not null)
+        {
+            held++;
+        }
+
+        int anchor = previous, pos = 0;
+        while (pos < held)
+        {
+            Pending q = _queue[pos];
+            if (q.Key)
+            {
+                _treePictures.Add(new TreePicture(q.Index, -1, -1, null));
+                anchor = q.Index;
+                pos++;
+                continue;
+            }
+
+            int run = 0;
+            if (pos == 0)
+            {
+                run = _bSteps[0].Index - first;
+            }
+            else
+            {
+                int max = Math.Min(_settings.BFrames, held - 1 - pos);
+                for (int k = 1; k <= max && !_queue[pos + k].Key; k++)
+                {
+                    run = k;
+                }
+            }
+
+            int next = q.Index + run;
+            _treePictures.Add(new TreePicture(next, anchor, -1, TreeEstimate(next, anchor, -1)));
+            AddTreeBFrames(anchor, next);
+            anchor = next;
+            pos += run + 1;
+        }
+
+        foreach (double[] array in _treeCarried.Values)
+        {
+            _treeArrays.Push(array);
+        }
+
+        _treeCarried.Clear();
+        int n = _analyzer.Columns * _analyzer.Rows;
+        foreach (TreePicture p in _treePictures)
+        {
+            double[] carried = _treeArrays.TryPop(out double[]? free) ? free : new double[n];
+            Array.Clear(carried);
+            _treeCarried[p.Index] = carried;
+        }
+
+        BlockTree.Propagate(_treePictures, _analyzer.Columns, _analyzer.Rows, _treeCarried);
+        foreach (BStep step in _bSteps)
+        {
+            if (!step.Referenced || Find(step.Index)?.Blocks is not { } blocks || !_treeCarried.TryGetValue(step.Index, out double[]? carried))
+            {
+                continue;
+            }
+
+            double[] offsets = new double[n];
+            double mean = BlockTree.Offsets(blocks.Intra, carried, _settings.BlockTree, offsets);
+            double frame = mean * _settings.BlockTreeFrame;
+            for (int i = 0; i < n; i++)
+            {
+                offsets[i] -= frame;
+            }
+
+            _treeSteps[step.Index] = Math.Pow(2, frame);
+            _treeOffsets[step.Index] = offsets;
+        }
+
+        // Estimates of frames already coded are no longer needed.
+        foreach ((int Index, int Ref0, int Ref1) key in _treeCosts.Keys.Where(k => k.Index < first).ToList())
+        {
+            _treeCosts.Remove(key);
+        }
+    }
+
+    /// <summary>Adds the B-frames between <paramref name="from"/> and <paramref name="to"/> to the tree's plan, in coding order.</summary>
+    private void AddTreeBFrames(int from, int to)
+    {
+        int count = to - from - 1;
+        if (count <= 0)
+        {
+            return;
+        }
+
+        if (_settings.BPyramid && count >= 2)
+        {
+            int middle = (from + to) / 2;
+            _treePictures.Add(new TreePicture(middle, from, to, TreeEstimate(middle, from, to)));
+            AddTreeBFrames(from, middle);
+            AddTreeBFrames(middle, to);
+            return;
+        }
+
+        for (int i = from + 1; i < to; i++)
+        {
+            _treePictures.Add(new TreePicture(i, from, to, TreeEstimate(i, from, to)));
+        }
+    }
+
+    /// <summary>The tree's estimate of frame <paramref name="index"/> against its references (kept while it is held), or null.</summary>
+    private TreeCosts? TreeEstimate(int index, int ref0, int ref1)
+    {
+        if (_treeCosts.TryGetValue((index, ref0, ref1), out TreeCosts? known))
+        {
+            return known;
+        }
+
+        Pending? target = Find(index);
+        byte[]? half0 = TreeHalf(ref0), half1 = ref1 < 0 ? null : TreeHalf(ref1);
+        if (target?.Blocks is null || half0 is null || (ref1 >= 0 && half1 is null))
+        {
+            return null;
+        }
+
+        TreeCosts costs = new(_analyzer.Columns * _analyzer.Rows);
+        _analyzer.Estimate(target.Half, target.Blocks, half0, ref0 - index, half1, ref1 - index, costs);
+        _treeCosts[(index, ref0, ref1)] = costs;
+        return costs;
+    }
+
+    /// <summary>The half-size copy of a frame held, or of the last anchor coded.</summary>
+    private byte[]? TreeHalf(int index) => index < 0 ? null : index == _anchorHalfIndex ? _anchorHalf : Find(index)?.Half;
+
     /// <summary>The macroblock tree's step for a frame from the last <see cref="PlanTree"/>, or 1.</summary>
     private double TreeStep(int index) => _treeSteps.TryGetValue(index, out double step) ? step : 1;
 
@@ -543,6 +719,7 @@ internal sealed class EncoderCore : IDisposable
         _bSteps.Clear();
         _bStepNext = 0;
         Pending head = _queue[0];
+        int previous = _lastAnchor;
         if (head.Key)
         {
             _bSteps.Add(new BStep(head.Index, FrameType.Key, 0, true, head.Stats.Intra));
@@ -558,7 +735,15 @@ internal sealed class EncoderCore : IDisposable
             _lastAnchor = anchor.Index;
         }
 
-        PlanTree();
+        if (_settings.BlockTree > 0)
+        {
+            PlanBlockTree(previous);
+        }
+        else
+        {
+            PlanTree();
+        }
+
         int count = 0;
         foreach (BStep step in _bSteps)
         {

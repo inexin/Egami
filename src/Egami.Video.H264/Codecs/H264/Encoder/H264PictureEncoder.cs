@@ -63,6 +63,12 @@ internal sealed class H264PictureEncoder
     /// <summary>Gets or sets whether macroblocks' QPs follow their energy (adaptive quantization).</summary>
     public bool AdaptiveQuantization { get; set; }
 
+    /// <summary>
+    /// Gets or sets the block macroblock tree's step offsets for the next picture, one per macroblock in base-2 logarithms of
+    /// the step (<see cref="Encoding.FrameDecision.BlockOffsets"/>), added to adaptive quantization's; null for none.
+    /// </summary>
+    public double[]? TreeOffsets { get; set; }
+
     /// <summary>Gets or sets the smallest QP a macroblock may take.</summary>
     public int MinQp { get; set; }
 
@@ -395,13 +401,21 @@ internal sealed class H264PictureEncoder
 
         _mb.Clear();
         Array.Clear(pic.MbIntra);
+        double[]? tree = TreeOffsets is { } t && t.Length == _qpOffsets.Length ? t : null;
         if (AdaptiveQuantization)
         {
-            AdaptQuantizers();
+            AdaptQuantizers(tree);
+        }
+        else if (tree is null)
+        {
+            Array.Clear(_qpOffsets);
         }
         else
         {
-            Array.Clear(_qpOffsets);
+            for (int i = 0; i < tree.Length; i++)
+            {
+                _qpOffsets[i] = Math.Clamp((int)Math.Round(6 * tree[i]), -12, 12);
+            }
         }
     }
 
@@ -556,7 +570,7 @@ internal sealed class H264PictureEncoder
     /// means, against the picture's: busy macroblocks, where errors show less, get coarser steps, flat ones finer; the mean
     /// offset is about zero.
     /// </summary>
-    private void AdaptQuantizers()
+    private void AdaptQuantizers(double[]? tree)
     {
         H264Picture pic = _current.Picture;
         int w = _config.WidthMbs, h = _config.HeightMbs;
@@ -584,7 +598,8 @@ internal sealed class H264PictureEncoder
         double mean = sum / logs.Length;
         for (int i = 0; i < logs.Length; i++)
         {
-            _qpOffsets[i] = Math.Clamp((int)Math.Round(AqStrength * (logs[i] - mean)), -12, 12);
+            // The block tree's offsets are in base-2 logarithms of the step: six QPs each.
+            _qpOffsets[i] = Math.Clamp((int)Math.Round((AqStrength * (logs[i] - mean)) + (tree is null ? 0 : 6 * tree[i])), -12, 12);
         }
     }
 

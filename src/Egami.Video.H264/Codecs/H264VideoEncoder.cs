@@ -154,7 +154,9 @@ internal sealed class H264VideoEncoder : IVideoEncoder
             // A pyramid's middle B picture a coarser step than the default 1.15 (H.264 compression Build Plan, PR D): its
             // residual took the most bits beyond x264's, and the B pictures that predict from it lose less than it saves.
             BReferenceStep = 1.3,
-            MacroblockTree = TreeStrength,
+            MacroblockTree = effort >= 4 && BlockTreeStrength > 0 ? 0 : TreeStrength,
+            BlockTree = effort >= 4 ? BlockTreeStrength : 0,
+            BlockTreeFrame = BlockTreeFrame,
             Rate = new RateSettings
             {
                 Mode = options.RateControl,
@@ -200,6 +202,15 @@ internal sealed class H264VideoEncoder : IVideoEncoder
     /// doubling of its content's worth through reuse, 1.5 QP.
     /// </summary>
     internal const double TreeStrength = 0.25;
+
+    /// <summary>
+    /// The block macroblock tree's strength from effort 4 (<see cref="CoreSettings.BlockTree"/>), which then replaces the
+    /// frame-level tree; 0 leaves it off (H.264 block macroblock tree plan, PR E: an internal switch until it is tuned).
+    /// </summary>
+    internal static double BlockTreeStrength { get; set; }
+
+    /// <summary>How much of a frame's mean block tree offset goes into its step (<see cref="CoreSettings.BlockTreeFrame"/>).</summary>
+    internal static double BlockTreeFrame { get; set; } = 1;
 
     /// <summary>The QP for a quality of 0 to 100: 51 at 0, 23 (x264's default CRF) at 50, 0 at 100 or so.</summary>
     internal static int QualityToQp(int quality) => Math.Clamp((int)Math.Round(51 - (0.56 * quality)), 0, 51);
@@ -398,6 +409,7 @@ internal sealed class H264FrameCoder : IFrameCoder
         int qp = Math.Clamp(decision.Quantizer, 0, 51);
         int poc = 2 * (decision.Index - _idrIndex);
         _encoder.Load(picture);
+        _encoder.TreeOffsets = decision.BlockOffsets;
         byte[][] slices = idr || _encoder.References == 0
             ? _encoder.EncodeIntra(idr, _idrPicId, _frameNum, poc, qp, decision.Referenced)
             : decision.Type == FrameType.Bidirectional
