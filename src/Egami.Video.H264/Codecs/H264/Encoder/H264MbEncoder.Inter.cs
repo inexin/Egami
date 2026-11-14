@@ -69,7 +69,7 @@ internal sealed partial class H264MbEncoder
     // quantizer steps large.
     private const double SkipSteps = 0.4;
 
-    // Speed round 4, tasks 1 and 2: the same test at effort 4, looser: B_Skip at 0.6 steps, P_Skip at 0.5. The review's 1 and
+    // Speed round 4, tasks 1 and 2: the same test at efforts 1 to 4, looser: B_Skip at 0.6 steps, P_Skip at 0.5. The review's 1 and
     // 0.7 held on the four busy 720p gate clips but cost 2.3 % and 1.1 % on rush_hour, whose clean, slow content keeps detail
     // below a step; B at 0.8 still cost 1.4 % there.
     private const double SkipStepsB = 0.6;
@@ -121,6 +121,7 @@ internal sealed partial class H264MbEncoder
     {
         Setup(mbX, mbY, qp);
         _round = InterRound;
+        _transform = -1;
         int addr = (mbY * _mb.WidthMbs) + mbX;
 
         // P_Skip: reference 0 and the predicted vector, no residual. The vector comes from the neighbours, which may reach
@@ -142,7 +143,7 @@ internal sealed partial class H264MbEncoder
             bestCost = skipSse + (_lambda * Rate(skip) / CabacCost.Bit);
             best = skip;
             SaveMb(0);
-            if (ResidualQuantizesAway(_effort == 4 ? SkipStepsP : SkipSteps))
+            if (ResidualQuantizesAway(_effort is >= 1 and <= 4 ? SkipStepsP : SkipSteps))
             {
                 // Task 7: what P_Skip leaves would quantize to nothing, so nothing else is searched or coded.
                 H264EncodeStats.Add(H264EncodeStat.EarlySkips);
@@ -1055,6 +1056,13 @@ internal sealed partial class H264MbEncoder
         code.Cbp = chroma << 4;
         long chromaSse = Sse(_srcCb, _cb, _chromaAt, _cstride, 8, 8) + Sse(_srcCr, _cr, _chromaAt, _cstride, 8, 8);
         bool can8 = _allow8x8 && _effort >= 2 && H264MbSyntax.NoSub8x8(code, b);
+        if (can8 && _transform >= 0)
+        {
+            // Speed round 4, task 5: the transform size the macroblock's first candidate with luma levels chose.
+            long sseT = CodeInterLuma(code, _transform == 1);
+            return sseT + chromaSse + (_lambda * Rate(code) / CabacCost.Bit);
+        }
+
         if (can8)
         {
             // Task 6: when the Hadamard costs of the residual, 4x4 (SATD) and 8x8 (SA8D), are far apart, code only the lower.
@@ -1062,6 +1070,7 @@ internal sealed partial class H264MbEncoder
             if (_effort < 10 && (satd8 > satd4 * (1 + TransformMargin) || satd4 > satd8 * (1 + TransformMargin)))
             {
                 long sseT = CodeInterLuma(code, satd8 < satd4);
+                KeepTransform(code);
                 return sseT + chromaSse + (_lambda * Rate(code) / CabacCost.Bit);
             }
         }
@@ -1078,14 +1087,31 @@ internal sealed partial class H264MbEncoder
             if (cost8 < cost)
             {
                 code.CopyFrom(eight);
+                KeepTransform(code);
                 return cost8;
             }
 
             Restore(_recon[0]);
+            KeepTransform(code);
         }
 
         return cost;
     }
+
+    /// <summary>
+    /// Speed round 4, task 5: at efforts 2 to 4 (where both transforms are open) the first candidate of a macroblock that codes luma levels with both transforms open
+    /// fixes the transform size, and later candidates code only that size.
+    /// </summary>
+    private void KeepTransform(H264MbCode code)
+    {
+        if (_effort is >= 1 and <= 4 && (code.Cbp & 15) != 0)
+        {
+            _transform = code.Transform8x8 ? 1 : 0;
+        }
+    }
+
+    // The transform size KeepTransform fixed for this macroblock: -1 none yet, 0 4x4, 1 8x8.
+    private int _transform = -1;
 
     /// <summary>Codes the luma residual against the prediction in <see cref="_ip"/> and reconstructs it; returns its squared error.</summary>
     private long CodeInterLuma(H264MbCode code, bool eight)
