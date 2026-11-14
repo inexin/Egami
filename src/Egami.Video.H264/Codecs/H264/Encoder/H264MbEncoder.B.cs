@@ -18,13 +18,16 @@ internal sealed partial class H264MbEncoder
     private H264RefPlanes[] _refs1 = [];
     private int _refCount1;
     private bool _weighted;
+    private int _poc;
 
     /// <summary>
     /// Sets the references of the B picture to code: list 0 and list 1 in order with their active counts, and the largest
-    /// vertical vector component the level allows in quarter samples. B slices do not weight their references.
+    /// vertical vector component the level allows in quarter samples, and the picture's order count, which scales the last P
+    /// picture's vectors into search starts. B slices do not weight their references.
     /// </summary>
-    public void SetBReferences(H264RefPlanes[] list0, int count0, H264RefPlanes[] list1, int count1, int maxMvY)
+    public void SetBReferences(H264RefPlanes[] list0, int count0, H264RefPlanes[] list1, int count1, int maxMvY, int poc)
     {
+        _poc = poc;
         _refs = list0;
         _refCount = count0;
         _refs1 = list1;
@@ -32,10 +35,7 @@ internal sealed partial class H264MbEncoder
         _maxMvY = maxMvY;
         _sub8x8 = false;
         _weighted = false;
-        if (_frameMv.Length != _mb.WidthMbs * _mb.HeightMbs)
-        {
-            _frameMv = new int[_mb.WidthMbs * _mb.HeightMbs];
-        }
+        EnsureMotion();
     }
 
     // The vectors the last SearchBPart found in each list, used or not.
@@ -92,9 +92,12 @@ internal sealed partial class H264MbEncoder
             directSatd = Satd(_srcY, _lumaAt, _stride, _ip, 0, 16, 16, 16) + (long)_sadLambda;
         }
 
-        Span<int> starts0 = [0, direct.RefIdx[0] >= 0 ? direct.Mv[0] : 0, 0];
-        Span<int> starts1 = [0, direct.RefIdx1[0] >= 0 ? direct.Mv1[0] : 0, 0];
-        int startCount = 2;
+        Span<int> starts0 = stackalloc int[8], starts1 = stackalloc int[8];
+        (starts0[0], starts0[1]) = (0, direct.RefIdx[0] >= 0 ? direct.Mv[0] : 0);
+        (starts1[0], starts1[1]) = (0, direct.RefIdx1[0] >= 0 ? direct.Mv1[0] : 0);
+
+        // H.264 compression Build Plan, PR D: also from the last P picture's vectors around this macroblock.
+        int startCount = NextPSeeds(mbX, mbY, starts0, starts1, 2);
 
         // Motion search: 16x16, then 16x8 and 8x16 from effort 1 and 8x8 from effort 2, each partition from list 0, list 1
         // or both.
@@ -110,7 +113,8 @@ internal sealed partial class H264MbEncoder
         }
 
         // Task 13: the partitions also start from the vectors the 16x16 search found in each list.
-        (starts0[2], starts1[2], startCount) = (_lastMv0, _lastMv1, 3);
+        (starts0[startCount], starts1[startCount]) = (_lastMv0, _lastMv1);
+        startCount++;
 
         starts0 = starts0[..startCount];
         starts1 = starts1[..startCount];
@@ -176,6 +180,40 @@ internal sealed partial class H264MbEncoder
 
         return FinishInter(mbX, mbY, qp, firstCost, bestCost, best, bestSlot);
     }
+
+    /// <summary>
+    /// Adds search starts from the 16x16 vectors the last P picture found at this macroblock and its four neighbours, each
+    /// scaled from the distance it covers to this picture's distance to list 0's and list 1's first reference.
+    /// </summary>
+    private int NextPSeeds(int mbX, int mbY, Span<int> starts0, Span<int> starts1, int n)
+    {
+        int w = _mb.WidthMbs, addr = (mbY * w) + mbX;
+        int d0 = _poc - _refs[0].Poc, d1 = _poc - _refs1[0].Poc;
+        for (int i = 0; i < 5; i++)
+        {
+            int a = i switch
+            {
+                0 => addr,
+                1 => mbX > 0 ? addr - 1 : -1,
+                2 => mbX < w - 1 ? addr + 1 : -1,
+                3 => mbY > 0 ? addr - w : -1,
+                _ => mbY < _mb.HeightMbs - 1 ? addr + w : -1,
+            };
+            if (a < 0 || _frameSpan[a] <= 0)
+            {
+                continue;
+            }
+
+            int v = _frameMv[a], x = H264SliceDecoder.MvX(v), y = H264SliceDecoder.MvY(v), span = _frameSpan[a];
+            starts0[n] = H264SliceDecoder.PackMv(Scale(x, d0, span), Scale(y, d0, span));
+            starts1[n] = H264SliceDecoder.PackMv(Scale(x, d1, span), Scale(y, d1, span));
+            n++;
+        }
+
+        return n;
+    }
+
+    private static int Scale(int c, int d, int span) => (int)Math.Round((double)c * d / span);
 
     private void CodeDirect(H264MbCode direct, ref double bestCost, ref H264MbCode? best, ref int bestSlot)
     {
@@ -245,6 +283,13 @@ internal sealed partial class H264MbEncoder
         long costBi = PartSatd(bx, by, w, h, r0, mv0, r1, mv1)
             + MvCost(H264SliceDecoder.MvX(mv0), H264SliceDecoder.MvY(mv0), mvp0) + MvCost(H264SliceDecoder.MvX(mv1), H264SliceDecoder.MvY(mv1), mvp1)
             + RefCost(r0, _refCount) + RefCost(r1, _refCount1) + (long)(2 * _sadLambda);
+        if (w == 4 && h == 4 && costBi < Math.Min(cost0, cost1))
+        {
+            // Compression PR D: a bi-predicted 16x16 block refines its two vectors together.
+            costBi = RefineBi(bx, by, w, h, r0, ref mv0, mvp0, r1, ref mv1, mvp1, costBi);
+            (_lastMv0, _lastMv1) = (mv0, mv1);
+        }
+
         bool use0 = true, use1 = true;
         long best = costBi;
         if (cost0 <= best)
@@ -264,6 +309,60 @@ internal sealed partial class H264MbEncoder
         _syntax.SetBlocks(0, bx, by, w, h, code.RefIdx[index], mv0);
         _syntax.SetBlocks(1, bx, by, w, h, code.RefIdx1[index], mv1);
         return best;
+    }
+
+    /// <summary>
+    /// Refines both vectors of a bi-predicted block together: each in turn moves a quarter sample in any of eight directions
+    /// while the other stays, as long as the averaged prediction costs less.
+    /// </summary>
+    private long RefineBi(int bx, int by, int w, int h, int r0, ref int mv0, int mvp0, int r1, ref int mv1, int mvp1, long cost)
+    {
+        long fixedCost = RefCost(r0, _refCount) + RefCost(r1, _refCount1) + (long)(2 * _sadLambda);
+        for (int round = 0; round < 2; round++)
+        {
+            bool moved = false;
+            for (int list = 0; list < 2; list++)
+            {
+                int mv = list == 0 ? mv0 : mv1, x = H264SliceDecoder.MvX(mv), y = H264SliceDecoder.MvY(mv), bestMv = mv;
+                for (int d = 0; d < 8; d++)
+                {
+                    int cx = x + (d is 0 or 3 or 5 ? -1 : d is 2 or 4 or 7 ? 1 : 0), cy = y + (d < 3 ? -1 : d > 4 ? 1 : 0);
+                    int c = H264SliceDecoder.PackMv(cx, cy);
+                    if (!Reachable(bx, by, w, h, c))
+                    {
+                        continue;
+                    }
+
+                    (int a0, int a1) = list == 0 ? (c, mv1) : (mv0, c);
+                    long cc = PartSatd(bx, by, w, h, r0, a0, r1, a1) + fixedCost
+                        + MvCost(H264SliceDecoder.MvX(a0), H264SliceDecoder.MvY(a0), mvp0) + MvCost(H264SliceDecoder.MvX(a1), H264SliceDecoder.MvY(a1), mvp1);
+                    if (cc < cost)
+                    {
+                        (cost, bestMv) = (cc, c);
+                    }
+                }
+
+                if (bestMv != mv)
+                {
+                    moved = true;
+                    if (list == 0)
+                    {
+                        mv0 = bestMv;
+                    }
+                    else
+                    {
+                        mv1 = bestMv;
+                    }
+                }
+            }
+
+            if (!moved)
+            {
+                break;
+            }
+        }
+
+        return cost;
     }
 
     /// <summary>The SATD of a block's prediction from list 0, list 1 or both (a reference index of -1 leaves its list out).</summary>

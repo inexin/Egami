@@ -149,6 +149,10 @@ internal sealed class H264VideoEncoder : IVideoEncoder
             // 2 % BD-rate on the eight clips (6 % on ducks_take_off) and time; scene cuts start a keyframe either way, and
             // clips joined at a cut gain too.
             AdaptiveBFrames = false,
+
+            // A pyramid's middle B picture a coarser step than the default 1.15 (H.264 compression Build Plan, PR D): its
+            // residual took the most bits beyond x264's, and the B pictures that predict from it lose less than it saves.
+            BReferenceStep = 1.3,
             MacroblockTree = TreeStrength,
             Rate = new RateSettings
             {
