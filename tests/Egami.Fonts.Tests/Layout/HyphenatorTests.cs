@@ -349,6 +349,18 @@ public sealed class HyphenatorTests
     }
 
     [Fact]
+    public void CompiledExceptionGapThatOverflowsIsRejected()
+    {
+        // The exception "a-b-c" ends the file as: count 1, "abc", 2 points, gaps 1 and 1, then no no-hyphen entries. A last
+        // gap of int.MaxValue would overflow the point into a negative number.
+        byte[] compiled = Compile(Hyphenator.FromPatterns(Liang, "a-b-c"));
+        byte[] tail = [1, 3, (byte)'a', (byte)'b', (byte)'c', 2, 1, 1, 0];
+        Assert.Equal(tail, compiled[^tail.Length..]);
+        byte[] crafted = [.. compiled[..^2], 0xFF, 0xFF, 0xFF, 0xFF, 0x07, 0];
+        Assert.Throws<InvalidDataException>(() => FromBytes(crafted, HyphenationFormat.Compiled));
+    }
+
+    [Fact]
     public void CompiledVersion1IsRejected()
     {
         byte[] compiled = Compile(s_english.Value);

@@ -228,9 +228,15 @@ internal static class CompiledHyphenation
             int[] points = new int[r.Count()];
             for (int k = 0; k < points.Length; k++)
             {
+                // Checked before the sum, so a huge gap cannot overflow into a negative point.
                 int gap = r.V();
+                if (gap <= 0 || gap > word.Length)
+                {
+                    throw new InvalidDataException("A hyphenation exception has a point out of order.");
+                }
+
                 points[k] = (k == 0 ? 0 : points[k - 1]) + gap;
-                if (gap == 0 || points[k] >= word.Length)
+                if (points[k] >= word.Length)
                 {
                     throw new InvalidDataException("A hyphenation exception has a point out of order.");
                 }
