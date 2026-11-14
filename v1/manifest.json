@@ -20110,6 +20110,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/compare.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/compare.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/diagnostics.md",
       "output": {
         ".html": {
