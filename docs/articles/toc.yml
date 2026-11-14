@@ -8,6 +8,8 @@
   items:
     - name: Benchmarks
       href: benchmarks.md
+    - name: Comparison with other libraries
+      href: compare.md
     - name: Diagnostics
       href: diagnostics.md
     - name: Memory and threading
