@@ -168,6 +168,24 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   time; each candidate's syntax state is set a row at a time, filling the parts every block shares; and the RDOQ price tables
   of a block category are kept from one macroblock to the next while its contexts have not changed (after a skip, say).
   Egami's own instructions fall 4.3 % at quality 50 and 6.3 % at quality 34 on the four 720p clips (old_town_cross 12 %).
+- Compression (H.264 compression Build Plan, PRs A to D), measured against x264 medium (both tuned for PSNR) on eight 720p
+  clips (the four gate clips and johnny, kristen_sara, pedestrian_area and rush_hour), 120 frames, at effort 4:
+  - The counting build splits each picture kind's bits into modes, QP deltas, references, vectors and residual, and its
+    macroblocks into skip, direct, inter and intra (PR A); time-h264-encoder.py's `--wide` measures the eight clips, and
+    records SSIM-Y BD-rate with adaptive quantization on next to PSNR-Y with it off.
+  - With a pyramid (effort 4 and up) every B run is full; below it runs still follow the content. I and P pictures choose
+    their modes at 0.6 times the B pictures' λ (PR B).
+  - Adaptive quantization keeps the last QP when it asks for a QP one step away, which saves the mb_qp_delta (PR C).
+  - B pictures start their motion search also from the last P picture's vectors at and around each macroblock, scaled by
+    distance; a pyramid's middle B picture codes at 1.3 times a P picture's step (was 1.15); and a bi-predicted 16x16 block
+    refines both vectors together (PR D).
+  - PSNR-Y BD-rate with adaptive quantization off goes from +11.3 % to +4.4 % on the eight clips (worst pedestrian_area
+    +14.1 %, was +24.5 %); on the four gate clips at 60 frames from +11.8 % to +4.1 %, so the +15 % gate is met on every clip.
+    SSIM-Y with adaptive quantization on, as both encoders default to, goes from +7.9 % to −1.8 %. Egami's own instructions
+    change by −0.6 % at quality 50 and +1.8 % at quality 34. Efforts 1 to 3 gain 1.4 to 3.8 points on the eight clips.
+  - Tried and left out: less adaptive quantization in unreferenced B pictures, other strengths than 1.0, B_Direct_16x16 with
+    a residual tried on every B macroblock (7.5 % more instructions), and implicit weighted bi-prediction, which changes
+    nothing when the two references are equally far, as in a pyramid of three.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
