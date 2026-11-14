@@ -16,6 +16,12 @@ a frame with tiered PGO on (the runtime users get) and off; and the encoder's wo
             costs (SAD), subpel costs (MC + SATD), B partition costs, SATD calls and samples. The counters exist only in a build
             with -p:EgamiH264Stats=true, which this makes under .cache/h264prof/stats-build (the normal Release build has none,
             and its output is the same).
+  bits      the coded bits by picture kind (I, P, referenced B, unreferenced B) from the same counting build: pictures, bits a
+            picture and share of the stream, the CABAC macroblock bits split into modes (skip flag, mb_type, sub_mb_type, intra
+            modes, coded_block_pattern, transform flag), mb_qp_delta, ref_idx, mvd and residual by the rate counter's estimate
+            of each bin (the rest of the bits, slice headers and the coder's rounding, is "other"), and the share of skipped,
+            direct, direct-with-residual, partitioned inter and intra macroblocks. Per clip at each of --qualities, then the
+            clips together (the H.264 compression Build Plan's task 3); Egami without adaptive quantization unless --aq.
   baseline  cycles, counts and BD-rate (time-h264-encoder.py bd against x264 medium, PSNR-Y, 60 frames) for --efforts on every
             clip, then the table (report).
   report    the baseline table from the results so far, as Markdown, also written to .cache/h264prof/baseline.md.
@@ -28,6 +34,7 @@ Usage, from the repo root with Docker running and the benchmarks built in Releas
   python tools/video/profile-h264-encoder.py stages [--clips crowd_run] [--effort 4] [--quality 50] [--frames 20] [--no-pgo]
   python tools/video/profile-h264-encoder.py cycles [--efforts 0,4] [--clips a,b] [--quality 50] [--frames 20]
   python tools/video/profile-h264-encoder.py counts [--efforts 0,4] [--clips a,b] [--quality 50] [--frames 20]
+  python tools/video/profile-h264-encoder.py bits [--effort 4] [--clips a,b | --wide] [--qualities 50,34] [--frames 60] [--aq]
   python tools/video/profile-h264-encoder.py baseline [--efforts 0-10] [--jobs 4]
   python tools/video/profile-h264-encoder.py report [--efforts 0-10]
 Every mode takes --out <folder> (default .cache/h264prof) for its results.
@@ -271,6 +278,71 @@ def run_counts(args):
             print_counts(clip, effort, row)
 
 
+PARTS = ["Modes", "QpDelta", "Refs", "Vectors", "Residual"]
+SHARES = ["Skip", "Direct", "DirectResidual", "Inter", "Intra"]
+KINDS = ["I", "P", "Bref", "B"]
+
+
+def bits_job(clip, quality, args):
+    name = f"bits-{clip}-e{args.effort}-q{quality}-f{args.frames}{'-aq' if args.aq else ''}"
+    if args.reuse and load(name):
+        return clip, quality, load(name)
+    src = th.clip_path(clip, args.size)
+    cmd = (f"dotnet {STATS_BENCH} --encode-h264 {src} --frames={args.frames} --quality={quality} --effort={args.effort} --threads=1"
+           + ("" if args.aq else " --no-aq"))
+    data = json.loads(th.checked(th.docker(th.DOTNET_IMAGE, cmd)).stdout.strip().splitlines()[-1])
+    if "pictures" not in data:
+        raise RuntimeError(f"{STATS_BENCH} does not split bits: rebuild it with -p:EgamiH264Stats=true")
+    row = {"frames": args.frames, "bytes": data["bytes"], "pictures": data["pictures"]}
+    save(name, row)
+    return clip, quality, row
+
+
+def bits_table(title, pictures):
+    """A Markdown table of picture kinds: count, kbit a picture, share of the bits, the parts' shares and the macroblock shares."""
+    total = sum(pictures[k]["Bits"] for k in KINDS) or 1
+    lines = [title, "", "| kind | pictures | kbit a picture | share of bits | " + " | ".join(PARTS) + " | other | "
+             + " | ".join(SHARES) + " |", "|---|---:|---:|---:|" + "---:|" * (len(PARTS) + 1 + len(SHARES))]
+    for kind in KINDS:
+        p = pictures[kind]
+        if p["Pictures"] == 0:
+            continue
+        parts = [p[f"{n}Bits"] / 32768 for n in PARTS]
+        mbs = sum(p[n] for n in SHARES) or 1
+        cells = [str(p["Pictures"]), f"{p['Bits'] / p['Pictures'] / 1000:.1f}", f"{p['Bits'] / total * 100:.1f} %"]
+        cells += [f"{v / p['Bits'] * 100:.1f} %" for v in parts] + [f"{(p['Bits'] - sum(parts)) / p['Bits'] * 100:.1f} %"]
+        cells += [f"{p[n] / mbs * 100:.1f} %" for n in SHARES]
+        lines.append(f"| {kind} | " + " | ".join(cells) + " |")
+    return "\n".join(lines)
+
+
+def run_bits(args):
+    os.makedirs(OUT, exist_ok=True)
+    if not args.reuse or not os.path.exists(STATS_BENCH):
+        build_stats()
+    clips = args.clips.split(",")
+    qualities = [int(q) for q in args.qualities.split(",")]
+    with concurrent.futures.ThreadPoolExecutor(args.jobs) as pool:
+        rows = list(pool.map(lambda j: bits_job(*j, args), [(c, q) for q in qualities for c in clips]))
+    aq = "on" if args.aq else "off"
+    out = []
+    for quality in qualities:
+        together = {k: collections.Counter() for k in KINDS}
+        for clip, q, row in rows:
+            if q != quality:
+                continue
+            out.append(bits_table(f"\n{clip}, effort {args.effort}, quality {quality}, {row['frames']} frames, adaptive quantization {aq}, "
+                                  f"{row['bytes'] * 8 / 1000:.0f} kbit:", row["pictures"]))
+            for k in KINDS:
+                together[k].update(row["pictures"][k])
+        out.append(bits_table(f"\nThe {len(clips)} clips together, effort {args.effort}, quality {quality}, adaptive quantization {aq}:",
+                              {k: {c: together[k][c] for c in ["Pictures", "Bits"] + [f"{n}Bits" for n in PARTS] + SHARES} for k in KINDS}))
+    text = "\n".join(out)
+    with open(f"{OUT}/bits-e{args.effort}{'-aq' if args.aq else ''}.md", "w") as f:
+        f.write(text + "\n")
+    print(text)
+
+
 def run_bd(args):
     for effort in efforts(args.efforts):
         subprocess.run(["python", "tools/video/time-h264-encoder.py", "bd", "--size", args.size, "--effort", str(effort),
@@ -337,13 +409,16 @@ def report(args):
 def main():
     global OUT
     parser = argparse.ArgumentParser()
-    parser.add_argument("mode", choices=["stages", "cycles", "counts", "baseline", "report"])
+    parser.add_argument("mode", choices=["stages", "cycles", "counts", "bits", "baseline", "report"])
     parser.add_argument("--size", default="720")
     parser.add_argument("--clips", default=",".join(th.CLIPS))
-    parser.add_argument("--effort", type=int, default=4, help="stages: the effort to profile")
+    parser.add_argument("--wide", action="store_true", help="the eight clips of the compression Build Plan (four busy, four calm)")
+    parser.add_argument("--qualities", default="50,34", help="bits: the qualities")
+    parser.add_argument("--aq", action="store_true", help="bits: Egami with adaptive quantization (its default) instead of without")
+    parser.add_argument("--effort", type=int, default=4, help="stages, bits: the effort to profile")
     parser.add_argument("--efforts", default="0-10", help="cycles, counts, baseline, report: efforts, e.g. 0,2,4 or 0-10")
     parser.add_argument("--quality", type=int, default=50)
-    parser.add_argument("--frames", type=int, default=20)
+    parser.add_argument("--frames", type=int, default=None, help="frames to code (20; bits 60)")
     parser.add_argument("--runs", type=int, default=2, help="stages: encodes of the frames in one process")
     parser.add_argument("--delay", type=float, default=8, help="stages: seconds before recording starts (start-up, tiering)")
     parser.add_argument("--no-pgo", action="store_true", help="stages: profile with tiered PGO off")
@@ -353,12 +428,15 @@ def main():
     parser.add_argument("--out", default=OUT, help="where runs and results go (clips stay in .cache/h264enc/clips)")
     parser.add_argument("--repeats", type=int, default=3, help="cycles, baseline: runs of each count, the least kept")
     args = parser.parse_args()
+    args.frames = args.frames or (60 if args.mode == "bits" else 20)
+    if args.wide:
+        args.clips = ",".join(th.WIDE_CLIPS)
     OUT = th.OUT = args.out
     th.REPEATS = args.repeats
     os.makedirs(f"{OUT}/runs", exist_ok=True)
     if args.mode != "report":
         th.ensure_clips(args.clips.split(","), args.size, args.clips_from)
-    {"stages": run_stages, "cycles": run_cycles, "counts": run_counts, "baseline": run_baseline, "report": report}[args.mode](args)
+    {"stages": run_stages, "cycles": run_cycles, "counts": run_counts, "bits": run_bits, "baseline": run_baseline, "report": report}[args.mode](args)
 
 
 if __name__ == "__main__":

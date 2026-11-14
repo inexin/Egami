@@ -293,8 +293,41 @@ internal sealed class H264PictureEncoder
         }
     }
 
-    /// <summary>The NAL units of the slices last coded.</summary>
-    private byte[][] Nals(int refIdc, int type) => [.. _slices.Select(s => H264StreamWriter.Nal(refIdc, type, s.Writer!))];
+    /// <summary>The NAL units of the slices last coded; a counting build adds the picture to <see cref="H264EncodeStats"/>.</summary>
+    private byte[][] Nals(int refIdc, int type)
+    {
+        byte[][] nals = [.. _slices.Select(s => H264StreamWriter.Nal(refIdc, type, s.Writer!))];
+#if EGAMI_H264_STATS
+        long[] parts = new long[_slices[0].Parts.Length], shares = new long[_slices[0].Shares.Length];
+        foreach (SliceCoder slice in _slices)
+        {
+            for (int i = 0; i < parts.Length; i++)
+            {
+                parts[i] += slice.Parts[i];
+            }
+
+            for (int i = 0; i < shares.Length; i++)
+            {
+                shares[i] += slice.Shares[i];
+            }
+        }
+
+        int kind = _slices[0].Syntax.SliceType switch { H264SliceType.I => 0, H264SliceType.P => 1, _ => refIdc > 0 ? 2 : 3 };
+        H264EncodeStats.AddPicture(kind, nals.Sum(n => 8L * n.Length), parts, shares);
+#endif
+        return nals;
+    }
+
+#if EGAMI_H264_STATS
+    /// <summary>The kind of macroblock a code is, for <see cref="H264EncodeStats"/>' shares.</summary>
+    private static H264BlockShare Share(H264MbCode code) => code.Kind switch
+    {
+        H264MbKind.PSkip or H264MbKind.BSkip => H264BlockShare.Skip,
+        H264MbKind.BDirect => code.Cbp == 0 ? H264BlockShare.Direct : H264BlockShare.DirectResidual,
+        H264MbKind.Inter => H264BlockShare.Inter,
+        _ => H264BlockShare.Intra,
+    };
+#endif
 
     /// <summary>
     /// Works out how a picture marks the references (8.2.5.3, 8.2.5.4): a P or I picture marks the referenced B-frames unused,
@@ -423,10 +456,20 @@ internal sealed class H264PictureEncoder
 
             CabacEncoder cabac = slice.Cabac;
             cabac.Start();
+#if EGAMI_H264_STATS
+            Array.Clear(slice.Parts);
+            Array.Clear(slice.Shares);
+            CabacStatsSink sink = new(cabac, slice.Parts);
+#else
             CabacWriteSink sink = new(cabac);
+#endif
             for (int addr = slice.FirstMb; addr < slice.EndMb; addr++)
             {
                 H264MbCode code = Code(slice, addr, qp, predicted);
+#if EGAMI_H264_STATS
+                slice.Shares[(int)Share(code)]++;
+#endif
+                H264EncodeStats.Part(H264BitPart.Modes);
                 if (predicted)
                 {
                     syntax.SkipFlagCabac(ref sink, H264MbState.IsSkip(code.Kind));
@@ -448,9 +491,16 @@ internal sealed class H264PictureEncoder
         {
             BitWriteSink sink = new(w);
             int run = 0;
+#if EGAMI_H264_STATS
+            Array.Clear(slice.Parts);
+            Array.Clear(slice.Shares);
+#endif
             for (int addr = slice.FirstMb; addr < slice.EndMb; addr++)
             {
                 H264MbCode code = Code(slice, addr, qp, predicted);
+#if EGAMI_H264_STATS
+                slice.Shares[(int)Share(code)]++;
+#endif
                 syntax.Begin(addr % _config.WidthMbs, addr / _config.WidthMbs, code);
                 if (H264MbState.IsSkip(code.Kind))
                 {
@@ -646,5 +696,13 @@ internal sealed class H264PictureEncoder
         public double Cost { get; set; }
 
         public NalBitWriter? Writer { get; set; }
+
+#if EGAMI_H264_STATS
+        /// <summary>Gets the CABAC bits of the final coding by <see cref="H264BitPart"/>, in 1/32768 bit.</summary>
+        public long[] Parts { get; } = new long[Enum.GetValues<H264BitPart>().Length];
+
+        /// <summary>Gets the macroblocks of the final coding by <see cref="H264BlockShare"/>.</summary>
+        public long[] Shares { get; } = new long[Enum.GetValues<H264BlockShare>().Length];
+#endif
     }
 }

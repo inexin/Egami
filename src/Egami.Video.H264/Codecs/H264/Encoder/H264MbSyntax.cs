@@ -609,6 +609,7 @@ internal sealed partial class H264MbSyntax
     private void QpDeltaCabac<T>(ref T sink, int delta)
         where T : struct, ICabacSink
     {
+        H264EncodeStats.Part(H264BitPart.QpDelta);
         byte[] ctx = Contexts;
         sink.Encode(ref ctx[60 + (PrevQpDeltaNonZero ? 1 : 0)], delta == 0 ? 0 : 1);
         if (delta == 0)
@@ -628,6 +629,7 @@ internal sealed partial class H264MbSyntax
     private void ResidualCabac<T>(H264MbCode code, ref T sink)
         where T : struct, ICabacSink
     {
+        H264EncodeStats.Part(H264BitPart.Residual);
         if (typeof(T) == typeof(CabacUndoSink))
         {
             CountResidual(code, ref Unsafe.As<T, CabacUndoSink>(ref sink));

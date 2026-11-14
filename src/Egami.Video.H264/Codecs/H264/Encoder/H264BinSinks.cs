@@ -34,6 +34,33 @@ internal readonly struct CabacWriteSink(CabacEncoder encoder) : ICabacSink
     public void Terminate(int bin) => encoder.Terminate(bin);
 }
 
+#if EGAMI_H264_STATS
+/// <summary>
+/// Bins into the CABAC encoder, each one's cost (<see cref="CabacCost"/>, 1/32768 bit) added to the <see cref="H264BitPart"/>
+/// the syntax last named (<see cref="H264EncodeStats.Part"/>): the final coding of a counting build only.
+/// </summary>
+internal readonly struct CabacStatsSink(CabacEncoder encoder, long[] parts) : ICabacSink
+{
+    public void Encode(ref byte state, int bin)
+    {
+        parts[H264EncodeStats.CurrentPart] += CabacCost.Of(state, bin);
+        encoder.Encode(ref state, bin);
+    }
+
+    public void Bypass(int bin)
+    {
+        parts[H264EncodeStats.CurrentPart] += CabacCost.Bit;
+        encoder.Bypass(bin);
+    }
+
+    public void Terminate(int bin)
+    {
+        parts[(int)H264BitPart.Modes] += bin == 0 ? 0 : 7 * CabacCost.Bit;
+        encoder.Terminate(bin);
+    }
+}
+#endif
+
 /// <summary>Counts what bins would cost, in 1/32768 bit (<see cref="CabacCost"/>), moving the states as coding would.</summary>
 internal struct CabacCountSink : ICabacSink
 {
