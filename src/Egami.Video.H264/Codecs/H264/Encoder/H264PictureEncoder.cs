@@ -532,6 +532,15 @@ internal sealed class H264PictureEncoder
     {
         int mbX = addr % _config.WidthMbs, mbY = addr / _config.WidthMbs;
         int mbQp = Math.Clamp(qp + _qpOffsets[addr], MinQp, MaxQp);
+
+        // A one-step change from the QP the last macroblock coded is not worth its mb_qp_delta (H.264 compression Build Plan,
+        // task 8): the macroblock keeps that QP. On the eight clips with adaptive quantization −0.65 % BD-rate on SSIM-Y and
+        // −1.0 % on PSNR-Y; without it every offset is 0 and nothing changes.
+        if (Math.Abs(mbQp - slice.Syntax.LastQp) == 1)
+        {
+            mbQp = slice.Syntax.LastQp;
+        }
+
         H264MbEncoder encoder = slice.Encoder;
         H264EncodeStats.Macroblock(slice.Syntax.SliceType);
         slice.Cost += !predicted ? encoder.Encode(mbX, mbY, mbQp)
