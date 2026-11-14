@@ -176,6 +176,14 @@ internal sealed partial class LineBuilder
         return table;
     }
 
+    /// <summary>For tests: where the candidates after <paramref name="start"/> are, up to the next mandatory break.</summary>
+    internal List<int> CandidateIndexes(int start)
+    {
+        List<Candidate> candidates = [];
+        Candidates(start, _paragraph.Style.OptimalLines ?? OptimalLineOptions.Default, candidates);
+        return [.. candidates.Select(c => c.Index)];
+    }
+
     /// <summary>For tests: the demerits of <paramref name="line"/> after <paramref name="previous"/> (null at the start).</summary>
     internal double LineDemerits(OptimalLine? previous, OptimalLine line)
     {
@@ -194,8 +202,11 @@ internal sealed partial class LineBuilder
         LineBreak[] breaks = _paragraph.Breaks;
         HyphenationOptions? auto = _paragraph.Style.Hyphens == Hyphens.Auto ? _paragraph.Style.Hyphenation : null;
         List<int>? points = auto is null ? null : [];
-        int previous = start;
-        for (int k = FirstBreakAfter(start); k < breaks.Length; k++)
+        // Words are found from the break opportunity at or before the start, so a plan from a hyphen inside a word keeps the
+        // whole word's points.
+        int first = FirstBreakAfter(start);
+        int previous = first > 0 ? breaks[first - 1].Index : 0;
+        for (int k = first; k < breaks.Length; k++)
         {
             LineBreak b = breaks[k];
             if (points is not null)
@@ -444,7 +455,9 @@ internal sealed partial class LineBuilder
         double spaces = stretch is null ? 0 : stretch[end] - stretch[start];
         if (natural > width + Epsilon)
         {
-            double shrink = justified && options.ShrinkSpaces ? spaces * (2.0 / 3) : 0;
+            // The last line before a mandatory break or the paragraph's end shrinks only when AlignLast justifies it.
+            bool shrinks = justified && options.ShrinkSpaces && (!candidate.Forced || Alignment(true) == TextAlignLast.Justify);
+            double shrink = shrinks ? spaces * (2.0 / 3) : 0;
             return shrink > 0 ? (width - natural) / shrink : double.NegativeInfinity;
         }
 
@@ -457,6 +470,21 @@ internal sealed partial class LineBuilder
         ragged = !justified;
         double room = ragged ? 2 * _paragraph.Styles[0].Size : spaces;
         return room > 0 ? Math.Max(0, width - natural) / room : double.PositiveInfinity;
+    }
+
+    /// <summary>How much <paramref name="draft"/>'s word spaces may shrink when <see cref="Finish"/> justifies it: a third of
+    /// each with <see cref="OptimalLineOptions.ShrinkSpaces"/> on a justified line, else nothing.</summary>
+    internal float Shrinkable(LineDraft draft)
+    {
+        bool justified = _paragraph.Style.Align == TextAlign.Justify && _paragraph.Style.Justify != TextJustify.None;
+        if (!justified || _paragraph.Style.OptimalLines is not { ShrinkSpaces: true }
+            || Alignment(draft.HardBreak || draft.End >= _text.Length) != TextAlignLast.Justify)
+        {
+            return 0;
+        }
+
+        float[] stretch = Stretch();
+        return (stretch[draft.ContentEnd] - stretch[draft.Start]) * (2f / 3);
     }
 
     /// <summary>TeX's badness, 100 |r|^3, or for ragged lines 100 r^2 (the squared space left), capped at 10000 (infinitely

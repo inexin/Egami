@@ -249,6 +249,58 @@ public sealed class OptimalLineTests
     }
 
     [Fact]
+    public void PlanningFromAnAutoHyphenFindsOnlyTheWholeWordsPoints()
+    {
+        // A flow plans again from wherever it is, which can be an automatic hyphen inside a word: the rest of that word must
+        // keep the points the whole word has, not be hyphenated as a word of its own.
+        Paragraph paragraph = Paragraph.Create(string.Join(' ', Words) + ".", Style(hyphens: true));
+        LineBuilder builder = paragraph.CreateFlow().Builder;
+        List<int> all = builder.CandidateIndexes(0);
+        int checkedPoints = 0;
+        foreach (int start in all.Where(i => i < paragraph.Text.Length && char.IsLetter(paragraph.Text[i - 1]) && char.IsLetter(paragraph.Text[i])))
+        {
+            Assert.Equal(all.Where(i => i > start), builder.CandidateIndexes(start));
+            checkedPoints++;
+        }
+
+        Assert.True(checkedPoints > 10, $"{checkedPoints} points");
+    }
+
+    [Fact]
+    public void ShrinkingSpacesNeverOverfillsALastLineThatIsNotJustified()
+    {
+        // Lines before a mandatory break and the paragraph's last line align to the start (AlignLast Auto), so they cannot
+        // shrink and must fit as they are.
+        OptimalLineOptions shrink = new() { ShrinkSpaces = true };
+        string text = Text + "\nA short line ends here, before the second part.\n" + Text;
+        foreach (TextAlignLast last in (TextAlignLast[])[TextAlignLast.Auto, TextAlignLast.Justify])
+        {
+            ParagraphStyle style = Style(options: shrink) with { AlignLast = last };
+            for (float width = 100; width <= 320; width += 1)
+            {
+                TextLayout layout = Paragraph.Create(text, style).Layout(width);
+                Assert.All(layout.Lines, l => Assert.True(l.Width <= width + 1e-3f, $"{l.Width} at {width}, AlignLast {last}"));
+            }
+        }
+    }
+
+    [Fact]
+    public void ShrunkLinesSurviveOverflowWrap()
+    {
+        // With OverflowWrap set, a planned line too wide for its box falls back to greedy filling, but one whose spaces shrink
+        // to fit is not too wide.
+        OptimalLineOptions shrink = new() { ShrinkSpaces = true };
+        ParagraphStyle style = Style(options: shrink);
+        ParagraphStyle wrapping = style with { LineBreaking = style.LineBreaking with { OverflowWrap = OverflowWrap.BreakWord } };
+        foreach (float width in (float[])[120, 140, 160, 180, 200])
+        {
+            TextLayout plain = Paragraph.Create(Text, style).Layout(width);
+            TextLayout wrapped = Paragraph.Create(Text, wrapping).Layout(width);
+            Assert.Equal(Ends(plain), Ends(wrapped));
+        }
+    }
+
+    [Fact]
     public void RaggedLinesLeaveEvenerRoomThanGreedy()
     {
         ParagraphStyle style = Style(TextAlign.Start);

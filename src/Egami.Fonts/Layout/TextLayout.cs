@@ -438,9 +438,11 @@ public sealed class LineFlow
         }
 
         LineDraft draft = _builder.FillTo(_next, plan.Ends[k]);
-        if (draft.ContentWidth > width + 1e-4f && Paragraph.Style.LineBreaking.OverflowWrap != OverflowWrap.Normal)
+        if (draft.ContentWidth > width + 1e-4f && Paragraph.Style.LineBreaking.OverflowWrap != OverflowWrap.Normal
+            && draft.ContentWidth - _builder.Shrinkable(draft) > width + 1e-4f)
         {
-            // A piece too wide for any line: break it as greedy filling does, and plan again after it.
+            // A piece too wide for any line, even with its spaces shrunk: break it as greedy filling does, and plan again after
+            // it.
             draft = _builder.Fill(_next, width);
         }
 
