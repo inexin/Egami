@@ -480,6 +480,67 @@ public class ParagraphLayout
             && l.Start + l.Length < layout.Paragraph.Text.Length && char.IsLetter(layout.Paragraph.Text[l.Start + l.Length]));
     }
 
+    [Fact]
+    public void OptimalLines()
+    {
+        string folder = AppContext.BaseDirectory;
+        FontCollection fonts = new();
+        fonts.Add(Typeface.FromFile(System.IO.Path.Combine(folder, "fonts", "NotoSans-Regular.ttf")));
+        string text = "In olden times when wishing still helped one, there lived a king whose daughters were all beautiful, "
+            + "but the youngest was so beautiful that the sun itself, which has seen so much, was astonished whenever it shone "
+            + "in her face.";
+        #region optimal-lines
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 16, Language = "en" },
+            Align = TextAlign.Justify,
+            LineFill = LineFill.Optimal,                    // Knuth-Plass, as TeX breaks paragraphs
+            OptimalLines = new OptimalLineOptions
+            {
+                HyphenPenalty = 100,                        // hyphenate a little less readily than TeX
+                ShrinkSpaces = true,                        // let spaces shrink to a third, as TeX does
+            },
+        };
+
+        TextLayout layout = Paragraph.Create(text, style).Layout(160);
+        #endregion
+
+        Assert.All(layout.Lines, l => Assert.True(l.Width <= 160.001f));
+    }
+
+    [Fact]
+    public void OptimalFlow()
+    {
+        string folder = AppContext.BaseDirectory;
+        FontCollection fonts = new();
+        fonts.Add(Typeface.FromFile(System.IO.Path.Combine(folder, "fonts", "NotoSans-Regular.ttf")));
+        string text = "In olden times when wishing still helped one, there lived a king whose daughters were all beautiful, "
+            + "but the youngest was so beautiful that the sun itself, which has seen so much, was astonished whenever it shone "
+            + "in her face.";
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 16 },
+            Align = TextAlign.Justify,
+            LineFill = LineFill.Optimal,
+        };
+        #region optimal-flow
+        // A 20-unit first-line indent: the first line is 140 wide, the rest 160. Optimal filling plans the whole paragraph at
+        // once, so it is told the width of the lines to come.
+        LineFlow flow = Paragraph.Create(text, style).CreateFlow();
+        flow.FollowingWidth = 160;
+        List<TextLine> lines = [];
+        for (float width = 140; flow.NextLine(width) is TextLine line; width = 160)
+        {
+            lines.Add(line);
+        }
+
+        // A width the plan did not expect (a float, a narrower column) plans the rest again from there.
+        #endregion
+
+        Assert.True(lines[0].Width <= 140.001f);
+        Assert.All(lines.Skip(1), l => Assert.True(l.Width <= 160.001f));
+    }
+
     private sealed class PathRecorder : IGlyphOutlineSink
     {
         public int Count { get; private set; }

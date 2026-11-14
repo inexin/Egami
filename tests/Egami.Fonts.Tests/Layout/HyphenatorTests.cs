@@ -334,4 +334,39 @@ public sealed class HyphenatorTests
             }
         }
     }
+
+    [Fact]
+    public void CompiledFormIsCompactAndKeepsEveryAnswer()
+    {
+        // Version 2 stores no edge targets (breadth-first numbering makes them implicit) and packs the rest in varints.
+        byte[] compiled = Compile(s_norwegian.Value);
+        Assert.True(compiled.Length < 200_000, $"{compiled.Length} bytes");
+        Hyphenator back = FromBytes(compiled, HyphenationFormat.Compiled);
+        foreach (string word in Words())
+        {
+            Assert.Equal(Hyphenate(s_norwegian.Value, word), Hyphenate(back, word));
+        }
+    }
+
+    [Fact]
+    public void CompiledExceptionGapThatOverflowsIsRejected()
+    {
+        // The exception "a-b-c" ends the file as: count 1, "abc", 2 points, gaps 1 and 1, then no no-hyphen entries. A last
+        // gap of int.MaxValue would overflow the point into a negative number.
+        byte[] compiled = Compile(Hyphenator.FromPatterns(Liang, "a-b-c"));
+        byte[] tail = [1, 3, (byte)'a', (byte)'b', (byte)'c', 2, 1, 1, 0];
+        Assert.Equal(tail, compiled[^tail.Length..]);
+        byte[] crafted = [.. compiled[..^2], 0xFF, 0xFF, 0xFF, 0xFF, 0x07, 0];
+        Assert.Throws<InvalidDataException>(() => FromBytes(crafted, HyphenationFormat.Compiled));
+    }
+
+    [Fact]
+    public void CompiledVersion1IsRejected()
+    {
+        byte[] compiled = Compile(s_english.Value);
+        compiled[4] = 1;
+        compiled[5] = 0;
+        InvalidDataException e = Assert.Throws<InvalidDataException>(() => FromBytes(compiled, HyphenationFormat.Compiled));
+        Assert.Contains("version 1", e.Message, StringComparison.Ordinal);
+    }
 }

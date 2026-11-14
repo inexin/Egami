@@ -625,7 +625,7 @@ KTX stage D (writing and whole textures; roadmap 2.3.11). Additive.
 
 ## Egami.Fonts 1.5.0-preview.1 (2026-11-13)
 
-Hyphenation patterns and automatic hyphens. Additive.
+Hyphenation patterns, automatic hyphens and optimal line breaking. Additive.
 
 - `Hyphenator` (`Egami.Fonts.Layout`) finds where a word may break with a hyphen, by Liang's algorithm (TeX's, LibreOffice's
   and browsers'): patterns in a packed trie, an exception list that wins over them, and `MinBefore` and `MinAfter`. `GetPoints`
@@ -635,13 +635,23 @@ Hyphenation patterns and automatic hyphens. Additive.
 - `Hyphenator.Load` reads hyph-utf8 `.tex` files (`\patterns`, `\hyphenation`, `^^` escapes, the `hyphenmins` header),
   `.pat.txt` lists, LibreOffice `.dic` files (character set, `LEFTHYPHENMIN`, `RIGHTHYPHENMIN`, `NOHYPHEN`, the second
   level after `NEXTLEVEL`; replacement rules throw `NotSupportedException`) and Egami's compiled `.ehyp`, which `Save`
-  writes: Norwegian's 27,000 patterns load in about 1 ms from it instead of 100 ms from TeX. `FromPatterns` and
+  writes: Norwegian's 27,000 patterns compile to 137 KB and load in about 0.7 ms from it instead of 100 ms from TeX
+  (`.ehyp` version 2: the trie stores no edge targets, and numbers are varints). `FromPatterns` and
   `WithExceptions` take patterns and `hy-phen-ate` exceptions as text.
 - `ParagraphStyle.Hyphens` (CSS `hyphens`: `Manual`, the default, `None` and `Auto`) and `ParagraphStyle.Hyphenation`
   (`HyphenationOptions` with `HyphenationDictionaries` by BCP 47 tag). With `Auto`, greedy filling hyphenates the word that
   crosses a line's end at its last point that fits, in the run's `TextStyle.Language`, within `MinWordLength`, `MinBefore`,
   `MinAfter`, `MaxConsecutiveLines`, `Zone` (applied to justified lines too, as Word does) and `HyphenateCapitalized`. A
   break inside a glyph cluster shapes both pieces again. `None` also ignores soft hyphens.
+- `LineFill.Optimal`: Knuth and Plass's total-fit line breaking, as TeX's, through `Paragraph.Layout` and `LineFlow`. Justified
+  lines are weighed by how far their spaces stretch, ragged ones by the squared room they leave (CSS `text-wrap: pretty`), and
+  breaks at hyphens, soft or automatic, as penalised candidates; passes at badness 200, 2000, then any line that is not
+  overfull. `ParagraphStyle.OptimalLines` (`OptimalLineOptions`) overrides TeX's penalties and the tolerances, and
+  `ShrinkSpaces` lets justified spaces shrink by a third. On a 500-paragraph corpus the total demerits are never above greedy
+  filling's, and on short paragraphs they match an exhaustive dynamic program.
+- `LineFlow.FollowingWidth`: the width optimal filling plans the lines after the next one at (after a first-line indent, say).
+  A flow plans the rest of the paragraph and plans again when it is asked for a width the plan did not expect; `Rewind` and
+  `Reset` keep the plan.
 - Egami.Drawing: `Canvas.DrawTextLayout` draws an automatic hyphen as marked content with an empty ActualText, so text copied
   from a PDF reads the word whole.
 - Layout with hyphenation off allocates no more than before: kashida justification's lazy state and the hyphenation state

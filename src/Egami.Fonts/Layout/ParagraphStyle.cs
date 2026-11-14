@@ -46,6 +46,12 @@ public sealed record class ParagraphStyle
     /// <summary>Gets how lines are filled.</summary>
     public LineFill LineFill { get; init; }
 
+    /// <summary>Gets the penalties and tolerances <see cref="LineFill.Optimal"/> weighs, or null for the defaults.</summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="optimal-lines"/>
+    /// </example>
+    public OptimalLineOptions? OptimalLines { get; init; }
+
     /// <summary>Gets the text drawn where a line ends at a soft hyphen or an automatic hyphenation point: U+2010 (U+002D when the
     /// font has none), a custom string, or null for none.</summary>
     public string? Hyphen { get; init; } = "\u2010";
@@ -58,8 +64,8 @@ public sealed record class ParagraphStyle
     public Hyphens Hyphens { get; init; }
 
     /// <summary>Gets the dictionaries and limits <see cref="Hyphens.Auto"/> uses; without them it hyphenates only at soft
-    /// hyphens. Greedy filling looks up only the word that crosses a line's end; balanced filling breaks only where the text
-    /// allows.</summary>
+    /// hyphens. Greedy filling looks up only the word that crosses a line's end, optimal filling every word; balanced filling
+    /// breaks only where the text allows.</summary>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="auto-hyphens"/>
     /// </example>
@@ -218,6 +224,17 @@ public enum LineFill
     /// <summary>Lines of even width, for headings (CSS <c>text-wrap: balance</c>); paragraphs of more than 6 lines fill
     /// greedily.</summary>
     Balanced = 1,
+
+    /// <summary>
+    /// The breaks that suit the whole paragraph best, as TeX chooses them (Knuth and Plass's total-fit algorithm, like CSS
+    /// <c>text-wrap: pretty</c>): justified paragraphs weigh how far each line's spaces stretch, others how much room each line
+    /// leaves, and both weigh hyphens. <see cref="OptimalLineOptions"/> sets the penalties. A <see cref="LineFlow"/> plans the
+    /// lines for the width it is given and <see cref="LineFlow.FollowingWidth"/>, and plans again when a width changes.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="optimal-lines"/>
+    /// </example>
+    Optimal = 2,
 }
 
 /// <summary>Whether lines run horizontally or vertically (CSS <c>writing-mode</c>).</summary>

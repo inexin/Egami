@@ -36,7 +36,7 @@ A `Hyphenator` finds where a word may break with a hyphen, by Liang's pattern al
 it. `Hyphenator.Load` (with a `HyphenationFormat`, or `Auto` to tell it from the data) reads hyph-utf8's `hyph-xx.tex` files
 (with the minimums from their `hyphenmins` header), plain `.pat.txt` pattern lists, LibreOffice's `hyph_xx_YY.dic` files
 (their spelling-change rules are not supported yet and throw `NotSupportedException`) and Egami's compiled `.ehyp` form,
-which `Save` writes and which loads in about a millisecond.
+which `Save` writes and which loads in under a millisecond (Norwegian's patterns compile to about 140 KB).
 `Hyphenator.FromPatterns` takes patterns and `hy-phen-ate` exceptions as text, and `WithExceptions` adds more.
 
 `GetPoints` writes UTF-16 offsets, ascending, and allocates nothing for ordinary words. Exceptions win over the patterns;
@@ -65,7 +65,8 @@ with its hyphen still fits. `HyphenationOptions` holds the limits word processor
 
 Words next to a digit or a hyphen, and pieces that have a soft hyphen, keep the breaks they have. A break inside a glyph cluster,
 such as a ligature, shapes both pieces again. The hyphen drawn is `ParagraphStyle.Hyphen`, and `Canvas.DrawTextLayout` marks
-it with an empty ActualText, so text copied from a PDF reads the word whole. Balanced filling breaks only where the text allows.
+it with an empty ActualText, so text copied from a PDF reads the word whole. Optimal filling (below) looks up every word once
+and weighs each point against the others; balanced filling breaks only where the text allows.
 
 ## Rich text and paragraphs
 
@@ -116,7 +117,34 @@ order. A run is glyphs (`Glyphs`, a `GlyphRun` already at its layout position), 
 - Each line reorders its own bidi runs (UAX #9 rules L1 and L2): trailing spaces take the paragraph's direction.
 - `LineFill.Balanced` evens the lines of a short paragraph (up to 6 lines): of the breaks that fit, the ones that leave the
   least squared space on every line, the last included, as Chromium's `text-wrap: balance` does.
+- `LineFill.Optimal` chooses all the breaks at once, as TeX does (below).
 - `float.PositiveInfinity` lays the paragraph out without wrapping; the box is then as wide as the longest line.
+
+### Optimal lines
+
+`LineFill.Optimal` breaks a paragraph as TeX does, by Knuth and Plass's total-fit algorithm: of all the ways to break it, the
+one whose lines cost least in total. A justified line costs more the further its word spaces stretch (up to half a space each
+counts as acceptable); a ragged one (start, end or centred) costs more the more room it leaves, which evens the ragged edge as
+CSS `text-wrap: pretty` does. Breaks at hyphens cost extra, two hyphenated lines in a row more, a hyphen on the last line but
+one more still, and so does a tight line next to a loose one. With `Hyphens.Auto`, every eligible word's hyphenation points
+are candidates, and `MaxConsecutiveLines` still holds; `Zone` is for greedy filling only.
+
+`OptimalLineOptions` sets the penalties and tolerances (TeX's line penalty 10 and hyphen penalty 50 by default) and
+`ShrinkSpaces`, which lets justified spaces shrink to two thirds, as TeX does; Word and browsers only stretch them, so it is
+off by default. If no set of breaks keeps every line within the tolerance (badness 200, then 2000), the last pass takes any
+line that is not overfull, and a word too wide for any line gets a line of its own, as with greedy filling. Mandatory breaks
+split the paragraph into parts broken on their own. Where a pass settles for breaks that cost more than greedy filling's (whose
+lines may pass the tolerance), the greedy breaks are taken, so optimal filling never costs more. Planning a paragraph costs a
+few greedy fills.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#optimal-lines)]
+
+A `LineFlow` plans the rest of the paragraph when it lays out a line: at the width it is given for that line, and at
+`LineFlow.FollowingWidth` (the next line's width when null) for the rest. A later call with the width the plan expects takes
+the planned line; a different width, for lines beside a float or a narrower column, plans again from there. `Rewind` and
+`Reset` keep the plan, so a line carried to the next column comes back the same.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#optimal-flow)]
 
 ### Line boxes and spacing
 
