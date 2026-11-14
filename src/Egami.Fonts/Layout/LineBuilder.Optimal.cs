@@ -26,10 +26,10 @@ internal sealed class OptimalPlan
 internal sealed partial class LineBuilder
 {
     /// <summary>Gets the flow's plan, made the first time it is needed so plain layouts stay small.</summary>
-    internal OptimalPlan Plan => (_lazy ??= new()).Plan ??= new();
+    internal OptimalPlan Plan => Breaks.Plan ??= new();
 
     /// <summary>Gets <see cref="LineFlow.FollowingWidth"/> without making a plan.</summary>
-    internal float? FollowingWidth => _lazy?.Plan?.FollowingWidth;
+    internal float? FollowingWidth => _lazy?.Breaks?.Plan?.FollowingWidth;
 
     // Penalties at or below this force a break (TeX's eject penalty); badness at or above inf_bad is "infinitely bad".
     private const int ForcedPenalty = -10000;
@@ -515,7 +515,7 @@ internal sealed partial class LineBuilder
     /// <summary>The running sum of the stretch of word separators (half their advance), made the first time it is needed.</summary>
     private float[] Stretch()
     {
-        LazyState state = _lazy ??= new();
+        BreakState state = Breaks;
         if (state.Stretch is { } done)
         {
             return done;

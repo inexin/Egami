@@ -311,7 +311,7 @@ internal sealed partial class LineBuilder
     private int? Hyphenate(int start, int segmentStart, int segmentEnd, float width, HyphenationOptions auto)
     {
         // One list per builder: greedy filling looks up a piece for nearly every line.
-        List<int> points = (_lazy ??= new()).Points ??= [];
+        List<int> points = Breaks.Points ??= [];
         points.Clear();
         WordPoints(segmentStart, segmentEnd, auto, points);
         for (int p = points.Count - 1; p >= 0; p--)
@@ -385,7 +385,7 @@ internal sealed partial class LineBuilder
                 if (!IsClusterStart(point))
                 {
                     // A break inside a glyph cluster (a ligature) shapes both pieces again.
-                    ((_lazy ??= new()).ForcedUnsafe ??= []).Add(point);
+                    (Breaks.ForcedUnsafe ??= []).Add(point);
                 }
 
                 points.Add(point);
@@ -484,7 +484,7 @@ internal sealed partial class LineBuilder
     }
 
     /// <summary>Whether a line breaking before <paramref name="i"/> must shape its pieces again.</summary>
-    private bool UnsafeAt(int i) => _m.Unsafe[i] || (_lazy?.ForcedUnsafe?.Contains(i) ?? false);
+    private bool UnsafeAt(int i) => _m.Unsafe[i] || (_lazy?.Breaks?.ForcedUnsafe?.Contains(i) ?? false);
 
     /// <summary>What kashida justification and automatic hyphenation keep, made only when a paragraph uses them, so the
     /// builder of a plain paragraph stays small.</summary>
@@ -502,6 +502,14 @@ internal sealed partial class LineBuilder
         /// <summary>The hyphenator of each language, or null for none.</summary>
         public Dictionary<string, Hyphenator?>? Hyphenators;
 
+        /// <summary>What hyphenation points and <see cref="LineFill.Optimal"/> keep, in an object of its own so the lazy state
+        /// of a paragraph that uses only kashidas stays as small as before.</summary>
+        public BreakState? Breaks;
+    }
+
+    /// <summary>The state of hyphenation points inside clusters and of optimal filling.</summary>
+    private sealed class BreakState
+    {
         /// <summary>Hyphenation points inside glyph clusters, where both pieces shape again.</summary>
         public HashSet<int>? ForcedUnsafe;
 
@@ -514,6 +522,8 @@ internal sealed partial class LineBuilder
         /// <summary>The <see cref="LineFlow"/>'s plan for <see cref="LineFill.Optimal"/>.</summary>
         public OptimalPlan? Plan;
     }
+
+    private BreakState Breaks => (_lazy ??= new()).Breaks ??= new();
 
     /// <summary>
     /// The line ends for <see cref="LineFill.Balanced"/> (CSS <c>text-wrap: balance</c>), or null to fill greedily: between hard
