@@ -94,25 +94,40 @@ internal sealed partial class H264MbEncoder
     private bool _sub8x8;
     private int[] _frameMv = [];
 
+    // The order count distance each vector in _frameMv covers (0 where unknown), to scale it to a B picture's references.
+    private int[] _frameSpan = [];
+
     /// <summary>
     /// Sets the references of the P picture to code (list 0 in order), the largest vertical vector component its level allows
-    /// in quarter samples, and whether 8x8 blocks may split further.
+    /// in quarter samples, whether 8x8 blocks may split further, and the picture's order count, which gives the distance each
+    /// of its vectors covers for the B pictures that start their search from them.
     /// </summary>
-    public void SetReferences(H264RefPlanes[] refs, int count, int maxMvY, bool sub8x8)
+    public void SetReferences(H264RefPlanes[] refs, int count, int maxMvY, bool sub8x8, int poc)
     {
+        _poc = poc;
         _refs = refs;
         _refCount = count;
         _maxMvY = maxMvY;
         _sub8x8 = sub8x8;
         _weighted = true;
-        if (_frameMv.Length != _mb.WidthMbs * _mb.HeightMbs)
-        {
-            _frameMv = new int[_mb.WidthMbs * _mb.HeightMbs];
-        }
+        EnsureMotion();
     }
 
     /// <summary>Forgets the vectors of earlier pictures, which seed the search (after a keyframe).</summary>
-    public void ResetMotion() => Array.Clear(_frameMv);
+    public void ResetMotion()
+    {
+        Array.Clear(_frameMv);
+        Array.Clear(_frameSpan);
+    }
+
+    private void EnsureMotion()
+    {
+        if (_frameMv.Length != _mb.WidthMbs * _mb.HeightMbs)
+        {
+            _frameMv = new int[_mb.WidthMbs * _mb.HeightMbs];
+            _frameSpan = new int[_mb.WidthMbs * _mb.HeightMbs];
+        }
+    }
 
     /// <summary>
     /// Chooses, codes and reconstructs the macroblock at (mbX, mbY) of a P slice at <paramref name="qp"/>; returns its cost.
@@ -148,6 +163,7 @@ internal sealed partial class H264MbEncoder
                 // Task 7: what P_Skip leaves would quantize to nothing, so nothing else is searched or coded.
                 H264EncodeStats.Add(H264EncodeStat.EarlySkips);
                 _frameMv[addr] = skipMv;
+                _frameSpan[addr] = _poc - _refs[0].Poc;
                 Best = skip;
                 return bestCost;
             }
@@ -159,6 +175,7 @@ internal sealed partial class H264MbEncoder
         H264MbCode p16 = _inter[0];
         long cost16 = Search16x16(p16, starts[..count]);
         _frameMv[addr] = p16.Mv[0];
+        _frameSpan[addr] = _poc - _refs[p16.RefIdx[0]].Poc;
         H264MbCode? second = null;
         long secondCost = long.MaxValue;
         H264MbCode first = p16;

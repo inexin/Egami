@@ -171,7 +171,7 @@ internal sealed class H264PictureEncoder
         {
             slice.Syntax.RefIds = ids;
             slice.Syntax.RefCount = count;
-            slice.Encoder.SetReferences(refs, count, maxMvY, _effort >= 6 && _config.LevelIdc <= 30);
+            slice.Encoder.SetReferences(refs, count, maxMvY, _effort >= 6 && _config.LevelIdc <= 30, pocLsb);
         }
 
         CodeSlices(qp, predicted: true, (w, slice) =>
@@ -224,7 +224,7 @@ internal sealed class H264PictureEncoder
             syntax.ColPoc = refs1[0].Poc;
             syntax.RefPocs = pocs0;
             syntax.CurrentPoc = poc;
-            slice.Encoder.SetBReferences(refs0, count0, refs1, 1, 4 * H264Levels.MaxVerticalMv(_config.LevelIdc));
+            slice.Encoder.SetBReferences(refs0, count0, refs1, 1, 4 * H264Levels.MaxVerticalMv(_config.LevelIdc), poc);
         }
 
         bool temporalAllowed = _slices[0].Syntax.TemporalAllowed();
