@@ -28602,12 +28602,31 @@ references:
   commentId: F:Egami.Fonts.Layout.LineFill.Greedy
   fullName: Egami.Fonts.Layout.LineFill.Greedy
   nameWithType: LineFill.Greedy
+- uid: Egami.Fonts.Layout.LineFill.Optimal
+  name: Optimal
+  href: api/Egami.Fonts.Layout.LineFill.html#Egami_Fonts_Layout_LineFill_Optimal
+  commentId: F:Egami.Fonts.Layout.LineFill.Optimal
+  fullName: Egami.Fonts.Layout.LineFill.Optimal
+  nameWithType: LineFill.Optimal
 - uid: Egami.Fonts.Layout.LineFlow
   name: LineFlow
   href: api/Egami.Fonts.Layout.LineFlow.html
   commentId: T:Egami.Fonts.Layout.LineFlow
   fullName: Egami.Fonts.Layout.LineFlow
   nameWithType: LineFlow
+- uid: Egami.Fonts.Layout.LineFlow.FollowingWidth
+  name: FollowingWidth
+  href: api/Egami.Fonts.Layout.LineFlow.html#Egami_Fonts_Layout_LineFlow_FollowingWidth
+  commentId: P:Egami.Fonts.Layout.LineFlow.FollowingWidth
+  fullName: Egami.Fonts.Layout.LineFlow.FollowingWidth
+  nameWithType: LineFlow.FollowingWidth
+- uid: Egami.Fonts.Layout.LineFlow.FollowingWidth*
+  name: FollowingWidth
+  href: api/Egami.Fonts.Layout.LineFlow.html#Egami_Fonts_Layout_LineFlow_FollowingWidth_
+  commentId: Overload:Egami.Fonts.Layout.LineFlow.FollowingWidth
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.LineFlow.FollowingWidth
+  nameWithType: LineFlow.FollowingWidth
 - uid: Egami.Fonts.Layout.LineFlow.IsComplete
   name: IsComplete
   href: api/Egami.Fonts.Layout.LineFlow.html#Egami_Fonts_Layout_LineFlow_IsComplete
@@ -28793,6 +28812,129 @@ references:
   commentId: F:Egami.Fonts.Layout.LineHeightKind.Normal
   fullName: Egami.Fonts.Layout.LineHeightKind.Normal
   nameWithType: LineHeightKind.Normal
+- uid: Egami.Fonts.Layout.OptimalLineOptions
+  name: OptimalLineOptions
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html
+  commentId: T:Egami.Fonts.Layout.OptimalLineOptions
+  fullName: Egami.Fonts.Layout.OptimalLineOptions
+  nameWithType: OptimalLineOptions
+- uid: Egami.Fonts.Layout.OptimalLineOptions.AdjacentDemerits
+  name: AdjacentDemerits
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_AdjacentDemerits
+  commentId: P:Egami.Fonts.Layout.OptimalLineOptions.AdjacentDemerits
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.AdjacentDemerits
+  nameWithType: OptimalLineOptions.AdjacentDemerits
+- uid: Egami.Fonts.Layout.OptimalLineOptions.AdjacentDemerits*
+  name: AdjacentDemerits
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_AdjacentDemerits_
+  commentId: Overload:Egami.Fonts.Layout.OptimalLineOptions.AdjacentDemerits
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.AdjacentDemerits
+  nameWithType: OptimalLineOptions.AdjacentDemerits
+- uid: Egami.Fonts.Layout.OptimalLineOptions.DoubleHyphenDemerits
+  name: DoubleHyphenDemerits
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_DoubleHyphenDemerits
+  commentId: P:Egami.Fonts.Layout.OptimalLineOptions.DoubleHyphenDemerits
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.DoubleHyphenDemerits
+  nameWithType: OptimalLineOptions.DoubleHyphenDemerits
+- uid: Egami.Fonts.Layout.OptimalLineOptions.DoubleHyphenDemerits*
+  name: DoubleHyphenDemerits
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_DoubleHyphenDemerits_
+  commentId: Overload:Egami.Fonts.Layout.OptimalLineOptions.DoubleHyphenDemerits
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.DoubleHyphenDemerits
+  nameWithType: OptimalLineOptions.DoubleHyphenDemerits
+- uid: Egami.Fonts.Layout.OptimalLineOptions.ExplicitHyphenPenalty
+  name: ExplicitHyphenPenalty
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_ExplicitHyphenPenalty
+  commentId: P:Egami.Fonts.Layout.OptimalLineOptions.ExplicitHyphenPenalty
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.ExplicitHyphenPenalty
+  nameWithType: OptimalLineOptions.ExplicitHyphenPenalty
+- uid: Egami.Fonts.Layout.OptimalLineOptions.ExplicitHyphenPenalty*
+  name: ExplicitHyphenPenalty
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_ExplicitHyphenPenalty_
+  commentId: Overload:Egami.Fonts.Layout.OptimalLineOptions.ExplicitHyphenPenalty
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.ExplicitHyphenPenalty
+  nameWithType: OptimalLineOptions.ExplicitHyphenPenalty
+- uid: Egami.Fonts.Layout.OptimalLineOptions.FinalHyphenDemerits
+  name: FinalHyphenDemerits
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_FinalHyphenDemerits
+  commentId: P:Egami.Fonts.Layout.OptimalLineOptions.FinalHyphenDemerits
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.FinalHyphenDemerits
+  nameWithType: OptimalLineOptions.FinalHyphenDemerits
+- uid: Egami.Fonts.Layout.OptimalLineOptions.FinalHyphenDemerits*
+  name: FinalHyphenDemerits
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_FinalHyphenDemerits_
+  commentId: Overload:Egami.Fonts.Layout.OptimalLineOptions.FinalHyphenDemerits
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.FinalHyphenDemerits
+  nameWithType: OptimalLineOptions.FinalHyphenDemerits
+- uid: Egami.Fonts.Layout.OptimalLineOptions.HyphenPenalty
+  name: HyphenPenalty
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_HyphenPenalty
+  commentId: P:Egami.Fonts.Layout.OptimalLineOptions.HyphenPenalty
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.HyphenPenalty
+  nameWithType: OptimalLineOptions.HyphenPenalty
+- uid: Egami.Fonts.Layout.OptimalLineOptions.HyphenPenalty*
+  name: HyphenPenalty
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_HyphenPenalty_
+  commentId: Overload:Egami.Fonts.Layout.OptimalLineOptions.HyphenPenalty
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.HyphenPenalty
+  nameWithType: OptimalLineOptions.HyphenPenalty
+- uid: Egami.Fonts.Layout.OptimalLineOptions.LinePenalty
+  name: LinePenalty
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_LinePenalty
+  commentId: P:Egami.Fonts.Layout.OptimalLineOptions.LinePenalty
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.LinePenalty
+  nameWithType: OptimalLineOptions.LinePenalty
+- uid: Egami.Fonts.Layout.OptimalLineOptions.LinePenalty*
+  name: LinePenalty
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_LinePenalty_
+  commentId: Overload:Egami.Fonts.Layout.OptimalLineOptions.LinePenalty
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.LinePenalty
+  nameWithType: OptimalLineOptions.LinePenalty
+- uid: Egami.Fonts.Layout.OptimalLineOptions.SecondTolerance
+  name: SecondTolerance
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_SecondTolerance
+  commentId: P:Egami.Fonts.Layout.OptimalLineOptions.SecondTolerance
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.SecondTolerance
+  nameWithType: OptimalLineOptions.SecondTolerance
+- uid: Egami.Fonts.Layout.OptimalLineOptions.SecondTolerance*
+  name: SecondTolerance
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_SecondTolerance_
+  commentId: Overload:Egami.Fonts.Layout.OptimalLineOptions.SecondTolerance
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.SecondTolerance
+  nameWithType: OptimalLineOptions.SecondTolerance
+- uid: Egami.Fonts.Layout.OptimalLineOptions.ShrinkSpaces
+  name: ShrinkSpaces
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_ShrinkSpaces
+  commentId: P:Egami.Fonts.Layout.OptimalLineOptions.ShrinkSpaces
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.ShrinkSpaces
+  nameWithType: OptimalLineOptions.ShrinkSpaces
+- uid: Egami.Fonts.Layout.OptimalLineOptions.ShrinkSpaces*
+  name: ShrinkSpaces
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_ShrinkSpaces_
+  commentId: Overload:Egami.Fonts.Layout.OptimalLineOptions.ShrinkSpaces
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.ShrinkSpaces
+  nameWithType: OptimalLineOptions.ShrinkSpaces
+- uid: Egami.Fonts.Layout.OptimalLineOptions.Tolerance
+  name: Tolerance
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_Tolerance
+  commentId: P:Egami.Fonts.Layout.OptimalLineOptions.Tolerance
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.Tolerance
+  nameWithType: OptimalLineOptions.Tolerance
+- uid: Egami.Fonts.Layout.OptimalLineOptions.Tolerance*
+  name: Tolerance
+  href: api/Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_Tolerance_
+  commentId: Overload:Egami.Fonts.Layout.OptimalLineOptions.Tolerance
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.OptimalLineOptions.Tolerance
+  nameWithType: OptimalLineOptions.Tolerance
 - uid: Egami.Fonts.Layout.OverflowWrap
   name: OverflowWrap
   href: api/Egami.Fonts.Layout.OverflowWrap.html
@@ -29143,6 +29285,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.ParagraphStyle.MaxLines
   nameWithType: ParagraphStyle.MaxLines
+- uid: Egami.Fonts.Layout.ParagraphStyle.OptimalLines
+  name: OptimalLines
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_OptimalLines
+  commentId: P:Egami.Fonts.Layout.ParagraphStyle.OptimalLines
+  fullName: Egami.Fonts.Layout.ParagraphStyle.OptimalLines
+  nameWithType: ParagraphStyle.OptimalLines
+- uid: Egami.Fonts.Layout.ParagraphStyle.OptimalLines*
+  name: OptimalLines
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_OptimalLines_
+  commentId: Overload:Egami.Fonts.Layout.ParagraphStyle.OptimalLines
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.ParagraphStyle.OptimalLines
+  nameWithType: ParagraphStyle.OptimalLines
 - uid: Egami.Fonts.Layout.ParagraphStyle.Strut
   name: Strut
   href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Strut

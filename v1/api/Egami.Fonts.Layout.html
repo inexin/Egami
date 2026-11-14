@@ -139,6 +139,15 @@ images; <a class="xref" href="Egami.Fonts.Layout.Paragraph.html#Egami_Fonts_Layo
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.OptimalLineOptions.html">OptimalLineOptions</a></dt>
+      <dd><p>The penalties and tolerances <a class="xref" href="Egami.Fonts.Layout.LineFill.html#Egami_Fonts_Layout_LineFill_Optimal">Optimal</a> weighs, after Knuth and Plass (&quot;Breaking Paragraphs into Lines&quot;,
+1981) and TeX. Each line costs (<a class="xref" href="Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_LinePenalty">LinePenalty</a> + badness)^2, plus its break's penalty squared and the extra
+demerits below; the breaks with the least total win. A justified line's badness is 100 r^3, where r is how far its word
+spaces stretch (by up to half a space each at r = 1) or shrink; a ragged line's is 100 r^2, where r is the space left at its
+end in units of 2 em.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Fonts.Layout.Paragraph.html">Paragraph</a></dt>
       <dd><p>A paragraph of styled text, prepared once to be laid out at any width: styles resolved, bidi levels and break opportunities
 found, text itemized into runs and each run shaped. Immutable and safe to share between threads.</p>

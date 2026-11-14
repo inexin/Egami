@@ -4619,6 +4619,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.OptimalLineOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.OptimalLineOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.OptimalLineOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.OptimalLineOptions.yml\" sourcestartlinenumber=\"1\">The penalties and tolerances <xref href=\"Egami.Fonts.Layout.LineFill.Optimal\" data-throw-if-not-resolved=\"false\"></xref> weighs, after Knuth and Plass (&quot;Breaking Paragraphs into Lines&quot;,\n1981) and TeX. Each line costs (<xref href=\"Egami.Fonts.Layout.OptimalLineOptions.LinePenalty\" data-throw-if-not-resolved=\"false\"></xref> + badness)^2, plus its break's penalty squared and the extra\ndemerits below; the breaks with the least total win. A justified line's badness is 100 r^3, where r is how far its word\nspaces stretch (by up to half a space each at r = 1) or shrink; a ragged line's is 100 r^2, where r is the space left at its\nend in units of 2 em.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Fonts.Layout.OverflowWrap.yml",
       "output": {
         ".html": {

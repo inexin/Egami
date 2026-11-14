@@ -131,7 +131,7 @@ replacement character (U+FFFC, as placeholders use) breaks before and after.</p>
 it. <code>Hyphenator.Load</code> (with a <code>HyphenationFormat</code>, or <code>Auto</code> to tell it from the data) reads hyph-utf8's <code>hyph-xx.tex</code> files
 (with the minimums from their <code>hyphenmins</code> header), plain <code>.pat.txt</code> pattern lists, LibreOffice's <code>hyph_xx_YY.dic</code> files
 (their spelling-change rules are not supported yet and throw <code>NotSupportedException</code>) and Egami's compiled <code>.ehyp</code> form,
-which <code>Save</code> writes and which loads in about a millisecond.
+which <code>Save</code> writes and which loads in under a millisecond (Norwegian's patterns compile to about 140 KB).
 <code>Hyphenator.FromPatterns</code> takes patterns and <code>hy-phen-ate</code> exceptions as text, and <code>WithExceptions</code> adds more.</p>
 <p><code>GetPoints</code> writes UTF-16 offsets, ascending, and allocates nothing for ordinary words. Exceptions win over the patterns;
 no break leaves fewer than <code>MinBefore</code> characters before it or <code>MinAfter</code> after it, and none falls inside a surrogate pair or
@@ -192,7 +192,8 @@ justified lines too, and so does Egami. A word that does not fit on a line of it
 </ul>
 <p>Words next to a digit or a hyphen, and pieces that have a soft hyphen, keep the breaks they have. A break inside a glyph cluster,
 such as a ligature, shapes both pieces again. The hyphen drawn is <code>ParagraphStyle.Hyphen</code>, and <code>Canvas.DrawTextLayout</code> marks
-it with an empty ActualText, so text copied from a PDF reads the word whole. Balanced filling breaks only where the text allows.</p>
+it with an empty ActualText, so text copied from a PDF reads the word whole. Optimal filling (below) looks up every word once
+and weighs each point against the others; balanced filling breaks only where the text allows.</p>
 <h2 id="rich-text-and-paragraphs">Rich text and paragraphs</h2>
 <p>A <code>RichText</code> is a string with <code>StyleSpan</code>s over it (start and length in UTF-16 units, never overlapping) and a <code>Placeholder</code>
 for each object replacement character (U+FFFC). <code>RichTextBuilder</code> builds one: <code>Push</code> a <code>TextStyle</code>, <code>Append</code> text,
@@ -280,9 +281,53 @@ the pieces on each side are shaped again, so a line has the glyphs it would have
 <li>Each line reorders its own bidi runs (UAX #9 rules L1 and L2): trailing spaces take the paragraph's direction.</li>
 <li><code>LineFill.Balanced</code> evens the lines of a short paragraph (up to 6 lines): of the breaks that fit, the ones that leave the
 least squared space on every line, the last included, as Chromium's <code>text-wrap: balance</code> does.</li>
+<li><code>LineFill.Optimal</code> chooses all the breaks at once, as TeX does (below).</li>
 <li><code>float.PositiveInfinity</code> lays the paragraph out without wrapping; the box is then as wide as the longest line.</li>
 </ul>
-<h3 id="line-boxes-and-spacing">Line boxes and spacing</h3>
+<h3 id="optimal-lines">Optimal lines</h3>
+<p><code>LineFill.Optimal</code> breaks a paragraph as TeX does, by Knuth and Plass's total-fit algorithm: of all the ways to break it, the
+one whose lines cost least in total. A justified line costs more the further its word spaces stretch (up to half a space each
+counts as acceptable); a ragged one (start, end or centred) costs more the more room it leaves, which evens the ragged edge as
+CSS <code>text-wrap: pretty</code> does. Breaks at hyphens cost extra, two hyphenated lines in a row more, a hyphen on the last line but
+one more still, and so does a tight line next to a loose one. With <code>Hyphens.Auto</code>, every eligible word's hyphenation points
+are candidates, and <code>MaxConsecutiveLines</code> still holds; <code>Zone</code> is for greedy filling only.</p>
+<p><code>OptimalLineOptions</code> sets the penalties and tolerances (TeX's line penalty 10 and hyphen penalty 50 by default) and
+<code>ShrinkSpaces</code>, which lets justified spaces shrink to two thirds, as TeX does; Word and browsers only stretch them, so it is
+off by default. If no set of breaks keeps every line within the tolerance (badness 200, then 2000), the last pass takes any
+line that is not overfull, and a word too wide for any line gets a line of its own, as with greedy filling. Mandatory breaks
+split the paragraph into parts broken on their own. Where a pass settles for breaks that cost more than greedy filling's (whose
+lines may pass the tolerance), the greedy breaks are taken, so optimal filling never costs more. Planning a paragraph costs a
+few greedy fills.</p>
+<pre><code class="lang-csharp">ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 16, Language = &quot;en&quot; },
+    Align = TextAlign.Justify,
+    LineFill = LineFill.Optimal,                    // Knuth-Plass, as TeX breaks paragraphs
+    OptimalLines = new OptimalLineOptions
+    {
+        HyphenPenalty = 100,                        // hyphenate a little less readily than TeX
+        ShrinkSpaces = true,                        // let spaces shrink to a third, as TeX does
+    },
+};
+
+TextLayout layout = Paragraph.Create(text, style).Layout(160);
+</code></pre>
+<p>A <code>LineFlow</code> plans the rest of the paragraph when it lays out a line: at the width it is given for that line, and at
+<code>LineFlow.FollowingWidth</code> (the next line's width when null) for the rest. A later call with the width the plan expects takes
+the planned line; a different width, for lines beside a float or a narrower column, plans again from there. <code>Rewind</code> and
+<code>Reset</code> keep the plan, so a line carried to the next column comes back the same.</p>
+<pre><code class="lang-csharp">// A 20-unit first-line indent: the first line is 140 wide, the rest 160. Optimal filling plans the whole paragraph at
+// once, so it is told the width of the lines to come.
+LineFlow flow = Paragraph.Create(text, style).CreateFlow();
+flow.FollowingWidth = 160;
+List&lt;TextLine&gt; lines = [];
+for (float width = 140; flow.NextLine(width) is TextLine line; width = 160)
+{
+    lines.Add(line);
+}
+
+// A width the plan did not expect (a float, a narrower column) plans the rest again from there.
+</code></pre><h3 id="line-boxes-and-spacing">Line boxes and spacing</h3>
 <p>Line boxes follow CSS Inline Layout 3, with the numbers browsers use:</p>
 <ul>
 <li>Each run's inline box is its font's ascent and descent, rounded to whole units as browsers round them, plus the leading

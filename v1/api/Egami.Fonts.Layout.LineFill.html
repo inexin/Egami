@@ -90,7 +90,7 @@
 
 
   <h1 id="Egami_Fonts_Layout_LineFill" data-uid="Egami.Fonts.Layout.LineFill" class="text-break">
-Enum LineFill  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L213"><i class="bi bi-code-slash"></i></a>
+Enum LineFill  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L219"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -125,6 +125,13 @@ greedily.</p>
     <dt id="Egami_Fonts_Layout_LineFill_Greedy"><code>Greedy = 0</code></dt>
   
   <dd><p>Each line takes as much as fits, as browsers fill.</p>
+</dd>
+    <dt id="Egami_Fonts_Layout_LineFill_Optimal"><code>Optimal = 2</code></dt>
+  
+  <dd><p>The breaks that suit the whole paragraph best, as TeX chooses them (Knuth and Plass's total-fit algorithm, like CSS
+<code>text-wrap: pretty</code>): justified paragraphs weigh how far each line's spaces stretch, others how much room each line
+leaves, and both weigh hyphens. <a class="xref" href="Egami.Fonts.Layout.OptimalLineOptions.html">OptimalLineOptions</a> sets the penalties. A <a class="xref" href="Egami.Fonts.Layout.LineFlow.html">LineFlow</a> plans the
+lines for the width it is given and <a class="xref" href="Egami.Fonts.Layout.LineFlow.html#Egami_Fonts_Layout_LineFlow_FollowingWidth">FollowingWidth</a>, and plans again when a width changes.</p>
 </dd>
   </dl>
 
@@ -163,7 +170,7 @@ Paragraph paragraph = Paragraph.Create(text, style);</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L213" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L219" class="edit-link">Edit this page</a>
         </div>
 
 
