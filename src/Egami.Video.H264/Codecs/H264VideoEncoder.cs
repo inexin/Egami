@@ -144,6 +144,11 @@ internal sealed class H264VideoEncoder : IVideoEncoder
             Parallelism = context.Egami.MaxParallelism,
             BFrames = bFrames,
             BPyramid = pyramid,
+
+            // Every run its full count of B-frames (H.264 compression Build Plan, task 4): cutting runs short on motion cost
+            // 2 % BD-rate on the eight clips (6 % on ducks_take_off) and time; scene cuts start a keyframe either way, and
+            // clips joined at a cut gain too.
+            AdaptiveBFrames = false,
             MacroblockTree = TreeStrength,
             Rate = new RateSettings
             {
