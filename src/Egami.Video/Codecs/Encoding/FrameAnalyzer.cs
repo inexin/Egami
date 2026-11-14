@@ -169,7 +169,27 @@ internal sealed class FrameAnalyzer
             int y0 = Math.Min(2 * y, lh - 1), y1 = Math.Min((2 * y) + 1, lh - 1);
             ReadOnlySpan<byte> r0 = luma.Row(y0), r1 = luma.Row(y1);
             Span<byte> row = target.AsSpan(y * _stride, _width);
-            for (int x = 0; x < _width; x++)
+            int x = 0;
+            if (Vector128.IsHardwareAccelerated && BitConverter.IsLittleEndian)
+            {
+                // Eight half-size samples, one 8x8 detail block, at a time while both source rows hold the sixteen samples
+                // whole; the same integer arithmetic as below.
+                Vector128<ushort> low = Vector128.Create((ushort)0xFF), two = Vector128.Create((ushort)2);
+                for (; x + 8 <= _width && (2 * x) + 16 <= lw; x += 8)
+                {
+                    Vector128<ushort> v0 = Vector128.Create(r0.Slice(2 * x, 16)).AsUInt16(), v1 = Vector128.Create(r1.Slice(2 * x, 16)).AsUInt16();
+                    Vector128<ushort> a = v0 & low, b = Vector128.ShiftRightLogical(v0, 8), c = v1 & low, d = Vector128.ShiftRightLogical(v1, 8);
+                    Vector128<ushort> mean = Vector128.ShiftRightLogical(a + b + c + d + two, 2);
+                    Vector128<ushort> d4 = (Vector128.Max(a, mean) - Vector128.Min(a, mean)) + (Vector128.Max(b, mean) - Vector128.Min(b, mean))
+                        + (Vector128.Max(c, mean) - Vector128.Min(c, mean)) + (Vector128.Max(d, mean) - Vector128.Min(d, mean));
+                    System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(row.Slice(x, 8), Vector128.Narrow(mean, mean).AsUInt64().ToScalar());
+                    int sum = Vector128.Sum(d4);
+                    detail += sum;
+                    _detail[blockRow + (x >> 3)] += sum;
+                }
+            }
+
+            for (; x < _width; x++)
             {
                 int x0 = Math.Min(2 * x, lw - 1), x1 = Math.Min((2 * x) + 1, lw - 1);
                 int a = r0[x0], b = r0[x1], c = r1[x0], d = r1[x1];

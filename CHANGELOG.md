@@ -163,6 +163,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   round 4 effort 4 takes 3.5 and 3.0 times x264 medium's instructions at quality 50 and 34 (was 4.0 and 3.6), 2.9 and 2.5
   times its cycles, for BD-rate +0.42 % against round 3 on eight clips (worst rush_hour +0.95 %).
 - Tools: time-h264-encoder.py's instruction gate is tightened to the ratios after round 4 plus 10 %.
+- H.264 encoder speed round 4, PR C (output unchanged, byte for byte): the lookahead's half-size copy takes eight samples at a
+  time; the motion arrays of a macroblock with one reference and vector a list (intra, P_Skip, 16x16) are written a row at a
+  time; each candidate's syntax state is set a row at a time, filling the parts every block shares; and the RDOQ price tables
+  of a block category are kept from one macroblock to the next while its contexts have not changed (after a skip, say).
+  Egami's own instructions fall 4.3 % at quality 50 and 6.3 % at quality 34 on the four 720p clips (old_town_cross 12 %).
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
