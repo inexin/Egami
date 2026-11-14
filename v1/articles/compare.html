@@ -233,7 +233,7 @@ documented set of built-in codecs.</p>
 <td>GIF, animated</td>
 <td>RW</td>
 <td>RW</td>
-<td>Not documented</td>
+<td>R</td>
 <td>RW</td>
 <td>RW</td>
 <td>RW</td>
@@ -260,52 +260,61 @@ documented set of built-in codecs.</p>
 <td>BMP</td>
 <td>RW</td>
 <td>RW</td>
-<td>Not documented</td>
+<td>R</td>
 <td>RW</td>
-<td>Not documented</td>
+<td>–</td>
 <td>RW</td>
 </tr>
 <tr>
 <td>ICO and CUR</td>
 <td>RW</td>
 <td>RW</td>
-<td>Not documented</td>
-<td>R</td>
-<td>Not documented</td>
 <td>R (ICO)</td>
+<td>R</td>
+<td>–</td>
+<td>R (ICO)</td>
+</tr>
+<tr>
+<td>WBMP</td>
+<td>RW (Egami.Formats.Extended)</td>
+<td>–</td>
+<td>R</td>
+<td>RW</td>
+<td>–</td>
+<td>–</td>
 </tr>
 <tr>
 <td>TGA</td>
 <td>RW</td>
 <td>RW</td>
-<td>Not documented</td>
+<td>–</td>
 <td>RW</td>
-<td>Not documented</td>
+<td>–</td>
 <td>–</td>
 </tr>
 <tr>
 <td>QOI</td>
 <td>RW</td>
 <td>RW</td>
-<td>Not documented</td>
+<td>–</td>
 <td>RW</td>
-<td>Not documented</td>
+<td>–</td>
 <td>–</td>
 </tr>
 <tr>
 <td>Netpbm (PBM, PGM, PPM)</td>
 <td>RW</td>
 <td>RW</td>
-<td>Not documented</td>
+<td>–</td>
 <td>RW</td>
-<td>RW</td>
+<td>– ²</td>
 <td>–</td>
 </tr>
 <tr>
 <td>AVIF</td>
 <td>RW</td>
 <td>–</td>
-<td>Not documented</td>
+<td>– ³</td>
 <td>RW ¹</td>
 <td>RW</td>
 <td>–</td>
@@ -314,54 +323,54 @@ documented set of built-in codecs.</p>
 <td>HEIC</td>
 <td>RW (Egami.Heic)</td>
 <td>–</td>
-<td>Not documented</td>
+<td>– ³</td>
 <td>RW ¹</td>
-<td>RW ²</td>
+<td>– ²</td>
 <td>–</td>
 </tr>
 <tr>
 <td>JPEG XL</td>
 <td>RW</td>
 <td>–</td>
-<td>Not documented</td>
+<td>– ³</td>
 <td>RW ¹</td>
-<td>RW ²</td>
+<td>– ²</td>
 <td>–</td>
 </tr>
 <tr>
 <td>JPEG 2000</td>
 <td>R</td>
 <td>–</td>
-<td>Not documented</td>
+<td>–</td>
 <td>RW ¹</td>
-<td>RW ²</td>
+<td>– ²</td>
 <td>–</td>
 </tr>
 <tr>
 <td>OpenEXR</td>
 <td>RW</td>
 <td>RW</td>
-<td>Not documented</td>
+<td>–</td>
 <td>RW ¹</td>
-<td>R ²</td>
+<td>– ²</td>
 <td>–</td>
 </tr>
 <tr>
 <td>Radiance HDR</td>
 <td>RW</td>
 <td>–</td>
-<td>Not documented</td>
+<td>–</td>
 <td>RW</td>
-<td>RW ²</td>
+<td>– ²</td>
 <td>–</td>
 </tr>
 <tr>
 <td>PSD and PSB</td>
 <td>R, layers included</td>
 <td>–</td>
-<td>Not documented</td>
+<td>–</td>
 <td>RW</td>
-<td>Not documented</td>
+<td>–</td>
 <td>–</td>
 </tr>
 <tr>
@@ -377,46 +386,49 @@ documented set of built-in codecs.</p>
 <td>Camera RAW</td>
 <td>R, and writes DNG (Egami.Formats.Extended)</td>
 <td>–</td>
-<td>Not documented</td>
+<td>– ³</td>
 <td>R ¹</td>
-<td>R ²</td>
+<td>– ²</td>
 <td>–</td>
 </tr>
 <tr>
 <td>DDS</td>
 <td>RW (Egami.Formats.Extended)</td>
 <td>–</td>
-<td>Not documented</td>
+<td>–</td>
 <td>RW</td>
-<td>Not documented</td>
+<td>–</td>
 <td>–</td>
 </tr>
 <tr>
 <td>EMF and WMF</td>
 <td>R (Egami.Metafiles)</td>
 <td>–</td>
-<td>Not documented</td>
+<td>–</td>
 <td>R ¹</td>
-<td>Not documented</td>
+<td>–</td>
 <td>R</td>
 </tr>
 <tr>
-<td>PDF pages</td>
-<td>Through <a href="https://github.com/inexin/Egap">Egap.Pdf</a></td>
+<td>PDF</td>
+<td>Read, render and write with <a href="https://github.com/inexin/Egap">Egap.Pdf</a></td>
 <td>–</td>
 <td>Writes PDF documents</td>
 <td>RW with Ghostscript</td>
-<td>R ²</td>
+<td>– ²</td>
 <td>–</td>
 </tr>
 </tbody>
 </table>
-<p>SkiaSharp's documentation names encoders for JPEG, PNG and WebP but does not list the formats its decoder reads; Egami's
-comparison runs read JPEG, PNG and WebP with it.</p>
+<p>The SkiaSharp column is the build SkiaSharp 4.156.0 ships: the codecs in Skia's source at the revision it pins, with the
+build options SkiaSharp's native build scripts set. The NetVips column is the NetVips.Native 8.18.7 binaries, from the build
+script and library list of the project that makes them.</p>
 <p>¹ ImageMagick needs a delegate library for this format, and Magick.NET's documentation does not say which delegates its
 packages include.</p>
-<p>² libvips has a loader for this format, but the NetVips README's list of formats in the bundled NetVips.Native binaries
-(JPEG, PNG, Ultra HDR, WebP, AVIF, TIFF, GIF and SVG input) does not name it.</p>
+<p>² libvips can handle this format with an extra library or build option, but the NetVips.Native binaries are built without
+it. A libvips you build yourself can add it.</p>
+<p>³ Skia has decoders for AVIF, JPEG XL and camera RAW, and decodes HEIF through Android's own decoder, but SkiaSharp's native
+builds leave them off.</p>
 <h2 id="features">Features</h2>
 <table>
 <thead>
@@ -489,9 +501,9 @@ packages include.</p>
 <td>Animation</td>
 <td>GIF, APNG, WebP, AVIF, JPEG XL</td>
 <td>GIF, APNG, WebP</td>
-<td>Decodes frames</td>
+<td>Decodes GIF and WebP frames</td>
 <td>GIF, APNG, MNG</td>
-<td>GIF, WebP, JPEG XL</td>
+<td>GIF, WebP</td>
 <td>GIF frames</td>
 </tr>
 <tr>
@@ -543,7 +555,8 @@ System.Drawing.Common run on .NET Framework 4.6.2, and ImageSharp 4 on .NET 8.</
 <li><strong>You draw a UI on the GPU.</strong> SkiaSharp renders through OpenGL, Metal, Vulkan and Direct3D and is built into many .NET UI
 frameworks. Egami draws on the CPU.</li>
 <li><strong>You need ImageMagick's format list or its exact output.</strong> Magick.NET reads and writes over 100 formats, PDF and PostScript
-through Ghostscript, and matches the <code>magick</code> command's results.</li>
+through Ghostscript, and matches the <code>magick</code> command's results. For PDF without Ghostscript, Egami's sister library
+<a href="https://github.com/inexin/Egap">Egap.Pdf</a> reads, renders, edits and writes PDF in the same managed code.</li>
 <li><strong>You process very large images on little memory.</strong> libvips, through NetVips, runs whole pipelines a region at a time.
 Egami streams decoding and transcoding, but most of its operations work on a whole raster.</li>
 <li><strong>You have Windows code built on System.Drawing.</strong> It keeps working there. To run the same code on Linux or macOS, try
@@ -562,7 +575,11 @@ and <a href="https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Meta
 <a href="https://learn.microsoft.com/dotnet/api/skiasharp.skpixmap.encode">SKPixmap.Encode</a>,
 <a href="https://learn.microsoft.com/dotnet/api/skiasharp.skcolorspace">SKColorSpace</a>,
 <a href="https://learn.microsoft.com/dotnet/api/skiasharp.skdocument.createpdf">SKDocument.CreatePdf</a>,
-<a href="https://www.nuget.org/packages/SkiaSharp.HarfBuzz">SkiaSharp.HarfBuzz</a>, <a href="https://github.com/wieslawsoltes/Svg.Skia">Svg.Skia</a>.</li>
+<a href="https://www.nuget.org/packages/SkiaSharp.HarfBuzz">SkiaSharp.HarfBuzz</a>, <a href="https://github.com/wieslawsoltes/Svg.Skia">Svg.Skia</a>,
+SkiaSharp 4.156.0's <a href="https://github.com/mono/SkiaSharp/blob/v4.156.0/scripts/infra/native/shared/native-shared.cake">native build options</a>
+and the <a href="https://github.com/mono/skia/tree/d1717dc22ef2203b7fc9bf0e01078b37b1a4af6b">Skia revision</a> it pins:
+<a href="https://github.com/mono/skia/blob/d1717dc22ef2203b7fc9bf0e01078b37b1a4af6b/BUILD.gn">codec build targets</a>,
+<a href="https://github.com/mono/skia/blob/d1717dc22ef2203b7fc9bf0e01078b37b1a4af6b/gn/skia.gni">default options</a>.</li>
 <li>Magick.NET: <a href="https://www.nuget.org/packages/Magick.NET-Q16-AnyCPU">NuGet</a>, <a href="https://github.com/dlemstra/Magick.NET">repository</a>,
 <a href="https://github.com/dlemstra/Magick.NET/blob/main/docs/Readme.md">docs</a>,
 <a href="https://github.com/dlemstra/Magick.NET/blob/main/docs/CrossPlatform.md">cross-platform notes</a>,
@@ -570,7 +587,10 @@ and <a href="https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Meta
 <li>NetVips: <a href="https://www.nuget.org/packages/NetVips">NuGet</a>, <a href="https://www.nuget.org/packages/NetVips.Native">NetVips.Native</a>,
 <a href="https://github.com/kleisauke/net-vips">repository</a>, <a href="https://github.com/libvips/libvips">libvips</a>,
 <a href="https://www.libvips.org/API/current/function-list.html">libvips operations</a>,
-<a href="https://www.libvips.org/API/current/multipage-and-animated-images.html">multipage and animated images</a>.</li>
+<a href="https://www.libvips.org/API/current/multipage-and-animated-images.html">multipage and animated images</a>,
+NetVips.Native's <a href="https://github.com/kleisauke/libvips-packaging/blob/main/build/posix.sh">build script</a>,
+<a href="https://github.com/kleisauke/libvips-packaging/blob/main/versions.properties">library versions</a> and
+<a href="https://github.com/kleisauke/libvips-packaging/blob/main/THIRD-PARTY-NOTICES.md">bundled libraries</a>.</li>
 <li>System.Drawing.Common: <a href="https://www.nuget.org/packages/System.Drawing.Common">NuGet</a>,
 <a href="https://learn.microsoft.com/dotnet/core/compatibility/core-libraries/6.0/system-drawing-common-windows-only">Windows-only change</a>,
 <a href="https://learn.microsoft.com/windows/win32/gdiplus/-gdiplus-using-image-encoders-and-decoders-use">GDI+ encoders and decoders</a>,
