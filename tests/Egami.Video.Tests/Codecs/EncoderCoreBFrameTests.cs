@@ -98,6 +98,30 @@ public class EncoderCoreBFrameTests
     }
 
     [Fact]
+    public void TheBlockTreeGivesReferencedFramesFinerStepsAndCentredBlockOffsets()
+    {
+        using Clip clip = Clip.Moving(64, 48, 17, speed: 1);
+        (List<FrameDecision> plain, _, _) = Encode(clip, new Options(BFrames: 3, Pyramid: true));
+        (List<FrameDecision> tree, _, _) = Encode(clip, new Options(BFrames: 3, Pyramid: true, BlockTree: 0.5));
+        Assert.Equal(plain.Select(d => d.Index), tree.Select(d => d.Index));
+        Assert.All(plain, d => Assert.Null(d.BlockOffsets));
+        foreach (FrameDecision d in tree.Where(d => !d.Referenced))
+        {
+            Assert.Null(d.BlockOffsets);
+        }
+
+        // Every referenced frame but the last anchor, which nothing after it predicts from, is reused, so it gets a finer
+        // step than without the tree, and offsets for its 4 x 3 blocks around the frame's own step.
+        foreach (FrameDecision d in tree.Where(d => d.Referenced && d.Index < 16))
+        {
+            double[] offsets = Assert.IsType<double[]>(d.BlockOffsets);
+            Assert.Equal(12, offsets.Length);
+            Assert.Equal(0, offsets.Average(), 9);
+            Assert.True(d.Quantizer < plain.Single(p => p.Index == d.Index).Quantizer, $"Frame {d.Index}");
+        }
+    }
+
+    [Fact]
     public void BFramesAreCheckedAgainstTheLimit()
     {
         using EncoderPictures pictures = new(16, 16, EncoderPictures.Vp8Color, EgamiContext.Default);
@@ -166,6 +190,7 @@ public class EncoderCoreBFrameTests
         BFrames = o.BFrames,
         BPyramid = o.Pyramid,
         AdaptiveBFrames = o.Adaptive,
+        BlockTree = o.BlockTree,
         Rate = new RateSettings
         {
             Mode = o.Mode,
@@ -200,7 +225,7 @@ public class EncoderCoreBFrameTests
         return clip;
     }
 
-    private readonly record struct Options(int BFrames, bool Pyramid = false, bool Adaptive = false, bool Realtime = false, bool SceneCuts = true, RateControlMode Mode = RateControlMode.Quality);
+    private readonly record struct Options(int BFrames, bool Pyramid = false, bool Adaptive = false, bool Realtime = false, bool SceneCuts = true, RateControlMode Mode = RateControlMode.Quality, double BlockTree = 0);
 
     private readonly record struct Packet(long Presentation, long? Decode, bool Key);
 
