@@ -2,6 +2,9 @@
 Egami.Fonts.Layout.HyphenationDictionaries
 Egami.Fonts.Layout.HyphenationDictionaries.Add(string! language, Egami.Fonts.Layout.Hyphenator! hyphenator) -> void
 Egami.Fonts.Layout.HyphenationDictionaries.HyphenationDictionaries() -> void
+Egami.Fonts.Layout.HyphenationDictionaries.HyphenationDictionaries(Egami.Fonts.Layout.HyphenationDictionaries! source) -> void
+Egami.Fonts.Layout.HyphenationDictionaries.IsReadOnly.get -> bool
+Egami.Fonts.Layout.HyphenationDictionaries.Languages.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
 Egami.Fonts.Layout.HyphenationDictionaries.TryGet(string? language, out Egami.Fonts.Layout.Hyphenator? hyphenator) -> bool
 Egami.Fonts.Layout.HyphenationFormat
 Egami.Fonts.Layout.HyphenationFormat.Auto = 0 -> Egami.Fonts.Layout.HyphenationFormat
@@ -37,10 +40,37 @@ Egami.Fonts.Layout.Hyphens
 Egami.Fonts.Layout.Hyphens.Auto = 2 -> Egami.Fonts.Layout.Hyphens
 Egami.Fonts.Layout.Hyphens.Manual = 0 -> Egami.Fonts.Layout.Hyphens
 Egami.Fonts.Layout.Hyphens.None = 1 -> Egami.Fonts.Layout.Hyphens
+Egami.Fonts.Layout.LineFill.Optimal = 2 -> Egami.Fonts.Layout.LineFill
+Egami.Fonts.Layout.LineFlow.FollowingWidth.get -> float?
+Egami.Fonts.Layout.LineFlow.FollowingWidth.set -> void
+Egami.Fonts.Layout.OptimalLineOptions
+Egami.Fonts.Layout.OptimalLineOptions.<Clone>$() -> Egami.Fonts.Layout.OptimalLineOptions!
+Egami.Fonts.Layout.OptimalLineOptions.AdjacentDemerits.get -> int
+Egami.Fonts.Layout.OptimalLineOptions.AdjacentDemerits.init -> void
+Egami.Fonts.Layout.OptimalLineOptions.DoubleHyphenDemerits.get -> int
+Egami.Fonts.Layout.OptimalLineOptions.DoubleHyphenDemerits.init -> void
+Egami.Fonts.Layout.OptimalLineOptions.Equals(Egami.Fonts.Layout.OptimalLineOptions? other) -> bool
+Egami.Fonts.Layout.OptimalLineOptions.ExplicitHyphenPenalty.get -> int
+Egami.Fonts.Layout.OptimalLineOptions.ExplicitHyphenPenalty.init -> void
+Egami.Fonts.Layout.OptimalLineOptions.FinalHyphenDemerits.get -> int
+Egami.Fonts.Layout.OptimalLineOptions.FinalHyphenDemerits.init -> void
+Egami.Fonts.Layout.OptimalLineOptions.HyphenPenalty.get -> int
+Egami.Fonts.Layout.OptimalLineOptions.HyphenPenalty.init -> void
+Egami.Fonts.Layout.OptimalLineOptions.LinePenalty.get -> int
+Egami.Fonts.Layout.OptimalLineOptions.LinePenalty.init -> void
+Egami.Fonts.Layout.OptimalLineOptions.OptimalLineOptions() -> void
+Egami.Fonts.Layout.OptimalLineOptions.SecondTolerance.get -> int
+Egami.Fonts.Layout.OptimalLineOptions.SecondTolerance.init -> void
+Egami.Fonts.Layout.OptimalLineOptions.ShrinkSpaces.get -> bool
+Egami.Fonts.Layout.OptimalLineOptions.ShrinkSpaces.init -> void
+Egami.Fonts.Layout.OptimalLineOptions.Tolerance.get -> int
+Egami.Fonts.Layout.OptimalLineOptions.Tolerance.init -> void
 Egami.Fonts.Layout.ParagraphStyle.Hyphenation.get -> Egami.Fonts.Layout.HyphenationOptions?
 Egami.Fonts.Layout.ParagraphStyle.Hyphenation.init -> void
 Egami.Fonts.Layout.ParagraphStyle.Hyphens.get -> Egami.Fonts.Layout.Hyphens
 Egami.Fonts.Layout.ParagraphStyle.Hyphens.init -> void
+Egami.Fonts.Layout.ParagraphStyle.OptimalLines.get -> Egami.Fonts.Layout.OptimalLineOptions?
+Egami.Fonts.Layout.ParagraphStyle.OptimalLines.init -> void
 Egami.Fonts.MathConstants
 Egami.Fonts.MathConstants.<Clone>$() -> Egami.Fonts.MathConstants!
 Egami.Fonts.MathConstants.AccentBaseHeight.get -> float
@@ -211,6 +241,9 @@ Egami.Fonts.TypefaceMath.MinConnectorOverlap.get -> float
 override Egami.Fonts.Layout.HyphenationOptions.Equals(object? obj) -> bool
 override Egami.Fonts.Layout.HyphenationOptions.GetHashCode() -> int
 override Egami.Fonts.Layout.HyphenationOptions.ToString() -> string!
+override Egami.Fonts.Layout.OptimalLineOptions.Equals(object? obj) -> bool
+override Egami.Fonts.Layout.OptimalLineOptions.GetHashCode() -> int
+override Egami.Fonts.Layout.OptimalLineOptions.ToString() -> string!
 override Egami.Fonts.MathConstants.Equals(object? obj) -> bool
 override Egami.Fonts.MathConstants.GetHashCode() -> int
 override Egami.Fonts.MathConstants.ToString() -> string!
@@ -219,10 +252,13 @@ override Egami.Fonts.MathGlyphAssembly.GetHashCode() -> int
 override Egami.Fonts.MathGlyphAssembly.ToString() -> string!
 override Egami.Fonts.MathGlyphPart.GetHashCode() -> int
 override Egami.Fonts.MathGlyphVariant.GetHashCode() -> int
+static Egami.Fonts.Layout.HyphenationDictionaries.BuiltIn.get -> Egami.Fonts.Layout.HyphenationDictionaries!
 static Egami.Fonts.Layout.HyphenationOptions.operator !=(Egami.Fonts.Layout.HyphenationOptions? left, Egami.Fonts.Layout.HyphenationOptions? right) -> bool
 static Egami.Fonts.Layout.HyphenationOptions.operator ==(Egami.Fonts.Layout.HyphenationOptions? left, Egami.Fonts.Layout.HyphenationOptions? right) -> bool
 static Egami.Fonts.Layout.Hyphenator.FromPatterns(string! patterns, string? exceptions = null, int minBefore = 2, int minAfter = 3) -> Egami.Fonts.Layout.Hyphenator!
 static Egami.Fonts.Layout.Hyphenator.Load(System.IO.Stream! stream, Egami.Fonts.Layout.HyphenationFormat format = Egami.Fonts.Layout.HyphenationFormat.Auto) -> Egami.Fonts.Layout.Hyphenator!
+static Egami.Fonts.Layout.OptimalLineOptions.operator !=(Egami.Fonts.Layout.OptimalLineOptions? left, Egami.Fonts.Layout.OptimalLineOptions? right) -> bool
+static Egami.Fonts.Layout.OptimalLineOptions.operator ==(Egami.Fonts.Layout.OptimalLineOptions? left, Egami.Fonts.Layout.OptimalLineOptions? right) -> bool
 static Egami.Fonts.MathConstants.operator !=(Egami.Fonts.MathConstants? left, Egami.Fonts.MathConstants? right) -> bool
 static Egami.Fonts.MathConstants.operator ==(Egami.Fonts.MathConstants? left, Egami.Fonts.MathConstants? right) -> bool
 static Egami.Fonts.MathGlyphAssembly.operator !=(Egami.Fonts.MathGlyphAssembly? left, Egami.Fonts.MathGlyphAssembly? right) -> bool
@@ -235,35 +271,3 @@ static Egami.Fonts.MathGlyphVariant.operator ==(Egami.Fonts.MathGlyphVariant lef
 ~override Egami.Fonts.MathGlyphPart.ToString() -> string
 ~override Egami.Fonts.MathGlyphVariant.Equals(object obj) -> bool
 ~override Egami.Fonts.MathGlyphVariant.ToString() -> string
-Egami.Fonts.Layout.LineFill.Optimal = 2 -> Egami.Fonts.Layout.LineFill
-Egami.Fonts.Layout.LineFlow.FollowingWidth.get -> float?
-Egami.Fonts.Layout.LineFlow.FollowingWidth.set -> void
-Egami.Fonts.Layout.OptimalLineOptions
-Egami.Fonts.Layout.OptimalLineOptions.<Clone>$() -> Egami.Fonts.Layout.OptimalLineOptions!
-Egami.Fonts.Layout.OptimalLineOptions.AdjacentDemerits.get -> int
-Egami.Fonts.Layout.OptimalLineOptions.AdjacentDemerits.init -> void
-Egami.Fonts.Layout.OptimalLineOptions.DoubleHyphenDemerits.get -> int
-Egami.Fonts.Layout.OptimalLineOptions.DoubleHyphenDemerits.init -> void
-Egami.Fonts.Layout.OptimalLineOptions.Equals(Egami.Fonts.Layout.OptimalLineOptions? other) -> bool
-Egami.Fonts.Layout.OptimalLineOptions.ExplicitHyphenPenalty.get -> int
-Egami.Fonts.Layout.OptimalLineOptions.ExplicitHyphenPenalty.init -> void
-Egami.Fonts.Layout.OptimalLineOptions.FinalHyphenDemerits.get -> int
-Egami.Fonts.Layout.OptimalLineOptions.FinalHyphenDemerits.init -> void
-Egami.Fonts.Layout.OptimalLineOptions.HyphenPenalty.get -> int
-Egami.Fonts.Layout.OptimalLineOptions.HyphenPenalty.init -> void
-Egami.Fonts.Layout.OptimalLineOptions.LinePenalty.get -> int
-Egami.Fonts.Layout.OptimalLineOptions.LinePenalty.init -> void
-Egami.Fonts.Layout.OptimalLineOptions.OptimalLineOptions() -> void
-Egami.Fonts.Layout.OptimalLineOptions.SecondTolerance.get -> int
-Egami.Fonts.Layout.OptimalLineOptions.SecondTolerance.init -> void
-Egami.Fonts.Layout.OptimalLineOptions.ShrinkSpaces.get -> bool
-Egami.Fonts.Layout.OptimalLineOptions.ShrinkSpaces.init -> void
-Egami.Fonts.Layout.OptimalLineOptions.Tolerance.get -> int
-Egami.Fonts.Layout.OptimalLineOptions.Tolerance.init -> void
-Egami.Fonts.Layout.ParagraphStyle.OptimalLines.get -> Egami.Fonts.Layout.OptimalLineOptions?
-Egami.Fonts.Layout.ParagraphStyle.OptimalLines.init -> void
-override Egami.Fonts.Layout.OptimalLineOptions.Equals(object? obj) -> bool
-override Egami.Fonts.Layout.OptimalLineOptions.GetHashCode() -> int
-override Egami.Fonts.Layout.OptimalLineOptions.ToString() -> string!
-static Egami.Fonts.Layout.OptimalLineOptions.operator !=(Egami.Fonts.Layout.OptimalLineOptions? left, Egami.Fonts.Layout.OptimalLineOptions? right) -> bool
-static Egami.Fonts.Layout.OptimalLineOptions.operator ==(Egami.Fonts.Layout.OptimalLineOptions? left, Egami.Fonts.Layout.OptimalLineOptions? right) -> bool

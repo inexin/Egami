@@ -1,5 +1,6 @@
 * text=auto eol=lf
 *.png binary
+*.ehyp binary
 *.rgba8 binary
 *.tgz binary
 *.icc binary
