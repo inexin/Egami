@@ -691,7 +691,7 @@ internal sealed partial class H264MbSyntax
     /// Encoder Speed Build Plan, task 19): the coded_block_flag conditions from masks of the coded blocks and their neighbours,
     /// each flag one table step, and each coded block from <see cref="CountLevels"/>.
     /// </summary>
-    private void CountResidual(H264MbCode code, ref CabacUndoSink sink)
+    private void CountResidual(H264MbCode code, ref CabacUndoSink sink, bool luma = true, bool chroma = true)
     {
         byte[] ctx = Contexts;
         CabacUndoLog log = sink.Log;
@@ -702,7 +702,12 @@ internal sealed partial class H264MbSyntax
         long cost = 0;
         int cbp = code.Cbp;
         bool i16 = code.Kind == H264MbKind.I16x16;
-        if (i16)
+        if (!luma)
+        {
+            cbp &= 0x30;
+        }
+
+        if (i16 && luma)
         {
             int count = code.LumaDcCount;
             int inc = CbfInc(DcCond(_availableLeft, _left, 1), DcCond(_availableTop, _top, 1));
@@ -752,6 +757,12 @@ internal sealed partial class H264MbSyntax
                     }
                 }
             }
+        }
+
+        if (!chroma)
+        {
+            sink.Cost += cost;
+            return;
         }
 
         if ((cbp & 0x30) != 0)

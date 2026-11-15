@@ -324,6 +324,44 @@ internal sealed partial class H264MbEncoder
         return (bits.Bits + (skippable ? 1 : 0)) * CabacCost.Bit;
     }
 
+    /// <summary>
+    /// Speed round 5, PR C: <see cref="Rate"/> of an inter macroblock with CABAC, also giving the part of it that the luma levels
+    /// and transform size leave unchanged (mb_skip_flag, mb_type, sub_mb_type, ref_idx, mvd and the chroma residual), so that
+    /// <see cref="RateLumaPart"/> can count the same macroblock with its other transform from that part. The sum is exact.
+    /// </summary>
+    private long RateShared(H264MbCode code, out long shared)
+    {
+        H264EncodeStats.Add(H264EncodeStat.RdCodings);
+        _syntax.Locate(_mbX, _mbY);
+        _undo.Begin(_syntax.Contexts);
+        CabacUndoSink sink = new(_undo);
+        _syntax.SkipFlagCabac(ref sink, false);
+        _syntax.Begin(_mbX, _mbY, code);
+        _syntax.WriteInterHeaderCabac(code, ref sink);
+        _syntax.CountChromaResidual(code, ref sink);
+        shared = sink.Cost;
+        _syntax.CountLumaPart(code, ref sink);
+        _undo.Restore();
+        return sink.Cost;
+    }
+
+    /// <summary>
+    /// The bits of an inter macroblock (CABAC) from the <paramref name="shared"/> part <see cref="RateShared"/> gave for the same
+    /// macroblock with its other luma transform: only coded_block_pattern, the transform flag, mb_qp_delta and the luma residual
+    /// are counted.
+    /// </summary>
+    private long RateLumaPart(H264MbCode code, long shared)
+    {
+        H264EncodeStats.Add(H264EncodeStat.RdCodings);
+        _syntax.Locate(_mbX, _mbY);
+        _undo.Begin(_syntax.Contexts);
+        CabacUndoSink sink = new(_undo);
+        _syntax.Begin(_mbX, _mbY, code);
+        _syntax.CountLumaPart(code, ref sink);
+        _undo.Restore();
+        return shared + sink.Cost;
+    }
+
     private void Save(byte[] recon)
     {
         for (int y = 0; y < 16; y++)

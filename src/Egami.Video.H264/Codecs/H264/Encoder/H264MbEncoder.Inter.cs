@@ -1100,25 +1100,29 @@ internal sealed partial class H264MbEncoder
         }
 
         long sse = CodeInterLuma(code, eight: false);
-        double cost = sse + chromaSse + (_lambda * Rate(code) / CabacCost.Bit);
-        if (can8)
+        if (!can8)
         {
-            Save(_recon[0]);
-            H264MbCode eight = _inter8;
-            eight.CopyFrom(code);
-            long sse8 = CodeInterLuma(eight, eight: true);
-            double cost8 = sse8 + chromaSse + (_lambda * Rate(eight) / CabacCost.Bit);
-            if (cost8 < cost)
-            {
-                code.CopyFrom(eight);
-                KeepTransform(code);
-                return cost8;
-            }
-
-            Restore(_recon[0]);
-            KeepTransform(code);
+            return sse + chromaSse + (_lambda * Rate(code) / CabacCost.Bit);
         }
 
+        // Speed round 5, PR C: with CABAC the two transforms share everything but the luma part of the count.
+        long shared = 0;
+        bool split = _syntax.Cabac;
+        double cost = sse + chromaSse + (_lambda * (split ? RateShared(code, out shared) : Rate(code)) / CabacCost.Bit);
+        Save(_recon[0]);
+        H264MbCode eight = _inter8;
+        eight.CopyFrom(code);
+        long sse8 = CodeInterLuma(eight, eight: true);
+        double cost8 = sse8 + chromaSse + (_lambda * (split ? RateLumaPart(eight, shared) : Rate(eight)) / CabacCost.Bit);
+        if (cost8 < cost)
+        {
+            code.CopyFrom(eight);
+            KeepTransform(code);
+            return cost8;
+        }
+
+        Restore(_recon[0]);
+        KeepTransform(code);
         return cost;
     }
 
