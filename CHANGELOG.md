@@ -3,6 +3,34 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Fonts (unreleased)
+
+Built-in hyphenation dictionaries and optimal line breaking, after 1.5.0-preview.1 (Hyphenation Build Plan tasks 5 to 8).
+Additive to 1.4.0. `.ehyp` files that 1.5.0-preview.1 wrote are version 1 and must be compiled again.
+
+- `HyphenationDictionaries.BuiltIn`: hyph-utf8's patterns for 35 languages, compiled into Egami.Fonts (1.3 MB) and each
+  loaded the first time it is used, in at most 0.6 ms (German, the largest). They are en-US, en-GB, de-1996, de-1901,
+  de-CH-1901, fr, nb, nn, da, es, pt, gl, it, nl, eu, la, ga, cy, pl, sk, sl, hr, bg, uk, be, et, lt, sq, el-monoton, af,
+  ka, hi, bn, ta and mn-Cyrl: the languages whose pattern files grant a permissive licence (MIT where they offer several),
+  each listed in THIRD-PARTY-NOTICES.md. A lookup falls back a subtag at a time, and `en` finds en-US, `de` de-1996, `no` nb,
+  `el` el-monoton and `mn` mn-Cyrl. Other languages (Swedish, Russian, Finnish and more, whose licences are LPPL, copyleft
+  or not cleared) load from the user's own pattern files.
+- `BuiltIn` is shared and read-only (`IsReadOnly`); `new HyphenationDictionaries(HyphenationDictionaries.BuiltIn)` copies it
+  to add to, sharing the built-in hyphenators. `Languages` lists a set's tags.
+- `tools/make-hyphenation-patterns.py` fetches the pattern files at a pinned hyph-utf8 commit, checks their SHA-256 and that
+  each still grants its licence, compiles them and writes their notices.
+- `LineFill.Optimal`: Knuth and Plass's total-fit line breaking, as TeX's, through `Paragraph.Layout` and `LineFlow`. Justified
+  lines are weighed by how far their spaces stretch, ragged ones by the squared room they leave (CSS `text-wrap: pretty`), and
+  breaks at hyphens, soft or automatic, as penalised candidates; passes at badness 200, 2000, then any line that is not
+  overfull. `ParagraphStyle.OptimalLines` (`OptimalLineOptions`) overrides TeX's penalties and the tolerances, and
+  `ShrinkSpaces` lets justified spaces shrink by a third. On a 500-paragraph corpus the total demerits are never above greedy
+  filling's, and on short paragraphs they match an exhaustive dynamic program.
+- `LineFlow.FollowingWidth`: the width optimal filling plans the lines after the next one at (after a first-line indent, say).
+  A flow plans the rest of the paragraph and plans again when it is asked for a width the plan did not expect; `Rewind` and
+  `Reset` keep the plan.
+- `.ehyp` version 2: Norwegian's patterns compile to 137 KB instead of 649 KB and load in about 0.7 ms. The trie stores no
+  edge targets, and numbers are varints. Version 1 files are rejected with a clear error.
+
 ## Egami.Video.H264 (unreleased)
 
 An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
@@ -202,6 +230,12 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   points, no clip more than 0.3 worse), for 1.3 % and 1.7 % more instructions.
 - Effort 0 chooses I and P macroblocks at 0.8 times the λ (was 0.6, as above): +68.2 % to +65.3 % on PSNR-Y and +52.0 % to
   +49.2 % on SSIM-Y on the eight clips, every clip better on PSNR-Y, for no more instructions.
+- H.264 encoder speed round 5, PR A (output unchanged, byte for byte): the SAD kernels (one block, two to four blocks of one
+  plane, four blocks of several planes, and against the mean of two predictions) have a loop for each block width, with one
+  vector holding a row of 16, two rows of 8 or four rows of 4 samples, instead of one loop that decides for each row what is
+  left; and the whole-sample search checks its few start vectors for repeats with a plain loop. Egami's own instructions fall
+  3.4 % at quality 50 and 2.9 % at quality 34 on the four 720p clips; effort 4 takes 3.3 and 2.8 times x264 medium's
+  instructions (was 3.5 and 2.8) and 2.9 and 2.3 times its cycles.
 - Effort 0 (speed round 5, PR B) tries intra in P pictures by the intra gate of efforts 1 to 4: only where an Intra16x16
   prediction comes within 1.5 times the inter search cost by SATD, and coded only when its best estimate comes below that cost
   (it was tried on almost every macroblock). Egami's own instructions at effort 0 fall 31 % at quality 50 and 35 % at quality
@@ -664,7 +698,7 @@ KTX stage D (writing and whole textures; roadmap 2.3.11). Additive.
 
 ## Egami.Fonts 1.5.0-preview.1 (2026-11-13)
 
-Hyphenation patterns, automatic hyphens and optimal line breaking. Additive.
+Hyphenation patterns and automatic hyphens. Additive.
 
 - `Hyphenator` (`Egami.Fonts.Layout`) finds where a word may break with a hyphen, by Liang's algorithm (TeX's, LibreOffice's
   and browsers'): patterns in a packed trie, an exception list that wins over them, and `MinBefore` and `MinAfter`. `GetPoints`
@@ -674,23 +708,13 @@ Hyphenation patterns, automatic hyphens and optimal line breaking. Additive.
 - `Hyphenator.Load` reads hyph-utf8 `.tex` files (`\patterns`, `\hyphenation`, `^^` escapes, the `hyphenmins` header),
   `.pat.txt` lists, LibreOffice `.dic` files (character set, `LEFTHYPHENMIN`, `RIGHTHYPHENMIN`, `NOHYPHEN`, the second
   level after `NEXTLEVEL`; replacement rules throw `NotSupportedException`) and Egami's compiled `.ehyp`, which `Save`
-  writes: Norwegian's 27,000 patterns compile to 137 KB and load in about 0.7 ms from it instead of 100 ms from TeX
-  (`.ehyp` version 2: the trie stores no edge targets, and numbers are varints). `FromPatterns` and
+  writes: Norwegian's 27,000 patterns load in about 1 ms from it instead of 100 ms from TeX. `FromPatterns` and
   `WithExceptions` take patterns and `hy-phen-ate` exceptions as text.
 - `ParagraphStyle.Hyphens` (CSS `hyphens`: `Manual`, the default, `None` and `Auto`) and `ParagraphStyle.Hyphenation`
   (`HyphenationOptions` with `HyphenationDictionaries` by BCP 47 tag). With `Auto`, greedy filling hyphenates the word that
   crosses a line's end at its last point that fits, in the run's `TextStyle.Language`, within `MinWordLength`, `MinBefore`,
   `MinAfter`, `MaxConsecutiveLines`, `Zone` (applied to justified lines too, as Word does) and `HyphenateCapitalized`. A
   break inside a glyph cluster shapes both pieces again. `None` also ignores soft hyphens.
-- `LineFill.Optimal`: Knuth and Plass's total-fit line breaking, as TeX's, through `Paragraph.Layout` and `LineFlow`. Justified
-  lines are weighed by how far their spaces stretch, ragged ones by the squared room they leave (CSS `text-wrap: pretty`), and
-  breaks at hyphens, soft or automatic, as penalised candidates; passes at badness 200, 2000, then any line that is not
-  overfull. `ParagraphStyle.OptimalLines` (`OptimalLineOptions`) overrides TeX's penalties and the tolerances, and
-  `ShrinkSpaces` lets justified spaces shrink by a third. On a 500-paragraph corpus the total demerits are never above greedy
-  filling's, and on short paragraphs they match an exhaustive dynamic program.
-- `LineFlow.FollowingWidth`: the width optimal filling plans the lines after the next one at (after a first-line indent, say).
-  A flow plans the rest of the paragraph and plans again when it is asked for a width the plan did not expect; `Rewind` and
-  `Reset` keep the plan.
 - Egami.Drawing: `Canvas.DrawTextLayout` draws an automatic hyphen as marked content with an empty ActualText, so text copied
   from a PDF reads the word whole.
 - Layout with hyphenation off allocates no more than before: kashida justification's lazy state and the hyphenation state
