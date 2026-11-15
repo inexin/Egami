@@ -4,9 +4,9 @@ encode time at its default effort against x264 medium, on one thread and on all 
 rate control gate: one and two-pass bitrate within 5 % of the target over a clip, constant bitrate never
 emptying the buffer.
 
-Speed: the design's goal of at most 2 times x264 medium was not met. Matched by quality, after speed round 4 effort 4 takes
-2.9 times x264 medium's CPU cycles a frame at 720p at quality 50 on the four clips (2.4 to 3.9 by clip) and 2.5 times at
-quality 34 (2.4 to 2.6); in instructions 3.5 and 3.0 times (3.0 to 4.6 and 2.9 to 3.3). The wall times and the ratios are
+Speed: the design's goal of at most 2 times x264 medium was not met. Matched by quality, after speed round 5 effort 4 takes
+2.9 times x264 medium's CPU cycles a frame at 720p at quality 50 on the four clips (2.3 to 3.5 by clip) and 2.3 times at
+quality 34 (2.0 to 2.7); in instructions 3.3 and 2.8 times (2.8 to 4.1 and 2.6 to 3.3). The wall times and the ratios are
 recorded; the gate is a regression gate on the instructions, which unlike the cycles barely move between runs: each clip's instruction ratio at each
 of the two qualities at most GATE_INSTRUCTIONS, the measured ratio and 10 %.
 

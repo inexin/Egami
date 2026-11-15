@@ -202,6 +202,12 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   points, no clip more than 0.3 worse), for 1.3 % and 1.7 % more instructions.
 - Effort 0 chooses I and P macroblocks at 0.8 times the λ (was 0.6, as above): +68.2 % to +65.3 % on PSNR-Y and +52.0 % to
   +49.2 % on SSIM-Y on the eight clips, every clip better on PSNR-Y, for no more instructions.
+- H.264 encoder speed round 5, PR A (output unchanged, byte for byte): the SAD kernels (one block, two to four blocks of one
+  plane, four blocks of several planes, and against the mean of two predictions) have a loop for each block width, with one
+  vector holding a row of 16, two rows of 8 or four rows of 4 samples, instead of one loop that decides for each row what is
+  left; and the whole-sample search checks its few start vectors for repeats with a plain loop. Egami's own instructions fall
+  3.4 % at quality 50 and 2.9 % at quality 34 on the four 720p clips; effort 4 takes 3.3 and 2.8 times x264 medium's
+  instructions (was 3.5 and 2.8) and 2.9 and 2.3 times its cycles.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 

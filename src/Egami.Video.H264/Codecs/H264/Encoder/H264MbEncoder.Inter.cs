@@ -659,7 +659,14 @@ internal sealed partial class H264MbEncoder
         {
             int sx = Math.Clamp((H264SliceDecoder.MvX(start) + 2) >> 2, minX, maxX), sy = Math.Clamp((H264SliceDecoder.MvY(start) + 2) >> 2, minY, maxY);
             int key = (sy << 16) ^ sx;
-            if (seen[..seenCount].Contains(key))
+            // A plain loop: the starts are a handful, too few for the vectorised search Contains calls out to.
+            bool repeated = false;
+            for (int i = 0; i < seenCount && !repeated; i++)
+            {
+                repeated = seen[i] == key;
+            }
+
+            if (repeated)
             {
                 continue;
             }

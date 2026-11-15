@@ -19,6 +19,17 @@ internal static class H264EncodeSimd
         ref byte rb = ref MemoryMarshal.GetArrayDataReference(b);
         if (Sse2.IsSupported)
         {
+            // Speed round 5: a loop for each block width, with one vector a row (16), two rows (8) or four rows (4).
+            switch (w)
+            {
+                case 16:
+                    return Sad<Rows16>(ref ra, atA, strideA, ref rb, atB, strideB, h);
+                case 8 when (h & 1) == 0:
+                    return Sad<Rows8>(ref ra, atA, strideA, ref rb, atB, strideB, h);
+                case 4 when (h & 3) == 0:
+                    return Sad<Rows4>(ref ra, atA, strideA, ref rb, atB, strideB, h);
+            }
+
             Vector128<ulong> sum = Vector128<ulong>.Zero;
             for (int y = 0; y < h; y++)
             {
@@ -78,34 +89,51 @@ internal static class H264EncodeSimd
             return;
         }
 
-        if (!Sse2.IsSupported || w != 16 || n == 4)
+        if (Sse2.IsSupported && n != 4)
         {
-            Sad4(a, atA, strideA, b, b0, b, b1, b, b2, b, b3, strideB, w, h, sums);
-            return;
+            ref byte ra = ref MemoryMarshal.GetArrayDataReference(a);
+            ref byte rb = ref MemoryMarshal.GetArrayDataReference(b);
+            switch (w)
+            {
+                case 16:
+                    SadN<Rows16>(ref ra, atA, strideA, ref rb, b0, b1, b2, strideB, h, n, sums);
+                    return;
+                case 8 when (h & 1) == 0:
+                    SadN<Rows8>(ref ra, atA, strideA, ref rb, b0, b1, b2, strideB, h, n, sums);
+                    return;
+                case 4 when (h & 3) == 0:
+                    SadN<Rows4>(ref ra, atA, strideA, ref rb, b0, b1, b2, strideB, h, n, sums);
+                    return;
+            }
         }
 
-        ref byte ra = ref MemoryMarshal.GetArrayDataReference(a);
-        ref byte rb = ref MemoryMarshal.GetArrayDataReference(b);
+        Sad4(a, atA, strideA, b, b0, b, b1, b, b2, b, b3, strideB, w, h, sums);
+    }
+
+    /// <summary><see cref="SadN"/> for two or three blocks of one plane, with the rows a vector of <typeparamref name="T"/>.</summary>
+    private static void SadN<T>(ref byte ra, int atA, int strideA, ref byte rb, int b0, int b1, int b2, int strideB, int h, int n, Span<long> sums)
+        where T : struct, IRows
+    {
         Vector128<ulong> s0 = Vector128<ulong>.Zero, s1 = s0, s2 = s0;
         if (n == 2)
         {
-            for (int y = 0; y < h; y++)
+            for (int y = 0; y < h; y += T.Count)
             {
-                Vector128<byte> v = Vector128.LoadUnsafe(ref ra, (nuint)(atA + (y * strideA)));
+                Vector128<byte> v = T.Load(ref ra, atA + (y * strideA), strideA);
                 int o = y * strideB;
-                s0 += Sse2.SumAbsoluteDifferences(v, Vector128.LoadUnsafe(ref rb, (nuint)(b0 + o))).AsUInt64();
-                s1 += Sse2.SumAbsoluteDifferences(v, Vector128.LoadUnsafe(ref rb, (nuint)(b1 + o))).AsUInt64();
+                s0 += Sse2.SumAbsoluteDifferences(v, T.Load(ref rb, b0 + o, strideB)).AsUInt64();
+                s1 += Sse2.SumAbsoluteDifferences(v, T.Load(ref rb, b1 + o, strideB)).AsUInt64();
             }
         }
         else
         {
-            for (int y = 0; y < h; y++)
+            for (int y = 0; y < h; y += T.Count)
             {
-                Vector128<byte> v = Vector128.LoadUnsafe(ref ra, (nuint)(atA + (y * strideA)));
+                Vector128<byte> v = T.Load(ref ra, atA + (y * strideA), strideA);
                 int o = y * strideB;
-                s0 += Sse2.SumAbsoluteDifferences(v, Vector128.LoadUnsafe(ref rb, (nuint)(b0 + o))).AsUInt64();
-                s1 += Sse2.SumAbsoluteDifferences(v, Vector128.LoadUnsafe(ref rb, (nuint)(b1 + o))).AsUInt64();
-                s2 += Sse2.SumAbsoluteDifferences(v, Vector128.LoadUnsafe(ref rb, (nuint)(b2 + o))).AsUInt64();
+                s0 += Sse2.SumAbsoluteDifferences(v, T.Load(ref rb, b0 + o, strideB)).AsUInt64();
+                s1 += Sse2.SumAbsoluteDifferences(v, T.Load(ref rb, b1 + o, strideB)).AsUInt64();
+                s2 += Sse2.SumAbsoluteDifferences(v, T.Load(ref rb, b2 + o, strideB)).AsUInt64();
             }
 
             sums[2] = (long)(s2.GetElement(0) + s2.GetElement(1));
@@ -135,6 +163,19 @@ internal static class H264EncodeSimd
         ref byte r1 = ref MemoryMarshal.GetArrayDataReference(p1);
         ref byte r2 = ref MemoryMarshal.GetArrayDataReference(p2);
         ref byte r3 = ref MemoryMarshal.GetArrayDataReference(p3);
+        switch (w)
+        {
+            case 16:
+                Sad4<Rows16>(ref ra, atA, strideA, ref r0, b0, ref r1, b1, ref r2, b2, ref r3, b3, strideB, h, sums);
+                return;
+            case 8 when (h & 1) == 0:
+                Sad4<Rows8>(ref ra, atA, strideA, ref r0, b0, ref r1, b1, ref r2, b2, ref r3, b3, strideB, h, sums);
+                return;
+            case 4 when (h & 3) == 0:
+                Sad4<Rows4>(ref ra, atA, strideA, ref r0, b0, ref r1, b1, ref r2, b2, ref r3, b3, strideB, h, sums);
+                return;
+        }
+
         Vector128<ulong> s0 = Vector128<ulong>.Zero, s1 = s0, s2 = s0, s3 = s0;
         for (int y = 0; y < h; y++)
         {
@@ -273,19 +314,17 @@ internal static class H264EncodeSimd
         ref byte rb = ref MemoryMarshal.GetArrayDataReference(b);
         if (Sse2.IsSupported)
         {
-            Vector128<ulong> sum = Vector128<ulong>.Zero;
-            if (w == 16)
+            switch (w)
             {
-                for (int y = 0; y < h; y++)
-                {
-                    int ps = at + (y * stride), pp = y * predStride;
-                    Vector128<byte> mean = Sse2.Average(Vector128.LoadUnsafe(ref ra, (nuint)(atA + pp)), Vector128.LoadUnsafe(ref rb, (nuint)(atB + pp)));
-                    sum += Sse2.SumAbsoluteDifferences(Vector128.LoadUnsafe(ref rs, (nuint)ps), mean).AsUInt64();
-                }
-
-                return (long)(sum.GetElement(0) + sum.GetElement(1));
+                case 16:
+                    return SadAverage<Rows16>(ref rs, at, stride, ref ra, atA, ref rb, atB, predStride, h);
+                case 8 when (h & 1) == 0:
+                    return SadAverage<Rows8>(ref rs, at, stride, ref ra, atA, ref rb, atB, predStride, h);
+                case 4 when (h & 3) == 0:
+                    return SadAverage<Rows4>(ref rs, at, stride, ref ra, atA, ref rb, atB, predStride, h);
             }
 
+            Vector128<ulong> sum = Vector128<ulong>.Zero;
             for (int y = 0; y < h; y++)
             {
                 int ps = at + (y * stride), pp = y * predStride;
@@ -646,6 +685,95 @@ internal static class H264EncodeSimd
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<byte> Load4(ref byte r, int at) => Vector128.CreateScalar(Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref r, at))).AsByte();
+
+    /// <summary>
+    /// The rows of a block one vector holds: one row of 16, two of 8 or four of 4 samples. A SAD over the vector is the sum of
+    /// its rows' SADs, so a block's SAD comes out the same whichever way its rows are loaded.
+    /// </summary>
+    private interface IRows
+    {
+        /// <summary>The rows in one vector.</summary>
+        static abstract int Count { get; }
+
+        /// <summary>Loads <see cref="Count"/> rows from <paramref name="at"/>, <paramref name="stride"/> apart.</summary>
+        static abstract Vector128<byte> Load(ref byte r, int at, int stride);
+    }
+
+    private readonly struct Rows16 : IRows
+    {
+        public static int Count => 1;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector128<byte> Load(ref byte r, int at, int stride) => Vector128.LoadUnsafe(ref r, (nuint)at);
+    }
+
+    private readonly struct Rows8 : IRows
+    {
+        public static int Count => 2;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector128<byte> Load(ref byte r, int at, int stride) => Vector128.Create(
+            Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref r, at)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref r, at + stride))).AsByte();
+    }
+
+    private readonly struct Rows4 : IRows
+    {
+        public static int Count => 4;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector128<byte> Load(ref byte r, int at, int stride) => Vector128.Create(
+            Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref r, at)), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref r, at + stride)),
+            Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref r, at + (2 * stride))), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref r, at + (3 * stride)))).AsByte();
+    }
+
+    /// <summary><see cref="Sad"/> with the rows a vector of <typeparamref name="T"/> (h a multiple of its count).</summary>
+    private static long Sad<T>(ref byte ra, int atA, int strideA, ref byte rb, int atB, int strideB, int h)
+        where T : struct, IRows
+    {
+        Vector128<ulong> sum = Vector128<ulong>.Zero;
+        for (int y = 0; y < h; y += T.Count)
+        {
+            sum += Sse2.SumAbsoluteDifferences(T.Load(ref ra, atA + (y * strideA), strideA), T.Load(ref rb, atB + (y * strideB), strideB)).AsUInt64();
+        }
+
+        return (long)(sum.GetElement(0) + sum.GetElement(1));
+    }
+
+    /// <summary>The four-plane <see cref="Sad4(byte[], int, int, byte[], int, byte[], int, byte[], int, byte[], int, int, int, int, Span{long})"/> with the rows a vector of <typeparamref name="T"/>.</summary>
+    private static void Sad4<T>(ref byte ra, int atA, int strideA, ref byte r0, int b0, ref byte r1, int b1, ref byte r2, int b2, ref byte r3, int b3, int strideB, int h, Span<long> sums)
+        where T : struct, IRows
+    {
+        Vector128<ulong> s0 = Vector128<ulong>.Zero, s1 = s0, s2 = s0, s3 = s0;
+        for (int y = 0; y < h; y += T.Count)
+        {
+            Vector128<byte> v = T.Load(ref ra, atA + (y * strideA), strideA);
+            int o = y * strideB;
+            s0 += Sse2.SumAbsoluteDifferences(v, T.Load(ref r0, b0 + o, strideB)).AsUInt64();
+            s1 += Sse2.SumAbsoluteDifferences(v, T.Load(ref r1, b1 + o, strideB)).AsUInt64();
+            s2 += Sse2.SumAbsoluteDifferences(v, T.Load(ref r2, b2 + o, strideB)).AsUInt64();
+            s3 += Sse2.SumAbsoluteDifferences(v, T.Load(ref r3, b3 + o, strideB)).AsUInt64();
+        }
+
+        sums[0] = (long)(s0.GetElement(0) + s0.GetElement(1));
+        sums[1] = (long)(s1.GetElement(0) + s1.GetElement(1));
+        sums[2] = (long)(s2.GetElement(0) + s2.GetElement(1));
+        sums[3] = (long)(s3.GetElement(0) + s3.GetElement(1));
+    }
+
+    /// <summary><see cref="SadAverage"/> with the rows a vector of <typeparamref name="T"/>.</summary>
+    private static long SadAverage<T>(ref byte rs, int at, int stride, ref byte ra, int atA, ref byte rb, int atB, int predStride, int h)
+        where T : struct, IRows
+    {
+        Vector128<ulong> sum = Vector128<ulong>.Zero;
+        for (int y = 0; y < h; y += T.Count)
+        {
+            int pp = y * predStride;
+            Vector128<byte> mean = Sse2.Average(T.Load(ref ra, atA + pp, predStride), T.Load(ref rb, atB + pp, predStride));
+            sum += Sse2.SumAbsoluteDifferences(T.Load(ref rs, at + (y * stride), stride), mean).AsUInt64();
+        }
+
+        return (long)(sum.GetElement(0) + sum.GetElement(1));
+    }
 
     /// <summary>
     /// The SA8D of a block (sides multiples of 8): the magnitudes of each 8x8 block's Hadamard coefficients of the differences,
