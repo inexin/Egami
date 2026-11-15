@@ -117,7 +117,7 @@ public class MemoryTests
 
         PooledPixelMemorySource pool = new();
         MediaContext context = MediaContext.Default with { Egami = EgamiContext.Default with { Memory = pool, MaxParallelism = 4 } };
-        long frameBytes = 0, afterWarmup = 0, managedAfterWarmup = 0;
+        long frameBytes = 0, afterWarmup = 0, managedAfterWarmup = 0, managedGrowth = 0;
         int frames = 0;
         using (Egami.Video.Codecs.IVideoDecoder decoder = Egami.Video.Codecs.VideoCodecs.CreateDecoder(track, context: context))
         {
@@ -144,6 +144,10 @@ public class MemoryTests
                 }
             }
 
+            // Measured with the packets and the decoder still alive, as after the warm-up: disposing the packets returns their
+            // buffers to the runtime's shared pool, which keeps them or not depending on when it last trimmed.
+            managedGrowth = GC.GetTotalMemory(forceFullCollection: true) - managedAfterWarmup;
+
             // The decoder's own buffers: a VP8 frame with a 48-pixel border (24 for chroma), four per stream and four more for alpha.
             long bordered = ((track.Width + 96L) * (track.Height + 96)) + (2L * (((track.Width + 1) / 2) + 48) * (((track.Height + 1) / 2) + 48));
             Assert.True(decoderBytes <= (alpha ? 8 : 4) * bordered * 5 / 4, $"the decoder holds {decoderBytes} bytes, {(alpha ? 8 : 4)} buffers are {(alpha ? 8 : 4) * bordered}");
@@ -156,7 +160,6 @@ public class MemoryTests
 
         Assert.Equal(packets.Count * 40, frames);
         Assert.True(pool.RetainedBytes <= afterWarmup + (2 * frameBytes), $"pool grew from {afterWarmup} to {pool.RetainedBytes}");
-        long managedGrowth = GC.GetTotalMemory(forceFullCollection: true) - managedAfterWarmup;
         Assert.True(managedGrowth < 2L << 20, $"managed memory grew by {managedGrowth} bytes");
         Assert.Equal(0, pool.Usage.LiveBytes);
     }

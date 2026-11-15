@@ -132,30 +132,48 @@ public class ProgressTests
     {
         string input = LongClip(3000);
         string output = AviWriterTests.TempFile($"cancel-{Guid.NewGuid():N}.mp4");
-        using CancellationTokenSource cts = new();
-        long cancelledAt = 0;
-        using FileStream file = File.OpenRead(input);
-        TriggerStream trigger = new(file, file.Length / 2, () =>
-        {
-            cancelledAt = Stopwatch.GetTimestamp();
-            cts.Cancel();
-        });
 
-        Assert.Throws<OperationCanceledException>(() => MediaFile.Remux(trigger, File.Create(output), ".mp4", cancellationToken: cts.Token));
-        TimeSpan stopped = Stopwatch.GetElapsedTime(cancelledAt);
-        Assert.True(stopped < TimeSpan.FromMilliseconds(100), $"stopped {stopped.TotalMilliseconds} ms after the cancel");
-
-        // The same through the path overload: the file is gone.
-        using CancellationTokenSource again = new();
+        // Through the path overload: the file is gone. This also runs the cancel path once, so its first-time costs (code
+        // compiled on first use, the first exception thrown) stay out of the measurement below.
+        using CancellationTokenSource first = new();
         int reports = 0;
         Assert.Throws<OperationCanceledException>(() => MediaFile.Remux(input, output, progress: new Reports(_ =>
         {
             if (++reports == 1)
             {
-                again.Cancel();
+                first.Cancel();
             }
-        }), cancellationToken: again.Token));
+        }), cancellationToken: first.Token));
         Assert.False(File.Exists(output));
+
+        // A cancel halfway through the input: the remux reads little more of it and stops at once.
+        using CancellationTokenSource cts = new();
+        long cancelledAt = 0, readAtCancel = 0;
+        using FileStream file = File.OpenRead(input);
+        long length = file.Length;
+        TriggerStream trigger = null!;
+        trigger = new(file, length / 2, () =>
+        {
+            cancelledAt = Stopwatch.GetTimestamp();
+            readAtCancel = trigger.BytesRead;
+            cts.Cancel();
+        });
+
+        try
+        {
+            Assert.Throws<OperationCanceledException>(() => MediaFile.Remux(trigger, File.Create(output), ".mp4", cancellationToken: cts.Token));
+            TimeSpan stopped = Stopwatch.GetElapsedTime(cancelledAt);
+            long readAfter = trigger.BytesRead - readAtCancel;
+            Assert.True(readAfter <= length / 16, $"read {readAfter} more bytes of {length} after the cancel");
+
+            // Wall-clock time on a shared runner (one without hardware intrinsics among them) is only a backstop: the remux
+            // of the second half alone takes longer than this on a fast machine.
+            Assert.True(stopped < TimeSpan.FromSeconds(1), $"stopped {stopped.TotalMilliseconds} ms after the cancel");
+        }
+        finally
+        {
+            File.Delete(output);
+        }
     }
 
     [Fact]
@@ -492,6 +510,8 @@ public class ProgressTests
     private sealed class TriggerStream(Stream inner, long after, Action trigger) : NonSeekableStream(inner)
     {
         private long _read;
+
+        public long BytesRead => _read;
 
         public override int Read(Span<byte> buffer)
         {
