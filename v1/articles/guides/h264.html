@@ -196,10 +196,10 @@ PSNR (4.0 % on average, 60 frames), between what x264's fast and medium presets 
 kristen_sara, pedestrian_area and rush_hour, 120 frames) it needs 4.0 % more on average (0.4 to 12.4 %); with adaptive
 quantization on, as both encoders default to, it needs 2.0 % fewer bits than x264 medium for the same SSIM. At effort 5, with
 the block macroblock tree, it needs 2.1 % more for the same PSNR and 4.7 % fewer for the same SSIM. It is slower: on
-one thread, with x264 at the CRF that gives the same PSNR-Y, 2.9 times x264 medium's CPU cycles a frame at 720p at quality
-50 (2.3 to 3.5 by clip) and 2.3 times at quality 34 (2.0 to 2.7), on .NET's default runtime with tiered PGO on and without
+one thread, with x264 at the CRF that gives the same PSNR-Y, 2.7 times x264 medium's CPU cycles a frame at 720p at quality
+50 (2.1 to 3.5 by clip) and 2.2 times at quality 34 (1.9 to 2.8), on .NET's default runtime with tiered PGO on and without
 adaptive quantization; with it, the default, 3.2 and 2.6 times. Cycles vary by up to a third between runs on a busy machine;
-in instructions, which vary less, effort 4 takes 3.3 and 2.8 times x264 medium's. The design's goal of twice x264 medium's time is not met. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as
+in instructions, which vary less, effort 4 takes 3.2 and 2.7 times x264 medium's. The design's goal of twice x264 medium's time is not met. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as
 Egami's own decoder.</p>
 <h4 id="speed-by-effort">Speed by effort</h4>
 <p>From effort 1 up, each effort costs more cycles than the one below it and needs fewer bits, on the mean of the four clips;
@@ -210,7 +210,8 @@ measured after the compression Build Plan (B pictures, adaptive quantization), a
 tree plan, which also made efforts 0 and 5 need 2.8 and 0.7 points fewer bits on eight clips (above); the cycles are from
 before both, which changed effort 4's instructions by under 2 % each. Effort 0's row is from speed round 5, which gave it the
 intra gate of efforts 1 to 4: its cycles are the earlier ones scaled by the 29 % less that round measured, and its BD-rate
-was measured then.</p>
+was measured then. Efforts 2 to 5 are scaled the same way by the instructions speed round 5's cheaper rate count saved (1 to
+5 %), and their BD-rate moved by what it cost (under 0.1 point).</p>
 <table>
 <thead>
 <tr>
@@ -238,31 +239,31 @@ was measured then.</p>
 </tr>
 <tr>
 <td style="text-align: right;">2</td>
-<td style="text-align: right;">133k</td>
+<td style="text-align: right;">131k</td>
 <td style="text-align: right;">2.1 (1.8–2.7)</td>
 <td style="text-align: right;">+21.5 %</td>
 <td style="text-align: right;">+29.0 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">3</td>
-<td style="text-align: right;">178k</td>
-<td style="text-align: right;">2.8 (2.3–3.3)</td>
-<td style="text-align: right;">+10.2 %</td>
-<td style="text-align: right;">+15.8 %</td>
+<td style="text-align: right;">170k</td>
+<td style="text-align: right;">2.7 (2.2–3.1)</td>
+<td style="text-align: right;">+10.3 %</td>
+<td style="text-align: right;">+15.9 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">4 (default)</td>
-<td style="text-align: right;">189k</td>
-<td style="text-align: right;">3.0 (2.5–3.7)</td>
+<td style="text-align: right;">181k</td>
+<td style="text-align: right;">2.9 (2.4–3.5)</td>
 <td style="text-align: right;">+4.0 %</td>
 <td style="text-align: right;">+5.8 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">5</td>
-<td style="text-align: right;">247k</td>
-<td style="text-align: right;">3.9 (3.2–5.0)</td>
-<td style="text-align: right;">+3.4 %</td>
-<td style="text-align: right;">+5.3 %</td>
+<td style="text-align: right;">238k</td>
+<td style="text-align: right;">3.8 (3.1–4.8)</td>
+<td style="text-align: right;">+3.5 %</td>
+<td style="text-align: right;">+5.4 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">6</td>
@@ -309,7 +310,8 @@ SATD gate as efforts 1 to 4.</li>
 no residual, intra in B pictures only below the inter cost, sub-block searches only in references near the best, the looser
 skip tests, and from effort 2 one transform size a macroblock).</li>
 <li><strong>2</strong>: two references, 8x8 partitions, a hexagon search and the 8x8 transform for inter blocks.</li>
-<li><strong>3</strong>: RDOQ and the second-best partitioning RD-coded when it comes close.</li>
+<li><strong>3</strong>: RDOQ and the second-best partitioning RD-coded when it comes close. Up to effort 5, an inter candidate's rate count
+takes each luma block's levels at the price RDOQ gave them instead of counting them again.</li>
 <li><strong>4</strong> (default): B pyramids with full runs (the middle B picture at 1.3 times a P picture's quantizer step), three references, the full sub-sample search in P pictures; B pictures search one list 0
 reference and try intra where its 16x16 prediction comes within 1.5 times the inter cost by SATD (as in P pictures). A 16x16 candidate whose search
 cost is low for the QP is coded at once, and when it leaves no residual nothing else but intra is searched or coded. The
