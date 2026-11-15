@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace Egami.Video.Codecs.H264;
 
@@ -242,10 +243,7 @@ internal sealed class H264RefPlanes
         (byte[] a, int atA, byte[]? b, int atB) = Sources(at, qx & 3, qy & 3);
         if (b is null)
         {
-            for (int j = 0; j < h; j++)
-            {
-                a.AsSpan(atA + (j * _stride), w).CopyTo(dst.AsSpan(dstAt + (j * dstStride), w));
-            }
+            Copy(a, atA, _stride, dst, dstAt, dstStride, w, h);
         }
         else
         {
@@ -255,6 +253,47 @@ internal sealed class H264RefPlanes
         if (weighted && Weighted)
         {
             Weigh(dst, dstAt, dstStride, w, h, LumaWeight, Denominator);
+        }
+    }
+
+    /// <summary>
+    /// Copies a w by h block (speed round 6: a row of 16, 8 or 4 samples as one load and store, the block's bounds checked
+    /// once).
+    /// </summary>
+    private static void Copy(byte[] src, int at, int stride, byte[] dst, int dstAt, int dstStride, int w, int h)
+    {
+        if (at < 0 || dstAt < 0 || h <= 0 || at + ((h - 1) * stride) + w > src.Length || dstAt + ((h - 1) * dstStride) + w > dst.Length)
+        {
+            for (int j = 0; j < h; j++)
+            {
+                src.AsSpan(at + (j * stride), w).CopyTo(dst.AsSpan(dstAt + (j * dstStride), w));
+            }
+
+            return;
+        }
+
+        ref byte s = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at);
+        ref byte d = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(dst), dstAt);
+        nint ss = stride, ds = dstStride;
+        for (nint j = 0; j < h; j++)
+        {
+            ref byte from = ref Unsafe.Add(ref s, j * ss);
+            ref byte to = ref Unsafe.Add(ref d, j * ds);
+            switch (w)
+            {
+                case 16:
+                    Unsafe.WriteUnaligned(ref to, Unsafe.ReadUnaligned<Vector128<byte>>(ref from));
+                    break;
+                case 8:
+                    Unsafe.WriteUnaligned(ref to, Unsafe.ReadUnaligned<ulong>(ref from));
+                    break;
+                case 4:
+                    Unsafe.WriteUnaligned(ref to, Unsafe.ReadUnaligned<uint>(ref from));
+                    break;
+                default:
+                    Unsafe.CopyBlockUnaligned(ref to, ref from, (uint)w);
+                    break;
+            }
         }
     }
 
@@ -273,13 +312,16 @@ internal sealed class H264RefPlanes
         {
             byte[] src = c == 0 ? Picture.Cb<byte>() : Picture.Cr<byte>();
             byte[] dst = c == 0 ? cb : cr;
-            for (int j = 0; j < h; j++)
+            if (!ChromaFast(src, at, s, dst, dstAt, dstStride, w, h, wa, wb, wc, wd))
             {
-                int r = at + (j * s), d = dstAt + (j * dstStride);
-                for (int i = 0; i < w; i++)
+                for (int j = 0; j < h; j++)
                 {
-                    int p = r + i;
-                    dst[d + i] = (byte)(((wa * src[p]) + (wb * src[p + 1]) + (wc * src[p + s]) + (wd * src[p + s + 1]) + 32) >> 6);
+                    int r = at + (j * s), d = dstAt + (j * dstStride);
+                    for (int i = 0; i < w; i++)
+                    {
+                        int p = r + i;
+                        dst[d + i] = (byte)(((wa * src[p]) + (wb * src[p + 1]) + (wc * src[p + s]) + (wd * src[p + s + 1]) + 32) >> 6);
+                    }
                 }
             }
 
@@ -288,6 +330,57 @@ internal sealed class H264RefPlanes
                 Weigh(dst, dstAt, dstStride, w, h, c == 0 ? CbWeight : CrWeight, Denominator);
             }
         }
+    }
+
+    /// <summary>
+    /// Speed round 6: the chroma filter of a block 8, 4 or 2 samples wide, a row at a time in 16-bit lanes (a weighted sum is
+    /// at most 64 · 255 + 32), read through refs with the block's bounds checked once; false where it does not apply.
+    /// </summary>
+    private static bool ChromaFast(byte[] src, int at, int s, byte[] dst, int dstAt, int dstStride, int w, int h, int wa, int wb, int wc, int wd)
+    {
+        // Rows of w + 1 samples are read, eight bytes at a time for w of 8 (four for 4 and 2), and the row below each.
+        int read = w == 8 ? 16 : 8;
+        if (!Sse2.IsSupported || w is not (8 or 4 or 2) || at < 0 || dstAt < 0 || h <= 0
+            || at + (h * s) + read > src.Length || dstAt + ((h - 1) * dstStride) + w > dst.Length)
+        {
+            return false;
+        }
+
+        ref byte r = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at);
+        ref byte d = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(dst), dstAt);
+        Vector128<short> va = Vector128.Create((short)wa), vb = Vector128.Create((short)wb), vc = Vector128.Create((short)wc), vd = Vector128.Create((short)wd);
+        Vector128<short> round = Vector128.Create((short)32);
+        nint ss = s, ds = dstStride;
+        Vector128<short> top = Load(ref r, w), topRight = Load(ref Unsafe.Add(ref r, 1), w);
+        for (nint j = 0; j < h; j++)
+        {
+            ref byte below = ref Unsafe.Add(ref r, (j + 1) * ss);
+            Vector128<short> bottom = Load(ref below, w), bottomRight = Load(ref Unsafe.Add(ref below, 1), w);
+            Vector128<short> sum = Vector128.ShiftRightArithmetic((va * top) + (vb * topRight) + (vc * bottom) + (vd * bottomRight) + round, 6);
+            Vector128<byte> bytes = Sse2.PackUnsignedSaturate(sum, sum);
+            ref byte to = ref Unsafe.Add(ref d, j * ds);
+            switch (w)
+            {
+                case 8:
+                    Unsafe.WriteUnaligned(ref to, bytes.AsUInt64().ToScalar());
+                    break;
+                case 4:
+                    Unsafe.WriteUnaligned(ref to, bytes.AsUInt32().ToScalar());
+                    break;
+                default:
+                    Unsafe.WriteUnaligned(ref to, bytes.AsUInt16().ToScalar());
+                    break;
+            }
+
+            (top, topRight) = (bottom, bottomRight);
+        }
+
+        return true;
+
+        // Eight samples (four for narrower blocks) widened to 16 bits.
+        static Vector128<short> Load(ref byte p, int w) => Sse2.UnpackLow(
+            w == 8 ? Vector128.CreateScalar(Unsafe.ReadUnaligned<ulong>(ref p)).AsByte() : Vector128.CreateScalar(Unsafe.ReadUnaligned<uint>(ref p)).AsByte(),
+            Vector128<byte>.Zero).AsInt16();
     }
 
     /// <summary>Explicit weighted prediction of one list (8-270).</summary>

@@ -44,32 +44,20 @@ internal sealed class CabacEncoder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal void Encode(ref byte state, int bin)
     {
+        // Speed round 6: without a branch on the bin, which is hard to predict. The mask is all ones for the LPS: the low end
+        // then moves up past the MPS's part, the range becomes the LPS's, and the state takes its LPS successor; the
+        // renormalisation is the shift that brings the range back to 9 bits (0 for an MPS whose range stays at least 256).
         int s = state;
         uint lps = CabacEngine.RangeLps[((s >> 1) << 2) + (int)((_range >> 6) & 3)];
         uint range = _range - lps;
-        if (bin == (s & 1))
-        {
-            state = CabacCost.NextMps[s];
-            if (range >= 256)
-            {
-                _range = range;
-                return;
-            }
-
-            _low <<= 1;
-            _range = range << 1;
-            if (++_pending >= 8)
-            {
-                PutByte();
-            }
-
-            return;
-        }
-
-        state = CabacCost.NextLps[s];
-        int shift = System.Numerics.BitOperations.LeadingZeroCount(lps) - 23;
-        _low = (_low + range) << shift;
-        _range = lps << shift;
+        uint mask = (uint)-(bin ^ (s & 1));
+        uint low = _low + (range & mask);
+        range ^= (range ^ lps) & mask;
+        int mps = CabacCost.NextMps[s];
+        state = (byte)(mps ^ ((mps ^ CabacCost.NextLps[s]) & (int)mask));
+        int shift = System.Numerics.BitOperations.LeadingZeroCount(range) - 23;
+        _low = low << shift;
+        _range = range << shift;
         _pending += shift;
         if (_pending >= 8)
         {

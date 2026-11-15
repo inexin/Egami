@@ -950,13 +950,6 @@ internal sealed partial class H264MbEncoder
         return n;
     }
 
-    // The 4x4 zigzag scan as lane permutations of the two halves of a raster block: the lanes of each half of the scan, and
-    // which of them come from the second half of the block.
-    private static readonly Vector256<int> ScanLow = Vector256.Create(0, 1, 4, 0, 5, 2, 3, 6);
-    private static readonly Vector256<int> ScanLowHigh = Vector256.Create(0, 0, 0, -1, 0, 0, 0, 0);
-    private static readonly Vector256<int> ScanHigh = Vector256.Create(1, 4, 5, 2, 7, 3, 6, 7);
-    private static readonly Vector256<int> ScanHighHigh = Vector256.Create(-1, -1, -1, -1, 0, -1, -1, -1);
-
     // The 8x8 zigzag scan's raster positions.
     private static readonly int[] Scan8x8 = Array.ConvertAll(H264ScalingLists.Zigzag8x8, p => (int)p);
 
@@ -966,9 +959,14 @@ internal sealed partial class H264MbEncoder
     /// </summary>
     private static ulong Scan4(int[] q, int first, Span<int> dst)
     {
+        // The 4x4 zigzag scan as lane permutations of the two halves of a raster block: the lanes of each half of the scan, and
+        // which of them come from the second half of the block (constants made here: speed round 6, as static readonly
+        // fields their loads kept the method from being inlined).
+        Vector256<int> scanLow = Vector256.Create(0, 1, 4, 0, 5, 2, 3, 6), scanLowHigh = Vector256.Create(0, 0, 0, -1, 0, 0, 0, 0);
+        Vector256<int> scanHigh = Vector256.Create(1, 4, 5, 2, 7, 3, 6, 7), scanHighHigh = Vector256.Create(-1, -1, -1, -1, 0, -1, -1, -1);
         Vector256<int> low = Vector256.Create(q, 0), high = Vector256.Create(q, 8);
-        Vector256<int> a = Vector256.ConditionalSelect(ScanLowHigh, Avx2.PermuteVar8x32(high, ScanLow), Avx2.PermuteVar8x32(low, ScanLow));
-        Vector256<int> b = Vector256.ConditionalSelect(ScanHighHigh, Avx2.PermuteVar8x32(high, ScanHigh), Avx2.PermuteVar8x32(low, ScanHigh));
+        Vector256<int> a = Vector256.ConditionalSelect(scanLowHigh, Avx2.PermuteVar8x32(high, scanLow), Avx2.PermuteVar8x32(low, scanLow));
+        Vector256<int> b = Vector256.ConditionalSelect(scanHighHigh, Avx2.PermuteVar8x32(high, scanHigh), Avx2.PermuteVar8x32(low, scanHigh));
         uint mask = ~(Vector256.Equals(a, Vector256<int>.Zero).ExtractMostSignificantBits() | (Vector256.Equals(b, Vector256<int>.Zero).ExtractMostSignificantBits() << 8)) & 0xFFFF;
         if (first == 0)
         {
@@ -1062,26 +1060,34 @@ internal sealed partial class H264MbEncoder
             rate = pricer.Begin(_syntax.Contexts, cat, max, levels, at, rows, count);
             H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts);
             ref int levelAt = ref levels[at];
+            ref int rowAt = ref MemoryMarshal.GetArrayDataReference(rows);
+            ref double gainAt = ref MemoryMarshal.GetArrayDataReference(gains);
+            // Speed round 6: the levels taken as a mask, their distortion summed after the loop in the same order, so that
+            // only λ, the rate and the gain live across the pricer's calls (a block has at most 64 levels).
+            ulong takenMask = 0;
             for (int row = count - 1; row >= 0; row--)
             {
                 // The choice taken without a branch, as whether RDOQ lowers a level is hard to predict.
-                int k = rows[row];
+                int k = Unsafe.Add(ref rowAt, row);
                 ref int slot = ref Unsafe.Add(ref levelAt, k);
                 int level = slot;
                 int lower = level - ((level >> 31) | 1);
                 int n2 = lower == 0 ? n - 1 : n;
-                double dd = gains[row];
                 slot = lower;
                 long rate2 = n2 == 0 ? 0 : pricer.Price(k, level);
                 H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts, n2 == 0 ? 0 : 1);
-                bool take = dd + (lambda * (rate2 - rate)) < 0;
-                int taken = take ? 1 : 0;
-                distortion += dd * taken;
+                bool take = Unsafe.Add(ref gainAt, row) + (lambda * (rate2 - rate)) < 0;
+                takenMask |= (ulong)(take ? 1 : 0) << row;
                 rate = take ? rate2 : rate;
                 n = take ? n2 : n;
                 slot = take ? lower : level;
                 pricer.Accept(take);
                 pricer.Advance(k);
+            }
+
+            for (int row = count - 1; row >= 0; row--)
+            {
+                distortion += Unsafe.Add(ref gainAt, row) * (int)((takenMask >> row) & 1);
             }
         }
 
@@ -1173,22 +1179,35 @@ internal sealed partial class H264MbEncoder
         int shift = qp / 6;
         int fraction = eight ? 6 : 4;
         ReadOnlySpan<int> scale = eight ? _scale8.AsSpan((qp % 6) * 64, 64) : _scale4.AsSpan((qp % 6) * 16, 16);
+
+        // Speed round 6: read and written through refs, checked once here: the scan's positions are within the block, which
+        // scale and d hold whole.
+        if (d.Length < scale.Length)
+        {
+            throw new ArgumentException("The coefficients hold a whole block.", nameof(d));
+        }
+
+        ref byte scanAt = ref MemoryMarshal.GetReference(scan);
+        ref int levelAt = ref MemoryMarshal.GetReference(levelsAt);
+        ref int scaleAt = ref MemoryMarshal.GetReference(scale);
+        ref int dAt = ref MemoryMarshal.GetReference(d);
+        int n = levelsAt.Length;
         if (shift >= fraction)
         {
             int up = shift - fraction;
-            for (int k = 0; k < levelsAt.Length; k++)
+            for (nint k = 0; k < n; k++)
             {
-                int pos = scan[k];
-                d[pos] = (levelsAt[k] * scale[pos]) << up;
+                nint pos = Unsafe.Add(ref scanAt, k);
+                Unsafe.Add(ref dAt, pos) = (Unsafe.Add(ref levelAt, k) * Unsafe.Add(ref scaleAt, pos)) << up;
             }
         }
         else
         {
             int down = fraction - shift, half = 1 << (down - 1);
-            for (int k = 0; k < levelsAt.Length; k++)
+            for (nint k = 0; k < n; k++)
             {
-                int pos = scan[k];
-                d[pos] = ((levelsAt[k] * scale[pos]) + half) >> down;
+                nint pos = Unsafe.Add(ref scanAt, k);
+                Unsafe.Add(ref dAt, pos) = ((Unsafe.Add(ref levelAt, k) * Unsafe.Add(ref scaleAt, pos)) + half) >> down;
             }
         }
     }
