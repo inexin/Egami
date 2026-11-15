@@ -155,22 +155,16 @@ int tablePoints = loaded.GetPoints(&quot;table&quot;, points);       // 1: offse
 <p><code>ParagraphStyle.Hyphens</code> is CSS's <code>hyphens</code>: <code>Manual</code> (the default) breaks words only at soft hyphens (U+00AD), <code>None</code> not
 even there, and <code>Auto</code> also where a dictionary allows. <code>ParagraphStyle.Hyphenation</code> gives <code>Auto</code> its <code>HyphenationDictionaries</code>
 (hyphenators by BCP 47 tag, falling back a subtag at a time) and limits; each run's <code>TextStyle.Language</code> picks the dictionary,
-and text in a language without one is not hyphenated, as CSS requires.</p>
-<pre><code class="lang-csharp">// One hyphenator per language; &quot;en&quot; also serves en-US and en-GB.
-HyphenationDictionaries dictionaries = new();
-using (FileStream patterns = File.OpenRead(System.IO.Path.Combine(folder, &quot;hyphenation&quot;, &quot;hyph-en-us.tex&quot;)))
-{
-    dictionaries.Add(&quot;en&quot;, Hyphenator.Load(patterns));
-}
-
-ParagraphStyle style = new()
+and text in a language without one is not hyphenated, as CSS requires. <code>HyphenationDictionaries.BuiltIn</code> holds the 35
+languages Egami.Fonts ships (see <a href="#hyphenation-languages">Hyphenation languages</a>).</p>
+<pre><code class="lang-csharp">ParagraphStyle style = new()
 {
     DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 16, Language = &quot;en-US&quot; },
     Align = TextAlign.Justify,
     Hyphens = Hyphens.Auto,                    // CSS hyphens: auto
     Hyphenation = new HyphenationOptions
     {
-        Dictionaries = dictionaries,
+        Dictionaries = HyphenationDictionaries.BuiltIn,  // 35 languages, each loaded on first use
         MinWordLength = 6,                     // shorter words stay whole
         MaxConsecutiveLines = 2,               // Word's consecutiveHyphenLimit
         Zone = 18,                             // Word's hyphenationZone: 0.25 inch in points
@@ -194,7 +188,236 @@ justified lines too, and so does Egami. A word that does not fit on a line of it
 such as a ligature, shapes both pieces again. The hyphen drawn is <code>ParagraphStyle.Hyphen</code>, and <code>Canvas.DrawTextLayout</code> marks
 it with an empty ActualText, so text copied from a PDF reads the word whole. Optimal filling (below) looks up every word once
 and weighs each point against the others; balanced filling breaks only where the text allows.</p>
-<h2 id="rich-text-and-paragraphs">Rich text and paragraphs</h2>
+<h3 id="hyphenation-languages">Hyphenation languages</h3>
+<p><code>HyphenationDictionaries.BuiltIn</code> is compiled from the hyph-utf8 package's patterns: the languages whose pattern files grant a
+permissive licence, under MIT where a file offers several (THIRD-PARTY-NOTICES.md lists each notice). Each loads the first time
+a lookup needs it, in well under a millisecond, and the 35 add 1.3 MB to Egami.Fonts. Besides the subtag fallback (<code>nb-NO</code>
+finds <code>nb</code>), <code>en</code> finds en-US, <code>de</code> de-1996, <code>no</code> nb, <code>el</code> el-monoton and <code>mn</code> mn-Cyrl.</p>
+<table>
+<thead>
+<tr>
+<th>Language</th>
+<th>Tags</th>
+<th>Licence taken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>English (US)</td>
+<td>en-US, en</td>
+<td>Permissive notice (Kuiken)</td>
+</tr>
+<tr>
+<td>English (UK)</td>
+<td>en-GB</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>German, reformed spelling</td>
+<td>de-1996, de</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>German, traditional spelling</td>
+<td>de-1901</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Swiss German, traditional spelling</td>
+<td>de-CH-1901</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>French</td>
+<td>fr</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Norwegian Bokmål, Nynorsk</td>
+<td>nb, no; nn</td>
+<td>Permissive notice (Kleveland, Selberg, Hufthammer)</td>
+</tr>
+<tr>
+<td>Danish</td>
+<td>da</td>
+<td>MIT (or LPPL)</td>
+</tr>
+<tr>
+<td>Spanish</td>
+<td>es</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Portuguese</td>
+<td>pt</td>
+<td>BSD 3-clause</td>
+</tr>
+<tr>
+<td>Galician</td>
+<td>gl</td>
+<td>Unlicense</td>
+</tr>
+<tr>
+<td>Italian</td>
+<td>it</td>
+<td>MIT (or LPPL)</td>
+</tr>
+<tr>
+<td>Dutch</td>
+<td>nl</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Basque</td>
+<td>eu</td>
+<td>Permissive notice</td>
+</tr>
+<tr>
+<td>Latin</td>
+<td>la</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Irish</td>
+<td>ga</td>
+<td>MIT (or GPL)</td>
+</tr>
+<tr>
+<td>Welsh</td>
+<td>cy</td>
+<td>MIT (or LPPL)</td>
+</tr>
+<tr>
+<td>Polish</td>
+<td>pl</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Slovak</td>
+<td>sk</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Slovenian</td>
+<td>sl</td>
+<td>MIT (or LPPL)</td>
+</tr>
+<tr>
+<td>Croatian</td>
+<td>hr</td>
+<td>Permissive notice (or LPPL)</td>
+</tr>
+<tr>
+<td>Bulgarian</td>
+<td>bg</td>
+<td>Permissive notice</td>
+</tr>
+<tr>
+<td>Ukrainian</td>
+<td>uk</td>
+<td>MIT (or LPPL)</td>
+</tr>
+<tr>
+<td>Belarusian</td>
+<td>be</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Estonian</td>
+<td>et</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Lithuanian</td>
+<td>lt</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Albanian</td>
+<td>sq</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Greek, monotonic</td>
+<td>el-monoton, el</td>
+<td>MIT (or LPPL)</td>
+</tr>
+<tr>
+<td>Afrikaans</td>
+<td>af</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Georgian</td>
+<td>ka</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Hindi</td>
+<td>hi</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Bengali</td>
+<td>bn</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Tamil</td>
+<td>ta</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td>Mongolian, Cyrillic</td>
+<td>mn-Cyrl, mn</td>
+<td>MIT (or LPPL)</td>
+</tr>
+</tbody>
+</table>
+<p>Other hyph-utf8 languages are not built in because their licences don't allow it in an MIT package. Load them from your
+own copy of the pattern file, as the sample below does:</p>
+<table>
+<thead>
+<tr>
+<th>Languages</th>
+<th>Tags</th>
+<th>Licence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Swedish, Russian, Catalan, Icelandic, Turkish, Thai, Serbo-Croatian (Latin and Cyrillic)</td>
+<td>sv, ru, ca, is, tr, th, sh-Latn, sh-Cyrl</td>
+<td>LPPL only</td>
+</tr>
+<tr>
+<td>Hungarian, Latvian, Czech, Serbian (Cyrillic), Armenian</td>
+<td>hu, lv, cs, sr-Cyrl, hy</td>
+<td>Copyleft (GPL, LGPL or MPL)</td>
+</tr>
+<tr>
+<td>Finnish, Romanian</td>
+<td>fi, ro</td>
+<td>Notices of their own, not cleared for shipping</td>
+</tr>
+</tbody>
+</table>
+<p><code>BuiltIn</code> is shared and read-only; <code>new HyphenationDictionaries(HyphenationDictionaries.BuiltIn)</code> copies it, sharing its
+hyphenators, so you can add to it or replace a language with your own patterns. <code>Hyphenator.Load</code> reads hyph-utf8 <code>.tex</code>
+files, LibreOffice <code>hyph_xx_YY.dic</code> files and compiled <code>.ehyp</code> files; compile a large <code>.tex</code> file once with <code>Save</code> to load it
+faster.</p>
+<pre><code class="lang-csharp">// BuiltIn is shared and read-only: copy it to add languages Egami does not ship, such as Swedish, whose hyph-sv.tex
+// is LPPL. Load hyph-utf8 .tex files, LibreOffice hyph_xx_YY.dic files or compiled .ehyp files the same way.
+HyphenationDictionaries dictionaries = new(HyphenationDictionaries.BuiltIn);
+using (FileStream patterns = File.OpenRead(System.IO.Path.Combine(folder, &quot;hyphenation&quot;, &quot;hyph-en-us.tex&quot;)))
+{
+    dictionaries.Add(&quot;en-x-mine&quot;, Hyphenator.Load(patterns));   // your own copy; a tag of its own, or one to replace
+}
+
+dictionaries.TryGet(&quot;nb-NO&quot;, out Hyphenator? norwegian);       // built-in nb, loaded now
+dictionaries.TryGet(&quot;de-AT&quot;, out Hyphenator? german);          // &quot;de&quot; finds de-1996
+bool swedish = dictionaries.TryGet(&quot;sv&quot;, out _);               // false: not built in, not added
+</code></pre><h2 id="rich-text-and-paragraphs">Rich text and paragraphs</h2>
 <p>A <code>RichText</code> is a string with <code>StyleSpan</code>s over it (start and length in UTF-16 units, never overlapping) and a <code>Placeholder</code>
 for each object replacement character (U+FFFC). <code>RichTextBuilder</code> builds one: <code>Push</code> a <code>TextStyle</code>, <code>Append</code> text,
 <code>AddPlaceholder</code> for an inline box, <code>Pop</code> back. Pushed styles nest, and the result has one flat span per stretch of equal style.</p>

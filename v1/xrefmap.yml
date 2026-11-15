@@ -27862,6 +27862,34 @@ references:
   commentId: T:Egami.Fonts.Layout.HyphenationDictionaries
   fullName: Egami.Fonts.Layout.HyphenationDictionaries
   nameWithType: HyphenationDictionaries
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.#ctor
+  name: HyphenationDictionaries()
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries__ctor
+  commentId: M:Egami.Fonts.Layout.HyphenationDictionaries.#ctor
+  name.vb: New()
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.HyphenationDictionaries()
+  fullName.vb: Egami.Fonts.Layout.HyphenationDictionaries.New()
+  nameWithType: HyphenationDictionaries.HyphenationDictionaries()
+  nameWithType.vb: HyphenationDictionaries.New()
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.#ctor(Egami.Fonts.Layout.HyphenationDictionaries)
+  name: HyphenationDictionaries(HyphenationDictionaries)
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries__ctor_Egami_Fonts_Layout_HyphenationDictionaries_
+  commentId: M:Egami.Fonts.Layout.HyphenationDictionaries.#ctor(Egami.Fonts.Layout.HyphenationDictionaries)
+  name.vb: New(HyphenationDictionaries)
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.HyphenationDictionaries(Egami.Fonts.Layout.HyphenationDictionaries)
+  fullName.vb: Egami.Fonts.Layout.HyphenationDictionaries.New(Egami.Fonts.Layout.HyphenationDictionaries)
+  nameWithType: HyphenationDictionaries.HyphenationDictionaries(HyphenationDictionaries)
+  nameWithType.vb: HyphenationDictionaries.New(HyphenationDictionaries)
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.#ctor*
+  name: HyphenationDictionaries
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries__ctor_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationDictionaries.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.HyphenationDictionaries
+  fullName.vb: Egami.Fonts.Layout.HyphenationDictionaries.New
+  nameWithType: HyphenationDictionaries.HyphenationDictionaries
+  nameWithType.vb: HyphenationDictionaries.New
 - uid: Egami.Fonts.Layout.HyphenationDictionaries.Add(System.String,Egami.Fonts.Layout.Hyphenator)
   name: Add(string, Hyphenator)
   href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_Add_System_String_Egami_Fonts_Layout_Hyphenator_
@@ -27878,6 +27906,45 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.HyphenationDictionaries.Add
   nameWithType: HyphenationDictionaries.Add
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.BuiltIn
+  name: BuiltIn
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_BuiltIn
+  commentId: P:Egami.Fonts.Layout.HyphenationDictionaries.BuiltIn
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.BuiltIn
+  nameWithType: HyphenationDictionaries.BuiltIn
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.BuiltIn*
+  name: BuiltIn
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_BuiltIn_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationDictionaries.BuiltIn
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.BuiltIn
+  nameWithType: HyphenationDictionaries.BuiltIn
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.IsReadOnly
+  name: IsReadOnly
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_IsReadOnly
+  commentId: P:Egami.Fonts.Layout.HyphenationDictionaries.IsReadOnly
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.IsReadOnly
+  nameWithType: HyphenationDictionaries.IsReadOnly
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.IsReadOnly*
+  name: IsReadOnly
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_IsReadOnly_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationDictionaries.IsReadOnly
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.IsReadOnly
+  nameWithType: HyphenationDictionaries.IsReadOnly
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.Languages
+  name: Languages
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_Languages
+  commentId: P:Egami.Fonts.Layout.HyphenationDictionaries.Languages
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.Languages
+  nameWithType: HyphenationDictionaries.Languages
+- uid: Egami.Fonts.Layout.HyphenationDictionaries.Languages*
+  name: Languages
+  href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_Languages_
+  commentId: Overload:Egami.Fonts.Layout.HyphenationDictionaries.Languages
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.HyphenationDictionaries.Languages
+  nameWithType: HyphenationDictionaries.Languages
 - uid: Egami.Fonts.Layout.HyphenationDictionaries.TryGet(System.String,Egami.Fonts.Layout.Hyphenator@)
   name: TryGet(string?, out Hyphenator?)
   href: api/Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_TryGet_System_String_Egami_Fonts_Layout_Hyphenator__

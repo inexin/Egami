@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Fonts_Layout_HyphenationDictionaries" data-uid="Egami.Fonts.Layout.HyphenationDictionaries" class="text-break">
-Class HyphenationDictionaries  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L101"><i class="bi bi-code-slash"></i></a>
+Class HyphenationDictionaries  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L105"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -146,30 +146,190 @@ before laying text out; reading from several threads is safe while nothing is ad
 
 
   <h2 id="Egami_Fonts_Layout_HyphenationDictionaries_examples">Examples</h2>
-  <pre><code class="lang-csharp">// One hyphenator per language; "en" also serves en-US and en-GB.
-HyphenationDictionaries dictionaries = new();
+  <pre><code class="lang-csharp">// BuiltIn is shared and read-only: copy it to add languages Egami does not ship, such as Swedish, whose hyph-sv.tex
+// is LPPL. Load hyph-utf8 .tex files, LibreOffice hyph_xx_YY.dic files or compiled .ehyp files the same way.
+HyphenationDictionaries dictionaries = new(HyphenationDictionaries.BuiltIn);
 using (FileStream patterns = File.OpenRead(System.IO.Path.Combine(folder, "hyphenation", "hyph-en-us.tex")))
 {
-    dictionaries.Add("en", Hyphenator.Load(patterns));
+    dictionaries.Add("en-x-mine", Hyphenator.Load(patterns));   // your own copy; a tag of its own, or one to replace
 }
 
-ParagraphStyle style = new()
-{
-    DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 16, Language = "en-US" },
-    Align = TextAlign.Justify,
-    Hyphens = Hyphens.Auto,                    // CSS hyphens: auto
-    Hyphenation = new HyphenationOptions
-    {
-        Dictionaries = dictionaries,
-        MinWordLength = 6,                     // shorter words stay whole
-        MaxConsecutiveLines = 2,               // Word's consecutiveHyphenLimit
-        Zone = 18,                             // Word's hyphenationZone: 0.25 inch in points
-    },
-};
+dictionaries.TryGet("nb-NO", out Hyphenator? norwegian);       // built-in nb, loaded now
+dictionaries.TryGet("de-AT", out Hyphenator? german);          // "de" finds de-1996
+bool swedish = dictionaries.TryGet("sv", out _);               // false: not built in, not added</code></pre>
 
-TextLayout layout = Paragraph.Create(
-    "Typographers traditionally hyphenate justified paragraphs, because otherwise extraordinarily long words "
-    + "leave conspicuous rivers of whitespace.", style).Layout(150);</code></pre>
+
+  <h2 id="Egami_Fonts_Layout_HyphenationDictionaries_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p><a class="xref" href="Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_BuiltIn">BuiltIn</a> holds the hyph-utf8 patterns Egami.Fonts ships, each loaded the first time a lookup finds it. To add
+languages to them, copy them with <a class="xref" href="Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries__ctor_Egami_Fonts_Layout_HyphenationDictionaries_">HyphenationDictionaries(HyphenationDictionaries)</a>.</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Fonts_Layout_HyphenationDictionaries__ctor_" data-uid="Egami.Fonts.Layout.HyphenationDictionaries.#ctor*"></a>
+
+  <h3 id="Egami_Fonts_Layout_HyphenationDictionaries__ctor" data-uid="Egami.Fonts.Layout.HyphenationDictionaries.#ctor">
+  HyphenationDictionaries()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes an empty set of hyphenators.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public HyphenationDictionaries()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_HyphenationDictionaries__ctor_" data-uid="Egami.Fonts.Layout.HyphenationDictionaries.#ctor*"></a>
+
+  <h3 id="Egami_Fonts_Layout_HyphenationDictionaries__ctor_Egami_Fonts_Layout_HyphenationDictionaries_" data-uid="Egami.Fonts.Layout.HyphenationDictionaries.#ctor(Egami.Fonts.Layout.HyphenationDictionaries)">
+  HyphenationDictionaries(HyphenationDictionaries)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L125"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a set that starts with <code class="paramref">source</code>'s hyphenators (sharing them, loaded or not) and
+fallbacks, to add to.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public HyphenationDictionaries(HyphenationDictionaries source)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>source</code> <a class="xref" href="Egami.Fonts.Layout.HyphenationDictionaries.html">HyphenationDictionaries</a></dt>
+    <dd><p>The hyphenators to start with, such as <a class="xref" href="Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_BuiltIn">BuiltIn</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Fonts_Layout_HyphenationDictionaries_BuiltIn_" data-uid="Egami.Fonts.Layout.HyphenationDictionaries.BuiltIn*"></a>
+
+  <h3 id="Egami_Fonts_Layout_HyphenationDictionaries_BuiltIn" data-uid="Egami.Fonts.Layout.HyphenationDictionaries.BuiltIn">
+  BuiltIn
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L146"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the hyphenators Egami.Fonts ships, compiled from hyph-utf8's patterns under their permissive licences (listed in
+THIRD-PARTY-NOTICES.md): en-US, en-GB, de-1996, de-1901, de-CH-1901, fr, nb, nn, da, es, pt, gl, it, nl, eu, la, ga,
+cy, pl, sk, sl, hr, bg, uk, be, et, lt, sq, el-monoton, af, ka, hi, bn, ta and mn-Cyrl. Each loads the first time a
+lookup needs it. Besides the subtag fallback, <code>en</code> finds en-US, <code>de</code> de-1996, <code>no</code> nb, <code>el</code>
+el-monoton and <code>mn</code> mn-Cyrl. The set is shared and read-only.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static HyphenationDictionaries BuiltIn { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.HyphenationDictionaries.html">HyphenationDictionaries</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_HyphenationDictionaries_IsReadOnly_" data-uid="Egami.Fonts.Layout.HyphenationDictionaries.IsReadOnly*"></a>
+
+  <h3 id="Egami_Fonts_Layout_HyphenationDictionaries_IsReadOnly" data-uid="Egami.Fonts.Layout.HyphenationDictionaries.IsReadOnly">
+  IsReadOnly
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L152"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_Add_System_String_Egami_Fonts_Layout_Hyphenator_">Add(string, Hyphenator)</a> throws: true for <a class="xref" href="Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_BuiltIn">BuiltIn</a>, which is shared.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsReadOnly { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_HyphenationDictionaries_Languages_" data-uid="Egami.Fonts.Layout.HyphenationDictionaries.Languages*"></a>
+
+  <h3 id="Egami_Fonts_Layout_HyphenationDictionaries_Languages" data-uid="Egami.Fonts.Layout.HyphenationDictionaries.Languages">
+  Languages
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L149"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the language tags hyphenators were added for.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyCollection&lt;string&gt; Languages { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1">IReadOnlyCollection</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
 
 
 
@@ -182,7 +342,7 @@ TextLayout layout = Paragraph.Create(
 
   <h3 id="Egami_Fonts_Layout_HyphenationDictionaries_Add_System_String_Egami_Fonts_Layout_Hyphenator_" data-uid="Egami.Fonts.Layout.HyphenationDictionaries.Add(System.String,Egami.Fonts.Layout.Hyphenator)">
   Add(string, Hyphenator)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L158"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Adds or replaces the hyphenator for a language.</p>
@@ -211,6 +371,12 @@ TextLayout layout = Paragraph.Create(
 
 
 
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>The set is <a class="xref" href="Egami.Fonts.Layout.HyphenationDictionaries.html#Egami_Fonts_Layout_HyphenationDictionaries_IsReadOnly">read-only</a>.</p>
+</dd>
+  </dl>
 
 
 
@@ -218,7 +384,7 @@ TextLayout layout = Paragraph.Create(
 
   <h3 id="Egami_Fonts_Layout_HyphenationDictionaries_TryGet_System_String_Egami_Fonts_Layout_Hyphenator__" data-uid="Egami.Fonts.Layout.HyphenationDictionaries.TryGet(System.String,Egami.Fonts.Layout.Hyphenator@)">
   TryGet(string?, out Hyphenator?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L119"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L175"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Finds the hyphenator for a language, or for the nearest language it falls back to.</p>
@@ -260,7 +426,7 @@ TextLayout layout = Paragraph.Create(
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L101" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/HyphenationOptions.cs/#L105" class="edit-link">Edit this page</a>
         </div>
 
 

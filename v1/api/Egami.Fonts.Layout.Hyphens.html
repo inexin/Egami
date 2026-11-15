@@ -133,21 +133,14 @@ as <a class="xref" href="Egami.Fonts.Layout.Hyphens.html#Egami_Fonts_Layout_Hyph
   </dl>
 
   <h2 id="Egami_Fonts_Layout_Hyphens_examples">Examples</h2>
-  <pre><code class="lang-csharp">// One hyphenator per language; "en" also serves en-US and en-GB.
-HyphenationDictionaries dictionaries = new();
-using (FileStream patterns = File.OpenRead(System.IO.Path.Combine(folder, "hyphenation", "hyph-en-us.tex")))
-{
-    dictionaries.Add("en", Hyphenator.Load(patterns));
-}
-
-ParagraphStyle style = new()
+  <pre><code class="lang-csharp">ParagraphStyle style = new()
 {
     DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 16, Language = "en-US" },
     Align = TextAlign.Justify,
     Hyphens = Hyphens.Auto,                    // CSS hyphens: auto
     Hyphenation = new HyphenationOptions
     {
-        Dictionaries = dictionaries,
+        Dictionaries = HyphenationDictionaries.BuiltIn,  // 35 languages, each loaded on first use
         MinWordLength = 6,                     // shorter words stay whole
         MaxConsecutiveLines = 2,               // Word's consecutiveHyphenLimit
         Zone = 18,                             // Word's hyphenationZone: 0.25 inch in points
