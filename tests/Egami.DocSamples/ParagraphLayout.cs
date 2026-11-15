@@ -450,13 +450,6 @@ public class ParagraphLayout
         FontCollection fonts = new();
         fonts.Add(Typeface.FromFile(System.IO.Path.Combine(folder, "fonts", "NotoSans-Regular.ttf")));
         #region auto-hyphens
-        // One hyphenator per language; "en" also serves en-US and en-GB.
-        HyphenationDictionaries dictionaries = new();
-        using (FileStream patterns = File.OpenRead(System.IO.Path.Combine(folder, "hyphenation", "hyph-en-us.tex")))
-        {
-            dictionaries.Add("en", Hyphenator.Load(patterns));
-        }
-
         ParagraphStyle style = new()
         {
             DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 16, Language = "en-US" },
@@ -464,7 +457,7 @@ public class ParagraphLayout
             Hyphens = Hyphens.Auto,                    // CSS hyphens: auto
             Hyphenation = new HyphenationOptions
             {
-                Dictionaries = dictionaries,
+                Dictionaries = HyphenationDictionaries.BuiltIn,  // 35 languages, each loaded on first use
                 MinWordLength = 6,                     // shorter words stay whole
                 MaxConsecutiveLines = 2,               // Word's consecutiveHyphenLimit
                 Zone = 18,                             // Word's hyphenationZone: 0.25 inch in points
@@ -478,6 +471,30 @@ public class ParagraphLayout
 
         Assert.Contains(layout.Lines, l => char.IsLetter(layout.Paragraph.Text[l.Start + l.Length - 1])
             && l.Start + l.Length < layout.Paragraph.Text.Length && char.IsLetter(layout.Paragraph.Text[l.Start + l.Length]));
+    }
+
+    [Fact]
+    public void BuiltInAndOwnHyphenation()
+    {
+        string folder = AppContext.BaseDirectory;
+        #region built-in-hyphenation
+        // BuiltIn is shared and read-only: copy it to add languages Egami does not ship, such as Swedish, whose hyph-sv.tex
+        // is LPPL. Load hyph-utf8 .tex files, LibreOffice hyph_xx_YY.dic files or compiled .ehyp files the same way.
+        HyphenationDictionaries dictionaries = new(HyphenationDictionaries.BuiltIn);
+        using (FileStream patterns = File.OpenRead(System.IO.Path.Combine(folder, "hyphenation", "hyph-en-us.tex")))
+        {
+            dictionaries.Add("en-x-mine", Hyphenator.Load(patterns));   // your own copy; a tag of its own, or one to replace
+        }
+
+        dictionaries.TryGet("nb-NO", out Hyphenator? norwegian);       // built-in nb, loaded now
+        dictionaries.TryGet("de-AT", out Hyphenator? german);          // "de" finds de-1996
+        bool swedish = dictionaries.TryGet("sv", out _);               // false: not built in, not added
+        #endregion
+
+        Assert.NotNull(norwegian);
+        Assert.NotNull(german);
+        Assert.False(swedish);
+        Assert.True(dictionaries.TryGet("en-x-mine", out _));
     }
 
     [Fact]

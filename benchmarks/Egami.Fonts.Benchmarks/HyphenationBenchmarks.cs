@@ -79,3 +79,18 @@ public class HyphenationBenchmarks
         return dir?.FullName ?? throw new InvalidOperationException("The repository root was not found.");
     }
 }
+
+/// <summary>The first use of a built-in hyphenation language: its resource read and its compiled form loaded (Hyphenation Build
+/// Plan task 7, under 1 ms), for every built-in language. The German ones are the largest.</summary>
+[MemoryDiagnoser]
+public class BuiltInHyphenationBenchmarks
+{
+    [ParamsSource(nameof(Tags))]
+    public string Tag { get; set; } = "";
+
+    public static IEnumerable<string> Tags => HyphenationDictionaries.BuiltIn.Languages.Order(StringComparer.Ordinal);
+
+    [Benchmark]
+    public int LoadBuiltIn() => HyphenationDictionaries.LoadBuiltIn(Tag).MinBefore;
+}
+
