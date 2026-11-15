@@ -691,6 +691,13 @@ internal sealed partial class H264MbSyntax
     /// Encoder Speed Build Plan, task 19): the coded_block_flag conditions from masks of the coded blocks and their neighbours,
     /// each flag one table step, and each coded block from <see cref="CountLevels"/>.
     /// </summary>
+    /// <summary>
+    /// Speed round 5, PR C: when set, the price of each luma block's levels by block (with one bit for its coded_block_flag),
+    /// which the count takes instead of counting the levels; a price of -1 is counted. The levels' contexts then do not adapt
+    /// within the macroblock as they do in the exact count.
+    /// </summary>
+    public long[]? LumaPrices { get; set; }
+
     private void CountResidual(H264MbCode code, ref CabacUndoSink sink, bool luma = true, bool chroma = true)
     {
         byte[] ctx = Contexts;
@@ -702,6 +709,7 @@ internal sealed partial class H264MbSyntax
         long cost = 0;
         int cbp = code.Cbp;
         bool i16 = code.Kind == H264MbKind.I16x16;
+        long[]? prices = i16 ? null : LumaPrices;
         if (!luma)
         {
             cbp &= 0x30;
@@ -726,7 +734,8 @@ internal sealed partial class H264MbSyntax
                 {
                     if ((cbp & (1 << i8)) != 0 && code.Luma8Count[i8] > 0)
                     {
-                        cost += CountLevels(ctx, log, 5, 64, code.Luma8, i8 * 64);
+                        long price = prices is null ? -1 : prices[i8];
+                        cost += price > 0 ? price - CabacCost.Bit : CountLevels(ctx, log, 5, 64, code.Luma8, i8 * 64);
                     }
                 }
             }
@@ -753,7 +762,8 @@ internal sealed partial class H264MbSyntax
                     cost += Bin(ref Unsafe.Add(ref cbf, inc), count > 0 ? 1 : 0, ref costs, ref next);
                     if (count > 0)
                     {
-                        cost += CountLevels(ctx, log, cat, max, code.Luma, blk * 16);
+                        long price = prices is null ? -1 : prices[blk];
+                        cost += price > 0 ? price - CabacCost.Bit : CountLevels(ctx, log, cat, max, code.Luma, blk * 16);
                     }
                 }
             }
