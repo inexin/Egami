@@ -532,11 +532,16 @@ internal sealed partial class H264MbEncoder
 
     /// <summary>
     /// Speed round 6: what a block search keeps from start to end, set once and passed by reference so that the search
-    /// methods take few arguments.
+    /// methods take few arguments, with the buffers its candidates are costed in.
     /// </summary>
-    private struct BlockSearch
+    private ref struct BlockSearch
     {
         public H264RefPlanes Rp;
+
+        /// <summary>The candidates costed together (up to four, or the distinct starts), their hexagon points and costs.</summary>
+        public Span<int> Xs, Ys, Ks, Seen;
+
+        public Span<long> Costs;
 
         /// <summary>The reference's whole-sample plane.</summary>
         public byte[] Plane;
@@ -572,7 +577,13 @@ internal sealed partial class H264MbEncoder
     {
         H264EncodeStats.Add(H264EncodeStat.BlockSearches);
         MvCostTable();
-        BlockSearch s = default;
+        // The buffers made here, where there is no loop: a method with a loop and a stackalloc gets no OSR or PGO.
+        scoped BlockSearch s = default;
+        s.Xs = stackalloc int[16];
+        s.Ys = stackalloc int[16];
+        s.Seen = stackalloc int[16];
+        s.Ks = stackalloc int[4];
+        s.Costs = stackalloc long[4];
         s.Rp = (list == 0 ? _refs : _refs1)[r];
         s.Plane = s.Rp.Picture.Y<byte>();
         s.Single = !(s.Rp.Weighted && _weighted);
@@ -643,13 +654,13 @@ internal sealed partial class H264MbEncoder
     }
 
     /// <summary>
-    /// The costs of up to four whole-sample vectors (_sx and _sy from <paramref name="from"/>) into _sc, as
+    /// The costs of up to four whole-sample vectors (Xs and Ys from <paramref name="from"/>) into Costs, as
     /// <see cref="IntCost"/> gives them; with SAD (task 13), one pass over the source rows for all of them.
     /// </summary>
     private void IntCosts(ref BlockSearch s, int from, int n)
     {
-        int[] xs = _sx, ys = _sy;
-        long[] c = _sc;
+        Span<int> xs = s.Xs, ys = s.Ys;
+        Span<long> c = s.Costs;
         if (!s.Single)
         {
             for (int i = 0; i < n; i++)
@@ -673,11 +684,6 @@ internal sealed partial class H264MbEncoder
         }
     }
 
-    // Speed round 6: the candidates a search costs together and their costs (up to four, or the distinct starts), and the
-    // hexagon point of each, in fields rather than stackalloc so that the search methods get tiered compilation's PGO and OSR.
-    private readonly int[] _sx = new int[16], _sy = new int[16], _seen = new int[16], _sk = new int[4];
-    private readonly long[] _sc = new long[4];
-
     /// <summary>
     /// The whole-sample part of the search: the best start, then a hexagon (or diamond) pattern around it, then the eight
     /// neighbours; returns the vector in quarter samples.
@@ -685,8 +691,8 @@ internal sealed partial class H264MbEncoder
     private int SearchWhole(ref BlockSearch s, ReadOnlySpan<int> starts)
     {
         int minX = s.MinX, maxX = s.MaxX, minY = s.MinY, maxY = s.MaxY;
-        int[] sxs = _sx, sys = _sy, seen = _seen, ks = _sk;
-        long[] c4 = _sc;
+        Span<int> sxs = s.Xs, sys = s.Ys, seen = s.Seen, ks = s.Ks;
+        Span<long> c4 = s.Costs;
 
         // The predicted vector, then each distinct start once (a repeated one costs what it did and cannot win), costed four at
         // a time and weighed in order as one at a time would.
@@ -849,8 +855,8 @@ internal sealed partial class H264MbEncoder
             H264EncodeStats.Add(H264EncodeStat.SubpelCosts);
             long bestSad = SubSad(ref s, bxq, byq) + MvCost(ref s, bxq, byq);
             int came = -1;
-            int[] xs = _sx, ys = _sy, ks = _sk;
-            long[] cs = _sc;
+            Span<int> xs = s.Xs, ys = s.Ys, ks = s.Ks;
+            Span<long> cs = s.Costs;
             for (int it = 0; it < HalfSteps; it++)
             {
                 int cx = bxq, cy = byq, moved = -1, m = 0;
@@ -968,15 +974,15 @@ internal sealed partial class H264MbEncoder
     }
 
     /// <summary>
-    /// The SADs plus vector bits of up to four half- or whole-sample vectors (_sx and _sy, one plane each, no mean) of the
-    /// searched block into _sc, as <see cref="SubSad"/> gives them; without a weight, one pass over the source rows for all of
+    /// The SADs plus vector bits of up to four half- or whole-sample vectors (Xs and Ys, one plane each, no mean) of the
+    /// searched block into Costs, as <see cref="SubSad"/> gives them; without a weight, one pass over the source rows for all of
     /// them.
     /// </summary>
     private void HalfSads(ref BlockSearch s, int n)
     {
         H264EncodeStats.Add(H264EncodeStat.SubpelCosts, n);
-        int[] xs = _sx, ys = _sy;
-        long[] c = _sc;
+        Span<int> xs = s.Xs, ys = s.Ys;
+        Span<long> c = s.Costs;
         if (!s.Single || n < 2)
         {
             for (int i = 0; i < n; i++)
