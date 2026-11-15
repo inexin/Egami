@@ -81,12 +81,14 @@ public class HyphenationBenchmarks
 }
 
 /// <summary>The first use of a built-in hyphenation language: its resource read and its compiled form loaded (Hyphenation Build
-/// Plan task 7, under 1 ms). The German ones are the largest.</summary>
+/// Plan task 7, under 1 ms), for every built-in language. The German ones are the largest.</summary>
 [MemoryDiagnoser]
 public class BuiltInHyphenationBenchmarks
 {
-    [Params("de-1996", "nb", "en-US")]
+    [ParamsSource(nameof(Tags))]
     public string Tag { get; set; } = "";
+
+    public static IEnumerable<string> Tags => HyphenationDictionaries.BuiltIn.Languages.Order(StringComparer.Ordinal);
 
     [Benchmark]
     public int LoadBuiltIn() => HyphenationDictionaries.LoadBuiltIn(Tag).MinBefore;
