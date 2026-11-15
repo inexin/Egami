@@ -202,6 +202,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   points, no clip more than 0.3 worse), for 1.3 % and 1.7 % more instructions.
 - Effort 0 chooses I and P macroblocks at 0.8 times the λ (was 0.6, as above): +68.2 % to +65.3 % on PSNR-Y and +52.0 % to
   +49.2 % on SSIM-Y on the eight clips, every clip better on PSNR-Y, for no more instructions.
+- Effort 0 (speed round 5, PR B) tries intra in P pictures by the intra gate of efforts 1 to 4: only where an Intra16x16
+  prediction comes within 1.5 times the inter search cost by SATD, and coded only when its best estimate comes below that cost
+  (it was tried on almost every macroblock). Egami's own instructions at effort 0 fall 31 % at quality 50 and 35 % at quality
+  34 (cycles 28 % and 34 %) on the four 720p clips, and BD-rate improves by 1.2 % on eight clips (rush_hour 5.1 %, worst
+  ducks_take_off +0.25 %). Effort 0 now takes 0.65 and 0.75 times effort 1's instructions; before it took 0.97 and 1.16.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 

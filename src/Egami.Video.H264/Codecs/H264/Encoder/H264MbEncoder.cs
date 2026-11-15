@@ -198,11 +198,6 @@ internal sealed partial class H264MbEncoder
             return true;
         }
 
-        if (_effort == 0)
-        {
-            return interSatd > 16 * 16 * 4;
-        }
-
         int[] t = _t, l = _l;
         H264IntraPredict.Gather(_y, _lumaAt, _stride, 16, _top, false, _left, _topLeft, t, l);
         _i16Satd.AsSpan().Fill(-1);
@@ -231,7 +226,7 @@ internal sealed partial class H264MbEncoder
     private readonly long[] _i16Satd = [-1, -1, -1, -1];
 
     // Speed round 4, task 4: the inter search cost TryIntra was given, above which Encode's best intra estimate gives up on
-    // intra (effort 1 to 6; long.MaxValue otherwise and in intra pictures). An 0.8 times gate cost 1.5 % on the four clips.
+    // intra (efforts 0 to 6; long.MaxValue otherwise and in intra pictures). An 0.8 times gate cost 1.5 % on the four clips.
     private long _intraGate = long.MaxValue;
     private bool _i16Pending;
     private int _i16Mode;
