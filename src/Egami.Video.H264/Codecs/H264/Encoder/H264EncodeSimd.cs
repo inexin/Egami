@@ -230,21 +230,23 @@ internal static class H264EncodeSimd
             return SatdScalar(src, at, stride, pred, predAt, predStride, width, height);
         }
 
-        ref byte rs = ref MemoryMarshal.GetArrayDataReference(src);
-        ref byte rp = ref MemoryMarshal.GetArrayDataReference(pred);
+        // Speed round 6: the block's offsets folded into the refs once, and the rows stepped in nint offsets, so no
+        // load widens an index.
+        ref byte rs = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at);
+        ref byte rp = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(pred), predAt);
+        nint ss = stride, ps = predStride, so = 0, po = 0;
         if (Avx2.IsSupported && (width & 15) == 0)
         {
             // Four 4x4 blocks side by side: each 128-bit lane holds two, as below.
             Vector256<int> wide = Vector256<int>.Zero;
             for (int by = 0; by < height; by += 4)
             {
-                for (int bx = 0; bx < width; bx += 16)
+                for (nint bx = 0; bx < width; bx += 16)
                 {
-                    int s = at + (by * stride) + bx, p = predAt + (by * predStride) + bx;
-                    Vector256<short> r0 = Diff16(ref rs, s, ref rp, p);
-                    Vector256<short> r1 = Diff16(ref rs, s + stride, ref rp, p + predStride);
-                    Vector256<short> r2 = Diff16(ref rs, s + (2 * stride), ref rp, p + (2 * predStride));
-                    Vector256<short> r3 = Diff16(ref rs, s + (3 * stride), ref rp, p + (3 * predStride));
+                    Vector256<short> r0 = Diff16(ref rs, so + bx, ref rp, po + bx);
+                    Vector256<short> r1 = Diff16(ref rs, so + bx + ss, ref rp, po + bx + ps);
+                    Vector256<short> r2 = Diff16(ref rs, so + bx + (2 * ss), ref rp, po + bx + (2 * ps));
+                    Vector256<short> r3 = Diff16(ref rs, so + bx + (3 * ss), ref rp, po + bx + (3 * ps));
                     wide += Hadamard4(r0, r1, r2, r3);
                 }
 
@@ -252,6 +254,8 @@ internal static class H264EncodeSimd
                 {
                     break;
                 }
+
+                (so, po) = (so + (4 * ss), po + (4 * ps));
             }
 
             return Vector256.Sum(wide);
@@ -261,19 +265,20 @@ internal static class H264EncodeSimd
         {
             // Two 4x4 blocks side by side in each 128-bit lane: rows 0-3 of the 8x8 in the low lane, rows 4-7 in the high one.
             Vector256<int> wide = Vector256<int>.Zero;
-            int s4 = 4 * stride, p4 = 4 * predStride;
+            nint s4 = 4 * ss, p4 = 4 * ps;
             for (int by = 0; by < height; by += 8)
             {
-                int s = at + (by * stride), p = predAt + (by * predStride);
-                Vector256<short> r0 = Diff8x2(ref rs, s, s + s4, ref rp, p, p + p4);
-                Vector256<short> r1 = Diff8x2(ref rs, s + stride, s + stride + s4, ref rp, p + predStride, p + predStride + p4);
-                Vector256<short> r2 = Diff8x2(ref rs, s + (2 * stride), s + (2 * stride) + s4, ref rp, p + (2 * predStride), p + (2 * predStride) + p4);
-                Vector256<short> r3 = Diff8x2(ref rs, s + (3 * stride), s + (3 * stride) + s4, ref rp, p + (3 * predStride), p + (3 * predStride) + p4);
+                Vector256<short> r0 = Diff8x2(ref rs, so, so + s4, ref rp, po, po + p4);
+                Vector256<short> r1 = Diff8x2(ref rs, so + ss, so + ss + s4, ref rp, po + ps, po + ps + p4);
+                Vector256<short> r2 = Diff8x2(ref rs, so + (2 * ss), so + (2 * ss) + s4, ref rp, po + (2 * ps), po + (2 * ps) + p4);
+                Vector256<short> r3 = Diff8x2(ref rs, so + (3 * ss), so + (3 * ss) + s4, ref rp, po + (3 * ps), po + (3 * ps) + p4);
                 wide += Hadamard4(r0, r1, r2, r3);
                 if (limit != long.MaxValue && Vector256.Sum(wide) >= limit)
                 {
                     break;
                 }
+
+                (so, po) = (so + (2 * s4), po + (2 * p4));
             }
 
             return Vector256.Sum(wide);
@@ -282,15 +287,14 @@ internal static class H264EncodeSimd
         Vector128<int> sum = Vector128<int>.Zero;
         for (int by = 0; by < height; by += 4)
         {
-            for (int bx = 0; bx < width; bx += 8)
+            for (nint bx = 0; bx < width; bx += 8)
             {
                 // Two 4x4 blocks side by side (the right one empty at the edge of a 4-wide block): one row of each per vector.
                 bool pair = width - bx >= 8;
-                int s = at + (by * stride) + bx, p = predAt + (by * predStride) + bx;
-                Vector128<short> r0 = Diff(ref rs, s, ref rp, p, pair);
-                Vector128<short> r1 = Diff(ref rs, s + stride, ref rp, p + predStride, pair);
-                Vector128<short> r2 = Diff(ref rs, s + (2 * stride), ref rp, p + (2 * predStride), pair);
-                Vector128<short> r3 = Diff(ref rs, s + (3 * stride), ref rp, p + (3 * predStride), pair);
+                Vector128<short> r0 = Diff(ref rs, so + bx, ref rp, po + bx, pair);
+                Vector128<short> r1 = Diff(ref rs, so + bx + ss, ref rp, po + bx + ps, pair);
+                Vector128<short> r2 = Diff(ref rs, so + bx + (2 * ss), ref rp, po + bx + (2 * ps), pair);
+                Vector128<short> r3 = Diff(ref rs, so + bx + (3 * ss), ref rp, po + bx + (3 * ps), pair);
                 sum += Hadamard2(r0, r1, r2, r3);
             }
 
@@ -298,6 +302,8 @@ internal static class H264EncodeSimd
             {
                 break;
             }
+
+            (so, po) = (so + (4 * ss), po + (4 * ps));
         }
 
         return Vector128.Sum(sum);
@@ -378,22 +384,22 @@ internal static class H264EncodeSimd
             return SatdScalar(src, at, stride, scratch, 0, 16, width, height);
         }
 
-        ref byte rs = ref MemoryMarshal.GetArrayDataReference(src);
-        ref byte ra = ref MemoryMarshal.GetArrayDataReference(a);
-        ref byte rb = ref MemoryMarshal.GetArrayDataReference(b);
-        int ps = predStride;
+        // Speed round 6: as in Satd, the offsets folded into the refs once and the rows stepped in nint offsets.
+        ref byte rs = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(src), at);
+        ref byte ra = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(a), atA);
+        ref byte rb = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(b), atB);
+        nint ss = stride, ps = predStride, so = 0, po = 0;
         if (Avx2.IsSupported && (width & 15) == 0)
         {
             Vector256<int> wide = Vector256<int>.Zero;
             for (int by = 0; by < height; by += 4)
             {
-                for (int bx = 0; bx < width; bx += 16)
+                for (nint bx = 0; bx < width; bx += 16)
                 {
-                    int s = at + (by * stride) + bx, p = (by * ps) + bx;
-                    Vector256<short> r0 = DiffMean16(ref rs, s, ref ra, atA + p, ref rb, atB + p);
-                    Vector256<short> r1 = DiffMean16(ref rs, s + stride, ref ra, atA + p + ps, ref rb, atB + p + ps);
-                    Vector256<short> r2 = DiffMean16(ref rs, s + (2 * stride), ref ra, atA + p + (2 * ps), ref rb, atB + p + (2 * ps));
-                    Vector256<short> r3 = DiffMean16(ref rs, s + (3 * stride), ref ra, atA + p + (3 * ps), ref rb, atB + p + (3 * ps));
+                    Vector256<short> r0 = DiffMean16(ref rs, so + bx, ref ra, po + bx, ref rb, po + bx);
+                    Vector256<short> r1 = DiffMean16(ref rs, so + bx + ss, ref ra, po + bx + ps, ref rb, po + bx + ps);
+                    Vector256<short> r2 = DiffMean16(ref rs, so + bx + (2 * ss), ref ra, po + bx + (2 * ps), ref rb, po + bx + (2 * ps));
+                    Vector256<short> r3 = DiffMean16(ref rs, so + bx + (3 * ss), ref ra, po + bx + (3 * ps), ref rb, po + bx + (3 * ps));
                     wide += Hadamard4(r0, r1, r2, r3);
                 }
 
@@ -401,6 +407,8 @@ internal static class H264EncodeSimd
                 {
                     break;
                 }
+
+                (so, po) = (so + (4 * ss), po + (4 * ps));
             }
 
             return Vector256.Sum(wide);
@@ -409,19 +417,20 @@ internal static class H264EncodeSimd
         if (Avx2.IsSupported && width == 8 && (height & 7) == 0)
         {
             Vector256<int> wide = Vector256<int>.Zero;
-            int s4 = 4 * stride, p4 = 4 * ps;
+            nint s4 = 4 * ss, p4 = 4 * ps;
             for (int by = 0; by < height; by += 8)
             {
-                int s = at + (by * stride), p = by * ps;
-                Vector256<short> r0 = DiffMean8x2(ref rs, s, s4, ref ra, atA + p, ref rb, atB + p, p4);
-                Vector256<short> r1 = DiffMean8x2(ref rs, s + stride, s4, ref ra, atA + p + ps, ref rb, atB + p + ps, p4);
-                Vector256<short> r2 = DiffMean8x2(ref rs, s + (2 * stride), s4, ref ra, atA + p + (2 * ps), ref rb, atB + p + (2 * ps), p4);
-                Vector256<short> r3 = DiffMean8x2(ref rs, s + (3 * stride), s4, ref ra, atA + p + (3 * ps), ref rb, atB + p + (3 * ps), p4);
+                Vector256<short> r0 = DiffMean8x2(ref rs, so, s4, ref ra, po, ref rb, po, p4);
+                Vector256<short> r1 = DiffMean8x2(ref rs, so + ss, s4, ref ra, po + ps, ref rb, po + ps, p4);
+                Vector256<short> r2 = DiffMean8x2(ref rs, so + (2 * ss), s4, ref ra, po + (2 * ps), ref rb, po + (2 * ps), p4);
+                Vector256<short> r3 = DiffMean8x2(ref rs, so + (3 * ss), s4, ref ra, po + (3 * ps), ref rb, po + (3 * ps), p4);
                 wide += Hadamard4(r0, r1, r2, r3);
                 if (limit != long.MaxValue && Vector256.Sum(wide) >= limit)
                 {
                     break;
                 }
+
+                (so, po) = (so + (2 * s4), po + (2 * p4));
             }
 
             return Vector256.Sum(wide);
@@ -430,14 +439,13 @@ internal static class H264EncodeSimd
         Vector128<int> sum = Vector128<int>.Zero;
         for (int by = 0; by < height; by += 4)
         {
-            for (int bx = 0; bx < width; bx += 8)
+            for (nint bx = 0; bx < width; bx += 8)
             {
                 bool pair = width - bx >= 8;
-                int s = at + (by * stride) + bx, p = (by * ps) + bx;
-                Vector128<short> r0 = DiffMean(ref rs, s, ref ra, atA + p, ref rb, atB + p, pair);
-                Vector128<short> r1 = DiffMean(ref rs, s + stride, ref ra, atA + p + ps, ref rb, atB + p + ps, pair);
-                Vector128<short> r2 = DiffMean(ref rs, s + (2 * stride), ref ra, atA + p + (2 * ps), ref rb, atB + p + (2 * ps), pair);
-                Vector128<short> r3 = DiffMean(ref rs, s + (3 * stride), ref ra, atA + p + (3 * ps), ref rb, atB + p + (3 * ps), pair);
+                Vector128<short> r0 = DiffMean(ref rs, so + bx, ref ra, po + bx, ref rb, po + bx, pair);
+                Vector128<short> r1 = DiffMean(ref rs, so + bx + ss, ref ra, po + bx + ps, ref rb, po + bx + ps, pair);
+                Vector128<short> r2 = DiffMean(ref rs, so + bx + (2 * ss), ref ra, po + bx + (2 * ps), ref rb, po + bx + (2 * ps), pair);
+                Vector128<short> r3 = DiffMean(ref rs, so + bx + (3 * ss), ref ra, po + bx + (3 * ps), ref rb, po + bx + (3 * ps), pair);
                 sum += Hadamard2(r0, r1, r2, r3);
             }
 
@@ -445,19 +453,21 @@ internal static class H264EncodeSimd
             {
                 break;
             }
+
+            (so, po) = (so + (4 * ss), po + (4 * ps));
         }
 
         return Vector128.Sum(sum);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector256<short> DiffMean16(ref byte s, int at, ref byte a, int atA, ref byte b, int atB) =>
+    private static Vector256<short> DiffMean16(ref byte s, nint at, ref byte a, nint atA, ref byte b, nint atB) =>
         Avx2.Subtract(
             Avx2.ConvertToVector256Int16(Vector128.LoadUnsafe(ref s, (nuint)at)),
             Avx2.ConvertToVector256Int16(Sse2.Average(Vector128.LoadUnsafe(ref a, (nuint)atA), Vector128.LoadUnsafe(ref b, (nuint)atB))));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector256<short> DiffMean8x2(ref byte s, int at, int s4, ref byte a, int atA, ref byte b, int atB, int p4)
+    private static Vector256<short> DiffMean8x2(ref byte s, nint at, nint s4, ref byte a, nint atA, ref byte b, nint atB, nint p4)
     {
         Vector128<byte> mean = Sse2.Average(
             Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref a, atA)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref a, atA + p4))).AsByte(),
@@ -468,7 +478,7 @@ internal static class H264EncodeSimd
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<short> DiffMean(ref byte s, int at, ref byte a, int atA, ref byte b, int atB, bool pair) => pair
+    private static Vector128<short> DiffMean(ref byte s, nint at, ref byte a, nint atA, ref byte b, nint atB, bool pair) => pair
         ? Sse2.Subtract(Widen(Load8(ref s, at)), Widen(Sse2.Average(Load8(ref a, atA), Load8(ref b, atB))))
         : Sse2.Subtract(Widen(Load4(ref s, at)), Widen(Sse2.Average(Load4(ref a, atA), Load4(ref b, atB))));
 
@@ -650,7 +660,7 @@ internal static class H264EncodeSimd
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector256<short> Diff8x2(ref byte s, int at0, int at1, ref byte p, int pAt0, int pAt1) =>
+    private static Vector256<short> Diff8x2(ref byte s, nint at0, nint at1, ref byte p, nint pAt0, nint pAt1) =>
         Avx2.Subtract(
             Avx2.ConvertToVector256Int16(Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref s, at0)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref s, at1))).AsByte()),
             Avx2.ConvertToVector256Int16(Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref p, pAt0)), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref p, pAt1))).AsByte()));
@@ -660,7 +670,7 @@ internal static class H264EncodeSimd
         Vector128.WidenLower(Load8(ref s, at)).AsInt16() - Vector128.WidenLower(Load8(ref p, pAt)).AsInt16();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector256<short> Diff16(ref byte s, int at, ref byte p, int pAt) =>
+    private static Vector256<short> Diff16(ref byte s, nint at, ref byte p, nint pAt) =>
         Avx2.Subtract(Avx2.ConvertToVector256Int16(Vector128.LoadUnsafe(ref s, (nuint)at)), Avx2.ConvertToVector256Int16(Vector128.LoadUnsafe(ref p, (nuint)pAt)));
 
     /// <summary>Across the rows of one block, given its columns 0|1 and 2|3; half the absolute coefficients, summed in pairs.</summary>
@@ -673,7 +683,7 @@ internal static class H264EncodeSimd
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<short> Diff(ref byte s, int at, ref byte p, int pAt, bool pair) => pair
+    private static Vector128<short> Diff(ref byte s, nint at, ref byte p, nint pAt, bool pair) => pair
         ? Sse2.Subtract(Widen(Load8(ref s, at)), Widen(Load8(ref p, pAt)))
         : Sse2.Subtract(Widen(Load4(ref s, at)), Widen(Load4(ref p, pAt)));
 
@@ -681,10 +691,10 @@ internal static class H264EncodeSimd
     private static Vector128<short> Widen(Vector128<byte> v) => Sse2.UnpackLow(v, Vector128<byte>.Zero).AsInt16();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<byte> Load8(ref byte r, int at) => Vector128.CreateScalar(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref r, at))).AsByte();
+    private static Vector128<byte> Load8(ref byte r, nint at) => Vector128.CreateScalar(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref r, at))).AsByte();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<byte> Load4(ref byte r, int at) => Vector128.CreateScalar(Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref r, at))).AsByte();
+    private static Vector128<byte> Load4(ref byte r, nint at) => Vector128.CreateScalar(Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref r, at))).AsByte();
 
     /// <summary>
     /// The rows of a block one vector holds: one row of 16, two of 8 or four of 4 samples. A SAD over the vector is the sum of
