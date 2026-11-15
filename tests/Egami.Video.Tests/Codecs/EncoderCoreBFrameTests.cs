@@ -122,6 +122,16 @@ public class EncoderCoreBFrameTests
     }
 
     [Fact]
+    public void WithTheFrameLevelTreeTheBlockTreeKeepsItsStepsAndAddsOnlyOffsets()
+    {
+        using Clip clip = Clip.Moving(64, 48, 17, speed: 1);
+        (List<FrameDecision> frame, _, _) = Encode(clip, new Options(BFrames: 3, Pyramid: true, Tree: 0.25));
+        (List<FrameDecision> both, _, _) = Encode(clip, new Options(BFrames: 3, Pyramid: true, Tree: 0.25, BlockTree: 0.5, BlockTreeFrame: 0));
+        Assert.Equal(frame.Select(d => (d.Index, d.Quantizer)), both.Select(d => (d.Index, d.Quantizer)));
+        Assert.Contains(both, d => d.BlockOffsets is { } o && o.Any(v => v != 0));
+    }
+
+    [Fact]
     public void BFramesAreCheckedAgainstTheLimit()
     {
         using EncoderPictures pictures = new(16, 16, EncoderPictures.Vp8Color, EgamiContext.Default);
@@ -190,7 +200,9 @@ public class EncoderCoreBFrameTests
         BFrames = o.BFrames,
         BPyramid = o.Pyramid,
         AdaptiveBFrames = o.Adaptive,
+        MacroblockTree = o.Tree,
         BlockTree = o.BlockTree,
+        BlockTreeFrame = o.BlockTreeFrame,
         Rate = new RateSettings
         {
             Mode = o.Mode,
@@ -225,7 +237,7 @@ public class EncoderCoreBFrameTests
         return clip;
     }
 
-    private readonly record struct Options(int BFrames, bool Pyramid = false, bool Adaptive = false, bool Realtime = false, bool SceneCuts = true, RateControlMode Mode = RateControlMode.Quality, double BlockTree = 0);
+    private readonly record struct Options(int BFrames, bool Pyramid = false, bool Adaptive = false, bool Realtime = false, bool SceneCuts = true, RateControlMode Mode = RateControlMode.Quality, double BlockTree = 0, double Tree = 0, double BlockTreeFrame = 1);
 
     private readonly record struct Packet(long Presentation, long? Decode, bool Key);
 

@@ -214,6 +214,22 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   - Tried and left out: less adaptive quantization in unreferenced B pictures, other strengths than 1.0, B_Direct_16x16 with
     a residual tried on every B macroblock (7.5 % more instructions), and implicit weighted bi-prediction, which changes
     nothing when the two references are equally far, as in a pyramid of three.
+- Block macroblock tree (H.264 block macroblock tree plan, PRs E and F): from effort 5 the lookahead also estimates each
+  16×16 block against the references the coded structure gives it (P pictures their anchor, B pictures both sides and their
+  mean), walks the costs back in coding order (a bi-predicted block passing half to each side), and lowers the step of the
+  blocks later pictures reuse most: 2^(−0.1 × log2((intra + passed on) / intra)), at most 3 QP, centred on the frame, whose
+  step the frame-level tree still sets; runs whose inter cost is under 0.6 of their intra cost get proportionally less. On
+  the eight clips (120 frames) at effort 5 BD-rate against x264 medium goes from +2.76 % to +2.05 % on PSNR-Y without
+  adaptive quantization and from −3.25 % to −4.67 % on SSIM-Y with it (pedestrian_area −2.4 points, no clip more than 0.8
+  worse), for 1.7 % (quality 50) and 2.4 % (34) more instructions. On two clips joined at a scene cut it stays within 1 point.
+  At effort 4 it gained as much but cost 3 to 7 % more instructions, so effort 4 keeps the frame-level tree. A strength of
+  0.25, or the frame steps from the block tree, helped SSIM more but cost the still clips (johnny, rush_hour,
+  ducks_take_off) 2 to 4 points of PSNR-Y.
+- Effort 4's B pictures try intra with the same margin as other pictures (24 sixteenths over the inter cost; was 16, as at
+  efforts 1 to 3): +4.35 % to +4.01 % on PSNR-Y and −1.76 % to −1.98 % on SSIM-Y on the eight clips (pedestrian_area −1.7
+  points, no clip more than 0.3 worse), for 1.3 % and 1.7 % more instructions.
+- Effort 0 chooses I and P macroblocks at 0.8 times the λ (was 0.6, as above): +68.2 % to +65.3 % on PSNR-Y and +52.0 % to
+  +49.2 % on SSIM-Y on the eight clips, every clip better on PSNR-Y, for no more instructions.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 

@@ -58,9 +58,18 @@ public class BlockTreeTests
     public void AnOffsetIsMinusTheStrengthTimesTheLogOfTheReuse()
     {
         double[] offsets = new double[2];
-        double mean = BlockTree.Offsets([1000, 1000], [1000, 0], 0.5, offsets);
+        double mean = BlockTree.Offsets([1000, 1000], [1000, 0], 0.5, double.PositiveInfinity, offsets);
         Assert.Equal([-0.5, 0], offsets);
         Assert.Equal(-0.25, mean);
+    }
+
+    [Fact]
+    public void AnOffsetStopsAtTheClamp()
+    {
+        double[] offsets = new double[2];
+        double mean = BlockTree.Offsets([1000, 1000], [15000, 1000], 0.5, 0.75, offsets);
+        Assert.Equal([-0.75, -0.5], offsets);
+        Assert.Equal(-0.625, mean);
     }
 
     private static Dictionary<int, double[]> Run(TreePicture[] plan, int blocks)

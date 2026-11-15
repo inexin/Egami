@@ -182,15 +182,15 @@ internal static class BlockTree
 
     /// <summary>
     /// Writes each block's step offset in base-2 logarithms, minus <paramref name="strength"/> times log2((intra + carried) /
-    /// intra), and returns their mean.
+    /// intra) but at least minus <paramref name="clamp"/>, and returns their mean.
     /// </summary>
-    public static double Offsets(int[] intraCosts, double[] carried, double strength, Span<double> offsets)
+    public static double Offsets(int[] intraCosts, double[] carried, double strength, double clamp, Span<double> offsets)
     {
         double sum = 0;
         for (int i = 0; i < offsets.Length; i++)
         {
             double intra = Math.Max(intraCosts[i], 1);
-            offsets[i] = -strength * Math.Log2((intra + carried[i]) / intra);
+            offsets[i] = Math.Max(-strength * Math.Log2((intra + carried[i]) / intra), -clamp);
             sum += offsets[i];
         }
 
