@@ -284,6 +284,30 @@ internal sealed partial class H264MbEncoder
         _syntax.Locate(mbX, mbY);
     }
 
+    // Speed round 5, PR C: the price RDOQ gave the last block QuantizeBlock coded (with one bit for its coded_block_flag; 0
+    // without levels, -1 when RDOQ did not price it), and those of the inter luma blocks CodeInterLuma coded last, by transform.
+    private long _blockPrice;
+    private readonly long[] _price4 = new long[16];
+    private readonly long[] _price8 = new long[4];
+
+    /// <summary>
+    /// Speed round 5, PR C: whether an inter candidate's rate count takes each luma block's levels at the price RDOQ gave them
+    /// (from the macroblock's starting states) instead of counting them again: efforts 3 to 5 with CABAC.
+    /// </summary>
+    private bool PricedTrials => _effort is >= 3 and <= 5 && _syntax.Cabac;
+
+    /// <summary>
+    /// The bits of an inter candidate CodeInterLuma just coded, as <see cref="Rate(H264MbCode)"/> gives them but with its luma
+    /// levels at RDOQ's prices where <see cref="PricedTrials"/>.
+    /// </summary>
+    private long InterRate(H264MbCode code)
+    {
+        _syntax.LumaPrices = PricedTrials ? (code.Transform8x8 ? _price8 : _price4) : null;
+        long rate = Rate(code);
+        _syntax.LumaPrices = null;
+        return rate;
+    }
+
     /// <summary>The bits of a macroblock (in 1/32768 bit) as the syntax writer would code it, the CABAC states left as they were.</summary>
     private long Rate(H264MbCode code)
     {
@@ -322,6 +346,48 @@ internal sealed partial class H264MbEncoder
 
         // The mb_skip_run before a coded macroblock of a P slice: one bit when it is 0.
         return (bits.Bits + (skippable ? 1 : 0)) * CabacCost.Bit;
+    }
+
+    /// <summary>
+    /// Speed round 5, PR C: <see cref="Rate"/> of an inter macroblock with CABAC, also giving the part of it that the luma levels
+    /// and transform size leave unchanged (mb_skip_flag, mb_type, sub_mb_type, ref_idx, mvd and the chroma residual), so that
+    /// <see cref="RateLumaPart"/> can count the same macroblock with its other transform from that part. The sum is exact.
+    /// </summary>
+    private long RateShared(H264MbCode code, out long shared)
+    {
+        H264EncodeStats.Add(H264EncodeStat.RdCodings);
+        _syntax.Locate(_mbX, _mbY);
+        _undo.Begin(_syntax.Contexts);
+        CabacUndoSink sink = new(_undo);
+        _syntax.SkipFlagCabac(ref sink, false);
+        _syntax.Begin(_mbX, _mbY, code);
+        _syntax.WriteInterHeaderCabac(code, ref sink);
+        _syntax.CountChromaResidual(code, ref sink);
+        shared = sink.Cost;
+        _syntax.LumaPrices = PricedTrials ? _price4 : null;
+        _syntax.CountLumaPart(code, ref sink);
+        _syntax.LumaPrices = null;
+        _undo.Restore();
+        return sink.Cost;
+    }
+
+    /// <summary>
+    /// The bits of an inter macroblock (CABAC) from the <paramref name="shared"/> part <see cref="RateShared"/> gave for the same
+    /// macroblock with its other luma transform: only coded_block_pattern, the transform flag, mb_qp_delta and the luma residual
+    /// are counted.
+    /// </summary>
+    private long RateLumaPart(H264MbCode code, long shared)
+    {
+        H264EncodeStats.Add(H264EncodeStat.RdCodings);
+        _syntax.Locate(_mbX, _mbY);
+        _undo.Begin(_syntax.Contexts);
+        CabacUndoSink sink = new(_undo);
+        _syntax.Begin(_mbX, _mbY, code);
+        _syntax.LumaPrices = PricedTrials ? _price8 : null;
+        _syntax.CountLumaPart(code, ref sink);
+        _syntax.LumaPrices = null;
+        _undo.Restore();
+        return shared + sink.Cost;
     }
 
     private void Save(byte[] recon)
@@ -832,6 +898,7 @@ internal sealed partial class H264MbEncoder
         if (largest + ((long)round << (qbits - 8)) < 1L << qbits)
         {
             levels.AsSpan(at, max).Clear();
+            _blockPrice = 0;
             return 0;
         }
 
@@ -874,7 +941,13 @@ internal sealed partial class H264MbEncoder
             }
         }
 
-        return rdoq && n > 0 ? Rdoq(w, levels, at, first, max, eight, qp, cat, n) : n;
+        if (rdoq && n > 0)
+        {
+            return Rdoq(w, levels, at, first, max, eight, qp, cat, n);
+        }
+
+        _blockPrice = n > 0 ? -1 : 0;
+        return n;
     }
 
     // The 4x4 zigzag scan as lane permutations of the two halves of a raster block: the lanes of each half of the scan, and
@@ -1019,6 +1092,7 @@ internal sealed partial class H264MbEncoder
             n = 0;
         }
 
+        _blockPrice = n == 0 ? 0 : _syntax.Cabac ? rate : -1;
         return n;
     }
 

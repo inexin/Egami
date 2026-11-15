@@ -115,12 +115,12 @@ internal sealed partial class H264MbSyntax
 
     // ---- CABAC ----
 
-    private void WriteInterCabac<T>(H264MbCode code, ref T sink)
+    private void WriteInterCabac<T>(H264MbCode code, ref T sink, bool part = true)
         where T : struct, ICabacSink
     {
         if (SliceType == H264SliceType.B)
         {
-            WriteBCabac(code, ref sink);
+            WriteBCabac(code, ref sink, part);
             return;
         }
 
@@ -182,7 +182,51 @@ internal sealed partial class H264MbSyntax
             MvdCabac(ref sink, 0, bx, by, 1, H264SliceDecoder.MvY(mvd));
         }
 
-        ResidualPartCabac(code, ref sink);
+        if (part)
+        {
+            ResidualPartCabac(code, ref sink);
+        }
+    }
+
+    /// <summary>
+    /// An inter macroblock's mb_type, sub_mb_type, ref_idx and mvd with CABAC, without <see cref="ResidualPartCabac"/>: the part
+    /// of its bits that does not depend on its luma levels or transform size.
+    /// </summary>
+    public void WriteInterHeaderCabac<T>(H264MbCode code, ref T sink)
+        where T : struct, ICabacSink => WriteInterCabac(code, ref sink, part: false);
+
+    /// <summary>
+    /// Counts what <see cref="ResidualPartCabac"/> writes but the chroma residual: coded_block_pattern, transform_size_8x8_flag,
+    /// mb_qp_delta and the luma residual. Their contexts are none of the header's or the chroma residual's, so a macroblock's
+    /// count is the header's, this part's and <see cref="CountChromaResidual"/>'s added up.
+    /// </summary>
+    public void CountLumaPart(H264MbCode code, ref CabacUndoSink sink)
+    {
+        H264EncodeStats.Part(H264BitPart.Modes);
+        byte[] ctx = Contexts;
+        CbpCabac(ref sink, code.Cbp);
+        if ((code.Cbp & 15) != 0 && Transform8x8Mode && NoSub8x8(code, SliceType == H264SliceType.B))
+        {
+            int inc = (_availableLeft && _mb.Transform8x8[_left] ? 1 : 0) + (_availableTop && _mb.Transform8x8[_top] ? 1 : 0);
+            sink.Encode(ref ctx[399 + inc], code.Transform8x8 ? 1 : 0);
+        }
+
+        if (code.Cbp != 0)
+        {
+            QpDeltaCabac(ref sink, code.Qp - LastQp);
+            H264EncodeStats.Part(H264BitPart.Residual);
+            CountResidual(code, ref sink, chroma: false);
+        }
+    }
+
+    /// <summary>Counts the chroma residual of an inter macroblock, the rest of <see cref="ResidualPartCabac"/>.</summary>
+    public void CountChromaResidual(H264MbCode code, ref CabacUndoSink sink)
+    {
+        if ((code.Cbp & 0x30) != 0)
+        {
+            H264EncodeStats.Part(H264BitPart.Residual);
+            CountResidual(code, ref sink, luma: false);
+        }
     }
 
     /// <summary>coded_block_pattern, transform_size_8x8_flag, mb_qp_delta and the residual of an inter macroblock, with CABAC.</summary>
@@ -206,7 +250,7 @@ internal sealed partial class H264MbSyntax
     }
 
     /// <summary>A B macroblock with CABAC: mb_type (Table 9-37, B), sub_mb_type, then each list's ref_idx and mvd.</summary>
-    private void WriteBCabac<T>(H264MbCode code, ref T sink)
+    private void WriteBCabac<T>(H264MbCode code, ref T sink, bool part = true)
         where T : struct, ICabacSink
     {
         byte[] ctx = Contexts;
@@ -300,7 +344,10 @@ internal sealed partial class H264MbSyntax
             }
         }
 
-        ResidualPartCabac(code, ref sink);
+        if (part)
+        {
+            ResidualPartCabac(code, ref sink);
+        }
     }
 
     /// <summary>Whether the coded (not direct) partition of a B macroblock covering block (bx, by) has an mvd in a list.</summary>

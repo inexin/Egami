@@ -241,6 +241,15 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   (it was tried on almost every macroblock). Egami's own instructions at effort 0 fall 31 % at quality 50 and 35 % at quality
   34 (cycles 28 % and 34 %) on the four 720p clips, and BD-rate improves by 1.2 % on eight clips (rush_hour 5.1 %, worst
   ducks_take_off +0.25 %). Effort 0 now takes 0.65 and 0.75 times effort 1's instructions; before it took 0.97 and 1.16.
+- H.264 encoder speed round 5, PR C: a cheaper rate count for the candidates of an inter macroblock. When a candidate is
+  coded with both luma transforms, the two counts share mb_type, sub_mb_type, ref_idx, mvd and the chroma residual, whose
+  contexts are none of the luma part's, so only coded_block_pattern, the transform flag, mb_qp_delta and the luma residual are
+  counted again (exact, from effort 2). At efforts 3 to 5 an inter candidate's luma levels are counted at the price RDOQ gave
+  each block, from the macroblock's starting states, instead of again with the states adapting block by block. Egami's own
+  instructions fall 4.2 % at quality 50 and 1.1 % at quality 34 at effort 4 on the four 720p clips (efforts 2, 3 and 5: 1.4 to
+  4.7 %), for BD-rate +0.03 % on eight clips at effort 4 (worst kristen_sara +0.15 %), +0.07 % at effort 3 and +0.06 % at
+  effort 5 on the four. Effort 4 takes 3.2 and 2.7 times x264 medium's instructions (was 3.3 and 2.8) and 2.7 and 2.2
+  times its cycles. The same prices for intra 4x4 and 8x8 trials cost +0.11 % for no further saving and were left out.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 

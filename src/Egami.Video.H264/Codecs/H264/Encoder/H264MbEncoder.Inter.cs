@@ -1084,7 +1084,7 @@ internal sealed partial class H264MbEncoder
         {
             // Speed round 4, task 5: the transform size the macroblock's first candidate with luma levels chose.
             long sseT = CodeInterLuma(code, _transform == 1);
-            return sseT + chromaSse + (_lambda * Rate(code) / CabacCost.Bit);
+            return sseT + chromaSse + (_lambda * InterRate(code) / CabacCost.Bit);
         }
 
         if (can8)
@@ -1095,30 +1095,34 @@ internal sealed partial class H264MbEncoder
             {
                 long sseT = CodeInterLuma(code, satd8 < satd4);
                 KeepTransform(code);
-                return sseT + chromaSse + (_lambda * Rate(code) / CabacCost.Bit);
+                return sseT + chromaSse + (_lambda * InterRate(code) / CabacCost.Bit);
             }
         }
 
         long sse = CodeInterLuma(code, eight: false);
-        double cost = sse + chromaSse + (_lambda * Rate(code) / CabacCost.Bit);
-        if (can8)
+        if (!can8)
         {
-            Save(_recon[0]);
-            H264MbCode eight = _inter8;
-            eight.CopyFrom(code);
-            long sse8 = CodeInterLuma(eight, eight: true);
-            double cost8 = sse8 + chromaSse + (_lambda * Rate(eight) / CabacCost.Bit);
-            if (cost8 < cost)
-            {
-                code.CopyFrom(eight);
-                KeepTransform(code);
-                return cost8;
-            }
-
-            Restore(_recon[0]);
-            KeepTransform(code);
+            return sse + chromaSse + (_lambda * InterRate(code) / CabacCost.Bit);
         }
 
+        // Speed round 5, PR C: with CABAC the two transforms share everything but the luma part of the count.
+        long shared = 0;
+        bool split = _syntax.Cabac;
+        double cost = sse + chromaSse + (_lambda * (split ? RateShared(code, out shared) : Rate(code)) / CabacCost.Bit);
+        Save(_recon[0]);
+        H264MbCode eight = _inter8;
+        eight.CopyFrom(code);
+        long sse8 = CodeInterLuma(eight, eight: true);
+        double cost8 = sse8 + chromaSse + (_lambda * (split ? RateLumaPart(eight, shared) : Rate(eight)) / CabacCost.Bit);
+        if (cost8 < cost)
+        {
+            code.CopyFrom(eight);
+            KeepTransform(code);
+            return cost8;
+        }
+
+        Restore(_recon[0]);
+        KeepTransform(code);
         return cost;
     }
 
@@ -1154,6 +1158,7 @@ internal sealed partial class H264MbEncoder
                 Residual(_srcY, _lumaAt + (by * 4 * _stride) + (bx * 4), _stride, _ip, (by * 64) + (bx * 4), 16, 8, block);
                 H264Forward.Transform8x8(block);
                 code.Luma8Count[i8] = QuantizeBlock(block, code.Luma8, i8 * 64, 0, 64, true, _qp, 5);
+                _price8[i8] = _blockPrice;
                 score[i8] = Score(code.Luma8, i8 * 64, 64, 4);
             }
         }
@@ -1165,6 +1170,7 @@ internal sealed partial class H264MbEncoder
             {
                 int xy = H264Tables.BlockXY[blk];
                 code.LumaCount[blk] = QuantizeBlock(_w.AsSpan((((xy >> 2) * 4) + (xy & 3)) * 16, 16), code.Luma, blk * 16, 0, 16, false, _qp, 2);
+                _price4[blk] = _blockPrice;
                 score[blk >> 2] = Math.Min(score[blk >> 2] + Score(code.Luma, blk * 16, 16, 1), 1000);
             }
         }
