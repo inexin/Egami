@@ -266,6 +266,15 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   vector are found from the block's own offset; and the SATD kernels fold the offsets into their refs at entry and step
   rows in nint, so no load widens an index. Egami's own instructions fall 2 to 3.4 % at quality 50 and 1.9 to 2.1 % at
   quality 34 at effort 4 on the four 720p clips (effort 1: 2.8 to 3.2 % and up to 5 %).
+- H.264 encoder speed round 7 (output unchanged, byte for byte): clean-ups. RDOQ applies its choice and the pricer its state
+  by masks, with a branch-free absolute value; the 4x4 scan, the pricer's steps, the SAD and Hadamard kernels and the search's
+  cost helper are inlined; the hot methods skip zeroing their stack buffers; the search patterns are data spans; chroma is
+  coded only after the intra gate passes; the quick sub-sample refinement starts from the whole-sample search's cost instead
+  of working it out again; intra 4x4 and 8x8 blocks without levels skip dequantization and the residual add; bi-prediction
+  refinement predicts the fixed list once per list; and B pictures no other picture references are not deblocked unless
+  their reconstruction is asked for. Egami's own instructions fall 1.0 % at quality 50 and 7.2 % at quality 34 at effort 4
+  on the four 720p clips (3.8 % and 4.8 % without PGO); effort 4 takes 2.91 and 2.41 times x264 medium's instructions and
+  2.44 and 2.05 times its cycles.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
