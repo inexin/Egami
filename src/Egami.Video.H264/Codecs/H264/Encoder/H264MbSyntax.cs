@@ -186,53 +186,63 @@ internal sealed partial class H264MbSyntax
         // Speed round 4: a row of four blocks at a time, filling what is the same for every block (no intra modes, no vector
         // differences, no luma levels) and working out the rest a block at a time; BlockXY is its own inverse.
         bool modes = code.Kind is H264MbKind.I4x4 or H264MbKind.I8x8, levels = (code.Cbp & 15) != 0;
+        bool intra = _intra, i4 = code.Kind == H264MbKind.I4x4, eight = code.Eight;
+        int cbp = code.Cbp;
+
+        // Speed round 6: the arrays read once, and each row's blocks written through a span of the row checked once.
+        sbyte[] intraModes = _mb.IntraModes;
+        byte[] mvd0 = _mb.Mvd[0], mvd1 = _mb.Mvd[1], nzLuma = _mb.NzLuma, nonzero = _mb.Nonzero;
+        int[] codeModes = code.Modes, codeMvd = code.Mvd, codeMvd1 = code.Mvd1, luma8Count = code.Luma8Count, lumaCount = code.LumaCount;
         for (int by = 0; by < 4; by++)
         {
             int row = _b0 + (by * _w4);
+            Span<sbyte> modesRow = intraModes.AsSpan(row, 4);
+            Span<byte> mvdRow = mvd0.AsSpan(2 * row, 8), mvdRow1 = mvd1.AsSpan(2 * row, 8);
+            Span<byte> nzRow = nzLuma.AsSpan(row, 4), nonzeroRow = nonzero.AsSpan(row, 4);
             if (!modes)
             {
-                _mb.IntraModes.AsSpan(row, 4).Fill(-1);
+                modesRow.Fill(-1);
             }
 
-            if (_intra)
+            if (intra)
             {
-                _mb.Mvd[0].AsSpan(2 * row, 8).Clear();
-                _mb.Mvd[1].AsSpan(2 * row, 8).Clear();
+                mvdRow.Clear();
+                mvdRow1.Clear();
             }
 
             if (!levels)
             {
-                _mb.NzLuma.AsSpan(row, 4).Clear();
-                _mb.Nonzero.AsSpan(row, 4).Clear();
+                nzRow.Clear();
+                nonzeroRow.Clear();
             }
 
-            if (!modes && _intra && !levels)
+            if (!modes && intra && !levels)
             {
                 continue;
             }
 
             for (int bx = 0; bx < 4; bx++)
             {
-                int xy = (by * 4) + bx, blk = H264Tables.BlockXY[xy], i8 = blk >> 2, b = row + bx;
+                int xy = (by * 4) + bx, blk = H264Tables.BlockXY[xy], i8 = blk >> 2;
                 if (modes)
                 {
-                    _mb.IntraModes[b] = (sbyte)(code.Kind == H264MbKind.I4x4 ? code.Modes[blk] : code.Modes[i8]);
+                    modesRow[bx] = (sbyte)(i4 ? codeModes[blk] : codeModes[i8]);
                 }
 
-                if (!_intra)
+                if (!intra)
                 {
-                    int mvd = code.Mvd[xy], mvd1 = code.Mvd1[xy];
-                    _mb.Mvd[0][2 * b] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvX(mvd)), 255);
-                    _mb.Mvd[0][(2 * b) + 1] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvY(mvd)), 255);
-                    _mb.Mvd[1][2 * b] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvX(mvd1)), 255);
-                    _mb.Mvd[1][(2 * b) + 1] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvY(mvd1)), 255);
+                    int mvd = codeMvd[xy], mvdB = codeMvd1[xy];
+                    mvdRow[2 * bx] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvX(mvd)), 255);
+                    mvdRow[(2 * bx) + 1] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvY(mvd)), 255);
+                    mvdRow1[2 * bx] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvX(mvdB)), 255);
+                    mvdRow1[(2 * bx) + 1] = (byte)Math.Min(Math.Abs(H264SliceDecoder.MvY(mvdB)), 255);
                 }
 
                 if (levels)
                 {
-                    int count = (code.Cbp & (1 << i8)) == 0 ? 0 : code.Eight ? code.Luma8Count[i8] : code.LumaCount[blk];
-                    _mb.NzLuma[b] = (byte)count;
-                    _mb.Nonzero[b] = (byte)(count > 0 ? 1 : 0);
+                    int count = (cbp & (1 << i8)) == 0 ? 0 : eight ? luma8Count[i8] : lumaCount[blk];
+                    nzRow[bx] = (byte)count;
+                    nonzeroRow[bx] = (byte)(count > 0 ? 1 : 0);
                 }
             }
         }
@@ -268,20 +278,38 @@ internal sealed partial class H264MbSyntax
             return;
         }
 
-        bool flat = !_intra;
-        for (int xy = 0; xy < 16; xy++)
+        // Speed round 6: the arrays read once, and each row of four blocks written through spans checked once. Not intra here.
+        sbyte[] refIdx0 = pic.RefIdx[0], refIdx1s = pic.RefIdx[1];
+        int[] id0 = pic.RefPicId[0], id1 = pic.RefPicId[1], mv0 = pic.Mv[0], mv1 = pic.Mv[1], codeMv = code.Mv, codeMv1 = code.Mv1;
+        byte[] nonzero = _mb.Nonzero;
+        int[] refIds = RefIds, refIds1 = RefIds1;
+        bool flat = true;
+        int firstId = 0, firstMv = 0, firstId1 = 0, firstMv1 = 0;
+        for (int by = 0; by < 4; by++)
         {
-            int bx = xy & 3, by = xy >> 2;
-            int b = _b0 + (by * _w4) + bx;
-            int refIdx = _intra ? -1 : BlockRef(code, 0, bx, by), refIdx1 = _intra ? -1 : BlockRef(code, 1, bx, by);
-            pic.RefIdx[0][b] = (sbyte)refIdx;
-            pic.RefPicId[0][b] = refIdx >= 0 ? RefIds[refIdx] : -1;
-            pic.Mv[0][b] = refIdx >= 0 ? code.Mv[xy] : 0;
-            pic.RefIdx[1][b] = (sbyte)refIdx1;
-            pic.RefPicId[1][b] = refIdx1 >= 0 ? RefIds1[refIdx1] : -1;
-            pic.Mv[1][b] = refIdx1 >= 0 ? code.Mv1[xy] : 0;
-            flat &= _mb.Nonzero[b] == 0 && pic.RefPicId[0][b] == pic.RefPicId[0][_b0] && pic.Mv[0][b] == pic.Mv[0][_b0]
-                && pic.RefPicId[1][b] == pic.RefPicId[1][_b0] && pic.Mv[1][b] == pic.Mv[1][_b0];
+            int row = _b0 + (by * _w4);
+            Span<sbyte> refRow = refIdx0.AsSpan(row, 4), refRow1 = refIdx1s.AsSpan(row, 4);
+            Span<int> idRow = id0.AsSpan(row, 4), idRow1 = id1.AsSpan(row, 4), mvRow = mv0.AsSpan(row, 4), mvRow1 = mv1.AsSpan(row, 4);
+            Span<byte> nonzeroRow = nonzero.AsSpan(row, 4);
+            for (int bx = 0; bx < 4; bx++)
+            {
+                int xy = (by * 4) + bx;
+                int refIdx = BlockRef(code, 0, bx, by), refIdx1 = BlockRef(code, 1, bx, by);
+                int id = refIdx >= 0 ? refIds[refIdx] : -1, mv = refIdx >= 0 ? codeMv[xy] : 0;
+                int idB = refIdx1 >= 0 ? refIds1[refIdx1] : -1, mvB = refIdx1 >= 0 ? codeMv1[xy] : 0;
+                refRow[bx] = (sbyte)refIdx;
+                idRow[bx] = id;
+                mvRow[bx] = mv;
+                refRow1[bx] = (sbyte)refIdx1;
+                idRow1[bx] = idB;
+                mvRow1[bx] = mvB;
+                if (xy == 0)
+                {
+                    (firstId, firstMv, firstId1, firstMv1) = (id, mv, idB, mvB);
+                }
+
+                flat &= nonzeroRow[bx] == 0 && id == firstId && mv == firstMv && idB == firstId1 && mvB == firstMv1;
+            }
         }
 
         pic.MbIntra[_addr] = _intra;

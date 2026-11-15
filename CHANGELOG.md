@@ -250,6 +250,13 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   4.7 %), for BD-rate +0.03 % on eight clips at effort 4 (worst kristen_sara +0.15 %), +0.07 % at effort 3 and +0.06 % at
   effort 5 on the four. Effort 4 takes 3.2 and 2.7 times x264 medium's instructions (was 3.3 and 2.8) and 2.7 and 2.2
   times its cycles. The same prices for intra 4x4 and 8x8 trials cost +0.11 % for no further saving and were left out.
+- H.264 encoder speed round 6, PR B (output unchanged, byte for byte): bounds checks and loops on the hot paths. The
+  Exp-Golomb suffix of RDOQ's level prices is a bit count instead of a loop, and its tail table reads its rows through refs;
+  RDOQ's decision loop keeps only λ, the rate and the gain across the pricer's calls and sums the distortion of the levels
+  it took after the loop, in the same order; Dequantize, the macroblock state Begin writes and SetMotion's motion arrays go
+  through refs and spans checked once a row; and a prediction copies whole luma rows as one load and store and filters
+  chroma eight samples at a time. Egami's own instructions fall 6.4 % at quality 50 and 8.6 % at quality 34 at effort 4 on
+  the four 720p clips (effort 1: 8.5 and 6.4 %).
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
