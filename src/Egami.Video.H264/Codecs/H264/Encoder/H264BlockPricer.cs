@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
@@ -66,13 +68,6 @@ internal sealed class H264BlockPricer
     private readonly byte[] _states = new byte[Categories * StateBytes];
     private int _built;
     private int _sigAt, _levelAt;
-
-    // The next coding state as lanes of the state before: after a level of 1, after a level greater than 1, for blocks with 4
-    // and with 3 prefix contexts.
-    private static readonly Vector256<int> NextOne4 = Vector256.Create(1, 2, 3, 3, 4, 5, 6, 7);
-    private static readonly Vector256<int> NextGreater4 = Vector256.Create(4, 4, 4, 4, 5, 6, 7, 7);
-    private static readonly Vector256<int> NextOne3 = Vector256.Create(1, 2, 3, 3, 4, 5, 6, 7);
-    private static readonly Vector256<int> NextGreater3 = Vector256.Create(4, 4, 4, 4, 5, 6, 6, 6);
 
     // The cost of the levels at rows r down to 0 as quantized, coded from each state, by (r * States) + state. Worked out for
     // every row and state when a block begins: RDOQ only changes levels above the rows it looks up (a level fits in 2^22 units
@@ -206,6 +201,7 @@ internal sealed class H264BlockPricer
     /// The rate with the level at scan position <paramref name="k"/> changed from <paramref name="old"/> to the value now in the
     /// levels, every level above it being final (<see cref="Advance"/>); 0 when the block has no levels left.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public long Price(int k, int old)
     {
         Debug.Assert(_rows[_row] == k && old != 0, "RDOQ tries the quantized levels from the last one back.");
@@ -277,21 +273,32 @@ internal sealed class H264BlockPricer
         int[] levels = _levels, rows = _rows, tail = _tail;
         if (Avx2.IsSupported)
         {
+            // Speed round 6: the rows and levels read through refs (RDOQ's rows hold count scan positions within the block),
+            // the level tables' row and the tail's from refs the loop steps.
+            Debug.Assert(count <= rows.Length && count * States <= tail.Length, "A block has at most 64 levels.");
+            // The next coding state as lanes of the state before: after a level of 1 (the same for blocks with 4 and with 3
+            // prefix contexts) and after a level greater than 1. Constants made here, not static readonly fields, whose loads
+            // keep a method from being inlined.
             bool three = _next == Next3;
-            Vector256<int> one = three ? NextOne3 : NextOne4, greater = three ? NextGreater3 : NextGreater4;
+            Vector256<int> one = Vector256.Create(1, 2, 3, 3, 4, 5, 6, 7);
+            Vector256<int> greater = three ? Vector256.Create(4, 4, 4, 4, 5, 6, 6, 6) : Vector256.Create(4, 4, 4, 4, 5, 6, 7, 7);
             Vector256<int> below = Vector256<int>.Zero;
-            int[] costs = _levelCosts;
-            for (int row = 0; row < count; row++)
+            ref int levelAt = ref levels[_at];
+            ref int rowAt = ref MemoryMarshal.GetArrayDataReference(rows);
+            ref int costs = ref MemoryMarshal.GetArrayDataReference(_levelCosts);
+            nint costAt = _levelAt;
+            ref int tailAt = ref MemoryMarshal.GetArrayDataReference(tail);
+            for (nint row = 0; row < count; row++)
             {
-                int abs = Math.Abs(levels[_at + rows[row]]);
-                Vector256<int> own = Vector256.LoadUnsafe(ref costs[0], (nuint)(_levelAt + (Math.Min(abs, 15) * States)));
+                int abs = Math.Abs(Unsafe.Add(ref levelAt, Unsafe.Add(ref rowAt, row)));
+                Vector256<int> own = Vector256.LoadUnsafe(ref costs, (nuint)(costAt + (Math.Min(abs, 15) * States)));
                 if (abs > MaxOnes)
                 {
                     own += Vector256.Create(Suffix(abs));
                 }
 
                 below = own + Avx2.PermuteVar8x32(below, abs > 1 ? greater : one);
-                below.StoreUnsafe(ref tail[0], (nuint)(row * States));
+                below.StoreUnsafe(ref tailAt, (nuint)(row * States));
             }
 
             return;
@@ -317,18 +324,10 @@ internal sealed class H264BlockPricer
         return abs > MaxOnes ? cost + Suffix(abs) : cost;
     }
 
-    // The Exp-Golomb suffix (k = 0) of a level above MaxOnes: k ones, a zero and k bits, all bypass.
-    private static int Suffix(int abs)
-    {
-        int v = abs - 15, k = 0;
-        while (v >= 1 << k)
-        {
-            v -= 1 << k;
-            k++;
-        }
-
-        return ((2 * k) + 1) * CabacCost.Bit;
-    }
+    // The Exp-Golomb suffix (k = 0) of a level above MaxOnes: k ones, a zero and k bits, all bypass. Its value abs - 15 takes
+    // k = floor(log2(abs - 14)) (speed round 6: a bit count, not a loop).
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Suffix(int abs) => ((2 * BitOperations.Log2((uint)(abs - 14))) + 1) * CabacCost.Bit;
 
     // significant_coeff_flag and last_significant_coeff_flag up to the last level, from the tables and the rows of the block's
     // count levels.

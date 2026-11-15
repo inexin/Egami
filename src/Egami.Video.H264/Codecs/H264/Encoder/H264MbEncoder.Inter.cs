@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 using Egami.Nal;
 
@@ -1198,6 +1199,18 @@ internal sealed partial class H264MbEncoder
         code.Transform8x8 = eight;
         Span<int> block = stackalloc int[64];
         Span<int> score = stackalloc int[4];
+
+        // Speed round 6: the counts, prices and scores by block read and written through refs, their lengths checked once.
+        int[] lumaCount = code.LumaCount, luma8Count = code.Luma8Count;
+        long[] price4 = _price4, price8 = _price8;
+        if (lumaCount.Length < 16 || luma8Count.Length < 4 || price4.Length < 16 || price8.Length < 4)
+        {
+            throw new InvalidOperationException("A macroblock has 16 4x4 and 4 8x8 luma blocks.");
+        }
+
+        ref int countAt = ref MemoryMarshal.GetArrayDataReference(lumaCount);
+        ref int count8At = ref MemoryMarshal.GetArrayDataReference(luma8Count);
+        ref int scoreAt = ref MemoryMarshal.GetReference(score);
         if (eight)
         {
             for (int i8 = 0; i8 < 4; i8++)
@@ -1205,9 +1218,9 @@ internal sealed partial class H264MbEncoder
                 int bx = (i8 & 1) * 2, by = (i8 >> 1) * 2;
                 Residual(_srcY, _lumaAt + (by * 4 * _stride) + (bx * 4), _stride, _ip, (by * 64) + (bx * 4), 16, 8, block);
                 H264Forward.Transform8x8(block);
-                code.Luma8Count[i8] = QuantizeBlock(block, code.Luma8, i8 * 64, 0, 64, true, _qp, 5);
-                _price8[i8] = _blockPrice;
-                score[i8] = Score(code.Luma8, i8 * 64, 64, 4);
+                Unsafe.Add(ref count8At, i8) = QuantizeBlock(block, code.Luma8, i8 * 64, 0, 64, true, _qp, 5);
+                Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(price8), i8) = _blockPrice;
+                Unsafe.Add(ref scoreAt, i8) = Score(code.Luma8, i8 * 64, 64, 4);
             }
         }
         else
@@ -1217,9 +1230,10 @@ internal sealed partial class H264MbEncoder
             for (int blk = 0; blk < 16; blk++)
             {
                 int xy = H264Tables.BlockXY[blk];
-                code.LumaCount[blk] = QuantizeBlock(_w.AsSpan((((xy >> 2) * 4) + (xy & 3)) * 16, 16), code.Luma, blk * 16, 0, 16, false, _qp, 2);
-                _price4[blk] = _blockPrice;
-                score[blk >> 2] = Math.Min(score[blk >> 2] + Score(code.Luma, blk * 16, 16, 1), 1000);
+                Unsafe.Add(ref countAt, blk) = QuantizeBlock(_w.AsSpan((((xy >> 2) * 4) + (xy & 3)) * 16, 16), code.Luma, blk * 16, 0, 16, false, _qp, 2);
+                Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(price4), blk) = _blockPrice;
+                ref int sc = ref Unsafe.Add(ref scoreAt, blk >> 2);
+                sc = Math.Min(sc + Score(code.Luma, blk * 16, 16, 1), 1000);
             }
         }
 
@@ -1229,28 +1243,30 @@ internal sealed partial class H264MbEncoder
         int cbp = 0;
         for (int i8 = 0; i8 < 4; i8++)
         {
-            bool drop = score[i8] < 4 || total < 6;
+            bool drop = Unsafe.Add(ref scoreAt, i8) < 4 || total < 6;
             if (eight)
             {
+                ref int count8 = ref Unsafe.Add(ref count8At, i8);
                 if (drop)
                 {
                     Array.Clear(code.Luma8, i8 * 64, 64);
-                    code.Luma8Count[i8] = 0;
+                    count8 = 0;
                 }
 
-                cbp |= code.Luma8Count[i8] > 0 ? 1 << i8 : 0;
+                cbp |= count8 > 0 ? 1 << i8 : 0;
                 continue;
             }
 
             for (int blk = i8 * 4; blk < (i8 * 4) + 4; blk++)
             {
+                ref int count = ref Unsafe.Add(ref countAt, blk);
                 if (drop)
                 {
                     Array.Clear(code.Luma, blk * 16, 16);
-                    code.LumaCount[blk] = 0;
+                    count = 0;
                 }
 
-                cbp |= code.LumaCount[blk] > 0 ? 1 << i8 : 0;
+                cbp |= count > 0 ? 1 << i8 : 0;
             }
         }
 
@@ -1258,9 +1274,15 @@ internal sealed partial class H264MbEncoder
 
         // transform_size_8x8_flag is coded only with luma levels; without them the decoder takes the 4x4 transform.
         code.Transform8x8 = eight && cbp != 0;
-        for (int y = 0; y < 16; y++)
+        // The prediction into the picture a row as one load and store, the whole block's bounds checked once.
+        Span<byte> pictureAt = _y.AsSpan(_lumaAt, (15 * _stride) + 16);
+        ReadOnlySpan<byte> prediction = _ip.AsSpan(0, 256);
+        ref byte to = ref MemoryMarshal.GetReference(pictureAt);
+        ref byte from = ref MemoryMarshal.GetReference(prediction);
+        nint stride = _stride;
+        for (nint y = 0; y < 16; y++)
         {
-            _ip.AsSpan(y * 16, 16).CopyTo(_y.AsSpan(_lumaAt + (y * _stride), 16));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref to, y * stride), Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref from, y * 16)));
         }
 
         Span<int> d = _d.AsSpan(0, eight ? 64 : 16);
@@ -1268,7 +1290,7 @@ internal sealed partial class H264MbEncoder
         {
             for (int i8 = 0; i8 < 4; i8++)
             {
-                if (code.Luma8Count[i8] > 0)
+                if (Unsafe.Add(ref count8At, i8) > 0)
                 {
                     int bx = (i8 & 1) * 2, by = (i8 >> 1) * 2;
                     Dequantize(code.Luma8, i8 * 64, 0, 64, true, _qp, d);
@@ -1280,7 +1302,7 @@ internal sealed partial class H264MbEncoder
         {
             for (int blk = 0; blk < 16; blk++)
             {
-                if (code.LumaCount[blk] > 0)
+                if (Unsafe.Add(ref countAt, blk) > 0)
                 {
                     int xy = H264Tables.BlockXY[blk];
                     Dequantize(code.Luma, blk * 16, 0, 16, false, _qp, d);
