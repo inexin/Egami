@@ -13,6 +13,15 @@ internal sealed partial class FrameAnalyzer
     private const int TreeRange = 48;
 
     /// <summary>
+    /// The SAD of a half-size block, after the starting vectors, at or below which a tree search stops: about 2 a sample, still
+    /// content, which costs no search.
+    /// </summary>
+    private const int TreeStill = 128;
+
+    /// <summary>The most rounds of a tree search's diamond at each step size.</summary>
+    private const int TreeRounds = 4;
+
+    /// <summary>
     /// Estimates each block of the picture whose half-size copy is <paramref name="target"/> (its own costs in
     /// <paramref name="own"/>, from <see cref="Analyze"/>) predicted from <paramref name="ref0"/>, <paramref name="ref1"/> or
     /// their mean, the references <paramref name="distance0"/> and <paramref name="distance1"/> frames away in display order
@@ -35,7 +44,9 @@ internal sealed partial class FrameAnalyzer
                 int x1 = 0, y1 = 0;
                 if (ref1 is not null)
                 {
-                    (int c1, x1, y1) = TreeSearch(target, ref1, x, y, bx, by, distance1, own, result.Vectors1);
+                    // The second reference starts from the first's vector scaled across, and only refines it.
+                    int sx = distance0 == 0 ? 0 : x0 * distance1 / distance0, sy = distance0 == 0 ? 0 : y0 * distance1 / distance0;
+                    (int c1, x1, y1) = TreeSearch(target, ref1, x, y, bx, by, distance1, own, result.Vectors1, (sx, sy));
                     long cost1 = ((long)c1 * 4) + detail;
                     if (cost1 < best)
                     {
@@ -62,9 +73,10 @@ internal sealed partial class FrameAnalyzer
 
     /// <summary>
     /// A block's search into a reference <paramref name="distance"/> frames away: from zero, the left and upper blocks' vectors
-    /// into the same reference, and its vector into the frame before scaled by the distance; then a diamond refinement.
+    /// into the same reference, and its vector into the frame before scaled by the distance; then a diamond refinement, from
+    /// step 4 down, or only step 1 when <paramref name="seed"/> (the other reference's vector scaled across) starts it too.
     /// </summary>
-    private (int Cost, int X, int Y) TreeSearch(byte[] target, byte[] reference, int x, int y, int bx, int by, int distance, BlockCosts own, short[] found)
+    private (int Cost, int X, int Y) TreeSearch(byte[] target, byte[] reference, int x, int y, int bx, int by, int distance, BlockCosts own, short[] found, (int X, int Y)? seed = null)
     {
         int range = Math.Min(Range * Math.Max(Math.Abs(distance), 1), TreeRange);
         int bestX = 0, bestY = 0, best = SadAt(target, reference, x, y, 0, 0);
@@ -80,10 +92,17 @@ internal sealed partial class FrameAnalyzer
             TryAt(target, reference, x, y, found[(i - _cols) * 2], found[((i - _cols) * 2) + 1], range, ref best, ref bestX, ref bestY);
         }
 
-        for (int step = Math.Abs(distance) > 1 ? 8 : 4; step >= 1; step >>= 1)
+        if (seed is { } s)
+        {
+            TryAt(target, reference, x, y, s.X, s.Y, range, ref best, ref bestX, ref bestY);
+        }
+
+        // A block the starting vectors already predict well enough is left there.
+        int start = best <= TreeStill ? 0 : seed is not null ? 1 : 4;
+        for (int step = start; step >= 1; step >>= 1)
         {
             bool moved = true;
-            for (int round = 0; moved && round < 8; round++)
+            for (int round = 0; moved && round < TreeRounds; round++)
             {
                 int cx = bestX, cy = bestY;
                 moved = TryAt(target, reference, x, y, cx - step, cy, range, ref best, ref bestX, ref bestY);
@@ -148,10 +167,28 @@ internal sealed partial class FrameAnalyzer
         return total;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<ushort> Widen(byte[] data, int at) =>
+        Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref data[at])).AsByte());
+
     /// <summary>The error of a block predicted by the rounded mean of two references at their vectors.</summary>
     private int BiSad(byte[] a, byte[] r0, byte[] r1, int x, int y, int x0, int y0, int x1, int y1)
     {
         int offset = (y * _stride) + x, at0 = ((y + y0) * _stride) + x + x0, at1 = ((y + y1) * _stride) + x + x1;
+        if (Vector128.IsHardwareAccelerated)
+        {
+            Vector128<ushort> sum = Vector128<ushort>.Zero, one = Vector128.Create((ushort)1);
+            for (int i = 0; i < Block; i++)
+            {
+                int row = i * _stride;
+                Vector128<ushort> p = Widen(a, offset + row);
+                Vector128<ushort> q = (Widen(r0, at0 + row) + Widen(r1, at1 + row) + one) >> 1;
+                sum += Vector128.Max(p, q) - Vector128.Min(p, q);
+            }
+
+            return Vector128.Sum(sum);
+        }
+
         int total = 0;
         for (int i = 0; i < Block; i++)
         {
