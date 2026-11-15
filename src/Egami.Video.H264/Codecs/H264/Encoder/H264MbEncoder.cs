@@ -124,7 +124,6 @@ internal sealed partial class H264MbEncoder
         _i16Pending = false;
         Setup(mbX, mbY, qp);
         _round = IntraRound;
-        CodeChroma();
 
         int count = _allow8x8 && _effort >= 1 ? 3 : 2;
 
@@ -158,6 +157,8 @@ internal sealed partial class H264MbEncoder
             return double.MaxValue;
         }
 
+        // Speed round 7: chroma is coded only once intra passed the gate (the luma estimates do not read it).
+        CodeChroma();
         int coded = _effort >= 10 ? count : estimate[order[1]] - estimate[order[0]] <= estimate[order[0]] * IntraRankMargin ? 2 : 1;
         int best = order[0];
         double bestCost = double.MaxValue;
@@ -653,7 +654,6 @@ internal sealed partial class H264MbEncoder
             H264Forward.Transform4x4(block);
             int n = QuantizeBlock(block, code.Luma, blk * 16, 0, 16, false, _qp, 2);
             Span<int> d = _d.AsSpan(0, 16);
-            Dequantize(code.Luma, blk * 16, 0, 16, false, _qp, d);
 
             code.LumaCount[blk] = n;
             cbp |= n > 0 ? 1 << (blk >> 2) : 0;
@@ -662,7 +662,12 @@ internal sealed partial class H264MbEncoder
                 _pred.AsSpan(y * 4, 4).CopyTo(_y.AsSpan(at + (y * _stride), 4));
             }
 
-            H264Transform.Add4x4(d, _y, at, _stride, 255);
+            if (n > 0)
+            {
+                // Speed round 7: a block without levels adds nothing to its prediction.
+                Dequantize(code.Luma, blk * 16, 0, 16, false, _qp, d);
+                H264Transform.Add4x4(d, _y, at, _stride, 255);
+            }
         }
 
         code.Cbp = (code.Cbp & 0x30) | cbp;
@@ -713,7 +718,6 @@ internal sealed partial class H264MbEncoder
             H264Forward.Transform8x8(block);
             int n = QuantizeBlock(block, code.Luma8, i8 * 64, 0, 64, true, _qp, 5);
             Span<int> d = _d.AsSpan(0, 64);
-            Dequantize(code.Luma8, i8 * 64, 0, 64, true, _qp, d);
 
             code.Luma8Count[i8] = n;
             cbp |= n > 0 ? 1 << i8 : 0;
@@ -722,7 +726,11 @@ internal sealed partial class H264MbEncoder
                 _pred.AsSpan(y * 8, 8).CopyTo(_y.AsSpan(at + (y * _stride), 8));
             }
 
-            H264Transform.Add8x8(d, _y, at, _stride, 255);
+            if (n > 0)
+            {
+                Dequantize(code.Luma8, i8 * 64, 0, 64, true, _qp, d);
+                H264Transform.Add8x8(d, _y, at, _stride, 255);
+            }
         }
 
         code.Cbp = (code.Cbp & 0x30) | cbp;
@@ -957,6 +965,7 @@ internal sealed partial class H264MbEncoder
     /// Puts a 4x4 block's quantized levels (raster order) into <paramref name="dst"/> in scan order from <paramref name="first"/>
     /// on, and returns the mask of the non-zero ones by position in <paramref name="dst"/>.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ulong Scan4(int[] q, int first, Span<int> dst)
     {
         // The 4x4 zigzag scan as lane permutations of the two halves of a raster block: the lanes of each half of the scan, and
@@ -1077,11 +1086,14 @@ internal sealed partial class H264MbEncoder
                 long rate2 = n2 == 0 ? 0 : pricer.Price(k, level);
                 H264EncodeStats.Add(H264EncodeStat.RdoqRateCounts, n2 == 0 ? 0 : 1);
                 bool take = Unsafe.Add(ref gainAt, row) + (lambda * (rate2 - rate)) < 0;
-                takenMask |= (ulong)(take ? 1 : 0) << row;
-                rate = take ? rate2 : rate;
-                n = take ? n2 : n;
-                slot = take ? lower : level;
-                pricer.Accept(take);
+                // Speed round 7: the choice applied by masks (all ones when taken), not selects the JIT turns into branches.
+                int taken = take ? 1 : 0;
+                long m = -(long)taken;
+                takenMask |= (ulong)taken << row;
+                rate ^= (rate ^ rate2) & m;
+                n ^= (n ^ n2) & (int)m;
+                slot = level ^ ((level ^ lower) & (int)m);
+                pricer.Accept(m);
                 pricer.Advance(k);
             }
 

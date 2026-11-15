@@ -74,6 +74,7 @@ internal static class H264EncodeSimd
     /// The SADs of one w by h block (w a multiple of 4) against four blocks of one plane at once, each source row loaded once;
     /// each sum is what <see cref="Sad"/> gives.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Sad4(byte[] a, int atA, int strideA, byte[] b, int b0, int b1, int b2, int b3, int strideB, int w, int h, Span<long> sums) =>
         Sad4(a, atA, strideA, b, b0, b, b1, b, b2, b, b3, strideB, w, h, sums);
 
@@ -81,6 +82,7 @@ internal static class H264EncodeSimd
     /// <see cref="Sad4(byte[], int, int, byte[], int, int, int, int, int, int, int, Span{long})"/> for the first
     /// <paramref name="n"/> (1 to 4) of the blocks: 16-wide blocks pay only for those.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SadN(byte[] a, int atA, int strideA, byte[] b, int b0, int b1, int b2, int b3, int strideB, int w, int h, int n, Span<long> sums)
     {
         if (n == 1)
@@ -147,6 +149,7 @@ internal static class H264EncodeSimd
     /// The SADs of one w by h block (w a multiple of 4) against four blocks of up to four planes with one row length at once,
     /// each source row loaded once; each sum is what <see cref="Sad"/> gives.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Sad4(byte[] a, int atA, int strideA, byte[] p0, int b0, byte[] p1, int b1, byte[] p2, int b2, byte[] p3, int b3, int strideB, int w, int h, Span<long> sums)
     {
         if (!Sse2.IsSupported)
@@ -640,6 +643,7 @@ internal static class H264EncodeSimd
     }
 
     /// <summary><see cref="Hadamard2"/> on four blocks, two in each 128-bit lane.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector256<int> Hadamard4(Vector256<short> r0, Vector256<short> r1, Vector256<short> r2, Vector256<short> r3)
     {
         Vector256<short> s01 = r0 + r1, d01 = r0 - r1, s23 = r2 + r3, d23 = r2 - r3;
@@ -651,6 +655,7 @@ internal static class H264EncodeSimd
         return Across4(col01A, col23A) + Across4(col01B, col23B);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector256<int> Across4(Vector256<short> c01, Vector256<short> c23)
     {
         Vector256<short> s = c01 + c23, t = c01 - c23;

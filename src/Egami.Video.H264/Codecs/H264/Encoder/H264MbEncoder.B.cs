@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 using Egami.Nal;
 
 namespace Egami.Video.Codecs.H264;
@@ -15,6 +17,9 @@ internal sealed partial class H264MbEncoder
     private readonly byte[] _biCb = new byte[64];
     private readonly byte[] _biCr = new byte[64];
     private readonly byte[] _mc1 = new byte[256];
+
+    // Speed round 7: RefineBi's prediction from the list it holds fixed while it moves the other's vector.
+    private readonly byte[] _mcFixed = new byte[256];
     private H264RefPlanes[] _refs1 = [];
     private int _refCount1;
     private bool _weighted;
@@ -42,6 +47,7 @@ internal sealed partial class H264MbEncoder
     private int _lastMv0, _lastMv1;
 
     /// <summary>Chooses, codes and reconstructs the macroblock at (mbX, mbY) of a B slice at <paramref name="qp"/>; returns its cost.</summary>
+    [SkipLocalsInit]
     public double EncodeB(int mbX, int mbY, int qp)
     {
         Setup(mbX, mbY, qp);
@@ -324,6 +330,20 @@ internal sealed partial class H264MbEncoder
             for (int list = 0; list < 2; list++)
             {
                 int mv = list == 0 ? mv0 : mv1, x = H264SliceDecoder.MvX(mv), y = H264SliceDecoder.MvY(mv), bestMv = mv;
+
+                // Speed round 7: the other list's prediction made once for the eight candidates, not again with each.
+                int px = (_mbX * 16) + (bx * 4), py = (_mbY * 16) + (by * 4), pw = w * 4, ph = h * 4;
+                if (list == 0)
+                {
+                    _refs1[r1].Luma(px, py, pw, ph, mv1, _mcFixed, 0, 16, false);
+                }
+                else
+                {
+                    _refs[r0].Luma(px, py, pw, ph, mv0, _mcFixed, 0, 16, false);
+                }
+
+                H264RefPlanes moving = list == 0 ? _refs[r0] : _refs1[r1];
+                int srcAt = _origin + (py * _stride) + px;
                 for (int d = 0; d < 8; d++)
                 {
                     int cx = x + (d is 0 or 3 or 5 ? -1 : d is 2 or 4 or 7 ? 1 : 0), cy = y + (d < 3 ? -1 : d > 4 ? 1 : 0);
@@ -334,7 +354,10 @@ internal sealed partial class H264MbEncoder
                     }
 
                     (int a0, int a1) = list == 0 ? (c, mv1) : (mv0, c);
-                    long cc = PartSatd(bx, by, w, h, r0, a0, r1, a1) + fixedCost
+                    H264EncodeStats.Add(H264EncodeStat.PartCosts);
+                    moving.Luma(px, py, pw, ph, c, _mc1, 0, 16, false);
+                    H264EncodeSimd.Average(_mcFixed, 0, 16, _mc1, 0, 16, _mc, 0, 16, pw, ph);
+                    long cc = Satd(_srcY, srcAt, _stride, _mc, 0, 16, pw, ph) + fixedCost
                         + MvCost(H264SliceDecoder.MvX(a0), H264SliceDecoder.MvY(a0), mvp0) + MvCost(H264SliceDecoder.MvX(a1), H264SliceDecoder.MvY(a1), mvp1);
                     if (cc < cost)
                     {
