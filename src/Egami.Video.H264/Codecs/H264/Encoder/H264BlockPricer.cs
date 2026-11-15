@@ -156,6 +156,7 @@ internal sealed class H264BlockPricer
     public void Invalidate() => _made = 0;
 
     // The tables of the block's category from the states, whose costs Begin and Price then look up instead of working out.
+    [SkipLocalsInit]
     private void MakeTables()
     {
         byte[] ctx = _ctx;
@@ -241,26 +242,36 @@ internal sealed class H264BlockPricer
         return _trySig + _prefix + cost + (_row > 0 ? _tail[((_row - 1) * States) + state] : 0) + CabacCost.Bit;
     }
 
-    /// <summary>Keeps the change of the last <see cref="Price"/> when RDOQ took it.</summary>
-    public void Accept(bool take)
+    /// <summary>Keeps the change of the last <see cref="Price"/> when RDOQ took it: <paramref name="taken"/> all ones, else 0.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Accept(long taken)
     {
-        _sig = take ? _trySig : _sig;
-        _last = take ? _tryLast : _last;
+        _sig ^= (_sig ^ _trySig) & taken;
+        _last ^= (_last ^ _tryLast) & (int)taken;
     }
 
     /// <summary>Moves the final level at scan position <paramref name="k"/> into the levels coded before the next one tried.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Advance(int k)
     {
         Debug.Assert(_rows[_row] == k, "RDOQ tries the quantized levels from the last one back.");
         int level = _levels[_at + k];
         int coded = (level | -level) >> 31;
         _prefix += LevelCost(level, _state) & coded;
-        _state = coded != 0 ? Next(level, _state) : _state;
+        _state ^= (_state ^ Next(level, _state)) & coded;
         _row--;
     }
 
+    // |level| without Math.Abs's overflow check: a level is far from int.MinValue (speed round 7).
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Abs(int level)
+    {
+        int sign = level >> 31;
+        return (level ^ sign) - sign;
+    }
+
     // The coding state after a level, looked up rather than branched on.
-    private int Next(int level, int state) => _next[(((1 - Math.Abs(level)) >>> 31) << 3) + state];
+    private int Next(int level, int state) => _next[(((1 - Abs(level)) >>> 31) << 3) + state];
 
     private (int Sig, int Last) Contexts(int i) =>
         _cat == 5 ? (_sigBase + H264Tables.Significant8x8[i], _lastBase + H264Tables.Last8x8[i]) : (_sigBase + i, _lastBase + i);
@@ -268,6 +279,7 @@ internal sealed class H264BlockPricer
     // The levels as quantized at rows row down to 0, coded from each state (states 0 to 3 count the levels of 1 while none was
     // greater than 1, states 4 on the levels greater than 1, each up to where the contexts stop changing), for every row: each
     // row's costs from the eight states at once, plus the row below's from the state each leads to.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Tails(int count)
     {
         int[] levels = _levels, rows = _rows, tail = _tail;
@@ -290,7 +302,7 @@ internal sealed class H264BlockPricer
             ref int tailAt = ref MemoryMarshal.GetArrayDataReference(tail);
             for (nint row = 0; row < count; row++)
             {
-                int abs = Math.Abs(Unsafe.Add(ref levelAt, Unsafe.Add(ref rowAt, row)));
+                int abs = Abs(Unsafe.Add(ref levelAt, Unsafe.Add(ref rowAt, row)));
                 Vector256<int> own = Vector256.LoadUnsafe(ref costs, (nuint)(costAt + (Math.Min(abs, 15) * States)));
                 if (abs > MaxOnes)
                 {
@@ -319,7 +331,7 @@ internal sealed class H264BlockPricer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int LevelCost(int level, int state)
     {
-        int abs = Math.Abs(level);
+        int abs = Abs(level);
         int cost = _levelCosts[_levelAt + (Math.Min(abs, 15) * States) + state];
         return abs > MaxOnes ? cost + Suffix(abs) : cost;
     }

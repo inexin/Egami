@@ -54,8 +54,14 @@ internal sealed class H264PictureEncoder
         _logs = new double[_qpOffsets.Length];
     }
 
-    /// <summary>Gets the reconstructed picture of the last picture coded, deblocked.</summary>
+    /// <summary>
+    /// Gets the reconstructed picture of the last picture coded, deblocked (an unreferenced one only with
+    /// <see cref="DeblockUnreferenced"/>).
+    /// </summary>
     public H264Picture Recon => _current.Picture;
+
+    /// <summary>Gets or sets whether unreferenced pictures are deblocked too, for a reconstruction that is read.</summary>
+    public bool DeblockUnreferenced { get; set; }
 
     /// <summary>Gets the number of reference pictures held, which P pictures may predict from.</summary>
     public int References => _refs.Count;
@@ -425,6 +431,13 @@ internal sealed class H264PictureEncoder
     /// </summary>
     private void FinishPicture(bool referenced, bool disposable, int frameNum, int poc)
     {
+        if (!referenced && !DeblockUnreferenced)
+        {
+            // Speed round 7: no picture predicts from an unreferenced one, so its reconstruction needs no deblocking unless
+            // something reads it (the tests' reconstruction hook).
+            return;
+        }
+
         _deblock.Filter(_current.Picture, _mb, _filters, 8, 8, 0, _config.HeightMbs);
         if (!referenced)
         {

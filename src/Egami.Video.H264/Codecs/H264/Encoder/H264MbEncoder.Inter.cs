@@ -16,8 +16,14 @@ internal sealed partial class H264MbEncoder
     /// <summary>The rounding offset of inter levels without RDOQ, in 1/256 of a step (a sixth).</summary>
     internal const int InterRound = 43;
 
-    private static readonly (int X, int Y)[] Diamond = [(0, -1), (-1, 0), (1, 0), (0, 1)];
-    private static readonly (int X, int Y)[] Hexagon = [(-2, 0), (-1, -2), (1, -2), (2, 0), (1, 2), (-1, 2)];
+    // The search patterns as offsets (speed round 7: data the JIT reads without the bounds checks of tuple arrays): the
+    // diamond's four points, the hexagon's six and the square's eight.
+    private static ReadOnlySpan<sbyte> DiamondX => [0, -1, 1, 0];
+    private static ReadOnlySpan<sbyte> DiamondY => [-1, 0, 0, 1];
+    private static ReadOnlySpan<sbyte> HexagonX => [-2, -1, 1, 2, 1, -1];
+    private static ReadOnlySpan<sbyte> HexagonY => [0, -2, -2, 0, 2, 2];
+    private static ReadOnlySpan<sbyte> SquareX => [-1, 0, 1, -1, 1, -1, 0, 1];
+    private static ReadOnlySpan<sbyte> SquareY => [-1, -1, -1, 0, 0, 1, 1, 1];
 
     // After a move to hexagon point k, the new points: k - 1, k and k + 1 (mod 6).
     private static ReadOnlySpan<byte> HexNext => [5, 0, 1, 0, 1, 2, 1, 2, 3, 2, 3, 4, 3, 4, 5, 4, 5, 0];
@@ -48,8 +54,6 @@ internal sealed partial class H264MbEncoder
         <= 7 => H264SearchShortcuts.QuickSubpelB,
         _ => H264SearchShortcuts.None,
     };
-
-    private static readonly (int X, int Y)[] Square = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)];
 
     // The cost of a lone ±1 level after a run of zeros, which decides when a sparse block is dropped.
     private static readonly byte[] RunCost = [3, 2, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -416,6 +420,7 @@ internal sealed partial class H264MbEncoder
     }
 
     /// <summary>P_8x8: each 8x8 block searched in turn, and split into 8x4, 4x8 or 4x4 where that costs less.</summary>
+    [SkipLocalsInit]
     private long Search8x8(H264MbCode code, ReadOnlySpan<int> starts)
     {
         ClearInter(code, H264MbKind.Inter);
@@ -560,6 +565,9 @@ internal sealed partial class H264MbEncoder
 
         /// <summary>The bits of the reference index, at λ.</summary>
         public long RefCost;
+
+        /// <summary>The cost SearchWhole found for the vector it returned: its SAD (SATD when weighted) plus vector bits.</summary>
+        public long WholeCost;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -574,6 +582,7 @@ internal sealed partial class H264MbEncoder
         Search(0, r, bx, by, w, h, mvp, starts, out cost);
 
     /// <summary>Searches the block in reference r of a list.</summary>
+    [SkipLocalsInit]
     private int Search(int list, int r, int bx, int by, int w, int h, int mvp, ReadOnlySpan<int> starts, out long cost, long bound = long.MaxValue)
     {
         H264EncodeStats.Add(H264EncodeStat.BlockSearches);
@@ -658,6 +667,7 @@ internal sealed partial class H264MbEncoder
     /// The costs of up to four whole-sample vectors (Xs and Ys from <paramref name="from"/>) into Costs, as
     /// <see cref="IntCost"/> gives them; with SAD (task 13), one pass over the source rows for all of them.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void IntCosts(ref BlockSearch s, int from, int n)
     {
         Span<int> xs = s.Xs, ys = s.Ys;
@@ -751,7 +761,7 @@ internal sealed partial class H264MbEncoder
                     for (int n = n0; n < Math.Min(points, n0 + 4); n++)
                     {
                         int k = moved < 0 ? n : HexNext[(moved * 3) + n];
-                        int x = cx + Hexagon[k].X, y = cy + Hexagon[k].Y;
+                        int x = cx + HexagonX[k], y = cy + HexagonY[k];
                         if (x >= minX && x <= maxX && y >= minY && y <= maxY)
                         {
                             (ks[m], sxs[m], sys[m]) = (k, x, y);
@@ -790,7 +800,7 @@ internal sealed partial class H264MbEncoder
                 int m = 0;
                 for (int q = q0; q < q0 + 4; q++)
                 {
-                    int x = qx + Square[q].X, y = qy + Square[q].Y;
+                    int x = qx + SquareX[q], y = qy + SquareY[q];
                     if (x >= minX && x <= maxX && y >= minY && y <= maxY)
                     {
                         (sxs[m], sys[m]) = (x, y);
@@ -818,9 +828,9 @@ internal sealed partial class H264MbEncoder
             for (int step = 0; step < range; step++)
             {
                 int cx = ix, cy = iy;
-                foreach ((int dx, int dy) in Diamond)
+                for (int k = 0; k < 4; k++)
                 {
-                    int x = cx + dx, y = cy + dy;
+                    int x = cx + DiamondX[k], y = cy + DiamondY[k];
                     if (x >= minX && x <= maxX && y >= minY && y <= maxY)
                     {
                         long c = IntCost(ref s, x, y);
@@ -838,6 +848,7 @@ internal sealed partial class H264MbEncoder
             }
         }
 
+        s.WholeCost = best;
         return H264SliceDecoder.PackMv(ix * 4, iy * 4);
     }
 
@@ -854,7 +865,8 @@ internal sealed partial class H264MbEncoder
         {
             // Half samples: a diamond by SAD, each step from the best so far.
             H264EncodeStats.Add(H264EncodeStat.SubpelCosts);
-            long bestSad = SubSad(ref s, bxq, byq) + MvCost(ref s, bxq, byq);
+            // Speed round 7: without a weight the whole-sample search costed this vector by the same SAD and bits.
+            long bestSad = s.Single ? s.WholeCost : SubSad(ref s, bxq, byq) + MvCost(ref s, bxq, byq);
             int came = -1;
             Span<int> xs = s.Xs, ys = s.Ys, ks = s.Ks;
             Span<long> cs = s.Costs;
@@ -863,7 +875,7 @@ internal sealed partial class H264MbEncoder
                 int cx = bxq, cy = byq, moved = -1, m = 0;
                 for (int k = 0; k < 4; k++)
                 {
-                    int x = cx + (Diamond[k].X * 2), y = cy + (Diamond[k].Y * 2);
+                    int x = cx + (DiamondX[k] * 2), y = cy + (DiamondY[k] * 2);
                     if (k == 3 - came || x < minX || x > maxX || y < minY || y > maxY)
                     {
                         continue;
@@ -908,7 +920,7 @@ internal sealed partial class H264MbEncoder
                 int cx = bxq, cy = byq, moved = -1;
                 for (int k = 0; k < 4; k++)
                 {
-                    int x = cx + Diamond[k].X, y = cy + Diamond[k].Y;
+                    int x = cx + DiamondX[k], y = cy + DiamondY[k];
                     if (k == 3 - came || x < minX || x > maxX || y < minY || y > maxY)
                     {
                         continue;
@@ -949,9 +961,9 @@ internal sealed partial class H264MbEncoder
                 break;
             }
 
-            foreach ((int dx, int dy) in Square)
+            for (int q = 0; q < 8; q++)
             {
-                int x = cx + (dx * d), y = cy + (dy * d);
+                int x = cx + (SquareX[q] * d), y = cy + (SquareY[q] * d);
                 if (x < minX || x > maxX || y < minY || y > maxY || (Math.Abs(x - lastX) <= 1 && Math.Abs(y - lastY) <= 1))
                 {
                     // Out of reach, or costed in the last quarter-sample round (its center too) and no better than the best.
@@ -1191,6 +1203,7 @@ internal sealed partial class H264MbEncoder
     private int _transform = -1;
 
     /// <summary>Codes the luma residual against the prediction in <see cref="_ip"/> and reconstructs it; returns its squared error.</summary>
+    [SkipLocalsInit]
     private long CodeInterLuma(H264MbCode code, bool eight)
     {
         H264EncodeStats.Add(H264EncodeStat.InterLumaCodings);

@@ -387,7 +387,17 @@ internal sealed class H264FrameCoder : IFrameCoder
     internal H264Picture Recon => _encoder.Recon;
 
     /// <summary>Gets or sets what runs after each frame is coded, with its reconstruction, for tests.</summary>
-    internal Action<H264Picture, int>? Coded { get; set; }
+    internal Action<H264Picture, int>? Coded
+    {
+        get => _coded;
+        set
+        {
+            _coded = value;
+            _encoder.DeblockUnreferenced = value is not null;
+        }
+    }
+
+    private Action<H264Picture, int>? _coded;
 
     /// <summary>Gets or sets the direct prediction B pictures are forced to, temporal or spatial, for tests.</summary>
     internal bool? TemporalDirect
