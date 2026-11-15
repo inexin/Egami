@@ -192,21 +192,23 @@ VideoWriterOptions baseline = options with { H264 = new H264EncoderOptions { Pro
 </code></pre><h3 id="compression-and-speed">Compression and speed</h3>
 <p>The encoder is measured against x264 0.164 on four Xiph test clips (crowd_run, ducks_take_off, park_joy and old_town_cross at
 720p, 50 frames a second), both tuned for PSNR. At effort 4 it needs 3 to 6 % more bits than x264's medium preset for the same
-PSNR (4.1 % on average, 60 frames), between what x264's fast and medium presets give. On eight clips (those four, and johnny,
-kristen_sara, pedestrian_area and rush_hour, 120 frames) it needs 4.4 % more on average (0.5 to 14.1 %); with adaptive
-quantization on, as both encoders default to, it needs 1.8 % fewer bits than x264 medium for the same SSIM. It is slower: on
-one thread, with x264 at the CRF that gives the same PSNR-Y, 3.2 times x264 medium's CPU cycles a frame at 720p at quality
-50 (2.4 to 4.6 by clip) and 2.4 times at quality 34 (1.8 to 3.7), on .NET's default runtime with tiered PGO on and without
-adaptive quantization; with it, the default, 3.2 and 2.5 times. Cycles vary by up to a third between runs on a busy machine;
-in instructions, which barely vary, effort 4 takes 3.5 and 2.8 times x264 medium's. The design's goal of twice x264 medium's time is not met. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as
+PSNR (4.0 % on average, 60 frames), between what x264's fast and medium presets give. On eight clips (those four, and johnny,
+kristen_sara, pedestrian_area and rush_hour, 120 frames) it needs 4.0 % more on average (0.4 to 12.4 %); with adaptive
+quantization on, as both encoders default to, it needs 2.0 % fewer bits than x264 medium for the same SSIM. At effort 5, with
+the block macroblock tree, it needs 2.1 % more for the same PSNR and 4.7 % fewer for the same SSIM. It is slower: on
+one thread, with x264 at the CRF that gives the same PSNR-Y, 2.9 times x264 medium's CPU cycles a frame at 720p at quality
+50 (2.3 to 3.6 by clip) and 2.3 times at quality 34 (2.2 to 2.6), on .NET's default runtime with tiered PGO on and without
+adaptive quantization; with it, the default, 3.2 and 2.6 times. Cycles vary by up to a third between runs on a busy machine;
+in instructions, which vary less, effort 4 takes 3.5 and 2.9 times x264 medium's. The design's goal of twice x264 medium's time is not met. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as
 Egami's own decoder.</p>
 <h4 id="speed-by-effort">Speed by effort</h4>
 <p>From effort 1 up, each effort costs more cycles than the one below it and needs fewer bits, on the mean of the four clips;
 effort 0, without B pictures, now costs about what effort 1 does for far more bits. Cycles are a
 macroblock (a 720p frame has 3600) at one thread, quality 50, the mean of the clips; x264 medium is timed at the CRF that gives
 effort 4's PSNR-Y. BD-rate is PSNR-Y against x264 medium over four qualities and 60 frames: the mean of the clips and the worst clip,
-measured after the compression Build Plan (B pictures, adaptive quantization); the cycles are from before it, which changed
-effort 4's instructions by under 2 %.</p>
+measured after the compression Build Plan (B pictures, adaptive quantization), and for effort 4 after the block macroblock
+tree plan, which also made efforts 0 and 5 need 2.8 and 0.7 points fewer bits on eight clips (above); the cycles are from
+before both, which changed effort 4's instructions by under 2 % each.</p>
 <table>
 <thead>
 <tr>
@@ -250,8 +252,8 @@ effort 4's instructions by under 2 %.</p>
 <td style="text-align: right;">4 (default)</td>
 <td style="text-align: right;">189k</td>
 <td style="text-align: right;">3.0 (2.5–3.7)</td>
-<td style="text-align: right;">+4.1 %</td>
-<td style="text-align: right;">+6.1 %</td>
+<td style="text-align: right;">+4.0 %</td>
+<td style="text-align: right;">+5.8 %</td>
 </tr>
 <tr>
 <td style="text-align: right;">5</td>
@@ -306,14 +308,15 @@ skip tests, and from effort 2 one transform size a macroblock).</li>
 <li><strong>2</strong>: two references, 8x8 partitions, a hexagon search and the 8x8 transform for inter blocks.</li>
 <li><strong>3</strong>: RDOQ and the second-best partitioning RD-coded when it comes close.</li>
 <li><strong>4</strong> (default): B pyramids with full runs (the middle B picture at 1.3 times a P picture's quantizer step), three references, the full sub-sample search in P pictures; B pictures search one list 0
-reference and try intra only where its 16x16 prediction comes below the inter cost by SATD. A 16x16 candidate whose search
+reference and try intra where its 16x16 prediction comes within 1.5 times the inter cost by SATD (as in P pictures). A 16x16 candidate whose search
 cost is low for the QP is coded at once, and when it leaves no residual nothing else but intra is searched or coded. The
 8x8, 16x8 and 8x16 parts search only the references whose 16x16 search came within 12.5 % of the best one's. Skip ends
 the search when no 4x4 block's error reaches 0.6 (B) or 0.5 (P) quantizer steps, and a B macroblock that stops early tries
 no intra. The first candidate that codes luma levels picks the transform size (4x4 or 8x8) for the macroblock's other
 candidates, and intra is coded only when its best estimate comes below the inter search cost.</li>
-<li><strong>5</strong>: two list 0 references in B pictures, intra in B pictures where it comes within 1.5 times the inter cost (as in P
-pictures), sub-block searches in every reference, 16x8 and 8x16 searched in every macroblock (not only where 8x8 beats
+<li><strong>5</strong>: the block macroblock tree: the lookahead estimates each 16x16 block against the references the B-frame order gives
+its picture and lowers by up to 3 QP the step of the blocks later pictures reuse most, around the step the frame-level
+tree gives the picture; two list 0 references in B pictures, sub-block searches in every reference, 16x8 and 8x16 searched in every macroblock (not only where 8x8 beats
 16x16), and one more sub-sample refinement round; the early stop after 16x16 stays.</li>
 <li><strong>6</strong>: no early stop after 16x16, a wider search range, and 8x4, 4x8 and 4x4 at levels up to 3.</li>
 <li><strong>7</strong>: intra tried in every inter macroblock.</li>
