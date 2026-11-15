@@ -56,11 +56,60 @@ public sealed class EncoderStatsTests
         Assert.True(Sum(Encode(effort: 3), H264EncodeStat.RdoqBlocks) > 0);
     }
 
+    [Fact]
+    public void SplitsEachPictureKindsBitsAndMacroblocks()
+    {
+        Assert.SkipUnless(H264EncodeStats.Enabled, "The counters compile away in this build (Release).");
+        long bytes = 0;
+        Encode(effort: 4, b => bytes += b);
+        long[,] pictures = H264EncodeStats.PictureSnapshot();
+        int parts = Enum.GetValues<H264BitPart>().Length;
+        int shares = Enum.GetValues<H264BlockShare>().Length;
+        Assert.Equal(H264EncodeStats.PictureColumns.Length, pictures.GetLength(1));
+
+        long count = 0, bits = 0;
+        for (int k = 0; k < H264EncodeStats.PictureKinds.Length; k++)
+        {
+            count += pictures[k, 0];
+            bits += pictures[k, 1];
+            if (pictures[k, 0] == 0)
+            {
+                continue;
+            }
+
+            // The parts are the rate counter's estimate of the macroblock layer: a little under the NAL units' bits, which add
+            // the slice headers.
+            long estimate = 0;
+            for (int i = 0; i < parts; i++)
+            {
+                estimate += pictures[k, 2 + i];
+            }
+
+            Assert.InRange(estimate / 32768.0, 0.9 * pictures[k, 1], pictures[k, 1]);
+            long mbs = 0;
+            for (int i = 0; i < shares; i++)
+            {
+                mbs += pictures[k, 2 + parts + i];
+            }
+
+            Assert.Equal(pictures[k, 0] * Mbs, mbs);
+        }
+
+        Assert.Equal(Frames, count);
+        Assert.Equal(1, pictures[0, 0]);
+        Assert.Equal(Mbs, pictures[0, 2 + parts + (int)H264BlockShare.Intra]);
+        Assert.True(pictures[1, 2 + (int)H264BitPart.Vectors] > 0, "no vector bits in P pictures");
+        Assert.True(pictures[2, 0] + pictures[3, 0] > 0, "no B pictures");
+
+        // The NAL units' bits, without the parameter sets and start codes the stream adds.
+        Assert.InRange(bits, 0.8 * 8 * bytes, 8 * bytes);
+    }
+
     private static long At(long[,] counts, int type, H264EncodeStat stat) => counts[type, (int)stat];
 
     private static long Sum(long[,] counts, H264EncodeStat stat) => At(counts, 0, stat) + At(counts, 1, stat) + At(counts, 2, stat);
 
-    private static long[,] Encode(int effort)
+    private static long[,] Encode(int effort, Action<long>? bytes = null)
     {
         MediaContext context = new() { Egami = EgamiContext.Default with { MaxParallelism = 1 } };
         VideoEncoderOptions options = new() { Width = W, Height = H, Effort = effort, KeyframeInterval = 100, SceneCutKeyframes = false };
@@ -72,11 +121,11 @@ public sealed class EncoderStatsTests
             for (int i = 0; i < Frames; i++)
             {
                 encoder.Send(new YuvVideoFrame(pictures[i], new MediaTime(i, timeBase)));
-                Drain(encoder);
+                Drain(encoder, bytes);
             }
 
             encoder.Flush();
-            Drain(encoder);
+            Drain(encoder, bytes);
         }
 
         foreach (YuvRaster<byte> picture in pictures)
@@ -87,10 +136,11 @@ public sealed class EncoderStatsTests
         return H264EncodeStats.Snapshot();
     }
 
-    private static void Drain(IVideoEncoder encoder)
+    private static void Drain(IVideoEncoder encoder, Action<long>? bytes)
     {
         while (encoder.TryReceive(out EncodedPacket? packet))
         {
+            bytes?.Invoke(packet.Data.Length);
             packet.Dispose();
         }
     }

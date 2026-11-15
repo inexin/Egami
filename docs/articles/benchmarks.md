@@ -6,6 +6,7 @@ led by lossless WebP at effort 4 on screen content, where SkiaSharp's native lib
 ImageSharp, Egami is typically 1.5 to 3 times faster.
 
 [Performance](performance.md) has the tips that keep your own code fast and the benchmarks that ship with Egami.
+[Comparison with other libraries](compare.md) compares licences, platforms, formats and features.
 
 ## Summary
 

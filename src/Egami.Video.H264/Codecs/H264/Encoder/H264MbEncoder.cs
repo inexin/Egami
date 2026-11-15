@@ -248,6 +248,15 @@ internal sealed partial class H264MbEncoder
     /// </summary>
     private const int BIntraMargin = 16;
 
+    /// <summary>
+    /// The share of <see cref="H264Forward.Lambda"/> that weighs bits against error in the RD codings of I and P macroblocks (H.264
+    /// compression Build Plan, task 5): pictures others predict from are worth more than their own error says, so they spend
+    /// more bits on it. B pictures keep the whole λ, and the search and its shortcuts keep √λ unscaled. 0.6 was best on the
+    /// eight clips: −5.4 % BD-rate on PSNR-Y with three B-frames, every clip better, for no more instructions; 0.5 to 0.8
+    /// were within 1 %.
+    /// </summary>
+    internal const double IpLambdaScale = 0.6;
+
     private void Setup(int mbX, int mbY, int qp)
     {
         _mbX = mbX;
@@ -255,8 +264,9 @@ internal sealed partial class H264MbEncoder
         _qp = qp;
         _pricer.Invalidate();
         _qpc = H264Tables.ChromaQp[Math.Clamp(qp + _syntax.ChromaQpOffset, 0, 51)];
-        _lambda = H264Forward.Lambda(qp);
-        _sadLambda = Math.Sqrt(_lambda);
+        double lambda = H264Forward.Lambda(qp);
+        _lambda = _syntax.SliceType == H264SliceType.B ? lambda : lambda * IpLambdaScale;
+        _sadLambda = Math.Sqrt(lambda);
         (_modeBits1, _modeBits4) = ((long)(_sadLambda * 1), (long)(_sadLambda * 4));
         int slice = _syntax.Slice, w = _mb.WidthMbs, addr = (mbY * w) + mbX;
         _left = mbX > 0 && _mb.Slice[addr - 1] == slice;

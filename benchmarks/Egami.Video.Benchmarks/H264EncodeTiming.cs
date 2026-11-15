@@ -13,7 +13,8 @@ namespace Egami.Video.Benchmarks;
 /// Options: --out=file.h264 --quality=Q --quantizer=Q --effort=E --threads=N (--one-thread for 1) --bitrate=BITS --cbr --two-pass --realtime
 /// --bframes=N --profile=baseline|main|high --cavlc --no-aq --frames=N --runs=N.
 /// In a build that counts (<see cref="H264EncodeStats.Enabled"/>), the JSON also carries the first run's work counters by
-/// picture type ("stats").
+/// picture type ("stats") and, by picture kind (I, P, referenced B, B), the pictures' bits split into parts and the shares of
+/// macroblock kinds ("pictures").
 /// </summary>
 internal static class H264EncodeTiming
 {
@@ -105,7 +106,7 @@ internal static class H264EncodeTiming
 
             if (run == 0 && H264EncodeStats.Enabled)
             {
-                stats = StatsJson(H264EncodeStats.Snapshot());
+                stats = StatsJson(H264EncodeStats.Snapshot()) + PicturesJson(H264EncodeStats.PictureSnapshot());
             }
         }
 
@@ -121,6 +122,13 @@ internal static class H264EncodeTiming
         IEnumerable<string> types = H264EncodeStats.Types.Select((type, t) =>
             $"\"{type}\": {{{string.Join(", ", names.Select((name, s) => string.Create(CultureInfo.InvariantCulture, $"\"{name}\": {counts[t, s]}")))}}}");
         return $", \"stats\": {{{string.Join(", ", types)}}}";
+    }
+
+    private static string PicturesJson(long[,] counts)
+    {
+        IEnumerable<string> kinds = H264EncodeStats.PictureKinds.Select((kind, k) =>
+            $"\"{kind}\": {{{string.Join(", ", H264EncodeStats.PictureColumns.Select((name, c) => string.Create(CultureInfo.InvariantCulture, $"\"{name}\": {counts[k, c]}")))}}}");
+        return $", \"pictures\": {{{string.Join(", ", kinds)}}}";
     }
 
     private static void Drain(IVideoEncoder encoder, MemoryStream output)

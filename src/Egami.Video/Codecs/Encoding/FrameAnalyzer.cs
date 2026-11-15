@@ -19,7 +19,7 @@ internal readonly record struct FrameStats(long Intra, long Inter, int Motion, l
 /// the best of DC, vertical and horizontal prediction from the source's own neighbours, and the error of a small motion search
 /// into the frame before, seeded by the left and upper blocks' vectors. The result depends only on the frames, never on threads.
 /// </summary>
-internal sealed class FrameAnalyzer
+internal sealed partial class FrameAnalyzer
 {
     private const int Block = 8;
     private const int Range = 16;
@@ -70,6 +70,7 @@ internal sealed class FrameAnalyzer
         {
             target.Intra[i] = (_intraCosts[i] * 4) + _detail[i];
             target.Inter[i] = (_interCosts[i] * 4) + _detail[i];
+            target.Detail[i] = _detail[i];
         }
 
         _vectors.CopyTo(target.Vectors, 0);

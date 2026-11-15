@@ -13,6 +13,8 @@ page in [Formats](../formats/index.md). If you are new, read [Getting started](.
 What every user meets: pixel types, metadata, and how Egami uses memory and handles untrusted files.
 
 - [Benchmarks](../benchmarks.md): Egami's speed next to ImageSharp, SkiaSharp and Magick.NET.
+- [Comparison with other libraries](../compare.md): licences, platforms, formats and features next to ImageSharp, SkiaSharp,
+  Magick.NET, NetVips and System.Drawing.
 - [Diagnostics](../diagnostics.md): warnings about damaged or unusual files, and how to log or reject them.
 - [Memory and threading](memory-and-threading.md): pooled memory, streaming decode and parallel work.
 - [Metadata](metadata.md): EXIF, IPTC and XMP, kept, edited or stripped.

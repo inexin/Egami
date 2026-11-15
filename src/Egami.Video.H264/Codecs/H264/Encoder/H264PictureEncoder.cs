@@ -63,6 +63,12 @@ internal sealed class H264PictureEncoder
     /// <summary>Gets or sets whether macroblocks' QPs follow their energy (adaptive quantization).</summary>
     public bool AdaptiveQuantization { get; set; }
 
+    /// <summary>
+    /// Gets or sets the block macroblock tree's step offsets for the next picture, one per macroblock in base-2 logarithms of
+    /// the step (<see cref="Encoding.FrameDecision.BlockOffsets"/>), added to adaptive quantization's; null for none.
+    /// </summary>
+    public double[]? TreeOffsets { get; set; }
+
     /// <summary>Gets or sets the smallest QP a macroblock may take.</summary>
     public int MinQp { get; set; }
 
@@ -171,7 +177,7 @@ internal sealed class H264PictureEncoder
         {
             slice.Syntax.RefIds = ids;
             slice.Syntax.RefCount = count;
-            slice.Encoder.SetReferences(refs, count, maxMvY, _effort >= 6 && _config.LevelIdc <= 30);
+            slice.Encoder.SetReferences(refs, count, maxMvY, _effort >= 6 && _config.LevelIdc <= 30, pocLsb);
         }
 
         CodeSlices(qp, predicted: true, (w, slice) =>
@@ -224,7 +230,7 @@ internal sealed class H264PictureEncoder
             syntax.ColPoc = refs1[0].Poc;
             syntax.RefPocs = pocs0;
             syntax.CurrentPoc = poc;
-            slice.Encoder.SetBReferences(refs0, count0, refs1, 1, 4 * H264Levels.MaxVerticalMv(_config.LevelIdc));
+            slice.Encoder.SetBReferences(refs0, count0, refs1, 1, 4 * H264Levels.MaxVerticalMv(_config.LevelIdc), poc);
         }
 
         bool temporalAllowed = _slices[0].Syntax.TemporalAllowed();
@@ -293,8 +299,41 @@ internal sealed class H264PictureEncoder
         }
     }
 
-    /// <summary>The NAL units of the slices last coded.</summary>
-    private byte[][] Nals(int refIdc, int type) => [.. _slices.Select(s => H264StreamWriter.Nal(refIdc, type, s.Writer!))];
+    /// <summary>The NAL units of the slices last coded; a counting build adds the picture to <see cref="H264EncodeStats"/>.</summary>
+    private byte[][] Nals(int refIdc, int type)
+    {
+        byte[][] nals = [.. _slices.Select(s => H264StreamWriter.Nal(refIdc, type, s.Writer!))];
+#if EGAMI_H264_STATS
+        long[] parts = new long[_slices[0].Parts.Length], shares = new long[_slices[0].Shares.Length];
+        foreach (SliceCoder slice in _slices)
+        {
+            for (int i = 0; i < parts.Length; i++)
+            {
+                parts[i] += slice.Parts[i];
+            }
+
+            for (int i = 0; i < shares.Length; i++)
+            {
+                shares[i] += slice.Shares[i];
+            }
+        }
+
+        int kind = _slices[0].Syntax.SliceType switch { H264SliceType.I => 0, H264SliceType.P => 1, _ => refIdc > 0 ? 2 : 3 };
+        H264EncodeStats.AddPicture(kind, nals.Sum(n => 8L * n.Length), parts, shares);
+#endif
+        return nals;
+    }
+
+#if EGAMI_H264_STATS
+    /// <summary>The kind of macroblock a code is, for <see cref="H264EncodeStats"/>' shares.</summary>
+    private static H264BlockShare Share(H264MbCode code) => code.Kind switch
+    {
+        H264MbKind.PSkip or H264MbKind.BSkip => H264BlockShare.Skip,
+        H264MbKind.BDirect => code.Cbp == 0 ? H264BlockShare.Direct : H264BlockShare.DirectResidual,
+        H264MbKind.Inter => H264BlockShare.Inter,
+        _ => H264BlockShare.Intra,
+    };
+#endif
 
     /// <summary>
     /// Works out how a picture marks the references (8.2.5.3, 8.2.5.4): a P or I picture marks the referenced B-frames unused,
@@ -362,13 +401,21 @@ internal sealed class H264PictureEncoder
 
         _mb.Clear();
         Array.Clear(pic.MbIntra);
+        double[]? tree = TreeOffsets is { } t && t.Length == _qpOffsets.Length ? t : null;
         if (AdaptiveQuantization)
         {
-            AdaptQuantizers();
+            AdaptQuantizers(tree);
+        }
+        else if (tree is null)
+        {
+            Array.Clear(_qpOffsets);
         }
         else
         {
-            Array.Clear(_qpOffsets);
+            for (int i = 0; i < tree.Length; i++)
+            {
+                _qpOffsets[i] = Math.Clamp((int)Math.Round(6 * tree[i]), -12, 12);
+            }
         }
     }
 
@@ -423,10 +470,20 @@ internal sealed class H264PictureEncoder
 
             CabacEncoder cabac = slice.Cabac;
             cabac.Start();
+#if EGAMI_H264_STATS
+            Array.Clear(slice.Parts);
+            Array.Clear(slice.Shares);
+            CabacStatsSink sink = new(cabac, slice.Parts);
+#else
             CabacWriteSink sink = new(cabac);
+#endif
             for (int addr = slice.FirstMb; addr < slice.EndMb; addr++)
             {
                 H264MbCode code = Code(slice, addr, qp, predicted);
+#if EGAMI_H264_STATS
+                slice.Shares[(int)Share(code)]++;
+#endif
+                H264EncodeStats.Part(H264BitPart.Modes);
                 if (predicted)
                 {
                     syntax.SkipFlagCabac(ref sink, H264MbState.IsSkip(code.Kind));
@@ -448,9 +505,16 @@ internal sealed class H264PictureEncoder
         {
             BitWriteSink sink = new(w);
             int run = 0;
+#if EGAMI_H264_STATS
+            Array.Clear(slice.Parts);
+            Array.Clear(slice.Shares);
+#endif
             for (int addr = slice.FirstMb; addr < slice.EndMb; addr++)
             {
                 H264MbCode code = Code(slice, addr, qp, predicted);
+#if EGAMI_H264_STATS
+                slice.Shares[(int)Share(code)]++;
+#endif
                 syntax.Begin(addr % _config.WidthMbs, addr / _config.WidthMbs, code);
                 if (H264MbState.IsSkip(code.Kind))
                 {
@@ -482,6 +546,15 @@ internal sealed class H264PictureEncoder
     {
         int mbX = addr % _config.WidthMbs, mbY = addr / _config.WidthMbs;
         int mbQp = Math.Clamp(qp + _qpOffsets[addr], MinQp, MaxQp);
+
+        // A one-step change from the QP the last macroblock coded is not worth its mb_qp_delta (H.264 compression Build Plan,
+        // task 8): the macroblock keeps that QP. On the eight clips with adaptive quantization −0.65 % BD-rate on SSIM-Y and
+        // −1.0 % on PSNR-Y; without it every offset is 0 and nothing changes.
+        if (Math.Abs(mbQp - slice.Syntax.LastQp) == 1)
+        {
+            mbQp = slice.Syntax.LastQp;
+        }
+
         H264MbEncoder encoder = slice.Encoder;
         H264EncodeStats.Macroblock(slice.Syntax.SliceType);
         slice.Cost += !predicted ? encoder.Encode(mbX, mbY, mbQp)
@@ -497,7 +570,7 @@ internal sealed class H264PictureEncoder
     /// means, against the picture's: busy macroblocks, where errors show less, get coarser steps, flat ones finer; the mean
     /// offset is about zero.
     /// </summary>
-    private void AdaptQuantizers()
+    private void AdaptQuantizers(double[]? tree)
     {
         H264Picture pic = _current.Picture;
         int w = _config.WidthMbs, h = _config.HeightMbs;
@@ -525,7 +598,8 @@ internal sealed class H264PictureEncoder
         double mean = sum / logs.Length;
         for (int i = 0; i < logs.Length; i++)
         {
-            _qpOffsets[i] = Math.Clamp((int)Math.Round(AqStrength * (logs[i] - mean)), -12, 12);
+            // The block tree's offsets are in base-2 logarithms of the step: six QPs each.
+            _qpOffsets[i] = Math.Clamp((int)Math.Round((AqStrength * (logs[i] - mean)) + (tree is null ? 0 : 6 * tree[i])), -12, 12);
         }
     }
 
@@ -646,5 +720,13 @@ internal sealed class H264PictureEncoder
         public double Cost { get; set; }
 
         public NalBitWriter? Writer { get; set; }
+
+#if EGAMI_H264_STATS
+        /// <summary>Gets the CABAC bits of the final coding by <see cref="H264BitPart"/>, in 1/32768 bit.</summary>
+        public long[] Parts { get; } = new long[Enum.GetValues<H264BitPart>().Length];
+
+        /// <summary>Gets the macroblocks of the final coding by <see cref="H264BlockShare"/>.</summary>
+        public long[] Shares { get; } = new long[Enum.GetValues<H264BlockShare>().Length];
+#endif
     }
 }

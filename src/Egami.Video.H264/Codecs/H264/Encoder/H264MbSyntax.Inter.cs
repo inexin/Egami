@@ -189,6 +189,7 @@ internal sealed partial class H264MbSyntax
     private void ResidualPartCabac<T>(H264MbCode code, ref T sink)
         where T : struct, ICabacSink
     {
+        H264EncodeStats.Part(H264BitPart.Modes);
         byte[] ctx = Contexts;
         CbpCabac(ref sink, code.Cbp);
         if ((code.Cbp & 15) != 0 && Transform8x8Mode && NoSub8x8(code, SliceType == H264SliceType.B))
@@ -310,6 +311,7 @@ internal sealed partial class H264MbSyntax
     private void RefIdxCabac<T>(ref T sink, int list, int bx, int by, int refIdx)
         where T : struct, ICabacSink
     {
+        H264EncodeStats.Part(H264BitPart.Refs);
         byte[] ctx = Contexts;
         int inc = (RefIdxCond(list, bx - 1, by) ? 1 : 0) + (RefIdxCond(list, bx, by - 1) ? 2 : 0);
         sink.Encode(ref ctx[54 + inc], refIdx > 0 ? 1 : 0);
@@ -347,6 +349,7 @@ internal sealed partial class H264MbSyntax
     private void MvdCabac<T>(ref T sink, int list, int bx, int by, int component, int value)
         where T : struct, ICabacSink
     {
+        H264EncodeStats.Part(H264BitPart.Vectors);
         byte[] mvds = _mb.Mvd[list];
         int at = ((_b0 + (by * _w4) + bx) * 2) + component;
         int sum = (bx > 0 || _availableLeft ? mvds[at - 2] : 0) + (by > 0 || _availableTop ? mvds[at - (2 * _w4)] : 0);

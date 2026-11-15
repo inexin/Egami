@@ -34,10 +34,17 @@ as this mode did before the H.264 Encoder Speed Build Plan (decision Q4).
 
 The clips are Xiph's derf clips (crowd_run, ducks_take_off, park_joy, old_town_cross; 50 fps), copied to .cache/h264enc/clips
 as <name>-<size>.y4m from .cache/video/derf (egami-compare's video/native/vp8-encode-gate.py fetches them) or --clips-from.
+--wide takes the eight clips the H.264 compression Build Plan measures every change on: those four busy ones and four calm
+ones (johnny, kristen_sara, pedestrian_area, rush_hour), whose costs the four alone understate.
+
+bd also codes Egami with adaptive quantization (its default) and gives, beside each clip's PSNR-Y BD-rate (Egami without it,
+the gated number), the SSIM-Y BD-rate of Egami with it against the same x264 runs: PSNR punishes adaptive quantization by
+design, so SSIM-Y judges it (the Build Plan's question 2). VMAF is not measured: the FFmpeg of egami-h264encref:7.2 has no
+libvmaf. --presets medium skips the other presets.
 
 Usage, from the repo root with Docker running and the benchmarks built in Release
 (dotnet build -c Release benchmarks/Egami.Video.Benchmarks):
-  python tools/video/time-h264-encoder.py bd [--size 720] [--frames 60] [--effort 4] [--presets ultrafast,...,slow] [--clips a,b]
+  python tools/video/time-h264-encoder.py bd [--size 720] [--frames 60] [--effort 4] [--presets ultrafast,...,slow] [--clips a,b | --wide]
   python tools/video/time-h264-encoder.py time [--size 720] [--frames 30] [--effort 4] [--presets medium] [--threads 1,24]
   python tools/video/time-h264-encoder.py cycles [--size 720] [--frames 20] [--effort 4] [--quality 50,34] [--aq off|on|both]
                                                 [--repeats 3] [--presets medium] [--no-pgo]
@@ -56,6 +63,7 @@ import numpy as np
 OUT = ".cache/h264enc"
 CLIP_DIR = ".cache/h264enc/clips"
 CLIPS = ["crowd_run", "ducks_take_off", "park_joy", "old_town_cross"]
+WIDE_CLIPS = CLIPS + ["johnny", "kristen_sara", "pedestrian_area", "rush_hour"]
 QUALITIES = [52, 43, 34, 25]
 CRFS = [21, 26, 31, 36]
 PRESETS = "ultrafast,superfast,veryfast,faster,fast,medium,slow"
@@ -223,12 +231,13 @@ def run_bd(args):
         with open(path) as f:
             results = json.load(f)
 
-    def egami_job(clip, q):
+    def egami_job(clip, q, aq):
         src = clip_path(clip, args.size)
-        out, ms, size = egami(src, args.frames, q, args.effort, 1, f"{clip}-{args.size}-q{q}-e{args.effort}")
+        out, ms, size = egami(src, args.frames, q, args.effort, 1, f"{clip}-{args.size}-q{q}-e{args.effort}{'-aq' if aq else ''}",
+                              "" if aq else "--no-aq")
         fps = y4m_info(src)[2]
         psnr, ssim = metrics(src, out, args.frames)
-        return clip, {"q": q, "kbps": size * 8 * fps / args.frames / 1000, "psnr": psnr, "ssim": ssim, "ms": ms}
+        return clip, aq, {"q": q, "kbps": size * 8 * fps / args.frames / 1000, "psnr": psnr, "ssim": ssim, "ms": ms}
 
     def x264_job(clip, preset, crf):
         src = clip_path(clip, args.size)
@@ -238,10 +247,10 @@ def run_bd(args):
         return clip, preset, {"crf": crf, "kbps": size * 8 * fps / args.frames / 1000, "psnr": psnr, "ssim": ssim, "ms": ms}
 
     with concurrent.futures.ThreadPoolExecutor(args.jobs) as pool:
-        missing = [(c, q) for c in clips for q in QUALITIES
-                   if not any(p.get("q") == q for p in results["clips"].get(c, {}).get("egami", []))]
-        for clip, value in pool.map(lambda job: egami_job(*job), missing):
-            results["clips"].setdefault(clip, {"egami": [], "x264": {}})["egami"].append(value)
+        missing = [(c, q, aq) for c in clips for aq in (False, True) for q in QUALITIES
+                   if not any(p.get("q") == q for p in results["clips"].get(c, {}).get("egami_aq" if aq else "egami", []))]
+        for clip, aq, value in pool.map(lambda job: egami_job(*job), missing):
+            results["clips"].setdefault(clip, {"egami": [], "x264": {}}).setdefault("egami_aq" if aq else "egami", []).append(value)
         jobs = [(c, p, crf) for c in clips for p in presets for crf in CRFS
                 if not any(v.get("crf") == crf for v in results["clips"][c].setdefault("x264", {}).get(p, []))]
         for clip, preset, value in pool.map(lambda job: x264_job(*job), jobs):
@@ -252,8 +261,9 @@ def run_bd(args):
     report_bd(results)
 
 
-def bd_against(data, preset):
-    e = sorted(data["egami"], key=lambda p: p["kbps"])
+def bd_against(data, preset, aq=False):
+    """PSNR-Y and SSIM-Y BD-rates of Egami (with adaptive quantization when aq) against an x264 preset."""
+    e = sorted(data["egami_aq" if aq else "egami"], key=lambda p: p["kbps"])
     v = sorted(data["x264"][preset], key=lambda p: p["kbps"])
     psnr = bd_rate([p["kbps"] for p in v], [p["psnr"] for p in v], [p["kbps"] for p in e], [p["psnr"] for p in e])
     ssim = bd_rate([p["kbps"] for p in v], [p["ssim"] for p in v], [p["kbps"] for p in e], [p["ssim"] for p in e])
@@ -265,16 +275,30 @@ def report_bd(results):
     print(f"BD-rate of Egami (effort {results['effort']}) against x264 presets, {results['size']}p, {frames} frames"
           " (PSNR-Y / SSIM; ms a frame at one thread, run --jobs at a time):")
     order = PRESETS.split(",") + ["slower", "veryslow", "placebo"]
-    worst = []
+    worst, table = [], []
     for clip, data in results["clips"].items():
         egami_ms = np.mean([p["ms"] for p in data["egami"]]) / frames
         print(f"  {clip}: Egami {egami_ms:.1f} ms a frame")
         for preset in sorted(data["x264"], key=lambda p: order.index(p) if p in order else 99):
             psnr, ssim = bd_against(data, preset)
             ms = np.mean([p["ms"] for p in data["x264"][preset]]) / frames
-            print(f"    x264 {preset:10s}: {psnr:+6.1f}% / {ssim:+6.1f}%   {ms:6.1f} ms a frame")
+            aq = ""
+            if data.get("egami_aq"):
+                aq_psnr, aq_ssim = bd_against(data, preset, aq=True)
+                aq = f"   AQ on: {aq_psnr:+6.1f}% / {aq_ssim:+6.1f}%"
+            print(f"    x264 {preset:10s}: {psnr:+6.1f}% / {ssim:+6.1f}%   {ms:6.1f} ms a frame{aq}")
             if preset == "medium":
                 worst.append((psnr, clip))
+                if data.get("egami_aq"):
+                    table.append((clip, psnr, aq_ssim, aq_psnr))
+    if table:
+        print("  Against x264 medium: PSNR-Y BD-rate with Egami's adaptive quantization off (gated), SSIM-Y with it on, and PSNR-Y"
+              " with it on:")
+        print("    | Clip | PSNR-Y, AQ off | SSIM-Y, AQ on | PSNR-Y, AQ on |\n    |---|---:|---:|---:|")
+        for clip, psnr, ssim, aq_psnr in table:
+            print(f"    | {clip} | {psnr:+.2f} % | {ssim:+.2f} % | {aq_psnr:+.2f} % |")
+        means = [np.mean([row[i] for row in table]) for i in (1, 2, 3)]
+        print(f"    | Mean of {len(table)} | {means[0]:+.2f} % | {means[1]:+.2f} % | {means[2]:+.2f} % |")
     if worst:
         mean = np.mean([w[0] for w in worst])
         top = max(worst)
@@ -516,6 +540,7 @@ def main():
     parser.add_argument("--kbps", type=int, default=2500)
     parser.add_argument("--threads", default=f"1,{os.cpu_count()}")
     parser.add_argument("--clips", default=",".join(CLIPS))
+    parser.add_argument("--wide", action="store_true", help="the eight clips of the compression Build Plan (four busy, four calm)")
     parser.add_argument("--rounds", type=int, default=2)
     parser.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 4) // 3))
     parser.add_argument("--reuse", action="store_true", help="keep the runs already in the bd file and add only what is missing")
@@ -530,6 +555,8 @@ def main():
     args = parser.parse_args()
     OUT = args.out
     BENCH = args.bench
+    if args.wide:
+        args.clips = ",".join(WIDE_CLIPS)
     if args.mode != "report":
         ensure_clips(args.clips.split(","), args.size, args.clips_from)
     if args.mode == "bd":

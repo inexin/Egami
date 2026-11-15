@@ -54,6 +54,44 @@ internal enum H264EncodeStat
     DupCandidates,
 }
 
+/// <summary>The parts of a macroblock's coded bits that <see cref="H264EncodeStats"/> splits CABAC's bits into.</summary>
+internal enum H264BitPart
+{
+    /// <summary>mb_skip_flag, mb_type, sub_mb_type, intra modes, coded_block_pattern, transform_size_8x8_flag, end_of_slice_flag.</summary>
+    Modes,
+
+    /// <summary>mb_qp_delta.</summary>
+    QpDelta,
+
+    /// <summary>ref_idx_l0 and ref_idx_l1.</summary>
+    Refs,
+
+    /// <summary>mvd_l0 and mvd_l1.</summary>
+    Vectors,
+
+    /// <summary>The residual blocks.</summary>
+    Residual,
+}
+
+/// <summary>The kinds of macroblock whose shares <see cref="H264EncodeStats"/> counts, by picture.</summary>
+internal enum H264BlockShare
+{
+    /// <summary>P_Skip or B_Skip.</summary>
+    Skip,
+
+    /// <summary>B_Direct_16x16 without a residual.</summary>
+    Direct,
+
+    /// <summary>B_Direct_16x16 with a residual.</summary>
+    DirectResidual,
+
+    /// <summary>An inter macroblock with partitions.</summary>
+    Inter,
+
+    /// <summary>An intra macroblock.</summary>
+    Intra,
+}
+
 /// <summary>
 /// Test and profiling counters of the H.264 encoder's work per macroblock, by picture type (P, B, I). The counting calls are
 /// <see cref="ConditionalAttribute"/> on <c>EGAMI_H264_STATS</c>, which the Debug build and a build with
@@ -73,14 +111,74 @@ internal static class H264EncodeStats
     /// <summary>The picture types, in the order of <see cref="Snapshot"/>'s first index.</summary>
     public static readonly string[] Types = ["P", "B", "I"];
 
+    /// <summary>The picture kinds of <see cref="PictureSnapshot"/>'s first index: B pictures split into referenced and not.</summary>
+    public static readonly string[] PictureKinds = ["I", "P", "Bref", "B"];
+
+    /// <summary>
+    /// The columns of <see cref="PictureSnapshot"/>: pictures, their NAL units' bits, the CABAC macroblock bits of each
+    /// <see cref="H264BitPart"/> (in 1/32768 bit, the rate counter's estimate of the final coding, so the parts add up to a little
+    /// less than the bits: the rest is slice headers and the coder's own rounding), and the macroblocks of each
+    /// <see cref="H264BlockShare"/>.
+    /// </summary>
+    public static readonly string[] PictureColumns =
+        ["Pictures", "Bits", .. Enum.GetNames<H264BitPart>().Select(n => n + "Bits"), .. Enum.GetNames<H264BlockShare>()];
+
     private static readonly int Count = Enum.GetValues<H264EncodeStat>().Length;
+    private static readonly int Parts = Enum.GetValues<H264BitPart>().Length;
+    private static readonly int Shares = Enum.GetValues<H264BlockShare>().Length;
     private static readonly List<long[]> All = [];
+    private static readonly long[,] Pictures = new long[4, 2 + Parts + Shares];
 
     [ThreadStatic]
     private static long[]? _counts;
 
     [ThreadStatic]
     private static int _type;
+
+#if EGAMI_H264_STATS
+    [ThreadStatic]
+    private static int _part;
+
+    /// <summary>Gets the part this thread's CABAC bins count to (<see cref="Part"/>).</summary>
+    public static int CurrentPart => _part;
+#endif
+
+    /// <summary>Makes <paramref name="part"/> the one this thread's next CABAC bins count to in a counting build's final coding.</summary>
+    [Conditional("EGAMI_H264_STATS")]
+    public static void Part(H264BitPart part)
+    {
+#if EGAMI_H264_STATS
+        _part = (int)part;
+#endif
+    }
+
+    /// <summary>Adds a coded picture: its kind (an index of <see cref="PictureKinds"/>), its bits, and its slices' parts and shares.</summary>
+    public static void AddPicture(int kind, long bits, ReadOnlySpan<long> parts, ReadOnlySpan<long> shares)
+    {
+        lock (All)
+        {
+            Pictures[kind, 0]++;
+            Pictures[kind, 1] += bits;
+            for (int i = 0; i < Parts; i++)
+            {
+                Pictures[kind, 2 + i] += parts[i];
+            }
+
+            for (int i = 0; i < Shares; i++)
+            {
+                Pictures[kind, 2 + Parts + i] += shares[i];
+            }
+        }
+    }
+
+    /// <summary>The picture counts so far, [kind, column] (<see cref="PictureKinds"/>, <see cref="PictureColumns"/>).</summary>
+    public static long[,] PictureSnapshot()
+    {
+        lock (All)
+        {
+            return (long[,])Pictures.Clone();
+        }
+    }
 
     /// <summary>Counts a macroblock of a slice type and makes that type the one this thread's next counts go to.</summary>
     [Conditional("EGAMI_H264_STATS")]
@@ -137,6 +235,8 @@ internal static class H264EncodeStats
             {
                 Array.Clear(counts);
             }
+
+            Array.Clear(Pictures);
         }
     }
 }
