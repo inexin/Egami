@@ -236,6 +236,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   left; and the whole-sample search checks its few start vectors for repeats with a plain loop. Egami's own instructions fall
   3.4 % at quality 50 and 2.9 % at quality 34 on the four 720p clips; effort 4 takes 3.3 and 2.8 times x264 medium's
   instructions (was 3.5 and 2.8) and 2.9 and 2.3 times its cycles.
+- Effort 0 (speed round 5, PR B) tries intra in P pictures by the intra gate of efforts 1 to 4: only where an Intra16x16
+  prediction comes within 1.5 times the inter search cost by SATD, and coded only when its best estimate comes below that cost
+  (it was tried on almost every macroblock). Egami's own instructions at effort 0 fall 31 % at quality 50 and 35 % at quality
+  34 (cycles 28 % and 34 %) on the four 720p clips, and BD-rate improves by 1.2 % on eight clips (rush_hour 5.1 %, worst
+  ducks_take_off +0.25 %). Effort 0 now takes 0.65 and 0.75 times effort 1's instructions; before it took 0.97 and 1.16.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
