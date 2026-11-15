@@ -531,6 +531,36 @@ internal sealed partial class H264MbEncoder
     private long RefCost(int r, int count) => count <= 1 ? 0 : (long)(_sadLambda * (count == 2 ? 1 : BitSinkCodes.UeBits((uint)r)));
 
     /// <summary>
+    /// Speed round 6: what a block search keeps from start to end, set once and passed by reference so that the search
+    /// methods take few arguments.
+    /// </summary>
+    private struct BlockSearch
+    {
+        public H264RefPlanes Rp;
+
+        /// <summary>The reference's whole-sample plane.</summary>
+        public byte[] Plane;
+
+        /// <summary>Whether no weight applies: the planes are read in place, and whole samples cost their SAD.</summary>
+        public bool Single;
+
+        public int Px, Py, Pw, Ph, SrcAt;
+
+        /// <summary>The bounds of the vector in whole samples (see <see cref="Bounds"/>).</summary>
+        public int MinX, MaxX, MinY, MaxY;
+
+        /// <summary>The predicted vector's components, in quarter samples.</summary>
+        public int MvpX, MvpY;
+
+        /// <summary>The bits of the reference index, at λ.</summary>
+        public long RefCost;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private long MvCost(ref BlockSearch s, int mvx, int mvy) =>
+        Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_mvBitCost), MvdBits(mvx - s.MvpX) + MvdBits(mvy - s.MvpY));
+
+    /// <summary>
     /// Searches the w by h block at 4x4 block (bx, by) of the macroblock in reference r: the best start in whole samples, a
     /// pattern search around it, then half and quarter samples; returns the vector and its cost.
     /// </summary>
@@ -542,7 +572,16 @@ internal sealed partial class H264MbEncoder
     {
         H264EncodeStats.Add(H264EncodeStat.BlockSearches);
         MvCostTable();
-        return Refine(list, r, bx, by, w, h, mvp, SearchWhole(list, r, bx, by, w, h, mvp, starts, out _), out cost, bound);
+        BlockSearch s = default;
+        s.Rp = (list == 0 ? _refs : _refs1)[r];
+        s.Plane = s.Rp.Picture.Y<byte>();
+        s.Single = !(s.Rp.Weighted && _weighted);
+        (s.Px, s.Py, s.Pw, s.Ph) = ((_mbX * 16) + (bx * 4), (_mbY * 16) + (by * 4), w * 4, h * 4);
+        s.SrcAt = _origin + (s.Py * _stride) + s.Px;
+        (s.MinX, s.MaxX, s.MinY, s.MaxY) = Bounds(bx, by, w, h);
+        (s.MvpX, s.MvpY) = (H264SliceDecoder.MvX(mvp), H264SliceDecoder.MvY(mvp));
+        s.RefCost = RefCost(r, list == 0 ? _refCount : _refCount1);
+        return Refine(ref s, SearchWhole(ref s, starts), out cost, bound);
     }
 
     /// <summary>
@@ -594,65 +633,64 @@ internal sealed partial class H264MbEncoder
     private const int RefPruneShare = 2;
 
     /// <summary>
-    /// The cost of whole-sample vector (x, y) of the pw by ph block at (px, py), whose source starts at srcAt: its SAD (SATD
-    /// for a weighted reference) plus vector bits.
+    /// The cost of whole-sample vector (x, y) of the searched block: its SAD (SATD for a weighted reference) plus vector bits.
     /// </summary>
-    private long IntCost(H264RefPlanes rp, bool sad, int px, int py, int pw, int ph, int srcAt, int x, int y, int mvp)
+    private long IntCost(ref BlockSearch s, int x, int y)
     {
         H264EncodeStats.Add(H264EncodeStat.IntegerCosts);
-        return (sad ? H264EncodeSimd.Sad(_srcY, srcAt, _stride, rp.Picture.Y<byte>(), srcAt + (y * _stride) + x, _stride, pw, ph)
-            : Satd(rp, px, py, pw, ph, H264SliceDecoder.PackMv(x * 4, y * 4), srcAt)) + MvCost(x * 4, y * 4, mvp);
+        return (s.Single ? H264EncodeSimd.Sad(_srcY, s.SrcAt, _stride, s.Plane, s.SrcAt + (y * _stride) + x, _stride, s.Pw, s.Ph)
+            : Satd(ref s, x * 4, y * 4)) + MvCost(ref s, x * 4, y * 4);
     }
 
     /// <summary>
-    /// The costs of up to four whole-sample vectors as <see cref="IntCost"/> gives them; with SAD (task 13), one pass over the
-    /// source rows for all of them.
+    /// The costs of up to four whole-sample vectors (_sx and _sy from <paramref name="from"/>) into _sc, as
+    /// <see cref="IntCost"/> gives them; with SAD (task 13), one pass over the source rows for all of them.
     /// </summary>
-    private void IntCosts(H264RefPlanes rp, bool sad, int px, int py, int pw, int ph, int srcAt, int mvp, int n, Span<int> xs, Span<int> ys, Span<long> c)
+    private void IntCosts(ref BlockSearch s, int from, int n)
     {
-        if (!sad)
+        int[] xs = _sx, ys = _sy;
+        long[] c = _sc;
+        if (!s.Single)
         {
             for (int i = 0; i < n; i++)
             {
-                c[i] = IntCost(rp, sad, px, py, pw, ph, srcAt, xs[i], ys[i], mvp);
+                c[i] = IntCost(ref s, xs[from + i], ys[from + i]);
             }
 
             return;
         }
 
         H264EncodeStats.Add(H264EncodeStat.IntegerCosts, n);
-        int s = _stride;
-        int at0 = srcAt + (ys[0] * s) + xs[0];
-        int at1 = n > 1 ? srcAt + (ys[1] * s) + xs[1] : at0;
-        int at2 = n > 2 ? srcAt + (ys[2] * s) + xs[2] : at0;
-        int at3 = n > 3 ? srcAt + (ys[3] * s) + xs[3] : at0;
-        H264EncodeSimd.SadN(_srcY, srcAt, s, rp.Picture.Y<byte>(), at0, at1, at2, at3, s, pw, ph, n, c);
+        int st = _stride, srcAt = s.SrcAt;
+        int at0 = srcAt + (ys[from] * st) + xs[from];
+        int at1 = n > 1 ? srcAt + (ys[from + 1] * st) + xs[from + 1] : at0;
+        int at2 = n > 2 ? srcAt + (ys[from + 2] * st) + xs[from + 2] : at0;
+        int at3 = n > 3 ? srcAt + (ys[from + 3] * st) + xs[from + 3] : at0;
+        H264EncodeSimd.SadN(_srcY, srcAt, st, s.Plane, at0, at1, at2, at3, st, s.Pw, s.Ph, n, c);
         for (int i = 0; i < n; i++)
         {
-            c[i] += MvCost(xs[i] * 4, ys[i] * 4, mvp);
+            c[i] += MvCost(ref s, xs[from + i] * 4, ys[from + i] * 4);
         }
     }
 
+    // Speed round 6: the candidates a search costs together and their costs (up to four, or the distinct starts), and the
+    // hexagon point of each, in fields rather than stackalloc so that the search methods get tiered compilation's PGO and OSR.
+    private readonly int[] _sx = new int[16], _sy = new int[16], _seen = new int[16], _sk = new int[4];
+    private readonly long[] _sc = new long[4];
+
     /// <summary>
     /// The whole-sample part of the search: the best start, then a hexagon (or diamond) pattern around it, then the eight
-    /// neighbours; returns the vector in quarter samples and its SAD (SATD for a weighted reference) plus vector bits.
+    /// neighbours; returns the vector in quarter samples.
     /// </summary>
-    [SkipLocalsInit]
-    private int SearchWhole(int list, int r, int bx, int by, int w, int h, int mvp, ReadOnlySpan<int> starts, out long cost)
+    private int SearchWhole(ref BlockSearch s, ReadOnlySpan<int> starts)
     {
-        H264RefPlanes rp = (list == 0 ? _refs : _refs1)[r];
-        int px = (_mbX * 16) + (bx * 4), py = (_mbY * 16) + (by * 4), pw = w * 4, ph = h * 4;
-        (int minX, int maxX, int minY, int maxY) = Bounds(bx, by, w, h);
-        int srcAt = _origin + (py * _stride) + px;
-        bool sad = !(rp.Weighted && _weighted);
-        Span<int> px4 = stackalloc int[4], py4 = stackalloc int[4];
-        Span<long> c4 = stackalloc long[4];
+        int minX = s.MinX, maxX = s.MaxX, minY = s.MinY, maxY = s.MaxY;
+        int[] sxs = _sx, sys = _sy, seen = _seen, ks = _sk;
+        long[] c4 = _sc;
 
         // The predicted vector, then each distinct start once (a repeated one costs what it did and cannot win), costed four at
         // a time and weighed in order as one at a time would.
-        int ix = Math.Clamp((H264SliceDecoder.MvX(mvp) + 2) >> 2, minX, maxX), iy = Math.Clamp((H264SliceDecoder.MvY(mvp) + 2) >> 2, minY, maxY);
-        Span<int> seen = stackalloc int[starts.Length + 1];
-        Span<int> sxs = stackalloc int[starts.Length + 4], sys = stackalloc int[starts.Length + 4];
+        int ix = Math.Clamp((s.MvpX + 2) >> 2, minX, maxX), iy = Math.Clamp((s.MvpY + 2) >> 2, minY, maxY);
         (seen[0], sxs[0], sys[0]) = ((iy << 16) ^ ix, ix, iy);
         int seenCount = 1;
         foreach (int start in starts)
@@ -679,7 +717,7 @@ internal sealed partial class H264MbEncoder
         for (int i0 = 0; i0 < seenCount; i0 += 4)
         {
             int m = Math.Min(4, seenCount - i0);
-            IntCosts(rp, sad, px, py, pw, ph, srcAt, mvp, m, sxs[i0..], sys[i0..], c4);
+            IntCosts(ref s, i0, m);
             for (int i = 0; i < m; i++)
             {
                 if (c4[i] < best)
@@ -695,7 +733,6 @@ internal sealed partial class H264MbEncoder
             // After a move to hexagon point k, the new hexagon's points k - 2 to k + 2 other than k - 1, k and k + 1 are the old
             // center and old points, already costed and no better: only the three new ones are.
             int moved = -1;
-            Span<int> ks = stackalloc int[4];
             for (int step = 0; step < range / 2; step++)
             {
                 int cx = ix, cy = iy, next = -1;
@@ -710,7 +747,7 @@ internal sealed partial class H264MbEncoder
                         int x = cx + Hexagon[k].X, y = cy + Hexagon[k].Y;
                         if (x >= minX && x <= maxX && y >= minY && y <= maxY)
                         {
-                            (ks[m], px4[m], py4[m]) = (k, x, y);
+                            (ks[m], sxs[m], sys[m]) = (k, x, y);
                             m++;
                         }
                     }
@@ -720,14 +757,14 @@ internal sealed partial class H264MbEncoder
                         continue;
                     }
 
-                    IntCosts(rp, sad, px, py, pw, ph, srcAt, mvp, m, px4, py4, c4);
+                    IntCosts(ref s, 0, m);
                     for (int i = 0; i < m; i++)
                     {
                         long c = c4[i];
                         int k = ks[i];
                         if (c < best || (c == best && next >= 0 && k < next && ix != cx))
                         {
-                            (best, ix, iy, next) = (c, px4[i], py4[i], k);
+                            (best, ix, iy, next) = (c, sxs[i], sys[i], k);
                         }
                     }
                 }
@@ -749,7 +786,7 @@ internal sealed partial class H264MbEncoder
                     int x = qx + Square[q].X, y = qy + Square[q].Y;
                     if (x >= minX && x <= maxX && y >= minY && y <= maxY)
                     {
-                        (px4[m], py4[m]) = (x, y);
+                        (sxs[m], sys[m]) = (x, y);
                         m++;
                     }
                 }
@@ -759,12 +796,12 @@ internal sealed partial class H264MbEncoder
                     continue;
                 }
 
-                IntCosts(rp, sad, px, py, pw, ph, srcAt, mvp, m, px4, py4, c4);
+                IntCosts(ref s, 0, m);
                 for (int i = 0; i < m; i++)
                 {
                     if (c4[i] < best)
                     {
-                        (best, ix, iy) = (c4[i], px4[i], py4[i]);
+                        (best, ix, iy) = (c4[i], sxs[i], sys[i]);
                     }
                 }
             }
@@ -779,7 +816,7 @@ internal sealed partial class H264MbEncoder
                     int x = cx + dx, y = cy + dy;
                     if (x >= minX && x <= maxX && y >= minY && y <= maxY)
                     {
-                        long c = IntCost(rp, sad, px, py, pw, ph, srcAt, x, y, mvp);
+                        long c = IntCost(ref s, x, y);
                         if (c < best)
                         {
                             (best, ix, iy) = (c, x, y);
@@ -794,7 +831,6 @@ internal sealed partial class H264MbEncoder
             }
         }
 
-        cost = best;
         return H264SliceDecoder.PackMv(ix * 4, iy * 4);
     }
 
@@ -803,31 +839,25 @@ internal sealed partial class H264MbEncoder
     /// quick schedule (task 12) half samples are a diamond by SAD and quarter samples a diamond by SATD, and a reference whose
     /// half-sample cost is already well above <paramref name="bound"/> (the best of the references before it) stops there.
     /// </summary>
-    [SkipLocalsInit]
-    private int Refine(int list, int r, int bx, int by, int w, int h, int mvp, int mv, out long cost, long bound = long.MaxValue)
+    private int Refine(ref BlockSearch s, int mv, out long cost, long bound)
     {
-        H264RefPlanes rp = (list == 0 ? _refs : _refs1)[r];
-        int px = (_mbX * 16) + (bx * 4), py = (_mbY * 16) + (by * 4), pw = w * 4, ph = h * 4;
-        (int minX, int maxX, int minY, int maxY) = Bounds(bx, by, w, h);
-        int srcAt = _origin + (py * _stride) + px;
-        long refCost = RefCost(r, list == 0 ? _refCount : _refCount1);
+        int minX = s.MinX * 4, maxX = s.MaxX * 4, minY = s.MinY * 4, maxY = s.MaxY * 4;
         int bxq = H264SliceDecoder.MvX(mv), byq = H264SliceDecoder.MvY(mv);
         if ((Shortcuts & H264SearchShortcuts.QuickSubpel) != 0 || ((Shortcuts & H264SearchShortcuts.QuickSubpelB) != 0 && _syntax.SliceType == H264SliceType.B))
         {
             // Half samples: a diamond by SAD, each step from the best so far.
             H264EncodeStats.Add(H264EncodeStat.SubpelCosts);
-            long bestSad = SubSad(rp, px, py, pw, ph, H264SliceDecoder.PackMv(bxq, byq), srcAt) + MvCost(bxq, byq, mvp);
+            long bestSad = SubSad(ref s, bxq, byq) + MvCost(ref s, bxq, byq);
             int came = -1;
-            bool single = !(rp.Weighted && _weighted);
-            Span<int> xs = stackalloc int[4], ys = stackalloc int[4], ks = stackalloc int[4];
-            Span<long> cs = stackalloc long[4];
+            int[] xs = _sx, ys = _sy, ks = _sk;
+            long[] cs = _sc;
             for (int it = 0; it < HalfSteps; it++)
             {
                 int cx = bxq, cy = byq, moved = -1, m = 0;
                 for (int k = 0; k < 4; k++)
                 {
                     int x = cx + (Diamond[k].X * 2), y = cy + (Diamond[k].Y * 2);
-                    if (k == 3 - came || x < minX * 4 || x > maxX * 4 || y < minY * 4 || y > maxY * 4)
+                    if (k == 3 - came || x < minX || x > maxX || y < minY || y > maxY)
                     {
                         continue;
                     }
@@ -837,7 +867,7 @@ internal sealed partial class H264MbEncoder
                 }
 
                 // Costed together, then weighed in order as one at a time would.
-                HalfSads(rp, single, px, py, pw, ph, srcAt, mvp, m, xs, ys, cs);
+                HalfSads(ref s, m);
                 for (int i = 0; i < m; i++)
                 {
                     if (cs[i] < bestSad)
@@ -855,11 +885,11 @@ internal sealed partial class H264MbEncoder
             }
 
             H264EncodeStats.Add(H264EncodeStat.SubpelCosts);
-            long best = Satd(rp, px, py, pw, ph, H264SliceDecoder.PackMv(bxq, byq), srcAt) + MvCost(bxq, byq, mvp);
-            if (bound != long.MaxValue && (best + refCost) * 7 > bound * 8)
+            long best = Satd(ref s, bxq, byq) + MvCost(ref s, bxq, byq);
+            if (bound != long.MaxValue && (best + s.RefCost) * 7 > bound * 8)
             {
                 // Another reference is already well ahead: quarter samples cannot close the gap.
-                cost = best + refCost;
+                cost = best + s.RefCost;
                 return H264SliceDecoder.PackMv(bxq, byq);
             }
 
@@ -872,14 +902,14 @@ internal sealed partial class H264MbEncoder
                 for (int k = 0; k < 4; k++)
                 {
                     int x = cx + Diamond[k].X, y = cy + Diamond[k].Y;
-                    if (k == 3 - came || x < minX * 4 || x > maxX * 4 || y < minY * 4 || y > maxY * 4)
+                    if (k == 3 - came || x < minX || x > maxX || y < minY || y > maxY)
                     {
                         continue;
                     }
 
                     H264EncodeStats.Add(H264EncodeStat.SubpelCosts);
-                    long bits = MvCost(x, y, mvp);
-                    long c = Satd(rp, px, py, pw, ph, H264SliceDecoder.PackMv(x, y), srcAt, best - bits) + bits;
+                    long bits = MvCost(ref s, x, y);
+                    long c = Satd(ref s, x, y, best - bits) + bits;
                     if (c < best)
                     {
                         (best, bxq, byq, moved) = (c, x, y, k);
@@ -894,12 +924,12 @@ internal sealed partial class H264MbEncoder
                 came = moved;
             }
 
-            cost = best + refCost;
+            cost = best + s.RefCost;
             return H264SliceDecoder.PackMv(bxq, byq);
         }
 
         H264EncodeStats.Add(H264EncodeStat.SubpelCosts);
-        long bestSatd = Satd(rp, px, py, pw, ph, H264SliceDecoder.PackMv(bxq, byq), srcAt) + MvCost(bxq, byq, mvp);
+        long bestSatd = Satd(ref s, bxq, byq) + MvCost(ref s, bxq, byq);
         int rounds = _effort >= 5 ? 3 : 2;
         int lastX = NoCenter, lastY = NoCenter;
         for (int round = 0; round < rounds; round++)
@@ -915,15 +945,15 @@ internal sealed partial class H264MbEncoder
             foreach ((int dx, int dy) in Square)
             {
                 int x = cx + (dx * d), y = cy + (dy * d);
-                if (x < minX * 4 || x > maxX * 4 || y < minY * 4 || y > maxY * 4 || (Math.Abs(x - lastX) <= 1 && Math.Abs(y - lastY) <= 1))
+                if (x < minX || x > maxX || y < minY || y > maxY || (Math.Abs(x - lastX) <= 1 && Math.Abs(y - lastY) <= 1))
                 {
                     // Out of reach, or costed in the last quarter-sample round (its center too) and no better than the best.
                     continue;
                 }
 
                 H264EncodeStats.Add(H264EncodeStat.SubpelCosts);
-                long bits = MvCost(x, y, mvp);
-                long c = Satd(rp, px, py, pw, ph, H264SliceDecoder.PackMv(x, y), srcAt, bestSatd - bits) + bits;
+                long bits = MvCost(ref s, x, y);
+                long c = Satd(ref s, x, y, bestSatd - bits) + bits;
                 if (c < bestSatd)
                 {
                     (bestSatd, bxq, byq) = (c, x, y);
@@ -933,87 +963,99 @@ internal sealed partial class H264MbEncoder
             (lastX, lastY) = d == 1 ? (cx, cy) : (NoCenter, NoCenter);
         }
 
-        cost = bestSatd + refCost;
+        cost = bestSatd + s.RefCost;
         return H264SliceDecoder.PackMv(bxq, byq);
     }
 
     /// <summary>
-    /// The SADs plus vector bits of up to four half- or whole-sample vectors (one plane each, no mean) of the pw by ph block at
-    /// (px, py), as <see cref="SubSad"/> gives them; without a weight, one pass over the source rows for all of them.
+    /// The SADs plus vector bits of up to four half- or whole-sample vectors (_sx and _sy, one plane each, no mean) of the
+    /// searched block into _sc, as <see cref="SubSad"/> gives them; without a weight, one pass over the source rows for all of
+    /// them.
     /// </summary>
-    private void HalfSads(H264RefPlanes rp, bool single, int px, int py, int pw, int ph, int srcAt, int mvp, int n, Span<int> xs, Span<int> ys, Span<long> c)
+    private void HalfSads(ref BlockSearch s, int n)
     {
         H264EncodeStats.Add(H264EncodeStat.SubpelCosts, n);
-        if (!single || n < 2)
+        int[] xs = _sx, ys = _sy;
+        long[] c = _sc;
+        if (!s.Single || n < 2)
         {
             for (int i = 0; i < n; i++)
             {
-                c[i] = SubSad(rp, px, py, pw, ph, H264SliceDecoder.PackMv(xs[i], ys[i]), srcAt) + MvCost(xs[i], ys[i], mvp);
+                c[i] = SubSad(ref s, xs[i], ys[i]) + MvCost(ref s, xs[i], ys[i]);
             }
 
             return;
         }
 
-        (byte[] p0, int at0, _, _) = rp.Locate(px, py, H264SliceDecoder.PackMv(xs[0], ys[0]));
-        (byte[] p1, int at1, _, _) = rp.Locate(px, py, H264SliceDecoder.PackMv(xs[1], ys[1]));
+        (byte[] p0, int at0, _, _) = Locate(ref s, xs[0], ys[0]);
+        (byte[] p1, int at1, _, _) = Locate(ref s, xs[1], ys[1]);
         (byte[] p2, int at2, byte[] p3, int at3) = (p0, at0, p0, at0);
         if (n > 2)
         {
-            (p2, at2, _, _) = rp.Locate(px, py, H264SliceDecoder.PackMv(xs[2], ys[2]));
+            (p2, at2, _, _) = Locate(ref s, xs[2], ys[2]);
         }
 
         if (n > 3)
         {
-            (p3, at3, _, _) = rp.Locate(px, py, H264SliceDecoder.PackMv(xs[3], ys[3]));
+            (p3, at3, _, _) = Locate(ref s, xs[3], ys[3]);
         }
 
-        H264EncodeSimd.Sad4(_srcY, srcAt, _stride, p0, at0, p1, at1, p2, at2, p3, at3, _stride, pw, ph, c);
+        H264EncodeSimd.Sad4(_srcY, s.SrcAt, _stride, p0, at0, p1, at1, p2, at2, p3, at3, _stride, s.Pw, s.Ph, c);
         for (int i = 0; i < n; i++)
         {
-            c[i] += MvCost(xs[i], ys[i], mvp);
+            c[i] += MvCost(ref s, xs[i], ys[i]);
         }
     }
 
     private long Sad(int srcAt, byte[] plane, int at, int w, int h) => H264EncodeSimd.Sad(_srcY, srcAt, _stride, plane, at, _stride, w, h);
 
     /// <summary>
-    /// The SATD of a block's prediction from a reference, read from its planes without a copy where no weight applies. With a
-    /// <paramref name="limit"/> (the best cost so far less the candidate's vector bits), a sum that reaches it part way stops
-    /// there: what is returned is then at least the limit, and the candidate cannot beat the best.
+    /// The planes and offsets of the searched block at quarter-sample vector (x, y), as <see cref="H264RefPlanes.Locate"/>
+    /// gives them: the block's own offset in the reference is that in the source.
     /// </summary>
-    private long Satd(H264RefPlanes rp, int px, int py, int pw, int ph, int mv, int srcAt, long limit = long.MaxValue)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private (byte[] A, int AtA, byte[]? B, int AtB) Locate(ref BlockSearch s, int x, int y) =>
+        s.Rp.Sources(s.SrcAt + ((y >> 2) * _stride) + (x >> 2), x & 3, y & 3);
+
+    /// <summary>
+    /// The SATD of the searched block's prediction at quarter-sample vector (x, y), read from the reference's planes without a
+    /// copy where no weight applies. With a <paramref name="limit"/> (the best cost so far less the candidate's vector bits), a
+    /// sum that reaches it part way stops there: what is returned is then at least the limit, and the candidate cannot beat the
+    /// best.
+    /// </summary>
+    private long Satd(ref BlockSearch s, int x, int y, long limit = long.MaxValue)
     {
-        if (!(rp.Weighted && _weighted))
+        if (s.Single)
         {
-            (byte[] a, int atA, byte[]? b, int atB) = rp.Locate(px, py, mv);
+            (byte[] a, int atA, byte[]? b, int atB) = Locate(ref s, x, y);
             if (b is null)
             {
-                return H264EncodeSimd.Satd(_srcY, srcAt, _stride, a, atA, _stride, pw, ph, limit);
+                return H264EncodeSimd.Satd(_srcY, s.SrcAt, _stride, a, atA, _stride, s.Pw, s.Ph, limit);
             }
 
-            return H264EncodeSimd.SatdAverage(_srcY, srcAt, _stride, a, atA, b, atB, _stride, pw, ph, _mc, limit);
+            return H264EncodeSimd.SatdAverage(_srcY, s.SrcAt, _stride, a, atA, b, atB, _stride, s.Pw, s.Ph, _mc, limit);
         }
 
-        rp.Luma(px, py, pw, ph, mv, _mc, 0, 16, _weighted);
-        return H264EncodeSimd.Satd(_srcY, srcAt, _stride, _mc, 0, 16, pw, ph, limit);
+        s.Rp.Luma(s.Px, s.Py, s.Pw, s.Ph, H264SliceDecoder.PackMv(x, y), _mc, 0, 16, _weighted);
+        return H264EncodeSimd.Satd(_srcY, s.SrcAt, _stride, _mc, 0, 16, s.Pw, s.Ph, limit);
     }
 
-    /// <summary>The SAD of a block's prediction from a reference at a half- or whole-sample vector.</summary>
-    private long SubSad(H264RefPlanes rp, int px, int py, int pw, int ph, int mv, int srcAt)
+    /// <summary>The SAD of the searched block's prediction at a half- or whole-sample vector (x, y).</summary>
+    private long SubSad(ref BlockSearch s, int x, int y)
     {
-        if (!(rp.Weighted && _weighted))
+        if (s.Single)
         {
-            (byte[] a, int atA, byte[]? b, int atB) = rp.Locate(px, py, mv);
+            (byte[] a, int atA, byte[]? b, int atB) = Locate(ref s, x, y);
             if (b is null)
             {
-                return H264EncodeSimd.Sad(_srcY, srcAt, _stride, a, atA, _stride, pw, ph);
+                return H264EncodeSimd.Sad(_srcY, s.SrcAt, _stride, a, atA, _stride, s.Pw, s.Ph);
             }
 
-            return H264EncodeSimd.SadAverage(_srcY, srcAt, _stride, a, atA, b, atB, _stride, pw, ph);
+            return H264EncodeSimd.SadAverage(_srcY, s.SrcAt, _stride, a, atA, b, atB, _stride, s.Pw, s.Ph);
         }
 
-        rp.Luma(px, py, pw, ph, mv, _mc, 0, 16, _weighted);
-        return H264EncodeSimd.Sad(_srcY, srcAt, _stride, _mc, 0, 16, pw, ph);
+        s.Rp.Luma(s.Px, s.Py, s.Pw, s.Ph, H264SliceDecoder.PackMv(x, y), _mc, 0, 16, _weighted);
+        return H264EncodeSimd.Sad(_srcY, s.SrcAt, _stride, _mc, 0, 16, s.Pw, s.Ph);
     }
 
     // ---- Coding ----

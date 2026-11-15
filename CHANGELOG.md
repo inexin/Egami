@@ -250,6 +250,13 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   4.7 %), for BD-rate +0.03 % on eight clips at effort 4 (worst kristen_sara +0.15 %), +0.07 % at effort 3 and +0.06 % at
   effort 5 on the four. Effort 4 takes 3.2 and 2.7 times x264 medium's instructions (was 3.3 and 2.8) and 2.7 and 2.2
   times its cycles. The same prices for intra 4x4 and 8x8 trials cost +0.11 % for no further saving and were left out.
+- H.264 encoder speed round 6, PR A (output unchanged, byte for byte): the machine code of the motion search. A block
+  search's fixed inputs (the reference, its planes, the block, the bounds and the predicted vector) are set once and passed
+  by reference; the candidates' buffers are fields instead of stackalloc, so the search methods get tiered compilation's
+  PGO and OSR; a candidate's vector bits use the predicted vector's components worked out once; the planes of a sub-sample
+  vector are found from the block's own offset; and the SATD kernels fold the offsets into their refs at entry and step
+  rows in nint, so no load widens an index. Egami's own instructions fall 2 to 3.4 % at quality 50 and 1.9 to 2.1 % at
+  quality 34 at effort 4 on the four 720p clips (effort 1: 2.8 to 3.2 % and up to 5 %).
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 

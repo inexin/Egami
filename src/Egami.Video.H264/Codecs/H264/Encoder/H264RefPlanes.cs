@@ -202,6 +202,7 @@ internal sealed class H264RefPlanes
     /// The one or two planes and offsets whose rounded mean is the quarter sample (fx, fy) at full sample offset at
     /// (8.4.2.2.1): b is <see cref="Half"/>, h <see cref="Down"/>, j <see cref="Center"/>.
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public (byte[] A, int AtA, byte[]? B, int AtB) Sources(int at, int fx, int fy)
     {
         // A table look-up for what is, by phase: (0, 0) f; (2, 0) b; (0, 2) h; (2, 2) j; (1, 0) f and b; (3, 0) b and f one
