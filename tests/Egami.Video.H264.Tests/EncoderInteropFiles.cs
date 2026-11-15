@@ -38,6 +38,10 @@ public class EncoderInteropFiles
         yield return ("vbr", 96, 64, 24, moving, Options(96, 64, 2, new H264EncoderOptions()) with { RateControl = RateControlMode.Bitrate, Bitrate = 200_000 });
         yield return ("realtime", 96, 64, 16, moving, Options(96, 64, 2, new H264EncoderOptions()) with { LatencyMode = LatencyMode.Realtime });
         yield return ("qp0", 48, 32, 6, moving, Options(48, 32, 2, new H264EncoderOptions()) with { RateControl = RateControlMode.Quantizer, Quantizer = 0 });
+        Func<int, int, int, YuvRaster<byte>> noisy = (w, h, f) => EncoderCavlcLevelTests.Make(w, h, f, f % 2 == 0 ? 1 : 0);
+        H264EncoderOptions lossless = new() { AdaptiveQuantization = false, MinQuantizer = 0 };
+        yield return ("pcm-cavlc", 64, 64, 8, noisy, Options(64, 64, 4, lossless with { Profile = H264Profile.Main, Entropy = H264EntropyCoder.Cavlc }) with { RateControl = RateControlMode.Quantizer, Quantizer = 0, KeyframeInterval = 4 });
+        yield return ("pcm-cabac", 64, 64, 8, noisy, Options(64, 64, 4, lossless) with { RateControl = RateControlMode.Quantizer, Quantizer = 0, KeyframeInterval = 4 });
         yield return ("qp51", 64, 48, 12, moving, Options(64, 48, 2, new H264EncoderOptions()) with { RateControl = RateControlMode.Quantizer, Quantizer = 51 });
         yield return ("crop-98x62", 98, 62, 12, EncoderIntraTests.Picture, Options(98, 62, 5, new H264EncoderOptions()));
         yield return ("crop-18x10", 18, 10, 10, EncoderIntraTests.Picture, Options(18, 10, 7, new H264EncoderOptions()));

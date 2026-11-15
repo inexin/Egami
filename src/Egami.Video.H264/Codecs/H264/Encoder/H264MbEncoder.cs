@@ -34,6 +34,13 @@ internal sealed partial class H264MbEncoder
     private readonly int[] _scale4;
     private readonly int[] _scale8;
     private readonly bool _allow8x8;
+
+    /// <summary>
+    /// The largest level CAVLC codes with a level_prefix of at most 15, as profiles below High require (9.2.2.1): a levelCode of
+    /// 4125 at a suffixLength of 0. Only the DC levels of Intra16x16 luma and of chroma pass it, at low QPs (a 4x4 block's
+    /// levels stay under 1633 at QP 0); they are clamped to it, and the reconstruction follows.
+    /// </summary>
+    private const int CavlcLevelLimit = 2063;
     private readonly int _effort;
     private readonly H264MbCode _chroma = new();
     private readonly H264MbCode[] _candidates = [new(), new(), new()];
@@ -518,12 +525,12 @@ internal sealed partial class H264MbEncoder
         }
 
         H264Forward.Hadamard4x4(_dc);
-        int dcCount = 0;
+        int dcCount = 0, limit = _allow8x8 || _syntax.Cabac ? int.MaxValue : CavlcLevelLimit;
         Span<int> dcLevels = stackalloc int[16];
         for (int k = 0; k < 16; k++)
         {
             int pos = H264ScalingLists.Zigzag4x4[k];
-            int level = H264Forward.Quantize(_dc[pos], H264Forward.Mf4[m * 16], H264Forward.Shift4 + 2 + q6, IntraRound);
+            int level = Math.Clamp(H264Forward.Quantize(_dc[pos], H264Forward.Mf4[m * 16], H264Forward.Shift4 + 2 + q6, IntraRound), -limit, limit);
             code.LumaDc[k] = level;
             dcLevels[pos] = level;
             dcCount += level != 0 ? 1 : 0;
@@ -823,10 +830,10 @@ internal sealed partial class H264MbEncoder
 
         // The 2x2 Hadamard of the DCs, quantized one bit finer than AC (8.5.11).
         Span<int> f = [dc[0] + dc[1] + dc[2] + dc[3], dc[0] - dc[1] + dc[2] - dc[3], dc[0] + dc[1] - dc[2] - dc[3], dc[0] - dc[1] - dc[2] + dc[3]];
-        int dcCount = 0;
+        int dcCount = 0, limit = _allow8x8 || _syntax.Cabac ? int.MaxValue : CavlcLevelLimit;
         for (int k = 0; k < 4; k++)
         {
-            int level = H264Forward.Quantize(f[k], H264Forward.Mf4[m * 16], H264Forward.Shift4 + 1 + q6, _round);
+            int level = Math.Clamp(H264Forward.Quantize(f[k], H264Forward.Mf4[m * 16], H264Forward.Shift4 + 1 + q6, _round), -limit, limit);
             code.ChromaDc[(c * 4) + k] = level;
             dcCount += level != 0 ? 1 : 0;
         }
