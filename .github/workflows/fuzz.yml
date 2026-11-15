@@ -1,7 +1,7 @@
 name: Fuzz
 
 # Nightly fuzzing of each reader with SharpFuzz and AFL++, 30 minutes per target.
-# Crashes and hangs are uploaded as artifacts and filed as an issue.
+# Crashes and hangs are uploaded as artifacts; hangs and crashes that fail again outside AFL++ are filed as an issue.
 on:
   schedule:
     - cron: '17 2 * * *'
@@ -56,14 +56,25 @@ jobs:
       - name: Collect crashes and hangs
         id: results
         run: |
-          mkdir -p results
-          find findings -path '*/crashes/id*' -exec cp {} results/ \;
-          find findings -path '*/hangs/id*' -exec sh -c 'cp "$1" "results/hang-$(basename "$1")"' _ {} \;
-          count=$(ls results | wc -l)
-          echo "count=$count" >> "$GITHUB_OUTPUT"
-          echo "Crashes and hangs: $count" >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p results/crashes results/hangs
+          # AFL++ names its files id:000000,sig:02,...; artifact paths may not contain colons, so they become underscores.
+          find findings -path '*/crashes/id*' -exec sh -c 'cp "$1" "results/crashes/$(basename "$1" | tr : _)"' _ {} \;
+          find findings -path '*/hangs/id*' -exec sh -c 'cp "$1" "results/hangs/$(basename "$1" | tr : _)"' _ {} \;
+          crashes=$(ls results/crashes | wc -l)
+          hangs=$(ls results/hangs | wc -l)
+          # SharpFuzz reports an exception and a fuzzing process that died the same way (sig:02), and a process can die for
+          # reasons outside the input. Each saved crash runs again outside AFL++; only those that fail there are reported.
+          reproduced=0
+          if [ "$crashes" != 0 ]; then
+            dotnet run --project tests/Egami.Fuzz -c Release -- replay ${{ matrix.target }} results/crashes | tee results/replay.txt || true
+            # If the replay did not finish, every crash counts.
+            reproduced=$(tail -n 1 results/replay.txt | grep -oE '[0-9]+ failures\.$' | grep -oE '^[0-9]+' || echo "$crashes")
+          fi
+          echo "saved=$((crashes + hangs))" >> "$GITHUB_OUTPUT"
+          echo "count=$((reproduced + hangs))" >> "$GITHUB_OUTPUT"
+          echo "Saved by AFL++: $crashes crash(es) and $hangs hang(s); $reproduced crash(es) fail again outside AFL++." >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
-        if: steps.results.outputs.count != '0'
+        if: steps.results.outputs.saved != '0'
         with:
           name: fuzz-${{ matrix.target }}
           path: results
@@ -76,4 +87,4 @@ jobs:
         run: |
           gh issue create \
             --title "Fuzzing found $COUNT crash or hang input(s) in the ${{ matrix.target }} reader" \
-            --body "The nightly fuzz run found $COUNT input(s). Download the fuzz-${{ matrix.target }} artifact from $RUN_URL, reproduce with \`dotnet run --project tests/Egami.Fuzz -c Release -- ${{ matrix.target }} <file>\`, and add each as a regression test."
+            --body "The nightly fuzz run found $COUNT input(s). Download the fuzz-${{ matrix.target }} artifact from $RUN_URL (replay.txt lists the crashes that failed again), reproduce with \`dotnet run --project tests/Egami.Fuzz -c Release -- ${{ matrix.target }} <file>\`, and add each as a regression test."
