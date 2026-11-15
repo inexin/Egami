@@ -152,16 +152,26 @@ internal sealed record CoreSettings
     public double MacroblockTree { get; init; }
 
     /// <summary>
-    /// Gets the block macroblock tree's strength (<see cref="Encoding.BlockTree"/>), which replaces <see cref="MacroblockTree"/>
-    /// when above 0: each 16×16 block's step is multiplied by 2 to the power of minus this times the base-2 logarithm of
-    /// (its intra cost + what later pictures take from it) over its intra cost, propagated along the coded structure of the
-    /// B-frame order (P pictures from their anchor, B pictures from both sides). The mean of a frame's offsets goes into the
-    /// frame's step, times <see cref="BlockTreeFrame"/>, and the rest to the coder as <see cref="FrameDecision.BlockOffsets"/>.
+    /// Gets the block macroblock tree's strength (<see cref="Encoding.BlockTree"/>); 0 for none: each 16×16 block's step is
+    /// multiplied by 2 to the power of minus this times the base-2 logarithm of (its intra cost + what later pictures take
+    /// from it) over its intra cost, propagated along the coded structure of the B-frame order (P pictures from their anchor,
+    /// B pictures from both sides). The mean of a frame's offsets goes into the frame's step, times
+    /// <see cref="BlockTreeFrame"/>, and the rest to the coder as <see cref="FrameDecision.BlockOffsets"/>. With
+    /// <see cref="MacroblockTree"/> above 0 too, the frame-level tree sets the frames' steps instead.
     /// </summary>
     public double BlockTree { get; init; }
 
     /// <summary>How much of a frame's mean block tree offset goes into the frame's step (rate control plans with it): 0 to 1.</summary>
     public double BlockTreeFrame { get; init; } = 1;
+
+    /// <summary>The most a block tree offset may lower a block's step, in base-2 logarithms of the step (0.5 is 3 QP in H.264).</summary>
+    public double BlockTreeClamp { get; init; } = double.PositiveInfinity;
+
+    /// <summary>
+    /// The ratio of inter to intra cost, summed over the pictures the block tree plans, below which its strength falls in
+    /// proportion (a still scene's blocks are all reused, and its offsets cost PSNR for little); 0 for no such guard.
+    /// </summary>
+    public double BlockTreeStill { get; init; }
 
     /// <summary>Whether keyframes are coded temporally filtered with the frames after them, as alternate references are.</summary>
     public bool FilterKeyframes { get; init; }
@@ -636,6 +646,7 @@ internal sealed class EncoderCore : IDisposable
         }
 
         BlockTree.Propagate(_treePictures, _analyzer.Columns, _analyzer.Rows, _treeCarried);
+        double strength = _settings.BlockTree * StillShare();
         foreach (BStep step in _bSteps)
         {
             if (!step.Referenced || Find(step.Index)?.Blocks is not { } blocks || !_treeCarried.TryGetValue(step.Index, out double[]? carried))
@@ -644,7 +655,7 @@ internal sealed class EncoderCore : IDisposable
             }
 
             double[] offsets = new double[n];
-            double mean = BlockTree.Offsets(blocks.Intra, carried, _settings.BlockTree, offsets);
+            double mean = BlockTree.Offsets(blocks.Intra, carried, strength, _settings.BlockTreeClamp, offsets);
             double frame = mean * _settings.BlockTreeFrame;
             for (int i = 0; i < n; i++)
             {
@@ -660,6 +671,33 @@ internal sealed class EncoderCore : IDisposable
         {
             _treeCosts.Remove(key);
         }
+    }
+
+    /// <summary>
+    /// The share of the block tree's strength the planned pictures get: 1, or their summed inter to intra cost over
+    /// <see cref="CoreSettings.BlockTreeStill"/> when lower.
+    /// </summary>
+    private double StillShare()
+    {
+        if (_settings.BlockTreeStill <= 0)
+        {
+            return 1;
+        }
+
+        long inter = 0, intra = 0;
+        foreach (TreePicture p in _treePictures)
+        {
+            if (p.Costs is { } costs)
+            {
+                for (int i = 0; i < costs.Inter.Length; i++)
+                {
+                    inter += costs.Inter[i];
+                    intra += costs.Intra[i];
+                }
+            }
+        }
+
+        return intra == 0 ? 1 : Math.Min(1, (double)inter / intra / _settings.BlockTreeStill);
     }
 
     /// <summary>Adds the B-frames between <paramref name="from"/> and <paramref name="to"/> to the tree's plan, in coding order.</summary>
@@ -735,11 +773,13 @@ internal sealed class EncoderCore : IDisposable
             _lastAnchor = anchor.Index;
         }
 
+        // The frame-level tree sets the frames' steps when on (after the block tree, whose centred offsets it keeps).
         if (_settings.BlockTree > 0)
         {
             PlanBlockTree(previous);
         }
-        else
+
+        if (_settings.MacroblockTree > 0)
         {
             PlanTree();
         }

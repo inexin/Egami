@@ -154,9 +154,11 @@ internal sealed class H264VideoEncoder : IVideoEncoder
             // A pyramid's middle B picture a coarser step than the default 1.15 (H.264 compression Build Plan, PR D): its
             // residual took the most bits beyond x264's, and the B pictures that predict from it lose less than it saves.
             BReferenceStep = 1.3,
-            MacroblockTree = effort >= 4 && BlockTreeStrength > 0 ? 0 : TreeStrength,
-            BlockTree = effort >= 4 ? BlockTreeStrength : 0,
-            BlockTreeFrame = BlockTreeFrame,
+            MacroblockTree = TreeStrength,
+            BlockTree = effort >= 5 ? BlockTreeStrength : 0,
+            BlockTreeFrame = 0,
+            BlockTreeClamp = BlockTreeClamp,
+            BlockTreeStill = BlockTreeStill,
             Rate = new RateSettings
             {
                 Mode = options.RateControl,
@@ -204,13 +206,24 @@ internal sealed class H264VideoEncoder : IVideoEncoder
     internal const double TreeStrength = 0.25;
 
     /// <summary>
-    /// The block macroblock tree's strength from effort 4 (<see cref="CoreSettings.BlockTree"/>), which then replaces the
-    /// frame-level tree; 0 leaves it off (H.264 block macroblock tree plan, PR E: an internal switch until it is tuned).
+    /// The block macroblock tree's strength from effort 5 (<see cref="CoreSettings.BlockTree"/>; H.264 block macroblock tree
+    /// plan, PR F). The frame-level tree (<see cref="TreeStrength"/>) keeps the frames' steps, and the block tree adds only its
+    /// offsets centred on each frame: on the eight clips at effort 5 that takes BD-rate against x264 medium from +2.76 % to
+    /// +2.05 % on PSNR-Y without AQ and from −3.25 % to −4.67 % on SSIM-Y with it, no clip more than 0.8 points worse, for
+    /// 1.7 % (quality 50) and 2.4 % (34) more instructions. At effort 4 it gained as much but cost 3 to 7 % more instructions,
+    /// over that effort's budget of 3 %, so effort 4 keeps the frame-level tree alone. 0.25 helped SSIM more but cost the
+    /// still clips PSNR (johnny, rush_hour, ducks_take_off), as did moving the frame steps to the block tree's mean.
     /// </summary>
-    internal static double BlockTreeStrength { get; set; }
+    internal const double BlockTreeStrength = 0.1;
 
-    /// <summary>How much of a frame's mean block tree offset goes into its step (<see cref="CoreSettings.BlockTreeFrame"/>).</summary>
-    internal static double BlockTreeFrame { get; set; } = 1;
+    /// <summary>The block tree's offset clamp (<see cref="CoreSettings.BlockTreeClamp"/>): at most 3 QP finer.</summary>
+    internal const double BlockTreeClamp = 0.5;
+
+    /// <summary>
+    /// The block tree's still-scene guard (<see cref="CoreSettings.BlockTreeStill"/>): runs whose inter cost is below 0.6 of
+    /// their intra cost get proportionally less strength.
+    /// </summary>
+    internal const double BlockTreeStill = 0.6;
 
     /// <summary>The QP for a quality of 0 to 100: 51 at 0, 23 (x264's default CRF) at 50, 0 at 100 or so.</summary>
     internal static int QualityToQp(int quality) => Math.Clamp((int)Math.Round(51 - (0.56 * quality)), 0, 51);

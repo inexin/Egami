@@ -233,7 +233,7 @@ internal sealed partial class H264MbEncoder
     private double FinishInter(int mbX, int mbY, int qp, long firstCost, double bestCost, H264MbCode? best, int bestSlot, bool intra = true)
     {
         bool b = _syntax.SliceType == H264SliceType.B;
-        if (intra && TryIntra(firstCost, b && _effort is >= 1 and <= 4 ? BIntraMargin : IntraMargin))
+        if (intra && TryIntra(firstCost, b && _effort is >= 1 and <= 3 ? BIntraMargin : IntraMargin))
         {
             double cost = Encode(mbX, mbY, qp);
             _round = InterRound;

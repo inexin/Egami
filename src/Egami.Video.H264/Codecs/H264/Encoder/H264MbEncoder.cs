@@ -244,7 +244,11 @@ internal sealed partial class H264MbEncoder
     internal static int IntraMargin { get; set; } = 24;
 
     /// <summary>
-    /// <see cref="IntraMargin"/> in B pictures at efforts 1 to 4: intra only below the inter cost, where B pictures rarely pick it.
+    /// <see cref="IntraMargin"/> in B pictures at efforts 1 to 3: intra only below the inter cost, where B pictures rarely pick
+    /// it. Effort 4 used it too until the H.264 block macroblock tree plan (PR F): with the whole margin there BD-rate against
+    /// x264 medium on the eight clips goes from +4.35 % to +4.01 % on PSNR-Y without AQ and from −1.76 % to −1.98 % on SSIM-Y
+    /// with it (pedestrian_area −1.7 points, no clip more than 0.3 worse), for 1.3 % (quality 50) and 1.7 % (34) more
+    /// instructions.
     /// </summary>
     private const int BIntraMargin = 16;
 
@@ -257,6 +261,13 @@ internal sealed partial class H264MbEncoder
     /// </summary>
     internal const double IpLambdaScale = 0.6;
 
+    /// <summary>
+    /// <see cref="IpLambdaScale"/> at effort 0 (H.264 block macroblock tree plan, PR F), whose quick decisions gain less from
+    /// spending bits on references: −2.8 points of BD-rate on PSNR-Y without AQ and on SSIM-Y with it on the eight clips,
+    /// every clip better on PSNR-Y, for no more instructions (+1.3 % at quality 50, −1.3 % at 34, within the noise).
+    /// </summary>
+    internal const double IpLambdaScaleEffort0 = 0.8;
+
     private void Setup(int mbX, int mbY, int qp)
     {
         _mbX = mbX;
@@ -265,7 +276,7 @@ internal sealed partial class H264MbEncoder
         _pricer.Invalidate();
         _qpc = H264Tables.ChromaQp[Math.Clamp(qp + _syntax.ChromaQpOffset, 0, 51)];
         double lambda = H264Forward.Lambda(qp);
-        _lambda = _syntax.SliceType == H264SliceType.B ? lambda : lambda * IpLambdaScale;
+        _lambda = _syntax.SliceType == H264SliceType.B ? lambda : lambda * (_effort == 0 ? IpLambdaScaleEffort0 : IpLambdaScale);
         _sadLambda = Math.Sqrt(lambda);
         (_modeBits1, _modeBits4) = ((long)(_sadLambda * 1), (long)(_sadLambda * 4));
         int slice = _syntax.Slice, w = _mb.WidthMbs, addr = (mbY * w) + mbX;
