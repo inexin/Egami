@@ -950,13 +950,6 @@ internal sealed partial class H264MbEncoder
         return n;
     }
 
-    // The 4x4 zigzag scan as lane permutations of the two halves of a raster block: the lanes of each half of the scan, and
-    // which of them come from the second half of the block.
-    private static readonly Vector256<int> ScanLow = Vector256.Create(0, 1, 4, 0, 5, 2, 3, 6);
-    private static readonly Vector256<int> ScanLowHigh = Vector256.Create(0, 0, 0, -1, 0, 0, 0, 0);
-    private static readonly Vector256<int> ScanHigh = Vector256.Create(1, 4, 5, 2, 7, 3, 6, 7);
-    private static readonly Vector256<int> ScanHighHigh = Vector256.Create(-1, -1, -1, -1, 0, -1, -1, -1);
-
     // The 8x8 zigzag scan's raster positions.
     private static readonly int[] Scan8x8 = Array.ConvertAll(H264ScalingLists.Zigzag8x8, p => (int)p);
 
@@ -966,9 +959,14 @@ internal sealed partial class H264MbEncoder
     /// </summary>
     private static ulong Scan4(int[] q, int first, Span<int> dst)
     {
+        // The 4x4 zigzag scan as lane permutations of the two halves of a raster block: the lanes of each half of the scan, and
+        // which of them come from the second half of the block (constants made here: speed round 6, as static readonly
+        // fields their loads kept the method from being inlined).
+        Vector256<int> scanLow = Vector256.Create(0, 1, 4, 0, 5, 2, 3, 6), scanLowHigh = Vector256.Create(0, 0, 0, -1, 0, 0, 0, 0);
+        Vector256<int> scanHigh = Vector256.Create(1, 4, 5, 2, 7, 3, 6, 7), scanHighHigh = Vector256.Create(-1, -1, -1, -1, 0, -1, -1, -1);
         Vector256<int> low = Vector256.Create(q, 0), high = Vector256.Create(q, 8);
-        Vector256<int> a = Vector256.ConditionalSelect(ScanLowHigh, Avx2.PermuteVar8x32(high, ScanLow), Avx2.PermuteVar8x32(low, ScanLow));
-        Vector256<int> b = Vector256.ConditionalSelect(ScanHighHigh, Avx2.PermuteVar8x32(high, ScanHigh), Avx2.PermuteVar8x32(low, ScanHigh));
+        Vector256<int> a = Vector256.ConditionalSelect(scanLowHigh, Avx2.PermuteVar8x32(high, scanLow), Avx2.PermuteVar8x32(low, scanLow));
+        Vector256<int> b = Vector256.ConditionalSelect(scanHighHigh, Avx2.PermuteVar8x32(high, scanHigh), Avx2.PermuteVar8x32(low, scanHigh));
         uint mask = ~(Vector256.Equals(a, Vector256<int>.Zero).ExtractMostSignificantBits() | (Vector256.Equals(b, Vector256<int>.Zero).ExtractMostSignificantBits() << 8)) & 0xFFFF;
         if (first == 0)
         {

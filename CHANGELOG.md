@@ -254,9 +254,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   Exp-Golomb suffix of RDOQ's level prices is a bit count instead of a loop, and its tail table reads its rows through refs;
   RDOQ's decision loop keeps only λ, the rate and the gain across the pricer's calls and sums the distortion of the levels
   it took after the loop, in the same order; Dequantize, the macroblock state Begin writes and SetMotion's motion arrays go
-  through refs and spans checked once a row; and a prediction copies whole luma rows as one load and store and filters
-  chroma eight samples at a time. Egami's own instructions fall 6.4 % at quality 50 and 8.6 % at quality 34 at effort 4 on
-  the four 720p clips (effort 1: 8.5 and 6.4 %).
+  through refs and spans checked once a row, as do CodeInterLuma's counts and scores; a prediction copies whole luma rows as
+  one load and store and filters chroma eight samples at a time; the pricer's tails and the 4x4 scan make their vector
+  constants in place (static readonly vector fields kept them from being inlined); and the pricer's Price is inlined into
+  RDOQ. The CABAC writer codes a bin without a branch on it (the LPS taken by a mask, the renormalisation by a bit count);
+  it is shared with the HEVC encoder, whose output is unchanged too. Egami's own instructions fall 8.2 % at quality 50 and 10.6 % at quality 34 at effort 4 on the four 720p clips.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
