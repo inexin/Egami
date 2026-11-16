@@ -196,10 +196,10 @@ PSNR (4.0 % on average, 60 frames), between what x264's fast and medium presets 
 kristen_sara, pedestrian_area and rush_hour, 120 frames) it needs 4.0 % more on average (0.4 to 12.4 %); with adaptive
 quantization on, as both encoders default to, it needs 2.0 % fewer bits than x264 medium for the same SSIM. At effort 5, with
 the block macroblock tree, it needs 2.1 % more for the same PSNR and 4.7 % fewer for the same SSIM. It is slower: on
-one thread, with x264 at the CRF that gives the same PSNR-Y, 2.1 times x264 medium's CPU cycles a frame at 720p at quality
-50 (1.6 to 2.8 by clip) and 1.8 times at quality 34 (1.6 to 2.1), on .NET's default runtime with tiered PGO on and without
+one thread, with x264 at the CRF that gives the same PSNR-Y, 1.8 times x264 medium's CPU cycles a frame at 720p at quality
+50 (1.5 to 2.5 by clip) and 1.7 times at quality 34 (1.4 to 2.0), on .NET's default runtime with tiered PGO on and without
 adaptive quantization; with it, the default, 3.2 and 2.6 times (measured before speed round 6). Cycles vary by up to a third between runs on a busy machine;
-in instructions, which vary less, effort 4 takes 2.5 and 2.1 times x264 medium's (after speed round 8; rounds 7 and 8 traded about 2.5 % more bits for the same PSNR and 1.9 % for the same SSIM on the eight clips, not yet in the bit figures above). The design's goal of twice x264 medium's time is not met. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as
+in instructions, which vary less, effort 4 takes 2.2 and 1.9 times x264 medium's (after speed round 9; rounds 7 to 9 traded about 2.7 % more bits for the same PSNR and 2.1 % for the same SSIM on the eight clips, not yet in the bit figures above). The design's goal of twice x264 medium's time is met in cycles since speed round 9. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as
 Egami's own decoder.</p>
 <h4 id="speed-by-effort">Speed by effort</h4>
 <p>From effort 1 up, each effort costs more cycles than the one below it and needs fewer bits, on the mean of the four clips;
@@ -213,7 +213,9 @@ intra gate of efforts 1 to 4: its cycles are the earlier ones scaled by the 29 %
 was measured then. Efforts 2 to 5 are scaled the same way by the instructions speed round 5's cheaper rate count saved (1 to
 5 %), and their BD-rate moved by what it cost (under 0.1 point). The table is from before speed rounds 6 and 7, which left the
 output unchanged and cut effort 4's instructions by about 8 % and 1 to 7 %, and effort 0's by 3 to 6 % in round 6; round
-7's trades then cut effort 4's by another 8 % for about 1.6 % more bits, and round 8's by 3 to 10 % for 0.9 % more.</p>
+7's trades then cut effort 4's by another 8 % for about 1.6 % more bits, round 8's by 3 to 10 % for 0.9 % more, and round
+9's cheaper partition search by about 10 % for 0.2 % more; round 9 also gave effort 3 the B-pyramid, which takes it to
+1.4 % more bits than effort 4 for 2 to 4 % fewer instructions.</p>
 <table>
 <thead>
 <tr>
@@ -308,23 +310,24 @@ output unchanged and cut effort 4's instructions by about 8 % and 1 to 7 %, and 
 <ul>
 <li><strong>0</strong>: one reference, no B pictures, 16x16 partitions only, a diamond search, and intra by the same
 SATD gate as efforts 1 to 4.</li>
-<li><strong>1</strong>: B pictures, 16x8 and 8x16 partitions, Intra8x8, and the shortcuts effort 4 lists (early stop after a 16x16 search with
+<li><strong>1</strong>: B pictures, 16x8 and 8x16 partitions (up to effort 4 each part searched from its start vectors only, then refined), Intra8x8, and the shortcuts effort 4 lists (early stop after a 16x16 search with
 no residual, intra in B pictures only below the inter cost, sub-block searches only in references near the best, the looser
 skip tests, and from effort 2 one transform size a macroblock).</li>
-<li><strong>2</strong>: two references, 8x8 partitions, a hexagon search and the 8x8 transform for inter blocks.</li>
-<li><strong>3</strong>: RDOQ (at efforts 3 and 4 not in B pictures no other picture references). Up to effort 5, an inter candidate's rate count
-takes each luma block's levels at the price RDOQ gave them instead of counting them again.</li>
-<li><strong>4</strong> (default): B pyramids with full runs (the middle B picture at 1.3 times a P picture's quantizer step), three references kept (P pictures search two), the full sub-sample search in P pictures with one quarter-sample step; B pictures search one list 0
+<li><strong>2</strong>: two references, a hexagon search and the 8x8 transform for inter blocks.</li>
+<li><strong>3</strong>: RDOQ (at efforts 3 and 4 not in B pictures no other picture references), and B pyramids with full runs (the middle
+B picture at 1.3 times a P picture's quantizer step) and three references kept. Up to effort 5, an inter candidate's rate
+count takes each luma block's levels at the price RDOQ gave them instead of counting them again.</li>
+<li><strong>4</strong> (default): P pictures search two references, the full sub-sample search in P pictures with one quarter-sample step; B pictures search one list 0
 reference and try intra where its 16x16 prediction comes within 1.5 times the inter cost by SATD (as in P pictures). A 16x16 candidate whose search
 cost is low for the QP is coded at once, and when it leaves no residual nothing else but intra is searched or coded. The
-8x8, 16x8 and 8x16 parts search only the references whose 16x16 search came within 12.5 % of the best one's. Skip ends
+16x8 and 8x16 parts search only the references whose 16x16 search came within 12.5 % of the best one's. Skip ends
 the search when no 4x4 block's error reaches 0.8 (B) or 0.5 (P) quantizer steps, and a B macroblock that stops early tries
 no intra. The first candidate that codes luma levels picks the transform size (4x4 or 8x8) for the macroblock's other
 candidates, and intra is coded only when its best estimate comes below the inter search cost.</li>
 <li><strong>5</strong>: the block macroblock tree: the lookahead estimates each 16x16 block against the references the B-frame order gives
 its picture and lowers by up to 3 QP the step of the blocks later pictures reuse most, around the step the frame-level
-tree gives the picture; two list 0 references in B pictures, sub-block searches in every reference, 16x8 and 8x16 searched in every macroblock (not only where 8x8 beats
-16x16), two more quarter-sample steps and one more sub-sample refinement round, and the second-best partitioning RD-coded
+tree gives the picture; two list 0 references in B pictures, sub-block searches in every reference, 8x8 partitions where 16x8 or 8x16 beats 16x16, full pattern searches for the
+parts, two more quarter-sample steps and one more sub-sample refinement round, and the second-best partitioning RD-coded
 when it comes close; the early stop after 16x16 stays.</li>
 <li><strong>6</strong>: no early stop after 16x16, a wider search range, and 8x4, 4x8 and 4x4 at levels up to 3.</li>
 <li><strong>7</strong>: intra tried in every inter macroblock.</li>
