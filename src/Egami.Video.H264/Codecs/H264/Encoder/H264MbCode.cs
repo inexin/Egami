@@ -8,8 +8,8 @@ internal sealed class H264MbCode
 {
     /// <summary>
     /// Gets or sets the macroblock's kind: <see cref="H264MbKind.I4x4"/>, <see cref="H264MbKind.I8x8"/>, <see cref="H264MbKind.I16x16"/>,
-    /// <see cref="H264MbKind.Inter"/>, <see cref="H264MbKind.PSkip"/>, <see cref="H264MbKind.BDirect"/> or
-    /// <see cref="H264MbKind.BSkip"/>.
+    /// <see cref="H264MbKind.Inter"/>, <see cref="H264MbKind.PSkip"/>, <see cref="H264MbKind.BDirect"/>,
+    /// <see cref="H264MbKind.BSkip"/> or <see cref="H264MbKind.IPcm"/> (<see cref="Pcm"/>).
     /// </summary>
     public H264MbKind Kind { get; set; }
 
@@ -96,6 +96,19 @@ internal sealed class H264MbCode
 
     /// <summary>Gets the number of non-zero levels of each chroma AC block.</summary>
     public int[] ChromaAcCount { get; } = new int[8];
+
+    /// <summary>
+    /// Makes an I_PCM macroblock as the decoder holds one: coded_block_pattern 0x2F and every block counted as 16 levels, for
+    /// later macroblocks' CAVLC nC and CABAC contexts (9.2.1, 9.3.3.1.1.4, 9.3.3.1.1.9). Its samples are the source's.
+    /// </summary>
+    public static H264MbCode Pcm()
+    {
+        H264MbCode code = new() { Kind = H264MbKind.IPcm, Cbp = 0x2F };
+        code.LumaCount.AsSpan().Fill(16);
+        code.ChromaAcCount.AsSpan().Fill(16);
+        code.ChromaDcCount.AsSpan().Fill(4);
+        return code;
+    }
 
     /// <summary>Copies another macroblock's choices and levels into this one.</summary>
     public void CopyFrom(H264MbCode other)

@@ -63,6 +63,9 @@ internal sealed class H264PictureEncoder
     /// <summary>Gets or sets whether unreferenced pictures are deblocked too, for a reconstruction that is read.</summary>
     public bool DeblockUnreferenced { get; set; }
 
+    /// <summary>Gets how many sets of reference planes the encoder has made: at most one more than the references it keeps.</summary>
+    internal int PlaneSets { get; private set; } = 1;
+
     /// <summary>Gets the number of reference pictures held, which P pictures may predict from.</summary>
     public int References => _refs.Count;
 
@@ -74,6 +77,12 @@ internal sealed class H264PictureEncoder
     /// the step (<see cref="Encoding.FrameDecision.BlockOffsets"/>), added to adaptive quantization's; null for none.
     /// </summary>
     public double[]? TreeOffsets { get; set; }
+
+    /// <summary>
+    /// Tests only: when set, each CAVLC macroblock is also counted as the rate count counts it, and this gets its kind, the
+    /// counted bits and the bits written, which must be equal.
+    /// </summary>
+    internal static Action<H264MbKind, long, long>? CavlcParity { get; set; }
 
     /// <summary>Gets or sets the smallest QP a macroblock may take.</summary>
     public int MinQp { get; set; }
@@ -375,14 +384,21 @@ internal sealed class H264PictureEncoder
     /// <summary>Takes a free picture to reconstruct into, and works out the macroblocks' QP offsets.</summary>
     private void StartPicture(int qp)
     {
-        if (_free.Count > 0)
+        if (!_refs.Contains(_current))
+        {
+            // The last picture was not kept (an unreferenced B picture, or an IDR picture emptied the references): code into
+            // its planes again, rather than dropping them for a free set.
+            _free.Remove(_current);
+        }
+        else if (_free.Count > 0)
         {
             _current = _free[^1];
             _free.RemoveAt(_free.Count - 1);
         }
-        else if (_refs.Contains(_current))
+        else
         {
             _current = new H264RefPlanes(_config.WidthMbs, _config.HeightMbs);
+            PlaneSets++;
         }
 
         foreach (SliceCoder slice in _slices)
@@ -505,7 +521,19 @@ internal sealed class H264PictureEncoder
                 syntax.Begin(addr % _config.WidthMbs, addr / _config.WidthMbs, code);
                 if (!H264MbState.IsSkip(code.Kind))
                 {
+                    var state = cabac.Save();
+                    long start = cabac.BitCount;
+                    syntax.Contexts.CopyTo(slice.SavedContexts, 0);
                     syntax.WriteCabac(code, ref sink);
+                    if (cabac.BitCount - start > MaxMbBits)
+                    {
+                        cabac.Restore(state);
+                        slice.SavedContexts.CopyTo(syntax.Contexts, 0);
+                        code = Pcm(slice, addr);
+                        syntax.Begin(addr % _config.WidthMbs, addr / _config.WidthMbs, code);
+                        syntax.WriteCabac(code, ref sink);
+                        cabac.Pcm(slice.Samples);
+                    }
                 }
 
                 syntax.Commit(code);
@@ -542,7 +570,30 @@ internal sealed class H264PictureEncoder
                     run = 0;
                 }
 
-                syntax.WriteCavlc(code, ref sink);
+                var position = w.Position;
+                long start = w.BitCount;
+                if (CavlcParity is { } parity)
+                {
+                    BitCountSink count = default;
+                    syntax.WriteCavlc(code, ref count);
+                    syntax.WriteCavlc(code, ref sink);
+                    parity(code.Kind, count.Bits, w.BitCount - start);
+                }
+                else
+                {
+                    syntax.WriteCavlc(code, ref sink);
+                }
+
+                if (w.BitCount - start > MaxMbBits)
+                {
+                    w.Rewind(position);
+                    code = Pcm(slice, addr);
+                    syntax.Begin(addr % _config.WidthMbs, addr / _config.WidthMbs, code);
+                    syntax.WriteCavlc(code, ref sink);
+                    w.AlignZero(); // pcm_alignment_zero_bit
+                    w.Bytes(slice.Samples);
+                }
+
                 syntax.Commit(code);
             }
 
@@ -553,6 +604,45 @@ internal sealed class H264PictureEncoder
 
             w.TrailingBits();
         }
+    }
+
+    /// <summary>
+    /// The most bits a macroblock_layer may take: 128 + RawMbBits, 3200 for 8-bit 4:2:0 (A.3.1, A.3.3). A macroblock coded
+    /// bigger, only at the lowest QPs on noise, is written as I_PCM instead, which is also smaller.
+    /// </summary>
+    internal const int MaxMbBits = 128 + (384 * 8);
+
+    /// <summary>Tests only: gets the address of each macroblock written as I_PCM, when set.</summary>
+    internal static Action<int>? PcmWritten { get; set; }
+
+    /// <summary>
+    /// Makes the macroblock at <paramref name="addr"/> I_PCM: its source samples become its reconstruction and
+    /// <see cref="SliceCoder.Samples"/>.
+    /// </summary>
+    private H264MbCode Pcm(SliceCoder slice, int addr)
+    {
+        PcmWritten?.Invoke(addr);
+        H264Picture pic = _current.Picture;
+        int mbX = addr % _config.WidthMbs, mbY = addr / _config.WidthMbs;
+        Span<byte> samples = slice.Samples;
+        byte[] y = pic.Y<byte>(), cb = pic.Cb<byte>(), cr = pic.Cr<byte>();
+        for (int row = 0; row < 16; row++)
+        {
+            int at = pic.Origin + (((mbY * 16) + row) * pic.Stride) + (mbX * 16);
+            _srcY.AsSpan(at, 16).CopyTo(samples.Slice(row * 16, 16));
+            _srcY.AsSpan(at, 16).CopyTo(y.AsSpan(at, 16));
+        }
+
+        for (int row = 0; row < 8; row++)
+        {
+            int at = pic.ChromaOrigin + (((mbY * 8) + row) * pic.ChromaStride) + (mbX * 8);
+            _srcCb.AsSpan(at, 8).CopyTo(samples.Slice(256 + (row * 8), 8));
+            _srcCr.AsSpan(at, 8).CopyTo(samples.Slice(320 + (row * 8), 8));
+            _srcCb.AsSpan(at, 8).CopyTo(cb.AsSpan(at, 8));
+            _srcCr.AsSpan(at, 8).CopyTo(cr.AsSpan(at, 8));
+        }
+
+        return slice.Pcm;
     }
 
     private H264MbCode Code(SliceCoder slice, int addr, int qp, bool predicted)
@@ -733,6 +823,15 @@ internal sealed class H264PictureEncoder
         public double Cost { get; set; }
 
         public NalBitWriter? Writer { get; set; }
+
+        /// <summary>Gets the I_PCM macroblock a macroblock too big for the level becomes.</summary>
+        public H264MbCode Pcm { get; } = H264MbCode.Pcm();
+
+        /// <summary>Gets the CABAC contexts before the macroblock being written, to go back to if it becomes I_PCM.</summary>
+        public byte[] SavedContexts { get; } = new byte[syntax.Contexts.Length];
+
+        /// <summary>Gets the pcm_sample bytes of a macroblock: luma, then Cb and Cr.</summary>
+        public byte[] Samples { get; } = new byte[384];
 
 #if EGAMI_H264_STATS
         /// <summary>Gets the CABAC bits of the final coding by <see cref="H264BitPart"/>, in 1/32768 bit.</summary>

@@ -29,6 +29,31 @@ internal sealed class CabacEncoder
     /// </summary>
     internal long BitCount => ((long)(_length + (_held >= 0 ? 1 : 0) + _run) * 8) + _pending + 1;
 
+    /// <summary>Gets the engine's state, to go back to with <see cref="Restore"/> (the contexts are the caller's to keep).</summary>
+    internal (int Length, uint Low, uint Range, int Pending, int Held, int Run) Save() => (_length, _low, _range, _pending, _held, _run);
+
+    /// <summary>Goes back to a state from <see cref="Save"/>, dropping the bins encoded since.</summary>
+    internal void Restore((int Length, uint Low, uint Range, int Pending, int Held, int Run) state) =>
+        (_length, _low, _range, _pending, _held, _run) = state;
+
+    /// <summary>
+    /// After the terminating 1 bin of an I_PCM mb_type (H.264 9.3.4.5): flushes the interval as <see cref="Finish"/> does (its
+    /// zero bits are pcm_alignment_zero_bit), appends the pcm_sample bytes and initialises the engine again (9.3.1.2), keeping
+    /// what was written.
+    /// </summary>
+    internal void Pcm(ReadOnlySpan<byte> samples)
+    {
+        Finish();
+        foreach (byte sample in samples)
+        {
+            Write(sample);
+        }
+
+        _low = 0;
+        _range = 510;
+        _pending = 0;
+    }
+
     /// <summary>Starts a new substream (H.265 9.3.2.5): the interval is the whole range and nothing is written.</summary>
     internal void Start()
     {

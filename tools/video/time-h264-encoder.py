@@ -72,6 +72,7 @@ DOTNET_IMAGE = "egami-dotnet-perf:2.4.5"
 PERF_IMAGE = "egami-perf-counters:2"
 PERF_DOCKERFILE = "FROM mcr.microsoft.com/dotnet/runtime:10.0-alpine\nRUN apk add --no-cache perf ffmpeg libjpeg-turbo-utils\n"
 BENCH = "benchmarks/Egami.Video.Benchmarks/bin/Release/net10.0/Egami.Video.Benchmarks.dll"
+EGAMI_ARGS = ""
 ENV = dict(os.environ, MSYS_NO_PATHCONV="1")
 ROOT = os.path.abspath(".")
 GATE_BD = 15.0
@@ -155,7 +156,7 @@ def metrics(src, stream, frames):
 def egami(src, frames, quality, effort, threads, tag, extra="--no-aq"):
     out = f"{OUT}/runs/egami-{tag}.h264"
     q = f"--quality={quality}" if quality is not None else ""
-    cmd = f"dotnet {BENCH} --encode-h264 {src} --frames={frames} {q} --effort={effort} --threads={threads} {extra} --out={out}"
+    cmd = f"dotnet {BENCH} --encode-h264 {src} --frames={frames} {q} --effort={effort} --threads={threads} {extra} {EGAMI_ARGS} --out={out}"
     data = json.loads(checked(docker(DOTNET_IMAGE, cmd)).stdout.strip().splitlines()[-1])
     return out, data["ms"], data["bytes"]
 
@@ -529,7 +530,7 @@ def report(args):
 
 
 def main():
-    global OUT, BENCH
+    global OUT, BENCH, EGAMI_ARGS
     parser = argparse.ArgumentParser()
     parser.add_argument("mode", choices=["bd", "time", "cycles", "rc", "report"])
     parser.add_argument("--size", default="720")
@@ -552,9 +553,11 @@ def main():
     parser.add_argument("--clips-from", default=".cache/video/derf")
     parser.add_argument("--out", default=OUT, help="where runs and results go (clips stay in .cache/h264enc/clips)")
     parser.add_argument("--bench", default=BENCH, help="the benchmark build to time Egami with, inside the repo")
+    parser.add_argument("--egami-args", default="", help="more H264EncodeTiming options for every Egami run (--cavlc)")
     args = parser.parse_args()
     OUT = args.out
     BENCH = args.bench
+    EGAMI_ARGS = args.egami_args
     if args.wide:
         args.clips = ",".join(WIDE_CLIPS)
     if args.mode != "report":
