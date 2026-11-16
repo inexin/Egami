@@ -42,16 +42,16 @@ internal sealed partial class H264MbEncoder
     internal H264SearchShortcuts Shortcuts { get; set; }
 
     /// <summary>
-    /// The shortcuts an effort takes: both, quick sub-samples everywhere, up to effort 3; at 4 the 16x8/8x16 gate and quick
-    /// sub-samples in B pictures only; at 5 to 7 quick sub-samples in B pictures only (task 26: at 5 the gate's absence takes
+    /// The shortcuts an effort takes: both, quick sub-samples everywhere, up to effort 3; at 4 halves only (until speed round
+    /// 9 the 16x8/8x16 gate behind 8x8) and quick sub-samples in B pictures only; at 5 to 7 quick sub-samples in B pictures only (task 26: at 5 the gate's absence takes
     /// 0.5 % fewer bits than effort 4 on every clip); none from effort 8. The macroblock
     /// tree's gain pays for them: on the four 720p clips the mean BD-rate stays below what it was before the tree, and no clip
     /// loses more than 1 %. Without the gate effort 6 takes 0.57 % fewer bits than with it, for 6 to 20 % more instructions.
     /// </summary>
     internal static H264SearchShortcuts DefaultShortcuts(int effort) => effort switch
     {
-        <= 3 => H264SearchShortcuts.QuickSubpel | H264SearchShortcuts.PruneHalves,
-        4 => H264SearchShortcuts.QuickSubpelB | H264SearchShortcuts.PruneHalves,
+        <= 3 => H264SearchShortcuts.QuickSubpel | H264SearchShortcuts.HalvesOnly,
+        4 => H264SearchShortcuts.QuickSubpelB | H264SearchShortcuts.HalvesOnly,
         <= 7 => H264SearchShortcuts.QuickSubpelB,
         _ => H264SearchShortcuts.None,
     };
@@ -87,6 +87,9 @@ internal sealed partial class H264MbEncoder
     /// picture at efforts 3 and 4, whose bits no other picture builds on).
     /// </summary>
     public bool PlainB { get; set; }
+
+    // Whether the block being searched takes only its start vectors in whole samples (HalvesOnly).
+    private bool _startsOnly;
 
     private readonly H264MbCode _skip = new();
     private readonly H264MbCode[] _inter = [new(), new(), new(), new()];
@@ -202,19 +205,21 @@ internal sealed partial class H264MbEncoder
         if (_effort >= 1)
         {
             starts[count++] = p16.Mv[0];
-            bool prune = _effort >= 2 && (Shortcuts & H264SearchShortcuts.PruneHalves) != 0;
-            long cost8 = long.MaxValue;
-            foreach (int partition in prune ? (ReadOnlySpan<int>)[3, 1, 2] : _effort >= 2 ? [1, 2, 3] : [1, 2])
+            bool halves = (Shortcuts & H264SearchShortcuts.HalvesOnly) != 0;
+            long costHalf = long.MaxValue;
+            foreach (int partition in halves || _effort < 2 ? (ReadOnlySpan<int>)[1, 2] : [1, 2, 3])
             {
-                if (prune && partition < 3 && cost8 >= cost16)
+                if (partition == 3 && costHalf >= cost16)
                 {
-                    // Task 12: 16x8 and 8x16 only where 8x8 already finds motion 16x16 cannot follow.
+                    // Speed round 9: 8x8 only where 16x8 or 8x16 already finds motion 16x16 cannot follow.
                     continue;
                 }
 
                 H264MbCode code = _inter[partition];
+                _startsOnly = halves;
                 long cost = partition == 3 ? Search8x8(code, starts[..count]) : SearchHalves(code, partition, starts[..count]);
-                cost8 = partition == 3 ? cost : cost8;
+                _startsOnly = false;
+                costHalf = partition < 3 ? Math.Min(costHalf, cost) : costHalf;
                 if (cost < firstCost)
                 {
                     (second, secondCost) = (first, firstCost);
@@ -753,6 +758,13 @@ internal sealed partial class H264MbEncoder
                     (best, ix, iy) = (c4[i], sxs[i0 + i], sys[i0 + i]);
                 }
             }
+        }
+
+        if (_startsOnly)
+        {
+            // Speed round 9: a 16x8 or 8x16 part with HalvesOnly takes the best start; the refinement still follows.
+            s.WholeCost = best;
+            return H264SliceDecoder.PackMv(ix * 4, iy * 4);
         }
 
         int range = _effort >= 6 ? 32 : 16;

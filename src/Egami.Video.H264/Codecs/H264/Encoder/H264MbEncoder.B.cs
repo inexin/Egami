@@ -129,13 +129,13 @@ internal sealed partial class H264MbEncoder
         long secondCost = long.MaxValue;
         if (_effort >= 1)
         {
-            bool prune = _effort >= 2 && (Shortcuts & H264SearchShortcuts.PruneHalves) != 0;
-            long cost8 = long.MaxValue;
-            foreach (int partition in prune ? (ReadOnlySpan<int>)[3, 1, 2] : _effort >= 2 ? [1, 2, 3] : [1, 2])
+            bool halves = (Shortcuts & H264SearchShortcuts.HalvesOnly) != 0;
+            long costHalf = long.MaxValue;
+            foreach (int partition in halves || _effort < 2 ? (ReadOnlySpan<int>)[1, 2] : [1, 2, 3])
             {
-                if (prune && partition < 3 && cost8 >= firstCost16)
+                if (partition == 3 && costHalf >= firstCost16)
                 {
-                    // Task 12: 16x8 and 8x16 only where 8x8 already finds motion 16x16 cannot follow.
+                    // Speed round 9: 8x8 only where 16x8 or 8x16 already finds motion 16x16 cannot follow.
                     continue;
                 }
 
@@ -145,15 +145,18 @@ internal sealed partial class H264MbEncoder
                 long cost = partition == 3 ? SearchB8x8(code, direct, directOk, starts0, starts1) : (long)(5 * _sadLambda);
                 if (partition < 3)
                 {
+                    _startsOnly = halves;
                     for (int p = 0; p < 2; p++)
                     {
                         (int bx, int by, int w, int h) = partition == 1 ? (0, p * 2, 4, 2) : (p * 2, 0, 2, 4);
                         int mask = p == 0 ? 0 : partition == 1 ? 0x00FF : 0x3333;
                         cost += SearchBPart(code, p, bx, by, w, h, mask, starts0, starts1);
                     }
+
+                    _startsOnly = false;
+                    costHalf = Math.Min(costHalf, cost);
                 }
 
-                cost8 = partition == 3 ? cost : cost8;
                 if (cost < firstCost)
                 {
                     (second, secondCost) = (first, firstCost);

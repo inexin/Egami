@@ -102,7 +102,8 @@ internal sealed class H264VideoEncoder : IVideoEncoder
         // level's buffer holds them, and fewer B-frames where it does not.
         bool Fits(int refs) => H264Levels.Misfit(H264Levels.Of(level), widthMbs, heightMbs, fps, refs) is null;
         int bFrames = h264.Profile == H264Profile.ConstrainedBaseline || options.LatencyMode != LatencyMode.Quality ? 0 : h264.BFrames ?? (effort >= 1 ? 3 : 0);
-        bool pyramid = bFrames is 2 or 3 && effort >= 4 && Fits(3);
+        // From effort 3 since speed round 9, which left effort 3 no cheaper than effort 4 without one.
+        bool pyramid = bFrames is 2 or 3 && effort >= 3 && Fits(3);
         if (bFrames > 0 && !Fits(2))
         {
             bFrames = 0;
@@ -149,7 +150,7 @@ internal sealed class H264VideoEncoder : IVideoEncoder
 
             // With a pyramid every run has its full count of B-frames (H.264 compression Build Plan, task 4): cutting runs
             // short on motion cost 2 % BD-rate on the eight clips (6 % on ducks_take_off) and time; scene cuts start a
-            // keyframe either way, and clips joined at a cut gain too. Without one (efforts 1 to 3) runs still follow the
+            // keyframe either way, and clips joined at a cut gain too. Without one (efforts 1 and 2) runs still follow the
             // content: full runs cost those efforts 1.3 to 2.2 % BD-rate on the eight clips (PR D).
             AdaptiveBFrames = !pyramid,
 

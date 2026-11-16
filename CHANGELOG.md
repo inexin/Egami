@@ -286,6 +286,15 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   10.1 % at quality 50 and 3.1 % at quality 34 on the four 720p clips (9.0 % and 6.3 % without PGO), for BD-rate +0.87 % on
   PSNR-Y and +0.79 % on SSIM-Y on eight clips (worst old_town_cross +1.25 % and +1.50 %). Effort 4 takes 2.45 and 2.10 times
   x264 medium's instructions and 2.07 and 1.79 times its cycles; the timing tool's gate levels follow.
+- Efforts 1 to 6 (speed round 9): a cheaper partition search. Up to effort 4 a macroblock searches 16x8 and 8x16 only, never
+  8x8, each part from its start vectors (the predicted vector, the 16x16 vector and the neighbours') without a pattern
+  search, then refined as before; from effort 5 16x8 and 8x16 come first and 8x8 only where one of them beats 16x16 (it was
+  8x8 first up to effort 4 and all three from 5). Effort 3 takes the B-pyramid, which without it cost about as much as
+  effort 4. Effort 4's own instructions fall 10.3 % at quality 50 and 10.6 % at quality 34 on the four 720p clips (10.4 % and
+  5.5 % without PGO), for BD-rate +0.19 % on PSNR-Y and +0.17 % on SSIM-Y on eight clips (crowd_run +2.29 %, park_joy +1.16 %,
+  five clips smaller). Effort 5 takes 4 to 7 % fewer instructions for +0.16 %, effort 6 +0.20 %; effort 3 needs 1.4 % more
+  bits than effort 4 (was 5.8 %). Effort 4 takes 2.19 and 1.94 times x264 medium's instructions and 1.83 and 1.66 times its
+  cycles, under the design's goal of twice; the timing tool's gate levels follow.
 - H.264 compression plan, PR G (stream fixes):
   - CAVLC's rate count left out the intra modes (prev_intra_pred_mode_flag and rem_intra_pred_mode), so I_NxN macroblocks
     looked cheaper than they were when choosing; every macroblock now counts the bits it writes. With CAVLC
