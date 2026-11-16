@@ -275,6 +275,12 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   their reconstruction is asked for. Egami's own instructions fall 1.0 % at quality 50 and 7.2 % at quality 34 at effort 4
   on the four 720p clips (3.8 % and 4.8 % without PGO); effort 4 takes 2.91 and 2.41 times x264 medium's instructions and
   2.44 and 2.05 times its cycles.
+- H.264 compression plan, PR I: with a B-pyramid a P picture's newest reference is the middle B picture, which the P picture
+  marks unused; list 0 now starts with the P or I picture before it, the B picture last, by ref_pic_list_modification
+  (8.2.4.3.1). BD-rate against x264 medium on the eight clips at effort 4 goes from +4.06 % to +2.57 % on PSNR-Y without AQ
+  and from −2.10 % to −4.44 % on SSIM-Y with it, no clip worse on PSNR-Y (johnny −3.5, kristen_sara −3.6 and
+  old_town_cross −2.5 points). FFmpeg and JM decode the streams as Egami does.
+  Egami's own instructions at effort 4 on the four 720p clips: +0.1 % at quality 50 and −0.7 % at quality 34.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
