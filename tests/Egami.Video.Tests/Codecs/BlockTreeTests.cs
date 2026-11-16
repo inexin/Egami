@@ -55,6 +55,20 @@ public class BlockTreeTests
     }
 
     [Fact]
+    public void AResidualAboveTheQuantizerNoisePassesOnLess()
+    {
+        // Two still blocks, inter 100 of intra 1000 (100 / 256 a sample). The left block's residual is all prediction error, so at a
+        // noise of 100 / 256 a sample it passes on 900 / (1 + 1²); the right block's is all the fine-detail term, so it passes on 900.
+        TreeCosts p = Costs(2, 1, mode: 0);
+        p.Detail[1] = 100;
+        TreePicture[] plan = [new(0, -1, -1, null), new(1, 0, -1, p)];
+        Dictionary<int, double[]> carried = plan.ToDictionary(q => q.Index, _ => new double[2]);
+        BlockTree.Propagate(plan, 2, 1, carried, 100 / 256.0);
+        Assert.Equal(450, carried[0][0], 6);
+        Assert.Equal(900, carried[0][1], 6);
+    }
+
+    [Fact]
     public void AnOffsetIsMinusTheStrengthTimesTheLogOfTheReuse()
     {
         double[] offsets = new double[2];

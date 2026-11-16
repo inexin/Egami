@@ -322,6 +322,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   picture's content coarser: pedestrian_area with 96-row black bars lost 2.51 dB of content PSNR-Y to AQ, now 0.27 dB.
   BD-rate against x264 medium on the eight clips at effort 4: PSNR-Y without AQ unchanged, SSIM-Y with AQ from −3.28 % to
   −4.50 % (rush_hour 1.5 points worse, johnny and kristen_sara about 4 points better).
+- H.264 compression plan, PR K: the block macroblock tree (effort 5 and up) weights each block's reuse by
+  1 / (1 + (m / (0.125 × step))²), m its inter error a sample without the half-size estimate's fine-detail term and step that
+  of the last coded P picture, and its strength goes from 0.1 to 0.2. BD-rate against x264 medium on the eight clips at
+  effort 5 goes from +0.82 % to −0.16 % on PSNR-Y without AQ and from −8.59 % to −10.92 % on SSIM-Y with it, no clip more
+  than 0.84 points worse, for 0.6 % (quality 50) and 1.0 % (34) more instructions. Effort 4 and below are unchanged.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
