@@ -907,7 +907,7 @@ internal sealed partial class H264MbEncoder
     {
         int m = qp % 6, q6 = qp / 6;
         byte[] scan = eight ? H264ScalingLists.Zigzag8x8 : H264ScalingLists.Zigzag4x4;
-        bool rdoq = _effort >= 3;
+        bool rdoq = _effort >= 3 && !(PlainB && _syntax.SliceType == H264SliceType.B);
         int round = rdoq ? 128 : _round;
 
         // Most blocks quantize to nothing: when the largest coefficient does, every one does.
