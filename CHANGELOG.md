@@ -317,6 +317,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   and from −2.10 % to −4.44 % on SSIM-Y with it, no clip worse on PSNR-Y (johnny −3.5, kristen_sara −3.6 and
   old_town_cross −2.5 points). FFmpeg and JM decode the streams as Egami does.
   Egami's own instructions at effort 4 on the four 720p clips: +0.1 % at quality 50 and −0.7 % at quality 34.
+- H.264 compression plan, PR J: the adaptive quantizer leaves flat macroblocks (under 2 levels of deviation a sample:
+  letterbox and pillarbox bars, blank areas) out of the mean its offsets centre on. Bars pulled the mean down and made the
+  picture's content coarser: pedestrian_area with 96-row black bars lost 2.51 dB of content PSNR-Y to AQ, now 0.27 dB.
+  BD-rate against x264 medium on the eight clips at effort 4: PSNR-Y without AQ unchanged, SSIM-Y with AQ from −3.28 % to
+  −4.50 % (rush_hour 1.5 points worse, johnny and kristen_sara about 4 points better).
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
