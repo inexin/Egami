@@ -196,10 +196,10 @@ PSNR (4.0 % on average, 60 frames), between what x264's fast and medium presets 
 kristen_sara, pedestrian_area and rush_hour, 120 frames) it needs 4.0 % more on average (0.4 to 12.4 %); with adaptive
 quantization on, as both encoders default to, it needs 2.0 % fewer bits than x264 medium for the same SSIM. At effort 5, with
 the block macroblock tree, it needs 2.1 % more for the same PSNR and 4.7 % fewer for the same SSIM. It is slower: on
-one thread, with x264 at the CRF that gives the same PSNR-Y, 2.4 times x264 medium's CPU cycles a frame at 720p at quality
-50 (1.9 to 3.1 by clip) and 2.1 times at quality 34 (1.8 to 2.5), on .NET's default runtime with tiered PGO on and without
+one thread, with x264 at the CRF that gives the same PSNR-Y, 2.3 times x264 medium's CPU cycles a frame at 720p at quality
+50 (1.8 to 2.9 by clip) and 1.9 times at quality 34 (1.7 to 2.3), on .NET's default runtime with tiered PGO on and without
 adaptive quantization; with it, the default, 3.2 and 2.6 times (measured before speed round 6). Cycles vary by up to a third between runs on a busy machine;
-in instructions, which vary less, effort 4 takes 2.9 and 2.4 times x264 medium's. The design's goal of twice x264 medium's time is not met. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as
+in instructions, which vary less, effort 4 takes 2.7 and 2.2 times x264 medium's (after speed round 7, whose trades cost 1.6 % more bits for the same PSNR and 1.1 % for the same SSIM on the eight clips, not yet in the figures above). The design's goal of twice x264 medium's time is not met. FFmpeg and the JM reference decoder decode every stream the encoder writes to the same frames as
 Egami's own decoder.</p>
 <h4 id="speed-by-effort">Speed by effort</h4>
 <p>From effort 1 up, each effort costs more cycles than the one below it and needs fewer bits, on the mean of the four clips;
@@ -212,7 +212,8 @@ before both, which changed effort 4's instructions by under 2 % each. Effort 0's
 intra gate of efforts 1 to 4: its cycles are the earlier ones scaled by the 29 % less that round measured, and its BD-rate
 was measured then. Efforts 2 to 5 are scaled the same way by the instructions speed round 5's cheaper rate count saved (1 to
 5 %), and their BD-rate moved by what it cost (under 0.1 point). The table is from before speed rounds 6 and 7, which left the
-output unchanged and cut effort 4's instructions by about 8 % and 1 to 7 %, and effort 0's by 3 to 6 % in round 6.</p>
+output unchanged and cut effort 4's instructions by about 8 % and 1 to 7 %, and effort 0's by 3 to 6 % in round 6; round
+7's trades then cut effort 4's by another 8 % for about 1.6 % more bits.</p>
 <table>
 <thead>
 <tr>
