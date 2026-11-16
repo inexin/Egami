@@ -19,10 +19,12 @@ internal enum H264SearchShortcuts
     QuickSubpel = 1,
 
     /// <summary>
-    /// 8x8 is searched first and 16x8 and 8x16 only where it beats 16x16. +0.94 % BD-rate on the worst clip for 4 to 13 %
-    /// fewer cycles; both shortcuts together +1.71 % for 9 to 16 % fewer.
+    /// 16x8 and 8x16 only, never 8x8, each part searched from its start vectors (the predicted vector, the 16x16 vector and
+    /// the neighbours') without a pattern search, then refined to sub-samples as usual (speed round 9). Without it 16x8 and
+    /// 8x16 are searched first and 8x8 only where one of them beats 16x16. Until round 9 this shortcut searched 8x8 first and
+    /// the halves only where 8x8 beat 16x16: on six of eight clips 8x8 was a net loss as that gate.
     /// </summary>
-    PruneHalves = 2,
+    HalvesOnly = 2,
 
     /// <summary><see cref="QuickSubpel"/> in B pictures only, where no picture or few predict from the result.</summary>
     QuickSubpelB = 4,
