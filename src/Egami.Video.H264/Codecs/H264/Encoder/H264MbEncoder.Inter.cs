@@ -76,9 +76,16 @@ internal sealed partial class H264MbEncoder
 
     // Speed round 4, tasks 1 and 2: the same test at efforts 1 to 4, looser: B_Skip at 0.6 steps, P_Skip at 0.5. The review's 1 and
     // 0.7 held on the four busy 720p gate clips but cost 2.3 % and 1.1 % on rush_hour, whose clean, slow content keeps detail
-    // below a step; B at 0.8 still cost 1.4 % there.
-    private const double SkipStepsB = 0.6;
+    // below a step; B at 0.8 still cost 1.4 % there. Speed round 7 took B to 0.8 anyway, with the other two round 7 trades: on
+    // the eight clips the three cost about 1 % BD-rate for 6 to 8 % of effort 4's instructions.
+    private const double SkipStepsB = 0.8;
     private const double SkipStepsP = 0.5;
+
+    /// <summary>
+    /// Gets or sets whether the B picture being coded quantizes plainly, without RDOQ (speed round 7: an unreferenced B
+    /// picture at efforts 3 and 4, whose bits no other picture builds on).
+    /// </summary>
+    public bool PlainB { get; set; }
 
     private readonly H264MbCode _skip = new();
     private readonly H264MbCode[] _inter = [new(), new(), new(), new()];

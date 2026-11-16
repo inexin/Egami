@@ -183,7 +183,8 @@ internal sealed class H264PictureEncoder
         // With a B-pyramid the newest reference is the middle B picture, which this picture's marking drops; the P or I picture
         // before it predicts better and comes first, the B picture after the other P and I pictures (H.264 compression plan,
         // PR I), by ref_pic_list_modification.
-        int count = Math.Clamp(maxRefs, 1, _refs.Count);
+        // Speed round 7: up to effort 4 a P picture searches two references, though a B-pyramid keeps three.
+        int count = Math.Clamp(_effort <= 4 ? Math.Min(maxRefs, 2) : maxRefs, 1, _refs.Count);
         H264RefPlanes[] refs = [.. _refs.Where(r => !r.Disposable).Concat(_refs.Where(r => r.Disposable)).Take(count)];
         bool reorder = !refs.SequenceEqual(_refs.Take(count));
         PList?.Invoke(refs.Select(r => r.Disposable).ToArray(), reorder);
@@ -255,6 +256,7 @@ internal sealed class H264PictureEncoder
             syntax.RefPocs = pocs0;
             syntax.CurrentPoc = poc;
             slice.Encoder.SetBReferences(refs0, count0, refs1, 1, 4 * H264Levels.MaxVerticalMv(_config.LevelIdc), poc);
+            slice.Encoder.PlainB = !referenced && _effort is 3 or 4;
         }
 
         bool temporalAllowed = _slices[0].Syntax.TemporalAllowed();
