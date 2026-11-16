@@ -27,7 +27,8 @@ internal sealed partial class H264MbEncoder
 
     // After a move to hexagon point k, the new points: k - 1, k and k + 1 (mod 6).
     private static ReadOnlySpan<byte> HexNext => [5, 0, 1, 0, 1, 2, 1, 2, 3, 2, 3, 4, 3, 4, 5, 4, 5, 0];
-    // Quick schedule: half-sample diamond steps by SAD, quarter-sample diamond steps by SATD (one more from effort 5).
+    // Quick schedule: half-sample diamond steps by SAD, quarter-sample diamond steps by SATD (one more from effort 5, one fewer
+    // at efforts 1 to 4 since speed round 8: the second step cost 0 to 1.7 % of effort 4's instructions for 0.2 % BD-rate).
     private const int HalfSteps = 2;
     private const int QuarterSteps = 2;
 
@@ -924,7 +925,7 @@ internal sealed partial class H264MbEncoder
 
             // Quarter samples: a diamond by SATD, the point just left skipped.
             came = -1;
-            int iters = _effort >= 5 ? QuarterSteps + 1 : QuarterSteps;
+            int iters = _effort >= 5 ? QuarterSteps + 1 : _effort >= 1 ? QuarterSteps - 1 : QuarterSteps;
             for (int it = 0; it < iters; it++)
             {
                 int cx = bxq, cy = byq, moved = -1;
@@ -1411,12 +1412,13 @@ internal sealed partial class H264MbEncoder
     }
 
     /// <summary>
-    /// Which of the best two partitionings to RD-code (task 8): the best, and from effort 3 the second when its search cost
-    /// (SATD and vector bits) comes within <see cref="SecondMargin"/> of the best's, from effort 8 always.
+    /// Which of the best two partitionings to RD-code (task 8): the best, and from effort 5 the second when its search cost
+    /// (SATD and vector bits) comes within <see cref="SecondMargin"/> of the best's, from effort 8 always. Efforts 3 and 4 coded
+    /// it too until speed round 8: at effort 4 it cost 5 to 8 % of the instructions for 0.6 % BD-rate.
     /// </summary>
     private (bool First, bool Second) PickPartitions(H264MbCode first, long firstCost, H264MbCode? second, long secondCost)
     {
-        bool codeSecond = _effort >= 3 && second is not null && (_effort >= 8 || secondCost - firstCost <= firstCost * SecondMargin);
+        bool codeSecond = _effort >= 5 && second is not null && (_effort >= 8 || secondCost - firstCost <= firstCost * SecondMargin);
         if (codeSecond && first == _inter[0] && SameAs16(second!))
         {
             // The second repeats the 16x16 prediction with more header bits: coding it cannot win.

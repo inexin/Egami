@@ -281,6 +281,11 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   quality 50 and 8.5 % at quality 34 on the four 720p clips (8.1 % and 6.5 % without PGO), for BD-rate +1.59 % on PSNR-Y
   and +1.11 % on SSIM-Y on eight clips (worst rush_hour +3.11 %, johnny +2.47 %). Effort 4 takes 2.68 and 2.22 times x264
   medium's instructions and 2.26 and 1.87 times its cycles; the timing tool's gate levels follow.
+- Efforts 1 to 4 (speed round 8, trades): the second-best partitioning is RD-coded from effort 5 instead of effort 3, and
+  the quick sub-sample search takes one quarter-sample step instead of two at efforts 1 to 4. Effort 4's own instructions fall
+  10.1 % at quality 50 and 3.1 % at quality 34 on the four 720p clips (9.0 % and 6.3 % without PGO), for BD-rate +0.87 % on
+  PSNR-Y and +0.79 % on SSIM-Y on eight clips (worst old_town_cross +1.25 % and +1.50 %). Effort 4 takes 2.45 and 2.10 times
+  x264 medium's instructions and 2.07 and 1.79 times its cycles; the timing tool's gate levels follow.
 - H.264 compression plan, PR G (stream fixes):
   - CAVLC's rate count left out the intra modes (prev_intra_pred_mode_flag and rem_intra_pred_mode), so I_NxN macroblocks
     looked cheaper than they were when choosing; every macroblock now counts the bits it writes. With CAVLC
