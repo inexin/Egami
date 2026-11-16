@@ -166,6 +166,9 @@ internal sealed class H264PictureEncoder
         return Nals(referenced ? 3 : 0, idr ? 5 : 1);
     }
 
+    /// <summary>Tests only: gets each P picture's list 0, whether each is a B picture to drop, and whether it was reordered.</summary>
+    internal static Action<bool[], bool>? PList { get; set; }
+
     /// <summary>
     /// Codes the loaded picture as P slices predicted from the references held (up to <paramref name="maxRefs"/>, most recent
     /// first) and returns their NAL units.
@@ -177,8 +180,13 @@ internal sealed class H264PictureEncoder
             throw new InvalidOperationException("A P picture needs a reference picture.");
         }
 
+        // With a B-pyramid the newest reference is the middle B picture, which this picture's marking drops; the P or I picture
+        // before it predicts better and comes first, the B picture after the other P and I pictures (H.264 compression plan,
+        // PR I), by ref_pic_list_modification.
         int count = Math.Clamp(maxRefs, 1, _refs.Count);
-        H264RefPlanes[] refs = [.. _refs.Take(count)];
+        H264RefPlanes[] refs = [.. _refs.Where(r => !r.Disposable).Concat(_refs.Where(r => r.Disposable)).Take(count)];
+        bool reorder = !refs.SequenceEqual(_refs.Take(count));
+        PList?.Invoke(refs.Select(r => r.Disposable).ToArray(), reorder);
         foreach (H264RefPlanes r in refs)
         {
             ChooseWeights(r);
@@ -197,7 +205,8 @@ internal sealed class H264PictureEncoder
 
         CodeSlices(qp, predicted: true, (w, slice) =>
         {
-            H264StreamWriter.SliceHeader(w, _config, slice.FirstMb, H264SliceType.P, false, 0, frameNum, pocLsb, qp, 0, refs, referenced: referenced, unmark: unmark);
+            H264StreamWriter.SliceHeader(w, _config, slice.FirstMb, H264SliceType.P, false, 0, frameNum, pocLsb, qp, 0, refs, referenced: referenced, unmark: unmark,
+                reorder: reorder);
             slice.Syntax.StartSlice(slice.Index, H264SliceType.P, qp, 0);
         });
         FinishPicture(referenced, false, frameNum, pocLsb);

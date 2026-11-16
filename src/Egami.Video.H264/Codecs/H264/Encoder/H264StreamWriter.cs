@@ -228,6 +228,36 @@ internal static class H264StreamWriter
         return Nal(0, 6, w);
     }
 
+    /// <summary>
+    /// Writes the ref_pic_list_modification commands that put each of <paramref name="refs"/> at its index (8.2.4.3.1): from
+    /// the current picture's number, the difference to each picture's PicNum before wrapping, subtracted
+    /// (modification_of_pic_nums_idc 0) or added (1); then 3, the end.
+    /// </summary>
+    private static void ModifyList(NalBitWriter w, int frameNum, ReadOnlySpan<H264RefPlanes> refs)
+    {
+        int max = 1 << FrameNumBits;
+        int predicted = frameNum & (max - 1); // CurrPicNum
+        foreach (H264RefPlanes r in refs)
+        {
+            // picNumLXNoWrap: the frame_num of a short-term frame, which the decoder wraps back to its PicNum.
+            int target = r.FrameNum & (max - 1);
+            if (target < predicted)
+            {
+                w.Ue(0);
+                w.Ue((uint)(predicted - target - 1)); // abs_diff_pic_num_minus1
+            }
+            else
+            {
+                w.Ue(1);
+                w.Ue((uint)(target - predicted - 1));
+            }
+
+            predicted = target;
+        }
+
+        w.Ue(3);
+    }
+
     private static void Payload(NalBitWriter w, int type, int size)
     {
         w.U(8, (uint)type);
@@ -240,10 +270,12 @@ internal static class H264StreamWriter
     /// Writes slice_header (7.3.3) of a frame slice: <paramref name="type"/> is coded with 5 added (every slice of the picture
     /// has it); <paramref name="refs"/> are list 0's active references and <paramref name="refs1"/> counts list 1's. A
     /// reference picture's marking keeps it as a short-term reference: an IDR picture's, by the sliding window, or, with
-    /// <paramref name="unmark"/>, by marking those pictures (difference_of_pic_nums_minus1 each) unused first.
+    /// <paramref name="unmark"/>, by marking those pictures (difference_of_pic_nums_minus1 each) unused first. With
+    /// <paramref name="reorder"/>, list 0 is put in the order of <paramref name="refs"/> by ref_pic_list_modification.
     /// </summary>
     internal static void SliceHeader(NalBitWriter w, H264StreamConfig c, int firstMb, H264SliceType type, bool idr, int idrPicId, int frameNum, int pocLsb, int qp,
-        int cabacInitIdc = 0, ReadOnlySpan<H264RefPlanes> refs = default, int refs1 = 1, bool directSpatial = true, bool referenced = true, ReadOnlySpan<int> unmark = default)
+        int cabacInitIdc = 0, ReadOnlySpan<H264RefPlanes> refs = default, int refs1 = 1, bool directSpatial = true, bool referenced = true, ReadOnlySpan<int> unmark = default,
+        bool reorder = false)
     {
         w.Ue((uint)firstMb);
         w.Ue((uint)type + 5);
@@ -275,7 +307,12 @@ internal static class H264StreamWriter
                 }
             }
 
-            w.Flag(false); // ref_pic_list_modification_flag_l0
+            w.Flag(reorder); // ref_pic_list_modification_flag_l0
+            if (reorder)
+            {
+                ModifyList(w, frameNum, refs);
+            }
+
             if (type == H264SliceType.B)
             {
                 w.Flag(false); // ref_pic_list_modification_flag_l1
