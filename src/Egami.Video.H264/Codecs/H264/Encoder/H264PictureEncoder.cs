@@ -14,6 +14,10 @@ internal sealed class H264PictureEncoder
     // The adaptive quantizer's strength: QP steps per doubling of a macroblock's energy against the picture's mean.
     private const double AqStrength = 1.0;
 
+    // The energy below which a macroblock counts as flat for the adaptive quantizer's mean: its 384 samples' squared deviation
+    // from their 8x8 blocks' means, here a deviation of under 2 levels a sample (H.264 compression plan, PR J).
+    private const long FlatEnergy = 384 * 4;
+
     private readonly H264StreamConfig _config;
     private readonly int _effort;
     private readonly H264MbState _mb;
@@ -689,7 +693,8 @@ internal sealed class H264PictureEncoder
         H264Picture pic = _current.Picture;
         int w = _config.WidthMbs, h = _config.HeightMbs;
         double[] logs = _logs;
-        double sum = 0;
+        double sum = 0, flatSum = 0;
+        int counted = 0;
         for (int mbY = 0; mbY < h; mbY++)
         {
             for (int mbX = 0; mbX < w; mbX++)
@@ -705,11 +710,21 @@ internal sealed class H264PictureEncoder
                 energy += Energy(_srcCb, chroma, pic.ChromaStride) + Energy(_srcCr, chroma, pic.ChromaStride);
                 double log = Math.Log2(Math.Max(energy, 1));
                 logs[(mbY * w) + mbX] = log;
-                sum += log;
+                if (energy < FlatEnergy)
+                {
+                    flatSum += log;
+                }
+                else
+                {
+                    sum += log;
+                    counted++;
+                }
             }
         }
 
-        double mean = sum / logs.Length;
+        // Flat macroblocks (letterbox and pillarbox bars, blank frames) are left out of the mean: they would pull it down and
+        // make the picture's content coarser. They still get finer steps from their own low energy.
+        double mean = counted > 0 ? sum / counted : flatSum / logs.Length;
         for (int i = 0; i < logs.Length; i++)
         {
             // The block tree's offsets are in base-2 logarithms of the step: six QPs each.
