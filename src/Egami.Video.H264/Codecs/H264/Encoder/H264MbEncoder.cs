@@ -483,6 +483,9 @@ internal sealed partial class H264MbEncoder
 
             H264IntraPredict.Edges(n, t, l, top, left, _edges);
             Span<int> satd = ModeSatds(n, at);
+            // Deliberately biased: the estimate does not write its modes, so later blocks predict from what the last trial left. The
+            // intra gates and margins are tuned against this estimate; writing the modes made it exact but measured +0.35 points of
+            // BD-rate on PSNR-Y on the eight clips at effort 4 (H.264 compression plan, PR H, 2026-11-16).
             int predicted = _syntax.PredictedIntraMode(bx, by);
             long bestCost = long.MaxValue;
             for (int mode = 0; mode < 9; mode++)

@@ -443,6 +443,9 @@ internal sealed partial class H264MbEncoder
                 {
                     int n = H264MbSyntax.SubParts(type, bx, by, parts);
                     int subMask = mask;
+                    // Each part's search cost holds the reference's bits, which the 8x8 block codes once: deliberately left so, as counting
+                    // them once measured +0.17 points of BD-rate on PSNR-Y on the eight clips at effort 6, 480x272 (H.264 compression plan,
+                    // PR H, 2026-11-16).
                     long cost = (long)(3 * _sadLambda);
                     for (int i = 0; i < n; i++)
                     {
