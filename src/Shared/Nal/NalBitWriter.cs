@@ -18,6 +18,12 @@ internal sealed class NalBitWriter
     /// <summary>Gets the number of bits written.</summary>
     internal long BitCount => ((long)_length * 8) + _bits;
 
+    /// <summary>Gets the position, to go back to with <see cref="Rewind"/>.</summary>
+    internal (int Length, ulong Accumulator, int Bits) Position => (_length, _accumulator, _bits);
+
+    /// <summary>Goes back to an earlier <see cref="Position"/>, dropping what was written since.</summary>
+    internal void Rewind((int Length, ulong Accumulator, int Bits) position) => (_length, _accumulator, _bits) = position;
+
     /// <summary>Gets whether the position is at a byte boundary.</summary>
     internal bool ByteAligned => _bits == 0;
 

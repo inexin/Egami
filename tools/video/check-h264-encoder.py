@@ -3,7 +3,7 @@
 Runs the EncoderInteropFiles test with EGAMI_INTEROP_DIR=.cache/interop, which writes Annex B streams from the H.264 encoder to
 .cache/interop/h264video (every effort; Constrained Baseline, Main and High; CABAC and CAVLC; P-only, one B-frame, B pyramids
 up to 16 B-frames; 4 and 32 slices; fades with weighted prediction; no adaptive quantization; the keyframe interval; CBR, ABR,
-real time and the extreme QPs; sizes that are not whole macroblocks down to 2x2, and a wide frame), each <name>.h264 next to
+real time and the extreme QPs; I_PCM macroblocks in CAVLC and CABAC; sizes that are not whole macroblocks down to 2x2, and a wide frame), each <name>.h264 next to
 <name>.yuv, the shown frames Egami's decoder makes of it as planar 4:2:0, and <name>.txt, its width, height and frame count.
 Each stream is also encoded at one thread and must give the same bytes. Then, in Docker (egami-h264encref:7.2 from
 tools/video/h264encref/Dockerfile: FFmpeg 6.1 and JM 19.0's ldecod, both run only as black-box decoders), decodes each

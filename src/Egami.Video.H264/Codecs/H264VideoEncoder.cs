@@ -127,7 +127,9 @@ internal sealed class H264VideoEncoder : IVideoEncoder
             Cabac = cabac,
             Transform8x8 = h264.Profile == H264Profile.High,
             MaxRefFrames = refFrames,
-            ReorderFrames = bFrames,
+            // A P picture is decoded before the B pictures shown ahead of it: one frame of reorder, two in a pyramid of three,
+            // where the middle B picture comes before the first too (max_num_reorder_frames, E.2.1).
+            ReorderFrames = bFrames == 0 ? 0 : pyramid && bFrames >= 3 ? 2 : 1,
             FrameRate = options.FrameRate,
             Color = H264Color,
             Slices = Math.Min(h264.Slices ?? AutoSlices(widthMbs, heightMbs), heightMbs),
@@ -385,6 +387,9 @@ internal sealed class H264FrameCoder : IFrameCoder
 
     /// <summary>Gets the reconstruction of the last frame coded, for tests.</summary>
     internal H264Picture Recon => _encoder.Recon;
+
+    /// <summary>Gets how many sets of reference planes the picture encoder has made.</summary>
+    internal int PlaneSets => _encoder.PlaneSets;
 
     /// <summary>Gets or sets what runs after each frame is coded, with its reconstruction, for tests.</summary>
     internal Action<H264Picture, int>? Coded

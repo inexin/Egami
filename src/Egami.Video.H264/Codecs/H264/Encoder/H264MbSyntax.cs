@@ -176,8 +176,10 @@ internal sealed partial class H264MbSyntax
             code.Qp = LastQp;
         }
 
-        _mb.Qp[addr] = (sbyte)code.Qp;
-        _mb.QpC[0][addr] = (sbyte)H264Tables.ChromaQp[Math.Clamp(code.Qp + ChromaQpOffset, 0, 51)];
+        // An I_PCM macroblock's QPY is 0 to the deblocking filter (8.7.2.2), the next macroblock's prediction its predecessor's.
+        int qp = code.Kind == H264MbKind.IPcm ? 0 : code.Qp;
+        _mb.Qp[addr] = (sbyte)qp;
+        _mb.QpC[0][addr] = (sbyte)H264Tables.ChromaQp[Math.Clamp(qp + ChromaQpOffset, 0, 51)];
         _mb.QpC[1][addr] = _mb.QpC[0][addr];
         _mb.QpDeltaNonZero[addr] = HasQpDelta(code) && code.Qp != LastQp;
         _mb.CbfDc[addr] = (byte)((code.Kind == H264MbKind.I16x16 && code.LumaDcCount > 0 ? 1 : 0)
@@ -376,7 +378,7 @@ internal sealed partial class H264MbSyntax
         return (code.SubTypes[0] == 0 ? 1 : 0) | (code.SubTypes[1] == 0 ? 2 : 0) | (code.SubTypes[2] == 0 ? 4 : 0) | (code.SubTypes[3] == 0 ? 8 : 0);
     }
 
-    private static bool HasQpDelta(H264MbCode code) => code.Cbp != 0 || code.Kind == H264MbKind.I16x16;
+    private static bool HasQpDelta(H264MbCode code) => code.Kind != H264MbKind.IPcm && (code.Cbp != 0 || code.Kind == H264MbKind.I16x16);
 
     /// <summary>Records the macroblock as coded: its mb_qp_delta becomes the next one's context and QP prediction.</summary>
     public void Commit(H264MbCode code)
@@ -392,9 +394,13 @@ internal sealed partial class H264MbSyntax
         }
     }
 
+    /// <summary>The mb_type of I_PCM in an I slice (Table 7-11).</summary>
+    internal const int PcmType = 25;
+
     /// <summary>The mb_type of an intra macroblock in an I slice (Table 7-11).</summary>
     private static int IntraType(H264MbCode code) => code.Kind switch
     {
+        H264MbKind.IPcm => PcmType,
         H264MbKind.I16x16 => 1 + code.I16Mode + (4 * (code.Cbp >> 4)) + ((code.Cbp & 15) != 0 ? 12 : 0),
         _ => 0,
     };
@@ -455,6 +461,11 @@ internal sealed partial class H264MbSyntax
                 }
         }
 
+        if (code.Kind == H264MbKind.IPcm)
+        {
+            return;
+        }
+
         if (code.Kind != H264MbKind.I16x16)
         {
             if (Transform8x8Mode)
@@ -463,7 +474,8 @@ internal sealed partial class H264MbSyntax
                 sink.Encode(ref ctx[399 + inc], code.Kind == H264MbKind.I8x8 ? 1 : 0);
             }
 
-            WriteIntraModes(code, ref sink, default(NoBits));
+            NoBits noBits = default;
+            WriteIntraModes(code, ref sink, ref noBits);
         }
 
         int chromaInc = (ChromaModeCond(_availableLeft, _left) ? 1 : 0) + (ChromaModeCond(_availableTop, _top) ? 1 : 0);
@@ -505,6 +517,13 @@ internal sealed partial class H264MbSyntax
         where T : struct, ICabacSink
     {
         byte[] ctx = Contexts;
+        if (type == PcmType)
+        {
+            // I_PCM: the bins end before the samples, which the slice writes (9.3.4.5).
+            sink.Terminate(1);
+            return;
+        }
+
         sink.Terminate(0);
         int t = type - 1;
         int luma = t / 12, chroma = (t / 4) % 3, mode = t % 4;
@@ -547,7 +566,7 @@ internal sealed partial class H264MbSyntax
     }
 
     /// <summary>Writes prev_intra_pred_mode_flag and rem_intra_pred_mode of each 4x4 or 8x8 block, with CABAC or CAVLC.</summary>
-    private void WriteIntraModes<TC, TB>(H264MbCode code, ref TC bins, TB bits)
+    private void WriteIntraModes<TC, TB>(H264MbCode code, ref TC bins, ref TB bits)
         where TC : struct, ICabacSink
         where TB : struct, IBitSink
     {
@@ -1186,6 +1205,11 @@ internal sealed partial class H264MbSyntax
 
         int typeOffset = SliceType switch { H264SliceType.I => 0, H264SliceType.P => 5, _ => 23 };
         BitSinkCodes.Ue(ref sink, (uint)(IntraType(code) + typeOffset));
+        if (code.Kind == H264MbKind.IPcm)
+        {
+            return; // pcm_alignment_zero_bit and the samples are the slice's to write
+        }
+
         if (code.Kind != H264MbKind.I16x16)
         {
             if (Transform8x8Mode)
@@ -1194,7 +1218,7 @@ internal sealed partial class H264MbSyntax
             }
 
             NoBins none = default;
-            WriteIntraModes(code, ref none, sink);
+            WriteIntraModes(code, ref none, ref sink);
         }
 
         BitSinkCodes.Ue(ref sink, (uint)code.ChromaMode);
@@ -1408,6 +1432,9 @@ internal sealed partial class H264MbSyntax
         }
     }
 
+    /// <summary>Tests only: gets each level_prefix of 15 and up that is written (not counted), when set.</summary>
+    internal static Action<int>? LongLevelPrefix { get; set; }
+
     /// <summary>Writes level_prefix and level_suffix of a levelCode (9.2.2.1, inverted).</summary>
     private static void WriteLevel<T>(ref T sink, int levelCode, int suffixLength)
         where T : struct, IBitSink
@@ -1437,6 +1464,10 @@ internal sealed partial class H264MbSyntax
             }
 
             (suffix, size) = (rest, prefix - 3);
+            if (typeof(T) == typeof(BitWriteSink))
+            {
+                LongLevelPrefix?.Invoke(prefix);
+            }
         }
 
         sink.U(prefix, 0);

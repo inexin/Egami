@@ -275,6 +275,22 @@ An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
   their reconstruction is asked for. Egami's own instructions fall 1.0 % at quality 50 and 7.2 % at quality 34 at effort 4
   on the four 720p clips (3.8 % and 4.8 % without PGO); effort 4 takes 2.91 and 2.41 times x264 medium's instructions and
   2.44 and 2.05 times its cycles.
+- H.264 compression plan, PR G (stream fixes):
+  - CAVLC's rate count left out the intra modes (prev_intra_pred_mode_flag and rem_intra_pred_mode), so I_NxN macroblocks
+    looked cheaper than they were when choosing; every macroblock now counts the bits it writes. With CAVLC
+    BD-rate against x264 medium on the eight clips at effort 4 goes from +26.17 % to +23.85 % on PSNR-Y without AQ
+    and from +21.95 % to +18.19 % on SSIM-Y with it, every clip better (pedestrian_area −5.8 points on PSNR-Y).
+  - The VUI's max_num_reorder_frames is the stream's real reorder (1 with B-frames, 2 with a pyramid; it was the B-frame
+    count), and max_dec_frame_buffering holds the references and the reorder within the level's DPB (A.3.1), where 16
+    B-frames asked for more frames than the level has.
+  - A keyframe after an unreferenced B picture codes into that picture's planes again; it took a new set each time, so a
+    long stream with keyframes every few frames kept allocating.
+  - Below High, CAVLC's level_prefix stays within 15 (9.2.2.1): the DC levels of Intra16x16 luma and of chroma are held to
+    ±2063 at the lowest QPs, where noise and hard edges needed 16, which only High decoders read.
+  - A macroblock whose macroblock_layer would take more than 128 + RawMbBits, 3200 bits (A.3.1, A.3.3), noise at QP 0 or
+    so, is written as I_PCM, with CAVLC and CABAC; it was written as coded. FFmpeg and JM decode it as Egami does.
+  - CABAC output is unchanged but for the VUI. Egami's own instructions at effort 4 on the four 720p clips: −0.8 % at
+    quality 50 and −2.3 % at quality 34.
 - H.264 compression plan, PR I: with a B-pyramid a P picture's newest reference is the middle B picture, which the P picture
   marks unused; list 0 now starts with the P or I picture before it, the B picture last, by ref_pic_list_modification
   (8.2.4.3.1). BD-rate against x264 medium on the eight clips at effort 4 goes from +4.06 % to +2.57 % on PSNR-Y without AQ
