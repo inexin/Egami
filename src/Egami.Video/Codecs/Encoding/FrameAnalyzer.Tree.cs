@@ -38,6 +38,7 @@ internal sealed partial class FrameAnalyzer
                 int i = (by * _cols) + bx, x = bx * Block, y = by * Block;
                 int detail = own.Detail[i], intra = own.Intra[i];
                 result.Intra[i] = intra;
+                result.Detail[i] = detail;
                 (int c0, int x0, int y0) = TreeSearch(target, ref0, x, y, bx, by, distance0, own, result.Vectors0);
                 long best = ((long)c0 * 4) + detail;
                 byte mode = 0;

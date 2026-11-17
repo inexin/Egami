@@ -159,6 +159,7 @@ internal sealed class H264VideoEncoder : IVideoEncoder
             BReferenceStep = 1.3,
             MacroblockTree = TreeStrength,
             BlockTree = effort >= 5 ? BlockTreeStrength : 0,
+            BlockTreeQuant = BlockTreeNoise / 16,
             BlockTreeFrame = 0,
             BlockTreeClamp = BlockTreeClamp,
             BlockTreeStill = BlockTreeStill,
@@ -215,9 +216,23 @@ internal sealed class H264VideoEncoder : IVideoEncoder
     /// +2.05 % on PSNR-Y without AQ and from −3.25 % to −4.67 % on SSIM-Y with it, no clip more than 0.8 points worse, for
     /// 1.7 % (quality 50) and 2.4 % (34) more instructions. At effort 4 it gained as much but cost 3 to 7 % more instructions,
     /// over that effort's budget of 3 %, so effort 4 keeps the frame-level tree alone. 0.25 helped SSIM more but cost the
-    /// still clips PSNR (johnny, rush_hour, ducks_take_off), as did moving the frame steps to the block tree's mean.
+    /// still clips PSNR (johnny, rush_hour, ducks_take_off), as did moving the frame steps to the block tree's mean. PR K of
+    /// the H.264 compression plan raised it to 0.2 along with <see cref="BlockTreeNoise"/>, which keeps the still clips' share
+    /// in check.
     /// </summary>
-    internal const double BlockTreeStrength = 0.1;
+    internal const double BlockTreeStrength = 0.2;
+
+    /// <summary>
+    /// The block tree's quantizer weight (<see cref="CoreSettings.BlockTreeQuant"/>; H.264 compression plan, PR K), in steps
+    /// of the last coded P picture (0.625 × 2^(QP/6), a sixteenth of <see cref="IFrameCoder.Steps"/>): a block whose inter error
+    /// a sample, without the half-size estimate's fine-detail term, is m passes on 1 / (1 + (m / (0.125 × step))²) of its
+    /// reuse. Residuals well above the step get coded anyway, so the reference explains less than the estimate says. With
+    /// <see cref="BlockTreeStrength"/> raised from 0.1 to 0.2, BD-rate against x264 medium on the eight clips at effort 5 goes
+    /// from +0.82 % to −0.16 % on PSNR-Y without AQ and from −8.59 % to −10.92 % on SSIM-Y with it, no clip more than 0.84
+    /// points worse, for 0.6 % (quality 50) and 1.0 % (34) more instructions. Effort 4 would gain about as much (+4.67 % to
+    /// +3.39 %, −4.50 % to −8.82 %) for 5 to 6 % more instructions, over its budget, so it keeps the frame-level tree alone.
+    /// </summary>
+    internal const double BlockTreeNoise = 0.125;
 
     /// <summary>The block tree's offset clamp (<see cref="CoreSettings.BlockTreeClamp"/>): at most 3 QP finer.</summary>
     internal const double BlockTreeClamp = 0.5;

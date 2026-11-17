@@ -173,6 +173,13 @@ internal sealed record CoreSettings
     /// </summary>
     public double BlockTreeStill { get; init; }
 
+    /// <summary>
+    /// The block tree's quantizer weight: each block's propagated amount is weighted by 1 / (1 + (m / (this × step))²), m its
+    /// inter error a sample and step the coder's <see cref="IFrameCoder.Steps"/> entry for the last coded inter picture's
+    /// quantizer; 0 for none.
+    /// </summary>
+    public double BlockTreeQuant { get; init; }
+
     /// <summary>Whether keyframes are coded temporally filtered with the frames after them, as alternate references are.</summary>
     public bool FilterKeyframes { get; init; }
 
@@ -253,6 +260,10 @@ internal sealed class EncoderCore : IDisposable
     private readonly Dictionary<int, double[]> _treeOffsets = [];
     private readonly Dictionary<(int Index, int Ref0, int Ref1), TreeCosts> _treeCosts = [];
     private readonly Dictionary<int, double[]> _treeCarried = [];
+
+    // The last coded inter picture's quantizer (until one is coded, the last coded picture's), for CoreSettings.BlockTreeQuant.
+    private int _treeQuantizer = -1;
+    private bool _treeInterCoded;
     private readonly Stack<double[]> _treeArrays = new();
     private readonly List<TreePicture> _treePictures = [];
     private byte[]? _anchorHalf;
@@ -467,6 +478,7 @@ internal sealed class EncoderCore : IDisposable
         }
 
         _rate.Done(type, coded.Quantizer, coded.Bits ?? ((coded.Data.Length - coded.HiddenLength) * 8L), complexity);
+        NoteQuantizer(type, coded.Quantizer);
         Trace?.Invoke($"{frame.Index} {type} q{coded.Quantizer} {coded.Data.Length - coded.HiddenLength}B c{complexity}");
         EncodedPacket packet = Packet(coded.Data, frame.Timestamp, frame.Key);
         packet.Duration = frame.Duration;
@@ -580,6 +592,15 @@ internal sealed class EncoderCore : IDisposable
     /// Runs the block macroblock tree (<see cref="CoreSettings.BlockTree"/>) over the frames held, in the coded structure the
     /// run just planned and the runs after it will have, and keeps each of the run's frames' step and block offsets.
     /// </summary>
+    private void NoteQuantizer(FrameType type, int quantizer)
+    {
+        if (type == FrameType.Inter || !_treeInterCoded)
+        {
+            _treeInterCoded |= type == FrameType.Inter;
+            _treeQuantizer = quantizer;
+        }
+    }
+
     private void PlanBlockTree(int previous)
     {
         _treeSteps.Clear();
@@ -645,7 +666,10 @@ internal sealed class EncoderCore : IDisposable
             _treeCarried[p.Index] = carried;
         }
 
-        BlockTree.Propagate(_treePictures, _analyzer.Columns, _analyzer.Rows, _treeCarried);
+        double noise = _settings.BlockTreeQuant > 0 && _treeQuantizer >= 0
+            ? _settings.BlockTreeQuant * _coder.Steps[Math.Min(_treeQuantizer, _coder.Steps.Length - 1)]
+            : 0;
+        BlockTree.Propagate(_treePictures, _analyzer.Columns, _analyzer.Rows, _treeCarried, noise);
         double strength = _settings.BlockTree * StillShare();
         foreach (BStep step in _bSteps)
         {
@@ -1250,6 +1274,7 @@ internal sealed class EncoderCore : IDisposable
         CodedFrame coded = full is null ? _coder.Code(filtered, decision) : _coder.Code(filtered, full, decision);
         long bits = coded.Bits ?? (coded.Data.Length * 8L);
         _rate.Done(type, coded.Quantizer, bits, complexity);
+        NoteQuantizer(type, coded.Quantizer);
         Trace?.Invoke($"{target} {type} q{coded.Quantizer} {bits / 8}B c{complexity}");
         _pictures.Return(filtered);
         if (!_coder.MergesHiddenFrames)

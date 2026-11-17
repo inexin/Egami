@@ -112,6 +112,9 @@ internal sealed class TreeCosts(int count)
     /// <summary>Gets each block's best inter error (list 0, list 1 or their mean), at most its intra error.</summary>
     public int[] Inter { get; } = new int[count];
 
+    /// <summary>Gets each block's fine-detail term in <see cref="Inter"/> (<see cref="BlockCosts.Detail"/>), in frame samples.</summary>
+    public int[] Detail { get; } = new int[count];
+
     /// <summary>Gets each block's best prediction: 0 from list 0, 1 from list 1, 2 from both, or <see cref="IntraMode"/>.</summary>
     public byte[] Modes { get; } = new byte[count];
 
@@ -140,8 +143,11 @@ internal static class BlockTree
     /// <summary>
     /// Fills <paramref name="carried"/>, by display index, with what the later pictures of <paramref name="pictures"/> (in
     /// coding order) propagate into each block of each picture; references missing from <paramref name="carried"/> are left out.
+    /// With <paramref name="noise"/> above 0, each block's amount is weighted by 1 / (1 + (m / noise)²), where m is its inter
+    /// error a sample without the fine-detail term: a residual well above the quantizer's step will be coded anyway, so the
+    /// reference explains less of the block than the estimate says.
     /// </summary>
-    public static void Propagate(IReadOnlyList<TreePicture> pictures, int columns, int rows, IReadOnlyDictionary<int, double[]> carried)
+    public static void Propagate(IReadOnlyList<TreePicture> pictures, int columns, int rows, IReadOnlyDictionary<int, double[]> carried, double noise = 0)
     {
         for (int k = pictures.Count - 1; k >= 0; k--)
         {
@@ -166,6 +172,12 @@ internal static class BlockTree
                     }
 
                     double amount = (intra + own[i]) * (intra - inter) / intra;
+                    if (noise > 0)
+                    {
+                        double m = Math.Max(inter - costs.Detail[i], 0) / (256 * noise);
+                        amount /= 1 + (m * m);
+                    }
+
                     if (mode == 2)
                     {
                         Spread(into0, columns, rows, bx, by, costs.Vectors0, i, amount / 2);
