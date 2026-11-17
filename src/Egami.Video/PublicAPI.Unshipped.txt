@@ -1,1 +1,32 @@
 #nullable enable
+Egami.Video.Codecs.HevcEncoderOptions
+Egami.Video.Codecs.HevcEncoderOptions.<Clone>$() -> Egami.Video.Codecs.HevcEncoderOptions!
+Egami.Video.Codecs.HevcEncoderOptions.AdaptiveQuantization.get -> bool
+Egami.Video.Codecs.HevcEncoderOptions.AdaptiveQuantization.init -> void
+Egami.Video.Codecs.HevcEncoderOptions.AnnexB.get -> bool
+Egami.Video.Codecs.HevcEncoderOptions.AnnexB.init -> void
+Egami.Video.Codecs.HevcEncoderOptions.BFrames.get -> int?
+Egami.Video.Codecs.HevcEncoderOptions.BFrames.init -> void
+Egami.Video.Codecs.HevcEncoderOptions.Equals(Egami.Video.Codecs.HevcEncoderOptions? other) -> bool
+Egami.Video.Codecs.HevcEncoderOptions.HevcEncoderOptions() -> void
+Egami.Video.Codecs.HevcEncoderOptions.Level.get -> int?
+Egami.Video.Codecs.HevcEncoderOptions.Level.init -> void
+Egami.Video.Codecs.HevcEncoderOptions.MaxQuantizer.get -> int
+Egami.Video.Codecs.HevcEncoderOptions.MaxQuantizer.init -> void
+Egami.Video.Codecs.HevcEncoderOptions.MinQuantizer.get -> int
+Egami.Video.Codecs.HevcEncoderOptions.MinQuantizer.init -> void
+Egami.Video.Codecs.HevcEncoderOptions.Profile.get -> Egami.Video.Codecs.HevcProfile?
+Egami.Video.Codecs.HevcEncoderOptions.Profile.init -> void
+Egami.Video.Codecs.HevcProfile
+Egami.Video.Codecs.HevcProfile.Main = 0 -> Egami.Video.Codecs.HevcProfile
+Egami.Video.Codecs.HevcProfile.Main10 = 1 -> Egami.Video.Codecs.HevcProfile
+Egami.Video.Codecs.VideoEncoderOptions.Hevc.get -> Egami.Video.Codecs.HevcEncoderOptions?
+Egami.Video.Codecs.VideoEncoderOptions.Hevc.init -> void
+Egami.Video.VideoWriterOptions.Hevc.get -> Egami.Video.Codecs.HevcEncoderOptions?
+Egami.Video.VideoWriterOptions.Hevc.init -> void
+override Egami.Video.Codecs.HevcEncoderOptions.Equals(object? obj) -> bool
+override Egami.Video.Codecs.HevcEncoderOptions.GetHashCode() -> int
+override Egami.Video.Codecs.HevcEncoderOptions.ToString() -> string!
+static Egami.Video.Codecs.HevcEncoderOptions.Default.get -> Egami.Video.Codecs.HevcEncoderOptions!
+static Egami.Video.Codecs.HevcEncoderOptions.operator !=(Egami.Video.Codecs.HevcEncoderOptions? left, Egami.Video.Codecs.HevcEncoderOptions? right) -> bool
+static Egami.Video.Codecs.HevcEncoderOptions.operator ==(Egami.Video.Codecs.HevcEncoderOptions? left, Egami.Video.Codecs.HevcEncoderOptions? right) -> bool
