@@ -6,14 +6,15 @@ Egami rasters, so resizing, color conversion and drawing from Egami work on vide
 - Containers: MP4 and QuickTime (fragmented MP4 too), Matroska and WebM, AVI (OpenDML over 1 GB), IVF, YUV4MPEG2, Ogg, and the
   audio files WAV, FLAC, MP3, AIFF and CAF.
 - Video codecs: AV1, VP9 and VP8 decode and encode (AV1 decodes equal to libaom, VP9 to libvpx), FFV1 for lossless
-  archives and Motion JPEG. H.264 and HEVC decode through the opt-in packages Egami.Video.H264 and Egami.Video.Hevc.
-- Audio codecs: PCM, FLAC, Opus and ALAC decode and encode; Vorbis, MP3, AC-3, AAC LC and G.711 decode; audio filters.
+  archives and Motion JPEG. H.264 decodes and encodes through the opt-in package Egami.Video.H264, and HEVC decodes through
+  Egami.Video.Hevc.
+- Audio codecs: PCM, FLAC, Opus, ALAC and AAC LC decode and encode; Vorbis, MP3, AC-3 and G.711 decode; audio filters.
 - Remuxing, trimming with smart cut and seeking without decoding what need not be; SRT, WebVTT and ASS subtitles.
 - Editing (`VideoEdit`, `Clip`): joins, transitions, overlays, keying, layouts and titles, rendered to a file.
 - Deinterlacing (`Deinterlacer`), HDR metadata, scene detection, waveforms and spectrograms.
 
-Royalty-free codecs only in this package (the MP3 and AC-3 patents have expired; AAC is decoded as AAC LC only, without
-SBR, parametric stereo, USAC or DRC). No native code, no wrapped C or C++ libraries.
+Royalty-free codecs only in this package (the MP3 and AC-3 patents have expired; AAC is decoded and encoded as AAC LC
+only, without SBR, parametric stereo, USAC or DRC). No native code, no wrapped C or C++ libraries.
 
 ## Read frames
 

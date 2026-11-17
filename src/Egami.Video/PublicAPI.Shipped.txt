@@ -3694,3 +3694,79 @@ static Egami.Video.Analysis.MediaAnalysis.Run(System.IO.Stream! stream, Egami.Vi
 static Egami.Video.Filters.DeinterlacerOptions.Default.get -> Egami.Video.Filters.DeinterlacerOptions!
 static Egami.Video.Filters.DeinterlacerOptions.operator !=(Egami.Video.Filters.DeinterlacerOptions? left, Egami.Video.Filters.DeinterlacerOptions? right) -> bool
 static Egami.Video.Filters.DeinterlacerOptions.operator ==(Egami.Video.Filters.DeinterlacerOptions? left, Egami.Video.Filters.DeinterlacerOptions? right) -> bool
+Egami.Video.Codecs.H264EncoderOptions
+Egami.Video.Codecs.H264EncoderOptions.<Clone>$() -> Egami.Video.Codecs.H264EncoderOptions!
+Egami.Video.Codecs.H264EncoderOptions.AdaptiveQuantization.get -> bool
+Egami.Video.Codecs.H264EncoderOptions.AdaptiveQuantization.init -> void
+Egami.Video.Codecs.H264EncoderOptions.AnnexB.get -> bool
+Egami.Video.Codecs.H264EncoderOptions.AnnexB.init -> void
+Egami.Video.Codecs.H264EncoderOptions.BFrames.get -> int?
+Egami.Video.Codecs.H264EncoderOptions.BFrames.init -> void
+Egami.Video.Codecs.H264EncoderOptions.Slices.get -> int?
+Egami.Video.Codecs.H264EncoderOptions.Slices.init -> void
+Egami.Video.Codecs.H264EncoderOptions.Entropy.get -> Egami.Video.Codecs.H264EntropyCoder?
+Egami.Video.Codecs.H264EncoderOptions.Entropy.init -> void
+Egami.Video.Codecs.H264EncoderOptions.Equals(Egami.Video.Codecs.H264EncoderOptions? other) -> bool
+Egami.Video.Codecs.H264EncoderOptions.H264EncoderOptions() -> void
+Egami.Video.Codecs.H264EncoderOptions.Level.get -> int?
+Egami.Video.Codecs.H264EncoderOptions.Level.init -> void
+Egami.Video.Codecs.H264EncoderOptions.MaxQuantizer.get -> int
+Egami.Video.Codecs.H264EncoderOptions.MaxQuantizer.init -> void
+Egami.Video.Codecs.H264EncoderOptions.MinQuantizer.get -> int
+Egami.Video.Codecs.H264EncoderOptions.MinQuantizer.init -> void
+Egami.Video.Codecs.H264EncoderOptions.Profile.get -> Egami.Video.Codecs.H264Profile
+Egami.Video.Codecs.H264EncoderOptions.Profile.init -> void
+Egami.Video.Codecs.H264EntropyCoder
+Egami.Video.Codecs.H264EntropyCoder.Cabac = 0 -> Egami.Video.Codecs.H264EntropyCoder
+Egami.Video.Codecs.H264EntropyCoder.Cavlc = 1 -> Egami.Video.Codecs.H264EntropyCoder
+Egami.Video.Codecs.H264Profile
+Egami.Video.Codecs.H264Profile.ConstrainedBaseline = 0 -> Egami.Video.Codecs.H264Profile
+Egami.Video.Codecs.H264Profile.High = 2 -> Egami.Video.Codecs.H264Profile
+Egami.Video.Codecs.H264Profile.Main = 1 -> Egami.Video.Codecs.H264Profile
+Egami.Video.Codecs.VideoEncoderOptions.H264.get -> Egami.Video.Codecs.H264EncoderOptions?
+Egami.Video.Codecs.VideoEncoderOptions.H264.init -> void
+override Egami.Video.Codecs.H264EncoderOptions.Equals(object? obj) -> bool
+override Egami.Video.Codecs.H264EncoderOptions.GetHashCode() -> int
+override Egami.Video.Codecs.H264EncoderOptions.ToString() -> string!
+static Egami.Video.Codecs.H264EncoderOptions.Default.get -> Egami.Video.Codecs.H264EncoderOptions!
+static Egami.Video.Codecs.H264EncoderOptions.operator !=(Egami.Video.Codecs.H264EncoderOptions? left, Egami.Video.Codecs.H264EncoderOptions? right) -> bool
+static Egami.Video.Codecs.H264EncoderOptions.operator ==(Egami.Video.Codecs.H264EncoderOptions? left, Egami.Video.Codecs.H264EncoderOptions? right) -> bool
+Egami.Video.VideoWriterOptions.H264.get -> Egami.Video.Codecs.H264EncoderOptions?
+Egami.Video.VideoWriterOptions.H264.init -> void
+Egami.Video.Containers.AdtsFormat
+override Egami.Video.Containers.AdtsFormat.CanMux.get -> bool
+override Egami.Video.Containers.AdtsFormat.CreateMuxer(System.IO.Stream! stream, System.Collections.Generic.IReadOnlyList<Egami.Video.TrackInfo!>! tracks, Egami.Video.MediaMetadata! metadata, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IMuxer!
+override Egami.Video.Containers.AdtsFormat.Extensions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+override Egami.Video.Containers.AdtsFormat.IsMatch(System.ReadOnlySpan<byte> header) -> bool
+override Egami.Video.Containers.AdtsFormat.Name.get -> string!
+override Egami.Video.Containers.AdtsFormat.OpenDemuxer(System.IO.Stream! stream, Egami.Video.MediaContext! context, bool leaveOpen) -> Egami.Video.Containers.IDemuxer!
+override Egami.Video.Containers.AdtsFormat.SignatureLength.get -> int
+static Egami.Video.Containers.AdtsFormat.Instance.get -> Egami.Video.Containers.AdtsFormat!
+Egami.Video.Audio.Codecs.AacCodec
+override Egami.Video.Audio.Codecs.AacCodec.CodecId.get -> string!
+override Egami.Video.Audio.Codecs.AacCodec.CreateDecoder(Egami.Video.AudioTrackInfo! track, Egami.Video.Audio.AudioDecoderOptions? options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioDecoder!
+override Egami.Video.Audio.Codecs.AacCodec.Name.get -> string!
+static Egami.Video.Audio.Codecs.AacCodec.Instance.get -> Egami.Video.Audio.Codecs.AacCodec!
+Egami.Video.Audio.AudioEncoderOptions.Aac.get -> Egami.Video.Audio.Codecs.AacEncoderOptions?
+Egami.Video.Audio.AudioEncoderOptions.Aac.init -> void
+Egami.Video.Audio.Codecs.AacEncoderOptions
+Egami.Video.Audio.Codecs.AacEncoderOptions.<Clone>$() -> Egami.Video.Audio.Codecs.AacEncoderOptions!
+Egami.Video.Audio.Codecs.AacEncoderOptions.AacEncoderOptions() -> void
+Egami.Video.Audio.Codecs.AacEncoderOptions.Bandwidth.get -> int?
+Egami.Video.Audio.Codecs.AacEncoderOptions.Bandwidth.init -> void
+Egami.Video.Audio.Codecs.AacEncoderOptions.Bitrate.get -> int?
+Egami.Video.Audio.Codecs.AacEncoderOptions.Bitrate.init -> void
+Egami.Video.Audio.Codecs.AacEncoderOptions.Equals(Egami.Video.Audio.Codecs.AacEncoderOptions? other) -> bool
+Egami.Video.Audio.Codecs.AacEncoderOptions.Quality.get -> int?
+Egami.Video.Audio.Codecs.AacEncoderOptions.Quality.init -> void
+Egami.Video.AudioWriterOptions.Aac.get -> Egami.Video.Audio.Codecs.AacEncoderOptions?
+Egami.Video.AudioWriterOptions.Aac.init -> void
+override Egami.Video.Audio.Codecs.AacCodec.CanEncode.get -> bool
+override Egami.Video.Audio.Codecs.AacCodec.CreateEncoder(Egami.Video.Audio.AudioEncoderOptions! options, Egami.Video.MediaContext! context) -> Egami.Video.Audio.IAudioEncoder!
+override Egami.Video.Audio.Codecs.AacEncoderOptions.Equals(object? obj) -> bool
+override Egami.Video.Audio.Codecs.AacEncoderOptions.GetHashCode() -> int
+override Egami.Video.Audio.Codecs.AacEncoderOptions.ToString() -> string!
+static Egami.Video.Audio.Codecs.AacEncoderOptions.Default.get -> Egami.Video.Audio.Codecs.AacEncoderOptions!
+static Egami.Video.Audio.Codecs.AacEncoderOptions.operator !=(Egami.Video.Audio.Codecs.AacEncoderOptions? left, Egami.Video.Audio.Codecs.AacEncoderOptions? right) -> bool
+static Egami.Video.Audio.Codecs.AacEncoderOptions.operator ==(Egami.Video.Audio.Codecs.AacEncoderOptions? left, Egami.Video.Audio.Codecs.AacEncoderOptions? right) -> bool
+static Egami.Video.Audio.AudioCodecs.Aac.get -> Egami.Video.Audio.AudioCodec!

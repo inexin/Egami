@@ -20,7 +20,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Egami.Video\Egami.Video.csproj" />
+  </ItemGroup>
+
+  <!-- Packed against the released Egami.Heic (UseReleasedDependencies=true), as Egami.Video is against the released Egami. -->
+  <ItemGroup Condition="'$(UseReleasedDependencies)' != 'true'">
     <ProjectReference Include="..\Egami.Heic\Egami.Heic.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseReleasedDependencies)' == 'true'">
+    <PackageReference Include="Egami.Heic" VersionOverride="1.4.0" />
   </ItemGroup>
 
   <!-- The shared NAL code, and Egami.Heic's sequence parameter set reader, compiled in as internal source (H.264 and HEVC design,
