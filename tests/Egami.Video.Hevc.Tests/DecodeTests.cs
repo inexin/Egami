@@ -1,3 +1,5 @@
+extern alias heic;
+
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -37,14 +39,14 @@ public sealed class DecodeTests
     {
         // The inter prediction, SAO and deblocking without AVX2. The tests of this class run one at a time; other classes that
         // decode meanwhile only take the scalar code as well.
-        Egami.Heic.Hevc.HevcInter.UseVectors = false;
+        heic::Egami.Heic.Hevc.HevcInter.UseVectors = false;
         try
         {
             RawStreamMatchesFfmpeg(clip);
         }
         finally
         {
-            Egami.Heic.Hevc.HevcInter.UseVectors = System.Runtime.Intrinsics.X86.Avx2.IsSupported;
+            heic::Egami.Heic.Hevc.HevcInter.UseVectors = System.Runtime.Intrinsics.X86.Avx2.IsSupported;
         }
     }
 
@@ -61,7 +63,7 @@ public sealed class DecodeTests
     [MemberData(nameof(Clips))]
     public void PicturesMatchTheirHashes(string clip)
     {
-        using Egami.Heic.HevcStreamDecoder decoder = new(new Egami.Heic.HevcDecoderOptions { CheckPictureHashes = true });
+        using heic::Egami.Heic.HevcStreamDecoder decoder = new(new heic::Egami.Heic.HevcDecoderOptions { CheckPictureHashes = true });
         decoder.Send(File.ReadAllBytes(PathOf(clip + ".h265")));
         decoder.Flush();
         int frames = 0;

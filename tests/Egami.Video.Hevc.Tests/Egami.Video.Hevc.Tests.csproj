@@ -24,6 +24,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egami.Video.Hevc\Egami.Video.Hevc.csproj" />
+    <!-- Egami.Video.Hevc compiles Egami.Heic's HEVC files in as internal source, and both grant this project their internals, so
+         Egami.Heic's own types are reached through the heic alias. -->
+    <ProjectReference Include="..\..\src\Egami.Heic\Egami.Heic.csproj" Aliases="heic" />
   </ItemGroup>
 
 </Project>

@@ -2,7 +2,7 @@
 
 These permissively licensed projects may be studied for ideas. Study the idea, then write your own C#. If code is ever translated closely, its license notice goes into [THIRD-PARTY-NOTICES.md](../THIRD-PARTY-NOTICES.md) in the same pull request.
 
-Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barcode libraries on 2026-10-19, psd-tools and ag-psd on 2026-10-30) against each project's own license file or package manifest.
+Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barcode libraries on 2026-10-19, psd-tools and ag-psd on 2026-10-30, Kvazaar on 2026-11-17) against each project's own license file or package manifest.
 
 | Library | Language | License | What to learn from it | Egami step |
 |---|---|---|---|---|
@@ -32,8 +32,9 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [quirc](https://github.com/dlbeer/quirc) | C | ISC | Compact QR code recognition | 2.11 |
 | [zint](https://github.com/zint/zint) (backend library only) | C | BSD-3 | Barcode encoding for many symbologies | 2.11 |
 | [GS1 Barcode Syntax Dictionary](https://github.com/gs1/gs1-syntax-dictionary) | Data | Apache 2.0 | Application Identifier formats and checks, embedded as it is | 2.11 |
-| [HM](https://vcgit.hhi.fraunhofer.de/jvet/HM), the HEVC reference software | C++ | BSD-3 (grants no patent rights) | Where H.265 is unclear; HM's decoder is the bit-exact reference; the JCT-VC HM encoder description for the HEIC encoder's search, RDOQ and SAO | 2.9.4, HEIC encoder |
-| [libhevc](https://android.googlesource.com/platform/external/libhevc) | C | Apache 2.0 | Fast SIMD structure of an HEVC decoder | 2.9.4 |
+| [HM](https://vcgit.hhi.fraunhofer.de/jvet/HM), the HEVC reference software | C++ | BSD-3 (grants no patent rights) | Where H.265 is unclear; HM's decoder is the bit-exact reference; the JCT-VC HM encoder description for the HEIC encoder's search, RDOQ and SAO, and its fast inter decisions for the HEVC video encoder | 2.9.4, HEIC encoder, V8.1 |
+| [libhevc](https://android.googlesource.com/platform/external/libhevc) | C | Apache 2.0 | Fast SIMD structure of an HEVC decoder; its ihevce encoder's decisions for the HEVC video encoder | 2.9.4, V8.1 |
+| [Kvazaar](https://github.com/ultravideo/kvazaar) | C | BSD-3 (current LICENSE file: Tampere University, ITU/ISO/IEC and contributors; read only sources under it) | A compact open HEVC encoder: CU search order, merge and AMVP candidate checks, inter search and RDOQ | V8.1 |
 | [CrabbyAvif](https://github.com/webmproject/CrabbyAvif) | Rust | Apache 2.0 | HEIF item handling, including HEIC | 2.9.4 |
 | [psd-tools](https://github.com/psd-tools/psd-tools) | Python | MIT | PSD layer records, masks, adjustment data and compositing; its composite() is a reference for flattening | 2.3.10 |
 | [ag-psd](https://github.com/Agamnentzar/ag-psd) | TypeScript | MIT | PSD layer records, masks and additional layer information as Photoshop writes them | 2.3.10 |
