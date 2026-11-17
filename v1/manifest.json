@@ -18017,6 +18017,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.HevcEncoderOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.HevcEncoderOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.HevcEncoderOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.HevcEncoderOptions.yml\" sourcestartlinenumber=\"1\">The HEVC settings beyond <xref href=\"Egami.Video.Codecs.VideoEncoderOptions\" data-throw-if-not-resolved=\"false\"></xref>, for experts (<xref href=\"Egami.Video.Codecs.VideoEncoderOptions.Hevc\" data-throw-if-not-resolved=\"false\"></xref>): the profile\nand level, quantizer limits, adaptive quantization, B-frames and the framing of the packets. Every one has a default that\nsuits most uses. The encoder lives in the Egami.Video.Hevc package.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Codecs.HevcProfile.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Codecs.HevcProfile.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Codecs.HevcProfile",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Codecs.HevcProfile.yml\" sourcestartlinenumber=\"1\">The HEVC profiles Egami encodes: 4:2:0 at 8 bits, or at up to 10.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Codecs.IVideoDecoder-1.yml",
       "output": {
         ".html": {

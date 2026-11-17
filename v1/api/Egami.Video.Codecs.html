@@ -184,6 +184,13 @@ The encoder lives in the Egami.Video.H264 package.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.HevcEncoderOptions.html">HevcEncoderOptions</a></dt>
+      <dd><p>The HEVC settings beyond <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html">VideoEncoderOptions</a>, for experts (<a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Hevc">Hevc</a>): the profile
+and level, quantizer limits, adaptive quantization, B-frames and the framing of the packets. Every one has a default that
+suits most uses. The encoder lives in the Egami.Video.Hevc package.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Codecs.MotionJpegCodec.html">MotionJpegCodec</a></dt>
       <dd><p>Motion JPEG: every frame a complete JPEG image, decoded and encoded by Egami's JPEG codec. Decoding fixes frames without
 a DHT segment, weaves interlaced field pairs, ignores junk around the image and decodes several frames at once. Frames
@@ -302,6 +309,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Codecs.H264Profile.html">H264Profile</a></dt>
       <dd><p>The H.264 profiles Egami encodes: which coding tools a stream may use, and so which decoders play it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Codecs.HevcProfile.html">HevcProfile</a></dt>
+      <dd><p>The HEVC profiles Egami encodes: 4:2:0 at 8 bits, or at up to 10.</p>
 </dd>
     </dl>
     <dl class="jumplist">

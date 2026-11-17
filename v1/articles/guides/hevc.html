@@ -87,7 +87,7 @@
         <article data-uid="">
 <h1 id="hevc">HEVC</h1>
 
-<p>Egami.Video.Hevc decodes HEVC (H.265), the codec of iPhone and Android video, GoPro footage, 4K streaming and HDR10. It is a
+<p>Egami.Video.Hevc decodes and encodes HEVC (H.265), the codec of iPhone and Android video, GoPro footage, 4K streaming and HDR10. It is a
 separate, opt-in package because HEVC is covered by patents (see <a href="#patents">Patents</a>); Egami.Video itself contains no HEVC
 decoder and copies HEVC tracks through untouched when this package is not registered. The decoder is Egami.Heic's, the same one
 that reads HEIC photos, so Egami.Video.Hevc depends on Egami.Heic; apps can also drive it directly through Egami.Heic's
@@ -151,6 +151,30 @@ Console.WriteLine($&quot;{reader.Track.Width}x{reader.Track.Height} at {reader.T
 
 // Remuxing keeps the stream as it is, here into MP4.
 MediaFile.Remux(&quot;camera.h265&quot;, &quot;camera.mp4&quot;, context: context);
+</code></pre><h2 id="encoding">Encoding</h2>
+<p><code>HevcCodec.Instance</code> encodes through <code>VideoWriter</code> (or <code>CreateEncoder</code> for packets): 4:2:0 progressive frames with an even
+width and height, in the Main profile for 8-bit frames and Main 10 for 16-bit planes. <code>Quality</code> (0 to 100, default 60, on the
+H.264 encoder's scale) and <code>Effort</code> (0 to 10, default 4) work as for Egami's other encoders. <code>HevcEncoderOptions</code> holds the
+HEVC settings: the <code>HevcProfile</code>, the level (the lowest Main tier level that the frame size and rate fit, unless set), QP
+limits, adaptive quantization, B-frames and Annex B packets for raw streams. Packets are otherwise length-prefixed with the
+parameter sets in the track's hvcC record, which MP4 and MOV write as an hvc1 sample entry, the one Apple players need. Each
+picture's CTB rows are wavefront substreams coded in parallel, and the stream is the same on any number of threads. Every
+picture decodes in Egami's decoder, and FFmpeg's, to the encoder's own reconstruction, sample for sample.</p>
+<p>The encoder is in progress: so far every picture is coded intra (keyframes as IDR pictures), with the HEIC encoder's search,
+and P and B pictures follow.</p>
+<pre><code class="lang-csharp">// HEVC in MP4 (an hvc1 track): Main for 8-bit frames, Main 10 for 16-bit planes, the level picked from the frame size and rate.
+VideoWriterOptions options = new() { Codec = HevcCodec.Instance, FrameRate = new Rational(30, 1), Quality = 60 };
+using (VideoWriter writer = VideoWriter.Create(&quot;duck.mp4&quot;, options))
+{
+    for (int i = 0; i &lt; 10; i++)
+    {
+        using Raster&lt;Rgb8&gt; frame = duck.Derive(ops =&gt; ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+        writer.WriteFrame(frame);
+    }
+}
+
+// Expert settings: Main 10 at level 4.1, without adaptive quantization (to measure PSNR).
+VideoWriterOptions main10 = options with { Hevc = new HevcEncoderOptions { Profile = HevcProfile.Main10, Level = 41, AdaptiveQuantization = false } };
 </code></pre><h2 id="patents">Patents</h2>
 <p>HEVC is covered by patents. Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence
 depends on your country and on how you use and distribute this package; commercial products may need one from the HEVC patent

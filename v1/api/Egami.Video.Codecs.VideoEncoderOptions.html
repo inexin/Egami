@@ -277,7 +277,7 @@ using IVideoEncoder rawEncoder = RawVideoCodec.Instance.CreateEncoder(options wi
 
   <h3 id="Egami_Video_Codecs_VideoEncoderOptions_ChromaFormat" data-uid="Egami.Video.Codecs.VideoEncoderOptions.ChromaFormat">
   ChromaFormat
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L200"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L206"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the chroma subsampling for frames given as RGB rasters, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the codec's default (4:2:0 for
@@ -492,6 +492,39 @@ the Egami.Video.H264 package.</p>
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Codecs_VideoEncoderOptions_Hevc_" data-uid="Egami.Video.Codecs.VideoEncoderOptions.Hevc*"></a>
+
+  <h3 id="Egami_Video_Codecs_VideoEncoderOptions_Hevc" data-uid="Egami.Video.Codecs.VideoEncoderOptions.Hevc">
+  Hevc
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L193"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the HEVC expert settings, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_Default">Default</a>. The encoder is in
+the Egami.Video.Hevc package.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public HevcEncoderOptions? Hevc { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Codecs.HevcEncoderOptions.html">HevcEncoderOptions</a></dt>
     <dd></dd>
   </dl>
 
@@ -736,7 +769,7 @@ fixed spacing.</p>
 
   <h3 id="Egami_Video_Codecs_VideoEncoderOptions_TargetFrameBytes" data-uid="Egami.Video.Codecs.VideoEncoderOptions.TargetFrameBytes">
   TargetFrameBytes
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L194"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L200"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the largest packet size in bytes to aim for, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none. Motion JPEG then picks, per frame,

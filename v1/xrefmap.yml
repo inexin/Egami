@@ -124935,6 +124935,134 @@ references:
   commentId: F:Egami.Video.Codecs.H264Profile.Main
   fullName: Egami.Video.Codecs.H264Profile.Main
   nameWithType: H264Profile.Main
+- uid: Egami.Video.Codecs.HevcEncoderOptions
+  name: HevcEncoderOptions
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html
+  commentId: T:Egami.Video.Codecs.HevcEncoderOptions
+  fullName: Egami.Video.Codecs.HevcEncoderOptions
+  nameWithType: HevcEncoderOptions
+- uid: Egami.Video.Codecs.HevcEncoderOptions.AdaptiveQuantization
+  name: AdaptiveQuantization
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_AdaptiveQuantization
+  commentId: P:Egami.Video.Codecs.HevcEncoderOptions.AdaptiveQuantization
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.AdaptiveQuantization
+  nameWithType: HevcEncoderOptions.AdaptiveQuantization
+- uid: Egami.Video.Codecs.HevcEncoderOptions.AdaptiveQuantization*
+  name: AdaptiveQuantization
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_AdaptiveQuantization_
+  commentId: Overload:Egami.Video.Codecs.HevcEncoderOptions.AdaptiveQuantization
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.AdaptiveQuantization
+  nameWithType: HevcEncoderOptions.AdaptiveQuantization
+- uid: Egami.Video.Codecs.HevcEncoderOptions.AnnexB
+  name: AnnexB
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_AnnexB
+  commentId: P:Egami.Video.Codecs.HevcEncoderOptions.AnnexB
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.AnnexB
+  nameWithType: HevcEncoderOptions.AnnexB
+- uid: Egami.Video.Codecs.HevcEncoderOptions.AnnexB*
+  name: AnnexB
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_AnnexB_
+  commentId: Overload:Egami.Video.Codecs.HevcEncoderOptions.AnnexB
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.AnnexB
+  nameWithType: HevcEncoderOptions.AnnexB
+- uid: Egami.Video.Codecs.HevcEncoderOptions.BFrames
+  name: BFrames
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_BFrames
+  commentId: P:Egami.Video.Codecs.HevcEncoderOptions.BFrames
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.BFrames
+  nameWithType: HevcEncoderOptions.BFrames
+- uid: Egami.Video.Codecs.HevcEncoderOptions.BFrames*
+  name: BFrames
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_BFrames_
+  commentId: Overload:Egami.Video.Codecs.HevcEncoderOptions.BFrames
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.BFrames
+  nameWithType: HevcEncoderOptions.BFrames
+- uid: Egami.Video.Codecs.HevcEncoderOptions.Default
+  name: Default
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_Default
+  commentId: P:Egami.Video.Codecs.HevcEncoderOptions.Default
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.Default
+  nameWithType: HevcEncoderOptions.Default
+- uid: Egami.Video.Codecs.HevcEncoderOptions.Default*
+  name: Default
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_Default_
+  commentId: Overload:Egami.Video.Codecs.HevcEncoderOptions.Default
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.Default
+  nameWithType: HevcEncoderOptions.Default
+- uid: Egami.Video.Codecs.HevcEncoderOptions.Level
+  name: Level
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_Level
+  commentId: P:Egami.Video.Codecs.HevcEncoderOptions.Level
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.Level
+  nameWithType: HevcEncoderOptions.Level
+- uid: Egami.Video.Codecs.HevcEncoderOptions.Level*
+  name: Level
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_Level_
+  commentId: Overload:Egami.Video.Codecs.HevcEncoderOptions.Level
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.Level
+  nameWithType: HevcEncoderOptions.Level
+- uid: Egami.Video.Codecs.HevcEncoderOptions.MaxQuantizer
+  name: MaxQuantizer
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_MaxQuantizer
+  commentId: P:Egami.Video.Codecs.HevcEncoderOptions.MaxQuantizer
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.MaxQuantizer
+  nameWithType: HevcEncoderOptions.MaxQuantizer
+- uid: Egami.Video.Codecs.HevcEncoderOptions.MaxQuantizer*
+  name: MaxQuantizer
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_MaxQuantizer_
+  commentId: Overload:Egami.Video.Codecs.HevcEncoderOptions.MaxQuantizer
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.MaxQuantizer
+  nameWithType: HevcEncoderOptions.MaxQuantizer
+- uid: Egami.Video.Codecs.HevcEncoderOptions.MinQuantizer
+  name: MinQuantizer
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_MinQuantizer
+  commentId: P:Egami.Video.Codecs.HevcEncoderOptions.MinQuantizer
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.MinQuantizer
+  nameWithType: HevcEncoderOptions.MinQuantizer
+- uid: Egami.Video.Codecs.HevcEncoderOptions.MinQuantizer*
+  name: MinQuantizer
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_MinQuantizer_
+  commentId: Overload:Egami.Video.Codecs.HevcEncoderOptions.MinQuantizer
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.MinQuantizer
+  nameWithType: HevcEncoderOptions.MinQuantizer
+- uid: Egami.Video.Codecs.HevcEncoderOptions.Profile
+  name: Profile
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_Profile
+  commentId: P:Egami.Video.Codecs.HevcEncoderOptions.Profile
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.Profile
+  nameWithType: HevcEncoderOptions.Profile
+- uid: Egami.Video.Codecs.HevcEncoderOptions.Profile*
+  name: Profile
+  href: api/Egami.Video.Codecs.HevcEncoderOptions.html#Egami_Video_Codecs_HevcEncoderOptions_Profile_
+  commentId: Overload:Egami.Video.Codecs.HevcEncoderOptions.Profile
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.HevcEncoderOptions.Profile
+  nameWithType: HevcEncoderOptions.Profile
+- uid: Egami.Video.Codecs.HevcProfile
+  name: HevcProfile
+  href: api/Egami.Video.Codecs.HevcProfile.html
+  commentId: T:Egami.Video.Codecs.HevcProfile
+  fullName: Egami.Video.Codecs.HevcProfile
+  nameWithType: HevcProfile
+- uid: Egami.Video.Codecs.HevcProfile.Main
+  name: Main
+  href: api/Egami.Video.Codecs.HevcProfile.html#Egami_Video_Codecs_HevcProfile_Main
+  commentId: F:Egami.Video.Codecs.HevcProfile.Main
+  fullName: Egami.Video.Codecs.HevcProfile.Main
+  nameWithType: HevcProfile.Main
+- uid: Egami.Video.Codecs.HevcProfile.Main10
+  name: Main10
+  href: api/Egami.Video.Codecs.HevcProfile.html#Egami_Video_Codecs_HevcProfile_Main10
+  commentId: F:Egami.Video.Codecs.HevcProfile.Main10
+  fullName: Egami.Video.Codecs.HevcProfile.Main10
+  nameWithType: HevcProfile.Main10
 - uid: Egami.Video.Codecs.IVideoDecoder
   name: IVideoDecoder
   href: api/Egami.Video.Codecs.IVideoDecoder.html
@@ -125808,6 +125936,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.VideoEncoderOptions.Height
   nameWithType: VideoEncoderOptions.Height
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Hevc
+  name: Hevc
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Hevc
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.Hevc
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Hevc
+  nameWithType: VideoEncoderOptions.Hevc
+- uid: Egami.Video.Codecs.VideoEncoderOptions.Hevc*
+  name: Hevc
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Hevc_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.Hevc
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.Hevc
+  nameWithType: VideoEncoderOptions.Hevc
 - uid: Egami.Video.Codecs.VideoEncoderOptions.KeyframeInterval
   name: KeyframeInterval
   href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_KeyframeInterval
@@ -138409,6 +138550,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.VideoWriterOptions.H264
   nameWithType: VideoWriterOptions.H264
+- uid: Egami.Video.VideoWriterOptions.Hevc
+  name: Hevc
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Hevc
+  commentId: P:Egami.Video.VideoWriterOptions.Hevc
+  fullName: Egami.Video.VideoWriterOptions.Hevc
+  nameWithType: VideoWriterOptions.Hevc
+- uid: Egami.Video.VideoWriterOptions.Hevc*
+  name: Hevc
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_Hevc_
+  commentId: Overload:Egami.Video.VideoWriterOptions.Hevc
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.Hevc
+  nameWithType: VideoWriterOptions.Hevc
 - uid: Egami.Video.VideoWriterOptions.KeyframeInterval
   name: KeyframeInterval
   href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_KeyframeInterval
