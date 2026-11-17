@@ -1,6 +1,6 @@
 # HEVC
 
-Egami.Video.Hevc decodes HEVC (H.265), the codec of iPhone and Android video, GoPro footage, 4K streaming and HDR10. It is a
+Egami.Video.Hevc decodes and encodes HEVC (H.265), the codec of iPhone and Android video, GoPro footage, 4K streaming and HDR10. It is a
 separate, opt-in package because HEVC is covered by patents (see [Patents](#patents)); Egami.Video itself contains no HEVC
 decoder and copies HEVC tracks through untouched when this package is not registered. The decoder is Egami.Heic's, the same one
 that reads HEIC photos, so Egami.Video.Hevc depends on Egami.Heic; apps can also drive it directly through Egami.Heic's
@@ -48,6 +48,22 @@ stream has no timestamps, so frames are timed by the stream's VUI frame rate, or
 set. Seeking goes back to the IRAP picture before the target.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoHevc.cs#raw)]
+
+## Encoding
+
+`HevcCodec.Instance` encodes through `VideoWriter` (or `CreateEncoder` for packets): 4:2:0 progressive frames with an even
+width and height, in the Main profile for 8-bit frames and Main 10 for 16-bit planes. `Quality` (0 to 100, default 60, on the
+H.264 encoder's scale) and `Effort` (0 to 10, default 4) work as for Egami's other encoders. `HevcEncoderOptions` holds the
+HEVC settings: the `HevcProfile`, the level (the lowest Main tier level that the frame size and rate fit, unless set), QP
+limits, adaptive quantization, B-frames and Annex B packets for raw streams. Packets are otherwise length-prefixed with the
+parameter sets in the track's hvcC record, which MP4 and MOV write as an hvc1 sample entry, the one Apple players need. Each
+picture's CTB rows are wavefront substreams coded in parallel, and the stream is the same on any number of threads. Every
+picture decodes in Egami's decoder, and FFmpeg's, to the encoder's own reconstruction, sample for sample.
+
+The encoder is in progress: so far every picture is coded intra (keyframes as IDR pictures), with the HEIC encoder's search,
+and P and B pictures follow.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoHevc.cs#encode)]
 
 ## Patents
 

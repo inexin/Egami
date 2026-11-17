@@ -15,17 +15,20 @@ internal static class HevcEncoder
     /// <param name="planes">The planes, Y then Cb and Cr (Y alone for 4:0:0), of the picture's size.</param>
     /// <param name="strides">Each plane's row length in samples.</param>
     /// <param name="cancellationToken">Cancels encoding.</param>
-    internal static HevcEncodedPicture Encode(HevcEncoderSettings settings, ushort[][] planes, int[] strides, CancellationToken cancellationToken = default)
+    internal static HevcEncodedPicture Encode(HevcEncoderSettings settings, ushort[][] planes, int[] strides, CancellationToken cancellationToken = default) =>
+        Encode(settings, planes, strides, null, cancellationToken);
+
+    /// <summary>Encodes a picture of a video stream.</summary>
+    /// <param name="settings">The picture's size and format and the coding settings.</param>
+    /// <param name="planes">The planes, Y then Cb and Cr (Y alone for 4:0:0), of the picture's size.</param>
+    /// <param name="strides">Each plane's row length in samples.</param>
+    /// <param name="info">The picture's slice type, order and references, or null for a still picture's IDR slice.</param>
+    /// <param name="cancellationToken">Cancels encoding.</param>
+    internal static HevcEncodedPicture Encode(HevcEncoderSettings settings, ushort[][] planes, int[] strides, HevcSliceInfo? info,
+        CancellationToken cancellationToken)
     {
         Check(settings);
-        HevcEncoderProfile profile = HevcEncoderProfile.For(settings.Effort);
-        if (settings.AdaptiveQp && !settings.Lossless)
-        {
-            // A 64x64 unit takes one QP for four 32x32 groups of the adaptive quantizer; measured on photos, files at equal
-            // SSIMULACRA2 are 5 % smaller without them.
-            profile = profile with { MaxCuLog2 = Math.Min(profile.MaxCuLog2, 5) };
-        }
-        settings = settings with { MaxTransformDepth = profile.TransformDepth, Sao = settings.Sao && profile.Sao && !settings.Lossless };
+        (settings, HevcEncoderProfile profile) = Resolve(settings);
         HevcSource source = new(settings, planes, strides);
         byte[] vps = HevcParameterWriter.Vps(settings), sps = HevcParameterWriter.Sps(settings), pps = HevcParameterWriter.Pps(settings);
         bool sao = settings.Sao;
@@ -35,7 +38,7 @@ internal static class HevcEncoder
         store.Parse(HevcNal.Parse(vps), out _);
         store.Parse(HevcNal.Parse(sps), out _);
         store.Parse(HevcNal.Parse(pps), out _);
-        HevcSliceHeader slice = store.Parse(HevcNal.Parse(HevcParameterWriter.SliceNal(settings, sao, [[0x80]])), out _)!;
+        HevcSliceHeader slice = store.Parse(HevcNal.Parse(HevcParameterWriter.SliceNal(settings, sao, [[0x80]], info)), out _)!;
         (HevcSps hevcSps, HevcPps hevcPps) = store.Active(0);
         HevcPicture picture = new(hevcSps, hevcPps);
         int ctbs = hevcSps.WidthInCtbs * hevcSps.HeightInCtbs;
@@ -68,7 +71,7 @@ internal static class HevcEncoder
             else
             {
                 // No CTB gains from SAO: the slice turns it off, which saves each CTB's syntax.
-                slice = store.Parse(HevcNal.Parse(HevcParameterWriter.SliceNal(settings, false, [[0x80]])), out _)!;
+                slice = store.Parse(HevcNal.Parse(HevcParameterWriter.SliceNal(settings, false, [[0x80]], info)), out _)!;
                 for (int i = 0; i < ctbs; i++)
                 {
                     picture.CtbSliceHeader[i] = slice;
@@ -76,7 +79,7 @@ internal static class HevcEncoder
             }
         }
 
-        byte[] sliceNal = Write(settings, picture, slice, ctus, saoChoices, wavefronts);
+        byte[] sliceNal = Write(settings, picture, slice, ctus, saoChoices, wavefronts, info);
         return new HevcEncodedPicture
         {
             Settings = settings,
@@ -86,6 +89,23 @@ internal static class HevcEncoder
             Slice = sliceNal,
             Reconstruction = picture,
         };
+    }
+
+    /// <summary>
+    /// The settings as the effort's profile leaves them (the parameter sets follow these) and the profile: the transform depth and
+    /// SAO the effort allows, and no 64x64 coding units with the adaptive quantizer.
+    /// </summary>
+    internal static (HevcEncoderSettings Settings, HevcEncoderProfile Profile) Resolve(HevcEncoderSettings settings)
+    {
+        HevcEncoderProfile profile = HevcEncoderProfile.For(settings.Effort);
+        if (settings.AdaptiveQp && !settings.Lossless)
+        {
+            // A 64x64 unit takes one QP for four 32x32 groups of the adaptive quantizer; measured on photos, files at equal
+            // SSIMULACRA2 are 5 % smaller without them.
+            profile = profile with { MaxCuLog2 = Math.Min(profile.MaxCuLog2, 5) };
+        }
+
+        return (settings with { MaxTransformDepth = profile.TransformDepth, Sao = settings.Sao && profile.Sao && !settings.Lossless }, profile);
     }
 
     private static void Check(HevcEncoderSettings s)
@@ -205,7 +225,7 @@ internal static class HevcEncoder
 
     /// <summary>The CABAC pass: every CTB's SAO and coding tree, one substream per CTB row with wavefronts, into the slice's NAL unit.</summary>
     private static byte[] Write(HevcEncoderSettings settings, HevcPicture picture, HevcSliceHeader slice, List<HevcCodingUnit>[] ctus, HevcSaoChoice[] sao,
-        bool wavefronts)
+        bool wavefronts, HevcSliceInfo? info)
     {
         HevcSps sps = picture.Sps;
         int rows = sps.HeightInCtbs, columns = sps.WidthInCtbs, total = rows * columns;
@@ -258,7 +278,7 @@ internal static class HevcEncoder
         }
 
         substreams.Add(encoder.Finish().ToArray());
-        return HevcParameterWriter.SliceNal(settings, slice.SaoLuma || slice.SaoChroma, substreams);
+        return HevcParameterWriter.SliceNal(settings, slice.SaoLuma || slice.SaoChroma, substreams, info);
     }
 }
 

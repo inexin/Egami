@@ -4,7 +4,8 @@ namespace Egami.Video.Codecs;
 /// HEVC (H.265), as MP4, MOV, Matroska and raw .h265 files carry it, decoded by Egami.Heic's <see cref="Egami.Heic.HevcStreamDecoder"/>:
 /// the Main, Main 10, Main 12 and format range extensions profiles to 12 bits, 4:0:0, 4:2:0, 4:2:2 and 4:4:4, and the HEVC base
 /// layer of Dolby Vision profile 8 files. Frames come out in presentation order at the stream's conformance window, as 8-bit
-/// planes, or 16-bit planes holding 9 to 12 bits. Register it with <see cref="HevcMediaContextExtensions.WithHevc"/>. Decode only.
+/// planes, or 16-bit planes holding 9 to 12 bits. Register it with <see cref="HevcMediaContextExtensions.WithHevc"/>.
+/// <see cref="CreateEncoder"/> encodes 4:2:0 progressive streams in the Main and Main 10 profiles (<see cref="HevcEncoderOptions"/>).
 /// </summary>
 /// <remarks>
 /// <para>
@@ -70,6 +71,27 @@ public sealed class HevcCodec : VideoCodec
         }
 
         return new HevcVideoDecoder(track, options, context);
+    }
+
+    /// <inheritdoc/>
+    public override bool CanEncode => true;
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// The frames are coded as 4:2:0 planes, 8-bit for <see cref="HevcProfile.Main"/> and 10-bit for <see cref="HevcProfile.Main10"/>;
+    /// others are converted. The width and height must be even. Packets are length-prefixed with the parameter sets in the
+    /// track's hvcC record (MP4 writes it as an hvc1 sample entry), or Annex B with <see cref="HevcEncoderOptions.AnnexB"/>.
+    /// The output is the same on any number of threads.
+    /// </remarks>
+    /// <exception cref="ArgumentException">The options do not make a valid stream, such as an odd size or a level too small for it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/VideoHevc.cs" region="encode"/>
+    /// </example>
+    public override IVideoEncoder CreateEncoder(VideoEncoderOptions options, MediaContext context)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(context);
+        return new HevcVideoEncoder(options, context);
     }
 
     /// <summary>
