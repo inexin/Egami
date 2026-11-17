@@ -58,7 +58,8 @@ jobs:
       - name: Build and test
         run: dotnet test Egami.slnx -c Release
       # UseReleasedDependencies builds a package that opts in (Egami.Barcodes) against the released versions of the packages
-      # it needs, so it installs with what is on nuget.org; the others ignore it.
+      # it needs, so it installs with what is on nuget.org; the others ignore it. Egami.Fonts.Substitutes and the Egami.Video
+      # packages opt in too.
       - name: Pack
         run: |
           unlisted=

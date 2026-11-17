@@ -6,8 +6,8 @@
     <!-- Egami.Video.H264 ships at Egami.Video's version and depends on it through its public API (H.264 and HEVC design,
          question 4), except that its encoder runs on Egami.Video's internal encoder core (H.264 Encoder Design, Q2). -->
     <Version>$(EgamiVideoVersion)</Version>
-    <Description>H.264 (AVC) decoding for Egami.Video, in managed code: progressive Constrained Baseline, Main, High, High 10 and High 4:2:2 streams in MP4, MOV, Matroska, AVI and raw .h264 files. H.264 is covered by patents; Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial products may need one from the AVC patent pools or holders. Egami.Video itself contains no H.264 decoder and does not depend on this package.</Description>
-    <PackageTags>$(EgamiPackageTags);video;h264;avc;mp4</PackageTags>
+    <Description>H.264 (AVC) decoding and encoding for Egami.Video, in managed code: decodes Constrained Baseline, Main, High, High 10 and High 4:2:2 streams, progressive and interlaced, in MP4, MOV, Matroska, AVI and raw .h264 files; encodes 8-bit 4:2:0 in Constrained Baseline, Main and High. H.264 is covered by patents; Egami's authors grant no patent rights and are not lawyers. Whether you need a patent licence depends on your country and on how you use and distribute this package; commercial products may need one from the AVC patent pools or holders. Egami.Video itself contains no H.264 codec and does not depend on this package.</Description>
+    <PackageTags>$(EgamiPackageTags);video;h264;avc;mp4;encoder</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>
@@ -40,5 +40,13 @@
     <InternalsVisibleTo Include="Egami.Video.Benchmarks" />
     <InternalsVisibleTo Include="Egami.Video.Fuzz" />
   </ItemGroup>
+
+  <!-- The encoder uses Egami.Video's internals, so the package depends on exactly the Egami.Video it was built with: [1.3.0], not
+       1.3.0 or later, as Egami.Heic does with Egami. Both ship at one version. -->
+  <Target Name="PinEgamiVideoVersion" AfterTargets="_GetProjectReferenceVersions">
+    <ItemGroup>
+      <_ProjectReferencesWithVersions Update="@(_ProjectReferencesWithVersions)" ProjectVersion="[%(_ProjectReferencesWithVersions.ProjectVersion)]" />
+    </ItemGroup>
+  </Target>
 
 </Project>

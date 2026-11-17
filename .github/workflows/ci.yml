@@ -120,6 +120,11 @@ jobs:
       # Egami.Fonts.Substitutes is packed against the released Egami.Fonts in the same way.
       - name: Egami.Fonts.Substitutes against the released packages
         run: dotnet build src/Egami.Fonts.Substitutes -c Release -p:UseReleasedDependencies=true
+      # Egami.Video, Egami.Video.H264 and Egami.Video.Hevc are packed against the released Egami and Egami.Heic in the same way.
+      - name: Egami.Video packages against the released packages
+        run: |
+          dotnet build src/Egami.Video.H264 -c Release -p:UseReleasedDependencies=true
+          dotnet build src/Egami.Video.Hevc -c Release -p:UseReleasedDependencies=true
 
   libpng:
     # Checks Egami's PNG reader and writer against libpng, the reference PNG library. libpng is a CI test tool only.

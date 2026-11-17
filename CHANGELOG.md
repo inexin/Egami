@@ -31,303 +31,6 @@ Additive to 1.4.0. `.ehyp` files that 1.5.0-preview.1 wrote are version 1 and mu
 - `.ehyp` version 2: Norwegian's patterns compile to 137 KB instead of 649 KB and load in about 0.7 ms. The trie stores no
   edge targets, and numbers are varints. Version 1 files are rejected with a clear error.
 
-## Egami.Video.H264 (unreleased)
-
-An H.264 encoder (Egami.Video.H264): intra, P and B pictures. Additive.
-
-- `H264Codec.CanEncode` is true and `CreateEncoder` encodes 8-bit 4:2:0 progressive frames in the Constrained Baseline, Main
-  and High profiles, with CABAC or CAVLC, 4x4, 8x8 and 16x16 intra prediction, RDOQ and deblocking. Keyframes are IDR pictures
-  and the frames between them P and B pictures.
-- P pictures: quarter-sample motion search over up to three references (more with effort), P_Skip, 16x16, 16x8, 8x16 and 8x8
-  partitions (8x4, 4x8 and 4x4 too from effort 6 at levels up to 3), the 8x8 transform for inter blocks, and explicit weighted
-  prediction for fades (Main and High). Each macroblock's type is chosen by squared error plus λ times its bits.
-- B pictures: up to `H264EncoderOptions.BFrames` between references (3 by default, none at effort 0 or in Constrained
-  Baseline), each run as long as the content suits; L0, L1 and bi-predicted 16x16, 16x8, 8x16 and 8x8 partitions, B_Skip and
-  B_Direct with spatial direct prediction, and temporal where it codes smaller (effort 8 and up). From effort 4 runs of two or
-  three are B-pyramids: the middle B picture is a reference, and the next P picture marks it unused (MMCO).
-- `H264EncoderOptions` (`VideoEncoderOptions.H264`, `VideoWriterOptions.H264`): `Profile`, `Level` (picked from the frame
-  size and rate when unset, and for the bitrate modes the peak bitrate and buffer too, and checked), `Entropy`, `BFrames`,
-  `Slices`, `MinQuantizer`, `MaxQuantizer`, `AdaptiveQuantization` (on by default: busy macroblocks get coarser steps, flat
-  ones finer) and `AnnexB`.
-- Rate control: `Quality` 50 is about x264's CRF 23 (QP 23, equal PSNR on three clips within a few quality points); one- and
-  two-pass average bitrate and constant bitrate land within 5 % of the target on 640×360 clips, and constant bitrate never runs
-  the decoder buffer dry. B-frame groups plan bits by their average cost, and the H.264 probe codes at QP 26.
-  Constant bitrate also holds at starved rates (720p50 derf clips at 2.5 Mbit/s: within 1 % of the target, the buffer never
-  below 60 %, where it overshot by up to 10 % and ran dry): in real time the first inter frame is planned from the keyframe's
-  bit model instead of an unlearned one, and the buffer's fill pulls harder on the budget and on the step, as at coarse steps
-  bits fall more slowly than the model expects.
-- Slices: each picture is cut into bands of macroblock rows (`H264EncoderOptions.Slices`, by default one per 1800 macroblocks:
-  one below 1280×720, four at 1920×1080, up to eight) coded on `EgamiContext.MaxParallelism` threads. The stream depends only on
-  the slice count, never on the thread count. Tracks carry an avcC record, or Annex B packets with the
-  parameter sets in band; HDR metadata goes into mastering display and content light level SEI.
-- Every picture decodes in Egami's decoder and FFmpeg's to the encoder's reconstruction, sample for sample. On two photos at
-  QP 22 to 37 intra coding takes 2–3 % fewer bits than x264's medium preset at equal PSNR; on three 640×360 clips without
-  B-frames, P coding takes 0.4–3.2 % fewer bits than x264's medium preset with `-bf 0`; with B-frames at effort 4, from 1.4 %
-  fewer to 15.3 % more than x264's medium preset (rate control has no macroblock tree yet).
-- Speed: SSE2 SAD, SATD, squared error and averaging, an AVX2 8x8 forward transform, a cheaper hexagon search and cached RDOQ
-  tables take one-thread encoding at effort 4 from about 540 to about 100 ms a 640×360 frame, with the same output; x264's
-  medium preset takes 8 to 13, so the speed goal of twice x264's time is not met yet. AVX2 SATD on four blocks at once, SIMD
-  half-sample planes and an all-zero quantization shortcut then take 9 % fewer cycles, with the same output.
-- Gates (task 12), with tools/video/check-h264-encoder.py and time-h264-encoder.py (x264, FFmpeg and the JM decoder in
-  Docker, black boxes only), run by egami-compare's video/native/h264-encode-gate.py on the derf clips:
-  - FFmpeg and JM 19.0's decoder give Egami's frames, byte for byte, for 31 streams across every effort, profile, entropy coder,
-    B-frame setting, slice count, rate mode and size; each stream is the same at one thread and at all cores.
-  - BD-rate PSNR-Y against x264 medium (both tuned for PSNR), 720p, 60 frames: +6.0 % to +17.4 % (mean +11.6 %); the +15 %
-    gate is not met on park_joy. In bits effort 4 lands between x264's veryfast and faster presets.
-  - Speed is not met: at 1080p effort 4 takes 7.4 times x264 medium's time on one thread and 7.3 times on 24; at 720p it takes
-    11 to 18 times x264 medium's CPU cycles a frame (2.5 to 4.1 G against 0.14 to 0.32 G).
-  - One- and two-pass bitrate land within 3.6 % of the target at 2.5 and 6 Mbit/s (720p50). Constant bitrate holds at 6 Mbit/s
-    (within 4.7 %, buffer never below 10 %) but not at a starved 2.5 Mbit/s, where it overshoots by up to 10 % and the buffer
-    runs dry.
-- The encoder core learned B-frames (planning only; Egami's VP8, VP9 and AV1 streams are unchanged byte for byte).
-- Tools: tools/video/profile-h264-encoder.py profiles the encoder by stage, counts cycles a frame with tiered PGO on and off,
-  and reads its work per macroblock from internal counters that only Debug and `-p:EgamiH264Stats=true` builds have (Release
-  output is unchanged). time-h264-encoder.py's cycles mode now measures with tiered PGO on, as users run it (`--no-pgo` for off).
-- Speed (H.264 Encoder Speed Build Plan, tasks 3 to 5): RDOQ prices each lowered level from the slice's CABAC states without
-  copying or moving them (the bins of a level's unary prefix adapt within the level; adaptation between levels and between 8x8
-  positions that share a context is left out) and looks up the cost of the levels after it, so a try costs about the same
-  however long the block is. Mode decision still counts each candidate's bits exactly, but puts back only the states the count
-  moved instead of copying all 460 in and out. Effort 4 takes 22 to 45 % fewer cycles a frame at 720p (1.8 to 2.1 G against
-  2.3 to 3.9 G with tiered PGO), effort 7 31 to 54 % fewer; BD-rate moves by +0.04 to +0.17 % at effort 4, +0.06 to +0.14 %
-  at effort 7 and not at all at effort 2. The stream is still coded exactly by the CABAC writer.
-- Speed (H.264 Encoder Speed Build Plan, tasks 6 to 8): fewer candidates are RD-coded per macroblock. An inter candidate codes
-  only the 4x4 or the 8x8 transform when SATD and an 8x8 Hadamard cost (SA8D) of its residual are more than 10 % apart; the
-  second-best partitioning is coded only within 1/16 of the best's search cost; B_Direct_16x16 with a residual only when its
-  SATD is at most 0.8 of the best partitioning's cost; intra codes the best of I16, I4 and I8 by SATD and mode bits (and the
-  next within 25 %); P_Skip and B_Skip end the search when every 4x4 block's error is far inside the dead zone. Full codings
-  fall from 6.3–7.5 to 4.7–5.7 a macroblock at effort 4 (8.1–9.2 to 6.0–6.6 at effort 7), effort 4 takes 2 to 16 % fewer
-  cycles a frame at 720p and effort 7 2 to 13 % fewer, for +0.25 to +0.69 % BD-rate at efforts 4 and 7 and +0.06 to +0.53 % at
-  effort 2 (within the +1 % this step was allowed).
-- Speed (H.264 Encoder Speed Build Plan, tasks 12 and 13): motion search reads half- and quarter-sample costs straight from
-  each reference's half-sample planes instead of copying the prediction, costs up to four whole-sample points of the hexagon
-  and square steps in one SAD pass, starts B partitions from the vectors the 16x16 search found, and skips a second candidate
-  that repeats the 16x16 prediction. Effort 4 takes 4 to 8 % fewer cycles a frame at 720p (7 to 9 % without PGO) and effort 7
-  7 to 12 % fewer, for BD-rate within ±0.16 % at efforts 2, 4 and 7. Two shortcuts stay off by default: a SAD/SATD diamond
-  sub-sample search with an early stop for later references (+0.65 % BD-rate, 4 to 9 % fewer cycles) and 16x8/8x16 only when
-  8x8 beats 16x16 (+0.94 %, 4 to 13 % fewer).
-- Macroblock tree (H.264 Encoder Speed Build Plan): with B-frames and a lookahead, the encoder core walks each frame's
-  half-size block costs back through the frames held, so the content later frames predict from passes its worth on to the
-  blocks it came from, and a referenced frame's step falls by 2^-0.25 for each doubling of that worth (about 1.5 QP). Rate
-  control plans each run with these steps. BD-rate on the four 720p clips: −0.04 to −2.59 % at effort 4, −0.42 to −3.36 % at
-  effort 2 and −0.08 to −2.59 % at effort 7, for −1 to +7 % cycles a frame. Quantizer offsets per macroblock from the same
-  tree measured worse (up to +4.9 %) and are not used.
-- Speed (H.264 Encoder Speed Build Plan, trade): the macroblock tree's gain buys motion search shortcuts. Efforts 4 to 7
-  search 16x8 and 8x16 only where 8x8 beats 16x16 and refine B pictures' vectors by a SAD half-sample and SATD quarter-sample
-  diamond; efforts 0 to 3 take the diamond in every picture; efforts 8 and up search in full. At effort 4 the mean BD-rate
-  of the four 720p clips is −0.49 % against the encoder before the tree (worst clip +0.52 %) for 5 to 19 % fewer cycles than
-  with the tree alone (4.5 to 7.6 times x264 medium's cycles); effort 7 −0.49 % (worst +0.53 %) for 6 to 18 % fewer; effort 2
-  −1.07 % (worst +0.30 %).
-- Speed (H.264 Encoder Speed Build Plan, task 17): RDOQ's block pricer looks up per-macroblock tables of the significance,
-  last and level bin costs instead of working them out from the CABAC states, prices the levels below the one it lowers for
-  all eight coding states at once (AVX2), and the 4x4 and 8x8 scans gather the levels and their non-zero mask in vectors.
-  The output is byte-identical. At effort 4 on the four 720p clips: 11 to 16 % fewer cycles a macroblock with PGO (mean
-  347k to 302k) and 11 to 13 % without (373k to 328k).
-- Speed (H.264 Encoder Speed Build Plan, task 20): Intra4x4 and Intra8x8 work out once per block the lines every mode copies
-  its rows from, so a prediction is a row copy, and price all nine modes' SATDs in one AVX2 kernel without writing them out;
-  plane prediction (16x16 and chroma) and chroma DC run in vectors. The output is byte-identical. At effort 4 on the four
-  720p clips intra decisions take 31.5k cycles a macroblock instead of 54.6k, and the encoder 6 to 13 % fewer instructions
-  (mean 317k to 290k cycles a macroblock with PGO, 343k to 315k without).
-- Speed (H.264 Encoder Speed Build Plan, task 18): motion search prices vector bits from a table for each QP, costs its
-  whole-sample starts and half-sample diamond four at a time, scores quarter samples with a fused mean-and-SATD kernel
-  (mean-and-SAD for sub-sample SADs), stops a candidate's SATD once it cannot win, skips quarter-sample points the last
-  round costed, and drops the 4x4 Hadamard's last stage (|a + b| + |a − b| is 2 max(|a|, |b|)). The output is
-  byte-identical. On the four 720p clips: 4.7 to 6.9 % fewer instructions at effort 4 (mean 382k to 373k cycles a
-  macroblock with PGO, 414k to 400k without), 5.4 to 9.6 % at effort 7 (490k to 464k, 523k to 497k), 5.5 to 8.2 % at
-  effort 2 (212k to 198k, 221k to 214k).
-- Efforts (H.264 Encoder Speed Build Plan, tasks 15 and 16): efforts 6 to 10 are retuned so that each costs more cycles and
-  needs fewer bits than the one below it on the four 720p clips; efforts 0 to 5, the default 4 among them, code exactly as
-  before. Effort 6 searches 16x8 and 8x16 in every macroblock (0.7 % fewer bits than before, about 7 % more cycles), so effort
-  7 does too; effort 8 always RD-codes the second-best partitioning; effort 9, which coded as 8, searches four references;
-  effort 10, which also coded as 8, RD-codes every intra kind, B_Direct_16x16 and both inter transforms. Measured with
-  profile-h264-encoder.py on an idle machine, at one thread, quality 50, 720p (cycles a macroblock with PGO, times x264 medium,
-  and BD-rate against x264 medium, mean of the clips):
-  effort 0 119k, 1.8×, +67.0 %; effort 2 175k, 2.6×, +22.3 %; effort 3 251k, 3.7×, +12.3 %; effort 4 263k, 4.0×, +11.6 %;
-  effort 6 313k, 4.7×, +10.8 %; effort 8 489k, 7.4×, +10.5 %; effort 10 594k, 8.9×, +10.0 %. The design's speed goal, twice
-  x264 medium's time at effort 4, is not met: effort 4 takes 4.0 times x264 medium's cycles (3.5 to 5.2 by clip). The H.264
-  guide has the table for every effort. Per-task cycle figures above were measured under load and run higher.
-- Tools: time-h264-encoder.py records the speed against x264 medium instead of gating it at 2 times, and gates the cycles at
-  effort 4 against regressions instead: each clip at most 10 % above the ratio measured after the speed plan.
-- Tools: time-h264-encoder.py matches x264 to Egami by quality for the speed (a CRF search to Egami's PSNR-Y, Egami without
-  adaptive quantization as x264 runs tuned for PSNR) instead of giving x264 Egami's bitrate, which x264 overshot on 20 frames
-  and so coded at a higher quality; the cycles are gated at quality 34 too, each count the least of three runs. Matched so,
-  effort 4 takes 4.3 times x264 medium's cycles at quality 50 (3.4 to 6.4 by clip) and 4.4 times at quality 34 (3.7 to 5.8);
-  with adaptive quantization, Egami's default, 4.6 and 4.7 times (recorded). profile-h264-encoder.py matches the same way.
-- Effort 4 (speed round 3, task 23): B pictures search one list 0 reference instead of two, and try intra only where intra
-  16x16 prediction comes below the inter cost by SATD (not within 1.5 times it); effort 5 keeps both. Egami's own
-  cycles fall 8.7 % at quality 50 and 15.4 % at quality 34 on the four 720p clips (3.67 and 3.66 times x264 medium) for no
-  loss: BD-rate −0.04 % on them, +0.11 % on eight clips (worst
-  +0.77 %, pedestrian_area). Two P references instead of three, also planned, cost up to 0.8 % on pedestrian_area and stays out.
-- Effort 4 (speed round 3, task 24): early stop after the 16x16 search. A 16x16 candidate whose search cost is below 32 times
-  the square root of λ a 4x4 block is RD-coded right after its search; when it leaves no residual, no other partitioning,
-  second candidate or B_Direct_16x16 is searched or coded, only intra is still tried, and otherwise its coding is kept as a
-  candidate. Egami's own cycles fall 8 % at quality 50 and 16 % at quality 34 on the four 720p clips (17.9 % and 29.0 %
-  fewer instructions than before round 3), 3.7 and 3.2 times x264 medium; BD-rate −0.17 % on eight clips (worst park_joy
-  +0.10 %).
-- Effort 4 (speed round 3, task 25): the 8x8, 16x8 and 8x16 parts search only the references whose 16x16 search came within
-  12.5 % of the best one's. Egami's own cycles fall 7.5 % at quality 50 and 6.3 % at quality 34 on the four 720p clips, for
-  BD-rate +0.12 % on eight clips (worst Johnny +0.34 %). After round 3 effort 4 takes 3.3 times x264 medium's cycles at
-  quality 50 and 3.0 times at quality 34 (3.6 and 3.1 with adaptive quantization), 23 % and 33 % fewer than before it, for
-  BD-rate +0.06 % against effort 4 before round 3 on eight clips (worst pedestrian_area +0.40 %).
-- Efforts 1 to 5 (speed round 3, task 26): the ladder is in order again, each effort costing more and needing no more bits
-  than the one below it. Efforts 1 to 3 take round 3's effort 4 shortcuts (early stop after 16x16 and B intra below the inter
-  cost; reference pruning from 2), so effort 3 no longer costs more than effort 4: 192k cycles a macroblock (was 251k), effort
-  2 133k (175k), effort 1 108k (139k), with the BD-rate against x264 medium within 0.4 % of before. Effort 5 keeps the early
-  stop, searches every reference for sub-blocks and drops the 16x8/8x16 gate: 253k cycles (288k), BD-rate 0.5 % below effort
-  4's on every clip (it was level with it). Effort 4 is unchanged.
-- Tools: time-h264-encoder.py gates the instruction ratio against x264 medium at effort 4 instead of the cycles ratio, which
-  swings by up to a third between runs on a busy machine: each clip at quality 50 and 34 at most 10 % above the ratio after
-  round 3 (4.0 and 3.6 times on the mean). The H.264 guide's effort table is re-measured with x264 matched by quality.
-- Effort 4 (speed round 4, tasks 1 to 4): B_Skip and P_Skip end the search when every 4x4 block's error is below 0.6 and 0.5
-  quantizer steps (was 0.4); a B macroblock whose 16x16 candidate stops early with no residual tries no intra; and from
-  effort 1 to 6 intra is not coded when its best estimate (I16, I4 or I8) costs more than the inter search. Egami's own
-  instructions fall 5 % at quality 50 and 14 % at quality 34 on the four 720p clips, for BD-rate +0.20 % on eight clips (worst
-  rush_hour +0.82 %). The review's looser 1 and 0.7 steps cost +0.93 % (rush_hour +3.6 %): clean, slow content keeps detail
-  below a quantizer step.
-- Efforts 1 to 4 (speed round 4, PR B): the first inter candidate of a macroblock that codes luma levels with both transforms
-  open fixes the transform size, and later candidates code only that size (efforts 2 to 4, task 5): Egami's own instructions
-  fall 6 % at quality 50 and 2 % at quality 34, for BD-rate +0.22 % on eight clips (worst kristen_sara +0.53 %). Round 4's
-  skip tests, B intra rule and transform reuse also apply at efforts 1 to 3, which keeps effort 3 below effort 4 in cost.
-  No intra trial after an early stop in P pictures (task 6) was measured and left out: +1.12 % (rush_hour +3.2 %). After
-  round 4 effort 4 takes 3.5 and 3.0 times x264 medium's instructions at quality 50 and 34 (was 4.0 and 3.6), 2.9 and 2.5
-  times its cycles, for BD-rate +0.42 % against round 3 on eight clips (worst rush_hour +0.95 %).
-- Tools: time-h264-encoder.py's instruction gate is tightened to the ratios after round 4 plus 10 %.
-- H.264 encoder speed round 4, PR C (output unchanged, byte for byte): the lookahead's half-size copy takes eight samples at a
-  time; the motion arrays of a macroblock with one reference and vector a list (intra, P_Skip, 16x16) are written a row at a
-  time; each candidate's syntax state is set a row at a time, filling the parts every block shares; and the RDOQ price tables
-  of a block category are kept from one macroblock to the next while its contexts have not changed (after a skip, say).
-  Egami's own instructions fall 4.3 % at quality 50 and 6.3 % at quality 34 on the four 720p clips (old_town_cross 12 %).
-- Compression (H.264 compression Build Plan, PRs A to D), measured against x264 medium (both tuned for PSNR) on eight 720p
-  clips (the four gate clips and johnny, kristen_sara, pedestrian_area and rush_hour), 120 frames, at effort 4:
-  - The counting build splits each picture kind's bits into modes, QP deltas, references, vectors and residual, and its
-    macroblocks into skip, direct, inter and intra (PR A); time-h264-encoder.py's `--wide` measures the eight clips, and
-    records SSIM-Y BD-rate with adaptive quantization on next to PSNR-Y with it off.
-  - With a pyramid (effort 4 and up) every B run is full; below it runs still follow the content. I and P pictures choose
-    their modes at 0.6 times the B pictures' λ (PR B).
-  - Adaptive quantization keeps the last QP when it asks for a QP one step away, which saves the mb_qp_delta (PR C).
-  - B pictures start their motion search also from the last P picture's vectors at and around each macroblock, scaled by
-    distance; a pyramid's middle B picture codes at 1.3 times a P picture's step (was 1.15); and a bi-predicted 16x16 block
-    refines both vectors together (PR D).
-  - PSNR-Y BD-rate with adaptive quantization off goes from +11.3 % to +4.4 % on the eight clips (worst pedestrian_area
-    +14.1 %, was +24.5 %); on the four gate clips at 60 frames from +11.8 % to +4.1 %, so the +15 % gate is met on every clip.
-    SSIM-Y with adaptive quantization on, as both encoders default to, goes from +7.9 % to −1.8 %. Egami's own instructions
-    change by −0.6 % at quality 50 and +1.8 % at quality 34. Efforts 1 to 3 gain 1.4 to 3.8 points on the eight clips.
-  - Tried and left out: less adaptive quantization in unreferenced B pictures, other strengths than 1.0, B_Direct_16x16 with
-    a residual tried on every B macroblock (7.5 % more instructions), and implicit weighted bi-prediction, which changes
-    nothing when the two references are equally far, as in a pyramid of three.
-- Block macroblock tree (H.264 block macroblock tree plan, PRs E and F): from effort 5 the lookahead also estimates each
-  16×16 block against the references the coded structure gives it (P pictures their anchor, B pictures both sides and their
-  mean), walks the costs back in coding order (a bi-predicted block passing half to each side), and lowers the step of the
-  blocks later pictures reuse most: 2^(−0.1 × log2((intra + passed on) / intra)), at most 3 QP, centred on the frame, whose
-  step the frame-level tree still sets; runs whose inter cost is under 0.6 of their intra cost get proportionally less. On
-  the eight clips (120 frames) at effort 5 BD-rate against x264 medium goes from +2.76 % to +2.05 % on PSNR-Y without
-  adaptive quantization and from −3.25 % to −4.67 % on SSIM-Y with it (pedestrian_area −2.4 points, no clip more than 0.8
-  worse), for 1.7 % (quality 50) and 2.4 % (34) more instructions. On two clips joined at a scene cut it stays within 1 point.
-  At effort 4 it gained as much but cost 3 to 7 % more instructions, so effort 4 keeps the frame-level tree. A strength of
-  0.25, or the frame steps from the block tree, helped SSIM more but cost the still clips (johnny, rush_hour,
-  ducks_take_off) 2 to 4 points of PSNR-Y.
-- Effort 4's B pictures try intra with the same margin as other pictures (24 sixteenths over the inter cost; was 16, as at
-  efforts 1 to 3): +4.35 % to +4.01 % on PSNR-Y and −1.76 % to −1.98 % on SSIM-Y on the eight clips (pedestrian_area −1.7
-  points, no clip more than 0.3 worse), for 1.3 % and 1.7 % more instructions.
-- Effort 0 chooses I and P macroblocks at 0.8 times the λ (was 0.6, as above): +68.2 % to +65.3 % on PSNR-Y and +52.0 % to
-  +49.2 % on SSIM-Y on the eight clips, every clip better on PSNR-Y, for no more instructions.
-- H.264 encoder speed round 5, PR A (output unchanged, byte for byte): the SAD kernels (one block, two to four blocks of one
-  plane, four blocks of several planes, and against the mean of two predictions) have a loop for each block width, with one
-  vector holding a row of 16, two rows of 8 or four rows of 4 samples, instead of one loop that decides for each row what is
-  left; and the whole-sample search checks its few start vectors for repeats with a plain loop. Egami's own instructions fall
-  3.4 % at quality 50 and 2.9 % at quality 34 on the four 720p clips; effort 4 takes 3.3 and 2.8 times x264 medium's
-  instructions (was 3.5 and 2.8) and 2.9 and 2.3 times its cycles.
-- Effort 0 (speed round 5, PR B) tries intra in P pictures by the intra gate of efforts 1 to 4: only where an Intra16x16
-  prediction comes within 1.5 times the inter search cost by SATD, and coded only when its best estimate comes below that cost
-  (it was tried on almost every macroblock). Egami's own instructions at effort 0 fall 31 % at quality 50 and 35 % at quality
-  34 (cycles 28 % and 34 %) on the four 720p clips, and BD-rate improves by 1.2 % on eight clips (rush_hour 5.1 %, worst
-  ducks_take_off +0.25 %). Effort 0 now takes 0.65 and 0.75 times effort 1's instructions; before it took 0.97 and 1.16.
-- H.264 encoder speed round 5, PR C: a cheaper rate count for the candidates of an inter macroblock. When a candidate is
-  coded with both luma transforms, the two counts share mb_type, sub_mb_type, ref_idx, mvd and the chroma residual, whose
-  contexts are none of the luma part's, so only coded_block_pattern, the transform flag, mb_qp_delta and the luma residual are
-  counted again (exact, from effort 2). At efforts 3 to 5 an inter candidate's luma levels are counted at the price RDOQ gave
-  each block, from the macroblock's starting states, instead of again with the states adapting block by block. Egami's own
-  instructions fall 4.2 % at quality 50 and 1.1 % at quality 34 at effort 4 on the four 720p clips (efforts 2, 3 and 5: 1.4 to
-  4.7 %), for BD-rate +0.03 % on eight clips at effort 4 (worst kristen_sara +0.15 %), +0.07 % at effort 3 and +0.06 % at
-  effort 5 on the four. Effort 4 takes 3.2 and 2.7 times x264 medium's instructions (was 3.3 and 2.8) and 2.7 and 2.2
-  times its cycles. The same prices for intra 4x4 and 8x8 trials cost +0.11 % for no further saving and were left out.
-- H.264 encoder speed round 6, PR B (output unchanged, byte for byte): bounds checks and loops on the hot paths. The
-  Exp-Golomb suffix of RDOQ's level prices is a bit count instead of a loop, and its tail table reads its rows through refs;
-  RDOQ's decision loop keeps only λ, the rate and the gain across the pricer's calls and sums the distortion of the levels
-  it took after the loop, in the same order; Dequantize, the macroblock state Begin writes and SetMotion's motion arrays go
-  through refs and spans checked once a row, as do CodeInterLuma's counts and scores; a prediction copies whole luma rows as
-  one load and store and filters chroma eight samples at a time; the pricer's tails and the 4x4 scan make their vector
-  constants in place (static readonly vector fields kept them from being inlined); and the pricer's Price is inlined into
-  RDOQ. The CABAC writer codes a bin without a branch on it (the LPS taken by a mask, the renormalisation by a bit count);
-  it is shared with the HEVC encoder, whose output is unchanged too. Egami's own instructions fall 8.2 % at quality 50 and 10.6 % at quality 34 at effort 4 on the four 720p clips.
-- H.264 encoder speed round 6, PR A (output unchanged, byte for byte): the machine code of the motion search. A block
-  search's fixed inputs (the reference, its planes, the block, the bounds and the predicted vector) are set once and passed
-  by reference, with the candidates' buffers made once where the search starts (a method with a loop and a stackalloc gets
-  no OSR or PGO; buffers in fields instead measured the same); a candidate's vector bits use the predicted vector's components worked out once; the planes of a sub-sample
-  vector are found from the block's own offset; and the SATD kernels fold the offsets into their refs at entry and step
-  rows in nint, so no load widens an index. Egami's own instructions fall 2 to 3.4 % at quality 50 and 1.9 to 2.1 % at
-  quality 34 at effort 4 on the four 720p clips (effort 1: 2.8 to 3.2 % and up to 5 %).
-- H.264 encoder speed round 7 (output unchanged, byte for byte): clean-ups. RDOQ applies its choice and the pricer its state
-  by masks, with a branch-free absolute value; the 4x4 scan, the pricer's steps, the SAD and Hadamard kernels and the search's
-  cost helper are inlined; the hot methods skip zeroing their stack buffers; the search patterns are data spans; chroma is
-  coded only after the intra gate passes; the quick sub-sample refinement starts from the whole-sample search's cost instead
-  of working it out again; intra 4x4 and 8x8 blocks without levels skip dequantization and the residual add; bi-prediction
-  refinement predicts the fixed list once per list; and B pictures no other picture references are not deblocked unless
-  their reconstruction is asked for. Egami's own instructions fall 1.0 % at quality 50 and 7.2 % at quality 34 at effort 4
-  on the four 720p clips (3.8 % and 4.8 % without PGO); effort 4 takes 2.91 and 2.41 times x264 medium's instructions and
-  2.44 and 2.05 times its cycles.
-- Efforts 1 to 4 (speed round 7, trades): less work for a little size. An unreferenced B picture quantizes without RDOQ at
-  efforts 3 and 4; a P picture searches two references instead of three at effort 4 (the B-pyramid still keeps three); and
-  B_Skip ends the search at 0.8 quantizer steps instead of 0.6 at efforts 1 to 4. Effort 4's own instructions fall 8.2 % at
-  quality 50 and 8.5 % at quality 34 on the four 720p clips (8.1 % and 6.5 % without PGO), for BD-rate +1.59 % on PSNR-Y
-  and +1.11 % on SSIM-Y on eight clips (worst rush_hour +3.11 %, johnny +2.47 %). Effort 4 takes 2.68 and 2.22 times x264
-  medium's instructions and 2.26 and 1.87 times its cycles; the timing tool's gate levels follow.
-- Efforts 1 to 4 (speed round 8, trades): the second-best partitioning is RD-coded from effort 5 instead of effort 3, and
-  the quick sub-sample search takes one quarter-sample step instead of two at efforts 1 to 4. Effort 4's own instructions fall
-  10.1 % at quality 50 and 3.1 % at quality 34 on the four 720p clips (9.0 % and 6.3 % without PGO), for BD-rate +0.87 % on
-  PSNR-Y and +0.79 % on SSIM-Y on eight clips (worst old_town_cross +1.25 % and +1.50 %). Effort 4 takes 2.45 and 2.10 times
-  x264 medium's instructions and 2.07 and 1.79 times its cycles; the timing tool's gate levels follow.
-- Efforts 1 to 6 (speed round 9): a cheaper partition search. Up to effort 4 a macroblock searches 16x8 and 8x16 only, never
-  8x8, each part from its start vectors (the predicted vector, the 16x16 vector and the neighbours') without a pattern
-  search, then refined as before; from effort 5 16x8 and 8x16 come first and 8x8 only where one of them beats 16x16 (it was
-  8x8 first up to effort 4 and all three from 5). Effort 3 takes the B-pyramid, which without it cost about as much as
-  effort 4. Effort 4's own instructions fall 10.3 % at quality 50 and 10.6 % at quality 34 on the four 720p clips (10.4 % and
-  5.5 % without PGO), for BD-rate +0.19 % on PSNR-Y and +0.17 % on SSIM-Y on eight clips (crowd_run +2.29 %, park_joy +1.16 %,
-  five clips smaller). Effort 5 takes 4 to 7 % fewer instructions for +0.16 %, effort 6 +0.20 %; effort 3 needs 1.4 % more
-  bits than effort 4 (was 5.8 %). Effort 4 takes 2.19 and 1.94 times x264 medium's instructions and 1.83 and 1.66 times its
-  cycles, under the design's goal of twice; the timing tool's gate levels follow.
-- H.264 compression plan, PR G (stream fixes):
-  - CAVLC's rate count left out the intra modes (prev_intra_pred_mode_flag and rem_intra_pred_mode), so I_NxN macroblocks
-    looked cheaper than they were when choosing; every macroblock now counts the bits it writes. With CAVLC
-    BD-rate against x264 medium on the eight clips at effort 4 goes from +26.17 % to +23.85 % on PSNR-Y without AQ
-    and from +21.95 % to +18.19 % on SSIM-Y with it, every clip better (pedestrian_area −5.8 points on PSNR-Y).
-  - The VUI's max_num_reorder_frames is the stream's real reorder (1 with B-frames, 2 with a pyramid; it was the B-frame
-    count), and max_dec_frame_buffering holds the references and the reorder within the level's DPB (A.3.1), where 16
-    B-frames asked for more frames than the level has.
-  - A keyframe after an unreferenced B picture codes into that picture's planes again; it took a new set each time, so a
-    long stream with keyframes every few frames kept allocating.
-  - Below High, CAVLC's level_prefix stays within 15 (9.2.2.1): the DC levels of Intra16x16 luma and of chroma are held to
-    ±2063 at the lowest QPs, where noise and hard edges needed 16, which only High decoders read.
-  - A macroblock whose macroblock_layer would take more than 128 + RawMbBits, 3200 bits (A.3.1, A.3.3), noise at QP 0 or
-    so, is written as I_PCM, with CAVLC and CABAC; it was written as coded. FFmpeg and JM decode it as Egami does.
-  - CABAC output is unchanged but for the VUI. Egami's own instructions at effort 4 on the four 720p clips: −0.8 % at
-    quality 50 and −2.3 % at quality 34.
-- H.264 compression plan, PR I: with a B-pyramid a P picture's newest reference is the middle B picture, which the P picture
-  marks unused; list 0 now starts with the P or I picture before it, the B picture last, by ref_pic_list_modification
-  (8.2.4.3.1). BD-rate against x264 medium on the eight clips at effort 4 goes from +4.06 % to +2.57 % on PSNR-Y without AQ
-  and from −2.10 % to −4.44 % on SSIM-Y with it, no clip worse on PSNR-Y (johnny −3.5, kristen_sara −3.6 and
-  old_town_cross −2.5 points). FFmpeg and JM decode the streams as Egami does.
-  Egami's own instructions at effort 4 on the four 720p clips: +0.1 % at quality 50 and −0.7 % at quality 34.
-- H.264 compression plan, PR J: the adaptive quantizer leaves flat macroblocks (under 2 levels of deviation a sample:
-  letterbox and pillarbox bars, blank areas) out of the mean its offsets centre on. Bars pulled the mean down and made the
-  picture's content coarser: pedestrian_area with 96-row black bars lost 2.51 dB of content PSNR-Y to AQ, now 0.27 dB.
-  BD-rate against x264 medium on the eight clips at effort 4: PSNR-Y without AQ unchanged, SSIM-Y with AQ from −3.28 % to
-  −4.50 % (rush_hour 1.5 points worse, johnny and kristen_sara about 4 points better).
-- H.264 compression plan, PR K: the block macroblock tree (effort 5 and up) weights each block's reuse by
-  1 / (1 + (m / (0.125 × step))²), m its inter error a sample without the half-size estimate's fine-detail term and step that
-  of the last coded P picture, and its strength goes from 0.1 to 0.2. BD-rate against x264 medium on the eight clips at
-  effort 5 goes from +0.82 % to −0.16 % on PSNR-Y without AQ and from −8.59 % to −10.92 % on SSIM-Y with it, no clip more
-  than 0.84 points worse, for 0.6 % (quality 50) and 1.0 % (34) more instructions. Effort 4 and below are unchanged.
-
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
 A preview of the next release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic,
@@ -1279,8 +982,11 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
 
 ## Egami.Video 1.3.0 (unreleased)
 
-AAC (V5.10): AAC LC decode and encode, raw .aac (ADTS) files, and AAC as the default codec in .aac, .m4a and .mp4 files.
-Additive to 1.2, apart from the new defaults (below). See [Encoding AAC](docs/articles/guides/aac-encoding.md).
+With Egami.Video.H264, Egami.Video.Hevc and Egami.Video.Cli 1.3.0, all at Egami.Video's version: an H.264 encoder, AAC LC
+decode and encode, and fixes. Additive to 1.2, apart from AAC as the new default audio codec in .aac, .m4a and .mp4 files
+(below). Egami.Video needs Egami 1.4.0 or later and Egami.Video.Hevc Egami.Heic 1.4.0 or later, so they install beside
+both Egami 1.4.0 and the 1.5 previews. See [Encoding AAC](docs/articles/guides/aac-encoding.md) and
+[H.264](docs/articles/guides/h264.md).
 
 - `AdtsFormat` reads and writes raw AAC in ADTS frames (.aac, .adts): one `CodecIds.Aac` packet per frame with the header and
   CRC stripped, the AudioSpecificConfig built from the first header, ID3v2 tags at the start read into the tags, junk between
@@ -1310,19 +1016,10 @@ Additive to 1.2, apart from the new defaults (below). See [Encoding AAC](docs/ar
 - Behaviour change: AAC is now the default codec in .aac, .m4a and .mp4 files. `AudioWriter` without a `Codec` writes AAC LC
   to ADTS and MP4 (it wrote PCM to MP4), and `egami-video audio` writes AAC to .aac, .m4a, .mp4 and .mov, where .m4a got ALAC
   and .mp4 and .mov got FLAC. ALAC stays available with `--codec alac` (`AudioWriterOptions.Codec = AlacCodec.Instance`).
-- ffmpeg mode encodes audio in the codec FFmpeg picks for the output, as FFmpeg does, where it remuxed: `ffmpeg -i in.wav
-  out.m4a` writes AAC (it copied the PCM), `.aac` outputs AAC, and `.mp4`, `.mov` and `.webm` outputs with no codec options
-  encode the input's audio in AAC or Opus and copy the video, with a warning that ffmpeg would encode the video too. `-vn -c:a
-  copy` now copies the audio packets (`remux --track a`, or `trim` with a range) instead of encoding them again. Matroska and
-  AVI still copy, as egami-video has no Vorbis or MP3 encoder.
-- CLI: `audio --codec aac` with `--bitrate` (8k to 1536k for all channels) or `--quality` 1 to 5 (variable bit rate); `run`
-  re-encodes filtered audio in MP4 as AAC. ffmpeg mode maps `-c:a aac` and `-c:a libfdk_aac` with `-b:a`, `-q:a` (FFmpeg's
-  0.1 to 2 spread over 1 to 5) and `-vbr`; `info --format ffprobe` reports an AAC stream's `profile` (LC, Main, HE-AAC, ...).
+- The encoder core plans B-frames and runs the macroblock tree for the H.264 encoder; Egami's VP8, VP9 and AV1 streams are
+  unchanged byte for byte.
 
-## Egami.Video 1.2.1 and Egami.Video.Cli 1.2.1 (unreleased)
-
-Fixes, no API changes. Egami.Video.H264 and Egami.Video.Hevc have no changes; they move to 1.2.1 only when released with
-Egami.Video.
+Fixes:
 
 - Edits rendered with FFV1 or uncompressed video no longer fail on a fade (`egami-video fade --codec ffv1`): the renderer sends
   source planes for plain frames and composed RGBA frames for fades, and those encoders refused a frame whose layout differed
@@ -1335,6 +1032,57 @@ Egami.Video.
 - Matroska `FieldOrder` 9 now reads as top field first and 14 as bottom field first, as RFC 9559 defines them (they read
   swapped). FFmpeg writes 9 for top-field-first FFV1, uncompressed and most other video, so those files read with the wrong
   order before.
+
+## Egami.Video.H264 1.3.0 (unreleased)
+
+An H.264 encoder. Additive to 1.2: `H264Codec.CanEncode` is now true and `CreateEncoder` returns an encoder. The package now
+depends on exactly the Egami.Video version it ships with, as its encoder runs on Egami.Video's encoder core.
+
+- Encodes 8-bit 4:2:0 progressive frames in the Constrained Baseline, Main and High profiles, with CABAC or CAVLC. Keyframes
+  are IDR pictures and the frames between them P and B pictures. Every stream decodes in FFmpeg and in the JM reference decoder
+  to the encoder's own reconstruction, sample for sample, and is the same at one thread and at all cores.
+- Intra: 4x4, 8x8 and 16x16 prediction. P pictures: quarter-sample motion search over up to three references, P_Skip, 16x16,
+  16x8, 8x16 and 8x8 partitions (8x4, 4x8 and 4x4 from effort 6 at levels up to 3), the 8x8 transform for inter blocks, and
+  explicit weighted prediction for fades (Main and High). B pictures: up to `H264EncoderOptions.BFrames` between references
+  (3 by default, none at effort 0 or in Constrained Baseline), L0, L1 and bi-predicted partitions, B_Skip and B_Direct (spatial;
+  temporal too from effort 8 where it codes smaller), and from effort 3 B-pyramids whose middle picture is a reference.
+  Macroblocks are chosen by squared error plus λ times their bits, with RDOQ from effort 3, and deblocked.
+- `H264EncoderOptions` (`VideoEncoderOptions.H264`, `VideoWriterOptions.H264`): `Profile`, `Level` (picked from the frame
+  size and rate when unset, and for the bitrate modes the peak bitrate and buffer too, and checked), `Entropy`, `BFrames`,
+  `Slices`, `MinQuantizer`, `MaxQuantizer`, `AdaptiveQuantization` (on by default: busy macroblocks get coarser steps, flat
+  ones finer; letterbox bars and blank areas are left out of the mean) and `AnnexB`.
+- `Quality` 50 is about x264's CRF 23. Effort 0 to 10 (default 4) trades speed for size, each effort from 1 up costing more and
+  needing fewer bits than the one below it. A lookahead runs a frame-level macroblock tree, and from effort 5 a block-level one.
+- Rate control: one- and two-pass average bitrate and constant bitrate land within 5 % of the target, and constant bitrate
+  never runs the decoder buffer dry, also at starved rates (720p at 2.5 Mbit/s).
+- Slices: each picture is cut into bands of macroblock rows (by default one per 1800 macroblocks: one below 1280×720, four at
+  1920×1080, up to eight), coded on `EgamiContext.MaxParallelism` threads; the stream depends only on the slice count. Tracks
+  carry an avcC record, or Annex B packets with the parameter sets in band; HDR metadata goes into mastering display and content
+  light level SEI. A macroblock too large for the level is written as I_PCM.
+- Against x264 0.164's medium preset on eight 720p test clips at effort 4: about 4.5 % fewer bits for the same SSIM-Y with
+  adaptive quantization on (both encoders' default), and a few percent more for the same PSNR-Y with it off; effort 5 needs
+  about 11 % fewer for the same SSIM-Y. On one thread effort 4 takes 1.83 times x264 medium's CPU cycles a frame at quality 50
+  and 1.66 times at quality 34. The [H.264 guide](docs/articles/guides/h264.md) has the figures for every effort.
+- Tools: `tools/video/check-h264-encoder.py`, `time-h264-encoder.py` and `profile-h264-encoder.py` check the streams against
+  FFmpeg and JM, measure BD-rate and speed against x264 (black boxes, in Docker) and profile the encoder by stage.
+
+## Egami.Video.Hevc 1.3.0 (unreleased)
+
+No changes; it moves to 1.3.0 with Egami.Video.
+
+## Egami.Video.Cli 1.3.0 (unreleased)
+
+The `egami-video` command, with Egami.Video 1.3.0's AAC and fixes. It still copies H.264 tracks without decoding or encoding
+them.
+
+- ffmpeg mode encodes audio in the codec FFmpeg picks for the output, as FFmpeg does, where it remuxed: `ffmpeg -i in.wav
+  out.m4a` writes AAC (it copied the PCM), `.aac` outputs AAC, and `.mp4`, `.mov` and `.webm` outputs with no codec options
+  encode the input's audio in AAC or Opus and copy the video, with a warning that ffmpeg would encode the video too. `-vn -c:a
+  copy` now copies the audio packets (`remux --track a`, or `trim` with a range) instead of encoding them again. Matroska and
+  AVI still copy, as egami-video has no Vorbis or MP3 encoder.
+- `audio --codec aac` with `--bitrate` (8k to 1536k for all channels) or `--quality` 1 to 5 (variable bit rate); `run`
+  re-encodes filtered audio in MP4 as AAC. ffmpeg mode maps `-c:a aac` and `-c:a libfdk_aac` with `-b:a`, `-q:a` (FFmpeg's
+  0.1 to 2 spread over 1 to 5) and `-vbr`; `info --format ffprobe` reports an AAC stream's `profile` (LC, Main, HE-AAC, ...).
 
 ## Egami.Video 1.2.0 (2026-11-02)
 
