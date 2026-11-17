@@ -980,7 +980,7 @@ Where GDI+ puts text in a layout box (2.7.6 task 28), measured on Windows. Addit
   linked face's aliased bitmaps), and grid-fitted metrics apply to fallback runs too. Fonts that set none of these shape and
   draw as before.
 
-## Egami.Video 1.3.0 (unreleased)
+## Egami.Video 1.3.0 (2026-11-17)
 
 With Egami.Video.H264, Egami.Video.Hevc and Egami.Video.Cli 1.3.0, all at Egami.Video's version: an H.264 encoder, AAC LC
 decode and encode, and fixes. Additive to 1.2, apart from AAC as the new default audio codec in .aac, .m4a and .mp4 files
@@ -1033,7 +1033,7 @@ Fixes:
   swapped). FFmpeg writes 9 for top-field-first FFV1, uncompressed and most other video, so those files read with the wrong
   order before.
 
-## Egami.Video.H264 1.3.0 (unreleased)
+## Egami.Video.H264 1.3.0 (2026-11-17)
 
 An H.264 encoder. Additive to 1.2: `H264Codec.CanEncode` is now true and `CreateEncoder` returns an encoder. The package now
 depends on exactly the Egami.Video version it ships with, as its encoder runs on Egami.Video's encoder core.
@@ -1066,11 +1066,11 @@ depends on exactly the Egami.Video version it ships with, as its encoder runs on
 - Tools: `tools/video/check-h264-encoder.py`, `time-h264-encoder.py` and `profile-h264-encoder.py` check the streams against
   FFmpeg and JM, measure BD-rate and speed against x264 (black boxes, in Docker) and profile the encoder by stage.
 
-## Egami.Video.Hevc 1.3.0 (unreleased)
+## Egami.Video.Hevc 1.3.0 (2026-11-17)
 
 No changes; it moves to 1.3.0 with Egami.Video.
 
-## Egami.Video.Cli 1.3.0 (unreleased)
+## Egami.Video.Cli 1.3.0 (2026-11-17)
 
 The `egami-video` command, with Egami.Video 1.3.0's AAC and fixes. It still copies H.264 tracks without decoding or encoding
 them.
