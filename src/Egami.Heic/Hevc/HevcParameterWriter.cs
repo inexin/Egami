@@ -49,6 +49,11 @@ internal static class HevcParameterWriter
     /// <summary>The lowest level whose MaxLumaPs and side length (A.4.1) hold the coded picture.</summary>
     internal static int Level(HevcEncoderSettings s)
     {
+        if (s.LevelIdc is int given)
+        {
+            return given;
+        }
+
         long samples = (long)s.CodedWidth * s.CodedHeight;
         foreach ((int idc, int max) in Levels)
         {
@@ -75,8 +80,8 @@ internal static class HevcParameterWriter
         w.U(16, 0xFFFF); // vps_reserved_0xffff_16bits
         ProfileTierLevel(w, s);
         w.Flag(true); // vps_sub_layer_ordering_info_present_flag
-        w.Ue(0); // vps_max_dec_pic_buffering_minus1
-        w.Ue(0); // vps_max_num_reorder_pics
+        w.Ue((uint)s.MaxDecPicBufferingMinus1); // vps_max_dec_pic_buffering_minus1
+        w.Ue((uint)s.MaxNumReorderPics); // vps_max_num_reorder_pics
         w.Ue(0); // vps_max_latency_increase_plus1
         w.U(6, 0); // vps_max_layer_id
         w.Ue(0); // vps_num_layer_sets_minus1
@@ -115,10 +120,10 @@ internal static class HevcParameterWriter
 
         w.Ue((uint)(s.BitDepth - 8)); // bit_depth_luma_minus8
         w.Ue((uint)(s.BitDepth - 8)); // bit_depth_chroma_minus8
-        w.Ue(0); // log2_max_pic_order_cnt_lsb_minus4
+        w.Ue((uint)(s.Log2MaxPocLsb - 4)); // log2_max_pic_order_cnt_lsb_minus4
         w.Flag(true); // sps_sub_layer_ordering_info_present_flag
-        w.Ue(0); // sps_max_dec_pic_buffering_minus1
-        w.Ue(0); // sps_max_num_reorder_pics
+        w.Ue((uint)s.MaxDecPicBufferingMinus1); // sps_max_dec_pic_buffering_minus1
+        w.Ue((uint)s.MaxNumReorderPics); // sps_max_num_reorder_pics
         w.Ue(0); // sps_max_latency_increase_plus1
         w.Ue(0); // log2_min_luma_coding_block_size_minus3: 8x8
         w.Ue((uint)(s.CtbLog2Size - 3)); // log2_diff_max_min_luma_coding_block_size
@@ -154,7 +159,7 @@ internal static class HevcParameterWriter
         w.Flag(false); // cabac_init_present_flag
         w.Ue(0); // num_ref_idx_l0_default_active_minus1
         w.Ue(0); // num_ref_idx_l1_default_active_minus1
-        w.Se(s.Lossless ? 0 : s.Qp - 26); // init_qp_minus26: the slice's QP, so slice_qp_delta is 0
+        w.Se(s.Lossless ? 0 : (s.PpsQp ?? s.Qp) - 26); // init_qp_minus26: a still picture's QP, so slice_qp_delta is 0
         w.Flag(false); // constrained_intra_pred_flag
         w.Flag(s.TransformSkip && !s.Lossless); // transform_skip_enabled_flag
         bool qpDelta = s.AdaptiveQp && !s.Lossless;
@@ -195,20 +200,33 @@ internal static class HevcParameterWriter
     internal static bool Wavefronts(HevcEncoderSettings s) => s.Wavefronts && s.CodedHeight > 1 << s.CtbLog2Size;
 
     /// <summary>
-    /// Writes the slice segment header of the picture's IDR slice (an RBSP, to byte_alignment()), with the entry points of its
-    /// substreams after the first: their sizes in bytes as the NAL unit holds them, emulation prevention included.
+    /// Writes the slice segment header of the picture's one slice (an RBSP, to byte_alignment()), with the entry points of its
+    /// substreams after the first: their sizes in bytes as the NAL unit holds them, emulation prevention included. Without
+    /// <paramref name="picture"/> the slice is an IDR picture's I slice, as a still picture has.
     /// </summary>
-    internal static byte[] SliceHeader(HevcEncoderSettings s, bool sao, ReadOnlySpan<int> substreamSizes)
+    internal static byte[] SliceHeader(HevcEncoderSettings s, bool sao, ReadOnlySpan<int> substreamSizes, HevcSliceInfo? picture = null)
     {
+        int nalType = picture?.NalType ?? HevcNal.IdrNLp;
         NalBitWriter w = new();
         w.U(1, 0); // forbidden_zero_bit
-        w.U(6, HevcNal.IdrNLp);
+        w.U(6, (uint)nalType);
         w.U(6, 0); // nuh_layer_id
         w.U(3, 1); // nuh_temporal_id_plus1
         w.Flag(true); // first_slice_segment_in_pic_flag
-        w.Flag(false); // no_output_of_prior_pics_flag
+        if (nalType is >= HevcNal.BlaWLp and <= 23)
+        {
+            w.Flag(false); // no_output_of_prior_pics_flag
+        }
+
         w.Ue(0); // slice_pic_parameter_set_id
-        w.Ue(HevcSliceHeader.I); // slice_type
+        w.Ue((uint)(picture?.SliceType ?? HevcSliceHeader.I)); // slice_type
+        if (picture is not null && nalType is not (HevcNal.IdrWRadl or HevcNal.IdrNLp))
+        {
+            w.U(s.Log2MaxPocLsb, (uint)(picture.Poc & ((1 << s.Log2MaxPocLsb) - 1))); // slice_pic_order_cnt_lsb
+            w.Flag(false); // short_term_ref_pic_set_sps_flag: the set is coded here
+            ShortTermRefPicSet(w, picture);
+        }
+
         if (s.Sao && !s.Lossless)
         {
             w.Flag(sao); // slice_sao_luma_flag
@@ -218,7 +236,7 @@ internal static class HevcParameterWriter
             }
         }
 
-        w.Se(0); // slice_qp_delta
+        w.Se(s.Lossless ? 0 : s.Qp - (s.PpsQp ?? s.Qp)); // slice_qp_delta
         if (Wavefronts(s))
         {
             w.Ue((uint)Math.Max(substreamSizes.Length - 1, 0)); // num_entry_point_offsets
@@ -248,7 +266,7 @@ internal static class HevcParameterWriter
     /// into one escaped NAL unit. The substreams are escaped on their own: the header ends with byte_alignment(), whose last byte
     /// is never 0, so no emulation prevention byte spans the two, and each substream ends with byte_alignment() too.
     /// </summary>
-    internal static byte[] SliceNal(HevcEncoderSettings s, bool sao, IReadOnlyList<byte[]> substreams)
+    internal static byte[] SliceNal(HevcEncoderSettings s, bool sao, IReadOnlyList<byte[]> substreams, HevcSliceInfo? picture = null)
     {
         // The data's substreams escaped as one run, so a 00 00 at the end of one and 03 at the start of the next is escaped too;
         // the entry points then count each substream's escaped bytes.
@@ -284,7 +302,7 @@ internal static class HevcParameterWriter
             sizes[i] += count;
         }
 
-        byte[] header = NalFraming.Escape(SliceHeader(s, sao, sizes));
+        byte[] header = NalFraming.Escape(SliceHeader(s, sao, sizes, picture));
         return [.. header, .. escaped];
     }
 
@@ -369,6 +387,32 @@ internal static class HevcParameterWriter
         w.U(8, (uint)Level(s));
     }
 
+    /// <summary>
+    /// Writes st_ref_pic_set(num_short_term_ref_pic_sets) of a slice header (7.3.7): with no sets in the SPS it is never predicted
+    /// from another, so it lists the pictures before and after the current one in output order as POC differences, each marked
+    /// as used by the current picture or only kept for later ones.
+    /// </summary>
+    private static void ShortTermRefPicSet(NalBitWriter w, HevcSliceInfo picture)
+    {
+        w.Ue((uint)picture.Before.Length); // num_negative_pics
+        w.Ue((uint)picture.After.Length); // num_positive_pics
+        int previous = 0;
+        foreach ((int delta, bool used) in picture.Before)
+        {
+            w.Ue((uint)(previous - delta - 1)); // delta_poc_s0_minus1: the differences fall
+            w.Flag(used); // used_by_curr_pic_s0_flag
+            previous = delta;
+        }
+
+        previous = 0;
+        foreach ((int delta, bool used) in picture.After)
+        {
+            w.Ue((uint)(delta - previous - 1)); // delta_poc_s1_minus1: the differences rise
+            w.Flag(used); // used_by_curr_pic_s1_flag
+            previous = delta;
+        }
+    }
+
     private static void Vui(NalBitWriter w, HevcEncoderSettings s)
     {
         w.Flag(false); // aspect_ratio_info_present_flag
@@ -385,10 +429,43 @@ internal static class HevcParameterWriter
         w.Flag(false); // field_seq_flag
         w.Flag(false); // frame_field_info_present_flag
         w.Flag(false); // default_display_window_flag
-        w.Flag(false); // vui_timing_info_present_flag
+        w.Flag(s.Timing is not null); // vui_timing_info_present_flag
+        if (s.Timing is (uint ticks, uint scale))
+        {
+            w.U(32, ticks); // vui_num_units_in_tick
+            w.U(32, scale); // vui_time_scale
+            w.Flag(false); // vui_poc_proportional_to_timing_flag
+            w.Flag(false); // vui_hrd_parameters_present_flag
+        }
+
         w.Flag(false); // bitstream_restriction_flag
     }
 
     /// <summary>A NAL unit: its two-byte header (nuh_layer_id 0, TemporalId 0) and the escaped RBSP.</summary>
     private static byte[] Nal(int type, byte[] rbsp) => [(byte)(type << 1), 1, .. NalFraming.Escape(rbsp)];
+}
+
+/// <summary>
+/// What a video picture's slice header says beyond a still picture's (<see cref="HevcParameterWriter.SliceHeader"/>): its NAL unit
+/// type, slice type, picture order count and short-term reference picture set.
+/// </summary>
+internal sealed record HevcSliceInfo
+{
+    /// <summary>Gets nal_unit_type: <see cref="HevcNal.IdrNLp"/>, <see cref="HevcNal.TrailR"/> or <see cref="HevcNal.TrailN"/>.</summary>
+    internal required int NalType { get; init; }
+
+    /// <summary>Gets slice_type: <see cref="HevcSliceHeader.I"/>, P or B.</summary>
+    internal int SliceType { get; init; } = HevcSliceHeader.I;
+
+    /// <summary>Gets the picture order count (its low bits are written).</summary>
+    internal int Poc { get; init; }
+
+    /// <summary>
+    /// Gets the reference set's pictures before this one in output order: POC differences, negative and falling, and whether
+    /// this picture predicts from each (else it is only kept for later pictures).
+    /// </summary>
+    internal (int Delta, bool Used)[] Before { get; init; } = [];
+
+    /// <summary>Gets the reference set's pictures after this one: POC differences, positive and rising, and whether this picture predicts from each.</summary>
+    internal (int Delta, bool Used)[] After { get; init; } = [];
 }

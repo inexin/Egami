@@ -73,4 +73,32 @@ public class VideoHevc
         Assert.Equal(new Rational(30, 1), reader.Track.FrameRate);
         Assert.Equal(8, reader.ReadFrames().Select(f => { f.Dispose(); return 0; }).Count());
     }
+
+    [Fact]
+    public void Encode()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgb8> duck = Raster.Load<Rgb8>("duck.png");
+
+        #region encode
+        // HEVC in MP4 (an hvc1 track): Main for 8-bit frames, Main 10 for 16-bit planes, the level picked from the frame size and rate.
+        VideoWriterOptions options = new() { Codec = HevcCodec.Instance, FrameRate = new Rational(30, 1), Quality = 60 };
+        using (VideoWriter writer = VideoWriter.Create("duck.mp4", options))
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                using Raster<Rgb8> frame = duck.Derive(ops => ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+                writer.WriteFrame(frame);
+            }
+        }
+
+        // Expert settings: Main 10 at level 4.1, without adaptive quantization (to measure PSNR).
+        VideoWriterOptions main10 = options with { Hevc = new HevcEncoderOptions { Profile = HevcProfile.Main10, Level = 41, AdaptiveQuantization = false } };
+        #endregion
+
+        using VideoReader reader = VideoReader.Open("duck.mp4", context: MediaContext.Default.WithHevc());
+        Assert.Equal(CodecIds.Hevc, reader.Track.CodecId);
+        Assert.Equal(10, reader.ReadFrames().Select(f => { f.Dispose(); return 0; }).Count());
+        Assert.Equal(HevcProfile.Main10, main10.Hevc!.Profile);
+    }
 }

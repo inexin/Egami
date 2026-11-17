@@ -314,6 +314,7 @@ public sealed class VideoWriter : IDisposable
             Av1 = _options.Av1,
             Ffv1 = _options.Ffv1,
             H264 = _options.H264,
+            Hevc = _options.Hevc,
         },
         _context);
 
@@ -507,6 +508,12 @@ public sealed record VideoWriterOptions
     /// the Egami.Video.H264 package.
     /// </summary>
     public H264EncoderOptions? H264 { get; init; }
+
+    /// <summary>
+    /// Gets the HEVC expert settings, or <see langword="null"/> for <see cref="HevcEncoderOptions.Default"/>. The encoder is in
+    /// the Egami.Video.Hevc package.
+    /// </summary>
+    public HevcEncoderOptions? Hevc { get; init; }
 
     /// <summary>
     /// Gets tracks written alongside the video, such as audio from the source file, whose packets go through

@@ -37,6 +37,8 @@
     <InternalsVisibleTo Include="Egami.Video.Fuzz" />
     <!-- The H.264 encoder runs on the encoder core (H.264 Encoder Design, Q2); the two ship on one version. -->
     <InternalsVisibleTo Include="Egami.Video.H264" />
+    <!-- So does the HEVC encoder (HEVC encoder design, Q1). -->
+    <InternalsVisibleTo Include="Egami.Video.Hevc" />
   </ItemGroup>
 
 </Project>

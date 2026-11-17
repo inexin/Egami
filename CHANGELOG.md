@@ -3,6 +3,24 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Video 1.4.0 (unreleased)
+
+An HEVC encoder in Egami.Video.Hevc, in progress (HEVC encoder Build Plan, PR A of seven): the release that ships it waits for
+inter coding, rate control tuning and its gates. Additive to 1.3.
+
+- `HevcCodec.CanEncode` is true and `HevcCodec.CreateEncoder` encodes 4:2:0 progressive video in the Main and Main 10
+  profiles, on the shared encoder core with the HEIC encoder's CTU search, its CTB rows as wavefront substreams: the same
+  bytes on any number of threads. `HevcEncoderOptions` (`VideoEncoderOptions.Hevc`, `VideoWriterOptions.Hevc`) sets the
+  `HevcProfile` (by default Main 10 for 16-bit planes, else Main), the level (else the lowest Main tier level the size, frame
+  rate, bitrate and buffer fit), quantizer limits, adaptive quantization, B-frames and Annex B packets. Quality 0 to 100 is on
+  the H.264 encoder's scale (default 60), Quantizer 0 to 51, Effort 0 to 10 (default 4). Packets are length-prefixed with the
+  parameter sets in the track's hvcC record (an hvc1 sample entry in MP4 and MOV), or Annex B; the VUI carries the colour,
+  range and frame rate. So far every picture is coded intra (keyframes as IDR pictures, the others as trailing I pictures),
+  and `HevcEncoderOptions.BFrames` takes effect with B pictures. Egami's decoder and FFmpeg decode every test stream to the
+  encoder's own reconstruction, bit for bit (tools/video/check-hevc-encoder.py).
+- Egami.Video.Hevc compiles Egami.Heic's HEVC encoder and decoder files in as internal source, so a Video release does not wait
+  for an Egami.Heic release; it still installs beside Egami.Heic 1.4.0. HEIC output is unchanged.
+
 ## Egami.Fonts (unreleased)
 
 Built-in hyphenation dictionaries and optimal line breaking, after 1.5.0-preview.1 (Hyphenation Build Plan tasks 5 to 8).

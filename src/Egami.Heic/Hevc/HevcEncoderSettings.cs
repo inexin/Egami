@@ -72,6 +72,27 @@ internal sealed record HevcEncoderSettings
     /// <summary>Gets the log2 of the CTB size (6, 64x64, unless a test asks for less).</summary>
     internal int CtbLog2Size { get; init; } = 6;
 
+    /// <summary>
+    /// Gets the QP the PPS starts slices at (init_qp_minus26 + 26), for a video stream whose pictures share one PPS and set their
+    /// own QP with slice_qp_delta; null (a still picture) for <see cref="Qp"/>, so slice_qp_delta is 0.
+    /// </summary>
+    internal int? PpsQp { get; init; }
+
+    /// <summary>Gets log2_max_pic_order_cnt_lsb (4 to 16).</summary>
+    internal int Log2MaxPocLsb { get; init; } = 4;
+
+    /// <summary>Gets sps_max_dec_pic_buffering_minus1 (and the VPS's): the pictures a decoder holds, less one.</summary>
+    internal int MaxDecPicBufferingMinus1 { get; init; }
+
+    /// <summary>Gets sps_max_num_reorder_pics (and the VPS's): how many pictures may precede one in decoding order and follow it in output order.</summary>
+    internal int MaxNumReorderPics { get; init; }
+
+    /// <summary>Gets general_level_idc, or null for the lowest level the picture size fits.</summary>
+    internal int? LevelIdc { get; init; }
+
+    /// <summary>Gets vui_num_units_in_tick and vui_time_scale, the VUI's timing, or null for none (a still picture).</summary>
+    internal (uint NumUnitsInTick, uint TimeScale)? Timing { get; init; }
+
     /// <summary>Gets SubWidthC.</summary>
     internal int SubWidthC => ChromaFormat is 1 or 2 ? 2 : 1;
 

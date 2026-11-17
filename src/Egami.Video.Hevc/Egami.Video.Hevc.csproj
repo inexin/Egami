@@ -11,6 +11,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>
+    <!-- SkipLocalsInit in the linked HEVC encoder files. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <!-- Build-time analyzer only; ships nothing. -->
@@ -31,11 +33,14 @@
     <PackageReference Include="Egami.Heic" VersionOverride="1.4.0" />
   </ItemGroup>
 
-  <!-- The shared NAL code, and Egami.Heic's sequence parameter set reader, compiled in as internal source (H.264 and HEVC design,
-       Q1): the raw .h265 reader takes the track's size, colour and frame rate from the stream's SPS before any decoding. -->
+  <!-- The shared NAL code and Egami.Heic's HEVC coding layer, compiled in as internal source (H.264 and HEVC design, Q1; HEVC
+       encoder design, Q1). The raw .h265 reader takes the track's size, colour and frame rate from the stream's SPS before any
+       decoding, and the encoder builds on the HEIC encoder's intra search, syntax and parameter set writers, transforms, loop
+       filters and inter prediction. Linked rather than referenced, so a Video release never waits for an Egami.Heic release.
+       Egami.Heic's decoders and its HEIF glue (HevcCodec) are left out: decoding goes through the public HevcStreamDecoder. -->
   <ItemGroup>
     <Compile Include="..\Shared\Nal\**\*.cs" Link="Shared\Nal\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="..\Egami.Heic\Hevc\HevcSps.cs;..\Egami.Heic\Hevc\HevcParameterSets.cs;..\Egami.Heic\Hevc\HevcNal.cs;..\Egami.Heic\Hevc\HevcErrors.cs;..\Egami.Heic\Hevc\NalErrors.cs;..\Egami.Heic\Hevc\HevcScan.cs" Link="Heic\%(Filename)%(Extension)" />
+    <Compile Include="..\Egami.Heic\Hevc\*.cs" Exclude="..\Egami.Heic\Hevc\HevcCodec.cs;..\Egami.Heic\Hevc\HevcDecoder.cs;..\Egami.Heic\Hevc\HevcSequenceDecoder.cs" Link="Heic\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
