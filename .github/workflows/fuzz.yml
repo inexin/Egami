@@ -78,13 +78,20 @@ jobs:
         with:
           name: fuzz-${{ matrix.target }}
           path: results
-      - name: File an issue
+      - name: File an issue, or comment on the open one
         if: steps.results.outputs.count != '0'
         env:
           GH_TOKEN: ${{ github.token }}
           COUNT: ${{ steps.results.outputs.count }}
+          TARGET: ${{ matrix.target }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          gh issue create \
-            --title "Fuzzing found $COUNT crash or hang input(s) in the ${{ matrix.target }} reader" \
-            --body "The nightly fuzz run found $COUNT input(s). Download the fuzz-${{ matrix.target }} artifact from $RUN_URL (replay.txt lists the crashes that failed again), reproduce with \`dotnet run --project tests/Egami.Fuzz -c Release -- ${{ matrix.target }} <file>\`, and add each as a regression test."
+          body="The nightly fuzz run found $COUNT input(s). Download the fuzz-$TARGET artifact from $RUN_URL (replay.txt lists the crashes that failed again), reproduce with \`dotnet run --project tests/Egami.Fuzz -c Release -- $TARGET <file>\`, and add each as a regression test."
+          # One open issue per target: a later night comments on it instead of opening another. The oldest open issue whose title
+          # this step wrote for the target is the one.
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 100 --search "in:title Fuzzing found \"in the $TARGET reader\"" --json number,title --jq "[.[] | select(.title | test(\"^Fuzzing found .* in the $TARGET reader$\"))] | sort_by(.number) | first | .number // empty")
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "Fuzzing found $COUNT crash or hang input(s) in the $TARGET reader" --body "$body"
+          fi
