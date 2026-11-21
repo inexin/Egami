@@ -21,6 +21,24 @@ inter coding, rate control tuning and its gates. Additive to 1.3.
 - Egami.Video.Hevc compiles Egami.Heic's HEVC encoder and decoder files in as internal source, so a Video release does not wait
   for an Egami.Heic release; it still installs beside Egami.Heic 1.4.0. HEIC output is unchanged.
 
+## Egami.Drawing and Egami.Svg 1.5.0 (unreleased)
+
+Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PR A of seven): black-and-white images become vector shapes.
+Additive to 1.4.0; the later PRs add Grayscale, Color, Logo, Centerline and PixelArt modes, presets and an `egami trace`
+command.
+
+- `raster.Trace(options)` (namespace `Egami.Drawing.Tracing`, also `Trace<TPixel>` and `TraceAsync` with a cancellation
+  token) traces a raster's first frame and returns a `TraceResult`: `TracedShape`s back to front (a `Path`, an `Rgba8`
+  color, `TracedShapeKind.Fill` or `Stroke`), with `Draw(canvas)`, `ToPicture()` and `ToPath(color)`. Outer edges run
+  clockwise and holes counter-clockwise, so either fill rule fills the same.
+- `TraceMode.BlackAndWhite` is written from P. Selinger's paper "Potrace: a polygon-based tracing algorithm" (2003): pixel
+  edge loops with diagonal ink kept together, the optimal polygon, corners moved to the best-fit lines, corner detection and
+  curve joining. `TraceOptions` sets the `Threshold` (Otsu's method when `null`), `PathFidelity`, `Corners`, `Noise` (regions
+  smaller than this many pixels merge into the regions around them, smallest first) and `IgnoreWhite`; `TraceOptions.Default`
+  matches potrace's published defaults, and `TraceOptions.BlackAndWhite` leaves out the white background shape.
+- Egami.Svg writes a trace as SVG through `SvgCanvas`: `result.ToSvg()` and `result.SaveSvg(path)` (or a stream).
+- Speed is not tuned yet (Build Plan PR F): a 1000 × 1000 drawing traces in about 0.4 s, 3000 × 3000 in about 1.2 s.
+
 ## Egami.Fonts (unreleased)
 
 Built-in hyphenation dictionaries and optimal line breaking, after 1.5.0-preview.1 (Hyphenation Build Plan tasks 5 to 8).

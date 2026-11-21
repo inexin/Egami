@@ -156,6 +156,8 @@
       href: guides/drawing.md
     - name: Drawing files (.egdr)
       href: guides/egdr-format.md
+    - name: Bitmap tracing
+      href: guides/tracing.md
 - name: Egami.Fonts
   items:
     - name: Fonts and text
