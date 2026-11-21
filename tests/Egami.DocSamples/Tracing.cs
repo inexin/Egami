@@ -96,6 +96,33 @@ public class Tracing
     }
 
     [Fact]
+    public void LogoMode()
+    {
+        using Raster<Rgba8> logo = Logo();
+        using Raster<Rgba8> icon = Raster.Create(40, 40, Rgba8.Transparent);
+        using (RasterCanvas<Rgba8> canvas = icon.CreateCanvas())
+        {
+            PathBuilder ring = new();
+            ring.AddCircle(new Vector2(20, 20), 15);
+            ring.AddCircle(new Vector2(20, 20), 6, PathDirection.CounterClockwise);
+            canvas.FillPath(ring.ToPath(FillRule.EvenOdd), new Rgba8(220, 30, 30, 255));
+        }
+
+        #region logo
+        // Flat-color art with antialiased edges: edges placed from smooth coverage fields, for rounder curves on small art.
+        TraceResult traced = logo.Trace(new TraceOptions { Mode = TraceMode.Logo, Colors = 8 });
+
+        // On a transparent icon the outside is left out; the hole the ring encloses is traced white unless IgnoreWhite.
+        TraceResult donut = icon.Trace(new TraceOptions { Mode = TraceMode.Logo, Layering = TraceLayering.Abutting });
+
+        // A photo or a gradient is not flat color, so logo mode refuses it: trace it with TraceMode.Color instead.
+        #endregion
+
+        Assert.Equal(3, traced.Palette.Count);
+        Assert.Contains(Rgba8.White, donut.Palette);
+    }
+
+    [Fact]
     public void Shapes()
     {
         using Raster<Rgba8> scan = Signature();

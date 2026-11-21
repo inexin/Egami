@@ -21,11 +21,23 @@ internal sealed class RegionTracer
     internal static readonly int[] Dy = [0, 1, 0, -1];
 
     private readonly LabelImage _image;
+    private readonly float[]? _margins;
+    private readonly double _unit;
 
-    internal RegionTracer(LabelImage image, int[] regions)
+    /// <summary>Initializes a tracer over a label image and its regions.</summary>
+    /// <param name="image">The labels, and the colors that place edges between them.</param>
+    /// <param name="regions">The region of each pixel.</param>
+    /// <param name="margins">
+    /// For a label image sampled from coverage fields (Logo mode), how far each sample's own coverage leads the next largest:
+    /// edges are then placed where the lead falls to zero between two samples, and <paramref name="image"/>'s colors are not used.
+    /// </param>
+    /// <param name="scale">The samples per output pixel along each axis: the points a tracer returns are divided by it.</param>
+    internal RegionTracer(LabelImage image, int[] regions, float[]? margins = null, int scale = 1)
     {
         _image = image;
         Regions = regions;
+        _margins = margins;
+        _unit = 1.0 / scale;
     }
 
     internal int Width => _image.Width;
@@ -205,8 +217,22 @@ internal sealed class RegionTracer
             }
         }
 
+        if (_unit != 1)
+        {
+            for (int i = 0; i < points.Count; i++)
+            {
+                points[i] *= _unit;
+            }
+        }
+
         return [.. points];
     }
+
+    /// <summary>A lattice point in output pixels.</summary>
+    internal Vec Point(int x, int y) => new Vec(x, y) * _unit;
+
+    /// <summary>A curve fitted in lattice units, in output pixels.</summary>
+    internal FittedCurve Scale(FittedCurve curve) => _unit == 1 ? curve : curve.Scaled(_unit);
 
     /// <summary>1 for a right turn from direction a to b, -1 for a left turn.</summary>
     private static int Sense(int a, int b) => ((b - a) & 3) == 1 ? 1 : -1;
@@ -235,6 +261,14 @@ internal sealed class RegionTracer
         if (a < 0 || b < 0 || a == b)
         {
             return 0;
+        }
+
+        if (_margins is { } margins)
+        {
+            // Marching squares (Lorensen and Cline): the boundary crosses the line between the two samples where p's lead over q's
+            // color, falling linearly, reaches zero; q's lead runs the other way.
+            float mp = margins[(py * Width) + px], mq = margins[(qy * Width) + qx];
+            return mp + mq > 0 ? Math.Clamp((mp / (mp + mq)) - 0.5, -0.5, 0.5) : 0;
         }
 
         Rgba8 ca = _image.Palette[a], cb = _image.Palette[b];

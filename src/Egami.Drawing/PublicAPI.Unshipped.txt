@@ -6,6 +6,7 @@ Egami.Drawing.Tracing.TraceLayering.Stacked = 0 -> Egami.Drawing.Tracing.TraceLa
 Egami.Drawing.Tracing.TraceMode
 Egami.Drawing.Tracing.TraceMode.BlackAndWhite = 0 -> Egami.Drawing.Tracing.TraceMode
 Egami.Drawing.Tracing.TraceMode.Color = 2 -> Egami.Drawing.Tracing.TraceMode
+Egami.Drawing.Tracing.TraceMode.Logo = 3 -> Egami.Drawing.Tracing.TraceMode
 Egami.Drawing.Tracing.TraceMode.Grayscale = 1 -> Egami.Drawing.Tracing.TraceMode
 Egami.Drawing.Tracing.TraceOptions
 Egami.Drawing.Tracing.TraceOptions.<Clone>$() -> Egami.Drawing.Tracing.TraceOptions!

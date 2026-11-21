@@ -4,7 +4,7 @@ Bitmap tracing turns a raster into filled vector shapes: a scanned signature, li
 with a color each, ready to draw at any size, record as a `Picture`, or save as SVG. It is part of Egami.Drawing, in the
 namespace `Egami.Drawing.Tracing`; Egami.Svg adds the SVG output.
 
-Three modes trace filled shapes: black and white, grayscale and color. Logo, centre-line and pixel-art modes come in later 1.x
+Four modes trace filled shapes: black and white, grayscale, color and logo. Centre-line and pixel-art modes come in later 1.x
 versions, as new `TraceMode` values; traced output may also improve between minor versions.
 
 ## Tracing a raster
@@ -15,7 +15,7 @@ traced image's `Width` and `Height`.
 [!code-csharp[](../../../tests/Egami.DocSamples/Tracing.cs#trace)]
 
 - Each `TracedShape` has a `Path`, a `Color` (`Rgba8`), a `Kind` (`TracedShapeKind.Fill` or `Stroke`) and, for a stroke, a
-  `StrokeWidth`. The black-and-white, grayscale and color modes give filled shapes only.
+  `StrokeWidth`. The black-and-white, grayscale, color and logo modes give filled shapes only.
 - Coordinates are the raster's pixels, y down, with pixel (0, 0) covering the square from (0, 0) to (1, 1), as on a
   [canvas](drawing.md#a-canvas).
 - In black and white, one shape is one ink region: its outer edge and its holes. A region inside another region's hole comes
@@ -35,18 +35,18 @@ traced image's `Width` and `Height`.
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| `Mode` | `BlackAndWhite` | How pixels become shapes: `BlackAndWhite`, `Grayscale` or `Color`. |
+| `Mode` | `BlackAndWhite` | How pixels become shapes: `BlackAndWhite`, `Grayscale`, `Color` or `Logo`. |
 | `Threshold` | `null` | Black and white: the level from 0 (black) to 1 (white) that splits ink from paper. A pixel is ink when its intensity, over white by its alpha, is at most this. `null` finds it with Otsu's method, as `Raster.FindThreshold` does. |
-| `Colors` | 8 | Grayscale and color: the most colors (gray levels) the image is reduced to, 2 to 256. An image with fewer flat colors gets fewer. |
-| `Palette` | `null` | Grayscale and color: fixed colors to reduce the image to instead; the shapes take them exactly. |
-| `Layering` | `Stacked` | Grayscale and color: how the layers fit together (see below). |
-| `Smoothing` | 0 | Grayscale and color: edge-keeping smoothing before the colors are found, from 0 to 1, for photos. |
+| `Colors` | 8 | Grayscale, color and logo: the most colors (gray levels) the image is reduced to, 2 to 256. An image with fewer flat colors gets fewer. |
+| `Palette` | `null` | Grayscale, color and logo: fixed colors to reduce the image to instead; the shapes take them exactly. |
+| `Layering` | `Stacked` | Grayscale, color and logo: how the layers fit together (see below). |
+| `Smoothing` | 0 | Grayscale and color: edge-keeping smoothing before the colors are found, from 0 to 1, for photos. Not used in logo. |
 | `PathFidelity` | 0.5 | How closely the curves follow the pixel edges: 0 gives the fewest curves, 1 the closest fit. 0.5 is a tolerance of half a pixel. |
 | `Corners` | 0.25 | How readily corners stay sharp: 0 rounds every corner, 1 keeps every corner (the outline is a polygon). 0.25 keeps any turn of more than 60 degrees. |
 | `SnapToLines` | `true` | Straight runs of an outline become lines. |
 | `SnapToArcs` | `true` | Runs on a circle become circular arcs, and round outlines circles. |
 | `Noise` | 2 | The smallest region kept, in pixels. Smaller regions merge into the regions around them, smallest first (in grayscale and color, into the neighbour they share the most edge with), so a speck inside a small hole goes before the hole. 0 or 1 keeps everything. |
-| `IgnoreWhite` | `false` | Leaves out white: in black and white the white shape that otherwise comes first, under the ink, the size of the image; in grayscale and color the layer of each color whose red, green and blue are all at least 240, whose areas stay empty. |
+| `IgnoreWhite` | `false` | Leaves out white: in black and white the white shape that otherwise comes first, under the ink, the size of the image; in grayscale, color and logo the layer of each color whose red, green and blue are all at least 240, whose areas stay empty (in logo, also the transparency the art encloses). |
 
 `TraceOptions.Default` is the defaults. `TraceOptions.BlackAndWhite` is the defaults with `IgnoreWhite`: the ink alone.
 
@@ -66,6 +66,24 @@ either side, so they are left out when the colors are found, and each takes the 
   exactly and never overlap. This suits editing the shapes one by one.
 - `Smoothing` runs a bilateral filter, one to three passes, before the colors are found: texture and noise flatten while
   edges between clearly different colors stay put.
+
+## Logo
+
+`TraceMode.Logo` is for logos, icons and other flat-color art with antialiased edges, where a few pixels decide whether a
+curve looks round. It finds the flat colors as color mode does, then splits every edge pixel into the two colors it blends
+and places the edge from a smooth field of how much of each pixel each color covers. The curves come back rounder than in
+color mode on small art: a disc of radius 6 keeps its radius to about 0.05 pixels.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tracing.cs#logo)]
+
+- Transparency around the art is left out: no shape covers it. Transparency the art encloses, such as the inside of a
+  letter O on a transparent background, is traced as white, which `IgnoreWhite` leaves out like any white.
+- `Colors`, `Palette`, `Layering`, `Noise` and the fit settings work as in color mode. A palette maps each of the image's own
+  colors to the nearest fixed color; with transparency it takes at most 254 colors.
+- An image that is not flat color is refused with an `ArgumentException`: when more than a tenth of its pixels are neither
+  one of its colors nor a blend of two, it is a photo or a gradient (trace it with `TraceMode.Color`), or it has more flat
+  colors than `Colors` allows. JPEG noise on a flat logo is fine.
+- Small images are sampled finer, up to 4 × 4 samples a pixel, so a 100-pixel icon has as smooth an outline as a large one.
 
 ## Shapes and paths
 
@@ -111,3 +129,16 @@ Each mode follows the same steps, written from the papers in the [references](..
 
 A traced circle keeps its size to a few hundredths of a pixel when its edge is antialiased: a disc of radius 30 comes back
 with a radius of 29.95.
+
+Logo mode replaces steps 1 and 3:
+
+1. **Coverage.** Each pixel is split into up to three shares: its flat color, or a blend of two colors (its own and a
+   neighbour's), and, under alpha, transparency. Fringe colors that only blend others, along edges or from JPEG, leave the
+   palette first.
+2. **Fields.** Each color's shares become a signed distance to its edge, after S. Gustavson and R. Strand, "Anti-aliased
+   Euclidean distance transform" (2011), which a cubic B-spline interpolates between pixel centres, prefiltered as in M.
+   Unser, A. Aldroubi and M. Eden, "B-spline signal processing" (1993) and P. Thévenaz, T. Blu and M. Unser,
+   "Interpolation revisited" (2000).
+3. **Iso-lines.** The fields are sampled on a finer grid and each sample takes the color whose field leads there; the edge
+   between two samples sits where the two fields cross, as in W. Lorensen and H. Cline's marching cubes (1987) in two
+   dimensions. The rest is the color-mode walk and fit, scaled back to the image's pixels.

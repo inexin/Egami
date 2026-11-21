@@ -30,8 +30,8 @@ waits for B pictures, rate control tuning and its gates. Additive to 1.3.
 
 ## Egami.Drawing and Egami.Svg 1.5.0 (unreleased)
 
-Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PRs A and B of seven): black-and-white, grayscale and color
-images become vector shapes. Additive to 1.4.0; the later PRs add Logo, Centerline and PixelArt modes, presets and an
+Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PRs A to C of seven): black-and-white, grayscale, color and
+logo images become vector shapes. Additive to 1.4.0; the later PRs add Centerline and PixelArt modes, presets and an
 `egami trace` command.
 
 - `raster.Trace(options)` (namespace `Egami.Drawing.Tracing`, also `Trace<TPixel>` and `TraceAsync` with a cancellation
@@ -48,6 +48,11 @@ images become vector shapes. Additive to 1.4.0; the later PRs add Logo, Centerli
   fitting digitized curves" (1990), with corners restored and runs snapped to lines (`SnapToLines`) and circular arcs
   (`SnapToArcs`). `PathFidelity` sets the tolerance, `Corners` the corner angle and `Noise` the smallest region kept;
   `IgnoreWhite` leaves out white. `TraceOptions.BlackAndWhite` is the defaults with `IgnoreWhite`.
+- `TraceMode.Logo` traces flat-color art with antialiased edges: each edge pixel is split into the colors it blends, each
+  color's coverage becomes a signed edge distance (Gustavson and Strand's antialiased distance transform) interpolated by
+  a cubic B-spline, and marching squares on a grid up to 4 × finer places the edges, for rounder curves than color mode
+  on small art (synthetic logos: mean edge error 0.06 px, max 0.45 px, at 1 ×). Transparency around the art is left
+  out and transparency it encloses traced as white; a photo or gradient throws `ArgumentException`.
 - Egami.Svg writes a trace as SVG through `SvgCanvas`: `result.ToSvg()` and `result.SaveSvg(path)` (or a stream).
 - Speed is not tuned yet (Build Plan PR F): a 3000 × 3000 drawing traces in about 0.7 s in black and white and 1 s in
   color.

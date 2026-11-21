@@ -15,6 +15,18 @@ internal static class ColorTracer
     {
         image.RemoveNoise(options.Noise, cancellationToken);
         image.Compact();
+        return Trace(image, options, -1, null, 1, cancellationToken);
+    }
+
+    /// <summary>Traces a label image whose noise is already removed and whose palette is compact.</summary>
+    /// <param name="image">The labels.</param>
+    /// <param name="options">The settings.</param>
+    /// <param name="background">A label that is never traced (Logo mode's transparent background), or -1.</param>
+    /// <param name="margins">The coverage leads that place edges in Logo mode, or <see langword="null"/> to place them by color.</param>
+    /// <param name="scale">The samples per output pixel along each axis.</param>
+    /// <param name="cancellationToken">Cancels the trace.</param>
+    internal static TraceResult Trace(LabelImage image, TraceOptions options, int background, float[]? margins, int scale, CancellationToken cancellationToken)
+    {
         int[] regions = new int[image.Labels.Length];
         int count = image.LabelRegions(regions, cancellationToken);
         int[] regionLabel = new int[count];
@@ -23,19 +35,25 @@ internal static class ColorTracer
             regionLabel[regions[i]] = image.Labels[i];
         }
 
-        RegionTracer tracer = new(image, regions);
+        RegionTracer tracer = new(image, regions, margins, scale);
         CurveSettings settings = CurveSettings.From(options);
+        if (scale > 1)
+        {
+            // The points come scale to a pixel: look as far along them for corners as at one point to a pixel.
+            settings = settings with { Reach = 3 * scale };
+        }
+
         bool[] skip = new bool[image.Palette.Length];
         for (int k = 0; k < skip.Length; k++)
         {
             Rgba8 c = image.Palette[k];
-            skip[k] = options.IgnoreWhite && c.R >= WhiteLevel && c.G >= WhiteLevel && c.B >= WhiteLevel;
+            skip[k] = k == background || (options.IgnoreWhite && c.R >= WhiteLevel && c.G >= WhiteLevel && c.B >= WhiteLevel);
         }
 
         List<TracedShape> shapes = options.Layering == TraceLayering.Abutting
             ? Abutting(tracer, image, count, regionLabel, skip, settings, cancellationToken)
             : Stacked(tracer, image, count, regionLabel, skip, settings, cancellationToken);
-        return new TraceResult(shapes, image.Width, image.Height);
+        return new TraceResult(shapes, image.Width / scale, image.Height / scale);
     }
 
     /// <summary>
@@ -205,7 +223,7 @@ internal static class ColorTracer
 
                     closedChains[leastKey] = (chains.Count, direction);
                     list.Add((chains.Count, false));
-                    chains.Add(n <= CubicFitter.Speck ? ([], true, CubicFitter.Polygon(xs, ys, ds)) : (tracer.Read(xs, ys, ds, true), true, null));
+                    chains.Add(n <= CubicFitter.Speck ? ([], true, tracer.Scale(CubicFitter.Polygon(xs, ys, ds))) : (tracer.Read(xs, ys, ds, true), true, null));
                 }
 
                 continue;
@@ -234,7 +252,7 @@ internal static class ColorTracer
 
                 // The junctions the piece runs between, around the points of its edges.
                 (int ex, int ey) = vertices[to];
-                Vec[] points = [new Vec(vertices[from].X, vertices[from].Y), .. tracer.Read(xs, ys, ds, false), new Vec(ex, ey)];
+                Vec[] points = [tracer.Point(vertices[from].X, vertices[from].Y), .. tracer.Read(xs, ys, ds, false), tracer.Point(ex, ey)];
                 openChains[firstKey] = chains.Count;
                 list.Add((chains.Count, false));
                 chains.Add((points, false, null));
@@ -289,7 +307,7 @@ internal static class ColorTracer
         (int X, int Y)[] vertices = RegionTracer.Vertices(loop);
         int[] xs = [.. vertices.Select(v => v.X)], ys = [.. vertices.Select(v => v.Y)];
         return loop.Directions.Length <= CubicFitter.Speck
-            ? CubicFitter.Polygon(xs, ys, loop.Directions)
+            ? tracer.Scale(CubicFitter.Polygon(xs, ys, loop.Directions))
             : CubicFitter.FitClosed(tracer.Read(xs, ys, loop.Directions, true), settings);
     }
 

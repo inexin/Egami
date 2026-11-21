@@ -16,6 +16,11 @@ internal static class Tracer
         }
 
         cancellationToken.ThrowIfCancellationRequested();
+        if (options.Mode == TraceMode.Logo)
+        {
+            return LogoTracer.Trace(raster, options, cancellationToken);
+        }
+
         if (options.Mode != TraceMode.BlackAndWhite)
         {
             return ColorTracer.Trace(LabelImage.FromRaster(raster, options, cancellationToken), options, cancellationToken);

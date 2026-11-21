@@ -19,6 +19,8 @@ public static class RasterTraceExtensions
     /// <exception cref="ArgumentNullException"><paramref name="raster"/> is <see langword="null"/>.</exception>
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
     /// <exception cref="LimitExceededException">The raster is larger than the context's <see cref="SafetyLimits.MaxPixels"/>.</exception>
+    /// <exception cref="ArgumentException">In <see cref="TraceMode.Logo"/>, the image is not flat-color art (a photo or a
+    /// gradient), or it has transparency and <see cref="TraceOptions.Palette"/> has more than 254 colors.</exception>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/Tracing.cs" region="trace"/>
     /// </example>
@@ -39,6 +41,8 @@ public static class RasterTraceExtensions
     /// <exception cref="ArgumentNullException"><paramref name="raster"/> is <see langword="null"/>.</exception>
     /// <exception cref="ObjectDisposedException">The raster has been disposed.</exception>
     /// <exception cref="LimitExceededException">The raster is larger than the context's <see cref="SafetyLimits.MaxPixels"/>.</exception>
+    /// <exception cref="ArgumentException">In <see cref="TraceMode.Logo"/>, the image is not flat-color art (a photo or a
+    /// gradient), or it has transparency and <see cref="TraceOptions.Palette"/> has more than 254 colors.</exception>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/Tracing.cs" region="options"/>
     /// </example>
@@ -58,6 +62,8 @@ public static class RasterTraceExtensions
     /// <exception cref="ArgumentNullException"><paramref name="raster"/> is <see langword="null"/>.</exception>
     /// <exception cref="OperationCanceledException">The trace was cancelled.</exception>
     /// <exception cref="LimitExceededException">The raster is larger than the context's <see cref="SafetyLimits.MaxPixels"/>.</exception>
+    /// <exception cref="ArgumentException">In <see cref="TraceMode.Logo"/>, the image is not flat-color art (a photo or a
+    /// gradient), or it has transparency and <see cref="TraceOptions.Palette"/> has more than 254 colors.</exception>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/Tracing.cs" region="async"/>
     /// </example>
