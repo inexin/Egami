@@ -229,7 +229,7 @@ Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));</c
 
   <h3 id="Egami_Drawing_Tracing_TraceResult_Height" data-uid="Egami.Drawing.Tracing.TraceResult.Height">
   Height
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L50"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the traced image's height in pixels.</p>
@@ -257,11 +257,66 @@ Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));</c
 
 
 
+  <a id="Egami_Drawing_Tracing_TraceResult_Palette_" data-uid="Egami.Drawing.Tracing.TraceResult.Palette*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceResult_Palette" data-uid="Egami.Drawing.Tracing.TraceResult.Palette">
+  Palette
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the shapes' colors, each once, in the order the shapes first use them: back to front.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Rgba8&gt; Palette { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Drawing_Tracing_TraceResult_Palette_examples">Examples</h4>
+  <pre><code class="lang-csharp">// A flat-colored logo: up to 8 of its own colors, one layer each, largest first, each layer covering those above it.
+TraceResult stacked = logo.Trace(new TraceOptions { Mode = TraceMode.Color, Colors = 8 });
+IReadOnlyList&lt;Rgba8&gt; colors = stacked.Palette;     // the colors found, back to front
+
+// Abutting layers: each color only its own area, neighbours sharing one edge, and white left out.
+TraceResult pieces = logo.Trace(new TraceOptions
+{
+    Mode = TraceMode.Color,
+    Layering = TraceLayering.Abutting,
+    IgnoreWhite = true,
+    SnapToLines = true,    // straight runs become lines
+    SnapToArcs = true,     // runs on a circle become arcs, round outlines circles
+});
+
+// Grayscale to fixed levels, smoothed first as for a photo.
+TraceResult poster = logo.Trace(new TraceOptions
+{
+    Mode = TraceMode.Grayscale,
+    Palette = [new Rgba8(0, 0, 0, 255), new Rgba8(128, 128, 128, 255), new Rgba8(255, 255, 255, 255)],
+    Smoothing = 0.5f,
+});</code></pre>
+
+
+
+
+
+
   <a id="Egami_Drawing_Tracing_TraceResult_Shapes_" data-uid="Egami.Drawing.Tracing.TraceResult.Shapes*"></a>
 
   <h3 id="Egami_Drawing_Tracing_TraceResult_Shapes" data-uid="Egami.Drawing.Tracing.TraceResult.Shapes">
   Shapes
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L38"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the shapes, back to front: draw them in this order.</p>
@@ -293,7 +348,7 @@ Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));</c
 
   <h3 id="Egami_Drawing_Tracing_TraceResult_Width" data-uid="Egami.Drawing.Tracing.TraceResult.Width">
   Width
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L47"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the traced image's width in pixels.</p>
@@ -329,7 +384,7 @@ Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));</c
 
   <h3 id="Egami_Drawing_Tracing_TraceResult_Draw_Egami_Drawing_Canvas_" data-uid="Egami.Drawing.Tracing.TraceResult.Draw(Egami.Drawing.Canvas)">
   Draw(Canvas)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L58"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws the shapes on a canvas, back to front, in the canvas's current transform and clip.</p>
@@ -383,7 +438,7 @@ using Raster&lt;Rgba8&gt; sharp = picture.ToRaster&lt;Rgba8&gt;(scale: 8);</code
 
   <h3 id="Egami_Drawing_Tracing_TraceResult_ToPath_Egami_Pixels_Rgba8_" data-uid="Egami.Drawing.Tracing.TraceResult.ToPath(Egami.Pixels.Rgba8)">
   ToPath(Rgba8)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L92"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the filled shapes of one color as one path, or <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Empty">Empty</a> when there are none.</p>
@@ -431,7 +486,7 @@ bool same = ink.Contains(new Vector2(40, 40)) == ink.WithFillRule(FillRule.EvenO
 
   <h3 id="Egami_Drawing_Tracing_TraceResult_ToPicture" data-uid="Egami.Drawing.Tracing.TraceResult.ToPicture">
   ToPicture()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L79"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Records the shapes as a picture of the traced image's size, to replay on any canvas or save as a drawing file.</p>
@@ -479,7 +534,7 @@ using Raster&lt;Rgba8&gt; sharp = picture.ToRaster&lt;Rgba8&gt;(scale: 8);</code
 
   <h3 id="Egami_Drawing_Tracing_TraceResult_ToString" data-uid="Egami.Drawing.Tracing.TraceResult.ToString">
   ToString()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L107"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a string that represents the current object.</p>

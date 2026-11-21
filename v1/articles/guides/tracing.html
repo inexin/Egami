@@ -90,7 +90,7 @@
 <p>Bitmap tracing turns a raster into filled vector shapes: a scanned signature, line art or a logo comes back as <code>Path</code> objects
 with a color each, ready to draw at any size, record as a <code>Picture</code>, or save as SVG. It is part of Egami.Drawing, in the
 namespace <code>Egami.Drawing.Tracing</code>; Egami.Svg adds the SVG output.</p>
-<p>This first release traces black and white. Grayscale, color, logo, centre-line and pixel-art modes come in later 1.x
+<p>Three modes trace filled shapes: black and white, grayscale and color. Logo, centre-line and pixel-art modes come in later 1.x
 versions, as new <code>TraceMode</code> values; traced output may also improve between minor versions.</p>
 <h2 id="tracing-a-raster">Tracing a raster</h2>
 <p><code>raster.Trace(options)</code> traces the raster's first frame and returns a <code>TraceResult</code>: its <code>Shapes</code>, back to front, and the
@@ -108,10 +108,11 @@ Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));
 </code></pre>
 <ul>
 <li>Each <code>TracedShape</code> has a <code>Path</code>, a <code>Color</code> (<code>Rgba8</code>), a <code>Kind</code> (<code>TracedShapeKind.Fill</code> or <code>Stroke</code>) and, for a stroke, a
-<code>StrokeWidth</code>. Black and white gives filled shapes only.</li>
+<code>StrokeWidth</code>. The black-and-white, grayscale and color modes give filled shapes only.</li>
 <li>Coordinates are the raster's pixels, y down, with pixel (0, 0) covering the square from (0, 0) to (1, 1), as on a
 <a href="drawing.html#a-canvas">canvas</a>.</li>
-<li>One shape is one ink region: its outer edge and its holes. A region inside another region's hole comes after it.</li>
+<li>In black and white, one shape is one ink region: its outer edge and its holes. A region inside another region's hole comes
+after it. <code>Palette</code> lists the shapes' colors, each once, back to front.</li>
 <li><code>Trace</code> (in <code>RasterTraceExtensions</code>) works on any pixel type; <code>Trace&lt;TPixel&gt;</code> is the same for a typed raster. <code>TraceAsync</code> traces on a worker thread and
 takes a <code>CancellationToken</code>, checked between rows and between outlines.</li>
 <li>The raster's <code>EgamiContext</code> (or one you pass) limits the size: a raster larger than <code>SafetyLimits.MaxPixels</code> throws
@@ -121,12 +122,12 @@ takes a <code>CancellationToken</code>, checked between rows and between outline
 TraceResult result = await scan.TraceAsync(TraceOptions.BlackAndWhite, cancellationToken: cancellationToken);
 </code></pre><h2 id="options">Options</h2>
 <p><code>TraceOptions</code> is a record: start from a preset and change what you need with <code>with</code>. Each setting is checked when it is set.</p>
-<pre><code class="lang-csharp">// Black and white with potrace-like settings.
+<pre><code class="lang-csharp">// Black and white with every setting spelled out.
 TraceResult ink = scan.Trace(new TraceOptions
 {
     Mode = TraceMode.BlackAndWhite,
     Threshold = null,      // null: Otsu's method, as Raster.FindThreshold; or a level from 0 (black) to 1 (white)
-    PathFidelity = 0.5f,   // 0: fewest curves; 1: every curve kept
+    PathFidelity = 0.5f,   // 0: fewest curves; 1: curves that follow the pixels most closely
     Corners = 0.75f,       // 0: round every corner; 1: keep every corner (a polygon)
     Noise = 4,             // regions under 4 pixels merge into the regions around them
     IgnoreWhite = true,    // the ink alone, no white background shape
@@ -147,37 +148,102 @@ TraceResult polygon = scan.Trace(TraceOptions.BlackAndWhite with { Corners = 1 }
 <tr>
 <td><code>Mode</code></td>
 <td><code>BlackAndWhite</code></td>
-<td>How pixels become shapes.</td>
+<td>How pixels become shapes: <code>BlackAndWhite</code>, <code>Grayscale</code> or <code>Color</code>.</td>
 </tr>
 <tr>
 <td><code>Threshold</code></td>
 <td><code>null</code></td>
-<td>The level from 0 (black) to 1 (white) that splits ink from paper: a pixel is ink when its intensity, over white by its alpha, is at most this. <code>null</code> finds it with Otsu's method, as <code>Raster.FindThreshold</code> does.</td>
+<td>Black and white: the level from 0 (black) to 1 (white) that splits ink from paper. A pixel is ink when its intensity, over white by its alpha, is at most this. <code>null</code> finds it with Otsu's method, as <code>Raster.FindThreshold</code> does.</td>
+</tr>
+<tr>
+<td><code>Colors</code></td>
+<td>8</td>
+<td>Grayscale and color: the most colors (gray levels) the image is reduced to, 2 to 256. An image with fewer flat colors gets fewer.</td>
+</tr>
+<tr>
+<td><code>Palette</code></td>
+<td><code>null</code></td>
+<td>Grayscale and color: fixed colors to reduce the image to instead; the shapes take them exactly.</td>
+</tr>
+<tr>
+<td><code>Layering</code></td>
+<td><code>Stacked</code></td>
+<td>Grayscale and color: how the layers fit together (see below).</td>
+</tr>
+<tr>
+<td><code>Smoothing</code></td>
+<td>0</td>
+<td>Grayscale and color: edge-keeping smoothing before the colors are found, from 0 to 1, for photos.</td>
 </tr>
 <tr>
 <td><code>PathFidelity</code></td>
 <td>0.5</td>
-<td>How closely joined curves follow the curves they replace: 0 gives the fewest curves, 1 keeps every curve. 0.5 is a tolerance of 0.2 pixels.</td>
+<td>How closely the curves follow the pixel edges: 0 gives the fewest curves, 1 the closest fit. 0.5 is a tolerance of half a pixel.</td>
 </tr>
 <tr>
 <td><code>Corners</code></td>
 <td>0.25</td>
-<td>How readily corners stay sharp: 0 rounds every corner, 1 keeps every corner (the outline is a polygon).</td>
+<td>How readily corners stay sharp: 0 rounds every corner, 1 keeps every corner (the outline is a polygon). 0.25 keeps any turn of more than 60 degrees.</td>
+</tr>
+<tr>
+<td><code>SnapToLines</code></td>
+<td><code>true</code></td>
+<td>Straight runs of an outline become lines.</td>
+</tr>
+<tr>
+<td><code>SnapToArcs</code></td>
+<td><code>true</code></td>
+<td>Runs on a circle become circular arcs, and round outlines circles.</td>
 </tr>
 <tr>
 <td><code>Noise</code></td>
 <td>2</td>
-<td>The smallest region kept, in pixels. Smaller regions, ink or paper, merge into the regions around them, smallest first, so a speck inside a small hole goes before the hole. 0 or 1 keeps everything.</td>
+<td>The smallest region kept, in pixels. Smaller regions merge into the regions around them, smallest first (in grayscale and color, into the neighbour they share the most edge with), so a speck inside a small hole goes before the hole. 0 or 1 keeps everything.</td>
 </tr>
 <tr>
 <td><code>IgnoreWhite</code></td>
 <td><code>false</code></td>
-<td>Leaves out the white shape that otherwise comes first, under the ink, the size of the image.</td>
+<td>Leaves out white: in black and white the white shape that otherwise comes first, under the ink, the size of the image; in grayscale and color the layer of each color whose red, green and blue are all at least 240, whose areas stay empty.</td>
 </tr>
 </tbody>
 </table>
-<p><code>TraceOptions.Default</code> is the defaults; they match potrace's published ones (corner threshold 1, curve tolerance 0.2,
-single-pixel specks dropped). <code>TraceOptions.BlackAndWhite</code> is the defaults with <code>IgnoreWhite</code>: the ink alone.</p>
+<p><code>TraceOptions.Default</code> is the defaults. <code>TraceOptions.BlackAndWhite</code> is the defaults with <code>IgnoreWhite</code>: the ink alone.</p>
+<h2 id="grayscale-and-color">Grayscale and color</h2>
+<p><code>TraceMode.Color</code> finds the image's own flat colors, at most <code>Colors</code> of them, and traces each as a layer of shapes;
+<code>TraceMode.Grayscale</code> does the same with gray levels. Pixels along antialiased or blurred edges are blends of the colors on
+either side, so they are left out when the colors are found, and each takes the color of the side it is nearer.</p>
+<pre><code class="lang-csharp">// A flat-colored logo: up to 8 of its own colors, one layer each, largest first, each layer covering those above it.
+TraceResult stacked = logo.Trace(new TraceOptions { Mode = TraceMode.Color, Colors = 8 });
+IReadOnlyList&lt;Rgba8&gt; colors = stacked.Palette;     // the colors found, back to front
+
+// Abutting layers: each color only its own area, neighbours sharing one edge, and white left out.
+TraceResult pieces = logo.Trace(new TraceOptions
+{
+    Mode = TraceMode.Color,
+    Layering = TraceLayering.Abutting,
+    IgnoreWhite = true,
+    SnapToLines = true,    // straight runs become lines
+    SnapToArcs = true,     // runs on a circle become arcs, round outlines circles
+});
+
+// Grayscale to fixed levels, smoothed first as for a photo.
+TraceResult poster = logo.Trace(new TraceOptions
+{
+    Mode = TraceMode.Grayscale,
+    Palette = [new Rgba8(0, 0, 0, 255), new Rgba8(128, 128, 128, 255), new Rgba8(255, 255, 255, 255)],
+    Smoothing = 0.5f,
+});
+</code></pre>
+<ul>
+<li><code>TraceLayering.Stacked</code> (the default) puts the color with the largest area first. Each layer covers its own pixels and
+those of the layers above it that it touches, so the layers above lie on it and no gap shows between colors when they are
+drawn antialiased. One shape is one connected part of a layer.</li>
+<li><code>TraceLayering.Abutting</code> gives each color only its own pixels, one shape per region. Where regions meet, the boundary is
+cut at the points where three meet, each piece is fitted once, and both neighbours use it, so they share their edge
+exactly and never overlap. This suits editing the shapes one by one.</li>
+<li><code>Smoothing</code> runs a bilateral filter, one to three passes, before the colors are found: texture and noise flatten while
+edges between clearly different colors stay put.</li>
+</ul>
 <h2 id="shapes-and-paths">Shapes and paths</h2>
 <pre><code class="lang-csharp">// TraceOptions.Default also gives a white shape for the paper, under the ink.
 TraceResult result = scan.Trace();
@@ -217,22 +283,25 @@ element per shape, back to front, in an SVG the size of the traced image. <code>
 TraceResult result = scan.Trace(TraceOptions.BlackAndWhite);
 string markup = result.ToSvg(new SvgWriteOptions { Precision = 2 });
 result.SaveSvg(file);
-</code></pre><h2 id="how-black-and-white-is-traced">How black and white is traced</h2>
-<p>The tracer follows P. Selinger, &quot;Potrace: a polygon-based tracing algorithm&quot; (2003), written from the paper:</p>
+</code></pre><h2 id="how-tracing-works">How tracing works</h2>
+<p>Each mode follows the same steps, written from the papers in the <a href="../../references.md">references</a>:</p>
 <ol>
-<li><strong>Ink map.</strong> Each pixel is ink or paper at the threshold. Ink pixels that touch only at a corner belong together
-(8-connected); paper is 4-connected. Regions under <code>Noise</code> pixels merge into their neighbours.</li>
-<li><strong>Boundaries.</strong> The edges between ink and paper pixels form closed loops, walked with ink on the right. Where two ink
-pixels meet at a corner, the walk turns so they stay in one loop.</li>
-<li><strong>Polygon.</strong> Each loop gets the polygon with the fewest sides that stays within half a pixel of it, and among those the
-one whose sides lie closest to the loop. Each corner then moves, by at most half a pixel, to where its sides' best-fit
-lines meet.</li>
-<li><strong>Curves and corners.</strong> At each polygon corner a curve runs between the two sides' midpoints; a corner that is sharp enough
-for its side lengths, by the <code>Corners</code> setting, stays a corner instead. Runs of curves that bend the same way, less than
-180 degrees in all, join into one curve where it stays within the <code>PathFidelity</code> tolerance.</li>
+<li><strong>Labels.</strong> Black and white splits ink from paper at the threshold; ink pixels that touch only at a corner belong together
+(8-connected) and paper is 4-connected. Grayscale and color give each pixel its nearest palette color; regions are
+4-connected. Regions under <code>Noise</code> pixels merge into their neighbours.</li>
+<li><strong>Boundaries.</strong> The pixel edges between regions form closed loops, walked with the region on the right, after P.
+Selinger's &quot;Potrace: a polygon-based tracing algorithm&quot; (2003).</li>
+<li><strong>Edge points.</strong> Each pixel edge gives a point, moved across the edge by how much the pixels on either side blend the two
+colors, so an antialiased edge lands where it was drawn. A hard staircase gives one point per step, on the line it draws,
+and a pixel corner between two sides stays.</li>
+<li><strong>Corners.</strong> A point where the outline turns by more than the <code>Corners</code> angle, over a few points and over twice as many,
+is a corner; it moves to where lines fitted to the points on either side meet.</li>
+<li><strong>Curves.</strong> Between corners, straight runs become lines and runs on a circle arcs; the rest is fitted with cubic curves
+by least squares, after P. J. Schneider, &quot;An algorithm for automatically fitting digitized curves&quot; (1990), split at the
+worst point until every point is within the <code>PathFidelity</code> tolerance.</li>
 </ol>
-<p>Because each curve only reaches the near edge of its corner's half-pixel square, a traced round shape comes out a fraction of a
-pixel smaller than its pixels: about 0.2 pixels in radius for a circle 60 pixels across.</p>
+<p>A traced circle keeps its size to a few hundredths of a pixel when its edge is antialiased: a disc of radius 30 comes back
+with a radius of 29.95.</p>
 
 </article>
 

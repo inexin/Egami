@@ -122,15 +122,25 @@ Enum TraceMode  <a class="header-action link-secondary" title="View source" href
   <dd><p>Splits the image into ink and paper at <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Threshold">Threshold</a> and traces the ink as black shapes, with smooth
 curves and sharp corners fitted to the pixel edges.</p>
 </dd>
+    <dt id="Egami_Drawing_Tracing_TraceMode_Color"><code>Color = 2</code></dt>
+  
+  <dd><p>Reduces the image to <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Colors">Colors</a> of its own flat colors (or to <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Palette">Palette</a>),
+leaving out the blends along edges, and traces each color as a layer of shapes.</p>
+</dd>
+    <dt id="Egami_Drawing_Tracing_TraceMode_Grayscale"><code>Grayscale = 1</code></dt>
+  
+  <dd><p>Reduces the image to <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Colors">Colors</a> gray levels of its own (or to <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Palette">Palette</a>)
+and traces each level as a layer of gray shapes.</p>
+</dd>
   </dl>
 
   <h2 id="Egami_Drawing_Tracing_TraceMode_examples">Examples</h2>
-  <pre><code class="lang-csharp">// Black and white with potrace-like settings.
+  <pre><code class="lang-csharp">// Black and white with every setting spelled out.
 TraceResult ink = scan.Trace(new TraceOptions
 {
     Mode = TraceMode.BlackAndWhite,
     Threshold = null,      // null: Otsu's method, as Raster.FindThreshold; or a level from 0 (black) to 1 (white)
-    PathFidelity = 0.5f,   // 0: fewest curves; 1: every curve kept
+    PathFidelity = 0.5f,   // 0: fewest curves; 1: curves that follow the pixels most closely
     Corners = 0.75f,       // 0: round every corner; 1: keep every corner (a polygon)
     Noise = 4,             // regions under 4 pixels merge into the regions around them
     IgnoreWhite = true,    // the ink alone, no white background shape

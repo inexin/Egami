@@ -172,8 +172,8 @@ Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));</c
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/RasterTraceExtensions.cs/#L25"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Traces a raster's first frame into shapes: ink regions become paths of smooth curves and sharp corners fitted to the
-pixel edges, in the raster's pixels.</p>
+  <div class="markdown level1 summary"><p>Traces a raster's first frame into shapes: its ink regions (or, in grayscale and color, its color regions) become paths
+of lines, arcs, curves and corners fitted to the pixel edges, in the raster's pixels.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -306,8 +306,8 @@ TraceResult result = await scan.TraceAsync(TraceOptions.BlackAndWhite, cancellat
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/RasterTraceExtensions.cs/#L45"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Traces a raster's first frame into shapes: ink regions become paths of smooth curves and sharp corners fitted to the
-pixel edges, in the raster's pixels.</p>
+  <div class="markdown level1 summary"><p>Traces a raster's first frame into shapes: its ink regions (or, in grayscale and color, its color regions) become paths
+of lines, arcs, curves and corners fitted to the pixel edges, in the raster's pixels.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -347,12 +347,12 @@ pixel edges, in the raster's pixels.</p>
 
 
   <h4 class="section" id="Egami_Drawing_Tracing_RasterTraceExtensions_Trace__1_Egami_Raster___0__Egami_Drawing_Tracing_TraceOptions_Egami_EgamiContext__examples">Examples</h4>
-  <pre><code class="lang-csharp">// Black and white with potrace-like settings.
+  <pre><code class="lang-csharp">// Black and white with every setting spelled out.
 TraceResult ink = scan.Trace(new TraceOptions
 {
     Mode = TraceMode.BlackAndWhite,
     Threshold = null,      // null: Otsu's method, as Raster.FindThreshold; or a level from 0 (black) to 1 (white)
-    PathFidelity = 0.5f,   // 0: fewest curves; 1: every curve kept
+    PathFidelity = 0.5f,   // 0: fewest curves; 1: curves that follow the pixels most closely
     Corners = 0.75f,       // 0: round every corner; 1: keep every corner (a polygon)
     Noise = 4,             // regions under 4 pixels merge into the regions around them
     IgnoreWhite = true,    // the ink alone, no white background shape

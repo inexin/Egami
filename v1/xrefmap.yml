@@ -22832,6 +22832,24 @@ references:
   fullName.vb: Egami.Drawing.Tracing.RasterTraceExtensions.Trace(Of TPixel)(Egami.Raster(Of TPixel), Egami.Drawing.Tracing.TraceOptions, Egami.EgamiContext)
   nameWithType: RasterTraceExtensions.Trace<TPixel>(Raster<TPixel>, TraceOptions?, EgamiContext?)
   nameWithType.vb: RasterTraceExtensions.Trace(Of TPixel)(Raster(Of TPixel), TraceOptions, EgamiContext)
+- uid: Egami.Drawing.Tracing.TraceLayering
+  name: TraceLayering
+  href: api/Egami.Drawing.Tracing.TraceLayering.html
+  commentId: T:Egami.Drawing.Tracing.TraceLayering
+  fullName: Egami.Drawing.Tracing.TraceLayering
+  nameWithType: TraceLayering
+- uid: Egami.Drawing.Tracing.TraceLayering.Abutting
+  name: Abutting
+  href: api/Egami.Drawing.Tracing.TraceLayering.html#Egami_Drawing_Tracing_TraceLayering_Abutting
+  commentId: F:Egami.Drawing.Tracing.TraceLayering.Abutting
+  fullName: Egami.Drawing.Tracing.TraceLayering.Abutting
+  nameWithType: TraceLayering.Abutting
+- uid: Egami.Drawing.Tracing.TraceLayering.Stacked
+  name: Stacked
+  href: api/Egami.Drawing.Tracing.TraceLayering.html#Egami_Drawing_Tracing_TraceLayering_Stacked
+  commentId: F:Egami.Drawing.Tracing.TraceLayering.Stacked
+  fullName: Egami.Drawing.Tracing.TraceLayering.Stacked
+  nameWithType: TraceLayering.Stacked
 - uid: Egami.Drawing.Tracing.TraceMode
   name: TraceMode
   href: api/Egami.Drawing.Tracing.TraceMode.html
@@ -22844,6 +22862,18 @@ references:
   commentId: F:Egami.Drawing.Tracing.TraceMode.BlackAndWhite
   fullName: Egami.Drawing.Tracing.TraceMode.BlackAndWhite
   nameWithType: TraceMode.BlackAndWhite
+- uid: Egami.Drawing.Tracing.TraceMode.Color
+  name: Color
+  href: api/Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_Color
+  commentId: F:Egami.Drawing.Tracing.TraceMode.Color
+  fullName: Egami.Drawing.Tracing.TraceMode.Color
+  nameWithType: TraceMode.Color
+- uid: Egami.Drawing.Tracing.TraceMode.Grayscale
+  name: Grayscale
+  href: api/Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_Grayscale
+  commentId: F:Egami.Drawing.Tracing.TraceMode.Grayscale
+  fullName: Egami.Drawing.Tracing.TraceMode.Grayscale
+  nameWithType: TraceMode.Grayscale
 - uid: Egami.Drawing.Tracing.TraceOptions
   name: TraceOptions
   href: api/Egami.Drawing.Tracing.TraceOptions.html
@@ -22863,6 +22893,19 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Tracing.TraceOptions.BlackAndWhite
   nameWithType: TraceOptions.BlackAndWhite
+- uid: Egami.Drawing.Tracing.TraceOptions.Colors
+  name: Colors
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Colors
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Colors
+  fullName: Egami.Drawing.Tracing.TraceOptions.Colors
+  nameWithType: TraceOptions.Colors
+- uid: Egami.Drawing.Tracing.TraceOptions.Colors*
+  name: Colors
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Colors_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Colors
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Colors
+  nameWithType: TraceOptions.Colors
 - uid: Egami.Drawing.Tracing.TraceOptions.Corners
   name: Corners
   href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Corners
@@ -22902,6 +22945,19 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Tracing.TraceOptions.IgnoreWhite
   nameWithType: TraceOptions.IgnoreWhite
+- uid: Egami.Drawing.Tracing.TraceOptions.Layering
+  name: Layering
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Layering
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Layering
+  fullName: Egami.Drawing.Tracing.TraceOptions.Layering
+  nameWithType: TraceOptions.Layering
+- uid: Egami.Drawing.Tracing.TraceOptions.Layering*
+  name: Layering
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Layering_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Layering
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Layering
+  nameWithType: TraceOptions.Layering
 - uid: Egami.Drawing.Tracing.TraceOptions.Mode
   name: Mode
   href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Mode
@@ -22928,6 +22984,19 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Tracing.TraceOptions.Noise
   nameWithType: TraceOptions.Noise
+- uid: Egami.Drawing.Tracing.TraceOptions.Palette
+  name: Palette
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Palette
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Palette
+  fullName: Egami.Drawing.Tracing.TraceOptions.Palette
+  nameWithType: TraceOptions.Palette
+- uid: Egami.Drawing.Tracing.TraceOptions.Palette*
+  name: Palette
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Palette_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Palette
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Palette
+  nameWithType: TraceOptions.Palette
 - uid: Egami.Drawing.Tracing.TraceOptions.PathFidelity
   name: PathFidelity
   href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_PathFidelity
@@ -22941,6 +23010,45 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Tracing.TraceOptions.PathFidelity
   nameWithType: TraceOptions.PathFidelity
+- uid: Egami.Drawing.Tracing.TraceOptions.Smoothing
+  name: Smoothing
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Smoothing
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Smoothing
+  fullName: Egami.Drawing.Tracing.TraceOptions.Smoothing
+  nameWithType: TraceOptions.Smoothing
+- uid: Egami.Drawing.Tracing.TraceOptions.Smoothing*
+  name: Smoothing
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Smoothing_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Smoothing
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Smoothing
+  nameWithType: TraceOptions.Smoothing
+- uid: Egami.Drawing.Tracing.TraceOptions.SnapToArcs
+  name: SnapToArcs
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_SnapToArcs
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.SnapToArcs
+  fullName: Egami.Drawing.Tracing.TraceOptions.SnapToArcs
+  nameWithType: TraceOptions.SnapToArcs
+- uid: Egami.Drawing.Tracing.TraceOptions.SnapToArcs*
+  name: SnapToArcs
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_SnapToArcs_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.SnapToArcs
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.SnapToArcs
+  nameWithType: TraceOptions.SnapToArcs
+- uid: Egami.Drawing.Tracing.TraceOptions.SnapToLines
+  name: SnapToLines
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_SnapToLines
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.SnapToLines
+  fullName: Egami.Drawing.Tracing.TraceOptions.SnapToLines
+  nameWithType: TraceOptions.SnapToLines
+- uid: Egami.Drawing.Tracing.TraceOptions.SnapToLines*
+  name: SnapToLines
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_SnapToLines_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.SnapToLines
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.SnapToLines
+  nameWithType: TraceOptions.SnapToLines
 - uid: Egami.Drawing.Tracing.TraceOptions.Threshold
   name: Threshold
   href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Threshold
@@ -23005,6 +23113,19 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Tracing.TraceResult.Height
   nameWithType: TraceResult.Height
+- uid: Egami.Drawing.Tracing.TraceResult.Palette
+  name: Palette
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_Palette
+  commentId: P:Egami.Drawing.Tracing.TraceResult.Palette
+  fullName: Egami.Drawing.Tracing.TraceResult.Palette
+  nameWithType: TraceResult.Palette
+- uid: Egami.Drawing.Tracing.TraceResult.Palette*
+  name: Palette
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_Palette_
+  commentId: Overload:Egami.Drawing.Tracing.TraceResult.Palette
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceResult.Palette
+  nameWithType: TraceResult.Palette
 - uid: Egami.Drawing.Tracing.TraceResult.Shapes
   name: Shapes
   href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_Shapes

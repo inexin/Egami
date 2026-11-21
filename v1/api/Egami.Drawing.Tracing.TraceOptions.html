@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Drawing_Tracing_TraceOptions" data-uid="Egami.Drawing.Tracing.TraceOptions" class="text-break">
-Class TraceOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L10"><i class="bi bi-code-slash"></i></a>
+Class TraceOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L12"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -151,12 +151,12 @@ when it is set.</p>
 
 
   <h2 id="Egami_Drawing_Tracing_TraceOptions_examples">Examples</h2>
-  <pre><code class="lang-csharp">// Black and white with potrace-like settings.
+  <pre><code class="lang-csharp">// Black and white with every setting spelled out.
 TraceResult ink = scan.Trace(new TraceOptions
 {
     Mode = TraceMode.BlackAndWhite,
     Threshold = null,      // null: Otsu's method, as Raster.FindThreshold; or a level from 0 (black) to 1 (white)
-    PathFidelity = 0.5f,   // 0: fewest curves; 1: every curve kept
+    PathFidelity = 0.5f,   // 0: fewest curves; 1: curves that follow the pixels most closely
     Corners = 0.75f,       // 0: round every corner; 1: keep every corner (a polygon)
     Noise = 4,             // regions under 4 pixels merge into the regions around them
     IgnoreWhite = true,    // the ink alone, no white background shape
@@ -176,7 +176,7 @@ TraceResult polygon = scan.Trace(TraceOptions.BlackAndWhite with { Corners = 1 }
 
   <h3 id="Egami_Drawing_Tracing_TraceOptions_BlackAndWhite" data-uid="Egami.Drawing.Tracing.TraceOptions.BlackAndWhite">
   BlackAndWhite
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L31"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the defaults with <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_IgnoreWhite">IgnoreWhite</a> on: the ink alone, for signatures, line art and logos to place over other content.</p>
@@ -204,15 +204,55 @@ TraceResult polygon = scan.Trace(TraceOptions.BlackAndWhite with { Corners = 1 }
 
 
 
+  <a id="Egami_Drawing_Tracing_TraceOptions_Colors_" data-uid="Egami.Drawing.Tracing.TraceOptions.Colors*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceOptions_Colors" data-uid="Egami.Drawing.Tracing.TraceOptions.Colors">
+  Colors
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the most colors (in <a class="xref" href="Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_Grayscale">Grayscale</a>, gray levels) a grayscale or color trace reduces the image to,
+from 2 to 256. The colors are the image's own flat ones, found with the blends along edges left out; an image with fewer
+distinct colors gets fewer. Defaults to 8. Not used in black and white or when <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Palette">Palette</a> is set.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Colors { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 2 to 256.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Drawing_Tracing_TraceOptions_Corners_" data-uid="Egami.Drawing.Tracing.TraceOptions.Corners*"></a>
 
   <h3 id="Egami_Drawing_Tracing_TraceOptions_Corners" data-uid="Egami.Drawing.Tracing.TraceOptions.Corners">
   Corners
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L70"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how readily corners stay sharp, from 0 (round every corner) to 1 (keep every corner: the outline is a polygon).
-Defaults to 0.25.</p>
+Defaults to 0.25, which keeps right angles sharp and, in grayscale and color, any turn of more than 60 degrees.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -247,11 +287,11 @@ Defaults to 0.25.</p>
 
   <h3 id="Egami_Drawing_Tracing_TraceOptions_Default" data-uid="Egami.Drawing.Tracing.TraceOptions.Default">
   Default
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L22"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L28"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the defaults: black and white at the Otsu threshold, with the paper traced as a white background shape. The
-defaults match potrace's published ones (corner threshold 1, curve tolerance 0.2, speckles under 2 pixels dropped).</p>
+  <div class="markdown level1 summary"><p>Gets the defaults: black and white at the Otsu threshold, with the paper traced as a white background shape, curves within
+half a pixel, turns of more than 60 degrees kept as corners and single-pixel specks dropped.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -280,11 +320,12 @@ defaults match potrace's published ones (corner threshold 1, curve tolerance 0.2
 
   <h3 id="Egami_Drawing_Tracing_TraceOptions_IgnoreWhite" data-uid="Egami.Drawing.Tracing.TraceOptions.IgnoreWhite">
   IgnoreWhite
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L92"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets whether white areas are left out. When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> (the default), a white shape the size of the image
-comes first, under the ink, wherever the image has paper.</p>
+  <div class="markdown level1 summary"><p>Gets whether white areas are left out. In black and white, when <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> (the default), a white shape the
+size of the image comes first, under the ink, wherever the image has paper. In grayscale and color, the layer of each
+palette color whose red, green and blue are all at least 240 is left out, and its areas stay empty in the other layers.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -309,11 +350,49 @@ comes first, under the ink, wherever the image has paper.</p>
 
 
 
+  <a id="Egami_Drawing_Tracing_TraceOptions_Layering_" data-uid="Egami.Drawing.Tracing.TraceOptions.Layering*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceOptions_Layering" data-uid="Egami.Drawing.Tracing.TraceOptions.Layering">
+  Layering
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L119"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how the layers of a grayscale or color trace fit together. Defaults to <a class="xref" href="Egami.Drawing.Tracing.TraceLayering.html#Egami_Drawing_Tracing_TraceLayering_Stacked">Stacked</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TraceLayering Layering { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Tracing.TraceLayering.html">TraceLayering</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is not defined.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Drawing_Tracing_TraceOptions_Mode_" data-uid="Egami.Drawing.Tracing.TraceOptions.Mode*"></a>
 
   <h3 id="Egami_Drawing_Tracing_TraceOptions_Mode" data-uid="Egami.Drawing.Tracing.TraceOptions.Mode">
   Mode
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L29"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L35"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how pixels are turned into shapes. Defaults to <a class="xref" href="Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_BlackAndWhite">BlackAndWhite</a>.</p>
@@ -351,7 +430,7 @@ comes first, under the ink, wherever the image has paper.</p>
 
   <h3 id="Egami_Drawing_Tracing_TraceOptions_Noise" data-uid="Egami.Drawing.Tracing.TraceOptions.Noise">
   Noise
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L81"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the smallest region kept, in pixels: a region of fewer pixels merges into the regions around it, smallest first.
@@ -386,15 +465,55 @@ comes first, under the ink, wherever the image has paper.</p>
 
 
 
+  <a id="Egami_Drawing_Tracing_TraceOptions_Palette_" data-uid="Egami.Drawing.Tracing.TraceOptions.Palette*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceOptions_Palette" data-uid="Egami.Drawing.Tracing.TraceOptions.Palette">
+  Palette
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets fixed colors for a grayscale or color trace, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to find them in the image. Each
+pixel takes the nearest of them (by intensity in grayscale), and the shapes take these colors exactly. The list is copied.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Rgba8&gt;? Palette { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The list is empty or has more than 256 colors.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Drawing_Tracing_TraceOptions_PathFidelity_" data-uid="Egami.Drawing.Tracing.TraceOptions.PathFidelity*"></a>
 
   <h3 id="Egami_Drawing_Tracing_TraceOptions_PathFidelity" data-uid="Egami.Drawing.Tracing.TraceOptions.PathFidelity">
   PathFidelity
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L59"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets how closely joined curves follow the shorter curves they replace, from 0 (loose: fewest curves) to 1 (tight: every
-curve kept). Defaults to 0.5, a tolerance of 0.2 pixels.</p>
+  <div class="markdown level1 summary"><p>Gets how closely the fitted curves follow the pixel edges, from 0 (loose: fewest curves) to 1 (tight: most curves).
+Defaults to 0.5: in black and white, joined curves stay within 0.2 pixels of the curves they replace; in grayscale and
+color, the curves stay within 0.5 pixels of the edge points.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -425,16 +544,120 @@ curve kept). Defaults to 0.5, a tolerance of 0.2 pixels.</p>
 
 
 
+  <a id="Egami_Drawing_Tracing_TraceOptions_Smoothing_" data-uid="Egami.Drawing.Tracing.TraceOptions.Smoothing*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceOptions_Smoothing" data-uid="Egami.Drawing.Tracing.TraceOptions.Smoothing">
+  Smoothing
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L141"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how strongly a grayscale or color trace smooths the image before reducing its colors, from 0 (not at all, the
+default) to 1. The smoothing keeps edges between clearly different colors and flattens texture and noise, for photos.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public float Smoothing { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.single">float</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>The value is outside 0 to 1.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Tracing_TraceOptions_SnapToArcs_" data-uid="Egami.Drawing.Tracing.TraceOptions.SnapToArcs*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceOptions_SnapToArcs" data-uid="Egami.Drawing.Tracing.TraceOptions.SnapToArcs">
+  SnapToArcs
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L134"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the runs of a grayscale or color outline that lie on a circle become circular arcs, and round outlines
+circles. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool SnapToArcs { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Tracing_TraceOptions_SnapToLines_" data-uid="Egami.Drawing.Tracing.TraceOptions.SnapToLines*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceOptions_SnapToLines" data-uid="Egami.Drawing.Tracing.TraceOptions.SnapToLines">
+  SnapToLines
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L128"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the straight runs of a grayscale or color outline become lines. Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool SnapToLines { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Drawing_Tracing_TraceOptions_Threshold_" data-uid="Egami.Drawing.Tracing.TraceOptions.Threshold*"></a>
 
   <h3 id="Egami_Drawing_Tracing_TraceOptions_Threshold" data-uid="Egami.Drawing.Tracing.TraceOptions.Threshold">
   Threshold
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L47"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the level that splits ink from paper, from 0 (black) to 1 (white): a pixel is ink when its intensity, over white by
 its alpha, is at most this. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) finds it with Otsu's method, as
-<a class="xref" href="Egami.Raster.html#Egami_Raster_FindThreshold_Egami_Operations_ThresholdMethod_Egami_Operations_ThresholdMode_">FindThreshold(ThresholdMethod, ThresholdMode)</a> does.</p>
+<a class="xref" href="Egami.Raster.html#Egami_Raster_FindThreshold_Egami_Operations_ThresholdMethod_Egami_Operations_ThresholdMode_">FindThreshold(ThresholdMethod, ThresholdMode)</a> does. Used in black and white only.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -469,7 +692,7 @@ its alpha, is at most this. <a href="https://learn.microsoft.com/dotnet/csharp/l
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L10" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceOptions.cs/#L12" class="edit-link">Edit this page</a>
         </div>
 
 

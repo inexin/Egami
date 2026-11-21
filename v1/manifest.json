@@ -3457,6 +3457,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.Tracing.TraceLayering.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.Tracing.TraceLayering.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.Tracing.TraceLayering",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.Tracing.TraceLayering.yml\" sourcestartlinenumber=\"1\">How the color layers of a grayscale or color trace fit together.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Drawing.Tracing.TraceMode.yml",
       "output": {
         ".html": {
