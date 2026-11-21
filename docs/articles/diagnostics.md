@@ -332,6 +332,7 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Svg.Unsupported` | Warning | An element Egami.Svg does not draw (foreignObject, and text until stage C); it is skipped (Egami.Svg) |
 | `Svg.UnsupportedColor` | Warning | A color uses CSS Color 4 syntax, which SVG here does not read (question 5); the initial value is used (Egami.Svg) |
 | `Text.LcdFallback` | Warning | LCD text edging could not be drawn (no pixel geometry, a canvas without 8-bit RGB, a layer, or a paint other than solid source-over); the text was drawn with grayscale antialiasing, reported once per canvas (Egami.Drawing) |
+| `Tga.ExtensionInPixels` | Warning | The TGA 2.0 extension area starts inside the image data, which is damage |
 | `Tga.IndexOutOfRange` | Warning | Pixels use indices outside the color map; they are drawn black |
 | `Tga.RowsMissing` | Warning | The pixel data ends or is damaged; the rows not decoded are black |
 | `Tga.RunPastImage` | Warning | An RLE packet goes past the end of the image; the rest of it was ignored |

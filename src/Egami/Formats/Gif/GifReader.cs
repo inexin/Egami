@@ -207,7 +207,14 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
             switch (head[0])
             {
                 case 0x21:
-                    return SubBlocksArrived(2);
+                    // An application extension's identifier block comes before its sub-blocks, read on its own by ReadApplication:
+                    // one of 0 bytes (found by fuzzing) must not be taken for the terminator.
+                    if (!_input.TryPeekAt(0, head[..3]))
+                    {
+                        return false;
+                    }
+
+                    return SubBlocksArrived(head[1] == 0xFF ? 3L + head[2] : 2);
                 case 0x2C:
                     if (!_input.TryPeekAt(0, head))
                     {
@@ -272,8 +279,18 @@ internal sealed partial class GifReader : IFormatReader, Streaming.IRowSourceRea
                     transparent = (head[3] & 1) != 0 && _input.TryPeekAt(at + 6, head[..1]) ? head[0] : -1;
                 }
 
-                // Skip the extension's sub-blocks.
+                // Skip the extension's sub-blocks, and an application extension's identifier block before them.
                 long offset = at + 2;
+                if (head[1] == 0xFF)
+                {
+                    if (!_input.TryPeekAt(offset, size))
+                    {
+                        return false;
+                    }
+
+                    offset += 1 + size[0];
+                }
+
                 while (true)
                 {
                     if (!_input.TryPeekAt(offset, size))

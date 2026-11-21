@@ -193,7 +193,7 @@ public class HtJ2kCorpusTests
         Assert.True(cap > 0);
         byte[] part2 = (byte[])bytes.Clone();
         part2[cap + 4] |= 0x40;
-        Assert.Throws<NotSupportedException>(() => J2kCodestream.Parse(part2, SafetyLimits.Default));
+        Assert.Throws<UnsupportedFormatException>(() => J2kCodestream.Parse(part2, SafetyLimits.Default));
     }
 
     /// <summary>

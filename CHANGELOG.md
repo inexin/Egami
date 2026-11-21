@@ -67,6 +67,27 @@ Additive to 1.4.0. `.ehyp` files that 1.5.0-preview.1 wrote are version 1 and mu
 - `.ehyp` version 2: Norwegian's patterns compile to 137 KB instead of 649 KB and load in about 0.7 ms. The trie stores no
   edge targets, and numbers are varints. Version 1 files are rejected with a clear error.
 
+## Egami (unreleased)
+
+Fixed: damaged files the nightly fuzz runs found (issues 351 and 360 to 367). Every one is reported as an `EgamiException`, and a
+Strict incremental decode now succeeds or fails as the whole decode does.
+
+- JPEG XL: a lossless frame with a channel coded smaller than the frame, adaptive LF smoothing on a frame with subsampled
+  chroma (skipped now, as libjxl does), and a varblock that does not fit its subsampled chroma group threw
+  `ArgumentOutOfRangeException` or `IndexOutOfRangeException`. A lossless Modular frame coded as YCbCr no longer skips its
+  color transform. A cropped frame is held to `MaxWidth`, `MaxHeight` and `MaxPixels` like the image: a 122-byte file with a
+  2797 × 3156 frame in a 71 × 40 image took seconds to load.
+- JPEG 2000: Part 2 features the reader refuses (SIZ Rsiz bit 15, CAP, Part 2 marker segments, arbitrary wavelets, trellis
+  quantization, other ROI styles) and components over 30 bits throw `UnsupportedFormatException` instead of
+  `NotSupportedException`, so `Raster.Load` callers that catch `EgamiException` see them.
+- BMP: an OS/2 Huffman or other whole-read BMP whose header claims more pixel bytes than the file holds was checked against
+  `MaxTotalBytes` at the claimed size when the input's length was unknown (an incremental decode), and at the real size when
+  known; it is now read in chunks and checked at what arrived.
+- GIF: an application extension with an empty identifier block was taken as complete before its sub-blocks had arrived, so a
+  Strict incremental decode reported a truncated block.
+- TGA: a TGA 2.0 extension area that starts inside the pixel data was used on a seekable input and ignored on one that cannot
+  seek, giving different alpha. It is damage now: Strict throws `CorruptDataException`, Lenient warns `Tga.ExtensionInPixels`.
+
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
 A preview of the next release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic,

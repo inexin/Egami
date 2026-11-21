@@ -299,7 +299,7 @@ internal sealed class J2kCodestream
                 default:
                     if (marker is >= 0xFF70 and <= 0xFF7F)
                     {
-                        throw new NotSupportedException($"The codestream uses JPEG 2000 Part 2 coding tools ({PartTwoName(marker)}), which Egami does not read.");
+                        throw new UnsupportedFormatException($"The codestream uses JPEG 2000 Part 2 coding tools ({PartTwoName(marker)}), which Egami does not read.");
                     }
 
                     if ((marker & 0xFF00) != 0xFF00)
@@ -361,7 +361,7 @@ internal sealed class J2kCodestream
         uint pcap = BinaryPrimitives.ReadUInt32BigEndian(body);
         if ((pcap & (1u << 30)) != 0)
         {
-            throw new NotSupportedException("The codestream needs JPEG 2000 Part 2 capabilities (CAP), which Egami does not read.");
+            throw new UnsupportedFormatException("The codestream needs JPEG 2000 Part 2 capabilities (CAP), which Egami does not read.");
         }
 
         int at = 4;
@@ -413,7 +413,7 @@ internal sealed class J2kCodestream
         Profile = BinaryPrimitives.ReadUInt16BigEndian(body);
         if ((Profile & 0x8000) != 0)
         {
-            throw new NotSupportedException("The codestream uses JPEG 2000 Part 2 extensions (SIZ Rsiz bit 15), which Egami does not read.");
+            throw new UnsupportedFormatException("The codestream uses JPEG 2000 Part 2 extensions (SIZ Rsiz bit 15), which Egami does not read.");
         }
 
         uint xsiz = BinaryPrimitives.ReadUInt32BigEndian(body[2..]);
@@ -542,7 +542,7 @@ internal sealed class J2kCodestream
 
         if (transform > 1)
         {
-            throw new NotSupportedException("The codestream uses an arbitrary wavelet (JPEG 2000 Part 2), which Egami does not read.");
+            throw new UnsupportedFormatException("The codestream uses an arbitrary wavelet (JPEG 2000 Part 2), which Egami does not read.");
         }
 
         style.Levels = levels;
@@ -605,7 +605,7 @@ internal sealed class J2kCodestream
         }
         else
         {
-            throw new NotSupportedException("The codestream uses trellis-coded or other Part 2 quantization, which Egami does not read.");
+            throw new UnsupportedFormatException("The codestream uses trellis-coded or other Part 2 quantization, which Egami does not read.");
         }
 
         if (q.Bands.Length == 0)
@@ -627,7 +627,7 @@ internal sealed class J2kCodestream
 
         if (rest[0] != 0)
         {
-            throw new NotSupportedException("The codestream uses a region of interest style other than max-shift (Part 2), which Egami does not read.");
+            throw new UnsupportedFormatException("The codestream uses a region of interest style other than max-shift (Part 2), which Egami does not read.");
         }
 
         return (c, rest[1]);
@@ -817,7 +817,7 @@ internal sealed class J2kCodestream
                     default:
                         if (m is >= 0xFF70 and <= 0xFF7F)
                         {
-                            throw new NotSupportedException($"The codestream uses JPEG 2000 Part 2 coding tools ({PartTwoName(m)}), which Egami does not read.");
+                            throw new UnsupportedFormatException($"The codestream uses JPEG 2000 Part 2 coding tools ({PartTwoName(m)}), which Egami does not read.");
                         }
 
                         break;

@@ -244,7 +244,16 @@ internal sealed partial class TgaReader : IRowSourceReader, IIncrementalFormatRe
             _decoder.FinishBytes();
             if (_header.FooterAfterPixels && _next == _header.Height)
             {
-                ReadTrailingFooter(_input, _header);
+                ReadTrailingFooter(_input, _header, _strict);
+            }
+            else if (!_header.TopDown)
+            {
+                // Bottom-up rows are read where they are stored, so the pixels' end is known whichever rows were read.
+                _decoder.CheckExtension(_pixels + ((long)_header.Height * _decoder.Stored.Length));
+            }
+            else if (allRows)
+            {
+                _decoder.CheckExtension(_input.Position);
             }
 
             ApplyMetadata(_header, Metadata, _options);

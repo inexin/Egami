@@ -549,13 +549,17 @@ internal sealed partial class BmpReader : IFormatReader
         return new Bgr8(c.B, c.G, c.R);
     }
 
-    /// <summary>Reads the stored pixels whole: the size the header gives, or up to the end of the file.</summary>
+    /// <summary>
+    /// Reads the stored pixels whole: the size the header gives, or up to the end of the file. The header's size is only an upper
+    /// bound, so on an input of unknown length the bytes are read in chunks and the memory checked against what arrived; checking
+    /// the header's size there failed a stream (found by fuzzing) that the same bytes read whole decoded.
+    /// </summary>
     private static byte[] ReadRest(EgamiInput input, Header header)
     {
-        long left = input.Length is long length ? length - input.Position : -1;
-        long known = header.ImageSize > 0 && left >= 0 ? Math.Min(header.ImageSize, left) : header.ImageSize > 0 ? header.ImageSize : left;
-        if (known >= 0)
+        long most = header.ImageSize > 0 ? header.ImageSize : long.MaxValue;
+        if (input.Length is long length)
         {
+            long known = Math.Min(most, Math.Max(0, length - input.Position));
             input.CheckMemory(known);
             byte[] bytes = new byte[(int)Math.Min(known, Array.MaxLength)];
             return bytes[..input.Read(bytes)];
@@ -566,7 +570,7 @@ internal sealed partial class BmpReader : IFormatReader
         try
         {
             int read;
-            while ((read = input.Read(chunk)) > 0)
+            while (all.Length < most && (read = input.Read(chunk.AsSpan(0, (int)Math.Min(chunk.Length, most - all.Length)))) > 0)
             {
                 all.Write(chunk, 0, read);
             }
@@ -576,6 +580,7 @@ internal sealed partial class BmpReader : IFormatReader
             ArrayPool<byte>.Shared.Return(chunk);
         }
 
+        input.CheckMemory(all.Length);
         return all.ToArray();
     }
 

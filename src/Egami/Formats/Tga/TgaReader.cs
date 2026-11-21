@@ -179,6 +179,7 @@ internal sealed partial class TgaReader : IFormatReader
         if (offset >= HeaderLength && offset + ExtensionLength <= length - FooterLength && input.TryReadAt(offset, extension))
         {
             header.Extension = extension;
+            header.ExtensionOffset = offset;
         }
     }
 
@@ -205,8 +206,12 @@ internal sealed partial class TgaReader : IFormatReader
             decoder.Run(raster);
             if (header.FooterAfterPixels)
             {
-                ReadTrailingFooter(input, header);
+                ReadTrailingFooter(input, header, strict);
                 decoder.FixAlphaAfterwards(raster);
+            }
+            else
+            {
+                decoder.CheckExtension(input.Position);
             }
 
             ApplyMetadata(header, raster.Metadata, options);
@@ -220,7 +225,7 @@ internal sealed partial class TgaReader : IFormatReader
     }
 
     /// <summary>Finds the footer in the bytes after the pixels of a stream that cannot seek, when they fit MaxMetadataBytes.</summary>
-    private static void ReadTrailingFooter(EgamiInput input, Header header)
+    private static void ReadTrailingFooter(EgamiInput input, Header header, bool strict)
     {
         long start = input.Position;
         input.ImageEnd = start;
@@ -258,16 +263,34 @@ internal sealed partial class TgaReader : IFormatReader
                 return;
             }
 
-            long offset = BinaryPrimitives.ReadUInt32LittleEndian(rest.AsSpan(length - FooterLength)) - start;
+            long at = BinaryPrimitives.ReadUInt32LittleEndian(rest.AsSpan(length - FooterLength));
+            long offset = at - start;
             if (offset >= 0 && offset + ExtensionLength <= length - FooterLength)
             {
                 header.Extension = rest.AsSpan((int)offset, ExtensionLength).ToArray();
+            }
+            else if (at >= HeaderLength && at < start)
+            {
+                // The bytes it points at have gone by; a seekable file reports the same (Decoder.CheckExtension).
+                ExtensionInPixels(input, header, strict, at);
             }
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(rest);
         }
+    }
+
+    /// <summary>Notes a TGA 2.0 extension area that starts inside the pixels: damage, which Strict refuses.</summary>
+    private static void ExtensionInPixels(EgamiInput input, Header header, bool strict, long at)
+    {
+        const string Message = "The TGA 2.0 extension area starts inside the image data.";
+        if (strict)
+        {
+            throw new CorruptDataException(TgaFormat.Info.Name, at, Message);
+        }
+
+        header.Warnings.Add("Tga.ExtensionInPixels", Message, at);
     }
 
     private static void ApplyMetadata(Header header, RasterMetadata metadata, ReaderOptions options)
@@ -369,6 +392,9 @@ internal sealed partial class TgaReader : IFormatReader
 
         public byte[]? Extension { get; set; }
 
+        /// <summary>Gets or sets where <see cref="Extension"/> was read from, on a seekable file.</summary>
+        public long ExtensionOffset { get; set; }
+
         /// <summary>Gets or sets whether the footer can only be looked for after the pixels (the stream cannot seek).</summary>
         public bool FooterAfterPixels { get; set; }
 
@@ -407,6 +433,7 @@ internal sealed partial class TgaReader : IFormatReader
         private Bgra8[] _color = ArrayPool<Bgra8>.Shared.Rent(header.Width);
         private GrayAlpha8[] _gray = ArrayPool<GrayAlpha8>.Shared.Rent(header.Width);
         private int _remaining;
+        private bool _damaged;
         private bool _repeat;
         private bool _pastPalette;
         private bool _disposed;
@@ -556,9 +583,23 @@ internal sealed partial class TgaReader : IFormatReader
             _bytes?.Finish();
         }
 
+        /// <summary>
+        /// Checks that an extension area read through the footer of a seekable file starts after the pixels, which end at
+        /// <paramref name="pixelEnd"/>. One inside them (found by fuzzing) is damage; a stream that cannot seek looks for the
+        /// extension after the pixels and reports the same, so both decodes agree.
+        /// </summary>
+        public void CheckExtension(long pixelEnd)
+        {
+            if (!_damaged && header.Extension is not null && header.ExtensionOffset < pixelEnd)
+            {
+                ExtensionInPixels(input, header, strict, header.ExtensionOffset);
+            }
+        }
+
         /// <summary>Notes damage found at stored row <paramref name="row"/>: the rows from there on are left black.</summary>
         public void Damaged(CorruptDataException e, int row)
         {
+            _damaged = true;
             header.Warnings.Add("Tga.RowsMissing", $"{e.Message} The {header.Height - row} rows not decoded are left black.", e);
             header.FooterAfterPixels = false;
         }
