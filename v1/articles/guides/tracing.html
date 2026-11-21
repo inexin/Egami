@@ -90,7 +90,7 @@
 <p>Bitmap tracing turns a raster into filled vector shapes: a scanned signature, line art or a logo comes back as <code>Path</code> objects
 with a color each, ready to draw at any size, record as a <code>Picture</code>, or save as SVG. It is part of Egami.Drawing, in the
 namespace <code>Egami.Drawing.Tracing</code>; Egami.Svg adds the SVG output.</p>
-<p>Three modes trace filled shapes: black and white, grayscale and color. Logo, centre-line and pixel-art modes come in later 1.x
+<p>Four modes trace filled shapes: black and white, grayscale, color and logo. Centre-line and pixel-art modes come in later 1.x
 versions, as new <code>TraceMode</code> values; traced output may also improve between minor versions.</p>
 <h2 id="tracing-a-raster">Tracing a raster</h2>
 <p><code>raster.Trace(options)</code> traces the raster's first frame and returns a <code>TraceResult</code>: its <code>Shapes</code>, back to front, and the
@@ -108,7 +108,7 @@ Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));
 </code></pre>
 <ul>
 <li>Each <code>TracedShape</code> has a <code>Path</code>, a <code>Color</code> (<code>Rgba8</code>), a <code>Kind</code> (<code>TracedShapeKind.Fill</code> or <code>Stroke</code>) and, for a stroke, a
-<code>StrokeWidth</code>. The black-and-white, grayscale and color modes give filled shapes only.</li>
+<code>StrokeWidth</code>. The black-and-white, grayscale, color and logo modes give filled shapes only.</li>
 <li>Coordinates are the raster's pixels, y down, with pixel (0, 0) covering the square from (0, 0) to (1, 1), as on a
 <a href="drawing.html#a-canvas">canvas</a>.</li>
 <li>In black and white, one shape is one ink region: its outer edge and its holes. A region inside another region's hole comes
@@ -148,7 +148,7 @@ TraceResult polygon = scan.Trace(TraceOptions.BlackAndWhite with { Corners = 1 }
 <tr>
 <td><code>Mode</code></td>
 <td><code>BlackAndWhite</code></td>
-<td>How pixels become shapes: <code>BlackAndWhite</code>, <code>Grayscale</code> or <code>Color</code>.</td>
+<td>How pixels become shapes: <code>BlackAndWhite</code>, <code>Grayscale</code>, <code>Color</code> or <code>Logo</code>.</td>
 </tr>
 <tr>
 <td><code>Threshold</code></td>
@@ -158,22 +158,22 @@ TraceResult polygon = scan.Trace(TraceOptions.BlackAndWhite with { Corners = 1 }
 <tr>
 <td><code>Colors</code></td>
 <td>8</td>
-<td>Grayscale and color: the most colors (gray levels) the image is reduced to, 2 to 256. An image with fewer flat colors gets fewer.</td>
+<td>Grayscale, color and logo: the most colors (gray levels) the image is reduced to, 2 to 256. An image with fewer flat colors gets fewer.</td>
 </tr>
 <tr>
 <td><code>Palette</code></td>
 <td><code>null</code></td>
-<td>Grayscale and color: fixed colors to reduce the image to instead; the shapes take them exactly.</td>
+<td>Grayscale, color and logo: fixed colors to reduce the image to instead; the shapes take them exactly.</td>
 </tr>
 <tr>
 <td><code>Layering</code></td>
 <td><code>Stacked</code></td>
-<td>Grayscale and color: how the layers fit together (see below).</td>
+<td>Grayscale, color and logo: how the layers fit together (see below).</td>
 </tr>
 <tr>
 <td><code>Smoothing</code></td>
 <td>0</td>
-<td>Grayscale and color: edge-keeping smoothing before the colors are found, from 0 to 1, for photos.</td>
+<td>Grayscale and color: edge-keeping smoothing before the colors are found, from 0 to 1, for photos. Not used in logo.</td>
 </tr>
 <tr>
 <td><code>PathFidelity</code></td>
@@ -203,7 +203,7 @@ TraceResult polygon = scan.Trace(TraceOptions.BlackAndWhite with { Corners = 1 }
 <tr>
 <td><code>IgnoreWhite</code></td>
 <td><code>false</code></td>
-<td>Leaves out white: in black and white the white shape that otherwise comes first, under the ink, the size of the image; in grayscale and color the layer of each color whose red, green and blue are all at least 240, whose areas stay empty.</td>
+<td>Leaves out white: in black and white the white shape that otherwise comes first, under the ink, the size of the image; in grayscale, color and logo the layer of each color whose red, green and blue are all at least 240, whose areas stay empty (in logo, also the transparency the art encloses).</td>
 </tr>
 </tbody>
 </table>
@@ -243,6 +243,29 @@ cut at the points where three meet, each piece is fitted once, and both neighbou
 exactly and never overlap. This suits editing the shapes one by one.</li>
 <li><code>Smoothing</code> runs a bilateral filter, one to three passes, before the colors are found: texture and noise flatten while
 edges between clearly different colors stay put.</li>
+</ul>
+<h2 id="logo">Logo</h2>
+<p><code>TraceMode.Logo</code> is for logos, icons and other flat-color art with antialiased edges, where a few pixels decide whether a
+curve looks round. It finds the flat colors as color mode does, then splits every edge pixel into the two colors it blends
+and places the edge from a smooth field of how much of each pixel each color covers. The curves come back rounder than in
+color mode on small art: a disc of radius 6 keeps its radius to about 0.05 pixels.</p>
+<pre><code class="lang-csharp">// Flat-color art with antialiased edges: edges placed from smooth coverage fields, for rounder curves on small art.
+TraceResult traced = logo.Trace(new TraceOptions { Mode = TraceMode.Logo, Colors = 8 });
+
+// On a transparent icon the outside is left out; the hole the ring encloses is traced white unless IgnoreWhite.
+TraceResult donut = icon.Trace(new TraceOptions { Mode = TraceMode.Logo, Layering = TraceLayering.Abutting });
+
+// A photo or a gradient is not flat color, so logo mode refuses it: trace it with TraceMode.Color instead.
+</code></pre>
+<ul>
+<li>Transparency around the art is left out: no shape covers it. Transparency the art encloses, such as the inside of a
+letter O on a transparent background, is traced as white, which <code>IgnoreWhite</code> leaves out like any white.</li>
+<li><code>Colors</code>, <code>Palette</code>, <code>Layering</code>, <code>Noise</code> and the fit settings work as in color mode. A palette maps each of the image's own
+colors to the nearest fixed color; with transparency it takes at most 254 colors.</li>
+<li>An image that is not flat color is refused with an <code>ArgumentException</code>: when more than a tenth of its pixels are neither
+one of its colors nor a blend of two, it is a photo or a gradient (trace it with <code>TraceMode.Color</code>), or it has more flat
+colors than <code>Colors</code> allows. JPEG noise on a flat logo is fine.</li>
+<li>Small images are sampled finer, up to 4 × 4 samples a pixel, so a 100-pixel icon has as smooth an outline as a large one.</li>
 </ul>
 <h2 id="shapes-and-paths">Shapes and paths</h2>
 <pre><code class="lang-csharp">// TraceOptions.Default also gives a white shape for the paper, under the ink.
@@ -302,6 +325,19 @@ worst point until every point is within the <code>PathFidelity</code> tolerance.
 </ol>
 <p>A traced circle keeps its size to a few hundredths of a pixel when its edge is antialiased: a disc of radius 30 comes back
 with a radius of 29.95.</p>
+<p>Logo mode replaces steps 1 and 3:</p>
+<ol>
+<li><strong>Coverage.</strong> Each pixel is split into up to three shares: its flat color, or a blend of two colors (its own and a
+neighbour's), and, under alpha, transparency. Fringe colors that only blend others, along edges or from JPEG, leave the
+palette first.</li>
+<li><strong>Fields.</strong> Each color's shares become a signed distance to its edge, after S. Gustavson and R. Strand, &quot;Anti-aliased
+Euclidean distance transform&quot; (2011), which a cubic B-spline interpolates between pixel centres, prefiltered as in M.
+Unser, A. Aldroubi and M. Eden, &quot;B-spline signal processing&quot; (1993) and P. Thévenaz, T. Blu and M. Unser,
+&quot;Interpolation revisited&quot; (2000).</li>
+<li><strong>Iso-lines.</strong> The fields are sampled on a finer grid and each sample takes the color whose field leads there; the edge
+between two samples sits where the two fields cross, as in W. Lorensen and H. Cline's marching cubes (1987) in two
+dimensions. The rest is the color-mode walk and fit, scaled back to the image's pixels.</li>
+</ol>
 
 </article>
 

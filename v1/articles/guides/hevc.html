@@ -159,9 +159,11 @@ HEVC settings: the <code>HevcProfile</code>, the level (the lowest Main tier lev
 limits, adaptive quantization, B-frames and Annex B packets for raw streams. Packets are otherwise length-prefixed with the
 parameter sets in the track's hvcC record, which MP4 and MOV write as an hvc1 sample entry, the one Apple players need. Each
 picture's CTB rows are wavefront substreams coded in parallel, and the stream is the same on any number of threads. Every
-picture decodes in Egami's decoder, and FFmpeg's, to the encoder's own reconstruction, sample for sample.</p>
-<p>The encoder is in progress: so far every picture is coded intra (keyframes as IDR pictures), with the HEIC encoder's search,
-and P and B pictures follow.</p>
+picture decodes in Egami's decoder, FFmpeg's and the reference decoder HM to the encoder's own reconstruction, sample for
+sample.</p>
+<p>The encoder is in progress: keyframes are IDR pictures, coded with the HEIC encoder's search, and the other pictures are P
+pictures predicted from earlier ones, with motion search, merge and skip modes and intra blocks where they pay. B pictures
+follow.</p>
 <pre><code class="lang-csharp">// HEVC in MP4 (an hvc1 track): Main for 8-bit frames, Main 10 for 16-bit planes, the level picked from the frame size and rate.
 VideoWriterOptions options = new() { Codec = HevcCodec.Instance, FrameRate = new Rational(30, 1), Quality = 60 };
 using (VideoWriter writer = VideoWriter.Create(&quot;duck.mp4&quot;, options))

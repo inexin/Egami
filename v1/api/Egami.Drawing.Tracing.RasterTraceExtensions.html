@@ -169,7 +169,7 @@ Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));</c
 
   <h3 id="Egami_Drawing_Tracing_RasterTraceExtensions_Trace_Egami_Raster_Egami_Drawing_Tracing_TraceOptions_Egami_EgamiContext_" data-uid="Egami.Drawing.Tracing.RasterTraceExtensions.Trace(Egami.Raster,Egami.Drawing.Tracing.TraceOptions,Egami.EgamiContext)">
   Trace(Raster, TraceOptions?, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/RasterTraceExtensions.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/RasterTraceExtensions.cs/#L27"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Traces a raster's first frame into shapes: its ink regions (or, in grayscale and color, its color regions) become paths
@@ -231,6 +231,10 @@ Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));</c
     <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
     <dd><p>The raster is larger than the context's <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxPixels">MaxPixels</a>.</p>
 </dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>In <a class="xref" href="Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_Logo">Logo</a>, the image is not flat-color art (a photo or a
+gradient), or it has transparency and <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Palette">Palette</a> has more than 254 colors.</p>
+</dd>
   </dl>
 
 
@@ -239,7 +243,7 @@ Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));</c
 
   <h3 id="Egami_Drawing_Tracing_RasterTraceExtensions_TraceAsync_Egami_Raster_Egami_Drawing_Tracing_TraceOptions_Egami_EgamiContext_System_Threading_CancellationToken_" data-uid="Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync(Egami.Raster,Egami.Drawing.Tracing.TraceOptions,Egami.EgamiContext,System.Threading.CancellationToken)">
   TraceAsync(Raster, TraceOptions?, EgamiContext?, CancellationToken)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/RasterTraceExtensions.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/RasterTraceExtensions.cs/#L70"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Traces a raster's first frame into shapes on a worker thread, as <a class="xref" href="Egami.Drawing.Tracing.RasterTraceExtensions.html#Egami_Drawing_Tracing_RasterTraceExtensions_Trace_Egami_Raster_Egami_Drawing_Tracing_TraceOptions_Egami_EgamiContext_">Trace(Raster, TraceOptions?, EgamiContext?)</a> does.</p>
@@ -295,6 +299,10 @@ TraceResult result = await scan.TraceAsync(TraceOptions.BlackAndWhite, cancellat
     <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
     <dd><p>The raster is larger than the context's <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxPixels">MaxPixels</a>.</p>
 </dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>In <a class="xref" href="Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_Logo">Logo</a>, the image is not flat-color art (a photo or a
+gradient), or it has transparency and <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Palette">Palette</a> has more than 254 colors.</p>
+</dd>
   </dl>
 
 
@@ -303,7 +311,7 @@ TraceResult result = await scan.TraceAsync(TraceOptions.BlackAndWhite, cancellat
 
   <h3 id="Egami_Drawing_Tracing_RasterTraceExtensions_Trace__1_Egami_Raster___0__Egami_Drawing_Tracing_TraceOptions_Egami_EgamiContext_" data-uid="Egami.Drawing.Tracing.RasterTraceExtensions.Trace``1(Egami.Raster{``0},Egami.Drawing.Tracing.TraceOptions,Egami.EgamiContext)">
   Trace&lt;TPixel&gt;(Raster&lt;TPixel&gt;, TraceOptions?, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/RasterTraceExtensions.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/RasterTraceExtensions.cs/#L49"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Traces a raster's first frame into shapes: its ink regions (or, in grayscale and color, its color regions) become paths
@@ -373,6 +381,10 @@ TraceResult polygon = scan.Trace(TraceOptions.BlackAndWhite with { Corners = 1 }
 </dd>
     <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
     <dd><p>The raster is larger than the context's <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxPixels">MaxPixels</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>In <a class="xref" href="Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_Logo">Logo</a>, the image is not flat-color art (a photo or a
+gradient), or it has transparency and <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Palette">Palette</a> has more than 254 colors.</p>
 </dd>
   </dl>
 

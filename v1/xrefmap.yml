@@ -22874,6 +22874,12 @@ references:
   commentId: F:Egami.Drawing.Tracing.TraceMode.Grayscale
   fullName: Egami.Drawing.Tracing.TraceMode.Grayscale
   nameWithType: TraceMode.Grayscale
+- uid: Egami.Drawing.Tracing.TraceMode.Logo
+  name: Logo
+  href: api/Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_Logo
+  commentId: F:Egami.Drawing.Tracing.TraceMode.Logo
+  fullName: Egami.Drawing.Tracing.TraceMode.Logo
+  nameWithType: TraceMode.Logo
 - uid: Egami.Drawing.Tracing.TraceOptions
   name: TraceOptions
   href: api/Egami.Drawing.Tracing.TraceOptions.html

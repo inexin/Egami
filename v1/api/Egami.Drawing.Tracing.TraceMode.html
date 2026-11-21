@@ -132,6 +132,13 @@ leaving out the blends along edges, and traces each color as a layer of shapes.<
   <dd><p>Reduces the image to <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Colors">Colors</a> gray levels of its own (or to <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Palette">Palette</a>)
 and traces each level as a layer of gray shapes.</p>
 </dd>
+    <dt id="Egami_Drawing_Tracing_TraceMode_Logo"><code>Logo = 3</code></dt>
+  
+  <dd><p>For logos, icons and other flat-color art with antialiased edges: reduces the image to its flat colors as
+<a class="xref" href="Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_Color">Color</a> does, then places each edge to a fraction of a pixel from smooth fields of how much of each pixel each
+color covers, for smoother curves than <a class="xref" href="Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_Color">Color</a> on small art. Transparency around the art is left out;
+transparency the art encloses is traced as white. An image that is not flat color (a photo, a gradient) is refused.</p>
+</dd>
   </dl>
 
   <h2 id="Egami_Drawing_Tracing_TraceMode_examples">Examples</h2>
