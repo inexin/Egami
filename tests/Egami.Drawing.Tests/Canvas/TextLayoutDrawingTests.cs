@@ -220,6 +220,91 @@ public class TextLayoutDrawingTests
         Assert.Equal(Count(byHand, p => p.R < 128), Count(drawn, p => p.R < 128));
     }
 
+    [Fact]
+    public void AColorSpanMidLineDrawsInItsColor()
+    {
+        // The red word shapes with the black text around it, in one shaped run, yet draws red.
+        RichText text = new("black red black", [new StyleSpan(6, 3, new TextStyle { Color = new Rgba8(255, 0, 0, 255) })]);
+        TextLayout layout = Paragraph.Create(text, Style()).Layout(220);
+        using Raster<Rgba8> image = Draw(c => c.DrawTextLayout(layout, Vector2.Zero));
+        (float redLeft, float redRight) = Extent(layout, 6, 9);
+        TextLine line = layout.Lines[0];
+
+        static bool IsRed(Rgba8 p) => p.R > 200 && p.G < 80 && p.B < 80;
+        static bool IsDark(Rgba8 p) => p.R < 80 && p.G < 80 && p.B < 80;
+        Assert.True(CountIn(image, redLeft, redRight, line.Top, line.Bottom, IsRed) > 20);
+        Assert.Equal(0, CountIn(image, redLeft, redRight, line.Top, line.Bottom, IsDark));
+        Assert.Equal(0, CountIn(image, 0, redLeft - 1, line.Top, line.Bottom, IsRed));
+        Assert.Equal(0, CountIn(image, redRight + 1, image.Width, line.Top, line.Bottom, IsRed));
+        Assert.True(CountIn(image, redRight + 1, image.Width, line.Top, line.Bottom, IsDark) > 20);
+    }
+
+    [Fact]
+    public void ABackgroundSpanMidLineFillsOnlyItsText()
+    {
+        Rgba8 yellow = new(255, 255, 0, 255);
+        RichText text = new("plain marked plain", [new StyleSpan(6, 6, new TextStyle { Background = yellow })]);
+        TextLayout layout = Paragraph.Create(text, Style()).Layout(220);
+        using Raster<Rgba8> image = Draw(c => c.DrawTextLayout(layout, Vector2.Zero));
+        (float left, float right) = Extent(layout, 6, 12);
+        int y = (int)layout.Lines[0].Top + 1;
+        Assert.Equal(yellow, image.GetPixel((int)MathF.Ceiling(left) + 1, y));
+        Assert.Equal(yellow, image.GetPixel((int)right - 2, y));
+        Assert.Equal(Rgba8.White, image.GetPixel((int)left - 3, y));
+        Assert.Equal(Rgba8.White, image.GetPixel((int)right + 3, y));
+    }
+
+    [Fact]
+    public void AnUnderlineSharedByTwoColorsTakesEachTextsColor()
+    {
+        // One TextDecoration for the whole paragraph; the red span inherits it and keeps its own text color.
+        TextStyle underlined = new() { Decoration = new TextDecoration { Lines = TextDecorationLines.Underline, SkipInk = TextDecorationSkipInk.None } };
+        Rgba8 red = new(255, 0, 0, 255);
+        RichText text = new("black red black", [new StyleSpan(6, 3, new TextStyle { Color = red })]);
+        TextLayout layout = Paragraph.Create(text, Style(underlined)).Layout(220);
+        Assert.Equal([Rgba8.Black, red, Rgba8.Black], layout.Decorations.Select(d => d.Color));
+
+        using Raster<Rgba8> image = Draw(c => c.DrawTextLayout(layout, Vector2.Zero));
+        DecorationShape redLine = layout.Decorations[1];
+        int y = (int)(redLine.Top + (redLine.Thickness / 2));
+        (float redLeft, float redRight) = Extent(layout, 6, 9);
+        Assert.Equal(red, image.GetPixel((int)((redLeft + redRight) / 2), y));
+        Assert.Equal(Rgba8.Black, image.GetPixel((int)redLeft - 4, y));
+        Assert.Equal(Rgba8.Black, image.GetPixel((int)redRight + 4, y));
+    }
+
+    /// <summary>The pen x of the glyphs of <c>[start, end)</c> on a left-to-right line, from the glyph at
+    /// <paramref name="start"/> to the one at <paramref name="end"/>.</summary>
+    private static (float Left, float Right) Extent(TextLayout layout, int start, int end)
+    {
+        float left = float.NaN, right = float.NaN;
+        foreach (GlyphRun glyphs in layout.Lines.SelectMany(l => l.Runs).Select(r => r.Glyphs).OfType<GlyphRun>())
+        {
+            for (int g = 0; g < glyphs.Count; g++)
+            {
+                left = glyphs.Clusters[g] == start ? glyphs.Positions[g].X : left;
+                right = glyphs.Clusters[g] == end ? glyphs.Positions[g].X : right;
+            }
+        }
+
+        Assert.True(left < right);
+        return (left, right);
+    }
+
+    private static int CountIn(Raster<Rgba8> image, float left, float right, float top, float bottom, Func<Rgba8, bool> match)
+    {
+        int count = 0;
+        for (int y = Math.Max(0, (int)top); y < Math.Min(image.Height, (int)MathF.Ceiling(bottom)); y++)
+        {
+            for (int x = Math.Max(0, (int)left); x < Math.Min(image.Width, (int)MathF.Ceiling(right)); x++)
+            {
+                count += match(image.GetPixel(x, y)) ? 1 : 0;
+            }
+        }
+
+        return count;
+    }
+
     private static int Ink(Raster<Rgba8> image, int top, int bottom)
     {
         int ink = 0;

@@ -325,9 +325,11 @@ public sealed partial class TextLayout
         return Paragraph.Styles[style].Style.Decoration is TextDecoration d && d.Lines != TextDecorationLines.None ? (d, style) : null;
     }
 
-    private static void Extend(List<(TextDecoration Decoration, int Style, float Left, float Right, List<(Font Font, GlyphRun Run, int Glyph)> Glyphs)> stretches, TextDecoration d, int style, float left, float right, (Font, GlyphRun, int)? glyph)
+    /// <summary>Adds a decorated cluster or tab to the line's stretches: it extends the last stretch when it touches it with the
+    /// same decoration and would be drawn the same way (see <see cref="DrawsAlike"/>), else starts a new one.</summary>
+    private void Extend(List<(TextDecoration Decoration, int Style, float Left, float Right, List<(Font Font, GlyphRun Run, int Glyph)> Glyphs)> stretches, TextDecoration d, int style, float left, float right, (Font, GlyphRun, int)? glyph)
     {
-        if (stretches.Count > 0 && ReferenceEquals(stretches[^1].Decoration, d) && Math.Abs(stretches[^1].Right - left) < 0.01f)
+        if (stretches.Count > 0 && ReferenceEquals(stretches[^1].Decoration, d) && Math.Abs(stretches[^1].Right - left) < 0.01f && DrawsAlike(stretches[^1].Style, style, d))
         {
             var last = stretches[^1];
             if (glyph is { } add)
@@ -340,6 +342,19 @@ public sealed partial class TextLayout
         }
 
         stretches.Add((d, style, left, right, glyph is { } g ? [g] : []));
+    }
+
+    /// <summary>Whether a decoration is drawn alike in two styles: in the same color (the decoration's own, or the same text
+    /// color) and with the same shadows.</summary>
+    private bool DrawsAlike(int a, int b, TextDecoration d)
+    {
+        if (a == b)
+        {
+            return true;
+        }
+
+        TextStyle x = Paragraph.Styles[a].Style, y = Paragraph.Styles[b].Style;
+        return (d.Color is not null || d.Paint is not null || x.Color == y.Color) && ReferenceEquals(x.Shadows, y.Shadows);
     }
 
     /// <summary>

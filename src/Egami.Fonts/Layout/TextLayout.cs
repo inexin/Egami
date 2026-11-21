@@ -269,7 +269,7 @@ public enum LayoutRunKind
     Control = 3,
 }
 
-/// <summary>A piece of a line: glyphs of one font and bidi level, or a placeholder, tab or break.</summary>
+/// <summary>A piece of a line: glyphs of one font, bidi level and style, or a placeholder, tab or break.</summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="layout"/>
 /// </example>
@@ -300,8 +300,8 @@ public sealed class LayoutRun
     /// <summary>Gets the run's bidi level after the line rules; odd levels run right to left.</summary>
     public int BidiLevel { get; }
 
-    /// <summary>Gets the style of the run's first character: 0 for the paragraph's default style, else 1 plus the index of the
-    /// rich text's span.</summary>
+    /// <summary>Gets the style of the run's text: 0 for the paragraph's default style, else 1 plus the index of the rich text's
+    /// span. A run has one style; where a ligature joins characters of two styles, the run holding it has its first character's.</summary>
     public int StyleIndex { get; }
 
     /// <summary>Gets the x of the run's left edge.</summary>

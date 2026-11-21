@@ -11,7 +11,8 @@ namespace Egami.Fonts.Layout;
 /// </summary>
 /// <remarks>
 /// Runs split where the bidi level, the script, the font (after fallback) or a style field that changes shaping changes; paint
-/// fields never split a run. Hard breaks, other control characters and placeholders are runs of their own without glyphs.
+/// fields, baseline shift and line height never split a run, so kerning and ligatures carry across a color change. Lines cut
+/// their runs at every style change again, so each <see cref="LayoutRun"/> has one style. Hard breaks, other control characters and placeholders are runs of their own without glyphs.
 /// </remarks>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="rich-text"/>
@@ -307,6 +308,10 @@ internal sealed class ParagraphRun(int start, int length, RunKind kind, int leve
 
     /// <summary>Whether the run stands upright in a vertical line, shaped top to bottom.</summary>
     public bool Upright { get; init; }
+
+    /// <summary>The grapheme cluster starts inside the run where the style changes (a span that shapes like the one before it,
+    /// such as a color change), in order; null when the whole run has one style. Lines cut their pieces there.</summary>
+    public int[]? StyleBreaks { get; init; }
 }
 
 /// <summary>Bidi levels and paragraphs copied out of a <see cref="BidiResult"/>, owned by the paragraph.</summary>
@@ -484,7 +489,14 @@ internal static class Itemizer
         new(new FontTag("liga"), 0), new(new FontTag("clig"), 0), new(new FontTag("dlig"), 0), new(new FontTag("hlig"), 0), new(new FontTag("calt"), 0),
     ];
 
-    private readonly record struct Pending(int Start, int Length, RunKind Kind, int Level, Script Script, int Style, int Group, Font Font, int Placeholder, bool Upright = false);
+    private readonly record struct Pending(int Start, int Length, RunKind Kind, int Level, Script Script, int Style, int Group, Font Font, int Placeholder, bool Upright = false)
+    {
+        /// <summary>The style of the run's last cluster so far.</summary>
+        public int LastStyle { get; init; } = Style;
+
+        /// <summary>Where the style changes inside the run, made at the first change.</summary>
+        public List<int>? StyleBreaks { get; init; }
+    }
 
     /// <summary>
     /// Whether a cluster stands upright in a vertical line: by its first character's Vertical_Orientation (UAX #50) with
@@ -537,7 +549,13 @@ internal static class Itemizer
             if (pending.Count > 0 && pending[^1] is { Kind: RunKind.Text } last && last.Level == level && last.Script == script
                 && last.Group == style.ShapingGroup && last.Font == font && last.Upright == upright && last.Start + last.Length == cluster.Start)
             {
-                pending[^1] = last with { Length = last.Length + cluster.Length };
+                List<int>? styleBreaks = last.StyleBreaks;
+                if (styleIndex != last.LastStyle)
+                {
+                    (styleBreaks ??= []).Add(cluster.Start);
+                }
+
+                pending[^1] = last with { Length = last.Length + cluster.Length, LastStyle = styleIndex, StyleBreaks = styleBreaks };
                 continue;
             }
 
@@ -572,7 +590,11 @@ internal static class Itemizer
                 TextShaper.ShapeRun(text, p.Start, p.Length, p.Font, properties, glyphs);
             }
 
-            runs[i] = new ParagraphRun(p.Start, p.Length, p.Kind, p.Level, p.Script, p.Style, p.Font, glyphs, p.Placeholder, properties) { Upright = p.Upright };
+            runs[i] = new ParagraphRun(p.Start, p.Length, p.Kind, p.Level, p.Script, p.Style, p.Font, glyphs, p.Placeholder, properties)
+            {
+                Upright = p.Upright,
+                StyleBreaks = p.StyleBreaks is { } styleBreaks ? [.. styleBreaks] : null,
+            };
         }
 
         return runs;
