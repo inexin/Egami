@@ -166,8 +166,11 @@ internal static class CubicFitter
                 continue;
             }
 
+            // Round a closed run each neighbour counts once, so a reach longer than the run (a tiny loop on a fine grid) never
+            // wraps past the point itself.
+            int near = closed ? Math.Min(reach, (n - 1) / 2) : reach;
             bool sharpest = true;
-            for (int j = -reach; j <= reach && sharpest; j++)
+            for (int j = -near; j <= near && sharpest; j++)
             {
                 int other = i + j;
                 if (closed)

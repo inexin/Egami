@@ -229,6 +229,40 @@ public class LogoTraceTests
     }
 
     [Fact]
+    public void TinyLoopsWithALongReachKeepTheirCorners()
+    {
+        // A closed run of 10 points, fewer than the corner reach of a 4x finer grid: the reach must not wrap past the run.
+        Vec[] run = [new(0, 0), new(1, 0), new(2, 0), new(3, 0), new(3, 1), new(3, 2), new(2, 2), new(1, 2), new(0, 2), new(0, 1)];
+        List<int> corners = CubicFitter.Corners(run, true, Math.PI / 3, 12);
+        Assert.Subset(corners.ToHashSet(), new HashSet<int> { 0, 3, 5, 8 });
+        Assert.All(corners, c => Assert.InRange(c, 0, run.Length - 1));
+    }
+
+    [Fact]
+    public void TinySpecksTraceWithNoNoiseFilter()
+    {
+        // Specks of a pixel or two, faint and strong, on a small image traced 4x finer with every region kept.
+        using Raster<Rgba8> raster = Raster.Create(20, 20, Rgba8.White);
+        for (int k = 0; k < 16; k++)
+        {
+            byte level = (byte)(255 - (k * 15));
+            Rgba8 speck = new(level, (byte)(30 + (k * 14)), 30, 255);
+            int x = 1 + ((k % 4) * 5), y = 1 + ((k / 4) * 5);
+            raster.SetPixel(x, y, speck);
+            if (k % 2 == 1)
+            {
+                raster.SetPixel(x + 1, y, Red);
+            }
+        }
+
+        foreach (TraceLayering layering in new[] { TraceLayering.Stacked, TraceLayering.Abutting })
+        {
+            TraceResult result = raster.Trace(Logo with { Noise = 0, Colors = 16, Layering = layering });
+            Assert.NotEmpty(result.Shapes);
+        }
+    }
+
+    [Fact]
     public void PixelArtKeepsItsAreaWhenAbutting()
     {
         Random random = new(5);
