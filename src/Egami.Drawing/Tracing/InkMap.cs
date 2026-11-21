@@ -36,6 +36,16 @@ internal sealed class InkMap
     internal static InkMap FromRaster<TPixel>(Raster<TPixel> raster, float level, CancellationToken cancellationToken)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
+        return FromRaster(raster, level, null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Makes the map from a raster's first frame, as <see cref="FromRaster{TPixel}(Raster{TPixel}, float, CancellationToken)"/>
+    /// does, and fills <paramref name="intensities"/>, when given, with each pixel's intensity over white from 0 to 255.
+    /// </summary>
+    internal static InkMap FromRaster<TPixel>(Raster<TPixel> raster, float level, byte[]? intensities, CancellationToken cancellationToken)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
         InkMap map = new(raster.Width, raster.Height);
         for (int y = 0; y < raster.Height; y++)
         {
@@ -49,6 +59,10 @@ internal sealed class InkMap
                 float alpha = Math.Clamp(rgba.W, 0, 1);
                 float over = (alpha * intensity) + (1 - alpha);
                 ink[x] = over <= level ? (byte)1 : (byte)0;
+                if (intensities is not null)
+                {
+                    intensities[(y * raster.Width) + x] = (byte)((Math.Clamp(over, 0, 1) * 255) + 0.5f);
+                }
             }
         }
 

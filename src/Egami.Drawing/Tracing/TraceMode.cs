@@ -11,4 +11,16 @@ public enum TraceMode
     /// curves and sharp corners fitted to the pixel edges.
     /// </summary>
     BlackAndWhite,
+
+    /// <summary>
+    /// Reduces the image to <see cref="TraceOptions.Colors"/> gray levels of its own (or to <see cref="TraceOptions.Palette"/>)
+    /// and traces each level as a layer of gray shapes.
+    /// </summary>
+    Grayscale,
+
+    /// <summary>
+    /// Reduces the image to <see cref="TraceOptions.Colors"/> of its own flat colors (or to <see cref="TraceOptions.Palette"/>),
+    /// leaving out the blends along edges, and traces each color as a layer of shapes.
+    /// </summary>
+    Color,
 }

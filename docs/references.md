@@ -59,11 +59,13 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 
 Specifications, textbooks and papers are always fine.
 
-For bitmap tracing, P. Selinger, "Potrace: a polygon-based tracing algorithm" (2003) is the reference for black and white:
-path decomposition, straight paths and the optimal polygon, vertex adjustment, corner detection and curve optimisation. The
-tracer is written from the paper, with VectorCraft and VTracer as the listed libraries. potrace, autotrace, Inkscape,
-libdepixelize and their .NET ports (CsPotrace and others) are GPL and never read; potrace's CLI runs only as a black box in
-egami-compare's gates.
+For bitmap tracing, P. Selinger, "Potrace: a polygon-based tracing algorithm" (2003) is the reference for the boundary walk
+(path decomposition with its turn policy), and P. J. Schneider, "An algorithm for automatically fitting digitized curves"
+(Graphics Gems, 1990) for the least-squares cubic fit every mode uses. Colors come from P. Heckbert's median cut (1982),
+refined by Lloyd's k-means; smoothing is C. Tomasi and R. Manduchi's bilateral filter (1998); circles are fitted with I.
+Kåsa's least-squares method (1976). The tracer is written from these papers, with VectorCraft and VTracer as the listed
+libraries. potrace, autotrace, Inkscape, libdepixelize and their .NET ports (CsPotrace and others) are GPL and never read;
+potrace's CLI runs only as a black box in egami-compare's gates.
 
 For DDS textures, Microsoft's DDS programming guide, the Direct3D 11 BC6H and BC7 format pages and the Khronos Data Format
 Specification (its S3TC, RGTC and BPTC chapters) are the references, with DirectXTex, Pfim, bcdec, stb_dxt and bc7enc_rdo as

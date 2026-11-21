@@ -9,8 +9,8 @@ namespace Egami.Drawing.Tracing;
 public static class RasterTraceExtensions
 {
     /// <summary>
-    /// Traces a raster's first frame into shapes: ink regions become paths of smooth curves and sharp corners fitted to the
-    /// pixel edges, in the raster's pixels.
+    /// Traces a raster's first frame into shapes: its ink regions (or, in grayscale and color, its color regions) become paths
+    /// of lines, arcs, curves and corners fitted to the pixel edges, in the raster's pixels.
     /// </summary>
     /// <param name="raster">The raster.</param>
     /// <param name="options">The settings, or <see langword="null"/> for <see cref="TraceOptions.Default"/>.</param>
@@ -28,8 +28,8 @@ public static class RasterTraceExtensions
     }
 
     /// <summary>
-    /// Traces a raster's first frame into shapes: ink regions become paths of smooth curves and sharp corners fitted to the
-    /// pixel edges, in the raster's pixels.
+    /// Traces a raster's first frame into shapes: its ink regions (or, in grayscale and color, its color regions) become paths
+    /// of lines, arcs, curves and corners fitted to the pixel edges, in the raster's pixels.
     /// </summary>
     /// <typeparam name="TPixel">The raster's pixel type.</typeparam>
     /// <param name="raster">The raster.</param>
@@ -81,9 +81,13 @@ public static class RasterTraceExtensions
             default:
                 {
                     // Other pixel types are read through a 16-bit copy, which keeps their precision for the threshold.
-                    float level = options.Threshold ?? raster.FindThreshold();
+                    if (options.Mode == TraceMode.BlackAndWhite)
+                    {
+                        options = options with { Threshold = options.Threshold ?? raster.FindThreshold() };
+                    }
+
                     using Raster<Rgba16> rgba16 = raster.As<Rgba16>();
-                    return Tracer.Trace(rgba16, options with { Threshold = level }, context, cancellationToken);
+                    return Tracer.Trace(rgba16, options, context, cancellationToken);
                 }
         }
     }

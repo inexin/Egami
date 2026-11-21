@@ -42,12 +42,12 @@ public class Tracing
         using Raster<Rgba8> scan = Signature();
 
         #region options
-        // Black and white with potrace-like settings.
+        // Black and white with every setting spelled out.
         TraceResult ink = scan.Trace(new TraceOptions
         {
             Mode = TraceMode.BlackAndWhite,
             Threshold = null,      // null: Otsu's method, as Raster.FindThreshold; or a level from 0 (black) to 1 (white)
-            PathFidelity = 0.5f,   // 0: fewest curves; 1: every curve kept
+            PathFidelity = 0.5f,   // 0: fewest curves; 1: curves that follow the pixels most closely
             Corners = 0.75f,       // 0: round every corner; 1: keep every corner (a polygon)
             Noise = 4,             // regions under 4 pixels merge into the regions around them
             IgnoreWhite = true,    // the ink alone, no white background shape
@@ -59,6 +59,40 @@ public class Tracing
 
         Assert.NotEmpty(ink.Shapes);
         Assert.DoesNotContain(PathVerb.Cubic, polygon.ToPath(Rgba8.Black).Verbs.ToArray());
+    }
+
+    [Fact]
+    public void Color()
+    {
+        using Raster<Rgba8> logo = Logo();
+
+        #region color
+        // A flat-colored logo: up to 8 of its own colors, one layer each, largest first, each layer covering those above it.
+        TraceResult stacked = logo.Trace(new TraceOptions { Mode = TraceMode.Color, Colors = 8 });
+        IReadOnlyList<Rgba8> colors = stacked.Palette;     // the colors found, back to front
+
+        // Abutting layers: each color only its own area, neighbours sharing one edge, and white left out.
+        TraceResult pieces = logo.Trace(new TraceOptions
+        {
+            Mode = TraceMode.Color,
+            Layering = TraceLayering.Abutting,
+            IgnoreWhite = true,
+            SnapToLines = true,    // straight runs become lines
+            SnapToArcs = true,     // runs on a circle become arcs, round outlines circles
+        });
+
+        // Grayscale to fixed levels, smoothed first as for a photo.
+        TraceResult poster = logo.Trace(new TraceOptions
+        {
+            Mode = TraceMode.Grayscale,
+            Palette = [new Rgba8(0, 0, 0, 255), new Rgba8(128, 128, 128, 255), new Rgba8(255, 255, 255, 255)],
+            Smoothing = 0.5f,
+        });
+        #endregion
+
+        Assert.Equal(3, colors.Count);
+        Assert.Equal(2, pieces.Palette.Count);
+        Assert.All(poster.Shapes, s => Assert.Equal(s.Color.R, s.Color.G));
     }
 
     [Fact]
@@ -137,6 +171,15 @@ public class Tracing
     }
 
     /// <summary>A stand-in for a scanned signature: strokes drawn in black on white, antialiased.</summary>
+    private static Raster<Rgba8> Logo()
+    {
+        Raster<Rgba8> raster = Raster.Create(120, 90, Rgba8.White);
+        using RasterCanvas<Rgba8> canvas = raster.CreateCanvas();
+        canvas.FillCircle(new Vector2(40, 45), 30, new Rgba8(220, 30, 30, 255));
+        canvas.FillRect(new RectF(60, 20, 45, 50), new Rgba8(20, 60, 200, 255));
+        return raster;
+    }
+
     private static Raster<Rgba8> Signature()
     {
         Raster<Rgba8> raster = Raster.Create(160, 80, Rgba8.White);

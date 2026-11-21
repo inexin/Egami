@@ -37,14 +37,12 @@ public class TraceTests
 
         TracedShape shape = Assert.Single(raster.Trace(TraceOptions.BlackAndWhite).Shapes);
 
-        // The curves run through the polygon's side midpoints and only reach the near edge of each corner's square, so a
-        // traced circle comes out a fraction of a pixel small: here 0.2 pixels of a radius of 30.
-        Assert.Equal(Math.PI * 900, PathEffectTests.Area(shape.Path), Math.PI * 900 * 0.025);
-        Assert.Contains(PathVerb.Cubic, shape.Path.Verbs.ToArray());
+        // The antialiased edge places the outline to a fraction of a pixel: the radius comes back within 0.1 pixels.
+        Assert.Equal(Math.PI * 900, PathEffectTests.Area(shape.Path), Math.PI * 900 * 0.007);
         Assert.DoesNotContain(PathVerb.Line, shape.Path.Verbs.ToArray());
 
-        // Far fewer curves than boundary steps: a circle of radius 30 has about 170 pixel edges.
-        Assert.InRange(shape.Path.Verbs.ToArray().Count(v => v == PathVerb.Cubic), 4, 24);
+        // A round outline snaps to a circle: four quarter arcs, where a circle of radius 30 has about 170 pixel edges.
+        Assert.Equal(4, shape.Path.Verbs.ToArray().Count(v => v == PathVerb.Cubic));
     }
 
     [Fact]
@@ -168,7 +166,7 @@ public class TraceTests
 
         Path polygon = raster.Trace(TraceOptions.BlackAndWhite with { Corners = 1 }).ToPath(Rgba8.Black);
         Assert.DoesNotContain(PathVerb.Cubic, polygon.Verbs.ToArray());
-        Path round = raster.Trace(TraceOptions.BlackAndWhite with { Corners = 0 }).ToPath(Rgba8.Black);
+        Path round = raster.Trace(TraceOptions.BlackAndWhite with { Corners = 0, SnapToLines = false }).ToPath(Rgba8.Black);
         Assert.DoesNotContain(PathVerb.Line, round.Verbs.ToArray());
     }
 
@@ -321,6 +319,12 @@ public class TraceTests
         Assert.Throws<ArgumentOutOfRangeException>(() => TraceOptions.Default with { Corners = float.PositiveInfinity });
         Assert.Throws<ArgumentOutOfRangeException>(() => TraceOptions.Default with { Noise = -1 });
         Assert.Throws<ArgumentOutOfRangeException>(() => TraceOptions.Default with { Mode = (TraceMode)99 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => TraceOptions.Default with { Colors = 1 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => TraceOptions.Default with { Colors = 257 });
+        Assert.Throws<ArgumentException>(() => TraceOptions.Default with { Palette = [] });
+        Assert.Throws<ArgumentException>(() => TraceOptions.Default with { Palette = [.. Enumerable.Repeat(Rgba8.Black, 257)] });
+        Assert.Throws<ArgumentOutOfRangeException>(() => TraceOptions.Default with { Layering = (TraceLayering)5 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => TraceOptions.Default with { Smoothing = 2 });
         Assert.Throws<ArgumentNullException>(() => ((Raster)null!).Trace());
         Assert.Throws<ArgumentOutOfRangeException>(() => new TracedShape(Path.Empty, Rgba8.Black, TracedShapeKind.Stroke, -1));
         Assert.Throws<ArgumentOutOfRangeException>(() => new TraceResult([], 0, 1));
@@ -329,6 +333,12 @@ public class TraceTests
         Assert.Equal(TraceMode.BlackAndWhite, TraceOptions.Default.Mode);
         Assert.False(TraceOptions.Default.IgnoreWhite);
         Assert.True(TraceOptions.BlackAndWhite.IgnoreWhite);
+        Assert.Equal(8, TraceOptions.Default.Colors);
+        Assert.Null(TraceOptions.Default.Palette);
+        Assert.Equal(TraceLayering.Stacked, TraceOptions.Default.Layering);
+        Assert.True(TraceOptions.Default.SnapToLines);
+        Assert.True(TraceOptions.Default.SnapToArcs);
+        Assert.Equal(0, TraceOptions.Default.Smoothing);
         Assert.Equal(TraceOptions.Default, new TraceOptions());
     }
 
@@ -355,7 +365,7 @@ public class TraceTests
     [Fact]
     public void RandomBitmapsKeepTheirArea()
     {
-        // Noise bitmaps stress the polygon and curve steps: the outline still encloses about the ink's area.
+        // Noise bitmaps stress the corner and curve fitting: the outline still encloses about the ink's area.
         Random random = new(11);
         using Raster<Rgba8> raster = Raster.Create(48, 40, Rgba8.White);
         int ink = 0;

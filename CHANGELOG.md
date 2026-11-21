@@ -23,21 +23,27 @@ inter coding, rate control tuning and its gates. Additive to 1.3.
 
 ## Egami.Drawing and Egami.Svg 1.5.0 (unreleased)
 
-Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PR A of seven): black-and-white images become vector shapes.
-Additive to 1.4.0; the later PRs add Grayscale, Color, Logo, Centerline and PixelArt modes, presets and an `egami trace`
-command.
+Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PRs A and B of seven): black-and-white, grayscale and color
+images become vector shapes. Additive to 1.4.0; the later PRs add Logo, Centerline and PixelArt modes, presets and an
+`egami trace` command.
 
 - `raster.Trace(options)` (namespace `Egami.Drawing.Tracing`, also `Trace<TPixel>` and `TraceAsync` with a cancellation
   token) traces a raster's first frame and returns a `TraceResult`: `TracedShape`s back to front (a `Path`, an `Rgba8`
-  color, `TracedShapeKind.Fill` or `Stroke`), with `Draw(canvas)`, `ToPicture()` and `ToPath(color)`. Outer edges run
-  clockwise and holes counter-clockwise, so either fill rule fills the same.
-- `TraceMode.BlackAndWhite` is written from P. Selinger's paper "Potrace: a polygon-based tracing algorithm" (2003): pixel
-  edge loops with diagonal ink kept together, the optimal polygon, corners moved to the best-fit lines, corner detection and
-  curve joining. `TraceOptions` sets the `Threshold` (Otsu's method when `null`), `PathFidelity`, `Corners`, `Noise` (regions
-  smaller than this many pixels merge into the regions around them, smallest first) and `IgnoreWhite`; `TraceOptions.Default`
-  matches potrace's published defaults, and `TraceOptions.BlackAndWhite` leaves out the white background shape.
+  color, `TracedShapeKind.Fill` or `Stroke`) and their `Palette`, with `Draw(canvas)`, `ToPicture()` and `ToPath(color)`.
+  Outer edges run clockwise and holes counter-clockwise, so either fill rule fills the same.
+- `TraceMode.BlackAndWhite` splits ink from paper at `Threshold` (Otsu's method when `null`); `TraceMode.Grayscale` and
+  `TraceMode.Color` reduce the image to at most `Colors` of its own flat colors (median cut and weighted k-means on a 15-bit
+  histogram that leaves out the blends along edges), or to a fixed `Palette`, with optional edge-keeping `Smoothing` for
+  photos. Color layers are `TraceLayering.Stacked` (the default: each layer also covers the layers above it, so no gaps
+  show) or `TraceLayering.Abutting` (each color only its own area, neighbours sharing one fitted edge).
+- Every mode places edges to a fraction of a pixel from antialiased or blurred pixels, reads hard staircases as the line
+  through their steps, and fits lines and cubics by least squares after P. J. Schneider, "An algorithm for automatically
+  fitting digitized curves" (1990), with corners restored and runs snapped to lines (`SnapToLines`) and circular arcs
+  (`SnapToArcs`). `PathFidelity` sets the tolerance, `Corners` the corner angle and `Noise` the smallest region kept;
+  `IgnoreWhite` leaves out white. `TraceOptions.BlackAndWhite` is the defaults with `IgnoreWhite`.
 - Egami.Svg writes a trace as SVG through `SvgCanvas`: `result.ToSvg()` and `result.SaveSvg(path)` (or a stream).
-- Speed is not tuned yet (Build Plan PR F): a 1000 × 1000 drawing traces in about 0.4 s, 3000 × 3000 in about 1.2 s.
+- Speed is not tuned yet (Build Plan PR F): a 3000 × 3000 drawing traces in about 0.7 s in black and white and 1 s in
+  color.
 
 ## Egami.Fonts (unreleased)
 
