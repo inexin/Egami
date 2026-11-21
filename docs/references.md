@@ -54,8 +54,16 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [LZMA SDK](https://www.7-zip.org/sdk.html) | C, C++, C# | Public domain | LZMA and LZMA2 as Igor Pavlov specifies them (lzma-specification.txt) | TIFF LZMA |
 | [XZ Utils](https://tukaani.org/xz/) (liblzma) | C | 0BSD (liblzma), public domain (older releases) | How liblzma reads and writes xz streams and LZMA2, as behaviour; its xz CLI makes the test corpus and the native speed | TIFF LZMA |
 | [CharLS](https://github.com/team-charls/charls) | C++ | BSD-3 | Run as a black box only: its public C API decodes and encodes for the JPEG-LS gates, and its output showed how HP's colour transforms (APP8 "mrfx") behave. The codec is written from ITU-T T.87 and the LOCO-I paper (Weinberger, Seroussi and Sapiro, IEEE Trans. Image Processing, 2000); its test images (the T.87 conformance set) are the test corpus | JPEG-LS |
+| [VectorCraft](https://github.com/storytold/vectorcraft) (`crates/trace`) | Rust | MIT or Apache 2.0 | A clean-room bitmap tracer: the pipeline's shape (quantise, merge small regions, crack-edge loops, fit curves) and its option set | 2.6.6 |
+| [VTracer](https://github.com/visioncortex/vtracer) | Rust | MIT | Colour tracing options and behaviour (speckle filter, corner threshold, presets); its CLI is a speed gate | 2.6.6 |
 
 Specifications, textbooks and papers are always fine.
+
+For bitmap tracing, P. Selinger, "Potrace: a polygon-based tracing algorithm" (2003) is the reference for black and white:
+path decomposition, straight paths and the optimal polygon, vertex adjustment, corner detection and curve optimisation. The
+tracer is written from the paper, with VectorCraft and VTracer as the listed libraries. potrace, autotrace, Inkscape,
+libdepixelize and their .NET ports (CsPotrace and others) are GPL and never read; potrace's CLI runs only as a black box in
+egami-compare's gates.
 
 For DDS textures, Microsoft's DDS programming guide, the Direct3D 11 BC6H and BC7 format pages and the Khronos Data Format
 Specification (its S3TC, RGTC and BPTC chapters) are the references, with DirectXTex, Pfim, bcdec, stb_dxt and bc7enc_rdo as
