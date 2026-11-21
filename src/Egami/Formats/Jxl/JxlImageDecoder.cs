@@ -467,11 +467,12 @@ internal static class JxlImageDecoder
                 (int decoded, int total) = decoder.PassGroups;
                 input.Emit(DiagnosticLevel.Debug, "Jxl.RegionGroups", $"ReaderOptions.Region needed {decoded} of {total} pass groups; the others were not decoded.");
             }
-            if (sequence.Count == 1 && frame.ColorPlanes is null && !h.XybEncoded && file.Output!.Transform is null && !f.Gaborish && f.EpfIterations == 0 && (f.Flags & 0x13) == 0
-                && f.Upsampling == 1 && f.ExtraChannelUpsampling.All(u => u == 1) && !f.HaveCrop
+            if (sequence.Count == 1 && frame.ColorPlanes is null && !h.XybEncoded && !f.YCbCr && file.Output!.Transform is null && !f.Gaborish && f.EpfIterations == 0 && (f.Flags & 0x13) == 0
+                && f.Upsampling == 1 && f.ExtraChannelUpsampling.All(u => u == 1) && !f.HaveCrop && FullSize(frame, f.Width, f.Height, h.ExtraChannels.Count)
                 && !h.ExtraChannels.Any(e => e.Type is JxlExtraChannelType.SpotColor or JxlExtraChannelType.Black || e.AlphaAssociated))
             {
-                // Lossless Modular: keep the integers, so 8 and 16-bit output is exact.
+                // Lossless Modular: keep the integers, so 8 and 16-bit output is exact. A channel coded smaller than the frame
+                // (chroma subsampling, or a damaged stream; found by fuzzing) takes the float path, which reports it.
                 emit(new JxlDecoded(file, f.Width, f.Height, frame), f);
                 return;
             }
@@ -688,6 +689,22 @@ internal static class JxlImageDecoder
         }
 
         return output;
+    }
+
+    /// <summary>Gets whether the color and extra channels of a Modular frame each hold at least a full frame of samples.</summary>
+    private static bool FullSize(JxlFrameChannels frame, int width, int height, int extras)
+    {
+        long count = (long)width * height;
+        for (int c = 0; c < frame.Channels.Count; c++)
+        {
+            bool used = c < frame.ColorChannels || (c >= frame.ExtraStart && c < frame.ExtraStart + extras);
+            if (used && frame.Channels[c].Data.Length < count)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>

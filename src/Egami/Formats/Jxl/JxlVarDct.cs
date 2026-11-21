@@ -909,7 +909,9 @@ internal sealed class JxlVarDct
                 }
             }
 
-            if ((_frame.Flags & 0x80) == 0)
+            // Adaptive smoothing works on three same-size LF planes, so like libjxl it runs only without chroma subsampling; a
+            // subsampled frame that does not set the skip flag (found by fuzzing) indexed past its smaller chroma planes.
+            if ((_frame.Flags & 0x80) == 0 && !Subsampled)
             {
                 SmoothLf();
             }
@@ -968,6 +970,15 @@ internal sealed class JxlVarDct
 
                     sbx = (gx0 >> hs) + ((bx - gx0) >> hs);
                     sby = (gy0 >> vs) + ((by - gy0) >> vs);
+
+                    // A varblock larger than one block can leave its group or the smaller chroma plane once shifted; that
+                    // indexed past the plane (found by fuzzing), and blocks crossing groups would be written by two threads.
+                    (int w8, int h8) = JxlTransforms8.Size((JxlTransformType)type);
+                    if (((bx - gx0) >> hs) + w8 > gb >> hs || ((by - gy0) >> vs) + h8 > gb >> vs
+                        || sbx + w8 > PlaneBlocksX(c) || sby + h8 > PlaneBlocksY(c))
+                    {
+                        throw new CorruptDataException(JxlFormat.Info.Name, -1, "A varblock does not fit its subsampled chroma group.");
+                    }
                 }
 
                 action(sbx, sby, (JxlTransformType)type, _hfMul[at]);

@@ -124,6 +124,10 @@ internal sealed class JxlFile
         {
             input.CancellationToken.ThrowIfCancellationRequested();
             JxlFrameHeader frame = JxlFrameHeader.Read(r, Header, preview: false);
+
+            // A cropped frame can be far larger than the image (a 2797×3156 frame in a 71×40 image, found by fuzzing, took
+            // seconds to upsample), so its own size is held to the limits too.
+            input.CheckFrameSize(frame.Width, frame.Height);
             JxlToc toc = JxlToc.Read(r, frame);
             Frames.Add(frame);
             input.CheckFrameCount(Frames.Count);

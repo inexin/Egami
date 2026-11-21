@@ -103,7 +103,7 @@ internal sealed class J2kDecoder
 
             if ((Needed is null || Needed[c]) && _stream.Components[c].Precision > 30)
             {
-                throw new NotSupportedException($"Component {c} has {_stream.Components[c].Precision}-bit samples; Egami reads JPEG 2000 components of up to 30 bits.");
+                throw new UnsupportedFormatException($"Component {c} has {_stream.Components[c].Precision}-bit samples; Egami reads JPEG 2000 components of up to 30 bits.");
             }
         }
 
