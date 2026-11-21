@@ -21,7 +21,10 @@ waits for B pictures, rate control tuning and its gates. Additive to 1.3.
   transform trees, and intra coding units in P pictures where the residual calls for them. `HevcEncoderOptions.BFrames` takes
   effect with B pictures. Egami's decoder, FFmpeg and the HM reference decoder decode every test stream to the encoder's own
   reconstruction, bit for bit (tools/video/check-hevc-encoder.py); tools/video/time-hevc-encoder.py measures BD-rate and speed
-  against x265 and Egami's H.264 encoder.
+  against x265 and Egami's H.264 encoder. The search prices trial codings from static rate tables and codes only the kept one
+  with RDOQ, refines motion with two half-sample SAD steps and one quarter-sample SATD step, and runs AVX2/SSE2/Vector128 SAD,
+  SATD, interpolation and quantization kernels; the shared forward transform gained 4x4 and even/odd-split 16x16/32x32 kernels,
+  which make HEIC encoding a few percent faster with byte-identical output.
 - Egami.Video.Hevc compiles Egami.Heic's HEVC encoder and decoder files in as internal source, so a Video release does not wait
   for an Egami.Heic release; it still installs beside Egami.Heic 1.4.0. HEIC output is unchanged.
 

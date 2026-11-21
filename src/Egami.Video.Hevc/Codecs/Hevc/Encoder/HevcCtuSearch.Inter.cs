@@ -587,7 +587,14 @@ internal sealed partial class HevcCtuSearch
         int qp = UnitQp(x0, y0);
         HevcCodingUnit cu = new()
         {
-            X = x0, Y = y0, Log2 = log2, Depth = depth, Bypass = _settings.Lossless, Qp = qp, Inter = true, PartMode = choice.PartMode,
+            X = x0,
+            Y = y0,
+            Log2 = log2,
+            Depth = depth,
+            Bypass = _settings.Lossless,
+            Qp = qp,
+            Inter = true,
+            PartMode = choice.PartMode,
         };
         cu.LumaModes[0] = 1;
         cu.ChromaSyntax[0] = 4;
