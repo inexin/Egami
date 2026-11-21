@@ -89,7 +89,7 @@ internal sealed partial class HevcCtuSearch
     {
         if (contexts is null)
         {
-            HevcContexts.Initialize(_bins.Contexts, _slice.SliceQp);
+            HevcContexts.Initialize(_bins.Contexts, _slice.SliceQp, InitType(_slice));
         }
         else
         {
@@ -107,9 +107,25 @@ internal sealed partial class HevcCtuSearch
         List<HevcCodingUnit> cus = [];
 
         // SAO syntax comes first in the CTB; its bins are counted once the SAO search has run, so here the contexts skip it.
-        Quadtree(xCtb, yCtb, _sps.CtbLog2Size, 0, cus);
+        bool coded = false;
+        InterCtu(xCtb, yCtb, cus, ref coded);
+        if (!coded)
+        {
+            Quadtree(xCtb, yCtb, _sps.CtbLog2Size, 0, cus);
+        }
+
         return cus;
     }
+
+    /// <summary>
+    /// Decides a CTB of a P or B slice, when the encoder has inter coding compiled in (Egami.Video.Hevc), and sets
+    /// <paramref name="coded"/>; else the intra search decides it.
+    /// </summary>
+    partial void InterCtu(int xCtb, int yCtb, List<HevcCodingUnit> cus, ref bool coded);
+
+    /// <summary>initType (9-7): 0 for I slices; P and B slices swap 1 and 2 with cabac_init_flag.</summary>
+    internal static int InitType(HevcSliceHeader slice) =>
+        slice.SliceType == HevcSliceHeader.I ? 0 : (slice.SliceType == HevcSliceHeader.P) != slice.CabacInit ? 1 : 2;
 
     private double Lambda(int qp) => 0.57 * Math.Pow(2, (qp + _sps.QpBdOffsetLuma - 12) / 3.0);
 

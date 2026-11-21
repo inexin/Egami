@@ -5,7 +5,7 @@ namespace Egami.Heic.Hevc;
 /// the reconstructed samples of the components it names, the 4x4 block maps (intra mode, depth, QpY, flags), and the rate
 /// contexts and QP state, which the search keeps with it.
 /// </summary>
-internal sealed class HevcSnapshot(HevcPicture picture)
+internal sealed partial class HevcSnapshot(HevcPicture picture)
 {
     private readonly ushort[][] _samples = [new ushort[64 * 64], new ushort[64 * 64], new ushort[64 * 64]];
     private readonly byte[] _modes = new byte[16 * 16];
@@ -102,5 +102,10 @@ internal sealed class HevcSnapshot(HevcPicture picture)
                 _flags.AsSpan(y * 16, w4).CopyTo(picture.Flags.AsSpan(at));
             }
         }
+
+        CopyMotion(capture, x4, y4, w4, h4);
     }
+
+    /// <summary>Copies the region's motion maps too, in an encoder with inter coding compiled in (Egami.Video.Hevc).</summary>
+    partial void CopyMotion(bool capture, int x4, int y4, int w4, int h4);
 }

@@ -63,6 +63,12 @@ internal sealed record HevcEncoderSettings
     /// <summary>Gets max_transform_hierarchy_depth_intra.</summary>
     internal int MaxTransformDepth { get; init; } = 2;
 
+    /// <summary>Gets max_transform_hierarchy_depth_inter, or null for <see cref="MaxTransformDepth"/> (a still picture has no inter units).</summary>
+    internal int? MaxTransformDepthInter { get; init; }
+
+    /// <summary>Gets sps_temporal_mvp_enabled_flag: whether P and B slices may predict motion vectors from a collocated picture.</summary>
+    internal bool TemporalMvp { get; init; }
+
     /// <summary>Gets whether CTB rows are wavefront substreams (entropy_coding_sync_enabled_flag).</summary>
     internal bool Wavefronts { get; init; } = true;
 

@@ -463,10 +463,10 @@ internal sealed partial class HevcCtuSearch
 
     /// <summary>Transforms (or skips the transform), quantizes, reconstructs and counts a predicted block's residual.</summary>
     private BlockResult Quantized(int c, ushort[] plane, ushort[] source, int at, int stride, int log2, int mode, int qp, int bitDepth, bool skip, double lambda,
-        double weight, short[] levels)
+        double weight, short[] levels, bool inter = false, bool rdoq = true)
     {
         int n = 1 << log2, count = n * n;
-        bool dst = c == 0 && log2 == 2;
+        bool dst = c == 0 && log2 == 2 && !inter;
         if (skip)
         {
             HevcForward.Skip(_residual, _coefficients, log2, bitDepth);
@@ -479,9 +479,9 @@ internal sealed partial class HevcCtuSearch
         int scanIdx = HevcSyntaxWriter.ScanIndex(log2, c, mode, _chroma);
         int scanEnd = count;
         long bits = -1;
-        int nonZero = _profile.Rdoq
+        int nonZero = _profile.Rdoq && rdoq
             ? Rdoq(_coefficients, levels, log2, c, scanIdx, qp, bitDepth, lambda / weight, out scanEnd, out bits)
-            : HevcForward.Quantize(_coefficients, levels, log2, qp, bitDepth);
+            : HevcForward.Quantize(_coefficients, levels, log2, qp, bitDepth, inter ? 85 : 171);
         if (nonZero != 0 && _pps.SignDataHiding)
         {
             HevcForward.HideSigns(_coefficients, levels, log2, qp, bitDepth, scanIdx, scanEnd >> 4);

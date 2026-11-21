@@ -4,7 +4,7 @@ namespace Egami.Heic.Hevc;
 /// The coding decisions of one coding unit, as the encoder's search leaves them for the final CABAC pass: its place and size,
 /// partitioning, intra modes, transquant bypass, the QP change it codes, and its transform tree with the coefficient levels.
 /// </summary>
-internal sealed class HevcCodingUnit
+internal sealed partial class HevcCodingUnit
 {
     /// <summary>Gets or sets the top-left luma sample.</summary>
     internal int X { get; set; }

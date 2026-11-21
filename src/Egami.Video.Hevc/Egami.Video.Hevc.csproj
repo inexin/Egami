@@ -15,6 +15,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <!-- The encoder's work counters (HevcEncodeStats): in Debug builds, and in a Release build with -p:EgamiHevcStats=true, which
+       tools/video/time-hevc-encoder.py makes in its own artifacts folder. Other Release builds compile the counting away. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug' Or '$(EgamiHevcStats)' == 'true'">
+    <DefineConstants>$(DefineConstants);EGAMI_HEVC_STATS</DefineConstants>
+  </PropertyGroup>
+
   <!-- Build-time analyzer only; ships nothing. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />

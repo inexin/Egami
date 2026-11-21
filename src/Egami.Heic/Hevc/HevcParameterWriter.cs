@@ -129,7 +129,7 @@ internal static class HevcParameterWriter
         w.Ue((uint)(s.CtbLog2Size - 3)); // log2_diff_max_min_luma_coding_block_size
         w.Ue(0); // log2_min_luma_transform_block_size_minus2: 4x4
         w.Ue((uint)(Math.Min(s.CtbLog2Size, 5) - 2)); // log2_diff_max_min_luma_transform_block_size: up to 32x32
-        w.Ue((uint)s.MaxTransformDepth); // max_transform_hierarchy_depth_inter
+        w.Ue((uint)(s.MaxTransformDepthInter ?? s.MaxTransformDepth)); // max_transform_hierarchy_depth_inter
         w.Ue((uint)s.MaxTransformDepth); // max_transform_hierarchy_depth_intra
         w.Flag(false); // scaling_list_enabled_flag
         w.Flag(false); // amp_enabled_flag
@@ -137,7 +137,7 @@ internal static class HevcParameterWriter
         w.Flag(false); // pcm_enabled_flag
         w.Ue(0); // num_short_term_ref_pic_sets
         w.Flag(false); // long_term_ref_pics_present_flag
-        w.Flag(false); // sps_temporal_mvp_enabled_flag
+        w.Flag(s.TemporalMvp); // sps_temporal_mvp_enabled_flag
         w.Flag(true); // strong_intra_smoothing_enabled_flag
         w.Flag(true); // vui_parameters_present_flag
         Vui(w, s);
@@ -225,6 +225,10 @@ internal static class HevcParameterWriter
             w.U(s.Log2MaxPocLsb, (uint)(picture.Poc & ((1 << s.Log2MaxPocLsb) - 1))); // slice_pic_order_cnt_lsb
             w.Flag(false); // short_term_ref_pic_set_sps_flag: the set is coded here
             ShortTermRefPicSet(w, picture);
+            if (s.TemporalMvp)
+            {
+                w.Flag(picture.TemporalMvp); // slice_temporal_mvp_enabled_flag
+            }
         }
 
         if (s.Sao && !s.Lossless)
@@ -234,6 +238,42 @@ internal static class HevcParameterWriter
             {
                 w.Flag(sao); // slice_sao_chroma_flag
             }
+        }
+
+        if (picture is not null && picture.SliceType != HevcSliceHeader.I)
+        {
+            // The PPS's default is one reference a list.
+            bool b = picture.SliceType == HevcSliceHeader.B;
+            bool overridden = picture.NumRefIdxL0 != 1 || (b && picture.NumRefIdxL1 != 1);
+            w.Flag(overridden); // num_ref_idx_active_override_flag
+            if (overridden)
+            {
+                w.Ue((uint)(picture.NumRefIdxL0 - 1)); // num_ref_idx_l0_active_minus1
+                if (b)
+                {
+                    w.Ue((uint)(picture.NumRefIdxL1 - 1)); // num_ref_idx_l1_active_minus1
+                }
+            }
+
+            if (b)
+            {
+                w.Flag(false); // mvd_l1_zero_flag
+            }
+
+            if (picture.TemporalMvp && s.TemporalMvp)
+            {
+                if (b)
+                {
+                    w.Flag(picture.CollocatedFromL0); // collocated_from_l0_flag
+                }
+
+                if ((picture.CollocatedFromL0 ? picture.NumRefIdxL0 : picture.NumRefIdxL1) > 1)
+                {
+                    w.Ue((uint)picture.CollocatedRefIdx); // collocated_ref_idx
+                }
+            }
+
+            w.Ue((uint)(5 - picture.MaxNumMergeCand)); // five_minus_max_num_merge_cand
         }
 
         w.Se(s.Lossless ? 0 : s.Qp - (s.PpsQp ?? s.Qp)); // slice_qp_delta
@@ -468,4 +508,22 @@ internal sealed record HevcSliceInfo
 
     /// <summary>Gets the reference set's pictures after this one: POC differences, positive and rising, and whether this picture predicts from each.</summary>
     internal (int Delta, bool Used)[] After { get; init; } = [];
+
+    /// <summary>Gets num_ref_idx_l0_active_minus1 + 1 of a P or B slice.</summary>
+    internal int NumRefIdxL0 { get; init; } = 1;
+
+    /// <summary>Gets num_ref_idx_l1_active_minus1 + 1 of a B slice.</summary>
+    internal int NumRefIdxL1 { get; init; } = 1;
+
+    /// <summary>Gets slice_temporal_mvp_enabled_flag (written when the SPS enables temporal motion vector prediction).</summary>
+    internal bool TemporalMvp { get; init; }
+
+    /// <summary>Gets collocated_from_l0_flag of a B slice (a P slice's collocated picture is always in list 0).</summary>
+    internal bool CollocatedFromL0 { get; init; } = true;
+
+    /// <summary>Gets collocated_ref_idx.</summary>
+    internal int CollocatedRefIdx { get; init; }
+
+    /// <summary>Gets MaxNumMergeCand, 1 to 5.</summary>
+    internal int MaxNumMergeCand { get; init; } = 5;
 }

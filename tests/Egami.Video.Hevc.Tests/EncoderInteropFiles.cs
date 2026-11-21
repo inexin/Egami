@@ -1,3 +1,4 @@
+using Egami.Pixels;
 using Egami.Video.Codecs;
 
 namespace Egami.Video.Hevc.Tests;
@@ -7,7 +8,8 @@ namespace Egami.Video.Hevc.Tests;
 /// tools/video/check-hevc-encoder.py to decode with FFmpeg: into EGAMI_INTEROP_DIR/hevcvideo, each stream as &lt;name&gt;.h265,
 /// the shown frames as &lt;name&gt;.yuv (planar 4:2:0, 16-bit little-endian samples for Main 10) and its size, frame count and bit
 /// depth as &lt;name&gt;.txt. Each stream is also encoded at one thread and must give the same bytes. Runs only when
-/// EGAMI_INTEROP_DIR is set.
+/// EGAMI_INTEROP_DIR is set. With EGAMI_INTEROP_CLIP naming an 8-bit 4:2:0 Y4M file, streams of a 416x240 crop of its first
+/// frames are written too, at several efforts: real motion for the P pictures.
 /// </summary>
 public class EncoderInteropFiles
 {
@@ -33,7 +35,18 @@ public class EncoderInteropFiles
         yield return ("crop-2x2", 2, 2, 3, 8, Options(2, 2, 4, new HevcEncoderOptions()));
         yield return ("rows", 200, 300, 3, 8, Options(200, 300, 4, new HevcEncoderOptions()));
         yield return ("wide", 1280, 48, 3, 8, Options(1280, 48, 1, new HevcEncoderOptions()));
+        if (Environment.GetEnvironmentVariable("EGAMI_INTEROP_CLIP") is not null)
+        {
+            foreach (int effort in new[] { 0, 2, 4, 6, 10 })
+            {
+                yield return ($"clip-effort{effort}", ClipWidth, ClipHeight, ClipFrames, 8, Options(ClipWidth, ClipHeight, effort, new HevcEncoderOptions()));
+            }
+        }
     }
+
+    private const int ClipWidth = 416;
+    private const int ClipHeight = 240;
+    private const int ClipFrames = 10;
 
     [Fact]
     public void WriteFiles()
@@ -50,9 +63,9 @@ public class EncoderInteropFiles
                 continue;
             }
 
-            (List<EncodedPacket> packets, _, VideoTrackInfo track) = EncoderTests.Encode(options, count, i => EncoderTests.Picture(w, h, i, depth));
-            (List<EncodedPacket> single, _, _) = EncoderTests.Encode(options, count, i => EncoderTests.Picture(w, h, i, depth),
-                new MediaContext { Egami = EgamiContext.Default with { MaxParallelism = 1 } });
+            Func<int, YuvRaster> make = name.StartsWith("clip-", StringComparison.Ordinal) ? Clip() : i => EncoderTests.Picture(w, h, i, depth);
+            (List<EncodedPacket> packets, _, VideoTrackInfo track) = EncoderTests.Encode(options, count, make);
+            (List<EncodedPacket> single, _, _) = EncoderTests.Encode(options, count, make, new MediaContext { Egami = EgamiContext.Default with { MaxParallelism = 1 } });
             byte[] file = [.. packets.SelectMany(p => p.Data.ToArray())];
             Assert.True(file.AsSpan().SequenceEqual([.. single.SelectMany(p => p.Data.ToArray())]), $"{name}: the stream differs at one thread.");
             string basePath = Path.Combine(directory, name);
@@ -77,6 +90,44 @@ public class EncoderInteropFiles
             EncoderTests.Dispose(packets);
             EncoderTests.Dispose(single);
             File.WriteAllText(basePath + ".txt", $"{w} {h} {count} {track.BitDepth}");
+        }
+    }
+
+    /// <summary>The 416x240 crop of the centre of EGAMI_INTEROP_CLIP's first frames, read once.</summary>
+    internal static Func<int, YuvRaster> Clip()
+    {
+        byte[] data = File.ReadAllBytes(Environment.GetEnvironmentVariable("EGAMI_INTEROP_CLIP")!);
+        int header = Array.IndexOf(data, (byte)'\n');
+        string[] fields = System.Text.Encoding.ASCII.GetString(data, 0, header).Split(' ');
+        int width = int.Parse(fields.First(f => f.StartsWith('W'))[1..], System.Globalization.CultureInfo.InvariantCulture);
+        int height = int.Parse(fields.First(f => f.StartsWith('H'))[1..], System.Globalization.CultureInfo.InvariantCulture);
+        int frameSize = width * height * 3 / 2;
+        int left = ((width - ClipWidth) / 4) * 2, top = ((height - ClipHeight) / 4) * 2;
+        return frame =>
+        {
+            // Each frame follows "FRAME\n".
+            int at = header + 1;
+            for (int i = 0; i < frame; i++)
+            {
+                at = Array.IndexOf(data, (byte)'\n', at) + 1 + frameSize;
+            }
+
+            at = Array.IndexOf(data, (byte)'\n', at) + 1;
+            YuvRaster<byte> picture = YuvRaster.Create(ClipWidth, ClipHeight, ChromaFormat.Yuv420,
+                new YuvColor(YuvMatrix.Bt709, YuvRange.Limited, ChromaSiting.Center));
+            Copy(picture.Y, at, width, left, top);
+            Copy(picture.U!, at + (width * height), width / 2, left / 2, top / 2);
+            Copy(picture.V!, at + (width * height * 5 / 4), width / 2, left / 2, top / 2);
+            return picture;
+        };
+
+        void Copy(YuvPlane<byte> plane, int at, int stride, int x, int y)
+        {
+            for (int r = 0; r < plane.Height; r++)
+            {
+                Span<byte> row = plane.Row(r);
+                data.AsSpan(at + ((y + r) * stride) + x, row.Length).CopyTo(row);
+            }
         }
     }
 

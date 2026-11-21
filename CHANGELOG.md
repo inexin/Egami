@@ -5,8 +5,8 @@ changes that break code come only in a new major version.
 
 ## Egami.Video 1.4.0 (unreleased)
 
-An HEVC encoder in Egami.Video.Hevc, in progress (HEVC encoder Build Plan, PR A of seven): the release that ships it waits for
-inter coding, rate control tuning and its gates. Additive to 1.3.
+An HEVC encoder in Egami.Video.Hevc, in progress (HEVC encoder Build Plan, PRs A and B of seven): the release that ships it
+waits for B pictures, rate control tuning and its gates. Additive to 1.3.
 
 - `HevcCodec.CanEncode` is true and `HevcCodec.CreateEncoder` encodes 4:2:0 progressive video in the Main and Main 10
   profiles, on the shared encoder core with the HEIC encoder's CTU search, its CTB rows as wavefront substreams: the same
@@ -15,9 +15,16 @@ inter coding, rate control tuning and its gates. Additive to 1.3.
   rate, bitrate and buffer fit), quantizer limits, adaptive quantization, B-frames and Annex B packets. Quality 0 to 100 is on
   the H.264 encoder's scale (default 60), Quantizer 0 to 51, Effort 0 to 10 (default 4). Packets are length-prefixed with the
   parameter sets in the track's hvcC record (an hvc1 sample entry in MP4 and MOV), or Annex B; the VUI carries the colour,
-  range and frame rate. So far every picture is coded intra (keyframes as IDR pictures, the others as trailing I pictures),
-  and `HevcEncoderOptions.BFrames` takes effect with B pictures. Egami's decoder and FFmpeg decode every test stream to the
-  encoder's own reconstruction, bit for bit (tools/video/check-hevc-encoder.py).
+  range and frame rate. Keyframes are IDR pictures and the others P pictures (PR B) predicted from up to the effort's number of
+  previous pictures: motion search on half- and quarter-sample planes, merge and skip with early skip, AMVP and temporal motion
+  vector prediction, 2Nx2N and (by effort) Nx2N/2NxN partitions ranked by SATD with full RD on the best one or two, inter
+  transform trees, and intra coding units in P pictures where the residual calls for them. `HevcEncoderOptions.BFrames` takes
+  effect with B pictures. Egami's decoder, FFmpeg and the HM reference decoder decode every test stream to the encoder's own
+  reconstruction, bit for bit (tools/video/check-hevc-encoder.py); tools/video/time-hevc-encoder.py measures BD-rate and speed
+  against x265 and Egami's H.264 encoder. The search prices trial codings from static rate tables and codes only the kept one
+  with RDOQ, refines motion with two half-sample SAD steps and one quarter-sample SATD step, and runs AVX2/SSE2/Vector128 SAD,
+  SATD, interpolation and quantization kernels; the shared forward transform gained 4x4 and even/odd-split 16x16/32x32 kernels,
+  which make HEIC encoding a few percent faster with byte-identical output.
 - Egami.Video.Hevc compiles Egami.Heic's HEVC encoder and decoder files in as internal source, so a Video release does not wait
   for an Egami.Heic release; it still installs beside Egami.Heic 1.4.0. HEIC output is unchanged.
 

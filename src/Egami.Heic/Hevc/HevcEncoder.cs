@@ -24,11 +24,18 @@ internal static class HevcEncoder
     /// <param name="strides">Each plane's row length in samples.</param>
     /// <param name="info">The picture's slice type, order and references, or null for a still picture's IDR slice.</param>
     /// <param name="cancellationToken">Cancels encoding.</param>
+    /// <param name="inter">
+    /// For a P or B picture (Egami.Video.Hevc): given the picture and its slice header, prepares them for inter coding and gives
+    /// what sets up each CTU search; null for an I picture.
+    /// </param>
+    /// <param name="profile">Changes the effort's search profile for this picture (the parameter sets stay as the effort's), or null.</param>
     internal static HevcEncodedPicture Encode(HevcEncoderSettings settings, ushort[][] planes, int[] strides, HevcSliceInfo? info,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, Func<HevcPicture, HevcSliceHeader, Action<HevcCtuSearch>>? inter = null,
+        Func<HevcEncoderProfile, HevcEncoderProfile>? profile = null)
     {
         Check(settings);
-        (settings, HevcEncoderProfile profile) = Resolve(settings);
+        (settings, HevcEncoderProfile resolved) = Resolve(settings);
+        resolved = profile?.Invoke(resolved) ?? resolved;
         HevcSource source = new(settings, planes, strides);
         byte[] vps = HevcParameterWriter.Vps(settings), sps = HevcParameterWriter.Sps(settings), pps = HevcParameterWriter.Pps(settings);
         bool sao = settings.Sao;
@@ -50,7 +57,8 @@ internal static class HevcEncoder
 
         int[] qgQp = HevcAdaptiveQp.GroupQps(settings, source, hevcPps.CuQpDeltaEnabled ? hevcSps.CtbLog2Size - hevcPps.DiffCuQpDeltaDepth : hevcSps.CtbLog2Size);
         bool wavefronts = HevcParameterWriter.Wavefronts(settings);
-        List<HevcCodingUnit>[] ctus = Decide(settings, profile, picture, slice, source, qgQp, wavefronts, cancellationToken);
+        Action<HevcCtuSearch>? setup = inter?.Invoke(picture, slice);
+        List<HevcCodingUnit>[] ctus = Decide(settings, resolved, picture, slice, source, qgQp, wavefronts, setup, cancellationToken);
 
         // The loop filters: deblocking, then SAO chosen on the deblocked samples.
         HevcLoopFilter.Deblock(picture, settings.Parallelism, cancellationToken);
@@ -88,6 +96,7 @@ internal static class HevcEncoder
             Pps = pps,
             Slice = sliceNal,
             Reconstruction = picture,
+            Ctus = ctus,
         };
     }
 
@@ -123,7 +132,7 @@ internal static class HevcEncoder
 
     /// <summary>Decides and reconstructs every CTB, the CTB rows on up to <see cref="HevcEncoderSettings.Parallelism"/> threads.</summary>
     private static List<HevcCodingUnit>[] Decide(HevcEncoderSettings settings, HevcEncoderProfile profile, HevcPicture picture, HevcSliceHeader slice,
-        HevcSource source, int[] qgQp, bool wavefronts, CancellationToken cancellationToken)
+        HevcSource source, int[] qgQp, bool wavefronts, Action<HevcCtuSearch>? setup, CancellationToken cancellationToken)
     {
         HevcSps sps = picture.Sps;
         int rows = sps.HeightInCtbs, columns = sps.WidthInCtbs;
@@ -137,6 +146,7 @@ internal static class HevcEncoder
         void Work()
         {
             HevcCtuSearch search = new(settings, profile, picture, slice, source, qgQp);
+            setup?.Invoke(search);
             try
             {
                 int row;
@@ -236,7 +246,7 @@ internal static class HevcEncoder
         List<byte[]> substreams = [];
         byte[]? synced = null;
         encoder.Start();
-        HevcContexts.Initialize(bins.Contexts, slice.SliceQp);
+        HevcContexts.Initialize(bins.Contexts, slice.SliceQp, HevcCtuSearch.InitType(slice));
         for (int row = 0; row < rows; row++)
         {
             if (wavefronts && row > 0)
@@ -248,7 +258,7 @@ internal static class HevcEncoder
                 }
                 else
                 {
-                    HevcContexts.Initialize(bins.Contexts, slice.SliceQp);
+                    HevcContexts.Initialize(bins.Contexts, slice.SliceQp, HevcCtuSearch.InitType(slice));
                 }
             }
 
@@ -296,6 +306,9 @@ internal sealed class HevcEncodedPicture
     internal required byte[] Slice { get; init; }
 
     internal required HevcPicture Reconstruction { get; init; }
+
+    /// <summary>Gets each CTB's coding units, in decoding order.</summary>
+    internal List<HevcCodingUnit>[] Ctus { get; init; } = [];
 
     /// <summary>Gets the hvcC record of the picture's parameter sets.</summary>
     internal byte[] ConfigurationRecord() => HevcParameterWriter.ConfigurationRecord(Settings, Vps, Sps, Pps);
