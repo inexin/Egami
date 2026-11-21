@@ -22779,6 +22779,405 @@ references:
   commentId: F:Egami.Drawing.TileMode.Repeat
   fullName: Egami.Drawing.TileMode.Repeat
   nameWithType: TileMode.Repeat
+- uid: Egami.Drawing.Tracing
+  name: Egami.Drawing.Tracing
+  href: api/Egami.Drawing.Tracing.html
+  commentId: N:Egami.Drawing.Tracing
+  fullName: Egami.Drawing.Tracing
+  nameWithType: Egami.Drawing.Tracing
+- uid: Egami.Drawing.Tracing.RasterTraceExtensions
+  name: RasterTraceExtensions
+  href: api/Egami.Drawing.Tracing.RasterTraceExtensions.html
+  commentId: T:Egami.Drawing.Tracing.RasterTraceExtensions
+  fullName: Egami.Drawing.Tracing.RasterTraceExtensions
+  nameWithType: RasterTraceExtensions
+- uid: Egami.Drawing.Tracing.RasterTraceExtensions.Trace(Egami.Raster,Egami.Drawing.Tracing.TraceOptions,Egami.EgamiContext)
+  name: Trace(Raster, TraceOptions?, EgamiContext?)
+  href: api/Egami.Drawing.Tracing.RasterTraceExtensions.html#Egami_Drawing_Tracing_RasterTraceExtensions_Trace_Egami_Raster_Egami_Drawing_Tracing_TraceOptions_Egami_EgamiContext_
+  commentId: M:Egami.Drawing.Tracing.RasterTraceExtensions.Trace(Egami.Raster,Egami.Drawing.Tracing.TraceOptions,Egami.EgamiContext)
+  name.vb: Trace(Raster, TraceOptions, EgamiContext)
+  fullName: Egami.Drawing.Tracing.RasterTraceExtensions.Trace(Egami.Raster, Egami.Drawing.Tracing.TraceOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Drawing.Tracing.RasterTraceExtensions.Trace(Egami.Raster, Egami.Drawing.Tracing.TraceOptions, Egami.EgamiContext)
+  nameWithType: RasterTraceExtensions.Trace(Raster, TraceOptions?, EgamiContext?)
+  nameWithType.vb: RasterTraceExtensions.Trace(Raster, TraceOptions, EgamiContext)
+- uid: Egami.Drawing.Tracing.RasterTraceExtensions.Trace*
+  name: Trace
+  href: api/Egami.Drawing.Tracing.RasterTraceExtensions.html#Egami_Drawing_Tracing_RasterTraceExtensions_Trace_
+  commentId: Overload:Egami.Drawing.Tracing.RasterTraceExtensions.Trace
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.RasterTraceExtensions.Trace
+  nameWithType: RasterTraceExtensions.Trace
+- uid: Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync(Egami.Raster,Egami.Drawing.Tracing.TraceOptions,Egami.EgamiContext,System.Threading.CancellationToken)
+  name: TraceAsync(Raster, TraceOptions?, EgamiContext?, CancellationToken)
+  href: api/Egami.Drawing.Tracing.RasterTraceExtensions.html#Egami_Drawing_Tracing_RasterTraceExtensions_TraceAsync_Egami_Raster_Egami_Drawing_Tracing_TraceOptions_Egami_EgamiContext_System_Threading_CancellationToken_
+  commentId: M:Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync(Egami.Raster,Egami.Drawing.Tracing.TraceOptions,Egami.EgamiContext,System.Threading.CancellationToken)
+  name.vb: TraceAsync(Raster, TraceOptions, EgamiContext, CancellationToken)
+  fullName: Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync(Egami.Raster, Egami.Drawing.Tracing.TraceOptions?, Egami.EgamiContext?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync(Egami.Raster, Egami.Drawing.Tracing.TraceOptions, Egami.EgamiContext, System.Threading.CancellationToken)
+  nameWithType: RasterTraceExtensions.TraceAsync(Raster, TraceOptions?, EgamiContext?, CancellationToken)
+  nameWithType.vb: RasterTraceExtensions.TraceAsync(Raster, TraceOptions, EgamiContext, CancellationToken)
+- uid: Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync*
+  name: TraceAsync
+  href: api/Egami.Drawing.Tracing.RasterTraceExtensions.html#Egami_Drawing_Tracing_RasterTraceExtensions_TraceAsync_
+  commentId: Overload:Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync
+  nameWithType: RasterTraceExtensions.TraceAsync
+- uid: Egami.Drawing.Tracing.RasterTraceExtensions.Trace``1(Egami.Raster{``0},Egami.Drawing.Tracing.TraceOptions,Egami.EgamiContext)
+  name: Trace<TPixel>(Raster<TPixel>, TraceOptions?, EgamiContext?)
+  href: api/Egami.Drawing.Tracing.RasterTraceExtensions.html#Egami_Drawing_Tracing_RasterTraceExtensions_Trace__1_Egami_Raster___0__Egami_Drawing_Tracing_TraceOptions_Egami_EgamiContext_
+  commentId: M:Egami.Drawing.Tracing.RasterTraceExtensions.Trace``1(Egami.Raster{``0},Egami.Drawing.Tracing.TraceOptions,Egami.EgamiContext)
+  name.vb: Trace(Of TPixel)(Raster(Of TPixel), TraceOptions, EgamiContext)
+  fullName: Egami.Drawing.Tracing.RasterTraceExtensions.Trace<TPixel>(Egami.Raster<TPixel>, Egami.Drawing.Tracing.TraceOptions?, Egami.EgamiContext?)
+  fullName.vb: Egami.Drawing.Tracing.RasterTraceExtensions.Trace(Of TPixel)(Egami.Raster(Of TPixel), Egami.Drawing.Tracing.TraceOptions, Egami.EgamiContext)
+  nameWithType: RasterTraceExtensions.Trace<TPixel>(Raster<TPixel>, TraceOptions?, EgamiContext?)
+  nameWithType.vb: RasterTraceExtensions.Trace(Of TPixel)(Raster(Of TPixel), TraceOptions, EgamiContext)
+- uid: Egami.Drawing.Tracing.TraceMode
+  name: TraceMode
+  href: api/Egami.Drawing.Tracing.TraceMode.html
+  commentId: T:Egami.Drawing.Tracing.TraceMode
+  fullName: Egami.Drawing.Tracing.TraceMode
+  nameWithType: TraceMode
+- uid: Egami.Drawing.Tracing.TraceMode.BlackAndWhite
+  name: BlackAndWhite
+  href: api/Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_BlackAndWhite
+  commentId: F:Egami.Drawing.Tracing.TraceMode.BlackAndWhite
+  fullName: Egami.Drawing.Tracing.TraceMode.BlackAndWhite
+  nameWithType: TraceMode.BlackAndWhite
+- uid: Egami.Drawing.Tracing.TraceOptions
+  name: TraceOptions
+  href: api/Egami.Drawing.Tracing.TraceOptions.html
+  commentId: T:Egami.Drawing.Tracing.TraceOptions
+  fullName: Egami.Drawing.Tracing.TraceOptions
+  nameWithType: TraceOptions
+- uid: Egami.Drawing.Tracing.TraceOptions.BlackAndWhite
+  name: BlackAndWhite
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_BlackAndWhite
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.BlackAndWhite
+  fullName: Egami.Drawing.Tracing.TraceOptions.BlackAndWhite
+  nameWithType: TraceOptions.BlackAndWhite
+- uid: Egami.Drawing.Tracing.TraceOptions.BlackAndWhite*
+  name: BlackAndWhite
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_BlackAndWhite_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.BlackAndWhite
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.BlackAndWhite
+  nameWithType: TraceOptions.BlackAndWhite
+- uid: Egami.Drawing.Tracing.TraceOptions.Corners
+  name: Corners
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Corners
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Corners
+  fullName: Egami.Drawing.Tracing.TraceOptions.Corners
+  nameWithType: TraceOptions.Corners
+- uid: Egami.Drawing.Tracing.TraceOptions.Corners*
+  name: Corners
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Corners_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Corners
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Corners
+  nameWithType: TraceOptions.Corners
+- uid: Egami.Drawing.Tracing.TraceOptions.Default
+  name: Default
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Default
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Default
+  fullName: Egami.Drawing.Tracing.TraceOptions.Default
+  nameWithType: TraceOptions.Default
+- uid: Egami.Drawing.Tracing.TraceOptions.Default*
+  name: Default
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Default_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Default
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Default
+  nameWithType: TraceOptions.Default
+- uid: Egami.Drawing.Tracing.TraceOptions.IgnoreWhite
+  name: IgnoreWhite
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_IgnoreWhite
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.IgnoreWhite
+  fullName: Egami.Drawing.Tracing.TraceOptions.IgnoreWhite
+  nameWithType: TraceOptions.IgnoreWhite
+- uid: Egami.Drawing.Tracing.TraceOptions.IgnoreWhite*
+  name: IgnoreWhite
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_IgnoreWhite_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.IgnoreWhite
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.IgnoreWhite
+  nameWithType: TraceOptions.IgnoreWhite
+- uid: Egami.Drawing.Tracing.TraceOptions.Mode
+  name: Mode
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Mode
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Mode
+  fullName: Egami.Drawing.Tracing.TraceOptions.Mode
+  nameWithType: TraceOptions.Mode
+- uid: Egami.Drawing.Tracing.TraceOptions.Mode*
+  name: Mode
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Mode_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Mode
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Mode
+  nameWithType: TraceOptions.Mode
+- uid: Egami.Drawing.Tracing.TraceOptions.Noise
+  name: Noise
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Noise
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Noise
+  fullName: Egami.Drawing.Tracing.TraceOptions.Noise
+  nameWithType: TraceOptions.Noise
+- uid: Egami.Drawing.Tracing.TraceOptions.Noise*
+  name: Noise
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Noise_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Noise
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Noise
+  nameWithType: TraceOptions.Noise
+- uid: Egami.Drawing.Tracing.TraceOptions.PathFidelity
+  name: PathFidelity
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_PathFidelity
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.PathFidelity
+  fullName: Egami.Drawing.Tracing.TraceOptions.PathFidelity
+  nameWithType: TraceOptions.PathFidelity
+- uid: Egami.Drawing.Tracing.TraceOptions.PathFidelity*
+  name: PathFidelity
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_PathFidelity_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.PathFidelity
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.PathFidelity
+  nameWithType: TraceOptions.PathFidelity
+- uid: Egami.Drawing.Tracing.TraceOptions.Threshold
+  name: Threshold
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Threshold
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Threshold
+  fullName: Egami.Drawing.Tracing.TraceOptions.Threshold
+  nameWithType: TraceOptions.Threshold
+- uid: Egami.Drawing.Tracing.TraceOptions.Threshold*
+  name: Threshold
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Threshold_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Threshold
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Threshold
+  nameWithType: TraceOptions.Threshold
+- uid: Egami.Drawing.Tracing.TraceResult
+  name: TraceResult
+  href: api/Egami.Drawing.Tracing.TraceResult.html
+  commentId: T:Egami.Drawing.Tracing.TraceResult
+  fullName: Egami.Drawing.Tracing.TraceResult
+  nameWithType: TraceResult
+- uid: Egami.Drawing.Tracing.TraceResult.#ctor(System.Collections.Generic.IEnumerable{Egami.Drawing.Tracing.TracedShape},System.Int32,System.Int32)
+  name: TraceResult(IEnumerable<TracedShape>, int, int)
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult__ctor_System_Collections_Generic_IEnumerable_Egami_Drawing_Tracing_TracedShape__System_Int32_System_Int32_
+  commentId: M:Egami.Drawing.Tracing.TraceResult.#ctor(System.Collections.Generic.IEnumerable{Egami.Drawing.Tracing.TracedShape},System.Int32,System.Int32)
+  name.vb: New(IEnumerable(Of TracedShape), Integer, Integer)
+  fullName: Egami.Drawing.Tracing.TraceResult.TraceResult(System.Collections.Generic.IEnumerable<Egami.Drawing.Tracing.TracedShape>, int, int)
+  fullName.vb: Egami.Drawing.Tracing.TraceResult.New(System.Collections.Generic.IEnumerable(Of Egami.Drawing.Tracing.TracedShape), Integer, Integer)
+  nameWithType: TraceResult.TraceResult(IEnumerable<TracedShape>, int, int)
+  nameWithType.vb: TraceResult.New(IEnumerable(Of TracedShape), Integer, Integer)
+- uid: Egami.Drawing.Tracing.TraceResult.#ctor*
+  name: TraceResult
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult__ctor_
+  commentId: Overload:Egami.Drawing.Tracing.TraceResult.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Drawing.Tracing.TraceResult.TraceResult
+  fullName.vb: Egami.Drawing.Tracing.TraceResult.New
+  nameWithType: TraceResult.TraceResult
+  nameWithType.vb: TraceResult.New
+- uid: Egami.Drawing.Tracing.TraceResult.Draw(Egami.Drawing.Canvas)
+  name: Draw(Canvas)
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_Draw_Egami_Drawing_Canvas_
+  commentId: M:Egami.Drawing.Tracing.TraceResult.Draw(Egami.Drawing.Canvas)
+  fullName: Egami.Drawing.Tracing.TraceResult.Draw(Egami.Drawing.Canvas)
+  nameWithType: TraceResult.Draw(Canvas)
+- uid: Egami.Drawing.Tracing.TraceResult.Draw*
+  name: Draw
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_Draw_
+  commentId: Overload:Egami.Drawing.Tracing.TraceResult.Draw
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceResult.Draw
+  nameWithType: TraceResult.Draw
+- uid: Egami.Drawing.Tracing.TraceResult.Height
+  name: Height
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_Height
+  commentId: P:Egami.Drawing.Tracing.TraceResult.Height
+  fullName: Egami.Drawing.Tracing.TraceResult.Height
+  nameWithType: TraceResult.Height
+- uid: Egami.Drawing.Tracing.TraceResult.Height*
+  name: Height
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_Height_
+  commentId: Overload:Egami.Drawing.Tracing.TraceResult.Height
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceResult.Height
+  nameWithType: TraceResult.Height
+- uid: Egami.Drawing.Tracing.TraceResult.Shapes
+  name: Shapes
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_Shapes
+  commentId: P:Egami.Drawing.Tracing.TraceResult.Shapes
+  fullName: Egami.Drawing.Tracing.TraceResult.Shapes
+  nameWithType: TraceResult.Shapes
+- uid: Egami.Drawing.Tracing.TraceResult.Shapes*
+  name: Shapes
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_Shapes_
+  commentId: Overload:Egami.Drawing.Tracing.TraceResult.Shapes
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceResult.Shapes
+  nameWithType: TraceResult.Shapes
+- uid: Egami.Drawing.Tracing.TraceResult.ToPath(Egami.Pixels.Rgba8)
+  name: ToPath(Rgba8)
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_ToPath_Egami_Pixels_Rgba8_
+  commentId: M:Egami.Drawing.Tracing.TraceResult.ToPath(Egami.Pixels.Rgba8)
+  fullName: Egami.Drawing.Tracing.TraceResult.ToPath(Egami.Pixels.Rgba8)
+  nameWithType: TraceResult.ToPath(Rgba8)
+- uid: Egami.Drawing.Tracing.TraceResult.ToPath*
+  name: ToPath
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_ToPath_
+  commentId: Overload:Egami.Drawing.Tracing.TraceResult.ToPath
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceResult.ToPath
+  nameWithType: TraceResult.ToPath
+- uid: Egami.Drawing.Tracing.TraceResult.ToPicture
+  name: ToPicture()
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_ToPicture
+  commentId: M:Egami.Drawing.Tracing.TraceResult.ToPicture
+  fullName: Egami.Drawing.Tracing.TraceResult.ToPicture()
+  nameWithType: TraceResult.ToPicture()
+- uid: Egami.Drawing.Tracing.TraceResult.ToPicture*
+  name: ToPicture
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_ToPicture_
+  commentId: Overload:Egami.Drawing.Tracing.TraceResult.ToPicture
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceResult.ToPicture
+  nameWithType: TraceResult.ToPicture
+- uid: Egami.Drawing.Tracing.TraceResult.ToString
+  name: ToString()
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_ToString
+  commentId: M:Egami.Drawing.Tracing.TraceResult.ToString
+  fullName: Egami.Drawing.Tracing.TraceResult.ToString()
+  nameWithType: TraceResult.ToString()
+- uid: Egami.Drawing.Tracing.TraceResult.ToString*
+  name: ToString
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_ToString_
+  commentId: Overload:Egami.Drawing.Tracing.TraceResult.ToString
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceResult.ToString
+  nameWithType: TraceResult.ToString
+- uid: Egami.Drawing.Tracing.TraceResult.Width
+  name: Width
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_Width
+  commentId: P:Egami.Drawing.Tracing.TraceResult.Width
+  fullName: Egami.Drawing.Tracing.TraceResult.Width
+  nameWithType: TraceResult.Width
+- uid: Egami.Drawing.Tracing.TraceResult.Width*
+  name: Width
+  href: api/Egami.Drawing.Tracing.TraceResult.html#Egami_Drawing_Tracing_TraceResult_Width_
+  commentId: Overload:Egami.Drawing.Tracing.TraceResult.Width
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceResult.Width
+  nameWithType: TraceResult.Width
+- uid: Egami.Drawing.Tracing.TracedShape
+  name: TracedShape
+  href: api/Egami.Drawing.Tracing.TracedShape.html
+  commentId: T:Egami.Drawing.Tracing.TracedShape
+  fullName: Egami.Drawing.Tracing.TracedShape
+  nameWithType: TracedShape
+- uid: Egami.Drawing.Tracing.TracedShape.#ctor(Egami.Drawing.Path,Egami.Pixels.Rgba8,Egami.Drawing.Tracing.TracedShapeKind,System.Single)
+  name: TracedShape(Path, Rgba8, TracedShapeKind, float)
+  href: api/Egami.Drawing.Tracing.TracedShape.html#Egami_Drawing_Tracing_TracedShape__ctor_Egami_Drawing_Path_Egami_Pixels_Rgba8_Egami_Drawing_Tracing_TracedShapeKind_System_Single_
+  commentId: M:Egami.Drawing.Tracing.TracedShape.#ctor(Egami.Drawing.Path,Egami.Pixels.Rgba8,Egami.Drawing.Tracing.TracedShapeKind,System.Single)
+  name.vb: New(Path, Rgba8, TracedShapeKind, Single)
+  fullName: Egami.Drawing.Tracing.TracedShape.TracedShape(Egami.Drawing.Path, Egami.Pixels.Rgba8, Egami.Drawing.Tracing.TracedShapeKind, float)
+  fullName.vb: Egami.Drawing.Tracing.TracedShape.New(Egami.Drawing.Path, Egami.Pixels.Rgba8, Egami.Drawing.Tracing.TracedShapeKind, Single)
+  nameWithType: TracedShape.TracedShape(Path, Rgba8, TracedShapeKind, float)
+  nameWithType.vb: TracedShape.New(Path, Rgba8, TracedShapeKind, Single)
+- uid: Egami.Drawing.Tracing.TracedShape.#ctor*
+  name: TracedShape
+  href: api/Egami.Drawing.Tracing.TracedShape.html#Egami_Drawing_Tracing_TracedShape__ctor_
+  commentId: Overload:Egami.Drawing.Tracing.TracedShape.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Drawing.Tracing.TracedShape.TracedShape
+  fullName.vb: Egami.Drawing.Tracing.TracedShape.New
+  nameWithType: TracedShape.TracedShape
+  nameWithType.vb: TracedShape.New
+- uid: Egami.Drawing.Tracing.TracedShape.Color
+  name: Color
+  href: api/Egami.Drawing.Tracing.TracedShape.html#Egami_Drawing_Tracing_TracedShape_Color
+  commentId: P:Egami.Drawing.Tracing.TracedShape.Color
+  fullName: Egami.Drawing.Tracing.TracedShape.Color
+  nameWithType: TracedShape.Color
+- uid: Egami.Drawing.Tracing.TracedShape.Color*
+  name: Color
+  href: api/Egami.Drawing.Tracing.TracedShape.html#Egami_Drawing_Tracing_TracedShape_Color_
+  commentId: Overload:Egami.Drawing.Tracing.TracedShape.Color
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TracedShape.Color
+  nameWithType: TracedShape.Color
+- uid: Egami.Drawing.Tracing.TracedShape.Kind
+  name: Kind
+  href: api/Egami.Drawing.Tracing.TracedShape.html#Egami_Drawing_Tracing_TracedShape_Kind
+  commentId: P:Egami.Drawing.Tracing.TracedShape.Kind
+  fullName: Egami.Drawing.Tracing.TracedShape.Kind
+  nameWithType: TracedShape.Kind
+- uid: Egami.Drawing.Tracing.TracedShape.Kind*
+  name: Kind
+  href: api/Egami.Drawing.Tracing.TracedShape.html#Egami_Drawing_Tracing_TracedShape_Kind_
+  commentId: Overload:Egami.Drawing.Tracing.TracedShape.Kind
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TracedShape.Kind
+  nameWithType: TracedShape.Kind
+- uid: Egami.Drawing.Tracing.TracedShape.Path
+  name: Path
+  href: api/Egami.Drawing.Tracing.TracedShape.html#Egami_Drawing_Tracing_TracedShape_Path
+  commentId: P:Egami.Drawing.Tracing.TracedShape.Path
+  fullName: Egami.Drawing.Tracing.TracedShape.Path
+  nameWithType: TracedShape.Path
+- uid: Egami.Drawing.Tracing.TracedShape.Path*
+  name: Path
+  href: api/Egami.Drawing.Tracing.TracedShape.html#Egami_Drawing_Tracing_TracedShape_Path_
+  commentId: Overload:Egami.Drawing.Tracing.TracedShape.Path
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TracedShape.Path
+  nameWithType: TracedShape.Path
+- uid: Egami.Drawing.Tracing.TracedShape.StrokeWidth
+  name: StrokeWidth
+  href: api/Egami.Drawing.Tracing.TracedShape.html#Egami_Drawing_Tracing_TracedShape_StrokeWidth
+  commentId: P:Egami.Drawing.Tracing.TracedShape.StrokeWidth
+  fullName: Egami.Drawing.Tracing.TracedShape.StrokeWidth
+  nameWithType: TracedShape.StrokeWidth
+- uid: Egami.Drawing.Tracing.TracedShape.StrokeWidth*
+  name: StrokeWidth
+  href: api/Egami.Drawing.Tracing.TracedShape.html#Egami_Drawing_Tracing_TracedShape_StrokeWidth_
+  commentId: Overload:Egami.Drawing.Tracing.TracedShape.StrokeWidth
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TracedShape.StrokeWidth
+  nameWithType: TracedShape.StrokeWidth
+- uid: Egami.Drawing.Tracing.TracedShape.ToString
+  name: ToString()
+  href: api/Egami.Drawing.Tracing.TracedShape.html#Egami_Drawing_Tracing_TracedShape_ToString
+  commentId: M:Egami.Drawing.Tracing.TracedShape.ToString
+  fullName: Egami.Drawing.Tracing.TracedShape.ToString()
+  nameWithType: TracedShape.ToString()
+- uid: Egami.Drawing.Tracing.TracedShape.ToString*
+  name: ToString
+  href: api/Egami.Drawing.Tracing.TracedShape.html#Egami_Drawing_Tracing_TracedShape_ToString_
+  commentId: Overload:Egami.Drawing.Tracing.TracedShape.ToString
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TracedShape.ToString
+  nameWithType: TracedShape.ToString
+- uid: Egami.Drawing.Tracing.TracedShapeKind
+  name: TracedShapeKind
+  href: api/Egami.Drawing.Tracing.TracedShapeKind.html
+  commentId: T:Egami.Drawing.Tracing.TracedShapeKind
+  fullName: Egami.Drawing.Tracing.TracedShapeKind
+  nameWithType: TracedShapeKind
+- uid: Egami.Drawing.Tracing.TracedShapeKind.Fill
+  name: Fill
+  href: api/Egami.Drawing.Tracing.TracedShapeKind.html#Egami_Drawing_Tracing_TracedShapeKind_Fill
+  commentId: F:Egami.Drawing.Tracing.TracedShapeKind.Fill
+  fullName: Egami.Drawing.Tracing.TracedShapeKind.Fill
+  nameWithType: TracedShapeKind.Fill
+- uid: Egami.Drawing.Tracing.TracedShapeKind.Stroke
+  name: Stroke
+  href: api/Egami.Drawing.Tracing.TracedShapeKind.html#Egami_Drawing_Tracing_TracedShapeKind_Stroke
+  commentId: F:Egami.Drawing.Tracing.TracedShapeKind.Stroke
+  fullName: Egami.Drawing.Tracing.TracedShapeKind.Stroke
+  nameWithType: TracedShapeKind.Stroke
 - uid: Egami.Drawing.VerticalAlign
   name: VerticalAlign
   href: api/Egami.Drawing.VerticalAlign.html
@@ -87418,6 +87817,53 @@ references:
   isSpec: "True"
   fullName: Egami.Svg.SvgTextRun.StrokePaint
   nameWithType: SvgTextRun.StrokePaint
+- uid: Egami.Svg.SvgTraceExtensions
+  name: SvgTraceExtensions
+  href: api/Egami.Svg.SvgTraceExtensions.html
+  commentId: T:Egami.Svg.SvgTraceExtensions
+  fullName: Egami.Svg.SvgTraceExtensions
+  nameWithType: SvgTraceExtensions
+- uid: Egami.Svg.SvgTraceExtensions.SaveSvg(Egami.Drawing.Tracing.TraceResult,System.IO.Stream,Egami.Svg.SvgWriteOptions)
+  name: SaveSvg(TraceResult, Stream, SvgWriteOptions?)
+  href: api/Egami.Svg.SvgTraceExtensions.html#Egami_Svg_SvgTraceExtensions_SaveSvg_Egami_Drawing_Tracing_TraceResult_System_IO_Stream_Egami_Svg_SvgWriteOptions_
+  commentId: M:Egami.Svg.SvgTraceExtensions.SaveSvg(Egami.Drawing.Tracing.TraceResult,System.IO.Stream,Egami.Svg.SvgWriteOptions)
+  name.vb: SaveSvg(TraceResult, Stream, SvgWriteOptions)
+  fullName: Egami.Svg.SvgTraceExtensions.SaveSvg(Egami.Drawing.Tracing.TraceResult, System.IO.Stream, Egami.Svg.SvgWriteOptions?)
+  fullName.vb: Egami.Svg.SvgTraceExtensions.SaveSvg(Egami.Drawing.Tracing.TraceResult, System.IO.Stream, Egami.Svg.SvgWriteOptions)
+  nameWithType: SvgTraceExtensions.SaveSvg(TraceResult, Stream, SvgWriteOptions?)
+  nameWithType.vb: SvgTraceExtensions.SaveSvg(TraceResult, Stream, SvgWriteOptions)
+- uid: Egami.Svg.SvgTraceExtensions.SaveSvg(Egami.Drawing.Tracing.TraceResult,System.String,Egami.Svg.SvgWriteOptions)
+  name: SaveSvg(TraceResult, string, SvgWriteOptions?)
+  href: api/Egami.Svg.SvgTraceExtensions.html#Egami_Svg_SvgTraceExtensions_SaveSvg_Egami_Drawing_Tracing_TraceResult_System_String_Egami_Svg_SvgWriteOptions_
+  commentId: M:Egami.Svg.SvgTraceExtensions.SaveSvg(Egami.Drawing.Tracing.TraceResult,System.String,Egami.Svg.SvgWriteOptions)
+  name.vb: SaveSvg(TraceResult, String, SvgWriteOptions)
+  fullName: Egami.Svg.SvgTraceExtensions.SaveSvg(Egami.Drawing.Tracing.TraceResult, string, Egami.Svg.SvgWriteOptions?)
+  fullName.vb: Egami.Svg.SvgTraceExtensions.SaveSvg(Egami.Drawing.Tracing.TraceResult, String, Egami.Svg.SvgWriteOptions)
+  nameWithType: SvgTraceExtensions.SaveSvg(TraceResult, string, SvgWriteOptions?)
+  nameWithType.vb: SvgTraceExtensions.SaveSvg(TraceResult, String, SvgWriteOptions)
+- uid: Egami.Svg.SvgTraceExtensions.SaveSvg*
+  name: SaveSvg
+  href: api/Egami.Svg.SvgTraceExtensions.html#Egami_Svg_SvgTraceExtensions_SaveSvg_
+  commentId: Overload:Egami.Svg.SvgTraceExtensions.SaveSvg
+  isSpec: "True"
+  fullName: Egami.Svg.SvgTraceExtensions.SaveSvg
+  nameWithType: SvgTraceExtensions.SaveSvg
+- uid: Egami.Svg.SvgTraceExtensions.ToSvg(Egami.Drawing.Tracing.TraceResult,Egami.Svg.SvgWriteOptions)
+  name: ToSvg(TraceResult, SvgWriteOptions?)
+  href: api/Egami.Svg.SvgTraceExtensions.html#Egami_Svg_SvgTraceExtensions_ToSvg_Egami_Drawing_Tracing_TraceResult_Egami_Svg_SvgWriteOptions_
+  commentId: M:Egami.Svg.SvgTraceExtensions.ToSvg(Egami.Drawing.Tracing.TraceResult,Egami.Svg.SvgWriteOptions)
+  name.vb: ToSvg(TraceResult, SvgWriteOptions)
+  fullName: Egami.Svg.SvgTraceExtensions.ToSvg(Egami.Drawing.Tracing.TraceResult, Egami.Svg.SvgWriteOptions?)
+  fullName.vb: Egami.Svg.SvgTraceExtensions.ToSvg(Egami.Drawing.Tracing.TraceResult, Egami.Svg.SvgWriteOptions)
+  nameWithType: SvgTraceExtensions.ToSvg(TraceResult, SvgWriteOptions?)
+  nameWithType.vb: SvgTraceExtensions.ToSvg(TraceResult, SvgWriteOptions)
+- uid: Egami.Svg.SvgTraceExtensions.ToSvg*
+  name: ToSvg
+  href: api/Egami.Svg.SvgTraceExtensions.html#Egami_Svg_SvgTraceExtensions_ToSvg_
+  commentId: Overload:Egami.Svg.SvgTraceExtensions.ToSvg
+  isSpec: "True"
+  fullName: Egami.Svg.SvgTraceExtensions.ToSvg
+  nameWithType: SvgTraceExtensions.ToSvg
 - uid: Egami.Svg.SvgWriteOptions
   name: SvgWriteOptions
   href: api/Egami.Svg.SvgWriteOptions.html

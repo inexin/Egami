@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Bitmap tracing | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Bitmap tracing | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/tracing.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="bitmap-tracing">Bitmap tracing</h1>
+
+<p>Bitmap tracing turns a raster into filled vector shapes: a scanned signature, line art or a logo comes back as <code>Path</code> objects
+with a color each, ready to draw at any size, record as a <code>Picture</code>, or save as SVG. It is part of Egami.Drawing, in the
+namespace <code>Egami.Drawing.Tracing</code>; Egami.Svg adds the SVG output.</p>
+<p>This first release traces black and white. Grayscale, color, logo, centre-line and pixel-art modes come in later 1.x
+versions, as new <code>TraceMode</code> values; traced output may also improve between minor versions.</p>
+<h2 id="tracing-a-raster">Tracing a raster</h2>
+<p><code>raster.Trace(options)</code> traces the raster's first frame and returns a <code>TraceResult</code>: its <code>Shapes</code>, back to front, and the
+traced image's <code>Width</code> and <code>Height</code>.</p>
+<pre><code class="lang-csharp">// Trace a scan into shapes: each ink region becomes a black path of curves and corners, back to front.
+TraceResult result = scan.Trace(TraceOptions.BlackAndWhite);
+
+foreach (TracedShape shape in result.Shapes)
+{
+    Console.WriteLine($&quot;{shape.Color} {shape.Path.Bounds}&quot;);
+}
+
+// The shapes are in the scan's pixels; scale them like any path.
+Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));
+</code></pre>
+<ul>
+<li>Each <code>TracedShape</code> has a <code>Path</code>, a <code>Color</code> (<code>Rgba8</code>), a <code>Kind</code> (<code>TracedShapeKind.Fill</code> or <code>Stroke</code>) and, for a stroke, a
+<code>StrokeWidth</code>. Black and white gives filled shapes only.</li>
+<li>Coordinates are the raster's pixels, y down, with pixel (0, 0) covering the square from (0, 0) to (1, 1), as on a
+<a href="drawing.html#a-canvas">canvas</a>.</li>
+<li>One shape is one ink region: its outer edge and its holes. A region inside another region's hole comes after it.</li>
+<li><code>Trace</code> (in <code>RasterTraceExtensions</code>) works on any pixel type; <code>Trace&lt;TPixel&gt;</code> is the same for a typed raster. <code>TraceAsync</code> traces on a worker thread and
+takes a <code>CancellationToken</code>, checked between rows and between outlines.</li>
+<li>The raster's <code>EgamiContext</code> (or one you pass) limits the size: a raster larger than <code>SafetyLimits.MaxPixels</code> throws
+<code>LimitExceededException</code>.</li>
+</ul>
+<pre><code class="lang-csharp">// Trace on a worker thread; the token is checked between rows and between outlines.
+TraceResult result = await scan.TraceAsync(TraceOptions.BlackAndWhite, cancellationToken: cancellationToken);
+</code></pre><h2 id="options">Options</h2>
+<p><code>TraceOptions</code> is a record: start from a preset and change what you need with <code>with</code>. Each setting is checked when it is set.</p>
+<pre><code class="lang-csharp">// Black and white with potrace-like settings.
+TraceResult ink = scan.Trace(new TraceOptions
+{
+    Mode = TraceMode.BlackAndWhite,
+    Threshold = null,      // null: Otsu's method, as Raster.FindThreshold; or a level from 0 (black) to 1 (white)
+    PathFidelity = 0.5f,   // 0: fewest curves; 1: every curve kept
+    Corners = 0.75f,       // 0: round every corner; 1: keep every corner (a polygon)
+    Noise = 4,             // regions under 4 pixels merge into the regions around them
+    IgnoreWhite = true,    // the ink alone, no white background shape
+});
+
+// Or start from a preset and change one thing.
+TraceResult polygon = scan.Trace(TraceOptions.BlackAndWhite with { Corners = 1 });
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Default</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Mode</code></td>
+<td><code>BlackAndWhite</code></td>
+<td>How pixels become shapes.</td>
+</tr>
+<tr>
+<td><code>Threshold</code></td>
+<td><code>null</code></td>
+<td>The level from 0 (black) to 1 (white) that splits ink from paper: a pixel is ink when its intensity, over white by its alpha, is at most this. <code>null</code> finds it with Otsu's method, as <code>Raster.FindThreshold</code> does.</td>
+</tr>
+<tr>
+<td><code>PathFidelity</code></td>
+<td>0.5</td>
+<td>How closely joined curves follow the curves they replace: 0 gives the fewest curves, 1 keeps every curve. 0.5 is a tolerance of 0.2 pixels.</td>
+</tr>
+<tr>
+<td><code>Corners</code></td>
+<td>0.25</td>
+<td>How readily corners stay sharp: 0 rounds every corner, 1 keeps every corner (the outline is a polygon).</td>
+</tr>
+<tr>
+<td><code>Noise</code></td>
+<td>2</td>
+<td>The smallest region kept, in pixels. Smaller regions, ink or paper, merge into the regions around them, smallest first, so a speck inside a small hole goes before the hole. 0 or 1 keeps everything.</td>
+</tr>
+<tr>
+<td><code>IgnoreWhite</code></td>
+<td><code>false</code></td>
+<td>Leaves out the white shape that otherwise comes first, under the ink, the size of the image.</td>
+</tr>
+</tbody>
+</table>
+<p><code>TraceOptions.Default</code> is the defaults; they match potrace's published ones (corner threshold 1, curve tolerance 0.2,
+single-pixel specks dropped). <code>TraceOptions.BlackAndWhite</code> is the defaults with <code>IgnoreWhite</code>: the ink alone.</p>
+<h2 id="shapes-and-paths">Shapes and paths</h2>
+<pre><code class="lang-csharp">// TraceOptions.Default also gives a white shape for the paper, under the ink.
+TraceResult result = scan.Trace();
+TracedShape paper = result.Shapes[0];          // Color white, Kind Fill, the whole image
+Path ink = result.ToPath(Rgba8.Black);          // every black shape as one path
+
+// Outer edges run clockwise and holes counter-clockwise, so either fill rule fills the same area.
+bool same = ink.Contains(new Vector2(40, 40)) == ink.WithFillRule(FillRule.EvenOdd).Contains(new Vector2(40, 40));
+</code></pre>
+<ul>
+<li><code>ToPath(color)</code> joins the filled shapes of one color into one path, with the non-zero fill rule, or returns <code>Path.Empty</code>.</li>
+<li>Outer edges run clockwise on screen and holes counter-clockwise, so <code>NonZero</code> and <code>EvenOdd</code> fill a traced path the same.</li>
+<li>The paths are ordinary <code>Path</code> objects: transform them, combine them with <code>PathOps</code>, measure them, or write them as SVG path
+data with <code>ToSvg</code>.</li>
+</ul>
+<h2 id="drawing-and-recording">Drawing and recording</h2>
+<p><code>Draw(canvas)</code> draws the shapes in the canvas's current transform and clip, so a scale draws them larger with no stair steps.
+<code>ToPicture()</code> records them as a <code>Picture</code> the size of the traced image, to replay on any canvas, render with <code>ToRaster</code> or save
+as a <a href="egdr-format.html">drawing file</a>.</p>
+<pre><code class="lang-csharp">TraceResult result = scan.Trace(TraceOptions.BlackAndWhite);
+
+// Draw the shapes on any canvas, here four times as large.
+using Raster&lt;Rgba8&gt; large = Raster.Create(scan.Width * 4, scan.Height * 4, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = large.CreateCanvas())
+{
+    canvas.Scale(4, 4);
+    result.Draw(canvas);
+}
+
+// Or record them as a picture to replay later, render, or save as a drawing file.
+Picture picture = result.ToPicture();
+using Raster&lt;Rgba8&gt; sharp = picture.ToRaster&lt;Rgba8&gt;(scale: 8);
+</code></pre><h2 id="svg">SVG</h2>
+<p>Egami.Svg writes a trace through <code>SvgCanvas</code> (<code>SvgTraceExtensions</code>): <code>ToSvg()</code> returns the markup and <code>SaveSvg</code> writes a file or a stream, one <code>path</code>
+element per shape, back to front, in an SVG the size of the traced image. <code>SvgWriteOptions</code> sets the number precision.</p>
+<pre><code class="lang-csharp">// Egami.Svg writes a trace as SVG through SvgCanvas: one path element per shape.
+TraceResult result = scan.Trace(TraceOptions.BlackAndWhite);
+string markup = result.ToSvg(new SvgWriteOptions { Precision = 2 });
+result.SaveSvg(file);
+</code></pre><h2 id="how-black-and-white-is-traced">How black and white is traced</h2>
+<p>The tracer follows P. Selinger, &quot;Potrace: a polygon-based tracing algorithm&quot; (2003), written from the paper:</p>
+<ol>
+<li><strong>Ink map.</strong> Each pixel is ink or paper at the threshold. Ink pixels that touch only at a corner belong together
+(8-connected); paper is 4-connected. Regions under <code>Noise</code> pixels merge into their neighbours.</li>
+<li><strong>Boundaries.</strong> The edges between ink and paper pixels form closed loops, walked with ink on the right. Where two ink
+pixels meet at a corner, the walk turns so they stay in one loop.</li>
+<li><strong>Polygon.</strong> Each loop gets the polygon with the fewest sides that stays within half a pixel of it, and among those the
+one whose sides lie closest to the loop. Each corner then moves, by at most half a pixel, to where its sides' best-fit
+lines meet.</li>
+<li><strong>Curves and corners.</strong> At each polygon corner a curve runs between the two sides' midpoints; a corner that is sharp enough
+for its side lengths, by the <code>Corners</code> setting, stays a corner instead. Runs of curves that bend the same way, less than
+180 degrees in all, join into one curve where it stays within the <code>PathFidelity</code> tolerance.</li>
+</ol>
+<p>Because each curve only reaches the near edge of its corner's half-pixel square, a traced round shape comes out a fraction of a
+pixel smaller than its pixels: about 0.2 pixels in radius for a circle 60 pixels across.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/tracing.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

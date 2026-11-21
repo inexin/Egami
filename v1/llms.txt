@@ -107,6 +107,7 @@ settings, safety limits and registered formats a call uses.
 
 - [Drawing](https://inexin.github.io/Egami/v1/articles/guides/drawing.html): Egami.Drawing is a separate package that draws antialiased paths, shapes, strokes, clips and images on a `Canvas`.
 - [Drawing files (.egdr)](https://inexin.github.io/Egami/v1/articles/guides/egdr-format.html): An Egami drawing file holds a recorded `Picture`.
+- [Bitmap tracing](https://inexin.github.io/Egami/v1/articles/guides/tracing.html): Bitmap tracing turns a raster into filled vector shapes.
 
 ## Egami.Fonts
 

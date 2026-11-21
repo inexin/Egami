@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class TraceResult | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class TraceResult | Egami ">
+      
+      <meta name="description" content="The shapes a trace found, back to front, in the traced image&#39;s pixels. Draw them on any , record them as a , or (with Egami.Svg) save them as an SVG file.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Drawing_Tracing_TraceResult.md&amp;value=---%0Auid%3A%20Egami.Drawing.Tracing.TraceResult%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Drawing.Tracing.TraceResult">
+
+
+
+  <h1 id="Egami_Drawing_Tracing_TraceResult" data-uid="Egami.Drawing.Tracing.TraceResult" class="text-break">
+Class TraceResult  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L12"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Drawing.html">Drawing</a>.<a class="xref" href="Egami.Drawing.Tracing.html">Tracing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Drawing.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>The shapes a trace found, back to front, in the traced image's pixels. Draw them on any <a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a>, record them as a
+<a class="xref" href="Egami.Drawing.Picture.html">Picture</a>, or (with Egami.Svg) save them as an SVG file.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class TraceResult</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">TraceResult</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+  <dl class="typelist extensionMethods">
+    <dt>Extension Methods</dt>
+    <dd>
+  <div>
+      <a class="xref" href="Egami.Svg.SvgTraceExtensions.html#Egami_Svg_SvgTraceExtensions_SaveSvg_Egami_Drawing_Tracing_TraceResult_System_IO_Stream_Egami_Svg_SvgWriteOptions_">SvgTraceExtensions.SaveSvg(TraceResult, Stream, SvgWriteOptions?)</a>
+  </div>
+  <div>
+      <a class="xref" href="Egami.Svg.SvgTraceExtensions.html#Egami_Svg_SvgTraceExtensions_SaveSvg_Egami_Drawing_Tracing_TraceResult_System_String_Egami_Svg_SvgWriteOptions_">SvgTraceExtensions.SaveSvg(TraceResult, string, SvgWriteOptions?)</a>
+  </div>
+  <div>
+      <a class="xref" href="Egami.Svg.SvgTraceExtensions.html#Egami_Svg_SvgTraceExtensions_ToSvg_Egami_Drawing_Tracing_TraceResult_Egami_Svg_SvgWriteOptions_">SvgTraceExtensions.ToSvg(TraceResult, SvgWriteOptions?)</a>
+  </div>
+  </dd></dl>
+
+
+  <h2 id="Egami_Drawing_Tracing_TraceResult_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Trace a scan into shapes: each ink region becomes a black path of curves and corners, back to front.
+TraceResult result = scan.Trace(TraceOptions.BlackAndWhite);
+
+foreach (TracedShape shape in result.Shapes)
+{
+    Console.WriteLine($"{shape.Color} {shape.Path.Bounds}");
+}
+
+// The shapes are in the scan's pixels; scale them like any path.
+Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));</code></pre>
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Drawing_Tracing_TraceResult__ctor_" data-uid="Egami.Drawing.Tracing.TraceResult.#ctor*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceResult__ctor_System_Collections_Generic_IEnumerable_Egami_Drawing_Tracing_TracedShape__System_Int32_System_Int32_" data-uid="Egami.Drawing.Tracing.TraceResult.#ctor(System.Collections.Generic.IEnumerable{Egami.Drawing.Tracing.TracedShape},System.Int32,System.Int32)">
+  TraceResult(IEnumerable&lt;TracedShape&gt;, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Drawing.Tracing.TraceResult.html">TraceResult</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TraceResult(IEnumerable&lt;TracedShape&gt; shapes, int width, int height)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>shapes</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="Egami.Drawing.Tracing.TracedShape.html">TracedShape</a>&gt;</dt>
+    <dd><p>The shapes, back to front.</p>
+</dd>
+    <dt><code>width</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The traced image's width in pixels.</p>
+</dd>
+    <dt><code>height</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The traced image's height in pixels.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">shapes</code> or one of its shapes is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">width</code> or <code class="paramref">height</code> is not positive.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Drawing_Tracing_TraceResult_Height_" data-uid="Egami.Drawing.Tracing.TraceResult.Height*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceResult_Height" data-uid="Egami.Drawing.Tracing.TraceResult.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the traced image's height in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Height { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Tracing_TraceResult_Shapes_" data-uid="Egami.Drawing.Tracing.TraceResult.Shapes*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceResult_Shapes" data-uid="Egami.Drawing.Tracing.TraceResult.Shapes">
+  Shapes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the shapes, back to front: draw them in this order.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;TracedShape&gt; Shapes { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Drawing.Tracing.TracedShape.html">TracedShape</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Drawing_Tracing_TraceResult_Width_" data-uid="Egami.Drawing.Tracing.TraceResult.Width*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceResult_Width" data-uid="Egami.Drawing.Tracing.TraceResult.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the traced image's width in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Width { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Drawing_Tracing_TraceResult_Draw_" data-uid="Egami.Drawing.Tracing.TraceResult.Draw*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceResult_Draw_Egami_Drawing_Canvas_" data-uid="Egami.Drawing.Tracing.TraceResult.Draw(Egami.Drawing.Canvas)">
+  Draw(Canvas)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws the shapes on a canvas, back to front, in the canvas's current transform and clip.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Draw(Canvas canvas)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>canvas</code> <a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a></dt>
+    <dd><p>The canvas.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Tracing_TraceResult_Draw_Egami_Drawing_Canvas__examples">Examples</h4>
+  <pre><code class="lang-csharp">TraceResult result = scan.Trace(TraceOptions.BlackAndWhite);
+
+// Draw the shapes on any canvas, here four times as large.
+using Raster&lt;Rgba8&gt; large = Raster.Create(scan.Width * 4, scan.Height * 4, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = large.CreateCanvas())
+{
+    canvas.Scale(4, 4);
+    result.Draw(canvas);
+}
+
+// Or record them as a picture to replay later, render, or save as a drawing file.
+Picture picture = result.ToPicture();
+using Raster&lt;Rgba8&gt; sharp = picture.ToRaster&lt;Rgba8&gt;(scale: 8);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">canvas</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Tracing_TraceResult_ToPath_" data-uid="Egami.Drawing.Tracing.TraceResult.ToPath*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceResult_ToPath_Egami_Pixels_Rgba8_" data-uid="Egami.Drawing.Tracing.TraceResult.ToPath(Egami.Pixels.Rgba8)">
+  ToPath(Rgba8)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the filled shapes of one color as one path, or <a class="xref" href="Egami.Drawing.Path.html#Egami_Drawing_Path_Empty">Empty</a> when there are none.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Path ToPath(Rgba8 color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>color</code> <a class="xref" href="Egami.Pixels.Rgba8.html">Rgba8</a></dt>
+    <dd><p>The color.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The path, with the non-zero fill rule.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Tracing_TraceResult_ToPath_Egami_Pixels_Rgba8__examples">Examples</h4>
+  <pre><code class="lang-csharp">// TraceOptions.Default also gives a white shape for the paper, under the ink.
+TraceResult result = scan.Trace();
+TracedShape paper = result.Shapes[0];          // Color white, Kind Fill, the whole image
+Path ink = result.ToPath(Rgba8.Black);          // every black shape as one path
+
+// Outer edges run clockwise and holes counter-clockwise, so either fill rule fills the same area.
+bool same = ink.Contains(new Vector2(40, 40)) == ink.WithFillRule(FillRule.EvenOdd).Contains(new Vector2(40, 40));</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_Tracing_TraceResult_ToPicture_" data-uid="Egami.Drawing.Tracing.TraceResult.ToPicture*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceResult_ToPicture" data-uid="Egami.Drawing.Tracing.TraceResult.ToPicture">
+  ToPicture()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Records the shapes as a picture of the traced image's size, to replay on any canvas or save as a drawing file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Picture ToPicture()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Drawing.Picture.html">Picture</a></dt>
+    <dd><p>The picture.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Tracing_TraceResult_ToPicture_examples">Examples</h4>
+  <pre><code class="lang-csharp">TraceResult result = scan.Trace(TraceOptions.BlackAndWhite);
+
+// Draw the shapes on any canvas, here four times as large.
+using Raster&lt;Rgba8&gt; large = Raster.Create(scan.Width * 4, scan.Height * 4, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = large.CreateCanvas())
+{
+    canvas.Scale(4, 4);
+    result.Draw(canvas);
+}
+
+// Or record them as a picture to replay later, render, or save as a drawing file.
+Picture picture = result.ToPicture();
+using Raster&lt;Rgba8&gt; sharp = picture.ToRaster&lt;Rgba8&gt;(scale: 8);</code></pre>
+
+
+
+
+
+
+  <a id="Egami_Drawing_Tracing_TraceResult_ToString_" data-uid="Egami.Drawing.Tracing.TraceResult.ToString*"></a>
+
+  <h3 id="Egami_Drawing_Tracing_TraceResult_ToString" data-uid="Egami.Drawing.Tracing.TraceResult.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns a string that represents the current object.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A string that represents the current object.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Tracing/TraceResult.cs/#L12" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

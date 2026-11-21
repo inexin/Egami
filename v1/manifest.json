@@ -3443,6 +3443,104 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.Tracing.RasterTraceExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.Tracing.RasterTraceExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.Tracing.RasterTraceExtensions",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.Tracing.RasterTraceExtensions.yml\" sourcestartlinenumber=\"1\">Bitmap tracing: turns a raster's first frame into filled vector shapes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.Tracing.TraceMode.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.Tracing.TraceMode.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.Tracing.TraceMode",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.Tracing.TraceMode.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Drawing.Tracing.RasterTraceExtensions.Trace(Egami.Raster%2cEgami.Drawing.Tracing.TraceOptions%2cEgami.EgamiContext)\" data-throw-if-not-resolved=\"false\"></xref> turns pixels into shapes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.Tracing.TraceOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.Tracing.TraceOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.Tracing.TraceOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.Tracing.TraceOptions.yml\" sourcestartlinenumber=\"1\">How a raster is traced into shapes. Start from a preset and change what you need with <code>with</code>; every setting is checked\nwhen it is set.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.Tracing.TraceResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.Tracing.TraceResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.Tracing.TraceResult",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.Tracing.TraceResult.yml\" sourcestartlinenumber=\"1\">The shapes a trace found, back to front, in the traced image's pixels. Draw them on any <xref href=\"Egami.Drawing.Canvas\" data-throw-if-not-resolved=\"false\"></xref>, record them as a\n<xref href=\"Egami.Drawing.Picture\" data-throw-if-not-resolved=\"false\"></xref>, or (with Egami.Svg) save them as an SVG file.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.Tracing.TracedShape.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.Tracing.TracedShape.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.Tracing.TracedShape",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.Tracing.TracedShape.yml\" sourcestartlinenumber=\"1\">One shape of a <xref href=\"Egami.Drawing.Tracing.TraceResult\" data-throw-if-not-resolved=\"false\"></xref>: a path and the color it is drawn in.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.Tracing.TracedShapeKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.Tracing.TracedShapeKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.Tracing.TracedShapeKind",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.Tracing.TracedShapeKind.yml\" sourcestartlinenumber=\"1\">Whether a <xref href=\"Egami.Drawing.Tracing.TracedShape\" data-throw-if-not-resolved=\"false\"></xref> is filled or drawn as a line.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.Tracing.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.Tracing.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.Tracing",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Drawing.VerticalAlign.yml",
       "output": {
         ".html": {
@@ -13551,6 +13649,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Svg.SvgTraceExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Svg.SvgTraceExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Svg.SvgTraceExtensions",
+      "Summary": "<p sourcefile=\"api/Egami.Svg.SvgTraceExtensions.yml\" sourcestartlinenumber=\"1\">Writes the shapes of a bitmap trace as SVG, through <xref href=\"Egami.Svg.SvgCanvas\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Svg.SvgWriteOptions.yml",
       "output": {
         ".html": {
@@ -20077,11 +20189,11 @@
       "type": "Toc",
       "source_relative_path": "api/toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "api/toc.json"
-        },
         ".html": {
           "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
         }
       },
       "version": ""
@@ -21038,6 +21150,16 @@
     },
     {
       "type": "Conceptual",
+      "source_relative_path": "articles/guides/tracing.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/tracing.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
       "source_relative_path": "articles/guides/unicode-text.md",
       "output": {
         ".html": {
@@ -21100,11 +21222,11 @@
       "type": "Toc",
       "source_relative_path": "articles/toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "articles/toc.json"
-        },
         ".html": {
           "relative_path": "articles/toc.html"
+        },
+        ".json": {
+          "relative_path": "articles/toc.json"
         }
       },
       "version": ""
@@ -21193,11 +21315,11 @@
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "toc.json"
-        },
         ".html": {
           "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
         }
       },
       "version": ""
