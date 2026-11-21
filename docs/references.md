@@ -67,7 +67,10 @@ Kåsa's least-squares method (1976). Logo mode's coverage fields are S. Gustavso
 distance transform" (Pattern Recognition Letters, 2011), interpolated by cubic B-splines after M. Unser, A. Aldroubi and
 M. Eden, "B-spline signal processing" (IEEE Trans. Signal Processing, 1993) and P. Thévenaz, T. Blu and M. Unser,
 "Interpolation revisited" (IEEE Trans. Medical Imaging, 2000), and read with marching squares, the two-dimensional case
-of W. Lorensen and H. Cline's marching cubes (1987). The tracer is written from these papers, with VectorCraft and VTracer as the listed
+of W. Lorensen and H. Cline's marching cubes (1987). Centerline mode thins ink after T. Y. Zhang and C. Y. Suen, "A fast
+parallel algorithm for thinning digital patterns" (Communications of the ACM, 1984), and measures it with P. F.
+Felzenszwalb and D. P. Huttenlocher's "Distance transforms of sampled functions" (Theory of Computing, 2012). The tracer
+is written from these papers, with VectorCraft and VTracer as the listed
 libraries. potrace, autotrace, Inkscape, libdepixelize and their .NET ports (CsPotrace and others) are GPL and never read;
 potrace's CLI runs only as a black box in egami-compare's gates.
 

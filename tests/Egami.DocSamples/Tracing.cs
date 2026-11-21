@@ -123,6 +123,27 @@ public class Tracing
     }
 
     [Fact]
+    public void Centerline()
+    {
+        using Raster<Rgba8> sketch = Signature();
+
+        #region centerline
+        // Line art as strokes: the middle of each line, with the width its ink covers.
+        TraceResult lines = sketch.Trace(new TraceOptions { Mode = TraceMode.Centerline, IgnoreWhite = true });
+        foreach (TracedShape stroke in lines.Shapes)
+        {
+            Console.WriteLine($"{stroke.Kind} {stroke.StrokeWidth:F1} px {stroke.Path.Bounds}");
+        }
+
+        // Or every stroke with one pen, for a plotter or an engraving machine.
+        TraceResult pen = sketch.Trace(new TraceOptions { Mode = TraceMode.Centerline, StrokeWidth = 1, IgnoreWhite = true });
+        #endregion
+
+        Assert.Contains(lines.Shapes, s => s.Kind == TracedShapeKind.Stroke);
+        Assert.All(pen.Shapes.Where(s => s.Kind == TracedShapeKind.Stroke), s => Assert.Equal(1, s.StrokeWidth));
+    }
+
+    [Fact]
     public void Shapes()
     {
         using Raster<Rgba8> scan = Signature();
