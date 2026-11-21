@@ -30,6 +30,13 @@ if (args is ["--encode-h264", .. string[] h264Encode])
     return;
 }
 
+// Time HEVC encoding (HEVC encoder gates): -- --encode-hevc <clip.y4m> [options]
+if (args is ["--encode-hevc", .. string[] hevcEncode])
+{
+    HevcEncodeTiming.Run(hevcEncode);
+    return;
+}
+
 // Time H.264 decoding (V7 speed gate): -- --time-h264 <file.h264>...
 if (args is ["--time-h264", .. string[] h264])
 {

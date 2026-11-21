@@ -63,6 +63,9 @@ internal sealed class HevcFrameCoder : IFrameCoder
 
     public short[] Steps => QpSteps;
 
+    private int CtuCount => ((_settings.Width + (1 << _settings.CtbLog2Size) - 1) >> _settings.CtbLog2Size)
+        * ((_settings.Height + (1 << _settings.CtbLog2Size) - 1) >> _settings.CtbLog2Size);
+
     public CodedFrame Code(YuvRaster<byte> picture, FrameDecision decision) => Code(picture, null, decision);
 
     public CodedFrame Code(YuvRaster<byte> picture, YuvRaster? full, FrameDecision decision)
@@ -78,9 +81,12 @@ internal sealed class HevcFrameCoder : IFrameCoder
             ? new HevcSliceInfo { NalType = HevcNal.IdrNLp }
             : new HevcSliceInfo { NalType = decision.Referenced ? HevcNal.TrailR : HevcNal.TrailN, Poc = decision.Index - _idrIndex };
         Load(picture, full);
+        HevcEncodeStats.Picture(2);
+        HevcEncodeStats.Add(HevcEncodeStat.Ctus, CtuCount);
         HevcEncodedPicture coded = HevcEncoder.Encode(_settings with { Qp = qp }, _planes, _strides, info, CancellationToken.None);
         Coded?.Invoke(coded.Reconstruction, decision.Index);
         byte[] data = idr && _annexB ? AccessUnit([Vps, Sps, Pps, coded.Slice]) : AccessUnit([coded.Slice]);
+        HevcEncodeStats.AddPicture(0, coded.Slice.Length * 8L, new long[4]);
         return new CodedFrame(data, null, qp);
     }
 
