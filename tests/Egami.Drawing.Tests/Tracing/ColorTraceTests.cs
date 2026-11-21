@@ -16,6 +16,22 @@ public class ColorTraceTests
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     [Fact]
+    public void ShallowEdgesLeaveNoSlivers()
+    {
+        // A large red disc and an orange square on white: where the disc's edge runs nearly level, its blends with white lie
+        // nearer the orange than either side, and they must not come back as slivers of orange.
+        using Raster<Rgba8> raster = Raster.Create(520, 420, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = raster.CreateCanvas())
+        {
+            canvas.FillCircle(new Vector2(120, 120), 80, new Rgba8(220, 30, 40, 255));
+            canvas.FillRect(new RectF(300, 250, 150, 120), new Rgba8(240, 140, 20, 255));
+        }
+
+        TraceResult result = raster.Trace(new TraceOptions { Mode = TraceMode.Color, Colors = 16, IgnoreWhite = true });
+        Assert.Equal(2, result.Shapes.Count);
+    }
+
+    [Fact]
     public void ColorFindsThePicturesOwnColors()
     {
         // Antialiased edges blend the three colors with white and with each other; the palette is the flat colors alone.
