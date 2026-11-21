@@ -29,12 +29,19 @@ public sealed class TraceResult
         }
 
         Shapes = list;
+        Palette = [.. list.Select(shape => shape.Color).Distinct()];
         Width = width;
         Height = height;
     }
 
     /// <summary>Gets the shapes, back to front: draw them in this order.</summary>
     public IReadOnlyList<TracedShape> Shapes { get; }
+
+    /// <summary>Gets the shapes' colors, each once, in the order the shapes first use them: back to front.</summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Tracing.cs" region="color"/>
+    /// </example>
+    public IReadOnlyList<Rgba8> Palette { get; }
 
     /// <summary>Gets the traced image's width in pixels.</summary>
     public int Width { get; }

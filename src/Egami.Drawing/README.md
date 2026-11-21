@@ -6,7 +6,8 @@ Egami.Drawing draws on Egami rasters and other canvases.
 - Gradients, image, noise and custom paints; layers with opacity, blend modes, filters and soft masks; shadows.
 - Text through Egami.Fonts, nine-patches, meshes and patches, and recorded drawings saved as .egdr files.
 - Printing with inks: process and spot colors, overprint and separations.
-- Bitmap tracing: black-and-white images become vector shapes of curves and corners, to draw at any size or save as SVG.
+- Bitmap tracing: black-and-white, grayscale and color images become vector shapes of lines, arcs and curves, to draw at
+  any size or save as SVG.
 
 See the [Drawing guide](https://inexin.github.io/Egami/v1/articles/guides/drawing.html) and the
 [Bitmap tracing guide](https://inexin.github.io/Egami/v1/articles/guides/tracing.html).
