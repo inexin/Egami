@@ -93,9 +93,18 @@ public class ZstdEncoderTests
         byte[] data = Input("mixed");
         byte[] packed = new byte[ZstdEncoder.MaxEncodedLength(data.Length)];
         ZstdEncoder.Encode(data, packed, level);
-        long before = GC.GetAllocatedBytesForCurrentThread();
-        ZstdEncoder.Encode(data, packed, level);
-        Assert.Equal(0, GC.GetAllocatedBytesForCurrentThread() - before);
+
+        // The JIT may still tier up a hot loop during the second encode (on-stack replacement allocates a few KB on the
+        // calling thread), so the encoder must reach zero within a few warm encodes rather than on exactly the second.
+        long allocated = long.MaxValue;
+        for (int attempt = 0; attempt < 5 && allocated != 0; attempt++)
+        {
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            ZstdEncoder.Encode(data, packed, level);
+            allocated = Math.Min(allocated, GC.GetAllocatedBytesForCurrentThread() - before);
+        }
+
+        Assert.Equal(0, allocated);
     }
 
     internal static byte[] Input(string name)
