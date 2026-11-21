@@ -407,7 +407,7 @@ public class LogoTraceTests
     }
 
     /// <summary>Points along a path's lines and cubics, twenty to a segment.</summary>
-    private static List<Vector2> Outline(Path path)
+    internal static List<Vector2> Outline(Path path)
     {
         ReadOnlySpan<Vector2> points = path.Points;
         List<Vector2> output = [];

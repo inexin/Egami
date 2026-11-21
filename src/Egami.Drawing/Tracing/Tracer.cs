@@ -21,7 +21,7 @@ internal static class Tracer
             return LogoTracer.Trace(raster, options, cancellationToken);
         }
 
-        if (options.Mode != TraceMode.BlackAndWhite)
+        if (options.Mode is not TraceMode.BlackAndWhite and not TraceMode.Centerline)
         {
             return ColorTracer.Trace(LabelImage.FromRaster(raster, options, cancellationToken), options, cancellationToken);
         }
@@ -30,6 +30,11 @@ internal static class Tracer
         byte[] intensities = new byte[checked(width * height)];
         InkMap ink = InkMap.FromRaster(raster, level, intensities, cancellationToken);
         ink.RemoveNoise(options.Noise, cancellationToken);
+        if (options.Mode == TraceMode.Centerline)
+        {
+            return CenterlineTracer.Trace(ink, intensities, options, cancellationToken);
+        }
+
         return TraceInk(ink, intensities, options, cancellationToken);
     }
 
