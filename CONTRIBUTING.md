@@ -52,7 +52,7 @@ filter and CI run them. Mark a new test `Slow` when it takes more than about 5 s
 To test the SIMD fallback paths locally, run the tests with `DOTNET_EnableHWIntrinsic=0`.
 
 CI on a pull request builds and tests on Linux x64 and runs the format, public API, dependency, docs, provenance and sign-off
-checks. Pushes to `main`, a nightly run and manual runs add Linux arm64, Windows and macOS, the tests with AVX-512, AVX2 or all
+checks. Dependabot's own commits need no sign-off, and its pull requests skip the provenance check and the Claude review. Pushes to `main`, a nightly run and manual runs add Linux arm64, Windows and macOS, the tests with AVX-512, AVX2 or all
 hardware intrinsics turned off, PNG against libpng and the Native AOT smoke app. If your change touches SIMD or
 platform-specific code, run the tests with the intrinsics turned off before you open the pull request.
 

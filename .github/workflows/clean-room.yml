@@ -10,6 +10,8 @@ permissions:
 jobs:
   provenance:
     name: Provenance boxes ticked
+    # Dependabot's version bumps carry no code anyone wrote and no PR template.
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Check the PR template's provenance section

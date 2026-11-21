@@ -3,8 +3,8 @@ name: Claude review
 # Claude reviews each pull request when it is opened, updated, reopened or marked ready, and posts its findings as inline
 # comments. It reads CLAUDE.md, which includes AGENTS.md, so it checks the clean-room and managed-only rules too. Each push
 # reviews the pull request again: Claude resolves its own threads that the new code fixes and doesn't repeat open ones.
-# Findings are advice: the job never fails a pull request. Pull requests from forks are skipped, because GitHub withholds the
-# secret there.
+# Findings are advice: the job never fails a pull request. Pull requests from forks and from Dependabot are skipped, because
+# GitHub withholds the secret there (Dependabot runs see only the separate Dependabot secrets).
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
@@ -19,7 +19,9 @@ concurrency:
 jobs:
   review:
     name: Claude review
-    if: github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
+    if: >-
+      github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
