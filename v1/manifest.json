@@ -4587,7 +4587,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Fonts.Layout.LayoutRun",
-      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.LayoutRun.yml\" sourcestartlinenumber=\"1\">A piece of a line: glyphs of one font and bidi level, or a placeholder, tab or break.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.LayoutRun.yml\" sourcestartlinenumber=\"1\">A piece of a line: glyphs of one font, bidi level and style, or a placeholder, tab or break.</p>\n"
     },
     {
       "type": "ManagedReference",

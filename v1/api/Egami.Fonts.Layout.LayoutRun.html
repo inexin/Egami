@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class LayoutRun | Egami ">
       
-      <meta name="description" content="A piece of a line: glyphs of one font and bidi level, or a placeholder, tab or break.">
+      <meta name="description" content="A piece of a line: glyphs of one font, bidi level and style, or a placeholder, tab or break.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -97,7 +97,7 @@ Class LayoutRun  <a class="header-action link-secondary" title="View source" hre
   <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>A piece of a line: glyphs of one font and bidi level, or a placeholder, tab or break.</p>
+  <div class="markdown summary"><p>A piece of a line: glyphs of one font, bidi level and style, or a placeholder, tab or break.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -402,8 +402,8 @@ otherwise null.</p>
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L305"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the style of the run's first character: 0 for the paragraph's default style, else 1 plus the index of the
-rich text's span.</p>
+  <div class="markdown level1 summary"><p>Gets the style of the run's text: 0 for the paragraph's default style, else 1 plus the index of the rich text's
+span. A run has one style; where a ligature joins characters of two styles, the run holding it has its first character's.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 

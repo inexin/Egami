@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Fonts_Layout_Paragraph" data-uid="Egami.Fonts.Layout.Paragraph" class="text-break">
-Class Paragraph  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L19"><i class="bi bi-code-slash"></i></a>
+Class Paragraph  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L20"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -177,7 +177,8 @@ Paragraph paragraph = Paragraph.Create(text, style);</code></pre>
 
   <h2 id="Egami_Fonts_Layout_Paragraph_remarks">Remarks</h2>
   <div class="markdown level0 remarks"><p>Runs split where the bidi level, the script, the font (after fallback) or a style field that changes shaping changes; paint
-fields never split a run. Hard breaks, other control characters and placeholders are runs of their own without glyphs.</p>
+fields, baseline shift and line height never split a run, so kerning and ligatures carry across a color change. Lines cut
+their runs at every style change again, so each <a class="xref" href="Egami.Fonts.Layout.LayoutRun.html">LayoutRun</a> has one style. Hard breaks, other control characters and placeholders are runs of their own without glyphs.</p>
 </div>
 
 
@@ -189,7 +190,7 @@ fields never split a run. Hard breaks, other control characters and placeholders
 
   <h3 id="Egami_Fonts_Layout_Paragraph_RichText" data-uid="Egami.Fonts.Layout.Paragraph.RichText">
   RichText
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L41"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the styled text the paragraph was made from.</p>
@@ -221,7 +222,7 @@ fields never split a run. Hard breaks, other control characters and placeholders
 
   <h3 id="Egami_Fonts_Layout_Paragraph_Style" data-uid="Egami.Fonts.Layout.Paragraph.Style">
   Style
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L44"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the paragraph style.</p>
@@ -253,7 +254,7 @@ fields never split a run. Hard breaks, other control characters and placeholders
 
   <h3 id="Egami_Fonts_Layout_Paragraph_Text" data-uid="Egami.Fonts.Layout.Paragraph.Text">
   Text
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L38"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the text.</p>
@@ -289,7 +290,7 @@ fields never split a run. Hard breaks, other control characters and placeholders
 
   <h3 id="Egami_Fonts_Layout_Paragraph_Create_Egami_Fonts_Layout_RichText_Egami_Fonts_Layout_ParagraphStyle_" data-uid="Egami.Fonts.Layout.Paragraph.Create(Egami.Fonts.Layout.RichText,Egami.Fonts.Layout.ParagraphStyle)">
   Create(RichText, ParagraphStyle)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L201"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L202"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Prepares a paragraph of styled text.</p>
@@ -370,7 +371,7 @@ Paragraph paragraph = Paragraph.Create(text, style);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_Paragraph_Create_System_String_Egami_Fonts_Layout_ParagraphStyle_" data-uid="Egami.Fonts.Layout.Paragraph.Create(System.String,Egami.Fonts.Layout.ParagraphStyle)">
   Create(string, ParagraphStyle)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L186"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L187"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Prepares a plain-text paragraph in the paragraph's default style.</p>
@@ -451,7 +452,7 @@ Paragraph paragraph = Paragraph.Create(text, style);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_Paragraph_CreateFlow" data-uid="Egami.Fonts.Layout.Paragraph.CreateFlow">
   CreateFlow()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L161"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Starts laying the paragraph out one line at a time, each at its own width.</p>
@@ -498,7 +499,7 @@ while (flow.NextLine(second.Count &lt; 2 ? 90 : 150) is TextLine line)
 
   <h3 id="Egami_Fonts_Layout_Paragraph_GetStyle_System_Int32_" data-uid="Egami.Fonts.Layout.Paragraph.GetStyle(System.Int32)">
   GetStyle(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L170"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L171"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the text style a run with <a class="xref" href="Egami.Fonts.Layout.LayoutRun.html#Egami_Fonts_Layout_LayoutRun_StyleIndex">StyleIndex</a> (or a decoration with
@@ -545,7 +546,7 @@ default's values filled in where it sets none.</p>
 
   <h3 id="Egami_Fonts_Layout_Paragraph_Layout_System_Single_" data-uid="Egami.Fonts.Layout.Paragraph.Layout(System.Single)">
   Layout(float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L96"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L97"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Lays the paragraph out at a width.</p>
@@ -611,7 +612,7 @@ TextLayout unbounded = paragraph.Layout(float.PositiveInfinity);</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L19" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/Paragraph.cs/#L20" class="edit-link">Edit this page</a>
         </div>
 
 
