@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 using Egami.Fonts.Shaping;
@@ -188,6 +189,7 @@ internal sealed partial class LineBuilder
     private readonly AdvanceTable _m;
     private readonly Dictionary<(int, int), GlyphBuffer> _reshaped = [];
     private readonly Dictionary<Font, (GlyphBuffer Ltr, GlyphBuffer Rtl)?> _hyphens = [];
+    private List<int>? _order;
     private float _tabInterval = -1;
     private LazyState? _lazy;
 
@@ -921,7 +923,7 @@ internal sealed partial class LineBuilder
         return shaped is { } pair ? ((run.Level & 1) != 0 ? pair.Rtl : pair.Ltr) : null;
     }
 
-    /// <summary>Builds the draft of the line <c>[start, end)</c>: pieces per run and level, glyphs shaped again where a break is
+    /// <summary>Builds the draft of the line <c>[start, end)</c>: pieces per run, level and style, glyphs shaped again where a break is
     /// unsafe, the hyphen of a taken soft hyphen, runs reordered (UAX #9 L1 and L2) and placed from x = 0.</summary>
     private LineDraft Build(int start, int end, bool hard, bool hyphen, bool autoHyphen = false)
     {
@@ -951,8 +953,7 @@ internal sealed partial class LineBuilder
             }
 
             pieceEnd = j;
-            DraftRun piece = MakePiece(run, i, pieceEnd, level, ref pen, hyphen && pieceEnd == end && run.Kind == RunKind.Text ? HyphenGlyphs(end) : null, end);
-            pieces.Add(piece);
+            AddPieces(pieces, run, i, pieceEnd, level, ref pen, hyphen && pieceEnd == end && run.Kind == RunKind.Text ? HyphenGlyphs(end) : null, end);
             i = pieceEnd;
         }
 
@@ -1007,111 +1008,278 @@ internal sealed partial class LineBuilder
         };
     }
 
-    private DraftRun MakePiece(ParagraphRun run, int start, int end, int level, ref float pen, GlyphBuffer? hyphen, int lineEnd)
+    /// <summary>
+    /// Adds the pieces of the segment <c>[start, end)</c> of a run (one line, one bidi level) in logical order: one piece, or for
+    /// a text run whose style changes inside the segment, one piece per style. The segment is shaped as one, so kerning and
+    /// ligatures carry across a color change; a glyph cluster that crosses a style change (a ligature) takes the style of its
+    /// first character. The hyphen goes on the last piece.
+    /// </summary>
+    private void AddPieces(List<DraftRun> pieces, ParagraphRun run, int start, int end, int level, ref float pen, GlyphBuffer? hyphen, int lineEnd)
     {
-        ResolvedStyle style = _paragraph.Styles[run.Style];
-        List<ushort> glyphs = [];
-        List<int> clusters = [];
-        List<float> advances = [];
-        List<Vector2> offsets = [];
-        float advance = 0;
-        switch (run.Kind)
+        if (run.Kind != RunKind.Text)
         {
-            case RunKind.Text:
+            float boxAdvance = run.Kind switch
+            {
+                RunKind.Placeholder => _paragraph.RichText.Placeholders[run.Placeholder].Width + _m.Spacing[start],
+                RunKind.Tab => TabAdvance(pen, start, lineEnd),
+                _ => 0,
+            };
+            pen += boxAdvance;
+            pieces.Add(Piece(run, start, end, level, [], [], [], [], boxAdvance));
+            return;
+        }
+
+        bool again = (start > run.Start && UnsafeAt(start)) || (end < run.End && UnsafeAt(end));
+        GlyphBuffer buffer = again ? Reshape(start, end) : run.Glyphs!;
+        bool rtl = (run.Level & 1) != 0;
+
+        // The segment's glyphs in visual order, in a list the builder reuses; whether their clusters run one way (up in
+        // left-to-right runs, down in right-to-left ones), as they do unless the shaping keeps clusters per character.
+        List<int> order = _order ??= [];
+        order.Clear();
+        int first = end;
+        int previous = rtl ? int.MaxValue : int.MinValue;
+        bool monotone = true;
+        ReadOnlySpan<int> bufferClusters = buffer.Clusters;
+        for (int g = 0; g < bufferClusters.Length; g++)
+        {
+            int c = bufferClusters[g];
+            if (c >= start && c < end)
+            {
+                order.Add(g);
+                first = Math.Min(first, c);
+                monotone &= rtl ? c <= previous : c >= previous;
+                previous = c;
+            }
+        }
+
+        ReadOnlySpan<int> all = CollectionsMarshal.AsSpan(order);
+        if (run.StyleBreaks is int[] styleBreaks && StyleCuts(styleBreaks, bufferClusters, all, start, end, first) is List<int> cuts)
+        {
+            AddStyledPieces(pieces, run, buffer, all, monotone, cuts, start, end, level, ref pen, hyphen, lineEnd);
+            return;
+        }
+
+        pieces.Add(TextPiece(run, buffer, all, monotone, start, end, level, ref pen, hyphen, lineEnd));
+    }
+
+    /// <summary>Adds one piece per style range of a segment, <paramref name="cuts"/> apart, in logical order.</summary>
+    private void AddStyledPieces(List<DraftRun> pieces, ParagraphRun run, GlyphBuffer buffer, ReadOnlySpan<int> all, bool monotone, List<int> cuts, int start, int end, int level, ref float pen, GlyphBuffer? hyphen, int lineEnd)
+    {
+        ReadOnlySpan<int> clusters = buffer.Clusters;
+        if (monotone)
+        {
+            // Each piece's glyphs are a slice of the visual order: from the left in left-to-right runs, from the right in
+            // right-to-left ones.
+            bool rtl = (run.Level & 1) != 0;
+            int o = rtl ? all.Length : 0;
+            for (int p = 0; p <= cuts.Count; p++)
+            {
+                int pieceStart = p == 0 ? start : cuts[p - 1];
+                int pieceEnd = p == cuts.Count ? end : cuts[p];
+                int from = o;
+                if (rtl)
                 {
-                    bool again = (start > run.Start && UnsafeAt(start)) || (end < run.End && UnsafeAt(end));
-                    GlyphBuffer buffer = again ? Reshape(start, end) : run.Glyphs!;
-                    bool rtl = (run.Level & 1) != 0;
-                    List<int> order = [];
-                    for (int g = 0; g < buffer.Count; g++)
+                    while (o > 0 && clusters[all[o - 1]] < pieceEnd)
                     {
-                        int c = buffer.Clusters[g];
-                        if (c >= start && c < end)
-                        {
-                            order.Add(g);
-                        }
+                        o--;
                     }
-
-                    // Spacing goes on the logically last glyph of each cluster: the visually last in left-to-right runs, the visually
-                    // first in right-to-left ones.
-                    HashSet<int> spaced = [];
-                    float[] extraOf = new float[order.Count];
-                    for (int o = 0; o < order.Count; o++)
+                }
+                else
+                {
+                    while (o < all.Length && clusters[all[o]] < pieceEnd)
                     {
-                        int idx = rtl ? o : order.Count - 1 - o;
-                        int c = buffer.Clusters[order[idx]];
-                        if (spaced.Add(c))
-                        {
-                            extraOf[idx] = _m.Spacing[c];
-                        }
+                        o++;
                     }
-
-                    if (hyphen is not null && rtl)
-                    {
-                        AddGlyphs(hyphen, lineEnd - 1, glyphs, clusters, advances, offsets, ref advance);
-                    }
-
-                    for (int o = 0; o < order.Count; o++)
-                    {
-                        int g = order[o];
-                        GlyphPosition p = buffer.Positions[g];
-                        float along = run.Upright ? -p.YAdvance : p.XAdvance;
-                        glyphs.Add(buffer.GlyphIds[g]);
-                        clusters.Add(buffer.Clusters[g]);
-                        advances.Add(along + extraOf[o]);
-                        offsets.Add(new Vector2(p.XOffset, p.YOffset));
-                        advance += along + extraOf[o];
-                    }
-
-                    if (hyphen is not null && !rtl)
-                    {
-                        AddGlyphs(hyphen, lineEnd - 1, glyphs, clusters, advances, offsets, ref advance);
-                    }
-
-                    break;
                 }
 
-            case RunKind.Placeholder:
-                advance = _paragraph.RichText.Placeholders[run.Placeholder].Width + _m.Spacing[start];
+                ReadOnlySpan<int> slice = rtl ? all[o..from] : all[from..o];
+                pieces.Add(TextPiece(run, buffer, slice, true, pieceStart, pieceEnd, level, ref pen, p == cuts.Count ? hyphen : null, lineEnd));
+            }
+
+            return;
+        }
+
+        // Clusters in no order: each glyph goes to the piece whose range holds its cluster, keeping the visual order.
+        List<int>[] parts = new List<int>[cuts.Count + 1];
+        for (int p = 0; p < parts.Length; p++)
+        {
+            parts[p] = [];
+        }
+
+        foreach (int g in all)
+        {
+            int c = clusters[g];
+            int p = 0;
+            while (p < cuts.Count && cuts[p] <= c)
+            {
+                p++;
+            }
+
+            parts[p].Add(g);
+        }
+
+        for (int p = 0; p < parts.Length; p++)
+        {
+            int pieceStart = p == 0 ? start : cuts[p - 1];
+            int pieceEnd = p == cuts.Count ? end : cuts[p];
+            pieces.Add(TextPiece(run, buffer, CollectionsMarshal.AsSpan(parts[p]), false, pieceStart, pieceEnd, level, ref pen, p == cuts.Count ? hyphen : null, lineEnd));
+        }
+    }
+
+    /// <summary>
+    /// Where a segment's pieces after its first start: each style change inside <c>(start, end)</c> moved to the first glyph
+    /// cluster at or after it, so no cluster is split; changes that land on one cluster, or before the segment's first cluster
+    /// <paramref name="first"/>, are taken once or not at all. Null when there are none.
+    /// </summary>
+    private static List<int>? StyleCuts(int[] styleBreaks, ReadOnlySpan<int> clusters, ReadOnlySpan<int> order, int start, int end, int first)
+    {
+        List<int>? cuts = null;
+        foreach (int b in styleBreaks)
+        {
+            if (b <= start)
+            {
+                continue;
+            }
+
+            if (b >= end)
+            {
                 break;
-            case RunKind.Tab:
-                advance = TabAdvance(pen, start, lineEnd);
-                break;
+            }
+
+            int cut = end;
+            foreach (int g in order)
+            {
+                int c = clusters[g];
+                if (c >= b && c < cut)
+                {
+                    cut = c;
+                }
+            }
+
+            if (cut < end && cut > first && (cuts is null || cut > cuts[^1]))
+            {
+                (cuts ??= []).Add(cut);
+            }
+        }
+
+        return cuts;
+    }
+
+    /// <summary>A text piece of the glyphs <paramref name="order"/> of <paramref name="buffer"/> (in visual order, their clusters
+    /// <paramref name="monotone"/> or not), with the letter and word spacing in their advances and the hyphen, if any, at the
+    /// logical end.</summary>
+    private DraftRun TextPiece(ParagraphRun run, GlyphBuffer buffer, ReadOnlySpan<int> order, bool monotone, int start, int end, int level, ref float pen, GlyphBuffer? hyphen, int lineEnd)
+    {
+        bool rtl = (run.Level & 1) != 0;
+        int n = order.Length;
+        int h = hyphen?.Count ?? 0;
+        ushort[] glyphs = new ushort[n + h];
+        int[] clusters = new int[n + h];
+        float[] advances = new float[n + h];
+        Vector2[] offsets = new Vector2[n + h];
+        float advance = 0;
+        int at = 0;
+        if (hyphen is not null && rtl)
+        {
+            advance += PutGlyphs(hyphen, lineEnd - 1, glyphs, clusters, advances, offsets, 0);
+            at = h;
+        }
+
+        // Spacing goes on the logically last glyph of each cluster: the visually last in left-to-right runs, the visually
+        // first in right-to-left ones. Clusters that run one way keep a cluster's glyphs together, so its neighbor tells.
+        ReadOnlySpan<int> bufferClusters = buffer.Clusters;
+        ReadOnlySpan<GlyphPosition> positions = buffer.Positions;
+        ReadOnlySpan<ushort> ids = buffer.GlyphIds;
+        float[]? extraOf = monotone ? null : ScatteredSpacing(bufferClusters, order, rtl);
+        for (int o = 0; o < n; o++)
+        {
+            int g = order[o];
+            int c = bufferClusters[g];
+            float extra;
+            if (extraOf is not null)
+            {
+                extra = extraOf[o];
+            }
+            else
+            {
+                bool logicallyLast = rtl ? o == 0 || bufferClusters[order[o - 1]] != c : o == n - 1 || bufferClusters[order[o + 1]] != c;
+                extra = logicallyLast ? _m.Spacing[c] : 0;
+            }
+
+            GlyphPosition p = positions[g];
+            float along = (run.Upright ? -p.YAdvance : p.XAdvance) + extra;
+            glyphs[at] = ids[g];
+            clusters[at] = c;
+            advances[at] = along;
+            offsets[at] = new Vector2(p.XOffset, p.YOffset);
+            advance += along;
+            at++;
+        }
+
+        if (hyphen is not null && !rtl)
+        {
+            advance += PutGlyphs(hyphen, lineEnd - 1, glyphs, clusters, advances, offsets, at);
         }
 
         pen += advance;
-        return new DraftRun
-        {
-            Kind = run.Kind,
-            Start = start,
-            Length = end - start,
-            Level = level,
-            Style = _paragraph.RichText.SpanAt(start) + 1,
-            Font = run.Font,
-            Glyphs = [.. glyphs],
-            Clusters = [.. clusters],
-            Advances = [.. advances],
-            Offsets = [.. offsets],
-            Advance = advance,
-            Placeholder = run.Placeholder,
-            Script = run.Script,
-            Language = style.Language,
-            Upright = run.Upright,
-        };
+        return Piece(run, start, end, level, glyphs, clusters, advances, offsets, advance);
     }
 
-    private static void AddGlyphs(GlyphBuffer buffer, int cluster, List<ushort> glyphs, List<int> clusters, List<float> advances, List<Vector2> offsets, ref float advance)
+    /// <summary>The spacing of each glyph of <paramref name="order"/> when a cluster's glyphs may be apart: on the first glyph
+    /// of each cluster met from the logical end.</summary>
+    private float[] ScatteredSpacing(ReadOnlySpan<int> clusters, ReadOnlySpan<int> order, bool rtl)
     {
+        HashSet<int> spaced = [];
+        float[] extraOf = new float[order.Length];
+        for (int o = 0; o < order.Length; o++)
+        {
+            int idx = rtl ? o : order.Length - 1 - o;
+            int c = clusters[order[idx]];
+            if (spaced.Add(c))
+            {
+                extraOf[idx] = _m.Spacing[c];
+            }
+        }
+
+        return extraOf;
+    }
+
+    /// <summary>Writes a shaped string's glyphs (a hyphen) at <paramref name="at"/>, all in one cluster, and returns their advance.</summary>
+    private static float PutGlyphs(GlyphBuffer buffer, int cluster, ushort[] glyphs, int[] clusters, float[] advances, Vector2[] offsets, int at)
+    {
+        float advance = 0;
         for (int g = 0; g < buffer.Count; g++)
         {
             GlyphPosition p = buffer.Positions[g];
-            glyphs.Add(buffer.GlyphIds[g]);
-            clusters.Add(cluster);
-            advances.Add(p.XAdvance);
-            offsets.Add(new Vector2(p.XOffset, p.YOffset));
+            glyphs[at + g] = buffer.GlyphIds[g];
+            clusters[at + g] = cluster;
+            advances[at + g] = p.XAdvance;
+            offsets[at + g] = new Vector2(p.XOffset, p.YOffset);
             advance += p.XAdvance;
         }
+
+        return advance;
     }
+
+    private DraftRun Piece(ParagraphRun run, int start, int end, int level, ushort[] glyphs, int[] clusters, float[] advances, Vector2[] offsets, float advance) => new()
+    {
+        Kind = run.Kind,
+        Start = start,
+        Length = end - start,
+        Level = level,
+        Style = _paragraph.RichText.SpanAt(start) + 1,
+        Font = run.Font,
+        Glyphs = glyphs,
+        Clusters = clusters,
+        Advances = advances,
+        Offsets = offsets,
+        Advance = advance,
+        Placeholder = run.Placeholder,
+        Script = run.Script,
+        Language = _paragraph.Styles[run.Style].Language,
+        Upright = run.Upright,
+    };
 
     /// <summary>
     /// The line box above and below the baseline (CSS Inline Layout 3): the root inline box (the paragraph's default style, the
@@ -1543,12 +1711,11 @@ internal sealed partial class LineBuilder
         hidden = content;
         LineDraft kept = Build(line.Start, content, false, false);
         bool rtl = (kept.ParagraphLevel & 1) != 0;
-        List<ushort> ids = [];
-        List<int> clusters = [];
-        List<float> advances = [];
-        List<Vector2> offsets = [];
-        float advance = 0;
-        AddGlyphs(glyphs, content, ids, clusters, advances, offsets, ref advance);
+        ushort[] ids = new ushort[glyphs.Count];
+        int[] clusters = new int[glyphs.Count];
+        float[] advances = new float[glyphs.Count];
+        Vector2[] offsets = new Vector2[glyphs.Count];
+        float advance = PutGlyphs(glyphs, content, ids, clusters, advances, offsets, 0);
         DraftRun ellipsis = new()
         {
             Kind = RunKind.Text,
@@ -1557,10 +1724,10 @@ internal sealed partial class LineBuilder
             Level = kept.ParagraphLevel,
             Style = styleIndex,
             Font = font,
-            Glyphs = [.. ids],
-            Clusters = [.. clusters],
-            Advances = [.. advances],
-            Offsets = [.. offsets],
+            Glyphs = ids,
+            Clusters = clusters,
+            Advances = advances,
+            Offsets = offsets,
             Advance = advance,
             Placeholder = -1,
             Script = Script.Common,

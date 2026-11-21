@@ -72,6 +72,11 @@ Additive to 1.4.0. `.ehyp` files that 1.5.0-preview.1 wrote are version 1 and mu
   `Reset` keep the plan.
 - `.ehyp` version 2: Norwegian's patterns compile to 137 KB instead of 649 KB and load in about 0.7 ms. The trie stores no
   edge targets, and numbers are varints. Version 1 files are rejected with a clear error.
+- Fixed: a color, paint, background, shadow, baseline shift or line height that changes in the middle of a line, in a span that
+  shapes like the text before it, took the style of the shaped run's first character, so a red word in a black line was drawn
+  black. Lines now cut a `LayoutRun` at every style change, each with its own `StyleIndex`, while the text is still shaped as
+  one, so kerning and ligatures across a color change stay; a ligature joining two styles takes its first character's.
+  Decorations shared by two spans (one `TextDecoration` instance) now break where the text's color or shadows change.
 
 ## Egami (unreleased)
 
