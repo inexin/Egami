@@ -10,13 +10,13 @@ namespace Egami.Drawing.Tracing;
 /// </summary>
 internal sealed class LabelImage
 {
-    internal LabelImage(int width, int height, Rgba8[] palette)
+    internal LabelImage(int width, int height, Rgba8[] palette, bool colors = true)
     {
         Width = width;
         Height = height;
         Palette = palette;
         Labels = new byte[checked(width * height)];
-        Rgb = new byte[checked(width * height * 3)];
+        Rgb = colors ? new byte[checked(width * height * 3)] : [];
     }
 
     internal int Width { get; }
@@ -26,7 +26,10 @@ internal sealed class LabelImage
     /// <summary>Gets the palette entry of each pixel, row by row.</summary>
     internal byte[] Labels { get; }
 
-    /// <summary>Gets each pixel's color over white (red, green, blue), row by row, after any smoothing.</summary>
+    /// <summary>
+    /// Gets each pixel's color over white (red, green, blue), row by row, after any smoothing; empty for a label image sampled
+    /// from coverage fields, whose edges are placed by the fields.
+    /// </summary>
     internal byte[] Rgb { get; }
 
     /// <summary>Gets the palette.</summary>
@@ -152,7 +155,14 @@ internal sealed class LabelImage
     /// split by median cut (Heckbert 1982) into at most <paramref name="colors"/> boxes, refined by weighted k-means (Lloyd), with
     /// colors closer than a few levels merged.
     /// </summary>
-    internal static Rgba8[] BuildPalette(byte[] rgb, int width, int height, int colors, bool gray, CancellationToken cancellationToken)
+    /// <param name="rgb">The pixels' colors, three bytes each.</param>
+    /// <param name="width">The width.</param>
+    /// <param name="height">The height.</param>
+    /// <param name="colors">The most colors.</param>
+    /// <param name="gray">Whether the palette is gray levels.</param>
+    /// <param name="cancellationToken">Cancels the work.</param>
+    /// <param name="alpha">Each pixel's alpha, when pixels under half opaque are to be left out; otherwise <see langword="null"/>.</param>
+    internal static Rgba8[] BuildPalette(byte[] rgb, int width, int height, int colors, bool gray, CancellationToken cancellationToken, byte[]? alpha = null)
     {
         const int Bins = 1 << 15;
         double[] weight = new double[Bins], sumR = new double[Bins], sumG = new double[Bins], sumB = new double[Bins];
@@ -163,7 +173,7 @@ internal sealed class LabelImage
             for (int x = 0; x < width; x++)
             {
                 int i = (y * width) + x;
-                if (IsBlend(rgb, width, height, x, y))
+                if ((alpha is not null && alpha[i] < 128) || IsBlend(rgb, width, height, x, y))
                 {
                     continue;
                 }
@@ -183,6 +193,11 @@ internal sealed class LabelImage
             // Every pixel is a blend (a picture smaller than its edges): count them all.
             for (int i = 0; i < width * height; i++)
             {
+                if (alpha is not null && alpha[i] == 0)
+                {
+                    continue;
+                }
+
                 int r = rgb[3 * i], g = rgb[(3 * i) + 1], b = rgb[(3 * i) + 2];
                 int bin = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
                 weight[bin]++;
@@ -717,8 +732,12 @@ internal sealed class LabelImage
         }
     }
 
+    /// <summary>Adds a color to the end of the palette.</summary>
+    internal void AddColor(Rgba8 color) => Palette = [.. Palette, color];
+
     /// <summary>Drops palette entries no pixel uses and renumbers the labels.</summary>
-    internal void Compact()
+    /// <returns>Each old entry's new number, or -1 for an entry dropped.</returns>
+    internal int[] Compact()
     {
         int[] used = new int[Palette.Length];
         foreach (byte label in Labels)
@@ -730,7 +749,7 @@ internal sealed class LabelImage
         List<Rgba8> palette = [];
         for (int k = 0; k < Palette.Length; k++)
         {
-            map[k] = palette.Count;
+            map[k] = used[k] > 0 ? palette.Count : -1;
             if (used[k] > 0)
             {
                 palette.Add(Palette[k]);
@@ -739,7 +758,7 @@ internal sealed class LabelImage
 
         if (palette.Count == Palette.Length)
         {
-            return;
+            return map;
         }
 
         for (int i = 0; i < Labels.Length; i++)
@@ -748,6 +767,7 @@ internal sealed class LabelImage
         }
 
         Palette = [.. palette];
+        return map;
     }
 
     private static void Count(Dictionary<int, int> shared, int[] parent, int root, int region)

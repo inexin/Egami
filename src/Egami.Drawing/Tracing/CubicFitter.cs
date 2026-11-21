@@ -5,7 +5,8 @@ namespace Egami.Drawing.Tracing;
 /// <param name="CornerAngle">The turn, in radians, above which a point is a corner.</param>
 /// <param name="Lines">Whether straight runs become lines.</param>
 /// <param name="Arcs">Whether runs on a circle become circular arcs, and round outlines circles.</param>
-internal sealed record CurveSettings(double Tolerance, double CornerAngle, bool Lines, bool Arcs)
+/// <param name="Reach">How many points either side a corner's turn is measured over: about one point per pixel gives 3.</param>
+internal sealed record CurveSettings(double Tolerance, double CornerAngle, bool Lines, bool Arcs, int Reach = 3)
 {
     /// <summary>The distance within which points count as on one line or one circle.</summary>
     internal double SnapTolerance => Math.Min(0.3, 0.6 * Tolerance);
@@ -43,9 +44,9 @@ internal static class CubicFitter
         }
 
         List<int> breaks = [0];
-        breaks.AddRange(Corners(points, false, settings.CornerAngle));
+        breaks.AddRange(Corners(points, false, settings.CornerAngle, settings.Reach));
         breaks.Add(n - 1);
-        Vec[] p = Prepare(points, false, breaks);
+        Vec[] p = Prepare(points, false, breaks, settings.Reach);
         for (int k = 0; k + 1 < breaks.Count; k++)
         {
             FitSpan(p[breaks[k]..(breaks[k + 1] + 1)], settings, segments);
@@ -98,13 +99,13 @@ internal static class CubicFitter
             return new FittedCurve(points[0], segments, true);
         }
 
-        List<int> corners = Corners(points, true, settings.CornerAngle);
+        List<int> corners = Corners(points, true, settings.CornerAngle, settings.Reach);
         if (corners.Count == 0 && settings.CornerAngle <= 0)
         {
             corners.Add(0);
         }
 
-        Vec[] p = Prepare(points, true, corners);
+        Vec[] p = Prepare(points, true, corners, settings.Reach);
         if (corners.Count == 0)
         {
             if (settings.Arcs && TryCircle(p, settings.SnapTolerance, segments, out Vec start))
@@ -141,7 +142,7 @@ internal static class CubicFitter
     /// The corners of a run: points where the direction turns by more than <paramref name="cornerAngle"/> over a few points on
     /// either side, the sharpest of any close together.
     /// </summary>
-    internal static List<int> Corners(Vec[] p, bool closed, double cornerAngle)
+    internal static List<int> Corners(Vec[] p, bool closed, double cornerAngle, int reach = Reach)
     {
         int n = p.Length;
         List<int> corners = [];
@@ -155,7 +156,7 @@ internal static class CubicFitter
         double[] turn = new double[n];
         for (int i = 0; i < n; i++)
         {
-            turn[i] = Math.Min(Turn(p, closed, i, Reach), Turn(p, closed, i, 2 * Reach));
+            turn[i] = Math.Min(Turn(p, closed, i, reach), Turn(p, closed, i, 2 * reach));
         }
 
         for (int i = 0; i < n; i++)
@@ -166,7 +167,7 @@ internal static class CubicFitter
             }
 
             bool sharpest = true;
-            for (int j = -Reach; j <= Reach && sharpest; j++)
+            for (int j = -reach; j <= reach && sharpest; j++)
             {
                 int other = i + j;
                 if (closed)
@@ -212,7 +213,7 @@ internal static class CubicFitter
     /// Smooths the points once with weights 1, 2, 1 (corners and ends stay), which evens out the half-pixel steps of a staircase,
     /// then moves each corner to where lines fitted to the points on either side of it meet.
     /// </summary>
-    private static Vec[] Prepare(Vec[] points, bool closed, List<int> breaks)
+    private static Vec[] Prepare(Vec[] points, bool closed, List<int> breaks, int reach)
     {
         int n = points.Length;
         bool[] fixedPoint = new bool[n];
@@ -236,6 +237,8 @@ internal static class CubicFitter
             p[i] = (before + (2 * points[i]) + after) * 0.25;
         }
 
+        // Dense points (several to a pixel) skip the first pixel either side, where an edge rounds into its corner.
+        int side = (5 * reach) / 3, skip = (reach - 3) / 3;
         foreach (int c in breaks)
         {
             if (!closed && (c == 0 || c == n - 1))
@@ -245,7 +248,7 @@ internal static class CubicFitter
 
             // The points on each side, up to the next break.
             List<Vec> left = [], right = [];
-            for (int j = 1; j <= 5; j++)
+            for (int j = 1; j <= side + skip; j++)
             {
                 int i = closed ? (c - j + n) % n : c - j;
                 if (i < 0 || fixedPoint[i])
@@ -253,10 +256,13 @@ internal static class CubicFitter
                     break;
                 }
 
-                left.Add(p[i]);
+                if (j > skip)
+                {
+                    left.Add(p[i]);
+                }
             }
 
-            for (int j = 1; j <= 5; j++)
+            for (int j = 1; j <= side + skip; j++)
             {
                 int i = closed ? (c + j) % n : c + j;
                 if (i >= n || fixedPoint[i])
@@ -264,7 +270,10 @@ internal static class CubicFitter
                     break;
                 }
 
-                right.Add(p[i]);
+                if (j > skip)
+                {
+                    right.Add(p[i]);
+                }
             }
 
             if (left.Count >= 2 && right.Count >= 2 && Intersect(FitLine(left), FitLine(right), out Vec meet) && (meet - p[c]).Length <= 1.5)
@@ -312,8 +321,8 @@ internal static class CubicFitter
             return;
         }
 
-        Vec t1 = (q[Math.Min(Reach, m)] - q[0]).Normalize();
-        Vec t2 = (q[m - Math.Min(Reach, m)] - q[m]).Normalize();
+        Vec t1 = (q[Math.Min(settings.Reach, m)] - q[0]).Normalize();
+        Vec t2 = (q[m - Math.Min(settings.Reach, m)] - q[m]).Normalize();
         Schneider(q, t1, t2, settings, output);
     }
 

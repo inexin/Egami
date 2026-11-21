@@ -63,7 +63,11 @@ For bitmap tracing, P. Selinger, "Potrace: a polygon-based tracing algorithm" (2
 (path decomposition with its turn policy), and P. J. Schneider, "An algorithm for automatically fitting digitized curves"
 (Graphics Gems, 1990) for the least-squares cubic fit every mode uses. Colors come from P. Heckbert's median cut (1982),
 refined by Lloyd's k-means; smoothing is C. Tomasi and R. Manduchi's bilateral filter (1998); circles are fitted with I.
-Kåsa's least-squares method (1976). The tracer is written from these papers, with VectorCraft and VTracer as the listed
+Kåsa's least-squares method (1976). Logo mode's coverage fields are S. Gustavson and R. Strand's "Anti-aliased Euclidean
+distance transform" (Pattern Recognition Letters, 2011), interpolated by cubic B-splines after M. Unser, A. Aldroubi and
+M. Eden, "B-spline signal processing" (IEEE Trans. Signal Processing, 1993) and P. Thévenaz, T. Blu and M. Unser,
+"Interpolation revisited" (IEEE Trans. Medical Imaging, 2000), and read with marching squares, the two-dimensional case
+of W. Lorensen and H. Cline's marching cubes (1987). The tracer is written from these papers, with VectorCraft and VTracer as the listed
 libraries. potrace, autotrace, Inkscape, libdepixelize and their .NET ports (CsPotrace and others) are GPL and never read;
 potrace's CLI runs only as a black box in egami-compare's gates.
 

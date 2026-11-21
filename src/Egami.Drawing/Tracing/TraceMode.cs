@@ -23,4 +23,12 @@ public enum TraceMode
     /// leaving out the blends along edges, and traces each color as a layer of shapes.
     /// </summary>
     Color,
+
+    /// <summary>
+    /// For logos, icons and other flat-color art with antialiased edges: reduces the image to its flat colors as
+    /// <see cref="Color"/> does, then places each edge to a fraction of a pixel from smooth fields of how much of each pixel each
+    /// color covers, for smoother curves than <see cref="Color"/> on small art. Transparency around the art is left out;
+    /// transparency the art encloses is traced as white. An image that is not flat color (a photo, a gradient) is refused.
+    /// </summary>
+    Logo,
 }

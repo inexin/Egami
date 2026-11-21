@@ -86,13 +86,14 @@ public sealed record class TraceOptions
 
     /// <summary>
     /// Gets whether white areas are left out. In black and white, when <see langword="false"/> (the default), a white shape the
-    /// size of the image comes first, under the ink, wherever the image has paper. In grayscale and color, the layer of each
-    /// palette color whose red, green and blue are all at least 240 is left out, and its areas stay empty in the other layers.
+    /// size of the image comes first, under the ink, wherever the image has paper. In grayscale, color and logo, the layer of each
+    /// palette color whose red, green and blue are all at least 240 is left out, and its areas stay empty in the other layers;
+    /// in logo, that includes the transparency the art encloses, which is otherwise traced as white.
     /// </summary>
     public bool IgnoreWhite { get; init; }
 
     /// <summary>
-    /// Gets the most colors (in <see cref="TraceMode.Grayscale"/>, gray levels) a grayscale or color trace reduces the image to,
+    /// Gets the most colors (in <see cref="TraceMode.Grayscale"/>, gray levels) a grayscale, color or logo trace reduces the image to,
     /// from 2 to 256. The colors are the image's own flat ones, found with the blends along edges left out; an image with fewer
     /// distinct colors gets fewer. Defaults to 8. Not used in black and white or when <see cref="Palette"/> is set.
     /// </summary>
@@ -104,8 +105,9 @@ public sealed record class TraceOptions
     }
 
     /// <summary>
-    /// Gets fixed colors for a grayscale or color trace, or <see langword="null"/> (the default) to find them in the image. Each
-    /// pixel takes the nearest of them (by intensity in grayscale), and the shapes take these colors exactly. The list is copied.
+    /// Gets fixed colors for a grayscale, color or logo trace, or <see langword="null"/> (the default) to find them in the image.
+    /// Each pixel takes the nearest of them (by intensity in grayscale; in logo, each of the image's own colors does), and the
+    /// shapes take these colors exactly. The list is copied.
     /// </summary>
     /// <exception cref="ArgumentException">The list is empty or has more than 256 colors.</exception>
     public IReadOnlyList<Rgba8>? Palette
@@ -114,7 +116,7 @@ public sealed record class TraceOptions
         init => _palette = value is null ? null : value.Count is >= 1 and <= 256 ? [.. value] : throw new ArgumentException("The palette must have from 1 to 256 colors.", nameof(value));
     }
 
-    /// <summary>Gets how the layers of a grayscale or color trace fit together. Defaults to <see cref="TraceLayering.Stacked"/>.</summary>
+    /// <summary>Gets how the layers of a grayscale, color or logo trace fit together. Defaults to <see cref="TraceLayering.Stacked"/>.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is not defined.</exception>
     public TraceLayering Layering
     {
@@ -123,19 +125,20 @@ public sealed record class TraceOptions
     }
 
     /// <summary>
-    /// Gets whether the straight runs of a grayscale or color outline become lines. Defaults to <see langword="true"/>.
+    /// Gets whether the straight runs of a grayscale, color or logo outline become lines. Defaults to <see langword="true"/>.
     /// </summary>
     public bool SnapToLines { get; init; } = true;
 
     /// <summary>
-    /// Gets whether the runs of a grayscale or color outline that lie on a circle become circular arcs, and round outlines
+    /// Gets whether the runs of a grayscale, color or logo outline that lie on a circle become circular arcs, and round outlines
     /// circles. Defaults to <see langword="true"/>.
     /// </summary>
     public bool SnapToArcs { get; init; } = true;
 
     /// <summary>
     /// Gets how strongly a grayscale or color trace smooths the image before reducing its colors, from 0 (not at all, the
-    /// default) to 1. The smoothing keeps edges between clearly different colors and flattens texture and noise, for photos.
+    /// default) to 1. The smoothing keeps edges between clearly different colors and flattens texture and noise, for photos. Not
+    /// used in logo, which takes flat-color art only.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is outside 0 to 1.</exception>
     public float Smoothing

@@ -62,6 +62,18 @@ internal sealed class FittedCurve
         return new FittedCurve(End, segments, Closed);
     }
 
+    /// <summary>The same curve with every point multiplied by <paramref name="factor"/>.</summary>
+    internal FittedCurve Scaled(double factor)
+    {
+        List<CurveSegment> segments = new(Segments.Count);
+        foreach (CurveSegment s in Segments)
+        {
+            segments.Add(new CurveSegment(s.IsCubic, s.C1 * factor, s.C2 * factor, s.End * factor));
+        }
+
+        return new FittedCurve(Start * factor, segments, Closed);
+    }
+
     /// <summary>Adds the segments to a path builder, starting a contour first when <paramref name="move"/> is set.</summary>
     internal void AddTo(PathBuilder builder, bool move)
     {
