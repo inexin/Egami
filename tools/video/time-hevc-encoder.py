@@ -241,8 +241,9 @@ def run_bd(args):
 
     def egami_job(codec, clip, q, aq):
         src = clip_path(clip)
+        extra = ("" if aq else "--no-aq") + (f" --inter={args.inter}" if args.inter and codec == "hevc" else "")
         out, data = egami(codec, src, args.frames, q, args.effort if codec == "hevc" else 4, 1,
-                          f"{clip}-q{q}-e{args.effort}{'-aq' if aq else ''}", "" if aq else "--no-aq")
+                          f"{clip}-q{q}-e{args.effort}{'-aq' if aq else ''}", extra)
         psnr, ssim = metrics(src, out, args.frames)
         fps = y4m_info(src)[2]
         key = ("egami" if codec == "hevc" else "h264") + ("_aq" if aq else "")
@@ -560,6 +561,7 @@ def main():
     parser.add_argument("--reuse", action="store_true", help="bd: keep the runs already in the bd file and add only what is missing")
     parser.add_argument("--repeats", type=int, default=3, help="cycles: runs of each count, the least kept")
     parser.add_argument("--no-h264", action="store_true", help="bd and cycles: leave out Egami's H.264 encoder")
+    parser.add_argument("--inter", default=None, help="bd: change Egami's inter profile (Name:value,...), to measure one setting")
     parser.add_argument("--clips-from", default=".cache/video/derf")
     parser.add_argument("--out", default=OUT, help="where runs and results go (clips stay in .cache/hevcenc/clips)")
     parser.add_argument("--bench", default=BENCH, help="the benchmark build to time Egami with, inside the repo")

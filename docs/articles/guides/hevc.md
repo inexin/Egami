@@ -58,10 +58,12 @@ HEVC settings: the `HevcProfile`, the level (the lowest Main tier level that the
 limits, adaptive quantization, B-frames and Annex B packets for raw streams. Packets are otherwise length-prefixed with the
 parameter sets in the track's hvcC record, which MP4 and MOV write as an hvc1 sample entry, the one Apple players need. Each
 picture's CTB rows are wavefront substreams coded in parallel, and the stream is the same on any number of threads. Every
-picture decodes in Egami's decoder, and FFmpeg's, to the encoder's own reconstruction, sample for sample.
+picture decodes in Egami's decoder, FFmpeg's and the reference decoder HM to the encoder's own reconstruction, sample for
+sample.
 
-The encoder is in progress: so far every picture is coded intra (keyframes as IDR pictures), with the HEIC encoder's search,
-and P and B pictures follow.
+The encoder is in progress: keyframes are IDR pictures, coded with the HEIC encoder's search, and the other pictures are P
+pictures predicted from earlier ones, with motion search, merge and skip modes and intra blocks where they pay. B pictures
+follow.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoHevc.cs#encode)]
 

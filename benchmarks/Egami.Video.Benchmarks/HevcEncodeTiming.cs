@@ -66,6 +66,25 @@ internal static class HevcEncodeTiming
                 Profile = Value("profile") switch { "main" => HevcProfile.Main, "main10" => HevcProfile.Main10, _ => null },
             },
         };
+        if (Value("inter") is { } inter)
+        {
+            // --inter=Name:value,... changes the inter profile of every effort, for measuring one setting (HevcInterProfile).
+            HevcInterProfile.Adjust = profile =>
+            {
+                HevcInterProfile changed = profile with { };
+                foreach (string pair in inter.Split(','))
+                {
+                    string[] parts = pair.Split(':');
+                    System.Reflection.PropertyInfo property = typeof(HevcInterProfile).GetProperty(parts[0],
+                        System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+                    property.SetValue(changed, Convert.ChangeType(parts[1] switch { "true" or "on" => "True", "false" or "off" => "False", _ => parts[1] },
+                        property.PropertyType, CultureInfo.InvariantCulture));
+                }
+
+                return changed;
+            };
+        }
+
         MediaContext context = new() { Egami = EgamiContext.Default with { MaxParallelism = threads } };
         int runs = Number("runs") ?? 1;
         double best = double.MaxValue, bestCpu = double.MaxValue;

@@ -11,7 +11,7 @@ namespace Egami.Heic.Hevc;
 /// picture's block maps, which hold every block decoded before the current one, as the decoder's do.
 /// </summary>
 [SkipLocalsInit]
-internal sealed class HevcSyntaxWriter
+internal sealed partial class HevcSyntaxWriter
 {
     private readonly HevcPicture _picture;
     private readonly HevcSps _sps;
@@ -191,6 +191,13 @@ internal sealed class HevcSyntaxWriter
     /// <summary>Writes a coding unit: transquant bypass, part_mode, the intra modes and the transform tree.</summary>
     internal void CodingUnit(HevcCodingUnit cu)
     {
+        bool inter = false;
+        InterCodingUnit(cu, ref inter);
+        if (inter)
+        {
+            return;
+        }
+
         CodingUnitHeader(cu);
         int maxTrafoDepth = _sps.MaxTransformHierarchyDepthIntra + (cu.NxN ? 1 : 0);
         TransformTree(cu, cu.Tree, cu.X, cu.Y, cu.X, cu.Y, cu.Log2, 0, 0, maxTrafoDepth, true, true, true, true);
@@ -205,6 +212,7 @@ internal sealed class HevcSyntaxWriter
             Bins.Encode(HevcContexts.CuTransquantBypass, cu.Bypass ? 1 : 0);
         }
 
+        IntraInInterSlice(cu);
         if (cu.Log2 == _sps.MinCbLog2Size)
         {
             Bins.Encode(HevcContexts.PartMode, cu.NxN ? 0 : 1);
@@ -213,6 +221,15 @@ internal sealed class HevcSyntaxWriter
         LumaModes(cu);
         ChromaModes(cu);
     }
+
+    /// <summary>
+    /// Writes a whole inter coding unit and sets <paramref name="inter"/>, in an encoder with inter coding compiled in
+    /// (Egami.Video.Hevc); an intra unit is left to <see cref="CodingUnitHeader"/>.
+    /// </summary>
+    partial void InterCodingUnit(HevcCodingUnit cu, ref bool inter);
+
+    /// <summary>Writes cu_skip_flag 0 and pred_mode_flag 1 of an intra coding unit in a P or B slice (Egami.Video.Hevc).</summary>
+    partial void IntraInInterSlice(HevcCodingUnit cu);
 
     /// <summary>prev_intra_luma_pred_flag, then mpm_idx or rem_intra_luma_pred_mode, of each prediction unit (8.4.2).</summary>
     internal void LumaModes(HevcCodingUnit cu)
