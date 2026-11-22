@@ -39,9 +39,9 @@ internal static class LogoTracer
         int width = raster.Width, height = raster.Height;
         int n = checked(width * height);
         byte[] rgb = new byte[checked(n * 3)], alpha = new byte[n];
-        for (int y = 0; y < height; y++)
+        ParallelOptions parallel = new() { CancellationToken = cancellationToken };
+        Parallel.For(0, height, parallel, y =>
         {
-            cancellationToken.ThrowIfCancellationRequested();
             Span<TPixel> row = raster.Row(y);
             for (int x = 0; x < row.Length; x++)
             {
@@ -52,14 +52,9 @@ internal static class LogoTracer
                 rgb[(3 * i) + 1] = ToByte(c.Y);
                 rgb[(3 * i) + 2] = ToByte(c.Z);
             }
-        }
+        });
 
-        bool transparent = false, visible = false;
-        foreach (byte a in alpha)
-        {
-            transparent |= a < 255;
-            visible |= a > 0;
-        }
+        bool transparent = alpha.AsSpan().ContainsAnyExcept((byte)255), visible = alpha.AsSpan().ContainsAnyExcept((byte)0);
 
         if (!visible)
         {
@@ -318,21 +313,45 @@ internal static class LogoTracer
         while (palette.Length > 2)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            // Each color's pixels and interior pixels, counted row by row in parallel (whole numbers, so in any order).
             long[] count = new long[palette.Length], interior = new long[palette.Length];
-            long total = 0;
-            for (int i = 0; i < nearest.Length; i++)
-            {
-                if (alpha[i] >= 128)
+            byte[] labels = nearest;
+            int colors = palette.Length;
+            Parallel.For(
+                0,
+                height,
+                new ParallelOptions { CancellationToken = cancellationToken },
+                () => new long[2 * colors],
+                (y, _, local) =>
                 {
-                    int k = nearest[i], x = i % width, y = i / width;
-                    count[k]++;
-                    total++;
-                    if (x > 0 && x + 1 < width && y > 0 && y + 1 < height && nearest[i - 1] == k && nearest[i + 1] == k && nearest[i - width] == k && nearest[i + width] == k)
+                    for (int x = 0; x < width; x++)
                     {
-                        interior[k]++;
+                        int i = (y * width) + x;
+                        if (alpha[i] >= 128)
+                        {
+                            int k = labels[i];
+                            local[k]++;
+                            if (x > 0 && x + 1 < width && y > 0 && y + 1 < height && labels[i - 1] == k && labels[i + 1] == k && labels[i - width] == k && labels[i + width] == k)
+                            {
+                                local[colors + k]++;
+                            }
+                        }
                     }
-                }
-            }
+
+                    return local;
+                },
+                local =>
+                {
+                    lock (count)
+                    {
+                        for (int k = 0; k < colors; k++)
+                        {
+                            count[k] += local[k];
+                            interior[k] += local[colors + k];
+                        }
+                    }
+                });
+            long total = count.Sum();
 
             int drop = -1;
             for (int k = 0; k < palette.Length && drop < 0; k++)

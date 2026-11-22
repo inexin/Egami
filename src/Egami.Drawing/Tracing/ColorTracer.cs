@@ -78,20 +78,35 @@ internal static class ColorTracer
         }
 
         // Regions that touch across a pixel edge.
+        // (Each set's root is its least region whatever order the pairs are joined in, so the order of the pairs is free.)
         HashSet<long> pairs = [];
         int w = image.Width;
-        for (int i = 0; i < tracer.Regions.Length; i++)
+        int[] regions = tracer.Regions;
+        long lastRight = -1, lastDown = -1;
+        for (int y = 0; y < image.Height; y++)
         {
-            int x = i % w;
-            int a = tracer.Regions[i];
-            if (x + 1 < w && tracer.Regions[i + 1] != a)
+            int row = y * w;
+            for (int x = 0; x < w; x++)
             {
-                pairs.Add(Pair(a, tracer.Regions[i + 1]));
-            }
+                int i = row + x;
+                int a = regions[i];
+                if (x + 1 < w && regions[i + 1] != a)
+                {
+                    long pair = Pair(a, regions[i + 1]);
+                    if (pair != lastRight)
+                    {
+                        pairs.Add(lastRight = pair);
+                    }
+                }
 
-            if (i + w < tracer.Regions.Length && tracer.Regions[i + w] != a)
-            {
-                pairs.Add(Pair(a, tracer.Regions[i + w]));
+                if (i + w < regions.Length && regions[i + w] != a)
+                {
+                    long pair = Pair(a, regions[i + w]);
+                    if (pair != lastDown)
+                    {
+                        pairs.Add(lastDown = pair);
+                    }
+                }
             }
         }
 

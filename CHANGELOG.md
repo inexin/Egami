@@ -30,9 +30,9 @@ waits for B pictures, rate control tuning and its gates. Additive to 1.3.
 
 ## Egami.Drawing and Egami.Svg 1.5.0 (unreleased)
 
-Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PRs A to E of seven): black-and-white, grayscale, color and
-logo images become vector shapes, and line art becomes stroked centre lines. Additive to 1.4.0; the later PRs add a
-PixelArt mode and speed work.
+Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PRs A to F of seven): black-and-white, grayscale, color and
+logo images become vector shapes, and line art becomes stroked centre lines. Additive to 1.4.0; the last PR adds a
+PixelArt mode.
 
 - `raster.Trace(options)` (namespace `Egami.Drawing.Tracing`, also `Trace<TPixel>` and `TraceAsync` with a cancellation
   token) traces a raster's first frame and returns a `TraceResult`: `TracedShape`s back to front (a `Path`, an `Rgba8`
@@ -64,9 +64,12 @@ PixelArt mode and speed work.
   `Default` and `BlackAndWhite`. On five test photos `Photo` traces draw back within 2.9 % of full scale on average and
   `Poster` traces within 3.5 %.
 - Color and grayscale tracing no longer leave slivers of a third color along shallow antialiased edges of large drawings.
+- Centerline tracing of an image that is ink everywhere no longer puts points two billion pixels off the image: the image's
+  edge counts as paper (found by the new trace fuzz target).
 - Egami.Svg writes a trace as SVG through `SvgCanvas`: `result.ToSvg()` and `result.SaveSvg(path)` (or a stream).
-- Speed is not tuned yet (Build Plan PR F): a 3000 × 3000 drawing traces in about 0.7 s in black and white and 1 s in
-  color.
+- Speed (Build Plan PR F): the distance transforms, region labelling (by runs) and per-pixel passes run in parallel, for
+  the same shapes as before. A 3000 × 2400 drawing traces in about 0.16 s in black and white, 0.25 s in color or
+  grayscale, 0.3 s as centre lines and 0.7 s in logo mode, 1.6 to 2.9 × faster than PR E.
 
 ## Egami.Fonts (unreleased)
 

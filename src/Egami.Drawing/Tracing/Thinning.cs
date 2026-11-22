@@ -22,7 +22,9 @@ internal static class Thinning
             }
         }
 
-        List<int> marked = [];
+        // Each sub-iteration only reads the map while it marks, so the marking runs in parallel, in chunks of the live pixels.
+        bool[] marked = [];
+        ParallelOptions parallel = new() { CancellationToken = cancellationToken };
         bool changed = true;
         while (changed)
         {
@@ -30,24 +32,44 @@ internal static class Thinning
             changed = false;
             for (int pass = 0; pass < 2; pass++)
             {
-                marked.Clear();
-                foreach (int i in alive)
+                int count = alive.Count;
+                if (count == 0)
                 {
-                    if (Removable(map, width, height, i, pass))
+                    break;
+                }
+
+                if (marked.Length < count)
+                {
+                    marked = new bool[count];
+                }
+
+                bool[] marks = marked;
+                int sub = pass;
+                Parallel.ForEach(System.Collections.Concurrent.Partitioner.Create(0, count, 4096), parallel, range =>
+                {
+                    for (int j = range.Item1; j < range.Item2; j++)
                     {
-                        marked.Add(i);
+                        marks[j] = Removable(map, width, height, alive[j], sub);
+                    }
+                });
+
+                int kept = 0;
+                for (int j = 0; j < count; j++)
+                {
+                    if (marks[j])
+                    {
+                        map[alive[j]] = 0;
+                    }
+                    else
+                    {
+                        alive[kept++] = alive[j];
                     }
                 }
 
-                foreach (int i in marked)
-                {
-                    map[i] = 0;
-                }
-
-                if (marked.Count > 0)
+                if (kept < count)
                 {
                     changed = true;
-                    alive.RemoveAll(i => map[i] == 0);
+                    alive.RemoveRange(kept, count - kept);
                 }
             }
         }

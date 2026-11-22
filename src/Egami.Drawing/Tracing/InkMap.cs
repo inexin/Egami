@@ -47,9 +47,8 @@ internal sealed class InkMap
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         InkMap map = new(raster.Width, raster.Height);
-        for (int y = 0; y < raster.Height; y++)
+        Parallel.For(0, raster.Height, new ParallelOptions { CancellationToken = cancellationToken }, y =>
         {
-            cancellationToken.ThrowIfCancellationRequested();
             Span<TPixel> row = raster.Row(y);
             Span<byte> ink = map._ink.AsSpan(y * raster.Width, raster.Width);
             for (int x = 0; x < row.Length; x++)
@@ -64,7 +63,7 @@ internal sealed class InkMap
                     intensities[(y * raster.Width) + x] = (byte)((Math.Clamp(over, 0, 1) * 255) + 0.5f);
                 }
             }
-        }
+        });
 
         return map;
     }
@@ -118,12 +117,12 @@ internal sealed class InkMap
             for (int x = 0; x < Width; x++)
             {
                 int a = labels[row + x];
-                if (x + 1 < Width)
+                if (x + 1 < Width && labels[row + x + 1] != a)
                 {
                     Touch(neighbours, a, labels[row + x + 1]);
                 }
 
-                if (y + 1 < Height)
+                if (y + 1 < Height && labels[row + Width + x] != a)
                 {
                     Touch(neighbours, a, labels[row + Width + x]);
                 }
@@ -209,83 +208,77 @@ internal sealed class InkMap
     /// </summary>
     internal int Label(int[] labels, CancellationToken cancellationToken)
     {
-        // Two passes with union-find over provisional labels.
-        List<int> parent = [];
-        for (int y = 0; y < Height; y++)
+        // Each row's runs of one value are joined to the runs of the same value they touch in the row above: those that share a
+        // column, and for ink also those that meet it at a corner. A region's number depends only on where the scan first meets
+        // it, and each set's root is its earliest run, so any order of joining gives the same numbers.
+        int width = Width, height = Height;
+        byte[] ink = _ink;
+        List<int> start = [], parent = [];
+        int previousFirst = 0, previousEnd = 0;
+        for (int y = 0; y < height; y++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            int row = y * Width;
-            for (int x = 0; x < Width; x++)
+            int row = y * width;
+            int first = start.Count;
+            int above = previousFirst;
+            for (int x = 0; x < width;)
             {
-                byte c = _ink[row + x];
-                int label = -1;
-                label = Join(parent, label, x > 0 && _ink[row + x - 1] == c ? labels[row + x - 1] : -1);
-                if (y > 0)
+                byte c = ink[row + x];
+                int stop = x + 1;
+                while (stop < width && ink[row + stop] == c)
                 {
-                    int up = row - Width + x;
-                    label = Join(parent, label, _ink[up] == c ? labels[up] : -1);
-                    if (c != 0)
+                    stop++;
+                }
+
+                int run = start.Count;
+                start.Add(x);
+                parent.Add(run);
+
+                // The runs above that reach columns x − d to stop − 1 + d, d one for ink and none for paper.
+                int d = c != 0 ? 1 : 0;
+                while (above < previousEnd && (above + 1 < previousEnd ? start[above + 1] : width) <= x - d)
+                {
+                    above++;
+                }
+
+                for (int a = above; a < previousEnd && start[a] < stop + d; a++)
+                {
+                    if (ink[row - width + start[a]] == c)
                     {
-                        label = Join(parent, label, x > 0 && _ink[up - 1] != 0 ? labels[up - 1] : -1);
-                        label = Join(parent, label, x + 1 < Width && _ink[up + 1] != 0 ? labels[up + 1] : -1);
+                        int ra = FindList(parent, a), rb = FindList(parent, run);
+                        if (ra != rb)
+                        {
+                            parent[Math.Max(ra, rb)] = Math.Min(ra, rb);
+                        }
                     }
                 }
 
-                if (label < 0)
-                {
-                    label = parent.Count;
-                    parent.Add(label);
-                }
-
-                labels[row + x] = label;
+                labels.AsSpan(row + x, stop - x).Fill(run);
+                x = stop;
             }
+
+            (previousFirst, previousEnd) = (first, start.Count);
         }
 
-        // Number the roots in scan order: a root is never later than the first pixel that carries its set.
-        int[] number = new int[parent.Count];
-        Array.Fill(number, -1);
+        // Number the regions in the order their first runs come.
+        int runs = start.Count;
+        int[] number = new int[runs];
         int count = 0;
-        for (int i = 0; i < labels.Length; i++)
+        for (int r = 0; r < runs; r++)
         {
-            int root = FindList(parent, labels[i]);
-            if (number[root] < 0)
-            {
-                number[root] = count++;
-            }
-
-            labels[i] = number[root];
+            int root = FindList(parent, r);
+            number[r] = root == r ? count++ : number[root];
         }
+
+        Parallel.For(0, height, new ParallelOptions { CancellationToken = cancellationToken }, y =>
+        {
+            for (int i = y * width; i < (y + 1) * width; i++)
+            {
+                labels[i] = number[labels[i]];
+            }
+        });
 
         return count;
-    }
-
-    private static int Join(List<int> parent, int label, int other)
-    {
-        if (other < 0)
-        {
-            return label;
-        }
-
-        if (label < 0)
-        {
-            return other;
-        }
-
-        int a = FindList(parent, label), b = FindList(parent, other);
-        if (a != b)
-        {
-            // The smaller root wins, so roots stay the earliest label of their set.
-            if (a < b)
-            {
-                parent[b] = a;
-            }
-            else
-            {
-                parent[a] = b;
-            }
-        }
-
-        return Math.Min(a, b);
     }
 
     private static int FindList(List<int> parent, int i)

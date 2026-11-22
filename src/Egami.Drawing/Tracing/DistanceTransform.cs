@@ -15,60 +15,65 @@ internal static class DistanceTransform
     /// Returns each pixel's squared distance to the nearest seed pixel, centre to centre, or <see cref="Far"/> when there are
     /// none; <paramref name="nearest"/>, when given, receives the index of that seed (-1 when there are none).
     /// </summary>
-    internal static double[] Squared(ReadOnlySpan<bool> seeds, int width, int height, int[]? nearest, CancellationToken cancellationToken)
+    internal static double[] Squared(bool[] seeds, int width, int height, int[]? nearest, CancellationToken cancellationToken)
     {
         int n = width * height;
         double[] d = new double[n];
         int[] arg = nearest ?? new int[n];
         int longest = Math.Max(width, height);
-        double[] f = new double[longest], output = new double[longest];
-        int[] v = new int[longest], from = new int[longest], where = new int[longest];
-        double[] z = new double[longest + 1];
+        ParallelOptions parallel = new() { CancellationToken = cancellationToken };
 
+        // Each column, then each row, is transformed on its own, so they run in parallel with a set of buffers per thread.
         // Down each column: the distance to the nearest seed in the column, and its row.
-        for (int x = 0; x < width; x++)
-        {
-            if ((x & 63) == 0)
+        Parallel.For(
+            0,
+            width,
+            parallel,
+            () => new Work(longest),
+            (x, _, w) =>
             {
-                cancellationToken.ThrowIfCancellationRequested();
-            }
+                for (int y = 0; y < height; y++)
+                {
+                    w.F[y] = seeds[(y * width) + x] ? 0 : Far;
+                    w.From[y] = y;
+                }
 
-            for (int y = 0; y < height; y++)
-            {
-                f[y] = seeds[(y * width) + x] ? 0 : Far;
-                from[y] = y;
-            }
+                Envelope(w.F.AsSpan(0, height), w.From, w.Output, w.Where, w.V, w.Z);
+                for (int y = 0; y < height; y++)
+                {
+                    d[(y * width) + x] = w.Output[y];
+                    arg[(y * width) + x] = w.Output[y] >= Far ? -1 : (w.Where[y] * width) + x;
+                }
 
-            Envelope(f.AsSpan(0, height), from, output, where, v, z);
-            for (int y = 0; y < height; y++)
-            {
-                d[(y * width) + x] = output[y];
-                arg[(y * width) + x] = output[y] >= Far ? -1 : (where[y] * width) + x;
-            }
-        }
+                return w;
+            },
+            _ => { });
 
         // Along each row of the column distances.
-        for (int y = 0; y < height; y++)
-        {
-            if ((y & 63) == 0)
+        Parallel.For(
+            0,
+            height,
+            parallel,
+            () => new Work(longest),
+            (y, _, w) =>
             {
-                cancellationToken.ThrowIfCancellationRequested();
-            }
+                int row = y * width;
+                for (int x = 0; x < width; x++)
+                {
+                    w.F[x] = d[row + x];
+                    w.From[x] = arg[row + x];
+                }
 
-            int row = y * width;
-            for (int x = 0; x < width; x++)
-            {
-                f[x] = d[row + x];
-                from[x] = arg[row + x];
-            }
+                Envelope(w.F.AsSpan(0, width), w.From, w.Output, w.Where, w.V, w.Z);
+                for (int x = 0; x < width; x++)
+                {
+                    d[row + x] = Math.Min(w.Output[x], Far);
+                    arg[row + x] = w.Output[x] >= Far ? -1 : w.Where[x];
+                }
 
-            Envelope(f.AsSpan(0, width), from, output, where, v, z);
-            for (int x = 0; x < width; x++)
-            {
-                d[row + x] = Math.Min(output[x], Far);
-                arg[row + x] = output[x] >= Far ? -1 : where[x];
-            }
-        }
+                return w;
+            },
+            _ => { });
 
         return d;
     }
@@ -117,5 +122,21 @@ internal static class DistanceTransform
     private static double Intersection(ReadOnlySpan<double> f, int q, int p)
     {
         return ((f[q] + ((double)q * q)) - (f[p] + ((double)p * p))) / (2.0 * (q - p));
+    }
+
+    /// <summary>One thread's buffers for <see cref="Envelope"/>.</summary>
+    private sealed class Work(int length)
+    {
+        public double[] F { get; } = new double[length];
+
+        public double[] Output { get; } = new double[length];
+
+        public int[] From { get; } = new int[length];
+
+        public int[] Where { get; } = new int[length];
+
+        public int[] V { get; } = new int[length];
+
+        public double[] Z { get; } = new double[length + 1];
     }
 }

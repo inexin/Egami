@@ -48,9 +48,8 @@ internal sealed class LabelImage
         int width = raster.Width, height = raster.Height;
         bool gray = options.Mode == TraceMode.Grayscale;
         byte[] rgb = new byte[checked(width * height * 3)];
-        for (int y = 0; y < height; y++)
+        Parallel.For(0, height, new ParallelOptions { CancellationToken = cancellationToken }, y =>
         {
-            cancellationToken.ThrowIfCancellationRequested();
             Span<TPixel> row = raster.Row(y);
             Span<byte> output = rgb.AsSpan(y * width * 3, width * 3);
             for (int x = 0; x < row.Length; x++)
@@ -69,7 +68,7 @@ internal sealed class LabelImage
                 output[(3 * x) + 1] = (byte)((g * 255) + 0.5f);
                 output[(3 * x) + 2] = (byte)((b * 255) + 0.5f);
             }
-        }
+        });
 
         if (options.Smoothing > 0)
         {
@@ -247,25 +246,33 @@ internal sealed class LabelImage
         const int Bins = 1 << 15;
         double[] weight = new double[Bins], sumR = new double[Bins], sumG = new double[Bins], sumB = new double[Bins];
         double total = 0;
-        for (int y = 0; y < height; y++)
+
+        // Which pixels count, row by row in parallel; the sums are of whole numbers, so they come out the same in any order.
+        bool[] counted = new bool[width * height];
+        ParallelOptions parallel = new() { CancellationToken = cancellationToken };
+        Parallel.For(0, height, parallel, y =>
         {
-            cancellationToken.ThrowIfCancellationRequested();
             for (int x = 0; x < width; x++)
             {
                 int i = (y * width) + x;
-                if ((alpha is not null && alpha[i] < 128) || IsBlend(rgb, width, height, x, y))
-                {
-                    continue;
-                }
-
-                int r = rgb[3 * i], g = rgb[(3 * i) + 1], b = rgb[(3 * i) + 2];
-                int bin = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
-                weight[bin]++;
-                sumR[bin] += r;
-                sumG[bin] += g;
-                sumB[bin] += b;
-                total++;
+                counted[i] = (alpha is null || alpha[i] >= 128) && !IsBlend(rgb, width, height, x, y);
             }
+        });
+
+        for (int i = 0; i < counted.Length; i++)
+        {
+            if (!counted[i])
+            {
+                continue;
+            }
+
+            int r = rgb[3 * i], g = rgb[(3 * i) + 1], b = rgb[(3 * i) + 2];
+            int bin = ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+            weight[bin]++;
+            sumR[bin] += r;
+            sumG[bin] += g;
+            sumB[bin] += b;
+            total++;
         }
 
         if (total == 0)
@@ -642,54 +649,89 @@ internal sealed class LabelImage
     /// </summary>
     internal int LabelRegions(int[] regions, CancellationToken cancellationToken)
     {
-        int[] parent = new int[Labels.Length];
-        int next = 0;
-        for (int y = 0; y < Height; y++)
+        // Each row's runs of one label are joined to the runs of the same label they touch in the row above. A region's number
+        // depends only on where the scan first meets it, so any order of joining gives the same numbers.
+        int width = Width, height = Height;
+        byte[] labels = Labels;
+        List<int> runStart = [];
+        List<int> parent = [];
+        int previousFirst = 0, previousEnd = 0;
+        for (int y = 0; y < height; y++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            int row = y * Width;
-            for (int x = 0; x < Width; x++)
+            int row = y * width;
+            int first = runStart.Count;
+            int above = previousFirst;
+            for (int x = 0; x < width;)
             {
-                int i = row + x;
-                byte c = Labels[i];
-                int left = x > 0 && Labels[i - 1] == c ? Find(parent, regions[i - 1]) : -1;
-                int up = y > 0 && Labels[i - Width] == c ? Find(parent, regions[i - Width]) : -1;
-                int label;
-                if (left < 0 && up < 0)
+                byte c = labels[row + x];
+                int end = x + 1;
+                while (end < width && labels[row + end] == c)
                 {
-                    label = next;
-                    parent[next] = next;
-                    next++;
-                }
-                else if (left < 0 || up < 0)
-                {
-                    label = Math.Max(left, up);
-                }
-                else
-                {
-                    label = Math.Min(left, up);
-                    parent[Math.Max(left, up)] = label;
+                    end++;
                 }
 
-                regions[i] = label;
+                int run = runStart.Count;
+                runStart.Add(row + x);
+                parent.Add(run);
+
+                // The runs above that overlap columns x to end − 1.
+                while (above < previousEnd && RunEnd(runStart, above, previousEnd, width) <= x)
+                {
+                    above++;
+                }
+
+                for (int a = above; a < previousEnd && runStart[a] - (row - width) < end; a++)
+                {
+                    if (labels[runStart[a]] == c)
+                    {
+                        int ra = Find(parent, a), rb = Find(parent, run);
+                        if (ra != rb)
+                        {
+                            parent[Math.Max(ra, rb)] = Math.Min(ra, rb);
+                        }
+                    }
+                }
+
+                for (int i = row + x; i < row + end; i++)
+                {
+                    regions[i] = run;
+                }
+
+                x = end;
             }
+
+            (previousFirst, previousEnd) = (first, runStart.Count);
         }
 
-        int[] number = new int[next];
-        Array.Fill(number, -1);
+        // Number the regions in the order their first runs come.
+        int runs = runStart.Count;
+        int[] number = new int[runs];
         int count = 0;
-        for (int i = 0; i < regions.Length; i++)
+        for (int r = 0; r < runs; r++)
         {
-            int root = Find(parent, regions[i]);
-            if (number[root] < 0)
-            {
-                number[root] = count++;
-            }
-
-            regions[i] = number[root];
+            int root = Find(parent, r);
+            number[r] = root == r ? count++ : number[root];
         }
+
+        ParallelOptions parallel = new() { CancellationToken = cancellationToken };
+        Parallel.For(0, height, parallel, y =>
+        {
+            for (int i = y * width; i < (y + 1) * width; i++)
+            {
+                regions[i] = number[regions[i]];
+            }
+        });
 
         return count;
+    }
+
+    /// <summary>The index one past the last pixel's column of run <paramref name="run"/>, whose row's runs end at <paramref name="last"/>.</summary>
+    private static int RunEnd(List<int> runStart, int run, int last, int width)
+    {
+        int start = runStart[run];
+        int end = run + 1 < last ? runStart[run + 1] : ((start / width) + 1) * width;
+        return end - ((start / width) * width);
     }
 
     /// <summary>
@@ -860,6 +902,24 @@ internal sealed class LabelImage
     }
 
     private static byte ToByte(double value) => (byte)Math.Clamp((int)Math.Round(value), 0, 255);
+
+    private static int Find(List<int> parent, int i)
+    {
+        int root = i;
+        while (parent[root] != root)
+        {
+            root = parent[root];
+        }
+
+        while (parent[i] != root)
+        {
+            int next = parent[i];
+            parent[i] = root;
+            i = next;
+        }
+
+        return root;
+    }
 
     private static int Find(int[] parent, int i)
     {
