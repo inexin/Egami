@@ -240,7 +240,7 @@ internal sealed partial class HevcSyntaxWriter
         {
             int pbSize = cu.NxN ? 1 << (cu.Log2 - 1) : 1 << cu.Log2;
             int xPb = cu.X + ((i & 1) * pbSize), yPb = cu.Y + ((i >> 1) * pbSize);
-            MostProbableModes(xPb, yPb, i > 0 ? cu.LumaModes.AsSpan(0, i) : default, cu, mpm.Slice(3 * i, 3));
+            MostProbableModes(xPb, yPb, ((ReadOnlySpan<int>)cu.LumaModes)[..i], cu, mpm.Slice(3 * i, 3));
         }
 
         for (int i = 0; i < parts; i++)

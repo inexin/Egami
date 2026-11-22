@@ -24,11 +24,11 @@ internal sealed partial class HevcCodingUnit
     /// <summary>Gets or sets cu_transquant_bypass_flag.</summary>
     internal bool Bypass { get; set; }
 
-    /// <summary>Gets IntraPredModeY of each prediction unit (one for 2Nx2N).</summary>
-    internal int[] LumaModes { get; } = new int[4];
+    /// <summary>IntraPredModeY of each prediction unit (one for 2Nx2N).</summary>
+    internal Four LumaModes;
 
-    /// <summary>Gets intra_chroma_pred_mode of each chroma prediction block (four only for NxN in 4:4:4).</summary>
-    internal int[] ChromaSyntax { get; } = new int[4];
+    /// <summary>intra_chroma_pred_mode of each chroma prediction block (four only for NxN in 4:4:4).</summary>
+    internal Four ChromaSyntax;
 
     /// <summary>Gets or sets CuQpDeltaVal when this unit codes it (its quantization group's first unit with coefficients).</summary>
     internal int QpDelta { get; set; }
@@ -38,6 +38,13 @@ internal sealed partial class HevcCodingUnit
 
     /// <summary>Gets or sets the transform tree.</summary>
     internal HevcTransformNode Tree { get; set; } = null!;
+
+    /// <summary>Four values held in the unit, one per prediction unit, so a unit is one allocation.</summary>
+    [System.Runtime.CompilerServices.InlineArray(4)]
+    internal struct Four
+    {
+        private int _first;
+    }
 }
 
 /// <summary>

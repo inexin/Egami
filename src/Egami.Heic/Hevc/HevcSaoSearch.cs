@@ -1,3 +1,7 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+
 using Egami.Nal;
 
 namespace Egami.Heic.Hevc;
@@ -308,39 +312,124 @@ internal static class HevcSaoSearch
         int width = picture.Widths[c], height = picture.Heights[c];
         int x0 = ((ctb % sps.WidthInCtbs) * ctbSize) / sx, y0 = ((ctb / sps.WidthInCtbs) * ctbSize) / sy;
         int w = Math.Min(ctbSize / sx, width - x0), h = Math.Min(ctbSize / sy, height - y0);
-        int shift = (c == 0 ? sps.BitDepthLuma : sps.BitDepthChroma) - 5;
+        int bitDepth = c == 0 ? sps.BitDepthLuma : sps.BitDepthChroma;
+        int shift = bitDepth - 5;
         ushort[] deblocked = picture.Planes[c], original = source.Planes[c];
         Statistics stats = new();
+        Span<long> edgeCount = stackalloc long[16], edgeSum = stackalloc long[16];
+        edgeCount.Clear();
+        edgeSum.Clear();
+        long[] bandCount = stats.BandCount, bandSum = stats.BandSum;
         for (int y = y0; y < y0 + h; y++)
         {
+            int row = y * width;
             for (int x = x0; x < x0 + w; x++)
             {
-                int i = (y * width) + x;
-                int value = deblocked[i];
-                int error = original[i] - value;
+                int value = deblocked[row + x];
                 int band = value >> shift;
-                stats.BandCount[band]++;
-                stats.BandSum[band] += error;
-                for (int k = 0; k < 4; k++)
-                {
-                    int[] d = Directions[k];
-                    int ax = x + d[0], ay = y + d[1], bx = x + d[2], by = y + d[3];
-                    if (ax < 0 || ay < 0 || bx < 0 || by < 0 || ax >= width || bx >= width || ay >= height || by >= height)
-                    {
-                        continue;
-                    }
+                bandCount[band]++;
+                bandSum[band] += original[row + x] - value;
+            }
 
-                    int edge = 2 + Math.Sign(value - deblocked[(ay * width) + ax]) + Math.Sign(value - deblocked[(by * width) + bx]);
-                    int category = edge switch { 0 => 1, 1 => 2, 2 => 0, _ => edge };
-                    if (category != 0)
-                    {
-                        stats.EdgeCount[(k * 4) + category - 1]++;
-                        stats.EdgeSum[(k * 4) + category - 1] += error;
-                    }
+            // Each class's neighbours, the samples whose neighbours are outside the picture left out.
+            for (int k = 0; k < 4; k++)
+            {
+                int[] d = Directions[k];
+                if (d[1] != 0 && (y == 0 || y == height - 1))
+                {
+                    continue;
                 }
+
+                int xs = x0, xe = x0 + w;
+                if (d[0] != 0)
+                {
+                    xs = Math.Max(xs, 1);
+                    xe = Math.Min(xe, width - 1);
+                }
+
+                EdgeRow(deblocked, original, row, (d[1] * width) + d[0], (d[3] * width) + d[2], xs, xe, bitDepth,
+                    edgeCount.Slice(k * 4, 4), edgeSum.Slice(k * 4, 4));
             }
         }
 
+        for (int i = 0; i < 16; i++)
+        {
+            stats.EdgeCount[i] = edgeCount[i];
+            stats.EdgeSum[i] = edgeSum[i];
+        }
+
         return stats;
+    }
+
+    /// <summary>
+    /// One row's edge statistics of a class from <paramref name="xs"/> to <paramref name="xe"/>: the neighbours at offsets
+    /// <paramref name="a"/> and <paramref name="b"/>; categories 1 to 4 (edge index 0, 1, 3, 4) counted at 0 to 3.
+    /// </summary>
+    private static void EdgeRow(ushort[] deblocked, ushort[] original, int row, int a, int b, int xs, int xe, int bitDepth, Span<long> count,
+        Span<long> sum)
+    {
+        int x = xs;
+        if (Vector256.IsHardwareAccelerated && bitDepth <= 12 && xe - xs >= 16)
+        {
+            // Sixteen samples at a time, the sums in 16-bit lanes for at most four steps (|error| < 4096), then widened.
+            ref short deb = ref Unsafe.As<ushort, short>(ref MemoryMarshal.GetArrayDataReference(deblocked));
+            ref short org = ref Unsafe.As<ushort, short>(ref MemoryMarshal.GetArrayDataReference(original));
+            Vector256<short> two = Vector256.Create((short)2), one = Vector256<short>.One, three = Vector256.Create((short)3), four = Vector256.Create((short)4);
+            Vector256<short> c0 = default, c1 = default, c2 = default, c3 = default;
+            Vector256<int> s0 = default, s1 = default, s2 = default, s3 = default;
+            while (x + 16 <= xe)
+            {
+                Vector256<short> s16_0 = default, s16_1 = default, s16_2 = default, s16_3 = default;
+                for (int step = 0; step < 4 && x + 16 <= xe; step++, x += 16)
+                {
+                    int i = row + x;
+                    Vector256<short> v = Vector256.LoadUnsafe(ref deb, (nuint)i);
+                    Vector256<short> va = Vector256.LoadUnsafe(ref deb, (nuint)(i + a));
+                    Vector256<short> vb = Vector256.LoadUnsafe(ref deb, (nuint)(i + b));
+                    Vector256<short> error = Vector256.LoadUnsafe(ref org, (nuint)i) - v;
+
+                    // 2 + sign(v - a) + sign(v - b), the comparisons' masks being -1.
+                    Vector256<short> edge = two - Vector256.GreaterThan(v, va) + Vector256.LessThan(v, va) - Vector256.GreaterThan(v, vb) + Vector256.LessThan(v, vb);
+                    Vector256<short> m0 = Vector256.Equals(edge, Vector256<short>.Zero), m1 = Vector256.Equals(edge, one);
+                    Vector256<short> m3 = Vector256.Equals(edge, three), m4 = Vector256.Equals(edge, four);
+                    c0 -= m0;
+                    c1 -= m1;
+                    c2 -= m3;
+                    c3 -= m4;
+                    s16_0 += error & m0;
+                    s16_1 += error & m1;
+                    s16_2 += error & m3;
+                    s16_3 += error & m4;
+                }
+
+                s0 += Vector256.WidenLower(s16_0) + Vector256.WidenUpper(s16_0);
+                s1 += Vector256.WidenLower(s16_1) + Vector256.WidenUpper(s16_1);
+                s2 += Vector256.WidenLower(s16_2) + Vector256.WidenUpper(s16_2);
+                s3 += Vector256.WidenLower(s16_3) + Vector256.WidenUpper(s16_3);
+            }
+
+            // A row has at most 64 / 16 steps, so the 16-bit counts cannot overflow.
+            count[0] += Vector256.Sum(Vector256.WidenLower(c0) + Vector256.WidenUpper(c0));
+            count[1] += Vector256.Sum(Vector256.WidenLower(c1) + Vector256.WidenUpper(c1));
+            count[2] += Vector256.Sum(Vector256.WidenLower(c2) + Vector256.WidenUpper(c2));
+            count[3] += Vector256.Sum(Vector256.WidenLower(c3) + Vector256.WidenUpper(c3));
+            sum[0] += Vector256.Sum(s0);
+            sum[1] += Vector256.Sum(s1);
+            sum[2] += Vector256.Sum(s2);
+            sum[3] += Vector256.Sum(s3);
+        }
+
+        for (; x < xe; x++)
+        {
+            int i = row + x;
+            int value = deblocked[i];
+            int edge = 2 + Math.Sign(value - deblocked[i + a]) + Math.Sign(value - deblocked[i + b]);
+            if (edge != 2)
+            {
+                int at = edge < 2 ? edge : edge - 1;
+                count[at]++;
+                sum[at] += original[i] - value;
+            }
+        }
     }
 }

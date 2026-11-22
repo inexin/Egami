@@ -35,6 +35,7 @@ internal sealed partial class HevcCtuSearch
         internal int Mvd;
         internal long Cost;
         internal long RefRate;
+        internal (int Mvp0, int Mvp1) Amvp;
     }
 
     /// <summary>
@@ -112,10 +113,10 @@ internal sealed partial class HevcCtuSearch
         if (costs[first] < cost)
         {
             cost = costs[first];
-            best = BUnit(unit, first, found, mvBi0, mvBi1);
+            best = BUnit(first, found, mvBi0, mvBi1);
             if (second >= 0)
             {
-                alternative = BUnit(unit, second, found, mvBi0, mvBi1);
+                alternative = BUnit(second, found, mvBi0, mvBi1);
                 alternativeCost = costs[second];
             }
         }
@@ -164,6 +165,7 @@ internal sealed partial class HevcCtuSearch
                     Mvd = HevcMotionPredictor.Pack((short)found - (short)mvp, (found >> 16) - (mvp >> 16)),
                     Cost = c0 + refRate,
                     RefRate = refRate,
+                    Amvp = (mvp0, mvp1),
                 };
             }
         }
@@ -222,22 +224,23 @@ internal sealed partial class HevcCtuSearch
         RoughBlock(0, m0.RefIdx, mv0, unit.XPb, unit.YPb, unit.Width, unit.Height, _rankBlock);
         RoughBlock(1, m1.RefIdx, mv1, unit.XPb, unit.YPb, unit.Width, unit.Height, _rankBlock1);
         Average(_rankBlock, _rankBlock1, _rankBlock, unit.Width, unit.Height);
-        return BiRate(unit, m0, m1, mv0, mv1) + SourceSatd(unit, _rankBlock);
+        return BiRate(m0, m1, mv0, mv1) + SourceSatd(unit, _rankBlock);
     }
 
-    private long BiRate(in HevcMotionPredictor.Unit unit, in ListMotion m0, in ListMotion m1, int mv0, int mv1) =>
-        m0.RefRate + m1.RefRate + (_lambdaMe * (2 + (long)VectorRate(unit, 0, m0.RefIdx, mv0) + VectorRate(unit, 1, m1.RefIdx, mv1)));
+    /// <summary>Both vectors' and references' rate and inter_pred_idc, from each list's AMVP predictors.</summary>
+    private long BiRate(in ListMotion m0, in ListMotion m1, int mv0, int mv1) =>
+        m0.RefRate + m1.RefRate + (_lambdaMe * (2 + (long)VectorRate(m0.Amvp, mv0) + VectorRate(m1.Amvp, mv1)));
 
     private long SourceSatd(in HevcMotionPredictor.Unit unit, ushort[] block)
     {
         int stride = _picture.Widths[0];
-        return HevcMotionSearch.Satd(_source.Planes[0], (unit.YPb * stride) + unit.XPb, stride, block, 0, 64, unit.Width, unit.Height) << 8;
+        return HevcMotionSearch.Satd(_source.Planes[0], (unit.YPb * stride) + unit.XPb, stride, block, 0, 64, unit.Width, unit.Height, _sps.BitDepthLuma == 8) << 8;
     }
 
     /// <summary>The bits of a vector's difference from the nearer of its AMVP predictors.</summary>
-    private int VectorRate(in HevcMotionPredictor.Unit unit, int l, int refIdx, int mv)
+    private static int VectorRate((int Mvp0, int Mvp1) amvp, int mv)
     {
-        (int mvp0, int mvp1) = _predictor!.Amvp(unit, l, refIdx);
+        (int mvp0, int mvp1) = amvp;
         return Math.Min(HevcMotionSearch.VectorBits((short)mv - (short)mvp0, (mv >> 16) - (mvp0 >> 16)),
             HevcMotionSearch.VectorBits((short)mv - (short)mvp1, (mv >> 16) - (mvp1 >> 16)));
     }
@@ -269,7 +272,7 @@ internal sealed partial class HevcCtuSearch
                     HevcEncodeStats.Add(HevcEncodeStat.SubpelCosts);
                     moving.Block(x, y, cx, cy, w, h, _rankBlock1, 64);
                     Average(_fixedBlock, _rankBlock1, _rankBlock, w, h);
-                    long cc = SourceSatd(unit, _rankBlock) + BiRate(unit, m0, m1, l == 0 ? c : mv0, l == 0 ? mv1 : c);
+                    long cc = SourceSatd(unit, _rankBlock) + BiRate(m0, m1, l == 0 ? c : mv0, l == 0 ? mv1 : c);
                     if (cc < cost)
                     {
                         (cost, bestMv) = (cc, c);
@@ -300,31 +303,31 @@ internal sealed partial class HevcCtuSearch
     }
 
     /// <summary>A B unit of the search's choice <paramref name="kind"/>: list 0 (0), list 1 (1) or both (2).</summary>
-    private HevcPredictionUnit BUnit(in HevcMotionPredictor.Unit unit, int kind, ReadOnlySpan<ListMotion> found, int mvBi0, int mvBi1)
+    private static HevcPredictionUnit BUnit(int kind, ReadOnlySpan<ListMotion> found, int mvBi0, int mvBi1)
     {
         HevcPredictionUnit pu = new() { Flags = kind == 2 ? 3 : 1 << kind, RefIdx0 = -1, RefIdx1 = -1 };
         if ((pu.Flags & 1) != 0)
         {
-            (pu.RefIdx0, pu.Mv0, pu.MvpFlag0, pu.Mvd0) = Coded(unit, 0, found[0], kind == 2 ? mvBi0 : found[0].Mv);
+            (pu.RefIdx0, pu.Mv0, pu.MvpFlag0, pu.Mvd0) = Coded(found[0], kind == 2 ? mvBi0 : found[0].Mv);
         }
 
         if ((pu.Flags & 2) != 0)
         {
-            (pu.RefIdx1, pu.Mv1, pu.MvpFlag1, pu.Mvd1) = Coded(unit, 1, found[1], kind == 2 ? mvBi1 : found[1].Mv);
+            (pu.RefIdx1, pu.Mv1, pu.MvpFlag1, pu.Mvd1) = Coded(found[1], kind == 2 ? mvBi1 : found[1].Mv);
         }
 
         return pu;
     }
 
     /// <summary>A list's syntax for a vector: the reference, the vector, and the predictor flag and difference that code it cheaper.</summary>
-    private (int RefIdx, int Mv, int MvpFlag, int Mvd) Coded(in HevcMotionPredictor.Unit unit, int l, in ListMotion m, int mv)
+    private static (int RefIdx, int Mv, int MvpFlag, int Mvd) Coded(in ListMotion m, int mv)
     {
         if (mv == m.Mv)
         {
             return (m.RefIdx, mv, m.MvpFlag, m.Mvd);
         }
 
-        (int mvp0, int mvp1) = _predictor!.Amvp(unit, l, m.RefIdx);
+        (int mvp0, int mvp1) = m.Amvp;
         int flag = HevcMotionSearch.VectorBits((short)mv - (short)mvp1, (mv >> 16) - (mvp1 >> 16)) < HevcMotionSearch.VectorBits((short)mv - (short)mvp0, (mv >> 16) - (mvp0 >> 16))
             ? 1 : 0;
         int mvp = flag == 0 ? mvp0 : mvp1;

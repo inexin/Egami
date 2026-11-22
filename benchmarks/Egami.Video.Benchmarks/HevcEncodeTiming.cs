@@ -101,10 +101,15 @@ internal static class HevcEncodeTiming
         long bytes = 0;
         string stats = "";
         HevcEncodeStats.Reset();
+        using AllocationSampler? sampler = Flag("alloc-types") ? new AllocationSampler() : null;
+        long allocated = 0;
+        int collections = 0;
         for (int run = 0; run < runs; run++)
         {
             long start = Stopwatch.GetTimestamp();
             TimeSpan cpuStart = Process.GetCurrentProcess().TotalProcessorTime;
+            long allocatedStart = GC.GetTotalAllocatedBytes(true);
+            int collectionsStart = GC.CollectionCount(0);
             if (Flag("two-pass"))
             {
                 options = options with { FirstPassStats = VideoWriter.AnalyzeFirstPass(frames) };
@@ -124,6 +129,8 @@ internal static class HevcEncodeTiming
             }
 
             bytes = output.Length;
+            allocated = GC.GetTotalAllocatedBytes(true) - allocatedStart;
+            collections = GC.CollectionCount(0) - collectionsStart;
             best = Math.Min(best, Stopwatch.GetElapsedTime(start).TotalMilliseconds);
             bestCpu = Math.Min(bestCpu, (Process.GetCurrentProcess().TotalProcessorTime - cpuStart).TotalMilliseconds);
             if (run == 0 && Value("out") is { } path)
@@ -139,7 +146,8 @@ internal static class HevcEncodeTiming
 
         double seconds = frames.Count * (double)rate.Denominator / rate.Numerator;
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
-            $"{{\"frames\": {frames.Count}, \"bytes\": {bytes}, \"kbps\": {bytes * 8 / seconds / 1000:F1}, \"ms\": {best:F1}, \"msPerFrame\": {best / frames.Count:F2}, \"cpuMsPerFrame\": {bestCpu / frames.Count:F2}, \"threads\": {threads}{stats}}}"));
+            $"{{\"frames\": {frames.Count}, \"bytes\": {bytes}, \"kbps\": {bytes * 8 / seconds / 1000:F1}, \"ms\": {best:F1}, \"msPerFrame\": {best / frames.Count:F2}, \"cpuMsPerFrame\": {bestCpu / frames.Count:F2}, \"allocMBPerFrame\": {allocated / 1e6 / frames.Count:F2}, \"gcPerFrame\": {collections / (double)frames.Count:F2}, \"threads\": {threads}{stats}}}"));
+        sampler?.Report(frames.Count * runs);
         frames.ForEach(f => f.Dispose());
     }
 

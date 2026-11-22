@@ -5,7 +5,7 @@ changes that break code come only in a new major version.
 
 ## Egami.Video 1.4.0 (unreleased)
 
-An HEVC encoder in Egami.Video.Hevc, in progress (HEVC encoder Build Plan, PRs A to D of seven): the release that ships it
+An HEVC encoder in Egami.Video.Hevc, in progress (HEVC encoder Build Plan, PRs A to E of seven): the release that ships it
 waits for its gates. Additive to 1.3.
 
 - `HevcCodec.CanEncode` is true and `HevcCodec.CreateEncoder` encodes 4:2:0 progressive video in the Main and Main 10
@@ -36,7 +36,14 @@ waits for its gates. Additive to 1.3.
   against x265 and Egami's H.264 encoder. The search prices trial codings from static rate tables and codes only the kept one
   with RDOQ, refines motion with two half-sample SAD steps and one quarter-sample SATD step, and runs AVX2/SSE2/Vector128 SAD,
   SATD, interpolation and quantization kernels; the shared forward transform gained 4x4 and even/odd-split 16x16/32x32 kernels,
-  which make HEIC encoding a few percent faster with byte-identical output.
+  which make HEIC encoding a few percent faster with byte-identical output. A speed round (PR E) makes effort 4 1.2 to 1.3
+  times faster with the same or fewer bits (2.2 to 2.5 times x265 medium's cycles at one thread, from 2.7 to 3.3): 8-bit luma
+  SAD on byte planes with PSADBW, 8-bit SATD with two 8x8 Hadamard transforms in one vector, vector half-sample filtering, SAO
+  statistics and SAD kernels, AMVP predictors kept from the search, reference planes reused once a reference leaves the
+  buffer, and from effort 2 to 5 a CTB's coding units shallower than its co-located CTBs in the first references split without
+  being tried whole (7 to 10 % less work, and 0.5 % fewer bits at effort 4). Output is otherwise byte-identical. Allocation
+  budget tests guard the encoder's steady state, and the `hevcenc` fuzz target in tests/Egami.Video.Fuzz drives its options
+  and input paths.
 - Egami.Video.H264: average bitrate (one and two passes) pays an overspend back over a third of a second instead of two.
   With two, 60-frame clips of still 60 fps scenes (johnny, kristen_sara at 2000 and 600 kbit/s) ended 47–57 % over the
   target; now 46 of the 48 runs on the eight clips are within 3.4 % and the other two within 5.0 %. Constant bitrate,
