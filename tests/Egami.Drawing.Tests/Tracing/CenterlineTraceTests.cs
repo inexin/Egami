@@ -169,6 +169,21 @@ public class CenterlineTraceTests
     }
 
     [Fact]
+    public void InkThatFillsTheImageStaysOnTheImage()
+    {
+        // Found by the trace fuzz target: with no paper in the image its distance to paper overflowed, and points went to
+        // −2.1e9. The edge of the image counts as paper.
+        using Raster<Rgba8> raster = Raster.Create(32, 24, Rgba8.Black);
+        TraceResult result = raster.Trace(new TraceOptions { Mode = TraceMode.Centerline, IgnoreWhite = true });
+        Assert.NotEmpty(result.Shapes);
+        foreach (TracedShape shape in result.Shapes)
+        {
+            RectF bounds = shape.Path.TightBounds;
+            Assert.True(bounds.Left >= -1 && bounds.Top >= -1 && bounds.Right <= 33 && bounds.Bottom <= 25, $"{bounds}");
+        }
+    }
+
+    [Fact]
     public void OtherPixelTypesTinyAndBlankImages()
     {
         (Raster<Rgba8> raster, _) = Drawing(1);

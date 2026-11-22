@@ -31,4 +31,9 @@
     <Compile Include="..\Egami.Fonts.Tests\EmbeddedStrikes.cs" Link="Canvas\EmbeddedStrikes.cs" />
   </ItemGroup>
 
+  <!-- Bitmap Tracing PR F: the trace fuzz target, run in process on its seeds. -->
+  <ItemGroup>
+    <Compile Include="..\Egami.Fuzz\TraceFuzzTarget.cs" Link="Tracing\TraceFuzzTarget.cs" />
+  </ItemGroup>
+
 </Project>

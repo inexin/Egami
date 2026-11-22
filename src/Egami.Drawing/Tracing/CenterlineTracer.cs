@@ -31,6 +31,18 @@ internal static class CenterlineTracer
         }
 
         double[] toPaper = DistanceTransform.Squared(paper, width, height, null, cancellationToken);
+
+        // Beyond the image is paper too (coverage is sampled as none there), so no pixel is farther from paper than from the
+        // pixels just outside the edge; ink that fills the image has no paper inside it at all.
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                double edge = Math.Min(Math.Min(x + 1, width - x), Math.Min(y + 1, height - y));
+                toPaper[(y * width) + x] = Math.Min(toPaper[(y * width) + x], edge * edge);
+            }
+        }
+
         byte[] skeleton = Thinning.Skeleton(pixels, width, height, cancellationToken);
         KeepSmallParts(ink, skeleton, toPaper, cancellationToken);
 

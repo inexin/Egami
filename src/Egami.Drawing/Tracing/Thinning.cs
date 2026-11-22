@@ -22,7 +22,9 @@ internal static class Thinning
             }
         }
 
-        List<int> marked = [];
+        // Each sub-iteration marks all the pixels it removes before removing any; the marks live in a rented array, and the live
+        // pixels are compacted in place.
+        bool[] marked = System.Buffers.ArrayPool<bool>.Shared.Rent(Math.Max(1, alive.Count));
         bool changed = true;
         while (changed)
         {
@@ -30,28 +32,39 @@ internal static class Thinning
             changed = false;
             for (int pass = 0; pass < 2; pass++)
             {
-                marked.Clear();
-                foreach (int i in alive)
+                int count = alive.Count;
+                if (count == 0)
                 {
-                    if (Removable(map, width, height, i, pass))
+                    break;
+                }
+
+                for (int j = 0; j < count; j++)
+                {
+                    marked[j] = Removable(map, width, height, alive[j], pass);
+                }
+
+                int kept = 0;
+                for (int j = 0; j < count; j++)
+                {
+                    if (marked[j])
                     {
-                        marked.Add(i);
+                        map[alive[j]] = 0;
+                    }
+                    else
+                    {
+                        alive[kept++] = alive[j];
                     }
                 }
 
-                foreach (int i in marked)
-                {
-                    map[i] = 0;
-                }
-
-                if (marked.Count > 0)
+                if (kept < count)
                 {
                     changed = true;
-                    alive.RemoveAll(i => map[i] == 0);
+                    alive.RemoveRange(kept, count - kept);
                 }
             }
         }
 
+        System.Buffers.ArrayPool<bool>.Shared.Return(marked);
         RemoveStairs(map, width, height, alive);
         return map;
     }
@@ -59,7 +72,15 @@ internal static class Thinning
     /// <summary>The neighbours of pixel i, P2 (north) to P9 (north-west) clockwise as in the paper, as bits 0 to 7.</summary>
     internal static int Neighbours(byte[] map, int width, int height, int i)
     {
-        int x = i % width, y = i / width;
+        int y = i / width, x = i - (y * width);
+        if (x > 0 && x + 1 < width && y > 0 && y + 1 < height)
+        {
+            // Inside the image every neighbour is there to read.
+            int up = i - width, down = i + width;
+            return (map[up] != 0 ? 1 : 0) | (map[up + 1] != 0 ? 2 : 0) | (map[i + 1] != 0 ? 4 : 0) | (map[down + 1] != 0 ? 8 : 0)
+                | (map[down] != 0 ? 16 : 0) | (map[down - 1] != 0 ? 32 : 0) | (map[i - 1] != 0 ? 64 : 0) | (map[up - 1] != 0 ? 128 : 0);
+        }
+
         int bits = 0;
         for (int k = 0; k < 8; k++)
         {

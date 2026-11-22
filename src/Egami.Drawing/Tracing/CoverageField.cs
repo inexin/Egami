@@ -65,6 +65,8 @@ internal static class CoverageField
         (int[] fineBaseX, float[] fineWeightX) = Taps(fineWidth, scale);
         (int[] fineBaseY, float[] fineWeightY) = Taps(fineHeight, scale);
         ParallelOptions parallel = new() { CancellationToken = cancellationToken };
+        DistanceWork work = new();
+        float[]? share = null, rows = null;
         for (int k = 0; k < colors; k++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -79,7 +81,12 @@ internal static class CoverageField
 
             // The color's share of each pixel in its box, turned into distances to its edge, then into the coefficients of the
             // spline through them.
-            float[] share = new float[cw * ch];
+            if (share is null || share.Length < cw * ch)
+            {
+                share = new float[cw * ch];
+            }
+
+            float[] shares = share;
             int color = k;
             Parallel.For(0, ch, parallel, j =>
             {
@@ -95,11 +102,11 @@ internal static class CoverageField
                         }
                     }
 
-                    share[(j * cw) + i] = Math.Clamp(sum, 0, 1);
+                    shares[(j * cw) + i] = Math.Clamp(sum, 0, 1);
                 }
             });
 
-            float[] coefficients = Distances(share, cw, ch, cancellationToken);
+            float[] coefficients = Distances(shares, cw, ch, work, cancellationToken);
             Parallel.For(0, ch, parallel, j => Prefilter(coefficients.AsSpan(j * cw, cw)));
             Parallel.For(0, cw, parallel, () => new double[ch], (i, _, column) =>
             {
@@ -119,11 +126,16 @@ internal static class CoverageField
 
             // Along x at the fine spacing, then along y, keeping each sample's largest and second largest field.
             int fx0 = x0 * scale, fw = cw * scale, fy0 = y0 * scale, fh = ch * scale;
-            float[] rows = new float[ch * fw];
+            if (rows is null || rows.Length < ch * fw)
+            {
+                rows = new float[ch * fw];
+            }
+
+            float[] spline = rows;
             Parallel.For(0, ch, parallel, j =>
             {
                 Span<float> row = coefficients.AsSpan(j * cw, cw);
-                Span<float> output = rows.AsSpan(j * fw, fw);
+                Span<float> output = spline.AsSpan(j * fw, fw);
                 for (int f = 0; f < fw; f++)
                 {
                     int fx = fx0 + f;
@@ -142,8 +154,8 @@ internal static class CoverageField
             {
                 int fy = fy0 + g;
                 int b = fineBaseY[fy] - y0;
-                Span<float> r0 = rows.AsSpan(Mirror(b, ch) * fw, fw), r1 = rows.AsSpan(Mirror(b + 1, ch) * fw, fw);
-                Span<float> r2 = rows.AsSpan(Mirror(b + 2, ch) * fw, fw), r3 = rows.AsSpan(Mirror(b + 3, ch) * fw, fw);
+                Span<float> r0 = spline.AsSpan(Mirror(b, ch) * fw, fw), r1 = spline.AsSpan(Mirror(b + 1, ch) * fw, fw);
+                Span<float> r2 = spline.AsSpan(Mirror(b + 2, ch) * fw, fw), r3 = spline.AsSpan(Mirror(b + 3, ch) * fw, fw);
                 float w0 = fineWeightY[4 * fy], w1 = fineWeightY[(4 * fy) + 1], w2 = fineWeightY[(4 * fy) + 2], w3 = fineWeightY[(4 * fy) + 3];
                 int at = (fy * fineWidth) + fx0;
                 for (int f = 0; f < fw; f++)
@@ -186,15 +198,25 @@ internal static class CoverageField
     /// </summary>
     internal static float[] Distances(float[] share, int width, int height, CancellationToken cancellationToken)
     {
+        return Distances(share, width, height, new DistanceWork(), cancellationToken)[..(width * height)];
+    }
+
+    /// <summary>
+    /// <see cref="Distances(float[], int, int, CancellationToken)"/> in <paramref name="work"/>'s buffers, which are reused from
+    /// call to call; the distances are the first <paramref name="width"/> × <paramref name="height"/> values of the array returned.
+    /// </summary>
+    internal static float[] Distances(float[] share, int width, int height, DistanceWork work, CancellationToken cancellationToken)
+    {
         const float Low = 1 / 510f, High = 1 - Low;
         int n = width * height;
-        float[] distance = new float[n];
-        int[] nearest = new int[n];
-        float[] ex = new float[n], ey = new float[n], ux = new float[n], uy = new float[n];
-        Array.Fill(nearest, -1);
-        for (int y = 0; y < height; y++)
+        work.Ensure(n);
+        float[] distance = work.Distance;
+        int[] nearest = work.Nearest, nearX = work.NearX, nearY = work.NearY;
+        float[] ex = work.Ex, ey = work.Ey, ux = work.Ux, uy = work.Uy;
+        Array.Fill(nearest, -1, 0, n);
+        ParallelOptions parallel = new() { CancellationToken = cancellationToken };
+        Parallel.For(0, height, parallel, y =>
         {
-            cancellationToken.ThrowIfCancellationRequested();
             for (int x = 0; x < width; x++)
             {
                 int i = (y * width) + x;
@@ -228,76 +250,121 @@ internal static class CoverageField
                 // covered, and the edge line's nearest point.
                 float d = EdgeDistance(Math.Clamp(a, 0, 1), Math.Abs(gx), Math.Abs(gy));
                 nearest[i] = i;
+                nearX[i] = x;
+                nearY[i] = y;
                 ux[i] = gx;
                 uy[i] = gy;
                 ex[i] = x + (d * gx);
                 ey[i] = y + (d * gy);
                 distance[i] = Math.Clamp(-d, -Reach, Reach);
             }
-        }
+        });
 
-        // Two sweeps carry each pixel's nearest edge pixel to its neighbours, forward then back.
-        ReadOnlySpan<int> sx = [-1, -1, 0, 1], sy = [0, -1, -1, -1];
-        for (int pass = 0; pass < 2; pass++)
+        // Two sweeps carry each pixel's nearest edge pixel to its neighbours, forward then back; each pixel keeps its nearest edge
+        // pixel's place, so no distance needs a division.
+        cancellationToken.ThrowIfCancellationRequested();
+        Sweep(nearest, nearX, nearY, width, height, forward: true);
+        cancellationToken.ThrowIfCancellationRequested();
+        Sweep(nearest, nearX, nearY, width, height, forward: false);
+        Parallel.For(0, height, parallel, y =>
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            int sign = pass == 0 ? 1 : -1;
-            for (int step = 0; step < n; step++)
+            for (int x = 0; x < width; x++)
             {
-                int i = pass == 0 ? step : n - 1 - step;
+                int i = (y * width) + x;
+                int seed = nearest[i];
+                if (seed == i)
+                {
+                    continue;
+                }
+
+                bool inside = share[i] >= 0.5f;
+                if (seed < 0 || Square(x - nearX[i], y - nearY[i]) > (Reach + 1) * (Reach + 1))
+                {
+                    distance[i] = inside ? Reach : -Reach;
+                    continue;
+                }
+
+                // The distance to the edge line through the nearest edge pixel, on the side the pixel's own share says.
+                float d = (ux[seed] * (x - ex[seed])) + (uy[seed] * (y - ey[seed]));
+                distance[i] = inside ? Math.Clamp(d, 0.5f, Reach) : Math.Clamp(d, -Reach, -0.5f);
+            }
+        });
+
+        return distance;
+    }
+
+    /// <summary>
+    /// One sweep of the distance transform: each pixel takes the nearest of its own edge pixel and those of the four neighbours
+    /// already swept (left, upper left, up and upper right going forward; the mirror going back).
+    /// </summary>
+    private static void Sweep(int[] nearest, int[] nearX, int[] nearY, int width, int height, bool forward)
+    {
+        int sign = forward ? 1 : -1;
+        for (int row = 0; row < height; row++)
+        {
+            int y = forward ? row : height - 1 - row;
+            int yy = y - sign;
+            bool hasRow = (uint)yy < (uint)height;
+            for (int column = 0; column < width; column++)
+            {
+                int x = forward ? column : width - 1 - column;
+                int i = (y * width) + x;
                 int best = nearest[i];
                 if (best == i)
                 {
                     continue;
                 }
 
-                int x = i % width, y = i / width;
-                float bestDistance = best < 0 ? float.MaxValue : Square(x, y, best, width);
-                for (int k = 0; k < 4; k++)
+                int bestX = 0, bestY = 0;
+                float bestDistance = float.MaxValue;
+                if (best >= 0)
                 {
-                    int xx = x + (sign * sx[k]), yy = y + (sign * sy[k]);
-                    if ((uint)xx >= (uint)width || (uint)yy >= (uint)height)
+                    (bestX, bestY) = (nearX[i], nearY[i]);
+                    bestDistance = Square(x - bestX, y - bestY);
+                }
+
+                // The neighbours in the order (−1, 0), (−1, −1), (0, −1), (1, −1), times the sweep's sign.
+                int xl = x - sign;
+                if ((uint)xl < (uint)width)
+                {
+                    Consider(nearest, nearX, nearY, (y * width) + xl, x, y, ref best, ref bestX, ref bestY, ref bestDistance);
+                }
+
+                if (hasRow)
+                {
+                    if ((uint)xl < (uint)width)
                     {
-                        continue;
+                        Consider(nearest, nearX, nearY, (yy * width) + xl, x, y, ref best, ref bestX, ref bestY, ref bestDistance);
                     }
 
-                    int candidate = nearest[(yy * width) + xx];
-                    if (candidate >= 0)
+                    Consider(nearest, nearX, nearY, (yy * width) + x, x, y, ref best, ref bestX, ref bestY, ref bestDistance);
+                    int xr = x + sign;
+                    if ((uint)xr < (uint)width)
                     {
-                        float d = Square(x, y, candidate, width);
-                        if (d < bestDistance)
-                        {
-                            (best, bestDistance) = (candidate, d);
-                        }
+                        Consider(nearest, nearX, nearY, (yy * width) + xr, x, y, ref best, ref bestX, ref bestY, ref bestDistance);
                     }
                 }
 
                 nearest[i] = best;
+                nearX[i] = bestX;
+                nearY[i] = bestY;
             }
         }
+    }
 
-        for (int i = 0; i < n; i++)
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static void Consider(int[] nearest, int[] nearX, int[] nearY, int j, int x, int y, ref int best, ref int bestX, ref int bestY, ref float bestDistance)
+    {
+        int candidate = nearest[j];
+        if (candidate >= 0)
         {
-            int seed = nearest[i];
-            if (seed == i)
+            int cx = nearX[j], cy = nearY[j];
+            float d = Square(x - cx, y - cy);
+            if (d < bestDistance)
             {
-                continue;
+                (best, bestX, bestY, bestDistance) = (candidate, cx, cy, d);
             }
-
-            int x = i % width, y = i / width;
-            bool inside = share[i] >= 0.5f;
-            if (seed < 0 || Square(x, y, seed, width) > (Reach + 1) * (Reach + 1))
-            {
-                distance[i] = inside ? Reach : -Reach;
-                continue;
-            }
-
-            // The distance to the edge line through the nearest edge pixel, on the side the pixel's own share says.
-            float d = (ux[seed] * (x - ex[seed])) + (uy[seed] * (y - ey[seed]));
-            distance[i] = inside ? Math.Clamp(d, 0.5f, Reach) : Math.Clamp(d, -Reach, -0.5f);
         }
-
-        return distance;
     }
 
     /// <summary>
@@ -400,10 +467,10 @@ internal static class CoverageField
     /// <summary>Whether a neighbour's share is the opposite extreme: empty beside a full pixel, full beside an empty one.</summary>
     private static bool Opposite(bool full, float neighbour) => full ? neighbour <= 1 / 510f : neighbour >= 1 - (1 / 510f);
 
-    private static float Square(int x, int y, int seed, int width)
+    private static float Square(int dx, int dy)
     {
-        float dx = x - (seed % width), dy = y - (seed / width);
-        return (dx * dx) + (dy * dy);
+        float fx = dx, fy = dy;
+        return (fx * fx) + (fy * fy);
     }
 
     /// <summary>
@@ -487,6 +554,44 @@ internal static class CoverageField
         for (int k = n - 2; k >= 0; k--)
         {
             c[k] = z * (c[k + 1] - c[k]);
+        }
+    }
+
+    /// <summary>The distance transform's buffers, kept from color to color.</summary>
+    internal sealed class DistanceWork
+    {
+        public float[] Distance { get; private set; } = [];
+
+        public int[] Nearest { get; private set; } = [];
+
+        public int[] NearX { get; private set; } = [];
+
+        public int[] NearY { get; private set; } = [];
+
+        public float[] Ex { get; private set; } = [];
+
+        public float[] Ey { get; private set; } = [];
+
+        public float[] Ux { get; private set; } = [];
+
+        public float[] Uy { get; private set; } = [];
+
+        /// <summary>Makes every buffer hold at least <paramref name="n"/> values.</summary>
+        public void Ensure(int n)
+        {
+            if (Distance.Length >= n)
+            {
+                return;
+            }
+
+            Distance = new float[n];
+            Nearest = new int[n];
+            NearX = new int[n];
+            NearY = new int[n];
+            Ex = new float[n];
+            Ey = new float[n];
+            Ux = new float[n];
+            Uy = new float[n];
         }
     }
 }
