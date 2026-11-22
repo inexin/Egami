@@ -144,6 +144,7 @@ settings, safety limits and registered formats a call uses.
 - [Lossless archiving with FFV1](https://inexin.github.io/Egami/v1/articles/guides/lossless-archiving.html): FFV1 (RFC 9043) is the lossless video codec memory institutions archive with.
 - [H.264](https://inexin.github.io/Egami/v1/articles/guides/h264.html): Egami.Video.H264 decodes and encodes H.264 (AVC), the codec of most MP4 and MOV files from phones, cameras and the web.
 - [HEVC](https://inexin.github.io/Egami/v1/articles/guides/hevc.html): Egami.Video.Hevc decodes and encodes HEVC (H.265), the codec of iPhone and Android video, GoPro footage, 4K streaming and HDR10.
+- [Hardware video](https://inexin.github.io/Egami/v1/articles/guides/video-hardware.html): Egami.Video.Hardware decodes and encodes video on the GPU's video engine, the fixed-function block that NVIDIA, AMD and Intel GPUs carry next to their shader cores.
 - [Audio](https://inexin.github.io/Egami/v1/articles/guides/audio.html): Egami.Video decodes and encodes audio with the same send and receive loop as video.
 - [Audio filters](https://inexin.github.io/Egami/v1/articles/guides/audio-filters.html): Egami.Video's audio filters change level, time, tone and placement of decoded audio as it streams.
 - [Encoding Opus](https://inexin.github.io/Egami/v1/articles/guides/opus-encoding.html): Opus (RFC 6716) is the audio codec of WebM and of .opus files, and the best general-purpose lossy codec for both speech and music.
@@ -185,5 +186,6 @@ settings, safety limits and registered formats a call uses.
 - [Egami.SystemDrawing agent guide](https://inexin.github.io/Egami/v1/agents/Egami.SystemDrawing.md): the names, entry points, samples and common mistakes of Egami.SystemDrawing, as packed in its NuGet package as AGENTS.md.
 - [Egami.Video agent guide](https://inexin.github.io/Egami/v1/agents/Egami.Video.md): the names, entry points, samples and common mistakes of Egami.Video, as packed in its NuGet package as AGENTS.md.
 - [Egami.Video.H264 agent guide](https://inexin.github.io/Egami/v1/agents/Egami.Video.H264.md): the names, entry points, samples and common mistakes of Egami.Video.H264, as packed in its NuGet package as AGENTS.md.
+- [Egami.Video.Hardware agent guide](https://inexin.github.io/Egami/v1/agents/Egami.Video.Hardware.md): the names, entry points, samples and common mistakes of Egami.Video.Hardware, as packed in its NuGet package as AGENTS.md.
 - [Egami.Video.Hevc agent guide](https://inexin.github.io/Egami/v1/agents/Egami.Video.Hevc.md): the names, entry points, samples and common mistakes of Egami.Video.Hevc, as packed in its NuGet package as AGENTS.md.
 - [Source and changelog](https://github.com/inexin/Egami): the repository, CHANGELOG.md and CONTRIBUTING.md.

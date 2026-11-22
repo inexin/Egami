@@ -87,7 +87,7 @@
         <article data-uid="">
 <h1 id="packages">Packages</h1>
 
-<p>Egami is a family of packages. Each is fully managed C# with no dependencies outside the family, and you add only the ones you
+<p>Egami is a family of packages. Each is fully managed C# with no dependencies outside the family (Egami.Video.Hardware also calls the GPU driver), and you add only the ones you
 use. Packages at 1.0 or above keep their public API compatible within the major version; packages at 0.x may still change.
 Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended, Egami.Cli and Egami.Cli.Host share
 one version and release together; the other packages have versions of their own. Each package name links to its source code.</p>
@@ -256,6 +256,13 @@ one version and release together; the other packages have versions of their own.
 <td>HEVC (H.265) decoding for Egami.Video: Main, Main 10, Main 12 and the range extensions to 12 bits in MP4, MOV, Matroska and raw .h265 files, through Egami.Heic's decoder. Opt-in because HEVC is covered by patents</td>
 <td>Egami.Video, the same version, and Egami.Heic</td>
 <td><a href="guides/hevc.html">HEVC</a></td>
+</tr>
+<tr>
+<td><a href="https://github.com/inexin/Egami/tree/main/src/Egami.Video.Hardware">Egami.Video.Hardware</a></td>
+<td>0.1 preview</td>
+<td>Hardware video through Vulkan Video, opt-in: finds the GPU's H.264 and HEVC decoders and encoders and their limits; the hardware codecs follow in the next previews. The one package that calls native code: the Vulkan loader the GPU driver installs, nothing shipped</td>
+<td>Egami.Video</td>
+<td><a href="guides/video-hardware.html">Hardware video</a></td>
 </tr>
 </tbody>
 </table>

@@ -123,6 +123,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "agents/Egami.Video.Hardware.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Video.Hardware.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "agents/Egami.Video.Hevc.md",
       "output": {
         "resource": {
@@ -19403,6 +19413,118 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hardware.HardwareDeviceKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hardware.HardwareDeviceKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hardware.HardwareDeviceKind",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Hardware.HardwareDeviceKind.yml\" sourcestartlinenumber=\"1\">What kind of device a GPU is.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hardware.HardwareDirection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hardware.HardwareDirection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hardware.HardwareDirection",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Hardware.HardwareDirection.yml\" sourcestartlinenumber=\"1\">Whether a hardware codec decodes or encodes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hardware.HardwareRateControl.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hardware.HardwareRateControl.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hardware.HardwareRateControl",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Hardware.HardwareRateControl.yml\" sourcestartlinenumber=\"1\">The rate control modes a hardware encoder offers.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hardware.HardwareVideoCodecs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hardware.HardwareVideoCodecs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hardware.HardwareVideoCodecs",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Hardware.HardwareVideoCodecs.yml\" sourcestartlinenumber=\"1\">Finds the hardware video codecs of the machine's GPUs. The first call asks the GPU driver through Vulkan Video and keeps the\nanswer for the life of the process; it never throws, and on a machine without a usable GPU or driver it finds nothing.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hardware.HardwareVideoDevice.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hardware.HardwareVideoDevice.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hardware.HardwareVideoDevice",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Hardware.HardwareVideoDevice.yml\" sourcestartlinenumber=\"1\">A GPU with hardware video codecs, as the driver reports it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hardware.HardwareVideoException.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hardware.HardwareVideoException.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hardware.HardwareVideoException",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Hardware.HardwareVideoException.yml\" sourcestartlinenumber=\"1\">Thrown when the GPU driver refuses or fails a hardware video operation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hardware.HardwareVideoProfile.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hardware.HardwareVideoProfile.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hardware.HardwareVideoProfile",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Hardware.HardwareVideoProfile.yml\" sourcestartlinenumber=\"1\">One codec profile a GPU decodes or encodes in hardware, with its limits.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hardware.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hardware.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hardware",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Hdr10PlusMetadata.yml",
       "output": {
         ".html": {
@@ -21198,6 +21320,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/guides/video-encoding.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/guides/video-hardware.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/guides/video-hardware.html"
         }
       },
       "version": ""

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class HardwareVideoProfile | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class HardwareVideoProfile | Egami ">
+      
+      <meta name="description" content="One codec profile a GPU decodes or encodes in hardware, with its limits.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Video_Hardware_HardwareVideoProfile.md&amp;value=---%0Auid%3A%20Egami.Video.Hardware.HardwareVideoProfile%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Video.Hardware.HardwareVideoProfile">
+
+
+
+  <h1 id="Egami_Video_Hardware_HardwareVideoProfile" data-uid="Egami.Video.Hardware.HardwareVideoProfile" class="text-break">
+Class HardwareVideoProfile  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Video.html">Video</a>.<a class="xref" href="Egami.Video.Hardware.html">Hardware</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Video.Hardware.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>One codec profile a GPU decodes or encodes in hardware, with its limits.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class HardwareVideoProfile</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">HardwareVideoProfile</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Video_Hardware_HardwareVideoProfile_examples">Examples</h2>
+  <pre><code class="lang-csharp">// List the GPUs and what their video hardware does: codec, profile, bit depth, size limits and, for encoders, the rate
+// control modes and quality levels. UnavailableReason says why the list is empty.
+IReadOnlyList&lt;HardwareVideoDevice&gt; devices = HardwareVideoCodecs.GetDevices();
+if (devices.Count == 0)
+{
+    Console.WriteLine($"No hardware video: {HardwareVideoCodecs.UnavailableReason}");
+}
+
+foreach (HardwareVideoDevice device in devices)
+{
+    Console.WriteLine(device);
+    foreach (HardwareVideoProfile profile in device.Profiles)
+    {
+        Console.WriteLine($"  {profile}");
+    }
+}</code></pre>
+
+
+  <h2 id="Egami_Video_Hardware_HardwareVideoProfile_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Every profile is 4:2:0. The encode-only members are zero, or <a class="xref" href="Egami.Video.Hardware.HardwareRateControl.html#Egami_Video_Hardware_HardwareRateControl_None">None</a>, for decoders.</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_BitDepth_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.BitDepth*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_BitDepth" data-uid="Egami.Video.Hardware.HardwareVideoProfile.BitDepth">
+  BitDepth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L136"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the bit depth of the samples: 8 or 10.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int BitDepth { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_CodecId_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.CodecId*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_CodecId" data-uid="Egami.Video.Hardware.HardwareVideoProfile.CodecId">
+  CodecId
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L127"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the codec, as an <a class="xref" href="Egami.Video.CodecIds.html">CodecIds</a> value such as <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Avc">Avc</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string CodecId { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_Direction_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.Direction*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_Direction" data-uid="Egami.Video.Hardware.HardwareVideoProfile.Direction">
+  Direction
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L130"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether this profile decodes or encodes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public HardwareDirection Direction { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Hardware.HardwareDirection.html">HardwareDirection</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_MaxBackwardReferences_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxBackwardReferences*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_MaxBackwardReferences" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxBackwardReferences">
+  MaxBackwardReferences
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L169"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many later pictures a B picture can reference: 0 when the encoder writes no B pictures, and for decoders.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MaxBackwardReferences { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_MaxBitrate_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxBitrate*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_MaxBitrate" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxBitrate">
+  MaxBitrate
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L163"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the highest bit rate the encoder supports, in bits per second; 0 for decoders.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public long MaxBitrate { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int64">long</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_MaxForwardReferences_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxForwardReferences*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_MaxForwardReferences" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxForwardReferences">
+  MaxForwardReferences
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L166"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many earlier pictures a P picture can reference; 0 for decoders.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MaxForwardReferences { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_MaxHeight_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxHeight*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_MaxHeight" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxHeight">
+  MaxHeight
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L148"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the largest height in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MaxHeight { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_MaxLevel_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxLevel*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_MaxLevel" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxLevel">
+  MaxLevel
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L151"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the highest codec level, such as &quot;5.2&quot;.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string MaxLevel { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_MaxReferences_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxReferences*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_MaxReferences" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxReferences">
+  MaxReferences
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L154"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many reference pictures one picture can use at most.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MaxReferences { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_MaxWidth_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxWidth*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_MaxWidth" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MaxWidth">
+  MaxWidth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L145"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the largest width in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MaxWidth { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_MinHeight_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MinHeight*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_MinHeight" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MinHeight">
+  MinHeight
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the smallest height in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MinHeight { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_MinWidth_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MinWidth*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_MinWidth" data-uid="Egami.Video.Hardware.HardwareVideoProfile.MinWidth">
+  MinWidth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the smallest width in pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int MinWidth { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_Profile_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.Profile*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_Profile" data-uid="Egami.Video.Hardware.HardwareVideoProfile.Profile">
+  Profile
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L133"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the codec profile, such as &quot;High&quot; or &quot;Main 10&quot;. A decoder of a profile also decodes the profiles below it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string Profile { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_QualityLevels_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.QualityLevels*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_QualityLevels" data-uid="Egami.Video.Hardware.HardwareVideoProfile.QualityLevels">
+  QualityLevels
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how many quality levels the encoder offers, from fastest to best; 0 for decoders.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int QualityLevels { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_RateControl_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.RateControl*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_RateControl" data-uid="Egami.Video.Hardware.HardwareVideoProfile.RateControl">
+  RateControl
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L157"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the rate control modes the encoder offers.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public HardwareRateControl RateControl { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Hardware.HardwareRateControl.html">HardwareRateControl</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Video_Hardware_HardwareVideoProfile_ToString_" data-uid="Egami.Video.Hardware.HardwareVideoProfile.ToString*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoProfile_ToString" data-uid="Egami.Video.Hardware.HardwareVideoProfile.ToString">
+  ToString()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L173"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Returns the codec, direction, profile and limits on one line.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A one-line description.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoTypes.cs/#L116" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
