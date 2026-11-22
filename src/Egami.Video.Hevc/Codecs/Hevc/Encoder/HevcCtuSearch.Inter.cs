@@ -857,6 +857,7 @@ internal sealed partial class HevcCtuSearch
 
         // A static trial leaves the picture and the contexts as they are: nothing to keep or put back.
         bool trial = !rdoq && !cu.Bypass && _interContext!.Profile.RdoqKeptOnly && _interContext.Profile.StaticTrials;
+        trySplit &= !trial || _interContext!.Profile.TrialTransformSplit;
         HevcSnapshot before = _tuBefore[log2], best = _tuBest[log2];
         if (trySplit && !trial)
         {

@@ -115,6 +115,12 @@ internal sealed record HevcInterProfile
     /// <summary>Gets whether the inter transform tree's splits are searched (else a transform unit is the coding unit, split only where it must).</summary>
     internal bool TransformSplit { get; init; }
 
+    /// <summary>
+    /// Gets whether static trials (with <see cref="StaticTrials"/>) search the transform tree's splits too; else only the kept coding
+    /// does, and the trials price the unsplit tree.
+    /// </summary>
+    internal bool TrialTransformSplit { get; init; } = true;
+
     /// <summary>The intra search of a P picture's coding units: the I pictures' unless <see cref="FullIntra"/> is off.</summary>
     internal HevcEncoderProfile IntraProfile(HevcEncoderProfile intra) => FullIntra ? intra : intra with
     {
