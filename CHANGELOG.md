@@ -5,8 +5,8 @@ changes that break code come only in a new major version.
 
 ## Egami.Video 1.4.0 (unreleased)
 
-An HEVC encoder in Egami.Video.Hevc, in progress (HEVC encoder Build Plan, PRs A to C of seven): the release that ships it
-waits for B pictures, rate control tuning and its gates. Additive to 1.3.
+An HEVC encoder in Egami.Video.Hevc, in progress (HEVC encoder Build Plan, PRs A to D of seven): the release that ships it
+waits for its gates. Additive to 1.3.
 
 - `HevcCodec.CanEncode` is true and `HevcCodec.CreateEncoder` encodes 4:2:0 progressive video in the Main and Main 10
   profiles, on the shared encoder core with the HEIC encoder's CTU search, its CTB rows as wavefront substreams: the same
@@ -24,7 +24,14 @@ waits for B pictures, rate control tuning and its gates. Additive to 1.3.
   reference picture sets and the decoded picture buffer size follow the level. B pictures predict from list 0, list 1 or both
   (bi-prediction with joint refinement), with merge, AMVP and temporal vectors from list 1; their search starts from the last
   P picture's vectors scaled to the distance, ranks one list against both by SATD and codes a runner-up within 17/16 in full,
-  and the frame analysis plans B pictures and their quantizers as the H.264 encoder does. Egami's decoder, FFmpeg and the HM reference decoder decode every test stream to the encoder's own
+  and the frame analysis plans B pictures and their quantizers as the H.264 encoder does. Rate control and perceptual tools
+  (PR D) as the H.264 encoder's: constant quality, quantizer, one- and two-pass bitrate and constant bitrate with the buffer
+  model; adaptive quantization through cu_qp_delta with flat groups (letterbox bars, blank areas) out of the picture's mean,
+  the frame tree from effort 1 and the quantizer-aware block tree from effort 5, and I and P pictures' RD λ scaled by 0.8
+  (better on SSIM and PSNR together than the H.264 encoder's 0.6). A frame's `VideoFrame.Hdr` goes into each IDR access unit
+  as mastering display colour volume and content light level SEI messages (and so to MP4 players and FFmpeg). The lookahead's
+  analysis (shared with the other encoders, whose output is unchanged) runs its block rows as a wavefront on the context's
+  threads, and the wavefront waits no longer sleep, so more threads help: the same bytes on any number. Egami's decoder, FFmpeg and the HM reference decoder decode every test stream to the encoder's own
   reconstruction, bit for bit (tools/video/check-hevc-encoder.py); tools/video/time-hevc-encoder.py measures BD-rate and speed
   against x265 and Egami's H.264 encoder. The search prices trial codings from static rate tables and codes only the kept one
   with RDOQ, refines motion with two half-sample SAD steps and one quarter-sample SATD step, and runs AVX2/SSE2/Vector128 SAD,

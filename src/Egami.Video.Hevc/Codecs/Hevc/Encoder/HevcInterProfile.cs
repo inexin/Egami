@@ -15,6 +15,9 @@ internal sealed record HevcInterProfile
     /// <summary>Gets the largest coding unit tried in P and B pictures, log2.</summary>
     internal int MaxCuLog2 { get; init; } = 6;
 
+    /// <summary>Gets the CTB size, log2: the unit of the wavefront rows, which threads code two CTBs apart.</summary>
+    internal int CtbLog2 { get; init; } = 6;
+
     /// <summary>Gets how many earlier pictures a P picture predicts from (num_ref_idx_l0_active).</summary>
     internal int References { get; init; } = 3;
 
@@ -32,6 +35,15 @@ internal sealed record HevcInterProfile
 
     /// <summary>Gets whether the B pictures no picture predicts from code their kept residuals without RDOQ.</summary>
     internal bool PlainB { get; init; }
+
+    /// <summary>
+    /// Gets the share of λ that weighs bits against error in the RD codings of I and P pictures (<see
+    /// cref="HevcEncoderSettings.RdLambdaScale"/>), as the H.264 encoder's: pictures others predict from are worth more than
+    /// their own error says, so they spend more bits on it; B pictures keep the whole λ and the searches √λ unscaled. On the
+    /// four clips at effort 4, 0.8 made SSIM-Y BD-rate 1.2 points better and PSNR-Y 0.3 points worse, no clip more than 0.3
+    /// points worse on SSIM; the H.264 encoder's 0.6 was 1.7 points better on SSIM but 1.8 worse on PSNR (ducks_take_off 4.2).
+    /// </summary>
+    internal double IpLambdaScale { get; init; } = 0.8;
 
     /// <summary>Gets MaxNumMergeCand.</summary>
     internal int MergeCandidates { get; init; } = 3;

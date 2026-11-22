@@ -301,7 +301,7 @@ internal sealed class EncoderCore : IDisposable
         _coder = coder;
         _pictures = pictures;
         _alpha = alpha;
-        _analyzer = new FrameAnalyzer(settings.Width, settings.Height);
+        _analyzer = new FrameAnalyzer(settings.Width, settings.Height) { Parallelism = Math.Max(1, settings.Parallelism) };
         _rate = new RateController(settings.Rate);
         _timeBase = settings.FrameRate.Reciprocal();
         _depth = settings.LatencyMode == LatencyMode.Quality ? settings.Lookahead : 0;

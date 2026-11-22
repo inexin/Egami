@@ -227,7 +227,7 @@ internal static class HevcEncoder
                 return false;
             }
 
-            spin.SpinOnce();
+            spin.SpinOnce(sleep1Threshold: -1);
         }
 
         return true;

@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 
+using Egami.Colors;
 using Egami.Heic.Hevc;
 using Egami.Pixels;
 using Egami.Video.Codecs.Encoding;
@@ -34,6 +35,16 @@ internal sealed class HevcFrameCoder : IFrameCoder
 
     // The reference pictures the decoder's buffer holds after the last picture, P and I pictures marked as anchors.
     private readonly List<HevcReference> _dpb = [];
+    private readonly byte[]? _sei;
+    private double[]? _tree;
+
+    /// <summary>The settings of a picture: its QP, RD λ share and the block tree's offsets for its quantization groups.</summary>
+    private HevcEncoderSettings Picture(int qp, double lambdaScale) => _settings with
+    {
+        Qp = qp,
+        RdLambdaScale = lambdaScale,
+        VideoQuantizer = _settings.VideoQuantizer is { } quantizer ? quantizer with { TreeOffsets = _tree } : null,
+    };
     private HevcReference? _lastAnchor;
     private int _idrIndex;
     private int _nextId;
@@ -44,8 +55,10 @@ internal sealed class HevcFrameCoder : IFrameCoder
     /// <param name="bFrames">The most B-frames the core puts between two references.</param>
     /// <param name="pyramid">Whether a run's middle B-frame is a reference.</param>
     /// <param name="references">How many P and I pictures a P picture predicts from, or null for the effort's.</param>
-    public HevcFrameCoder(HevcEncoderSettings settings, bool annexB, int bFrames = 0, bool pyramid = false, int? references = null)
+    /// <param name="hdr">The HDR10 metadata each IDR access unit states in a prefix SEI message, or null for none.</param>
+    public HevcFrameCoder(HevcEncoderSettings settings, bool annexB, int bFrames = 0, bool pyramid = false, int? references = null, HdrMetadata? hdr = null)
     {
+        _sei = HevcSeiWriter.Hdr(hdr);
         _profile = HevcInterProfile.For(settings.Effort);
         _references = Math.Max(1, references ?? _profile.References);
 
@@ -109,6 +122,7 @@ internal sealed class HevcFrameCoder : IFrameCoder
         }
 
         int qp = Math.Clamp(decision.Quantizer, 0, 51);
+        _tree = decision.BlockOffsets;
         int poc = decision.Index - _idrIndex;
         bool b = !idr && decision.Type == FrameType.Bidirectional && _dpb.Exists(r => r.Picture.Poc > poc);
         Load(picture, full);
@@ -131,7 +145,9 @@ internal sealed class HevcFrameCoder : IFrameCoder
         }
 
         Coded?.Invoke(coded.Reconstruction, decision.Index);
-        byte[] data = idr && _annexB ? AccessUnit([Vps, Sps, Pps, coded.Slice]) : AccessUnit([coded.Slice]);
+        byte[] data = !idr ? AccessUnit([coded.Slice])
+            : _annexB ? _sei is { } sei ? AccessUnit([Vps, Sps, Pps, sei, coded.Slice]) : AccessUnit([Vps, Sps, Pps, coded.Slice])
+            : _sei is { } prefix ? AccessUnit([prefix, coded.Slice]) : AccessUnit([coded.Slice]);
         AddPicture(idr ? 0 : !b ? 1 : decision.Referenced ? 2 : 3, coded);
         return new CodedFrame(data, null, qp);
     }
@@ -139,6 +155,7 @@ internal sealed class HevcFrameCoder : IFrameCoder
     public (long Key, long Next) Probe(YuvRaster<byte> key, YuvRaster<byte>? next, int quantizer)
     {
         int qp = Math.Clamp(quantizer, 0, 51);
+        _tree = null;
         Load(key, null);
         HevcEncodedPicture first = EncodeIdr(qp);
         long nextBits = 0;
@@ -155,7 +172,8 @@ internal sealed class HevcFrameCoder : IFrameCoder
 
     private HevcEncodedPicture EncodeIdr(int qp)
     {
-        HevcEncodedPicture coded = HevcEncoder.Encode(_settings with { Qp = qp }, _planes, _strides, new HevcSliceInfo { NalType = HevcNal.IdrNLp },
+        HevcEncodedPicture coded = HevcEncoder.Encode(Picture(qp, _profile.IpLambdaScale), _planes, _strides,
+            new HevcSliceInfo { NalType = HevcNal.IdrNLp },
             CancellationToken.None);
         coded.Reconstruction.ColMotion = new HevcColMotion(coded.Reconstruction);
         return coded;
@@ -232,7 +250,8 @@ internal sealed class HevcFrameCoder : IFrameCoder
             MaxNumMergeCand = _profile.MergeCandidates,
         };
         HevcSliceRefs refs = new([.. list0.Select(r => r.Picture)], [.. list1.Select(r => r.Picture)], new bool[list0.Length], new bool[list1.Length], poc);
-        HevcEncodedPicture coded = HevcEncoder.Encode(_settings with { Qp = qp }, _planes, _strides, info, CancellationToken.None, (picture, slice) =>
+        HevcEncoderSettings settings = Picture(qp, b ? 1 : _profile.IpLambdaScale);
+        HevcEncodedPicture coded = HevcEncoder.Encode(settings, _planes, _strides, info, CancellationToken.None, (picture, slice) =>
         {
             Array.Fill(picture.CtbRefs, refs);
             HevcInterContext context = new(refs, list0, list1, _profile, picture.CtbRefs.Length)

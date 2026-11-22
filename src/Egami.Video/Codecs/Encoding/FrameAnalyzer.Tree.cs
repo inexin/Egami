@@ -31,10 +31,11 @@ internal sealed partial class FrameAnalyzer
     public void Estimate(byte[] target, BlockCosts own, byte[] ref0, int distance0, byte[]? ref1, int distance1, TreeCosts result)
     {
         result.Bi = ref1 is not null;
-        for (int by = 0; by < _rows; by++)
+        Wavefront(by =>
         {
             for (int bx = 0; bx < _cols; bx++)
             {
+                WaitAbove(by, bx);
                 int i = (by * _cols) + bx, x = bx * Block, y = by * Block;
                 int detail = own.Detail[i], intra = own.Intra[i];
                 result.Intra[i] = intra;
@@ -68,8 +69,9 @@ internal sealed partial class FrameAnalyzer
                 result.Vectors1[(i * 2) + 1] = (short)y1;
                 result.Inter[i] = (int)Math.Min(best, intra);
                 result.Modes[i] = best >= intra ? TreeCosts.IntraMode : mode;
+                Volatile.Write(ref _progress[by], bx + 1);
             }
-        }
+        });
     }
 
     /// <summary>

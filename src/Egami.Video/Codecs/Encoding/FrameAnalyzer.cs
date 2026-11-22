@@ -35,7 +35,10 @@ internal sealed partial class FrameAnalyzer
     private readonly int[] _intraCosts;
     private readonly int[] _interCosts;
     private readonly int[] _detail;
+    private readonly int[] _progress;
+    private readonly long[] _rowSums;
     private bool _hasPrevious;
+    private int _nextRow;
 
     public FrameAnalyzer(int width, int height)
     {
@@ -51,7 +54,15 @@ internal sealed partial class FrameAnalyzer
         _intraCosts = new int[_cols * _rows];
         _interCosts = new int[_cols * _rows];
         _detail = new int[_cols * _rows];
+        _progress = new int[_rows];
+        _rowSums = new long[_rows * 4];
     }
+
+    /// <summary>
+    /// Gets or sets how many threads analyze a frame: block rows run as a wavefront, each block after the one to its left and
+    /// the one above, whose vectors seed its search, so the result is the same on any number.
+    /// </summary>
+    public int Parallelism { get; set; } = 1;
 
     /// <summary>Gets the columns of blocks: 8x8 on the half-size copy, 16x16 in the frame.</summary>
     public int Columns => _cols;
@@ -91,25 +102,82 @@ internal sealed partial class FrameAnalyzer
     {
         (byte[] current, byte[] previous) = (_current, _previous);
         (_current, _previous) = (to, from);
-        long intra = 0, inter = 0;
         Array.Clear(_vectors);
+        Wavefront(DistanceRow);
+        long intra = 0, inter = 0;
         for (int by = 0; by < _rows; by++)
         {
-            for (int bx = 0; bx < _cols; bx++)
-            {
-                int x = bx * Block, y = by * Block;
-                int intraCost = IntraCost(x, y);
-                (int cost, int mx, int my) = Search(x, y, bx, by);
-                int index = ((by * _cols) + bx) * 2;
-                _vectors[index] = (short)mx;
-                _vectors[index + 1] = (short)my;
-                intra += intraCost;
-                inter += Math.Min(cost, intraCost);
-            }
+            intra += _rowSums[by * 4];
+            inter += _rowSums[(by * 4) + 1];
         }
 
         (_current, _previous) = (current, previous);
         return (inter * 4, intra * 4);
+    }
+
+    private void DistanceRow(int by)
+    {
+        long intra = 0, inter = 0;
+        for (int bx = 0; bx < _cols; bx++)
+        {
+            WaitAbove(by, bx);
+            int x = bx * Block, y = by * Block;
+            int intraCost = IntraCost(x, y);
+            (int cost, int mx, int my) = Search(x, y, bx, by);
+            int index = ((by * _cols) + bx) * 2;
+            _vectors[index] = (short)mx;
+            _vectors[index + 1] = (short)my;
+            intra += intraCost;
+            inter += Math.Min(cost, intraCost);
+            Volatile.Write(ref _progress[by], bx + 1);
+        }
+
+        _rowSums[by * 4] = intra;
+        _rowSums[(by * 4) + 1] = inter;
+    }
+
+    /// <summary>
+    /// Runs <paramref name="row"/> on each block row: in order on one thread, else as a wavefront, workers taking rows in order
+    /// and each block waiting for the block above (<see cref="WaitAbove"/>, after which the row marks its progress).
+    /// </summary>
+    private void Wavefront(Action<int> row)
+    {
+        Array.Clear(_progress);
+        int workers = Math.Min(Parallelism, _rows);
+        if (workers <= 1)
+        {
+            for (int by = 0; by < _rows; by++)
+            {
+                row(by);
+            }
+
+            return;
+        }
+
+        // Rows are handed out in order, so the earliest unfinished row always belongs to a running worker and can go on.
+        _nextRow = 0;
+        Parallel.For(0, workers, new ParallelOptions { MaxDegreeOfParallelism = workers }, _ =>
+        {
+            for (int by = Interlocked.Increment(ref _nextRow) - 1; by < _rows; by = Interlocked.Increment(ref _nextRow) - 1)
+            {
+                row(by);
+            }
+        });
+    }
+
+    /// <summary>Waits until the block above (<paramref name="bx"/>, <paramref name="by"/> - 1) is done.</summary>
+    private void WaitAbove(int by, int bx)
+    {
+        if (by == 0 || Parallelism <= 1)
+        {
+            return;
+        }
+
+        SpinWait spin = default;
+        while (Volatile.Read(ref _progress[by - 1]) <= bx)
+        {
+            spin.SpinOnce(sleep1Threshold: -1);
+        }
     }
 
     /// <summary>Forgets the frame before, so the next frame is analyzed as the first of a stream.</summary>
@@ -120,11 +188,30 @@ internal sealed partial class FrameAnalyzer
     {
         (_current, _previous) = (_previous, _current);
         long detail = Downscale(picture.Y, _current);
+        Wavefront(AnalyzeRow);
         long intra = 0, inter = 0, motion = 0, moving = 0;
         for (int by = 0; by < _rows; by++)
         {
+            intra += _rowSums[by * 4];
+            inter += _rowSums[(by * 4) + 1];
+            motion += _rowSums[(by * 4) + 2];
+            moving += _rowSums[(by * 4) + 3];
+        }
+
+        _hasPrevious = true;
+
+        // Half-size errors stand for four times the samples; the detail the half-size copy averaged away (noise, fine texture)
+        // costs bits whichever way a frame is predicted. Vectors are in half-size pixels, so twice as long in the frame.
+        return new FrameStats((intra * 4) + detail, (inter * 4) + detail, moving == 0 ? 0 : (int)(motion * 2 * 16 / moving), detail);
+    }
+
+    private void AnalyzeRow(int by)
+    {
+        long intra = 0, inter = 0, motion = 0, moving = 0;
+        {
             for (int bx = 0; bx < _cols; bx++)
             {
+                WaitAbove(by, bx);
                 int x = bx * Block, y = by * Block;
                 int intraCost = IntraCost(x, y);
                 int best = intraCost;
@@ -148,14 +235,14 @@ internal sealed partial class FrameAnalyzer
                 inter += best;
                 _intraCosts[index / 2] = intraCost;
                 _interCosts[index / 2] = best;
+                Volatile.Write(ref _progress[by], bx + 1);
             }
         }
 
-        _hasPrevious = true;
-
-        // Half-size errors stand for four times the samples; the detail the half-size copy averaged away (noise, fine texture)
-        // costs bits whichever way a frame is predicted. Vectors are in half-size pixels, so twice as long in the frame.
-        return new FrameStats((intra * 4) + detail, (inter * 4) + detail, moving == 0 ? 0 : (int)(motion * 2 * 16 / moving), detail);
+        _rowSums[by * 4] = intra;
+        _rowSums[(by * 4) + 1] = inter;
+        _rowSums[(by * 4) + 2] = motion;
+        _rowSums[(by * 4) + 3] = moving;
     }
 
     /// <summary>Averages 2 × 2 blocks into the half-size copy and returns how far the samples were from their averages, summed.</summary>
