@@ -498,7 +498,7 @@ internal sealed partial class HevcCtuSearch
         }
 
         int stride = _picture.Widths[0];
-        return HevcMotionSearch.Satd(_source.Planes[0], (y * stride) + x, stride, _rankBlock, 0, 64, w, h) << 8;
+        return HevcMotionSearch.Satd(_source.Planes[0], (y * stride) + x, stride, _rankBlock, 0, 64, w, h, _sps.BitDepthLuma == 8) << 8;
     }
 
     // A B picture's 2Nx2N runner-up between one list and both, when near the best (its Cost 0 when there is none).

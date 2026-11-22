@@ -234,7 +234,7 @@ internal sealed partial class HevcCtuSearch
     private long SourceSatd(in HevcMotionPredictor.Unit unit, ushort[] block)
     {
         int stride = _picture.Widths[0];
-        return HevcMotionSearch.Satd(_source.Planes[0], (unit.YPb * stride) + unit.XPb, stride, block, 0, 64, unit.Width, unit.Height) << 8;
+        return HevcMotionSearch.Satd(_source.Planes[0], (unit.YPb * stride) + unit.XPb, stride, block, 0, 64, unit.Width, unit.Height, _sps.BitDepthLuma == 8) << 8;
     }
 
     /// <summary>The bits of a vector's difference from the nearer of its AMVP predictors.</summary>

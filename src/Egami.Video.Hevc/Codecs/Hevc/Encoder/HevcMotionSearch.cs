@@ -230,7 +230,7 @@ internal sealed class HevcMotionSearch
     {
         HevcEncodeStats.Add(HevcEncodeStat.SubpelCosts);
         _reference.Block(_x, _y, mvx, mvy, _w, _h, _block, 64);
-        long satd = Satd(_source, (_y * _sourceStride) + _x, _sourceStride, _block, 0, 64, _w, _h);
+        long satd = Satd(_source, (_y * _sourceStride) + _x, _sourceStride, _block, 0, 64, _w, _h, Source8 is not null);
         return (satd << 8) + (_lambda * (long)MvBits(mvx, mvy));
     }
 
@@ -396,9 +396,33 @@ internal sealed class HevcMotionSearch
     }
 
     /// <summary>The SATD of two w by h blocks: 8x8 Hadamards where both sides are multiples of 8, else 4x4 ones.</summary>
-    internal static long Satd(ushort[] a, int atA, int strideA, ushort[] b, int atB, int strideB, int w, int h)
+    /// <param name="a">The first block's plane.</param>
+    /// <param name="atA">The first block's index.</param>
+    /// <param name="strideA">The first plane's row length.</param>
+    /// <param name="b">The second block's plane.</param>
+    /// <param name="atB">The second block's index.</param>
+    /// <param name="strideB">The second plane's row length.</param>
+    /// <param name="w">The width.</param>
+    /// <param name="h">The height.</param>
+    /// <param name="narrow">Whether the samples have 8 bits, so two 8x8 transforms fit one vector of 16-bit lanes.</param>
+    internal static long Satd(ushort[] a, int atA, int strideA, ushort[] b, int atB, int strideB, int w, int h, bool narrow = false)
     {
         int n = (w & 7) == 0 && (h & 7) == 0 ? 8 : 4;
+        if (n == 8 && narrow && Avx2.IsSupported && ((w >> 3) * (h >> 3) & 1) == 0)
+        {
+            // Pairs of 8x8 blocks in raster order: side by side when the width allows, else one above the other.
+            long total = 0;
+            int blocksX = w >> 3, count = blocksX * (h >> 3);
+            for (int i = 0; i < count; i += 2)
+            {
+                int x0 = (i % blocksX) << 3, y0 = (i / blocksX) << 3, x1 = ((i + 1) % blocksX) << 3, y1 = ((i + 1) / blocksX) << 3;
+                total += Hadamard8Pair(a, atA + (y0 * strideA) + x0, atA + (y1 * strideA) + x1, strideA, b, atB + (y0 * strideB) + x0,
+                    atB + (y1 * strideB) + x1, strideB);
+            }
+
+            return total;
+        }
+
         long sum = 0;
         for (int y = 0; y < h; y += n)
         {
@@ -409,5 +433,67 @@ internal sealed class HevcMotionSearch
         }
 
         return sum;
+    }
+
+    /// <summary>
+    /// The SATD of two 8x8 blocks of 8-bit samples, each rounded as <see cref="HevcSatd"/> rounds it, summed: block 0 in the low
+    /// 128 bits of each row vector and block 1 in the high, in 16-bit lanes (a coefficient's magnitude is at most 255 · 64).
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static long Hadamard8Pair(ushort[] a, int atA0, int atA1, int sa, ushort[] b, int atB0, int atB1, int sb)
+    {
+        ref ushort pa = ref MemoryMarshal.GetArrayDataReference(a);
+        ref ushort pb = ref MemoryMarshal.GetArrayDataReference(b);
+        Vector256<short> r0 = PairRow(ref pa, ref pb, atA0, atA1, atB0, atB1), r1 = PairRow(ref pa, ref pb, atA0 + sa, atA1 + sa, atB0 + sb, atB1 + sb);
+        Vector256<short> r2 = PairRow(ref pa, ref pb, atA0 + (2 * sa), atA1 + (2 * sa), atB0 + (2 * sb), atB1 + (2 * sb));
+        Vector256<short> r3 = PairRow(ref pa, ref pb, atA0 + (3 * sa), atA1 + (3 * sa), atB0 + (3 * sb), atB1 + (3 * sb));
+        Vector256<short> r4 = PairRow(ref pa, ref pb, atA0 + (4 * sa), atA1 + (4 * sa), atB0 + (4 * sb), atB1 + (4 * sb));
+        Vector256<short> r5 = PairRow(ref pa, ref pb, atA0 + (5 * sa), atA1 + (5 * sa), atB0 + (5 * sb), atB1 + (5 * sb));
+        Vector256<short> r6 = PairRow(ref pa, ref pb, atA0 + (6 * sa), atA1 + (6 * sa), atB0 + (6 * sb), atB1 + (6 * sb));
+        Vector256<short> r7 = PairRow(ref pa, ref pb, atA0 + (7 * sa), atA1 + (7 * sa), atB0 + (7 * sb), atB1 + (7 * sb));
+
+        // Vertical butterflies: rows i and i ^ 1, i ^ 2, i ^ 4.
+        (r0, r1) = (r0 + r1, r0 - r1);
+        (r2, r3) = (r2 + r3, r2 - r3);
+        (r4, r5) = (r4 + r5, r4 - r5);
+        (r6, r7) = (r6 + r7, r6 - r7);
+        (r0, r2) = (r0 + r2, r0 - r2);
+        (r1, r3) = (r1 + r3, r1 - r3);
+        (r4, r6) = (r4 + r6, r4 - r6);
+        (r5, r7) = (r5 + r7, r5 - r7);
+        (r0, r4) = (r0 + r4, r0 - r4);
+        (r1, r5) = (r1 + r5, r1 - r5);
+        (r2, r6) = (r2 + r6, r2 - r6);
+        (r3, r7) = (r3 + r7, r3 - r7);
+
+        Vector256<short> ones = Vector256<short>.One;
+        Vector256<int> sum = Avx2.MultiplyAddAdjacent(Avx2.Abs(Horizontal16(r0)).AsInt16(), ones) + Avx2.MultiplyAddAdjacent(Avx2.Abs(Horizontal16(r1)).AsInt16(), ones)
+            + Avx2.MultiplyAddAdjacent(Avx2.Abs(Horizontal16(r2)).AsInt16(), ones) + Avx2.MultiplyAddAdjacent(Avx2.Abs(Horizontal16(r3)).AsInt16(), ones)
+            + Avx2.MultiplyAddAdjacent(Avx2.Abs(Horizontal16(r4)).AsInt16(), ones) + Avx2.MultiplyAddAdjacent(Avx2.Abs(Horizontal16(r5)).AsInt16(), ones)
+            + Avx2.MultiplyAddAdjacent(Avx2.Abs(Horizontal16(r6)).AsInt16(), ones) + Avx2.MultiplyAddAdjacent(Avx2.Abs(Horizontal16(r7)).AsInt16(), ones);
+        long s0 = Vector128.Sum(sum.GetLower()), s1 = Vector128.Sum(sum.GetUpper());
+        return ((s0 + 2) >> 2) + ((s1 + 2) >> 2);
+    }
+
+    /// <summary>A row of two 8x8 blocks' differences: block 0's in the low half, block 1's in the high.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> PairRow(ref ushort pa, ref ushort pb, int a0, int a1, int b0, int b1) =>
+        (Vector256.Create(Vector128.LoadUnsafe(ref pa, (nuint)a0), Vector128.LoadUnsafe(ref pa, (nuint)a1))
+        - Vector256.Create(Vector128.LoadUnsafe(ref pb, (nuint)b0), Vector128.LoadUnsafe(ref pb, (nuint)b1))).AsInt16();
+
+    private static readonly Vector256<byte> SwapPairs = Vector256.Create((byte)2, 3, 0, 1, 6, 7, 4, 5, 10, 11, 8, 9, 14, 15, 12, 13, 2, 3, 0, 1, 6, 7, 4, 5, 10, 11, 8, 9, 14, 15, 12, 13);
+    private static readonly Vector256<byte> SwapQuads = Vector256.Create((byte)4, 5, 6, 7, 0, 1, 2, 3, 12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3, 12, 13, 14, 15, 8, 9, 10, 11);
+
+    /// <summary>The 8-point Walsh-Hadamard transform of each 128-bit half's eight 16-bit lanes, in some order.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Horizontal16(Vector256<short> v)
+    {
+        // Lanes i and i ^ 1, i ^ 2, i ^ 4 of each half: sums where the bit is clear, differences where it is set.
+        Vector256<short> b = Avx2.Shuffle(v.AsByte(), SwapPairs).AsInt16();
+        v = Avx2.Blend(v + b, b - v, 0b1010_1010);
+        b = Avx2.Shuffle(v.AsByte(), SwapQuads).AsInt16();
+        v = Avx2.Blend(v + b, b - v, 0b1100_1100);
+        b = Avx2.Shuffle(v.AsInt32(), 0b01_00_11_10).AsInt16();
+        return Avx2.Blend(v + b, b - v, 0b1111_0000);
     }
 }
