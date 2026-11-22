@@ -161,9 +161,10 @@ parameter sets in the track's hvcC record, which MP4 and MOV write as an hvc1 sa
 picture's CTB rows are wavefront substreams coded in parallel, and the stream is the same on any number of threads. Every
 picture decodes in Egami's decoder, FFmpeg's and the reference decoder HM to the encoder's own reconstruction, sample for
 sample.</p>
-<p>The encoder is in progress: keyframes are IDR pictures, coded with the HEIC encoder's search, and the other pictures are P
-pictures predicted from earlier ones, with motion search, merge and skip modes and intra blocks where they pay. B pictures
-follow.</p>
+<p>The encoder is in progress: keyframes are IDR pictures, coded with the HEIC encoder's search; P pictures predict from earlier
+ones, with motion search, merge and skip modes and intra blocks where they pay; and B pictures between them (three by default
+from effort 1, <code>BFrames</code> sets how many, <code>LatencyMode.Quality</code> only) predict from both sides, from effort 3 in a pyramid whose
+middle picture the others predict from. Rate control tuning and the release gates follow.</p>
 <pre><code class="lang-csharp">// HEVC in MP4 (an hvc1 track): Main for 8-bit frames, Main 10 for 16-bit planes, the level picked from the frame size and rate.
 VideoWriterOptions options = new() { Codec = HevcCodec.Instance, FrameRate = new Rational(30, 1), Quality = 60 };
 using (VideoWriter writer = VideoWriter.Create(&quot;duck.mp4&quot;, options))
