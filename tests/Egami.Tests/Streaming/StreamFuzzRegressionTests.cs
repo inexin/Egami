@@ -7,7 +7,8 @@ namespace Egami.Tests.Streaming;
 /// Inputs the stream fuzz target found (tests/images/fuzz/stream): with <see cref="RecoveryMode.Strict"/>, decoding while the bytes
 /// arrive must give the whole decode's pixels, or fail as it does. A BMP whose header claims a gigabyte of pixels failed the
 /// memory limit only incrementally; a GIF application extension with an empty identifier was read before its sub-blocks had
-/// arrived; a TGA whose extension area points into its pixels gave a different alpha when the file could not seek.
+/// arrived; a TGA whose extension area points into its pixels gave a different alpha when the file could not seek. Run-length
+/// TGA files whose pixels reach into the footer, or whose extension area overruns the footer, were damage to one decode only.
 /// </summary>
 public class StreamFuzzRegressionTests
 {
