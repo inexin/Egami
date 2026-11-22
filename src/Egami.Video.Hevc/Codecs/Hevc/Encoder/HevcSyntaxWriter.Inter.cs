@@ -50,7 +50,8 @@ internal sealed partial class HevcSyntaxWriter
         InterPartMode(cu);
         for (int i = 0; i < cu.UnitCount; i++)
         {
-            PredictionUnit(cu.Units[i]);
+            (_, _, int w, int h) = HevcCodingUnit.UnitRect(cu.X, cu.Y, cu.Log2, cu.PartMode, i);
+            PredictionUnit(cu.Units[i], cu.Depth, w + h == 12);
         }
 
         if (!(cu.PartMode == HevcCodingUnit.Part2Nx2N && cu.Units[0].Merge))
@@ -109,8 +110,12 @@ internal sealed partial class HevcSyntaxWriter
         }
     }
 
-    /// <summary>prediction_unit (7.3.8.6) of a P slice: merge_flag and merge_idx, or ref_idx_l0, mvd_coding and mvp_l0_flag.</summary>
-    private void PredictionUnit(in HevcPredictionUnit pu)
+    /// <summary>
+    /// prediction_unit (7.3.8.6): merge_flag and merge_idx, or in a B slice inter_pred_idc (its first bin's context the unit's
+    /// coding quadtree depth; none for 8x4 and 4x8 units, which predict from one list), then for each list used ref_idx_lX,
+    /// mvd_coding and mvp_lX_flag.
+    /// </summary>
+    private void PredictionUnit(in HevcPredictionUnit pu, int depth, bool small)
     {
         Bins.Encode(HevcContexts.MergeFlag, pu.Merge ? 1 : 0);
         if (pu.Merge)
@@ -119,14 +124,42 @@ internal sealed partial class HevcSyntaxWriter
             return;
         }
 
-        Debug.Assert(_slice.SliceType == HevcSliceHeader.P, "B slices come with PR C.");
-        if (_slice.NumRefIdxL0 > 1)
+        if (_slice.SliceType == HevcSliceHeader.B)
         {
-            RefIdx(pu.RefIdx0, _slice.NumRefIdxL0 - 1);
+            Debug.Assert(!small || pu.Flags != 3, "8x4 and 4x8 units are not bi-predicted.");
+            if (!small)
+            {
+                Bins.Encode(HevcContexts.InterPredIdc + depth, pu.Flags == 3 ? 1 : 0);
+            }
+
+            if (pu.Flags != 3)
+            {
+                Bins.Encode(HevcContexts.InterPredIdc + 4, pu.Flags == 2 ? 1 : 0);
+            }
         }
 
-        MvdCoding(pu.Mvd0);
-        Bins.Encode(HevcContexts.MvpFlag, pu.MvpFlag0);
+        if ((pu.Flags & 1) != 0)
+        {
+            if (_slice.NumRefIdxL0 > 1)
+            {
+                RefIdx(pu.RefIdx0, _slice.NumRefIdxL0 - 1);
+            }
+
+            MvdCoding(pu.Mvd0);
+            Bins.Encode(HevcContexts.MvpFlag, pu.MvpFlag0);
+        }
+
+        if ((pu.Flags & 2) != 0)
+        {
+            if (_slice.NumRefIdxL1 > 1)
+            {
+                RefIdx(pu.RefIdx1, _slice.NumRefIdxL1 - 1);
+            }
+
+            Debug.Assert(!_slice.MvdL1Zero, "mvd_l1_zero_flag is not set.");
+            MvdCoding(pu.Mvd1);
+            Bins.Encode(HevcContexts.MvpFlag, pu.MvpFlag1);
+        }
     }
 
     /// <summary>merge_idx: truncated rice with cMax MaxNumMergeCand - 1, the first bin context-coded, the rest bypass.</summary>

@@ -34,6 +34,11 @@ public class EncoderInteropFiles
         yield return ("crop-18x10", 18, 10, 4, 8, Options(18, 10, 7, new HevcEncoderOptions()));
         yield return ("crop-2x2", 2, 2, 3, 8, Options(2, 2, 4, new HevcEncoderOptions()));
         yield return ("rows", 200, 300, 3, 8, Options(200, 300, 4, new HevcEncoderOptions()));
+        yield return ("bframes0", 96, 64, 6, 8, Options(96, 64, 4, new HevcEncoderOptions { BFrames = 0 }));
+        yield return ("bframes2", 96, 64, 10, 8, Options(96, 64, 4, new HevcEncoderOptions { BFrames = 2 }));
+        yield return ("bframes7", 96, 64, 12, 8, Options(96, 64, 4, new HevcEncoderOptions { BFrames = 7 }));
+        yield return ("bframes-keyint", 96, 64, 20, 8, Options(96, 64, 4, new HevcEncoderOptions()) with { KeyframeInterval = 9 });
+        yield return ("bframes-main10", 96, 64, 10, 10, Options(96, 64, 5, new HevcEncoderOptions()));
         yield return ("wide", 1280, 48, 3, 8, Options(1280, 48, 1, new HevcEncoderOptions()));
         if (Environment.GetEnvironmentVariable("EGAMI_INTEROP_CLIP") is not null)
         {

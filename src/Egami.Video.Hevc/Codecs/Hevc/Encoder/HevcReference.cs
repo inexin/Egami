@@ -47,6 +47,9 @@ internal sealed class HevcReference
         Filter(Planes[1], Planes[3], Stride, rows, max);
     }
 
+    /// <summary>Gets or sets whether the picture is a P or I picture, which P pictures predict from (a B picture is not).</summary>
+    internal bool Anchor { get; init; }
+
     /// <summary>Gets the decoded picture buffer entry.</summary>
     internal HevcDpbPicture Picture { get; }
 

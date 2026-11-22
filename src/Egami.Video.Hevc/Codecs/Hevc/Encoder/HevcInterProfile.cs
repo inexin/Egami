@@ -4,19 +4,34 @@ namespace Egami.Video.Codecs.Hevc.Encoder;
 
 /// <summary>
 /// How hard the inter search works at an effort from 0 to 10 (HEVC encoder design, coding tools table), beside the HEIC
-/// encoder's intra profile: the coding unit sizes of P pictures, references, merge candidates, partitions, motion search, the
+/// encoder's intra profile: the coding unit sizes of P and B pictures, references, merge candidates, partitions, motion search, the
 /// inter transform tree, how many candidates get a full RD coding, and the early terminations.
 /// </summary>
 internal sealed record HevcInterProfile
 {
-    /// <summary>Gets the smallest coding unit tried in P pictures, log2.</summary>
+    /// <summary>Gets the smallest coding unit tried in P and B pictures, log2.</summary>
     internal int MinCuLog2 { get; init; } = 3;
 
-    /// <summary>Gets the largest coding unit tried in P pictures, log2.</summary>
+    /// <summary>Gets the largest coding unit tried in P and B pictures, log2.</summary>
     internal int MaxCuLog2 { get; init; } = 6;
 
     /// <summary>Gets how many earlier pictures a P picture predicts from (num_ref_idx_l0_active).</summary>
     internal int References { get; init; } = 3;
+
+    /// <summary>Gets how many earlier pictures list 0 of a B picture holds (list 1 holds one).</summary>
+    internal int BReferences { get; init; } = 1;
+
+    /// <summary>Gets whether a bi-predicted 2Nx2N unit of a B picture refines its two vectors together.</summary>
+    internal bool BiRefine { get; init; } = true;
+
+    /// <summary>Gets whether a B picture's 2Nx2N runner-up between one list and both is coded in full when within 17/16 of the best.</summary>
+    internal bool BAlternative { get; init; } = true;
+
+    /// <summary>Gets whether a B picture's motion search also starts from the last P picture's vectors, scaled.</summary>
+    internal bool BSeeds { get; init; } = true;
+
+    /// <summary>Gets whether the B pictures no picture predicts from code their kept residuals without RDOQ.</summary>
+    internal bool PlainB { get; init; }
 
     /// <summary>Gets MaxNumMergeCand.</summary>
     internal int MergeCandidates { get; init; } = 3;
@@ -75,7 +90,7 @@ internal sealed record HevcInterProfile
     /// </summary>
     internal bool RecodeAfterSplit { get; init; } = true;
 
-    /// <summary>Gets whether intra in P pictures searches as the I pictures do (else one 2Nx2N mode, its transform tree unsearched).</summary>
+    /// <summary>Gets whether intra in P and B pictures searches as the I pictures do (else one 2Nx2N mode, its transform tree unsearched).</summary>
     internal bool FullIntra { get; init; }
 
     /// <summary>Gets whether the inter transform tree's splits are searched (else a transform unit is the coding unit, split only where it must).</summary>
@@ -112,11 +127,11 @@ internal sealed record HevcInterProfile
         2 => new() { References = 2, MergeCandidates = 2, SearchRange = 32, SecondCandidateRatio = 0 },
         3 => new() { References = 2, MergeCandidates = 3, SearchRange = 48, TransformSplit = true },
         4 => new() { TransformSplit = true },
-        5 => new() { References = 3, MergeCandidates = 4, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false },
-        6 => new() { References = 4, MergeCandidates = 5, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false },
-        7 => new() { References = 4, MergeCandidates = 5, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false, SecondCandidateRatio = 1.5 },
-        8 => new() { HalvesStartsOnly = false, References = 4, MergeCandidates = 5, TransformDepth = 3, TransformSplit = true, FullIntra = true, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false, SecondCandidateRatio = 2, IntraGate = false, HalvesGate = false },
-        9 => new() { HalvesStartsOnly = false, References = 4, MergeCandidates = 5, TransformDepth = 3, TransformSplit = true, FullIntra = true, SearchRange = 96, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false, SecondCandidateRatio = 4, IntraGate = false, HalvesGate = false, EarlySkip = false },
-        _ => new() { HalvesStartsOnly = false, References = 4, MergeCandidates = 5, TransformDepth = 3, TransformSplit = true, FullIntra = true, SearchRange = 128, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false, SecondCandidateRatio = 100, IntraGate = false, HalvesGate = false, EarlySkip = false },
+        5 => new() { BReferences = 2, References = 3, MergeCandidates = 4, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false },
+        6 => new() { BReferences = 2, References = 4, MergeCandidates = 5, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false },
+        7 => new() { BReferences = 2, References = 4, MergeCandidates = 5, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false, SecondCandidateRatio = 1.5 },
+        8 => new() { BReferences = 2, HalvesStartsOnly = false, References = 4, MergeCandidates = 5, TransformDepth = 3, TransformSplit = true, FullIntra = true, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false, SecondCandidateRatio = 2, IntraGate = false, HalvesGate = false },
+        9 => new() { BReferences = 2, HalvesStartsOnly = false, References = 4, MergeCandidates = 5, TransformDepth = 3, TransformSplit = true, FullIntra = true, SearchRange = 96, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false, SecondCandidateRatio = 4, IntraGate = false, HalvesGate = false, EarlySkip = false },
+        _ => new() { BReferences = 2, HalvesStartsOnly = false, References = 4, MergeCandidates = 5, TransformDepth = 3, TransformSplit = true, FullIntra = true, SearchRange = 128, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false, SecondCandidateRatio = 100, IntraGate = false, HalvesGate = false, EarlySkip = false },
     };
 }
