@@ -31,6 +31,46 @@ public sealed record class TraceOptions
     /// <summary>Gets the defaults with <see cref="IgnoreWhite"/> on: the ink alone, for signatures, line art and logos to place over other content.</summary>
     public static TraceOptions BlackAndWhite { get; } = new() { IgnoreWhite = true };
 
+    /// <summary>
+    /// Gets <see cref="TraceMode.Logo"/> with up to 8 colors, stacked, lines and arcs snapped: flat-color logos, icons and
+    /// badges with antialiased edges. White areas are traced; set <see cref="IgnoreWhite"/> to leave them out.
+    /// </summary>
+    public static TraceOptions Logo { get; } = new() { Mode = TraceMode.Logo };
+
+    /// <summary>
+    /// Gets <see cref="TraceMode.Color"/> reduced to 6 flat colors, with light smoothing and regions under 16 pixels merged:
+    /// posters, illustrations and photos turned into a few bold color areas.
+    /// </summary>
+    public static TraceOptions Poster { get; } = new() { Mode = TraceMode.Color, Colors = 6, Noise = 16, Smoothing = 0.3f };
+
+    /// <summary>
+    /// Gets <see cref="TraceMode.Color"/> with 16 colors, strong smoothing, regions under 8 pixels merged, looser curves and
+    /// no line or arc snapping: photos and painted art as stacked color areas. Photos give many shapes; fewer
+    /// <see cref="Colors"/> or a larger <see cref="Noise"/> give fewer.
+    /// </summary>
+    public static TraceOptions Photo { get; } = new()
+    {
+        Mode = TraceMode.Color,
+        Colors = 16,
+        Noise = 8,
+        Smoothing = 0.6f,
+        PathFidelity = 0.3f,
+        SnapToLines = false,
+        SnapToArcs = false,
+    };
+
+    /// <summary>
+    /// Gets <see cref="TraceMode.Centerline"/> with <see cref="IgnoreWhite"/> on: clean line art, diagrams and handwriting as
+    /// strokes along the middle of each line, each with the width its ink covers.
+    /// </summary>
+    public static TraceOptions LineArt { get; } = new() { Mode = TraceMode.Centerline, IgnoreWhite = true };
+
+    /// <summary>
+    /// Gets <see cref="TraceMode.Centerline"/> with <see cref="IgnoreWhite"/> on, specks under 8 pixels dropped and looser curves:
+    /// pencil sketches and grainy scans, whose paper texture would otherwise trace as dots and short strokes.
+    /// </summary>
+    public static TraceOptions Sketch { get; } = new() { Mode = TraceMode.Centerline, IgnoreWhite = true, Noise = 8, PathFidelity = 0.3f };
+
     /// <summary>Gets how pixels are turned into shapes. Defaults to <see cref="TraceMode.BlackAndWhite"/>.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The mode is not defined.</exception>
     public TraceMode Mode

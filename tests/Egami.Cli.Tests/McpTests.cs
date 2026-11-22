@@ -44,7 +44,8 @@ public sealed class McpTests : IAsyncDisposable
         string[] expected =
         [
             "info", "convert", "resize", "thumbnail", "crop", "rotate", "flip", "auto_orient", "run", "compare", "stats", "frames_split",
-            "frames_join", "layers", "metadata_show", "metadata_strip", "metadata_copy", "color", "text", "overlay", "montage", "formats",
+            "frames_join", "layers", "metadata_show", "metadata_strip", "metadata_copy", "color", "text", "overlay", "montage", "trace",
+            "formats",
         ];
         Assert.Equal(expected, tools.Select(t => t.Name));
 
@@ -367,6 +368,7 @@ public sealed class McpTests : IAsyncDisposable
             ["text"] = new() { ["inputs"] = new[] { jpeg }, ["text"] = "egami", ["output"] = "t/text.png" },
             ["overlay"] = new() { ["inputs"] = new[] { jpeg }, ["image"] = png, ["output"] = "t/overlay.png" },
             ["montage"] = new() { ["inputs"] = new[] { jpeg, png }, ["output"] = "t/montage.png" },
+            ["trace"] = new() { ["inputs"] = new[] { png }, ["preset"] = "poster", ["output"] = "t/trace.svg", ["preview_png"] = "t/trace.png" },
             ["formats"] = new() { ["format"] = "png" },
         };
         Assert.Equal(ToolCatalog.Tools.Select(t => t.Name).Order(), calls.Keys.Order());

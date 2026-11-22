@@ -2,7 +2,8 @@
 
 Bitmap tracing turns a raster into vector shapes: a scanned signature, line art or a logo comes back as `Path` objects
 with a color each, ready to draw at any size, record as a `Picture`, or save as SVG. It is part of Egami.Drawing, in the
-namespace `Egami.Drawing.Tracing`; Egami.Svg adds the SVG output.
+namespace `Egami.Drawing.Tracing`; Egami.Svg adds the SVG output, and [`egami trace`](#from-the-command-line) does it all
+from a shell.
 
 Four modes trace filled shapes: black and white, grayscale, color and logo. Centerline traces line art as stroked lines. A
 pixel-art mode comes in a later 1.x version, as a new `TraceMode` value; traced output may also improve between minor
@@ -51,7 +52,26 @@ traced image's `Width` and `Height`.
 | `Noise` | 2 | The smallest region kept, in pixels. Smaller regions merge into the regions around them, smallest first (in grayscale and color, into the neighbour they share the most edge with), so a speck inside a small hole goes before the hole. 0 or 1 keeps everything. |
 | `IgnoreWhite` | `false` | Leaves out white: in black and white and centerline the white shape that otherwise comes first, under the ink, the size of the image; in grayscale, color and logo the layer of each color whose red, green and blue are all at least 240, whose areas stay empty (in logo, also the transparency the art encloses). |
 
-`TraceOptions.Default` is the defaults. `TraceOptions.BlackAndWhite` is the defaults with `IgnoreWhite`: the ink alone.
+## Presets
+
+Each preset is a `TraceOptions` to start from, for one kind of image; change any setting with `with`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tracing.cs#presets)]
+
+| Preset | For | Settings |
+| --- | --- | --- |
+| `Default` | Scans to keep as a page | The defaults: black and white, with the paper as a white shape under the ink. |
+| `BlackAndWhite` | Signatures, stamps, black-and-white logos | The defaults with `IgnoreWhite`: the ink alone. |
+| `Logo` | Flat-color logos, icons and badges | `Logo` mode, up to 8 colors, stacked; white is traced. |
+| `Poster` | Posters and illustrations, or photos as a few bold areas | `Color` mode, 6 colors, `Smoothing` 0.3, `Noise` 16. |
+| `Photo` | Photos and painted art | `Color` mode, 16 colors, `Smoothing` 0.6, `Noise` 8, `PathFidelity` 0.3, no line or arc snapping. |
+| `LineArt` | Clean line art, diagrams and handwriting | `Centerline` mode with `IgnoreWhite`. |
+| `Sketch` | Pencil sketches and grainy scans | `Centerline` mode with `IgnoreWhite`, `Noise` 8 and `PathFidelity` 0.3. |
+
+The color presets were set on test photos: over five of them, a `Photo` trace drawn back differs from the photo by 2.9 %
+of full scale on average and a `Poster` trace by 3.5 %, against 2.75 % for color mode's defaults, with a fifth and a twelfth
+of its shapes (647 and 292 against 3444). A photo gives hundreds of shapes or more; fewer `Colors` or a larger `Noise` give fewer. `Sketch` drops the
+grain of a scanned pencil drawing that `LineArt` would trace as dots and short strokes.
 
 ## Grayscale and color
 
@@ -129,6 +149,18 @@ Egami.Svg writes a trace through `SvgCanvas` (`SvgTraceExtensions`): `ToSvg()` r
 element per shape, back to front, in an SVG the size of the traced image. `SvgWriteOptions` sets the number precision.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Tracing.cs#svg)]
+
+## From the command line
+
+[`egami trace`](../cli/commands.md#trace) traces images and writes SVG, from a preset (`--preset logo`, `poster`,
+`line-art`, ...) with any setting changed by its option (`--colors`, `--palette`, `--layering`, `--corners`,
+`--path-fidelity`, `--noise`, `--ignore-white`, `--stroke-width`, ...). `--preview-png` also writes the trace drawn as a PNG,
+to compare with the image.
+
+```sh
+egami trace logo.png --preset logo --colors 4 -o logo.svg --preview-png logo-trace.png
+egami trace "scans/*.png" --preset line-art --stroke-width 2 -o "svg/{name}.svg"
+```
 
 ## How tracing works
 

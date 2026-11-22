@@ -69,3 +69,8 @@ static Egami.Drawing.Tracing.TraceOptions.operator ==(Egami.Drawing.Tracing.Trac
 Egami.Drawing.Tracing.TraceMode.Centerline = 4 -> Egami.Drawing.Tracing.TraceMode
 Egami.Drawing.Tracing.TraceOptions.StrokeWidth.get -> float?
 Egami.Drawing.Tracing.TraceOptions.StrokeWidth.init -> void
+static Egami.Drawing.Tracing.TraceOptions.LineArt.get -> Egami.Drawing.Tracing.TraceOptions!
+static Egami.Drawing.Tracing.TraceOptions.Logo.get -> Egami.Drawing.Tracing.TraceOptions!
+static Egami.Drawing.Tracing.TraceOptions.Photo.get -> Egami.Drawing.Tracing.TraceOptions!
+static Egami.Drawing.Tracing.TraceOptions.Poster.get -> Egami.Drawing.Tracing.TraceOptions!
+static Egami.Drawing.Tracing.TraceOptions.Sketch.get -> Egami.Drawing.Tracing.TraceOptions!
