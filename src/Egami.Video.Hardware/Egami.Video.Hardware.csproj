@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Egami.Video.Hardware</RootNamespace>
+    <PackageId>Egami.Video.Hardware</PackageId>
+    <!-- Its own version, a preview until the hardware codecs are complete (GPU acceleration design; Lars, 2026-11-21). -->
+    <Version>0.1.0-preview.1</Version>
+    <Description>Hardware video decoding and encoding for Egami.Video through Vulkan Video: finds the GPU's H.264 and HEVC decoders and encoders through the Vulkan loader that ships with the graphics driver. Ships no native code. Egami's software codecs stay the default; hardware is opt-in.</Description>
+    <PackageTags>$(EgamiPackageTags);video;hardware;gpu;vulkan;h264;hevc</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+    <!-- The Vulkan bindings: structs passed by pointer and function pointers loaded from the driver. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!-- Build-time analyzer only; ships nothing. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Egami.Video\Egami.Video.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Video.Hardware.Tests" />
+  </ItemGroup>
+
+</Project>

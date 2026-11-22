@@ -1,0 +1,50 @@
+#nullable enable
+Egami.Video.Hardware.HardwareDeviceKind
+Egami.Video.Hardware.HardwareDeviceKind.Cpu = 4 -> Egami.Video.Hardware.HardwareDeviceKind
+Egami.Video.Hardware.HardwareDeviceKind.Discrete = 2 -> Egami.Video.Hardware.HardwareDeviceKind
+Egami.Video.Hardware.HardwareDeviceKind.Integrated = 1 -> Egami.Video.Hardware.HardwareDeviceKind
+Egami.Video.Hardware.HardwareDeviceKind.Other = 0 -> Egami.Video.Hardware.HardwareDeviceKind
+Egami.Video.Hardware.HardwareDeviceKind.Virtual = 3 -> Egami.Video.Hardware.HardwareDeviceKind
+Egami.Video.Hardware.HardwareDirection
+Egami.Video.Hardware.HardwareDirection.Decode = 0 -> Egami.Video.Hardware.HardwareDirection
+Egami.Video.Hardware.HardwareDirection.Encode = 1 -> Egami.Video.Hardware.HardwareDirection
+Egami.Video.Hardware.HardwareRateControl
+Egami.Video.Hardware.HardwareRateControl.ConstantBitrate = 2 -> Egami.Video.Hardware.HardwareRateControl
+Egami.Video.Hardware.HardwareRateControl.ConstantQp = 1 -> Egami.Video.Hardware.HardwareRateControl
+Egami.Video.Hardware.HardwareRateControl.None = 0 -> Egami.Video.Hardware.HardwareRateControl
+Egami.Video.Hardware.HardwareRateControl.VariableBitrate = 4 -> Egami.Video.Hardware.HardwareRateControl
+Egami.Video.Hardware.HardwareVideoCodecs
+Egami.Video.Hardware.HardwareVideoDevice
+Egami.Video.Hardware.HardwareVideoDevice.Api.get -> string!
+Egami.Video.Hardware.HardwareVideoDevice.ApiVersion.get -> System.Version!
+Egami.Video.Hardware.HardwareVideoDevice.DeviceId.get -> int
+Egami.Video.Hardware.HardwareVideoDevice.DriverInfo.get -> string!
+Egami.Video.Hardware.HardwareVideoDevice.DriverName.get -> string!
+Egami.Video.Hardware.HardwareVideoDevice.Kind.get -> Egami.Video.Hardware.HardwareDeviceKind
+Egami.Video.Hardware.HardwareVideoDevice.Name.get -> string!
+Egami.Video.Hardware.HardwareVideoDevice.Profiles.get -> System.Collections.Generic.IReadOnlyList<Egami.Video.Hardware.HardwareVideoProfile!>!
+Egami.Video.Hardware.HardwareVideoDevice.VendorId.get -> int
+Egami.Video.Hardware.HardwareVideoException
+Egami.Video.Hardware.HardwareVideoException.HardwareVideoException(string! message, int resultCode = 0, System.Exception? innerException = null) -> void
+Egami.Video.Hardware.HardwareVideoException.ResultCode.get -> int
+Egami.Video.Hardware.HardwareVideoProfile
+Egami.Video.Hardware.HardwareVideoProfile.BitDepth.get -> int
+Egami.Video.Hardware.HardwareVideoProfile.CodecId.get -> string!
+Egami.Video.Hardware.HardwareVideoProfile.Direction.get -> Egami.Video.Hardware.HardwareDirection
+Egami.Video.Hardware.HardwareVideoProfile.MaxBackwardReferences.get -> int
+Egami.Video.Hardware.HardwareVideoProfile.MaxBitrate.get -> long
+Egami.Video.Hardware.HardwareVideoProfile.MaxForwardReferences.get -> int
+Egami.Video.Hardware.HardwareVideoProfile.MaxHeight.get -> int
+Egami.Video.Hardware.HardwareVideoProfile.MaxLevel.get -> string!
+Egami.Video.Hardware.HardwareVideoProfile.MaxReferences.get -> int
+Egami.Video.Hardware.HardwareVideoProfile.MaxWidth.get -> int
+Egami.Video.Hardware.HardwareVideoProfile.MinHeight.get -> int
+Egami.Video.Hardware.HardwareVideoProfile.MinWidth.get -> int
+Egami.Video.Hardware.HardwareVideoProfile.Profile.get -> string!
+Egami.Video.Hardware.HardwareVideoProfile.QualityLevels.get -> int
+Egami.Video.Hardware.HardwareVideoProfile.RateControl.get -> Egami.Video.Hardware.HardwareRateControl
+override Egami.Video.Hardware.HardwareVideoDevice.ToString() -> string!
+override Egami.Video.Hardware.HardwareVideoProfile.ToString() -> string!
+static Egami.Video.Hardware.HardwareVideoCodecs.GetDevices() -> System.Collections.Generic.IReadOnlyList<Egami.Video.Hardware.HardwareVideoDevice!>!
+static Egami.Video.Hardware.HardwareVideoCodecs.IsAvailable(string! codecId, Egami.Video.Hardware.HardwareDirection direction) -> bool
+static Egami.Video.Hardware.HardwareVideoCodecs.UnavailableReason.get -> string?

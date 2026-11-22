@@ -206,6 +206,8 @@
       href: guides/h264.md
     - name: HEVC
       href: guides/hevc.md
+    - name: Hardware video
+      href: guides/video-hardware.md
     - name: Audio
       href: guides/audio.md
     - name: Audio filters
