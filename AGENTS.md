@@ -16,6 +16,14 @@ adds what an agent tends to get wrong.
   closely from a listed library, add its notice to `THIRD-PARTY-NOTICES.md` in the same change.
 - **Managed .NET 10 only.** No P/Invoke, no native binaries, no wrappers around C or C++ libraries. .NET's own APIs (for example
   `ZLibStream`) are fine. Don't add a package reference that docs/references.md doesn't list as approved; ask first.
+- **The one exception: Egami.Video.Hardware.** Only the package in `src/Egami.Video.Hardware` may call native code, and only the
+  Vulkan loader that GPU drivers install (`vulkan-1.dll` on Windows, `libvulkan.so.1` on Linux): it takes the one export
+  `vkGetInstanceProcAddr` through `NativeLibrary` and reaches every other Vulkan command through the function pointers that
+  returns. It ships no native binary and references no package outside Egami's own. Its bindings are Egami's own, generated
+  by `tools/video/make-vulkan-bindings.py` from the Khronos registry (Vulkan-Headers, Apache-2.0 or MIT) and checked against
+  the C headers; regenerate them, never edit them by hand. Never read ffmpeg, GStreamer, Mesa or GPU vendors' sample code for
+  it. Every other package, Egami.Video included, stays pure managed, and none may reference Egami.Video.Hardware except
+  through an opt-in an app makes. Tests that need a GPU carry `[Trait("Category", "Gpu")]` and skip where there is none.
 - **Branch and pull request.** Never commit to `main`, push to it or force-push it, and don't merge your own pull request. The
   maintainer reviews and merges.
 - **Never publish.** Don't push to NuGet, push tags, create releases or change GitHub settings or Actions unless the

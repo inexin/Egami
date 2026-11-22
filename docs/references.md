@@ -159,6 +159,16 @@ convention 2.3, with its Rice, PLIO and subtractive dither descriptions) and IRA
 references. CFITSIO and astropy (BSD-3) are not read; ImageMagick runs only as a black-box tool to compare values, orientation
 and speed.
 
+For Egami.Video.Hardware, the Vulkan 1.4 specification (Khronos, with its video coding, decode and encode chapters and the
+H.264 and H.265 codec extensions), ITU-T H.264 and H.265 are the references, and the Khronos Vulkan registry is the source of
+the bindings: `registry/vk.xml` and `registry/video.xml` of [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers)
+(Apache-2.0 OR MIT, used under MIT; notice in THIRD-PARTY-NOTICES.md), from which `tools/video/make-vulkan-bindings.py`
+generates the structs, enums and function pointer tables, and whose C headers check the struct layouts. The package calls one
+system library, under the package-scoped exception to the no-native-code rule (maintainer's decisions of 2026-11-14 and
+2026-11-21): the Vulkan loader the GPU driver installs, `vulkan-1.dll` on Windows and `libvulkan.so.1` on Linux, from which it
+takes only `vkGetInstanceProcAddr`. No native binary is shipped and no binding package is used. FFmpeg, GStreamer, Mesa and
+the GPU vendors' video samples (NVIDIA's Vulkan video samples among them) are never read.
+
 For HEIC, libheif and libde265 (LGPL-3), FFmpeg's HEVC decoder and openHEVC (LGPL-2.1) and x265 (GPL-2) are never read; they
 only run as black-box tools in Docker to make test files and references. Nokia's HEIF code (non-commercial licence) is never
 read.
