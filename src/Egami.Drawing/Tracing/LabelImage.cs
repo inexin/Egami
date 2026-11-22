@@ -79,11 +79,120 @@ internal sealed class LabelImage
             }
         }
 
-        Rgba8[] palette = options.Palette is { } fixedColors ? [.. fixedColors] : BuildPalette(rgb, width, height, options.Colors, gray, cancellationToken);
-        LabelImage image = new(width, height, palette);
+        // The labels are not set yet: the palette search marks the pixels it counts in them.
+        LabelImage image = new(width, height, []);
+        image.Palette = options.Palette is { } fixedColors ? [.. fixedColors] : BuildPalette(rgb, width, height, options.Colors, gray, cancellationToken, scratch: image.Labels);
         rgb.CopyTo(image.Rgb, 0);
         image.Assign(gray, cancellationToken);
+        if (options.Palette is null)
+        {
+            image.AddSoftBands(options.Colors, cancellationToken);
+        }
+
         return image;
+    }
+
+    /// <summary>
+    /// Gives the middle of each soft edge a color of its own: where two palette colors meet through a blend three or more pixels
+    /// wide (a blurred or JPEG-compressed edge, unlike an antialiased one, which is one pixel wide), the pixels halfway along the
+    /// blend take a new palette entry, the mean of their colors, one per pair of colors, so the traced edge fades in a step as
+    /// the picture does. The bands with the most pixels come first, while the palette has fewer than <paramref name="colors"/>.
+    /// </summary>
+    /// <param name="colors">The most colors the palette may reach.</param>
+    /// <param name="cancellationToken">Cancels the work.</param>
+    internal void AddSoftBands(int colors, CancellationToken cancellationToken)
+    {
+        int w = Width, h = Height;
+        // The band pixels, each as its pair of colors (high half) and its index (low half): few, so they are listed rather than
+        // marked in a map the size of the picture.
+        List<long> found = [];
+        ParallelOptions parallel = new() { CancellationToken = cancellationToken };
+        Parallel.For(2, Math.Max(2, h - 2), parallel, () => new List<long>(), (y, _, list) =>
+        {
+            for (int x = 2; x < w - 2; x++)
+            {
+                int i = (y * w) + x;
+                int key = 0;
+                bool sharp = false;
+                for (int axis = 0; axis < 2 && !sharp; axis++)
+                {
+                    int step = axis == 0 ? 1 : w;
+                    int a = Labels[i - (2 * step)], b = Labels[i + (2 * step)];
+                    if (a == b)
+                    {
+                        continue;
+                    }
+
+                    if (Along(i - step, a, b) is double before && Along(i, a, b) is double middle && Along(i + step, a, b) is double after
+                        && middle is >= 0.3 and <= 0.7 && before >= 0.08 && after <= 0.92 && before <= middle && middle <= after)
+                    {
+                        key = (Math.Min(a, b) << 8) | Math.Max(a, b);
+                    }
+                    else
+                    {
+                        sharp = true;
+                    }
+                }
+
+                if (!sharp && key > 0)
+                {
+                    list.Add(((long)key << 32) | (uint)i);
+                }
+            }
+
+            return list;
+        }, list =>
+        {
+            lock (found)
+            {
+                found.AddRange(list);
+            }
+        });
+
+        Dictionary<int, (long Count, long R, long G, long B)> bands = [];
+        foreach (long entry in found)
+        {
+            int key = (int)(entry >> 32), i = (int)entry;
+            bands.TryGetValue(key, out var band);
+            bands[key] = (band.Count + 1, band.R + Rgb[3 * i], band.G + Rgb[(3 * i) + 1], band.B + Rgb[(3 * i) + 2]);
+        }
+
+        Dictionary<int, byte> label = [];
+        foreach ((int key, var band) in bands.OrderByDescending(b => b.Value.Count).ThenBy(b => b.Key))
+        {
+            if (Palette.Length >= colors || band.Count < 8)
+            {
+                break;
+            }
+
+            label[key] = (byte)Palette.Length;
+            AddColor(new Rgba8((byte)(band.R / band.Count), (byte)(band.G / band.Count), (byte)(band.B / band.Count), 255));
+        }
+
+        foreach (long entry in found)
+        {
+            if (label.TryGetValue((int)(entry >> 32), out byte l))
+            {
+                Labels[(int)entry] = l;
+            }
+        }
+
+        // How far pixel i's color lies from palette color a toward b, when it lies near the line between them; otherwise null.
+        double? Along(int i, int a, int b)
+        {
+            Rgba8 ca = Palette[a], cb = Palette[b];
+            double dr = cb.R - ca.R, dg = cb.G - ca.G, db = cb.B - ca.B;
+            double length = (dr * dr) + (dg * dg) + (db * db);
+            if (length < 32 * 32)
+            {
+                return null;
+            }
+
+            double pr = Rgb[3 * i] - ca.R, pg = Rgb[(3 * i) + 1] - ca.G, pb = Rgb[(3 * i) + 2] - ca.B;
+            double t = ((pr * dr) + (pg * dg) + (pb * db)) / length;
+            double er = pr - (t * dr), eg = pg - (t * dg), eb = pb - (t * db);
+            return (er * er) + (eg * eg) + (eb * eb) <= (0.05 * length) + 100 ? t : null;
+        }
     }
 
     /// <summary>Sets each pixel's label to its nearest palette entry, by intensity in grayscale mode and by color otherwise.</summary>
@@ -241,27 +350,48 @@ internal sealed class LabelImage
     /// <param name="gray">Whether the palette is gray levels.</param>
     /// <param name="cancellationToken">Cancels the work.</param>
     /// <param name="alpha">Each pixel's alpha, when pixels under half opaque are to be left out; otherwise <see langword="null"/>.</param>
-    internal static Rgba8[] BuildPalette(byte[] rgb, int width, int height, int colors, bool gray, CancellationToken cancellationToken, byte[]? alpha = null)
+    /// <param name="scratch">A buffer of one byte per pixel the search may use, or <see langword="null"/> to allocate one.</param>
+    internal static Rgba8[] BuildPalette(byte[] rgb, int width, int height, int colors, bool gray, CancellationToken cancellationToken, byte[]? alpha = null, byte[]? scratch = null)
     {
         const int Bins = 1 << 15;
         double[] weight = new double[Bins], sumR = new double[Bins], sumG = new double[Bins], sumB = new double[Bins];
         double total = 0;
 
-        // Which pixels count, row by row in parallel; the sums are of whole numbers, so they come out the same in any order.
-        bool[] counted = new bool[width * height];
+        // Which pixels count, row by row in parallel; the sums are of whole numbers, so they come out the same in any order. A
+        // pixel that is no blend counts 1, or 2 when it is also close in color to all four neighbours: the inside of a flat area.
+        // Compression noise rings around edges in colors of its own that the blend test misses; inside flat areas it only
+        // wobbles about the true color, so when enough of the picture is flat only those pixels count.
+        byte[] counted = scratch ?? new byte[width * height];
         ParallelOptions parallel = new() { CancellationToken = cancellationToken };
-        Parallel.For(0, height, parallel, y =>
+        int flatCount = 0;
+        Parallel.For(0, height, parallel, () => 0, (y, _, count) =>
         {
             for (int x = 0; x < width; x++)
             {
                 int i = (y * width) + x;
-                counted[i] = (alpha is null || alpha[i] >= 128) && !IsBlend(rgb, width, height, x, y);
-            }
-        });
+                byte kind = 0;
+                if (alpha is null || alpha[i] >= 128)
+                {
+                    int flat = Flatness(rgb, width, height, x, y);
 
-        for (int i = 0; i < counted.Length; i++)
+                    // A pixel the same as its four neighbours lies on no line between two of them that differ: no blend.
+                    if (flat == 0 || !IsBlend(rgb, width, height, x, y))
+                    {
+                        kind = (byte)(flat <= FlatLimit ? 2 : 1);
+                    }
+                }
+
+                counted[i] = kind;
+                count += kind >> 1;
+            }
+
+            return count;
+        }, count => Interlocked.Add(ref flatCount, count));
+
+        byte least = (byte)(flatCount >= width * height / 8 ? 2 : 1);
+        for (int i = 0; i < width * height; i++)
         {
-            if (!counted[i])
+            if (counted[i] < least)
             {
                 continue;
             }
@@ -316,14 +446,27 @@ internal sealed class LabelImage
             c[2][k] = sumB[bin] / weight[bin];
         }
 
-        List<double[]> centers = MedianCut(w, c, colors);
+        // Cut into more boxes than colors wanted, so a large color spread by noise cannot take the boxes a small distinct color
+        // needs; the extra colors are merged away below.
+        List<double[]> centers = MedianCut(w, c, Math.Min(256, colors * 4));
         KMeans(w, c, centers, 10, cancellationToken);
 
         // Colors a few levels apart are one color with noise or a faint blend; colors covering almost nothing are leftovers of
         // blends the edge test missed. Their pixels go to the nearest color kept.
         DropRare(w, c, centers, 0.001);
         MergeClose(centers, gray ? 12 : 20);
-        KMeans(w, c, centers, 3, cancellationToken);
+        Reduce(w, c, centers, colors);
+        for (int round = 0; round < 3; round++)
+        {
+            // The refined colors can draw back together: merge them again until none are close.
+            KMeans(w, c, centers, 3, cancellationToken);
+            int before = centers.Count;
+            MergeClose(centers, gray ? 12 : 20);
+            if (centers.Count == before)
+            {
+                break;
+            }
+        }
 
         Rgba8[] palette = new Rgba8[centers.Count];
         for (int k = 0; k < palette.Length; k++)
@@ -340,6 +483,43 @@ internal sealed class LabelImage
     /// between them, well inside it. Such pixels are an edge's antialiasing or blur, not a color of their own.
     /// </summary>
     internal static bool IsBlend(byte[] rgb, int width, int height, int x, int y) => BlendSource(rgb, width, height, x, y) >= 0;
+
+    /// <summary>The largest squared color distance from a pixel to its four neighbours inside the picture at which it is flat.</summary>
+    private const int FlatLimit = 24 * 24;
+
+    /// <summary>The largest squared color distance from a pixel to one of its four neighbours inside the picture.</summary>
+    private static int Flatness(byte[] rgb, int width, int height, int x, int y)
+    {
+        int p = 3 * ((y * width) + x);
+        int most = 0;
+        if (x > 0)
+        {
+            most = Math.Max(most, Distance(rgb, p, p - 3));
+        }
+
+        if (x < width - 1)
+        {
+            most = Math.Max(most, Distance(rgb, p, p + 3));
+        }
+
+        if (y > 0)
+        {
+            most = Math.Max(most, Distance(rgb, p, p - (3 * width)));
+        }
+
+        if (y < height - 1)
+        {
+            most = Math.Max(most, Distance(rgb, p, p + (3 * width)));
+        }
+
+        return most;
+
+        static int Distance(byte[] rgb, int a, int b)
+        {
+            int dr = rgb[a] - rgb[b], dg = rgb[a + 1] - rgb[b + 1], db = rgb[a + 2] - rgb[b + 2];
+            return (dr * dr) + (dg * dg) + (db * db);
+        }
+    }
 
     /// <summary>
     /// For a blend pixel (see <see cref="IsBlend"/>), the index of the neighbour whose color it is nearer on the line between its
@@ -387,7 +567,15 @@ internal sealed class LabelImage
     /// <summary>Median cut over weighted colors: splits the box of most weighted spread at the weighted median of its widest channel.</summary>
     private static List<double[]> MedianCut(double[] w, double[][] c, int colors)
     {
-        List<int[]> boxes = [[.. Enumerable.Range(0, w.Length)]];
+        // The boxes are ranges of one index array, sorted in place, so splitting allocates nothing.
+        int[] order = new int[w.Length];
+        for (int k = 0; k < order.Length; k++)
+        {
+            order[k] = k;
+        }
+
+        double[] keys = new double[w.Length];
+        List<(int Start, int Length)> boxes = [(0, w.Length)];
         while (boxes.Count < colors)
         {
             int best = -1, bestChannel = 0;
@@ -401,7 +589,7 @@ internal sealed class LabelImage
 
                 for (int ch = 0; ch < 3; ch++)
                 {
-                    double score = Spread(boxes[i], w, c[ch]);
+                    double score = Spread(order.AsSpan(boxes[i].Start, boxes[i].Length), w, c[ch]);
                     if (score > bestScore)
                     {
                         (best, bestChannel, bestScore) = (i, ch, score);
@@ -414,20 +602,25 @@ internal sealed class LabelImage
                 break;
             }
 
-            int[] box = boxes[best];
+            (int start, int length) = boxes[best];
             double[] channel = c[bestChannel];
-            Array.Sort(box, (a, b) => channel[a].CompareTo(channel[b]));
-            double half = 0, sum = 0;
-            foreach (int k in box)
+            for (int k = start; k < start + length; k++)
             {
-                half += w[k];
+                keys[k] = channel[order[k]];
+            }
+
+            Array.Sort(keys, order, start, length);
+            double half = 0, sum = 0;
+            for (int k = start; k < start + length; k++)
+            {
+                half += w[order[k]];
             }
 
             half /= 2;
             int cut = 1;
-            for (int k = 0; k < box.Length - 1; k++)
+            for (int k = 0; k < length - 1; k++)
             {
-                sum += w[box[k]];
+                sum += w[order[start + k]];
                 cut = k + 1;
                 if (sum >= half)
                 {
@@ -435,15 +628,15 @@ internal sealed class LabelImage
                 }
             }
 
-            boxes[best] = box[..cut];
-            boxes.Add(box[cut..]);
+            boxes[best] = (start, cut);
+            boxes.Add((start + cut, length - cut));
         }
 
         List<double[]> centers = [];
-        foreach (int[] box in boxes)
+        foreach ((int start, int length) in boxes)
         {
             double sw = 0, r = 0, g = 0, b = 0;
-            foreach (int k in box)
+            foreach (int k in order.AsSpan(start, length))
             {
                 sw += w[k];
                 r += w[k] * c[0][k];
@@ -458,7 +651,7 @@ internal sealed class LabelImage
     }
 
     /// <summary>The weighted sum of squared deviations of one channel in a box.</summary>
-    private static double Spread(int[] box, double[] w, double[] channel)
+    private static double Spread(ReadOnlySpan<int> box, double[] w, double[] channel)
     {
         double sw = 0, sum = 0, squares = 0;
         foreach (int k in box)
@@ -551,6 +744,62 @@ internal sealed class LabelImage
             {
                 centers.RemoveAt(j);
             }
+        }
+    }
+
+    /// <summary>
+    /// Merges pairs of centers until at most <paramref name="colors"/> are left, each time the pair whose merge adds the least
+    /// squared error (Ward 1963), into their weighted mean.
+    /// </summary>
+    private static void Reduce(double[] w, double[][] c, List<double[]> centers, int colors)
+    {
+        if (centers.Count <= colors)
+        {
+            return;
+        }
+
+        List<double> weight = [.. new double[centers.Count]];
+        for (int i = 0; i < w.Length; i++)
+        {
+            int best = 0;
+            double bestDistance = double.MaxValue;
+            for (int j = 0; j < centers.Count; j++)
+            {
+                double dr = c[0][i] - centers[j][0], dg = c[1][i] - centers[j][1], db = c[2][i] - centers[j][2];
+                double distance = (dr * dr) + (dg * dg) + (db * db);
+                if (distance < bestDistance)
+                {
+                    (best, bestDistance) = (j, distance);
+                }
+            }
+
+            weight[best] += w[i];
+        }
+
+        while (centers.Count > colors)
+        {
+            int a = 0, b = 1;
+            double least = double.MaxValue;
+            for (int i = 0; i < centers.Count; i++)
+            {
+                for (int j = i + 1; j < centers.Count; j++)
+                {
+                    double dr = centers[i][0] - centers[j][0], dg = centers[i][1] - centers[j][1], db = centers[i][2] - centers[j][2];
+                    double sum = weight[i] + weight[j];
+                    double cost = sum > 0 ? weight[i] * weight[j] / sum * ((dr * dr) + (dg * dg) + (db * db)) : 0;
+                    if (cost < least)
+                    {
+                        (a, b, least) = (i, j, cost);
+                    }
+                }
+            }
+
+            double wa = weight[a], wb = weight[b], total = wa + wb;
+            double fa = total > 0 ? wa / total : 0.5, fb = 1 - fa;
+            centers[a] = [(fa * centers[a][0]) + (fb * centers[b][0]), (fa * centers[a][1]) + (fb * centers[b][1]), (fa * centers[a][2]) + (fb * centers[b][2])];
+            weight[a] = total;
+            centers.RemoveAt(b);
+            weight.RemoveAt(b);
         }
     }
 

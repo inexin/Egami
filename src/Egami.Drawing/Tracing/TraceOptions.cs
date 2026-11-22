@@ -142,7 +142,9 @@ public sealed record class TraceOptions
     /// <summary>
     /// Gets the most colors (in <see cref="TraceMode.Grayscale"/>, gray levels) a grayscale, color or logo trace reduces the image to,
     /// from 2 to 256. The colors are the image's own flat ones, found with the blends along edges left out; an image with fewer
-    /// distinct colors gets fewer. Defaults to 8. Not used in black and white or when <see cref="Palette"/> is set.
+    /// distinct colors gets fewer. In grayscale and color, while the limit allows, a soft edge (a blend three or more pixels
+    /// wide, as JPEG and blur leave) gets a color of its own between its two sides, so it fades in a step. Defaults to 8. Not
+    /// used in black and white or when <see cref="Palette"/> is set.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is outside 2 to 256.</exception>
     public int Colors

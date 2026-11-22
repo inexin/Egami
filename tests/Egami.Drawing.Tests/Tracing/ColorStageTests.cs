@@ -35,6 +35,52 @@ public class ColorStageTests
     }
 
     [Fact]
+    public void PaletteKeepsSmallColorsBesideANoisyLargeOne()
+    {
+        // A large mid gray wobbling by up to 12 levels, with a small dark and a small light square: three colors, the squares'
+        // own among them, rather than the noise taking the palette entries.
+        Random random = new(5);
+        byte[] rgb = Rgb(60, 60, (x, y) => x is >= 5 and < 11 && y is >= 5 and < 11 ? 20 : x is >= 40 and < 46 && y is >= 40 and < 46 ? 240 : 128 + random.Next(-12, 13));
+        Rgba8[] palette = LabelImage.BuildPalette(rgb, 60, 60, 3, true, Ct);
+        Assert.Equal(3, palette.Length);
+        Assert.Contains(palette, c => Math.Abs(c.R - 20) <= 2);
+        Assert.Contains(palette, c => Math.Abs(c.R - 240) <= 2);
+    }
+
+    [Fact]
+    public void SoftEdgesGetABandAndHardOnesDoNot()
+    {
+        // A blend three pixels wide between two grays gets a band of the middle gray; a one-pixel antialiased blend does not.
+        using Raster<Rgba8> soft = Gray(30, 20, x => x < 14 ? 30 : x == 14 ? 80 : x == 15 ? 130 : x == 16 ? 180 : 230);
+        TraceResult traced = soft.Trace(new TraceOptions { Mode = TraceMode.Grayscale });
+        Assert.Equal(3, traced.Palette.Count);
+        Assert.Contains(traced.Palette, c => Math.Abs(c.R - 130) <= 2);
+
+        using Raster<Rgba8> hard = Gray(30, 20, x => x < 14 ? 30 : x == 14 ? 130 : 230);
+        Assert.Equal(2, hard.Trace(new TraceOptions { Mode = TraceMode.Grayscale }).Palette.Count);
+
+        // A fixed palette is kept as given.
+        Rgba8[] fixedColors = [new Rgba8(30, 30, 30, 255), new Rgba8(230, 230, 230, 255)];
+        Assert.Equal(2, soft.Trace(new TraceOptions { Mode = TraceMode.Grayscale, Palette = fixedColors }).Palette.Count);
+
+        static Raster<Rgba8> Gray(int width, int height, Func<int, int> level)
+        {
+            Raster<Rgba8> raster = Raster.Create(width, height, Rgba8.White);
+            for (int y = 0; y < height; y++)
+            {
+                Span<Rgba8> row = raster.Row(y);
+                for (int x = 0; x < width; x++)
+                {
+                    byte v = (byte)level(x);
+                    row[x] = new Rgba8(v, v, v, 255);
+                }
+            }
+
+            return raster;
+        }
+    }
+
+    [Fact]
     public void PaletteStopsAtTheColorsThereAre()
     {
         byte[] rgb = Rgb(40, 40, (x, y) => ((x / 10) + (y / 10)) % 3 * 100);

@@ -107,6 +107,13 @@ pixel-art images become vector shapes, and line art becomes stroked centre lines
 - Logo mode keeps blunt corners (a bend of half the corner angle or more, all at one point, as on hexagons and octagons)
   and finds sharp tips further out, past where their antialiased sides round off. On the egami-compare gates' 24 synthetic
   logos the edges lie a mean 0.045 pixels from the true outlines (was 0.076), at most 0.44 (was 0.60).
+- The palette of a grayscale, color or logo trace is found from the inside of flat areas only, so the colors JPEG noise
+  rings around edges no longer take palette entries, and it is cut into more colors than wanted and merged back by least
+  added error (Ward), so a noisy large color no longer crowds out a small distinct one. On the egami-compare gates' JPEG
+  posters the palettes now match the drawn colors, with 3 to 10 times fewer anchors than before.
+- Grayscale and color traces give a soft edge (a blend three or more pixels wide, as JPEG and blur leave) a band of the
+  color between its sides, while `Colors` allows, so it fades in a step. On the egami-compare gates' posters the trace
+  now has a lower error than VTracer 0.6.5 at no more anchors on 32 of 40 (was 24).
 
 ## Egami.Fonts (unreleased)
 
