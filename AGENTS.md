@@ -28,7 +28,8 @@ adds what an agent tends to get wrong.
 - Run the tests for your area with `python tools/test.py <area>` (`--list` shows the areas), not `dotnet test Egami.slnx`:
   several sessions share one machine, and a full run takes minutes and skews benchmarks. Add `--slow` once before you open
   the pull request. Run the whole solution only when the change reaches across packages (pixel types, `Raster<TPixel>`,
-  shared code); CI runs everything on the pull request. Mark a test that takes more than about 5 seconds
+  shared code), with `python tools/run-tests.py` as CI does: `dotnet test` can drop failures whose message holds control
+  characters (CONTRIBUTING.md says which). CI runs everything on the pull request. Mark a test that takes more than about 5 seconds
   `[Trait("Category", "Slow")]`.
 - Hot code (pixel conversion, codecs, operations) must not get slower or allocate more than `main`. Run the benchmarks and the
   allocation-budget tests (CONTRIBUTING.md has the commands) and put the before and after numbers in the pull request.

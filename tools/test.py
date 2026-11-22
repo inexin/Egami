@@ -6,6 +6,7 @@ name (tests/Egami.DocSamples/Jxl.cs for jxl). Anything else is used as a FullyQu
 tests/Egami.DocSamples. Give several areas separated by commas.
 
 Tests marked [Trait("Category", "Slow")] are left out unless you pass --slow. CI and `dotnet test Egami.slnx` run everything.
+Caveat: dotnet test drops failures whose message holds control characters; tools/run-tests.py (CI's runner) does not.
 
 Usage (from the repo root):
   python tools/test.py jxl                    # Egami.Tests.Formats.Jxl and DocSamples Jxl, without the slow tests
