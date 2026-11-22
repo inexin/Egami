@@ -26,6 +26,9 @@ internal sealed class InkMap
     /// <summary>Gets the pixels, row by row.</summary>
     internal Span<byte> Pixels => _ink;
 
+    /// <summary>Gets the map's array, 1 for ink, row by row, for loops that run in parallel.</summary>
+    internal byte[] Data => _ink;
+
     /// <summary>Whether a pixel is ink; pixels outside the image are paper.</summary>
     internal bool this[int x, int y] => (uint)x < (uint)Width && (uint)y < (uint)Height && _ink[(y * Width) + x] != 0;
 
@@ -71,22 +74,19 @@ internal sealed class InkMap
     /// <summary>
     /// Merges every region of fewer than <paramref name="minArea"/> pixels into its neighbours, smallest first, until each
     /// region left is at least that large or has no neighbour. In black and white the neighbours of a region are all of the
-    /// other color, so merging flips the region.
+    /// other color, so merging flips the region. Returns the regions of the map it leaves, numbered as <see cref="Label(int[],
+    /// CancellationToken)"/> would number them (each merged set is one region, first met where its first member was), or
+    /// <see langword="null"/> when <paramref name="minArea"/> is 1 or less and nothing was labelled.
     /// </summary>
-    internal void RemoveNoise(int minArea, CancellationToken cancellationToken)
+    internal int[]? RemoveNoise(int minArea, CancellationToken cancellationToken)
     {
         if (minArea <= 1)
         {
-            return;
+            return null;
         }
 
         int[] labels = new int[_ink.Length];
-        int count = Label(labels, cancellationToken);
-        long[] size = new long[count];
-        for (int i = 0; i < labels.Length; i++)
-        {
-            size[labels[i]]++;
-        }
+        int count = Label(labels, cancellationToken, out long[] size, out byte[] color);
 
         List<int> small = [];
         for (int r = 0; r < count; r++)
@@ -96,10 +96,9 @@ internal sealed class InkMap
                 small.Add(r);
             }
         }
-
         if (small.Count == 0)
         {
-            return;
+            return labels;
         }
 
         // The regions each small region touches across a pixel edge. Regions that touch only at a corner are both paper (ink is
@@ -110,35 +109,64 @@ internal sealed class InkMap
             neighbours[r] = [];
         }
 
-        for (int y = 0; y < Height; y++)
+        // Rows in parallel bands, each keeping the pairs of touching regions where one is small (in pooled buffers, as two
+        // region numbers in a long); then the pairs in band order.
+        int width = Width, height = Height;
+        int bands = Math.Min(height, Environment.ProcessorCount * 4);
+        long[][] pairs = new long[bands][];
+        int[] pairCount = new int[bands];
+        Parallel.For(0, bands, new ParallelOptions { CancellationToken = cancellationToken }, band =>
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            int row = y * Width;
-            for (int x = 0; x < Width; x++)
+            long[] found = System.Buffers.ArrayPool<long>.Shared.Rent(256);
+            int n = 0;
+            for (int y = (int)((long)band * height / bands); y < (int)((long)(band + 1) * height / bands); y++)
             {
-                int a = labels[row + x];
-                if (x + 1 < Width && labels[row + x + 1] != a)
+                int row = y * width;
+                for (int x = 0; x < width; x++)
                 {
-                    Touch(neighbours, a, labels[row + x + 1]);
-                }
+                    int a = labels[row + x];
+                    if (x + 1 < width && labels[row + x + 1] is int right && right != a && (size[a] < minArea || size[right] < minArea))
+                    {
+                        Add(a, right);
+                    }
 
-                if (y + 1 < Height && labels[row + Width + x] != a)
-                {
-                    Touch(neighbours, a, labels[row + Width + x]);
+                    if (y + 1 < height && labels[row + width + x] is int below && below != a && (size[a] < minArea || size[below] < minArea))
+                    {
+                        Add(a, below);
+                    }
                 }
             }
+
+            (pairs[band], pairCount[band]) = (found, n);
+
+            void Add(int a, int b)
+            {
+                if (n == found.Length)
+                {
+                    long[] larger = System.Buffers.ArrayPool<long>.Shared.Rent(2 * n);
+                    found.AsSpan(0, n).CopyTo(larger);
+                    System.Buffers.ArrayPool<long>.Shared.Return(found);
+                    found = larger;
+                }
+
+                found[n++] = ((long)a << 32) | (uint)b;
+            }
+        });
+
+        for (int band = 0; band < bands; band++)
+        {
+            foreach (long pair in pairs[band].AsSpan(0, pairCount[band]))
+            {
+                Touch(neighbours, (int)(pair >> 32), (int)pair);
+            }
+
+            System.Buffers.ArrayPool<long>.Shared.Return(pairs[band]);
         }
 
-        byte[] color = new byte[count];
         int[] parent = new int[count];
         for (int r = 0; r < count; r++)
         {
             parent[r] = r;
-        }
-
-        for (int i = 0; i < labels.Length; i++)
-        {
-            color[labels[i]] = _ink[i];
         }
 
         small.Sort((a, b) => size[a] != size[b] ? size[a].CompareTo(size[b]) : a.CompareTo(b));
@@ -195,11 +223,34 @@ internal sealed class InkMap
             color[keep] = flipped;
             neighbours[keep] = joined;
         }
-
-        for (int i = 0; i < _ink.Length; i++)
+        // Each region's final color once, and each merged set numbered by its least member, which the scan met first. The sizes
+        // are done with: a root's holds its set's number, as -1 - number, once the set is met.
+        byte[] final = new byte[count];
+        int sets = 0;
+        for (int r = 0; r < count; r++)
         {
-            _ink[i] = color[Find(parent, labels[i])];
+            int root = Find(parent, r);
+            parent[r] = root;
+            final[r] = color[root];
+            if (size[root] >= 0)
+            {
+                size[root] = -1 - sets++;
+            }
         }
+
+        // Then every pixel from its region's.
+        byte[] ink = _ink;
+        Parallel.For(0, Height, new ParallelOptions { CancellationToken = cancellationToken }, y =>
+        {
+            for (int i = y * width; i < (y + 1) * width; i++)
+            {
+                int label = labels[i];
+                ink[i] = final[label];
+                labels[i] = (int)(-1 - size[parent[label]]);
+            }
+        });
+
+        return labels;
     }
 
     /// <summary>
@@ -207,6 +258,20 @@ internal sealed class InkMap
     /// first pixel. Returns the number of regions.
     /// </summary>
     internal int Label(int[] labels, CancellationToken cancellationToken)
+    {
+        return Label(labels, false, out _, out _, cancellationToken);
+    }
+
+    /// <summary>
+    /// Labels the regions as <see cref="Label(int[], CancellationToken)"/> does and gives each region's pixel count and value
+    /// (1 for ink), summed from its runs.
+    /// </summary>
+    internal int Label(int[] labels, CancellationToken cancellationToken, out long[] size, out byte[] value)
+    {
+        return Label(labels, true, out size, out value, cancellationToken);
+    }
+
+    private int Label(int[] labels, bool measure, out long[] size, out byte[] value, CancellationToken cancellationToken)
     {
         // Each row's runs of one value are joined to the runs of the same value they touch in the row above: those that share a
         // column, and for ink also those that meet it at a corner. A region's number depends only on where the scan first meets
@@ -264,6 +329,29 @@ internal sealed class InkMap
                 labels[i] = number[labels[i]];
             }
         });
+
+        size = measure ? new long[count] : [];
+        value = measure ? new byte[count] : [];
+        if (measure)
+        {
+            // A run's value is its first pixel's, and it ends where the next run starts or at the row's end: runs are numbered row
+            // by row, so the row is found by walking with them.
+            int y = 0, total = runs.Count;
+            int[] starts = runs.Start;
+            for (int r = 0, previous = -1; r < total; r++)
+            {
+                int start = starts[r];
+                if (start <= previous)
+                {
+                    y++;
+                }
+
+                previous = start;
+                int next = r + 1 < total ? starts[r + 1] : 0;
+                size[number[r]] += (next > start ? next : width) - start;
+                value[number[r]] = ink[(y * width) + start];
+            }
+        }
 
         System.Buffers.ArrayPool<int>.Shared.Return(number);
         return count;

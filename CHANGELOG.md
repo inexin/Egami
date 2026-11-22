@@ -99,6 +99,11 @@ pixel-art images become vector shapes, and line art becomes stroked centre lines
   left out, and an image of more than 256 colors throws `ArgumentException`. `TraceOptions.Exact` keeps the pixel squares
   instead, merged into one shape per color, and `TraceOptions.PixelArt` is the preset. A 1000 × 800 sprite sheet traces in
   about 0.1 s.
+- Black-and-white tracing is faster (follow-up to the egami-compare gates), with the same shapes: 8-bit RGB images are read
+  in place instead of through a 16-bit copy, noise removal finds its regions' sizes from the labelling's runs, scans for
+  neighbours in parallel and hands its regions on, so they are not labelled twice, the boundary scan skips equal rows by
+  vector compare, and the levels pass runs in parallel. Path data numbers are written through integers. Native `egami trace`
+  on a 12-megapixel drawing takes 0.19 s instead of 0.47 s (1.2 × potrace 1.16), 4 megapixels 0.10 s (1.4 ×).
 
 ## Egami.Fonts (unreleased)
 

@@ -84,6 +84,13 @@ public static class RasterTraceExtensions
                 return Tracer.Trace(rgba8, options, context, cancellationToken);
             case Raster<Gray8> gray8:
                 return Tracer.Trace(gray8, options, context, cancellationToken);
+            // Other 8-bit color types are read in place: a 16-bit copy would add nothing to their precision.
+            case Raster<Bgr8> bgr8:
+                return Tracer.Trace(bgr8, options, context, cancellationToken);
+            case Raster<Rgb8> rgb8:
+                return Tracer.Trace(rgb8, options, context, cancellationToken);
+            case Raster<Bgra8> bgra8:
+                return Tracer.Trace(bgra8, options, context, cancellationToken);
             default:
                 {
                     // Other pixel types are read through a 16-bit copy, which keeps their precision for the threshold.

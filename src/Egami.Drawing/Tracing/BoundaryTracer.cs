@@ -33,21 +33,30 @@ internal static class BoundaryTracer
         bool[] used = new bool[checked((h + 1) * w)];
         List<PixelLoop> loops = [];
         List<int> xs = [], ys = [];
+        byte[] data = ink.Data;
+        byte[] paper = new byte[w];
         for (int y = 0; y <= h; y++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            // The rows on either side of crack row y (paper outside the image); only where they differ is there an edge.
+            ReadOnlySpan<byte> rowAbove = y > 0 ? data.AsSpan((y - 1) * w, w) : paper;
+            ReadOnlySpan<byte> rowBelow = y < h ? data.AsSpan(y * w, w) : paper;
             for (int x = 0; x < w; x++)
             {
+                int same = rowAbove[x..].CommonPrefixLength(rowBelow[x..]);
+                x += same;
+                if (x >= w)
+                {
+                    break;
+                }
+
                 if (used[(y * w) + x])
                 {
                     continue;
                 }
 
-                bool below = ink[x, y], above = ink[x, y - 1];
-                if (below == above)
-                {
-                    continue;
-                }
+                bool below = rowBelow[x] != 0;
 
                 // Ink below: walk right from (x, y). Ink above: walk left from (x + 1, y).
                 int sx = below ? x : x + 1, dx = below ? 1 : -1;
