@@ -102,9 +102,10 @@ static Action<Stream> Target(string name) => name switch
     "ffv1raw" => DecodeFfv1Packets,
     "ffv1enc" => EncodeFfv1,
     "h264enc" => EncodeH264,
+    "hevcenc" => EncodeHevc,
     "afilters" => FilterAudio,
     "deinterlace" => Deinterlace,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, adts, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, hevc, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, h264enc, afilters, deinterlace."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, adts, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, hevc, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, h264enc, hevcenc, afilters, deinterlace."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -414,6 +415,135 @@ static void EncodeH264(Stream stream)
     }
 
     using IVideoDecoder decoder = H264Codec.Instance.CreateDecoder(encoder.Track, null, context);
+    int shown = 0;
+    void Take()
+    {
+        while (decoder.TryReceive(out YuvVideoFrame? frame))
+        {
+            using (frame)
+            {
+                if (frame.Width != width || frame.Height != height)
+                {
+                    throw new InvalidOperationException($"A {width}x{height} frame came out as {frame.Width}x{frame.Height}.");
+                }
+            }
+
+            shown++;
+        }
+    }
+
+    foreach (EncodedPacket packet in packets)
+    {
+        using (packet)
+        {
+            decoder.Send(packet);
+            Take();
+        }
+    }
+
+    decoder.Flush();
+    Take();
+    if (shown != frames)
+    {
+        throw new InvalidOperationException($"{frames} frames went in, {shown} came out of the decoder.");
+    }
+}
+
+// The HEVC encoder: the first bytes pick an even size, the profile (8-bit or 10-bit input), effort, B-frames, threads, rate
+// control and QP limits, keyframe spacing, adaptive quantization and Annex B; the rest fills the frames. Every option it can pick
+// is valid, so nothing may throw, and every frame must come back out of Egami's decoder at the coded size.
+static void EncodeHevc(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    if (data.Length < 13)
+    {
+        return;
+    }
+
+    int width = 2 * (1 + (data[0] % 48)), height = 2 * (1 + (data[1] % 32)), frames = 1 + (data[2] % 8);
+    RateControlMode mode = (RateControlMode)(data[3] % 4);
+    bool main10 = (data[8] & 1) != 0, words = (data[8] & 2) != 0;
+    int minQp = data[9] % 30, maxQp = minQp + (data[10] % (52 - minQp));
+    VideoEncoderOptions options = new()
+    {
+        Width = width,
+        Height = height,
+        Quality = data[4] % 101,
+        Effort = data[5] % 11,
+        RateControl = mode,
+        Bitrate = mode is RateControlMode.Bitrate or RateControlMode.ConstantBitrate ? 1000 + (data[6] * 4000L) : null,
+        Quantizer = mode == RateControlMode.Quantizer ? data[6] % 52 : null,
+        LatencyMode = (data[7] & 1) != 0 ? LatencyMode.Realtime : LatencyMode.Quality,
+        KeyframeInterval = (data[7] & 2) != 0 ? 1 + (data[7] >> 4) : null,
+        SceneCutKeyframes = (data[7] & 4) == 0,
+        Hevc = new HevcEncoderOptions
+        {
+            Profile = main10 ? HevcProfile.Main10 : (data[8] & 4) != 0 ? HevcProfile.Main : null,
+            BFrames = (data[11] & 7) switch { 0 => null, var b => b - 1 },
+            AdaptiveQuantization = (data[7] & 8) == 0,
+            AnnexB = (data[8] & 16) != 0,
+            MinQuantizer = minQp,
+            MaxQuantizer = maxQp,
+        },
+    };
+    MediaContext context = Context().WithHevc() with { Egami = Context().Egami with { MaxParallelism = 1 + ((data[8] >> 5) & 3) } };
+    using IVideoEncoder encoder = HevcCodec.Instance.CreateEncoder(options, context);
+    List<EncodedPacket> packets = [];
+    int at = 0;
+    byte Next() => data[12 + (at++ % (data.Length - 12))];
+    for (int f = 0; f < frames; f++)
+    {
+        YuvRaster picture;
+        if (words && main10)
+        {
+            YuvRaster<ushort> deep = YuvRaster.Create(width, height, ChromaFormat.Yuv420, 10, YuvColor.Bt709Limited);
+            foreach (YuvPlane<ushort>? plane in (YuvPlane<ushort>?[])[deep.Y, deep.U, deep.V])
+            {
+                for (int y = 0; y < plane!.Height; y++)
+                {
+                    Span<ushort> row = plane.Row(y);
+                    for (int x = 0; x < row.Length; x++)
+                    {
+                        row[x] = (ushort)(((Next() << 8) | Next()) & 1023);
+                    }
+                }
+            }
+
+            picture = deep;
+        }
+        else
+        {
+            YuvRaster<byte> bytes = YuvRaster.Create(width, height, ChromaFormat.Yuv420, YuvColor.Bt601Limited);
+            foreach (YuvPlane<byte>? plane in (YuvPlane<byte>?[])[bytes.Y, bytes.U, bytes.V])
+            {
+                for (int y = 0; y < plane!.Height; y++)
+                {
+                    Span<byte> row = plane.Row(y);
+                    for (int x = 0; x < row.Length; x++)
+                    {
+                        row[x] = Next();
+                    }
+                }
+            }
+
+            picture = bytes;
+        }
+
+        using YuvVideoFrame frame = new(picture, new MediaTime(f, new Rational(1, 30)));
+        encoder.Send(frame, new EncodeFrameOptions { ForceKeyframe = (data[(at + f) % data.Length] & 7) == 0 });
+        while (encoder.TryReceive(out EncodedPacket? packet))
+        {
+            packets.Add(packet);
+        }
+    }
+
+    encoder.Flush();
+    while (encoder.TryReceive(out EncodedPacket? packet))
+    {
+        packets.Add(packet);
+    }
+
+    using IVideoDecoder decoder = HevcCodec.Instance.CreateDecoder(encoder.Track, null, context);
     int shown = 0;
     void Take()
     {
