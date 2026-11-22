@@ -32,6 +32,15 @@ internal static class PixelArtTracer
     // The shortest straight leg, in quarter pixels, either side of a turn that stays a sharp corner: one pixel edge.
     private const int MinLeg = 4;
 
+    // The spline optimisation: the most sweeps over a piece's nodes, the tries per node and sweep, how far a try moves a node
+    // (in pixels) and the least drop in energy a move must bring.
+    private const int Sweeps = 8, Tries = 6;
+    private const float Reach = 0.125f, MinGain = 1e-3f;
+
+    // No node moves further than MaxMove from where it started, nor so far that a pixel center could come within Clearance of
+    // the curve, in pixels.
+    private const float Clearance = 0.15f, MaxMove = 0.5f;
+
     // The graph edges each pixel keeps, to its neighbours after it in scan order.
     private const byte East = 1, South = 2, SouthEast = 4, SouthWest = 8;
 
@@ -41,7 +50,9 @@ internal static class PixelArtTracer
     private static readonly sbyte[] SlotX = [0, 1, -1, -1, 1];
     private static readonly sbyte[] SlotY = [0, -1, 1, -1, 1];
 
-    internal static TraceResult Trace<TPixel>(Raster<TPixel> raster, TraceOptions options, CancellationToken cancellationToken)
+    /// <summary>Traces <paramref name="raster"/>; <paramref name="optimize"/> false skips the spline optimisation, for tests.</summary>
+    internal static TraceResult Trace<TPixel>(
+        Raster<TPixel> raster, TraceOptions options, CancellationToken cancellationToken, bool optimize = true)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         int w = raster.Width, h = raster.Height, n = w * h;
@@ -79,6 +90,7 @@ internal static class PixelArtTracer
                 outline.Extract(graph, cancellationToken);
             }
 
+            outline.Optimize(optimize, cancellationToken);
             outline.Join();
             outline.Build();
 
@@ -931,6 +943,9 @@ internal static class PixelArtTracer
         private readonly List<Pt> _merged = [];
         private readonly Vector3[] _yuv = [.. palette.Select(Yuv)];
 
+        // Where each point is drawn, in pixels, after the optimisation; rented from the shared pool until the curves are built.
+        private Vector2[] _at = [];
+
         internal Rgba8[] Palette { get; } = palette;
 
         internal int[] RegionColor { get; } = regionColor;
@@ -1181,6 +1196,240 @@ internal static class PixelArtTracer
         }
 
         /// <summary>
+        /// Moves the points of the smooth pieces to take the last stairs out of their curves, as the paper's section 3.4 does: each
+        /// point's energy is the curvature of the curve near it plus the fourth power of its distance from where it started (in
+        /// quarter pixels), and sweeps over the points try small random moves and keep those that lower it. The curvature of a
+        /// quadratic B-spline span, integrated along it, is the angle its control polygon turns through, so a point's share is
+        /// the turns at it and at its two neighbours. Piece ends (junctions and sharp corners) and pieces along the image's edge
+        /// stay where they are, no point moves so far that a pixel center comes nearer the curve than <see cref="Clearance"/>,
+        /// and the moves come from a fixed seed, so the same image always gives the same curves.
+        /// </summary>
+        internal void Optimize(bool optimize, CancellationToken cancellationToken)
+        {
+            int n = _points.Count;
+            _at = ArrayPool<Vector2>.Shared.Rent(Math.Max(1, n));
+            for (int i = 0; i < n; i++)
+            {
+                _at[i] = _points[i].ToVector();
+            }
+
+            if (!smooth || !optimize)
+            {
+                return;
+            }
+
+            // The pieces meet only at their ends, which stay put, so each is smoothed on its own, until a sweep moves nothing.
+            float[] limit = ArrayPool<float>.Shared.Rent(Math.Max(1, n));
+            try
+            {
+                uint state = 0x9E3779B9;
+                for (int p = 0; p < _pieces.Count; p++)
+                {
+                    if ((p & 1023) == 0)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+
+                    Piece piece = _pieces[p];
+                    if (piece.Left < 0 || piece.Right < 0 || piece.Count < (piece.Closed ? 4 : 3) || !Limits(piece, limit))
+                    {
+                        continue;
+                    }
+
+                    int from = piece.Closed ? 0 : 1, to = piece.Closed ? piece.Count : piece.Count - 1;
+                    bool moved = true;
+                    for (int sweep = 0; sweep < Sweeps && moved; sweep++)
+                    {
+                        moved = false;
+                        for (int i = from; i < to; i++)
+                        {
+                            moved |= Relax(piece.Offset, piece.Count, piece.Closed, i, limit[piece.Offset + i], ref state);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                ArrayPool<float>.Shared.Return(limit);
+            }
+        }
+
+        /// <summary>
+        /// How far each point of a piece may move from where it started, into <paramref name="limit"/>; returns whether any may.
+        /// Each point of a span is a weighted mean of its three control points with weights that sum to one, so while none of
+        /// them moves further than d, no point of the span moves further than d either: a span whose nearest pixel center is r
+        /// away lets its control points move r - <see cref="Clearance"/>, and no center can come nearer than that or change side.
+        /// </summary>
+        private bool Limits(Piece piece, float[] limit)
+        {
+            int m = piece.Count, offset = piece.Offset;
+            bool closed = piece.Closed, any = false;
+            for (int i = 0; i < m; i++)
+            {
+                limit[offset + i] = MaxMove;
+            }
+
+            for (int j = closed ? 0 : 1; j < (closed ? m : m - 1); j++)
+            {
+                Vector2 previous = Start(j - 1), control = Start(j), next = Start(j + 1);
+                Vector2 a = !closed && j == 1 ? previous : (previous + control) / 2;
+                Vector2 c = !closed && j == m - 2 ? next : (control + next) / 2;
+                float slack = MathF.Max(0, Distance(a, control, c) - Clearance);
+                for (int k = j - 1; k <= j + 1; k++)
+                {
+                    ref float l = ref limit[offset + (closed ? (k + m) % m : k)];
+                    l = MathF.Min(l, slack);
+                }
+            }
+
+            // The point next to a junction stays too: the curves joined there meet at a point found from it.
+            if (piece.StartVertex >= 0)
+            {
+                limit[offset + 1] = 0;
+            }
+
+            if (piece.EndVertex >= 0)
+            {
+                limit[offset + m - 2] = 0;
+            }
+
+            for (int i = closed ? 0 : 1; i < (closed ? m : m - 1); i++)
+            {
+                any |= limit[offset + i] > 0;
+            }
+
+            return any;
+
+            Vector2 Start(int k) => _at[offset + (closed ? (k + m) % m : k)];
+        }
+
+        /// <summary>
+        /// Tries a few random moves of point <paramref name="i"/> of a piece, each within <paramref name="limit"/> of where it
+        /// started, and keeps the best, if it lowers the energy; returns whether it moved.
+        /// </summary>
+        private bool Relax(int offset, int m, bool closed, int i, float limit, ref uint state)
+        {
+            // A point on a straight run (one put near a junction) stays, to keep the run straight.
+            if (limit <= 0 || Straight(_points[offset + ((i + m - 1) % m)], _points[offset + i], _points[offset + ((i + 1) % m)]))
+            {
+                return false;
+            }
+
+            // The points up to two either side, and whether the turns at the neighbours count: an open piece's ends have none.
+            Vector2 a = Neighbour(-2), b = Neighbour(-1), c = Neighbour(1), e = Neighbour(2);
+            bool before = closed || i > 1, after = closed || i < m - 2;
+            Vector2 start = _points[offset + i].ToVector(), current = _at[offset + i];
+            float best = Energy(current, start, a, b, c, e, before, after), limit2 = limit * limit;
+            Vector2 bestAt = current;
+            for (int t = 0; t < Tries; t++)
+            {
+                // A point in the square of side 2 Reach about the current one, from a xorshift generator.
+                state ^= state << 13;
+                state ^= state >> 17;
+                state ^= state << 5;
+                float dx = (((state & 0xFFFF) / 65535f) * 2) - 1, dy = (((state >> 16) / 65535f) * 2) - 1;
+                Vector2 tryAt = current + (new Vector2(dx, dy) * Reach);
+                if (Vector2.DistanceSquared(tryAt, start) > limit2)
+                {
+                    continue;
+                }
+
+                float energy = Energy(tryAt, start, a, b, c, e, before, after);
+                if (energy < best - MinGain)
+                {
+                    (best, bestAt) = (energy, tryAt);
+                }
+            }
+
+            _at[offset + i] = bestAt;
+            return bestAt != current;
+
+            Vector2 Neighbour(int k) => _at[offset + (closed ? (i + k + m + m) % m : Math.Clamp(i + k, 0, m - 1))];
+        }
+
+        /// <summary>
+        /// The distance from the quadratic span a, b, c (sampled 8 times) to the nearest pixel center, at (x + 1/2, y + 1/2), up
+        /// to <see cref="Clearance"/> + <see cref="MaxMove"/>.
+        /// </summary>
+        private static float Distance(Vector2 a, Vector2 b, Vector2 c)
+        {
+            const float Far = Clearance + MaxMove;
+            Vector2 min = Vector2.Min(a, Vector2.Min(b, c)), max = Vector2.Max(a, Vector2.Max(b, c));
+            int x0 = (int)MathF.Ceiling(min.X - Far - 0.5f), x1 = (int)MathF.Floor(max.X + Far - 0.5f);
+            int y0 = (int)MathF.Ceiling(min.Y - Far - 0.5f), y1 = (int)MathF.Floor(max.Y + Far - 0.5f);
+            Span<Vector2> curve = stackalloc Vector2[9];
+            for (int q = 0; q <= 8; q++)
+            {
+                float t = q / 8f, u = 1 - t;
+                curve[q] = (u * u * a) + (2 * u * t * b) + (t * t * c);
+            }
+
+            float best = Far * Far;
+            for (int y = y0; y <= y1; y++)
+            {
+                for (int x = x0; x <= x1; x++)
+                {
+                    Vector2 center = new(x + 0.5f, y + 0.5f);
+                    for (int q = 1; q <= 8; q++)
+                    {
+                        best = MathF.Min(best, DistanceToSegment(center, curve[q - 1], curve[q]));
+                    }
+                }
+            }
+
+            return MathF.Sqrt(best);
+        }
+
+        /// <summary>The squared distance from <paramref name="p"/> to the segment a-b.</summary>
+        private static float DistanceToSegment(Vector2 p, Vector2 a, Vector2 b)
+        {
+            Vector2 d = b - a;
+            float length = d.LengthSquared();
+            float t = length > 0 ? Math.Clamp(Vector2.Dot(p - a, d) / length, 0, 1) : 0;
+            return Vector2.DistanceSquared(p, a + (t * d));
+        }
+
+        /// <summary>
+        /// The energy of a point put at <paramref name="p"/>, which started at <paramref name="start"/>, between
+        /// <paramref name="a"/>, <paramref name="b"/> before it and <paramref name="c"/>, <paramref name="e"/> after it.
+        /// </summary>
+        private static float Energy(Vector2 p, Vector2 start, Vector2 a, Vector2 b, Vector2 c, Vector2 e, bool before, bool after)
+        {
+            // The distance in quarter pixels, the grid the points start on: a quarter pixel away weighs as much as a turn of a
+            // radian.
+            float d = Vector2.DistanceSquared(p, start) * 16;
+            float energy = (d * d) + Turn(b, p, c);
+            if (before)
+            {
+                energy += Turn(a, b, p);
+            }
+
+            if (after)
+            {
+                energy += Turn(p, c, e);
+            }
+
+            return energy;
+        }
+
+        /// <summary>The angle, from 0 to pi, the polygon a-b-c turns through at b.</summary>
+        private static float Turn(Vector2 a, Vector2 b, Vector2 c)
+        {
+            Vector2 u = b - a, v = c - b;
+            float y = MathF.Abs((u.X * v.Y) - (u.Y * v.X)), x = Vector2.Dot(u, v);
+            if (y == 0)
+            {
+                return x < 0 ? MathF.PI : 0;
+            }
+
+            // atan2(y, x) for y > 0 from a polynomial for atan on [-1, 1], good to about 1e-5.
+            bool steep = y > MathF.Abs(x);
+            float z = steep ? x / y : y / x, z2 = z * z;
+            float atan = z * (0.9998660f + (z2 * (-0.3302995f + (z2 * (0.1801410f + (z2 * (-0.0851330f + (z2 * 0.0208351f))))))));
+            return steep ? (MathF.PI / 2) - atan : x > 0 ? atan : MathF.PI + atan;
+        }
+
+        /// <summary>
         /// Where three colors meet, two of the pieces join in one smooth curve and the third ends on it, as the paper does: the
         /// two contours when the third edge is shading between similar colors, else the two most nearly opposite; on the image's
         /// edge, the edge itself. Where four meet, the pieces meet at the point.
@@ -1307,19 +1556,23 @@ internal static class PixelArtTracer
         private Vector2 Junction(int end)
         {
             Piece piece = _pieces[end >> 1];
-            return _points[(end & 1) != 0 ? piece.Offset + piece.Count - 1 : piece.Offset].ToVector();
+            return _at[(end & 1) != 0 ? piece.Offset + piece.Count - 1 : piece.Offset];
         }
 
         /// <summary>The point next to the junction along the piece.</summary>
         private Vector2 Beyond(int end)
         {
             Piece piece = _pieces[end >> 1];
-            return _points[(end & 1) != 0 ? piece.Offset + piece.Count - 2 : piece.Offset + 1].ToVector();
+            return _at[(end & 1) != 0 ? piece.Offset + piece.Count - 2 : piece.Offset + 1];
         }
 
         /// <summary>Draws each piece's curve: quadratic B-splines through its points in smooth mode, its polygon otherwise.</summary>
         internal void Build()
         {
+            // About one curve or line per point (a few more at junctions): sized once rather than grown.
+            int capacity = _points.Count + (smooth ? _pieces.Count : 0);
+            _controls.EnsureCapacity(capacity);
+            _ends.EnsureCapacity(capacity);
             List<Vector2> e = [];
             for (int p = 0; p < _pieces.Count; p++)
             {
@@ -1327,10 +1580,10 @@ internal static class PixelArtTracer
                 piece.OpOffset = _ends.Count;
                 if (!smooth)
                 {
-                    piece.First = _points[piece.Offset].ToVector();
+                    piece.First = _at[piece.Offset];
                     for (int i = 1; i < piece.Count; i++)
                     {
-                        Line(_points[piece.Offset + i].ToVector());
+                        Line(_at[piece.Offset + i]);
                     }
 
                     if (piece.Closed)
@@ -1343,7 +1596,7 @@ internal static class PixelArtTracer
                     // A closed uniform quadratic B-spline: from the midpoint of each side to the next, bent towards the corner
                     // between them.
                     int m = piece.Count;
-                    Vector2 Point(int i) => _points[piece.Offset + (i % m)].ToVector();
+                    Vector2 Point(int i) => _at[piece.Offset + (i % m)];
                     piece.First = (Point(m - 1) + Point(0)) / 2;
                     for (int i = 0; i < m; i++)
                     {
@@ -1361,7 +1614,7 @@ internal static class PixelArtTracer
 
                     for (int i = 0; i < piece.Count; i++)
                     {
-                        e.Add(_points[piece.Offset + i].ToVector());
+                        e.Add(_at[piece.Offset + i]);
                     }
 
                     if (endJoin)
@@ -1419,6 +1672,9 @@ internal static class PixelArtTracer
                 piece.OpCount = _ends.Count - piece.OpOffset;
                 _pieces[p] = piece;
             }
+
+            ArrayPool<Vector2>.Shared.Return(_at);
+            _at = [];
         }
 
         private void Line(Vector2 to)

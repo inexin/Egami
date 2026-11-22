@@ -146,7 +146,8 @@ upscaled sprite has no blocks and no blur.
   `ArgumentException`: trace it with `TraceMode.Color` instead.
 - `Exact` keeps the pixel squares, merged into one shape per color with straight edges on the pixel grid: drawn back at its
   size, the trace is the image again.
-- Long diagonal edges drawn in steps keep a slight ripple, one per step.
+- The curves are then smoothed: the steps of long diagonal edges straighten out, while the curves stay within half a pixel
+  of where they were and every pixel's center stays in its own color. The same image always gives the same shapes.
 
 ## Shapes and paths
 
@@ -244,5 +245,11 @@ Pixel-art mode replaces steps 1 to 5:
 4. **Curves.** The cell edges between colors run from junction to junction; a right angle between straight legs of a pixel
    or more, cut or not, becomes a sharp corner, and the rest becomes a quadratic B-spline through the nodes. Where three
    colors meet, the two edges that are contours (or the two most nearly straight) join in one smooth curve and the third
-   ends on it. `Exact` skips steps 1 to 4 and keeps the pixel edges.
-5. **Shapes.** The curves around each color's cells become its shape, stacked or abutting as in color mode.
+   ends on it.
+5. **Smoothing.** As in the paper's section 3.4, the B-spline nodes move to lower their energy: how far the curve turns near
+   each (for a quadratic B-spline, the angle its control polygon turns through) plus the fourth power of its distance from
+   where it started, in quarter pixels. Sweeps over the nodes try small moves from a fixed seed and keep the best. Junctions,
+   sharp corners, the nodes next to junctions and curves along the image's edge stay put, and no node moves so far that the
+   curve could come within 0.15 pixels of a pixel center (or half a pixel from where it was). `Exact` skips steps 1 to 5 and
+   keeps the pixel edges.
+6. **Shapes.** The curves around each color's cells become its shape, stacked or abutting as in color mode.
