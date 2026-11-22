@@ -127,7 +127,7 @@ internal sealed partial class HevcCtuSearch
             return 35;
         }
 
-        double sqrtLambda = Math.Sqrt(lambda);
+        double sqrtLambda = Math.Sqrt(lambda / _settings.RdLambdaScale);
         Span<bool> tried = stackalloc bool[35];
         tried.Clear();
         Span<int> modes = stackalloc int[35];

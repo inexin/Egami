@@ -43,6 +43,16 @@ internal static class HevcEncodeTiming
             }
         }
 
+        if (Value("horizon") is { } horizon)
+        {
+            HevcVideoEncoder.HorizonSeconds = double.Parse(horizon, CultureInfo.InvariantCulture);
+        }
+
+        if (Flag("trace"))
+        {
+            Egami.Video.Codecs.Encoding.EncoderCore.Trace = Console.Error.WriteLine;
+        }
+
         int threads = Flag("one-thread") ? 1 : Number("threads") ?? Environment.ProcessorCount;
         long? bitrate = Value("bitrate") is { } b ? long.Parse(b, CultureInfo.InvariantCulture) : null;
         VideoEncoderOptions options = new()

@@ -1,3 +1,4 @@
+using Egami.Colors;
 using Egami.Pixels;
 using Egami.Video.Codecs;
 
@@ -39,6 +40,7 @@ public class EncoderInteropFiles
         yield return ("bframes7", 96, 64, 12, 8, Options(96, 64, 4, new HevcEncoderOptions { BFrames = 7 }));
         yield return ("bframes-keyint", 96, 64, 20, 8, Options(96, 64, 4, new HevcEncoderOptions()) with { KeyframeInterval = 9 });
         yield return ("bframes-main10", 96, 64, 10, 10, Options(96, 64, 5, new HevcEncoderOptions()));
+        yield return ("main10-hdr", 96, 64, 10, 10, Options(96, 64, 4, new HevcEncoderOptions()) with { KeyframeInterval = 5 });
         yield return ("wide", 1280, 48, 3, 8, Options(1280, 48, 1, new HevcEncoderOptions()));
         if (Environment.GetEnvironmentVariable("EGAMI_INTEROP_CLIP") is not null)
         {
@@ -69,8 +71,10 @@ public class EncoderInteropFiles
             }
 
             Func<int, YuvRaster> make = name.StartsWith("clip-", StringComparison.Ordinal) ? Clip() : i => EncoderTests.Picture(w, h, i, depth);
-            (List<EncodedPacket> packets, _, VideoTrackInfo track) = EncoderTests.Encode(options, count, make);
-            (List<EncodedPacket> single, _, _) = EncoderTests.Encode(options, count, make, new MediaContext { Egami = EgamiContext.Default with { MaxParallelism = 1 } });
+            HdrMetadata? hdr = name.EndsWith("-hdr", StringComparison.Ordinal) ? EncoderTests.Hdr10 : null;
+            (List<EncodedPacket> packets, _, VideoTrackInfo track) = EncoderTests.Encode(options, count, make, hdr: hdr);
+            (List<EncodedPacket> single, _, _) = EncoderTests.Encode(options, count, make, new MediaContext { Egami = EgamiContext.Default with { MaxParallelism = 1 } },
+                hdr: hdr);
             byte[] file = [.. packets.SelectMany(p => p.Data.ToArray())];
             Assert.True(file.AsSpan().SequenceEqual([.. single.SelectMany(p => p.Data.ToArray())]), $"{name}: the stream differs at one thread.");
             string basePath = Path.Combine(directory, name);

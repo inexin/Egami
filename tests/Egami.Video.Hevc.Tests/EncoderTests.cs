@@ -1,3 +1,4 @@
+using Egami.Colors;
 using Egami.Pixels;
 using Egami.Video.Codecs;
 
@@ -101,6 +102,56 @@ public sealed class EncoderTests
         }
 
         Dispose(packets);
+    }
+
+    /// <summary>HDR10 metadata: BT.2020 primaries mastered at 1000 nits, content light 800 and 400 nits.</summary>
+    internal static readonly HdrMetadata Hdr10 = new()
+    {
+        MasteringPrimaries = new ColorPrimaries(new(0.708, 0.292), new(0.17, 0.797), new(0.131, 0.046), new(0.3127, 0.329)),
+        MasteringMaxLuminance = 1000,
+        MasteringMinLuminance = 0.005,
+        MaxContentLightLevel = 800,
+        MaxFrameAverageLightLevel = 400,
+    };
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void HdrMetadataGoesInEveryIdrAccessUnit(bool annexB)
+    {
+        VideoEncoderOptions options = new() { Width = 64, Height = 48, KeyframeInterval = 4, Hevc = new HevcEncoderOptions { AnnexB = annexB } };
+        (List<EncodedPacket> packets, _, VideoTrackInfo track) = Encode(options, 8, i => Picture(64, 48, i, 10), hdr: Hdr10);
+        Assert.Equal(Hdr10, track.Hdr);
+        using IVideoDecoder decoder = HevcCodec.Instance.CreateDecoder(track, null, MediaContext.Default);
+        int frames = 0;
+        foreach (EncodedPacket packet in packets)
+        {
+            decoder.Send(packet);
+            Drain();
+        }
+
+        decoder.Flush();
+        Drain();
+        Assert.Equal(8, frames);
+        Dispose(packets);
+
+        void Drain()
+        {
+            while (decoder.TryReceive(out YuvVideoFrame? frame))
+            {
+                using (frame)
+                {
+                    frames++;
+                    Assert.Equal(1000, frame.Hdr!.MasteringMaxLuminance!.Value, 3);
+                    Assert.Equal(0.005, frame.Hdr.MasteringMinLuminance!.Value, 4);
+                    Assert.Equal(800, frame.Hdr.MaxContentLightLevel);
+                    Assert.Equal(400, frame.Hdr.MaxFrameAverageLightLevel);
+                    Assert.Equal(0.708, frame.Hdr.MasteringPrimaries!.Red.X, 4);
+                    Assert.Equal(0.797, frame.Hdr.MasteringPrimaries.Green.Y, 4);
+                    Assert.Equal(0.3127, frame.Hdr.MasteringPrimaries.White.X, 4);
+                }
+            }
+        }
     }
 
     [Fact]
@@ -276,7 +327,7 @@ public sealed class EncoderTests
     }
 
     internal static (List<EncodedPacket> Packets, List<ushort[]> Recon, VideoTrackInfo Track) Encode(VideoEncoderOptions options, int frames,
-        Func<int, YuvRaster> make, MediaContext? context = null, Action<HevcVideoEncoder>? inspect = null)
+        Func<int, YuvRaster> make, MediaContext? context = null, Action<HevcVideoEncoder>? inspect = null, HdrMetadata? hdr = null)
     {
         using HevcVideoEncoder encoder = (HevcVideoEncoder)HevcCodec.Instance.CreateEncoder(options, context ?? MediaContext.Default);
         List<EncodedPacket> packets = [];
@@ -285,7 +336,7 @@ public sealed class EncoderTests
         for (int i = 0; i < frames; i++)
         {
             using YuvRaster picture = make(i);
-            encoder.Send(new YuvVideoFrame(picture, new MediaTime(i, timeBase)));
+            encoder.Send(new YuvVideoFrame(picture, new MediaTime(i, timeBase)) { Hdr = hdr });
             encoder.Coder!.Coded ??= (pic, index) => recon[index] = Samples(pic.Planes, pic.Widths, options.Width, options.Height);
             while (encoder.TryReceive(out EncodedPacket? packet))
             {

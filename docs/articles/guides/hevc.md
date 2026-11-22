@@ -57,14 +57,19 @@ H.264 encoder's scale) and `Effort` (0 to 10, default 4) work as for Egami's oth
 HEVC settings: the `HevcProfile`, the level (the lowest Main tier level that the frame size and rate fit, unless set), QP
 limits, adaptive quantization, B-frames and Annex B packets for raw streams. Packets are otherwise length-prefixed with the
 parameter sets in the track's hvcC record, which MP4 and MOV write as an hvc1 sample entry, the one Apple players need. Each
-picture's CTB rows are wavefront substreams coded in parallel, and the stream is the same on any number of threads. Every
+picture's CTB rows are wavefront substreams coded in parallel, the lookahead's analysis runs as a wavefront too, and the
+stream is the same on any number of threads. Rate control works as for the H.264 encoder: constant quality (the default),
+a fixed quantizer, an average bitrate (one pass, or two with `FirstPassStats`) and constant bitrate with a buffer model.
+Adaptive quantization codes busy areas coarser and flat ones finer, leaving letterbox bars out of the picture's mean; from
+effort 5 a block tree codes the blocks later pictures predict from finer. A frame's `Hdr` metadata goes into every IDR
+access unit as mastering display and content light level SEI messages. Every
 picture decodes in Egami's decoder, FFmpeg's and the reference decoder HM to the encoder's own reconstruction, sample for
 sample.
 
 The encoder is in progress: keyframes are IDR pictures, coded with the HEIC encoder's search; P pictures predict from earlier
 ones, with motion search, merge and skip modes and intra blocks where they pay; and B pictures between them (three by default
 from effort 1, `BFrames` sets how many, `LatencyMode.Quality` only) predict from both sides, from effort 3 in a pyramid whose
-middle picture the others predict from. Rate control tuning and the release gates follow.
+middle picture the others predict from. The release gates follow.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoHevc.cs#encode)]
 

@@ -102,7 +102,7 @@ internal sealed partial class HevcCtuSearch
         HevcSnapshot before = _before[depth], best = _best[depth];
         Save(before, x0, y0, size);
         double lambda = Lambda(QgQp(x0, y0));
-        _lambdaMe = (int)(Math.Sqrt(lambda) * 256);
+        _lambdaMe = (int)(Math.Sqrt(SearchLambda(QgQp(x0, y0))) * 256);
 
         // The merge candidates: the best by SATD (and a close second) coded in full, with and without residual.
         HevcCodingUnit? bestCu = null;
@@ -261,7 +261,7 @@ internal sealed partial class HevcCtuSearch
     {
         Span<bool> tried = stackalloc bool[35];
         ReadOnlySpan<int> modes = [0, 1, 10, 26];
-        RoughCosts(x0, y0, log2, modes, modes[..3], Math.Sqrt(Lambda(QgQp(x0, y0))), tried);
+        RoughCosts(x0, y0, log2, modes, modes[..3], Math.Sqrt(SearchLambda(QgQp(x0, y0))), tried);
         long best = long.MaxValue;
         foreach (int m in modes)
         {

@@ -141,6 +141,13 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
             // A pyramid's middle B picture a coarser step than the default 1.15, as the H.264 encoder's (H.264 compression plan, PR D).
             BReferenceStep = 1.3,
             MacroblockTree = TreeStrength,
+
+            // The quantizer-aware block tree from effort 5, with the H.264 encoder's settings (H.264 compression plan, PR K).
+            BlockTree = effort >= 5 ? BlockTreeStrength : 0,
+            BlockTreeQuant = BlockTreeNoise / 16,
+            BlockTreeFrame = 0,
+            BlockTreeClamp = BlockTreeClamp,
+            BlockTreeStill = BlockTreeStill,
             Rate = new RateSettings
             {
                 Mode = options.RateControl,
@@ -154,6 +161,7 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
                 Pixels = (long)options.Width * options.Height,
                 Steps = HevcFrameCoder.QpSteps,
                 PlanWholeGroupAhead = bFrames > 0,
+                HorizonFrames = Math.Max(1, (int)Math.Round(fps * HorizonSeconds)),
                 ProbeQuantizer = 26,
                 InterFromKeyProbe = true,
                 BufferPull = 8,
@@ -174,6 +182,31 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
     /// 2^(-0.25) for each doubling of its content's worth through reuse.
     /// </summary>
     internal const double TreeStrength = 0.25;
+
+    /// <summary>
+    /// The seconds of frames ahead that the bitrate modes spread an overspend over (<see cref="RateSettings.HorizonFrames"/>):
+    /// a third of a second, where the core's default two seconds left 60-frame clips of still 60 fps scenes 9 to 12 % over
+    /// their target (the keyframe and the first P pictures, coded finer by the frame tree, were paid back too slowly).
+    /// </summary>
+    internal static double HorizonSeconds { get; set; } = 1 / 3.0;
+
+    /// <summary>The block tree's strength from effort 5 (<see cref="CoreSettings.BlockTree"/>), the H.264 encoder's.</summary>
+    internal const double BlockTreeStrength = 0.2;
+
+    /// <summary>The block tree's quantizer weight (<see cref="CoreSettings.BlockTreeQuant"/>, times 16), the H.264 encoder's.</summary>
+    internal const double BlockTreeNoise = 0.125;
+
+    /// <summary>The block tree's offset clamp (<see cref="CoreSettings.BlockTreeClamp"/>): at most 3 QP finer.</summary>
+    internal const double BlockTreeClamp = 0.5;
+
+    /// <summary>The block tree's still-scene guard (<see cref="CoreSettings.BlockTreeStill"/>), the H.264 encoder's.</summary>
+    internal const double BlockTreeStill = 0.6;
+
+    /// <summary>
+    /// The mean 8x8 luma variance below which a quantization group is flat and left out of the adaptive quantizer's mean (<see
+    /// cref="HevcVideoQuantizer.FlatVariance"/>): the H.264 encoder's flat energy, 384 for each of a macroblock's four luma blocks.
+    /// </summary>
+    internal const double FlatVariance = 6;
 
     /// <summary>The QP for a quality of 0 to 100, as the H.264 encoder's: 51 at 0, 23 at 50, 0 at 100 or so.</summary>
     internal static int QualityToQp(int quality) => Math.Clamp((int)Math.Round(51 - (0.56 * quality)), 0, 51);
@@ -211,16 +244,19 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
                 ChromaFormat = 1,
                 BitDepth = depth,
                 Effort = _effort,
+                CtbLog2Size = HevcInterProfile.For(_effort).CtbLog2,
                 ColourPrimaries = color.Primaries,
                 TransferCharacteristics = color.TransferCharacteristics,
                 MatrixCoefficients = color.MatrixCoefficients,
                 FullRange = color.FullRange,
-                AdaptiveQp = _hevc.AdaptiveQuantization,
+                // cu_qp_delta for the adaptive quantizer and for the block tree's offsets.
+                AdaptiveQp = _hevc.AdaptiveQuantization || _settings.BlockTree > 0,
+                VideoQuantizer = new HevcVideoQuantizer(_hevc.AdaptiveQuantization ? 1 : 0, FlatVariance, null),
                 Parallelism = Math.Max(1, _context.Egami.MaxParallelism),
                 LevelIdc = HevcLevels.Of(_level).Idc,
                 Timing = Timing(_options.FrameRate),
             };
-            _coder = new HevcFrameCoder(settings, _hevc.AnnexB, _bFrames, _pyramid, _references);
+            _coder = new HevcFrameCoder(settings, _hevc.AnnexB, _bFrames, _pyramid, _references, frame.Hdr);
             Track = MakeTrack(profile, color, frame.Hdr, _coder);
             _pictures = new EncoderPictures(_options.Width, _options.Height, EncoderPictures.Vp8Color, _context.Egami)
             {

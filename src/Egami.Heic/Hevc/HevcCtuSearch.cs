@@ -127,7 +127,11 @@ internal sealed partial class HevcCtuSearch
     internal static int InitType(HevcSliceHeader slice) =>
         slice.SliceType == HevcSliceHeader.I ? 0 : (slice.SliceType == HevcSliceHeader.P) != slice.CabacInit ? 1 : 2;
 
-    private double Lambda(int qp) => 0.57 * Math.Pow(2, (qp + _sps.QpBdOffsetLuma - 12) / 3.0);
+    /// <summary>The λ of the RD codings: <see cref="SearchLambda"/> scaled by <see cref="HevcEncoderSettings.RdLambdaScale"/>.</summary>
+    private double Lambda(int qp) => SearchLambda(qp) * _settings.RdLambdaScale;
+
+    /// <summary>The λ whose square root weighs bits in the SATD and SAD searches.</summary>
+    private double SearchLambda(int qp) => 0.57 * Math.Pow(2, (qp + _sps.QpBdOffsetLuma - 12) / 3.0);
 
     /// <summary>The weight of chroma distortion: 2^((QpY - QpC) / 3), so chroma is weighed with its own QP's lambda.</summary>
     private double ChromaWeight(int qpY, int c)

@@ -48,6 +48,12 @@ internal sealed record HevcEncoderSettings
     /// <summary>Gets the size of a quantization group, log2 (4 to 6), when <see cref="AdaptiveQp"/> is on.</summary>
     internal int QpGroupLog2 { get; init; } = 5;
 
+    /// <summary>
+    /// Gets the video encoder's quantizer offsets, or null for the HEIC encoder's adaptive quantizer (the mean over every group).
+    /// Applies when <see cref="AdaptiveQp"/> is on.
+    /// </summary>
+    internal HevcVideoQuantizer? VideoQuantizer { get; init; }
+
     /// <summary>Gets whether SAO is on (sample_adaptive_offset_enabled_flag and the slice's flags).</summary>
     internal bool Sao { get; init; } = true;
 
@@ -96,6 +102,12 @@ internal sealed record HevcEncoderSettings
     /// <summary>Gets general_level_idc, or null for the lowest level the picture size fits.</summary>
     internal int? LevelIdc { get; init; }
 
+    /// <summary>
+    /// Gets the share of λ that weighs bits against error in the RD codings (1, the HEIC encoder's); the searches' √λ stays
+    /// unscaled. Video pictures others predict from use less (HEVC encoder Build Plan, task 9).
+    /// </summary>
+    internal double RdLambdaScale { get; init; } = 1;
+
     /// <summary>Gets vui_num_units_in_tick and vui_time_scale, the VUI's timing, or null for none (a still picture).</summary>
     internal (uint NumUnitsInTick, uint TimeScale)? Timing { get; init; }
 
@@ -111,3 +123,13 @@ internal sealed record HevcEncoderSettings
     /// <summary>Gets the coded height.</summary>
     internal int CodedHeight => (Height + 7) & ~7;
 }
+
+/// <summary>
+/// How the video encoder sets each quantization group's QP (HEVC encoder Build Plan, task 9, as the H.264 encoder does): the
+/// adaptive quantizer's offset, with flat groups (letterbox and pillarbox bars, blank areas) left out of the picture's mean so
+/// they do not make the content coarser, plus the block tree's offsets.
+/// </summary>
+/// <param name="Strength">The adaptive quantizer's QP change per doubling of a group's variance against the mean; 0 for none.</param>
+/// <param name="FlatVariance">The mean 8x8 luma variance (8-bit units) below which a group is flat and left out of the mean.</param>
+/// <param name="TreeOffsets">The block tree's offsets in base-2 logarithms of the step (six QPs each), one per 16x16 block in raster order, or null.</param>
+internal sealed record HevcVideoQuantizer(double Strength, double FlatVariance, double[]? TreeOffsets);
