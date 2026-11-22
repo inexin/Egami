@@ -18,7 +18,7 @@ internal sealed partial class HevcCtuSearch
     private HevcTransformNode LumaPredictionUnit(HevcCodingUnit cu, int part, int x, int y, int log2, int depth, int qp, double lambda)
     {
         Span<int> mpm = stackalloc int[3];
-        _writer.MostProbableModes(x, y, cu.LumaModes.AsSpan(0, part), cu, mpm);
+        _writer.MostProbableModes(x, y, ((ReadOnlySpan<int>)cu.LumaModes)[..part], cu, mpm);
         int count = cu.Bypass && _profile.SmallCandidates == 1 ? 1 : Candidates(x, y, log2, mpm, lambda, log2 <= 3 ? _profile.SmallCandidates : _profile.LargeCandidates);
 
         HevcSnapshot before = _tuBefore[log2], best = _tuBest[log2];

@@ -19,7 +19,10 @@ internal sealed class HevcReference
 
     private static readonly int[] HalfTaps = [-1, 4, -11, 40, 40, -11, 4, -1];
 
-    internal HevcReference(HevcDpbPicture picture)
+    /// <summary>Makes the reference planes of a picture, in the arrays of <paramref name="recycled"/> when given (a reference of the same size that left the buffer).</summary>
+    /// <param name="picture">The decoded picture buffer entry.</param>
+    /// <param name="recycled">A reference no longer used, whose planes are written over, or null.</param>
+    internal HevcReference(HevcDpbPicture picture, HevcReference? recycled = null)
     {
         Picture = picture;
         HevcPicture p = picture.Picture;
@@ -28,7 +31,8 @@ internal sealed class HevcReference
         Stride = Width + (2 * Pad);
         int rows = Height + (2 * Pad);
         int max = (1 << p.Sps.BitDepthLuma) - 1;
-        Planes = [new ushort[Stride * rows], new ushort[Stride * rows], new ushort[Stride * rows], new ushort[Stride * rows]];
+        Planes = recycled?.Planes is { } planes && planes[0].Length == Stride * rows ? planes
+            : [new ushort[Stride * rows], new ushort[Stride * rows], new ushort[Stride * rows], new ushort[Stride * rows]];
 
         // The whole samples with their edges repeated.
         ushort[] full = Planes[0], source = p.Planes[0];
@@ -47,17 +51,18 @@ internal sealed class HevcReference
         Filter(Planes[1], Planes[3], Stride, rows, max);
         if (p.Sps.BitDepthLuma == 8)
         {
-            Planes8 = [Bytes(Planes[0]), Bytes(Planes[1]), Bytes(Planes[2]), Bytes(Planes[3])];
+            byte[][]? bytes = recycled?.Planes8 is { } b && b[0].Length == Planes[0].Length ? b : null;
+            Planes8 = [Bytes(Planes[0], bytes?[0]), Bytes(Planes[1], bytes?[1]), Bytes(Planes[2], bytes?[2]), Bytes(Planes[3], bytes?[3])];
         }
     }
 
     /// <summary>Gets <see cref="Planes"/> as bytes when luma has 8 bits, for the whole and half-sample SAD, else null.</summary>
     internal byte[][]? Planes8 { get; }
 
-    /// <summary>A plane of samples that fit a byte, as bytes.</summary>
-    internal static byte[] Bytes(ushort[] plane)
+    /// <summary>A plane of samples that fit a byte, as bytes: into <paramref name="into"/> when given, else a new array.</summary>
+    internal static byte[] Bytes(ushort[] plane, byte[]? into = null)
     {
-        byte[] bytes = GC.AllocateUninitializedArray<byte>(plane.Length);
+        byte[] bytes = into ?? GC.AllocateUninitializedArray<byte>(plane.Length);
         ref ushort p0 = ref MemoryMarshal.GetArrayDataReference(plane);
         ref byte b0 = ref MemoryMarshal.GetArrayDataReference(bytes);
         int i = 0;

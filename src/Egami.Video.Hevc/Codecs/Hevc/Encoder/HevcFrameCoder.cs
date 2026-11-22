@@ -35,6 +35,9 @@ internal sealed class HevcFrameCoder : IFrameCoder
 
     // The reference pictures the decoder's buffer holds after the last picture, P and I pictures marked as anchors.
     private readonly List<HevcReference> _dpb = [];
+
+    // References that left the buffer, whose planes the next reference takes over instead of new ones.
+    private readonly Stack<HevcReference> _spare = [];
     private readonly byte[]? _sei;
     private double[]? _tree;
 
@@ -118,7 +121,7 @@ internal sealed class HevcFrameCoder : IFrameCoder
         if (idr)
         {
             _idrIndex = decision.Index;
-            _dpb.Clear();
+            Retire([]);
         }
 
         int qp = Math.Clamp(decision.Quantizer, 0, 51);
@@ -210,19 +213,34 @@ internal sealed class HevcFrameCoder : IFrameCoder
     /// <summary>Makes the buffer the reference set kept and the picture just coded, when it is a reference.</summary>
     private void Keep(HevcReference[] kept, HevcEncodedPicture? coded, int poc, bool anchor)
     {
-        _dpb.Clear();
+        Retire(kept);
         _dpb.AddRange(kept);
         if (coded is null)
         {
             return;
         }
 
-        HevcReference current = new(new HevcDpbPicture(coded.Reconstruction, poc, _nextId++)) { Anchor = anchor };
+        _spare.TryPop(out HevcReference? recycled);
+        HevcReference current = new(new HevcDpbPicture(coded.Reconstruction, poc, _nextId++), recycled) { Anchor = anchor };
         _dpb.Add(current);
         if (anchor)
         {
             _lastAnchor = current;
         }
+    }
+
+    /// <summary>Empties the buffer, keeping the planes of the references not in <paramref name="kept"/> for later ones.</summary>
+    private void Retire(HevcReference[] kept)
+    {
+        foreach (HevcReference r in _dpb)
+        {
+            if (Array.IndexOf(kept, r) < 0 && r != _lastAnchor)
+            {
+                _spare.Push(r);
+            }
+        }
+
+        _dpb.Clear();
     }
 
     /// <summary>
