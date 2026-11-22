@@ -114,6 +114,9 @@ pixel-art images become vector shapes, and line art becomes stroked centre lines
 - Grayscale and color traces give a soft edge (a blend three or more pixels wide, as JPEG and blur leave) a band of the
   color between its sides, while `Colors` allows, so it fades in a step. On the egami-compare gates' posters the trace
   now has a lower error than VTracer 0.6.5 at no more anchors on 32 of 40 (was 24).
+- Pixel-art mode's sparse-pixels window reaches 4 pixels up and left of the crossing and 3 down and right past it (it
+  reached 3 and 4), so a dither beside a flat area no longer counts the flat area in. On the egami-compare gates' 13
+  sprites the trace keeps the same diagonal as Inkscape 1.4's pixel-art trace at 96.5 % of crossings (was 93.8 %).
 
 ## Egami.Fonts (unreleased)
 
