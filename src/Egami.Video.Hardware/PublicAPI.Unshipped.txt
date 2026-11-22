@@ -46,5 +46,6 @@ Egami.Video.Hardware.HardwareVideoProfile.RateControl.get -> Egami.Video.Hardwar
 override Egami.Video.Hardware.HardwareVideoDevice.ToString() -> string!
 override Egami.Video.Hardware.HardwareVideoProfile.ToString() -> string!
 static Egami.Video.Hardware.HardwareVideoCodecs.GetDevices() -> System.Collections.Generic.IReadOnlyList<Egami.Video.Hardware.HardwareVideoDevice!>!
+static Egami.Video.Hardware.HardwareVideoCodecs.H264.get -> Egami.Video.Codecs.VideoCodec!
 static Egami.Video.Hardware.HardwareVideoCodecs.IsAvailable(string! codecId, Egami.Video.Hardware.HardwareDirection direction) -> bool
 static Egami.Video.Hardware.HardwareVideoCodecs.UnavailableReason.get -> string?
