@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_Hardware_HardwareVideoCodecs" data-uid="Egami.Video.Hardware.HardwareVideoCodecs" class="text-break">
-Class HardwareVideoCodecs  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L23"><i class="bi bi-code-slash"></i></a>
+Class HardwareVideoCodecs  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L25"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -172,11 +172,80 @@ in 4:2:0.
 </h2>
 
 
+  <a id="Egami_Video_Hardware_HardwareVideoCodecs_H264_" data-uid="Egami.Video.Hardware.HardwareVideoCodecs.H264*"></a>
+
+  <h3 id="Egami_Video_Hardware_HardwareVideoCodecs_H264" data-uid="Egami.Video.Hardware.HardwareVideoCodecs.H264">
+  H264
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the hardware H.264 codec: its <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_">CreateEncoder(VideoEncoderOptions, MediaContext)</a> encodes on the GPU through Vulkan Video, 8-bit
+4:2:0 in the Constrained Baseline, Main and High profiles. Hand it frames as Egami's software encoder takes them, with the
+same <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html">VideoEncoderOptions</a> and <a class="xref" href="Egami.Video.Codecs.H264EncoderOptions.html">H264EncoderOptions</a>: quality, quantizer, constant and variable
+bitrate, keyframe interval, B-frames and Annex B packets. Decoding comes in a later preview.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static VideoCodec H264 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Video.Codecs.VideoCodec.html">VideoCodec</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Video_Hardware_HardwareVideoCodecs_H264_examples">Examples</h4>
+  <pre><code class="lang-csharp">// H.264 on the GPU, in MP4: the same options as Egami's software encoder. Effort picks the driver's quality level.
+VideoWriterOptions options = new() { Codec = HardwareVideoCodecs.H264, FrameRate = new Rational(30, 1), Quality = 60 };
+using (VideoWriter writer = VideoWriter.Create("duck-gpu.mp4", options))
+{
+    for (int i = 0; i &lt; 30; i++)
+    {
+        using Raster&lt;Rgb8&gt; frame = duck.Derive(ops =&gt; ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+        writer.WriteFrame(frame);
+    }
+}
+
+// A stream at 2 Mbit/s with a keyframe every second.
+VideoWriterOptions streaming = options with { RateControl = RateControlMode.ConstantBitrate, Bitrate = 2_000_000, KeyframeInterval = 30 };</code></pre>
+
+
+  <h4 class="section" id="Egami_Video_Hardware_HardwareVideoCodecs_H264_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_Effort">Effort</a> picks the driver's quality level: from effort 4 (the default) its best, lower
+efforts its faster levels. Quality maps to the quantizer on the software encoder's scale (Quality 60 is QP 17), with I
+and B pictures spaced from P pictures as the driver prefers (2 finer and 2 coarser where it doesn't say). B-frames are
+off unless <a class="xref" href="Egami.Video.Codecs.H264EncoderOptions.html#Egami_Video_Codecs_H264EncoderOptions_BFrames">BFrames</a> asks for them, since some GPUs predict B pictures from the earlier
+reference only and they then cost more than P pictures; they need <a class="xref" href="Egami.Video.Codecs.LatencyMode.html#Egami_Video_Codecs_LatencyMode_Quality">Quality</a>.
+<a class="xref" href="Egami.Video.Codecs.LatencyMode.html#Egami_Video_Codecs_LatencyMode_Realtime">Realtime</a> tunes the driver for low latency.
+The driver writes the SPS and PPS from Egami's values: the level, the VUI with the frames' color and frame rate, and the
+entropy coder, which drivers may change.
+</p>
+<p>
+Scene cuts do not start keyframes (keyframes come at <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_KeyframeInterval">KeyframeInterval</a> and where
+<a class="xref" href="Egami.Video.Codecs.EncodeFrameOptions.html#Egami_Video_Codecs_EncodeFrameOptions_ForceKeyframe">ForceKeyframe</a> asks), adaptive quantization and first-pass statistics are not used, and
+HDR SEI messages are not written (the track carries the HDR metadata). The output differs between GPUs and drivers.
+Creating an encoder throws <a class="xref" href="Egami.Video.Hardware.HardwareVideoException.html">HardwareVideoException</a> when no GPU encodes H.264, and
+<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a> when the GPU cannot code the size, level or rate control asked for.
+</p>
+</div>
+
+
+
+
   <a id="Egami_Video_Hardware_HardwareVideoCodecs_UnavailableReason_" data-uid="Egami.Video.Hardware.HardwareVideoCodecs.UnavailableReason*"></a>
 
   <h3 id="Egami_Video_Hardware_HardwareVideoCodecs_UnavailableReason" data-uid="Egami.Video.Hardware.HardwareVideoCodecs.UnavailableReason">
   UnavailableReason
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L67"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets why <a class="xref" href="Egami.Video.Hardware.HardwareVideoCodecs.html#Egami_Video_Hardware_HardwareVideoCodecs_GetDevices">GetDevices()</a> found no device with hardware video, such as a missing Vulkan loader or a driver without
@@ -231,7 +300,7 @@ foreach (HardwareVideoDevice device in devices)
 
   <h3 id="Egami_Video_Hardware_HardwareVideoCodecs_GetDevices" data-uid="Egami.Video.Hardware.HardwareVideoCodecs.GetDevices">
   GetDevices()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L74"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the GPUs with hardware video codecs Egami can use, and their profiles.</p>
@@ -282,7 +351,7 @@ foreach (HardwareVideoDevice device in devices)
 
   <h3 id="Egami_Video_Hardware_HardwareVideoCodecs_IsAvailable_System_String_Egami_Video_Hardware_HardwareDirection_" data-uid="Egami.Video.Hardware.HardwareVideoCodecs.IsAvailable(System.String,Egami.Video.Hardware.HardwareDirection)">
   IsAvailable(string, HardwareDirection)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L84"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns whether some GPU on this machine decodes or encodes <code class="paramref">codecId</code> in hardware.</p>
@@ -337,7 +406,7 @@ Console.WriteLine($"H.264 encode: {canEncode}, HEVC decode: {canDecodeHevc}");</
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L23" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L25" class="edit-link">Edit this page</a>
         </div>
 
 

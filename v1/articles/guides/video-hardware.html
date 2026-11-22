@@ -92,8 +92,9 @@ Intel GPUs carry next to their shader cores. It reaches the engine through Vulka
 Vulkan driver, on Windows and Linux. A hardware encoder runs many times faster than a software one and leaves the CPU almost
 idle; the price is bigger files at the same quality than Egami's own encoders at their default effort, and output that
 differs between GPU models and driver versions.</p>
-<p>The package is a preview. This release finds the hardware and reports what it can do; the hardware decoders and encoders
-follow in the next previews. Egami.Video's software codecs stay the default: hardware is used only when an app asks for it.</p>
+<p>The package is a preview. It finds the hardware, reports what it can do and encodes H.264; the hardware decoders and the
+HEVC encoder follow in the next previews. Egami.Video's software codecs stay the default: hardware is used only when an app
+asks for it.</p>
 <h2 id="what-it-needs">What it needs</h2>
 <ul>
 <li>A GPU and driver with Vulkan 1.3 and the Vulkan Video extensions (<code>VK_KHR_video_queue</code> and the decode or encode queue
@@ -147,6 +148,44 @@ foreach (HardwareVideoDevice device in devices)
   HEVC encode Main 8-bit, 96x32 to 4096x4096, level 6.2, 15 references, rate control ConstantQp, ConstantBitrate, VariableBitrate, 5 quality levels, P 1 / B 0
 </code></pre>
 <p>AV1 hardware (newer GPUs) is not listed yet. Every profile is 4:2:0.</p>
+<h2 id="encoding-h264">Encoding H.264</h2>
+<p><code>HardwareVideoCodecs.H264</code> is a <code>VideoCodec</code> like Egami's software H.264 codec: hand it to <code>VideoWriterOptions.Codec</code>, or
+call its <code>CreateEncoder</code>, with the same <code>VideoEncoderOptions</code> and <code>H264EncoderOptions</code>. It writes 8-bit 4:2:0 in the
+Constrained Baseline, Main and High profiles, in MP4, Matroska or a raw <code>.h264</code> stream, and takes frames as Egami's encoders
+do: YUV frames as they are, RGB frames converted to BT.601.</p>
+<pre><code class="lang-csharp">// H.264 on the GPU, in MP4: the same options as Egami's software encoder. Effort picks the driver's quality level.
+VideoWriterOptions options = new() { Codec = HardwareVideoCodecs.H264, FrameRate = new Rational(30, 1), Quality = 60 };
+using (VideoWriter writer = VideoWriter.Create(&quot;duck-gpu.mp4&quot;, options))
+{
+    for (int i = 0; i &lt; 30; i++)
+    {
+        using Raster&lt;Rgb8&gt; frame = duck.Derive(ops =&gt; ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+        writer.WriteFrame(frame);
+    }
+}
+
+// A stream at 2 Mbit/s with a keyframe every second.
+VideoWriterOptions streaming = options with { RateControl = RateControlMode.ConstantBitrate, Bitrate = 2_000_000, KeyframeInterval = 30 };
+</code></pre>
+<p>How the options map to the hardware:</p>
+<ul>
+<li><code>Quality</code> sets a constant quantiser on the software encoder's scale (Quality 60 is QP 17), with I and B pictures spaced
+from P pictures as the driver prefers. <code>Quantizer</code> sets the QP directly.</li>
+<li><code>RateControl</code> <code>Bitrate</code> (variable) and <code>ConstantBitrate</code> hand <code>Bitrate</code>, <code>MaxBitrate</code> and <code>BufferSize</code> to the driver's
+own rate control. <code>FirstPassStats</code> is refused: the hardware has no two-pass mode.</li>
+<li><code>Effort</code> picks the driver's quality level: effort 4, the default, its best; lower efforts its faster levels.</li>
+<li><code>KeyframeInterval</code> and <code>EncodeFrameOptions.ForceKeyframe</code> place IDR pictures; scene cuts don't start one.</li>
+<li>B-frames are off unless <code>H264EncoderOptions.BFrames</code> asks for them. Some GPUs predict B pictures from the earlier
+reference only, so that they cost more than P pictures: on a GeForce GTX 1070 two B-frames make files 10 to 40 % bigger at
+the same quality.</li>
+<li><code>LatencyMode.Realtime</code> tunes the driver for low latency and writes no B pictures.</li>
+<li><code>Level</code>, <code>Entropy</code> and <code>Slices</code> work as on the software encoder; the driver writes the SPS and PPS and may change the
+entropy coder.</li>
+</ul>
+<p>What to expect, measured on a GeForce GTX 1070 (driver 582.66) with 720p and 1080p test clips at constant QP: the GPU encodes
+about 300 frames per second at 1080p and 550 to 600 at 720p, with the CPU mostly idle, against 12 to 55 frames per second
+for Egami's software encoder. At the same quality its files are 8 to 17 % smaller than the software encoder's at effort 0
+and 15 to 70 % bigger than at effort 4, its default. Other GPUs differ: newer video engines compress better.</p>
 <h2 id="errors">Errors</h2>
 <p>When the driver refuses or fails an operation, the package throws <code>HardwareVideoException</code>, an <code>EgamiException</code> whose
 <code>ResultCode</code> holds the driver's result (a negative <code>VkResult</code>, such as -4 when the driver reset the GPU). The probe itself

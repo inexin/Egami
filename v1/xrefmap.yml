@@ -133720,6 +133720,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Hardware.HardwareVideoCodecs.GetDevices
   nameWithType: HardwareVideoCodecs.GetDevices
+- uid: Egami.Video.Hardware.HardwareVideoCodecs.H264
+  name: H264
+  href: api/Egami.Video.Hardware.HardwareVideoCodecs.html#Egami_Video_Hardware_HardwareVideoCodecs_H264
+  commentId: P:Egami.Video.Hardware.HardwareVideoCodecs.H264
+  fullName: Egami.Video.Hardware.HardwareVideoCodecs.H264
+  nameWithType: HardwareVideoCodecs.H264
+- uid: Egami.Video.Hardware.HardwareVideoCodecs.H264*
+  name: H264
+  href: api/Egami.Video.Hardware.HardwareVideoCodecs.html#Egami_Video_Hardware_HardwareVideoCodecs_H264_
+  commentId: Overload:Egami.Video.Hardware.HardwareVideoCodecs.H264
+  isSpec: "True"
+  fullName: Egami.Video.Hardware.HardwareVideoCodecs.H264
+  nameWithType: HardwareVideoCodecs.H264
 - uid: Egami.Video.Hardware.HardwareVideoCodecs.IsAvailable(System.String,Egami.Video.Hardware.HardwareDirection)
   name: IsAvailable(string, HardwareDirection)
   href: api/Egami.Video.Hardware.HardwareVideoCodecs.html#Egami_Video_Hardware_HardwareVideoCodecs_IsAvailable_System_String_Egami_Video_Hardware_HardwareDirection_
