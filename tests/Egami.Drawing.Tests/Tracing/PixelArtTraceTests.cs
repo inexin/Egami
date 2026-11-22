@@ -276,6 +276,112 @@ public class PixelArtTraceTests
         return count;
     }
 
+    [Fact]
+    public void TheOptimisationStraightensSteps()
+    {
+        // A shallow slope and a disc, drawn in steps: smoothed, their outlines turn less, every pixel center keeps its color,
+        // and the curves stay within half a pixel of where they were.
+        string[] slope =
+        [
+            ".......................K",
+            "....................KKKK",
+            ".................KKKKKKK",
+            "..............KKKKKKKKKK",
+            "...........KKKKKKKKKKKKK",
+            "........KKKKKKKKKKKKKKKK",
+            ".....KKKKKKKKKKKKKKKKKKK",
+            "..KKKKKKKKKKKKKKKKKKKKKK",
+        ];
+        string[] disc = [.. Enumerable.Range(0, 16).Select(y => new string([.. Enumerable.Range(0, 16)
+            .Select(x => ((x - 7.5) * (x - 7.5)) + ((y - 7.5) * (y - 7.5)) <= 7.2 * 7.2 ? 'R' : '.')]))];
+        foreach (string[] rows in new[] { slope, disc })
+        {
+            using Raster<Rgba8> raster = Sprite(rows);
+            TraceResult plain = PixelArtTracer.Trace(raster, TraceOptions.PixelArt, CancellationToken.None, optimize: false);
+            TraceResult smooth = raster.Trace(TraceOptions.PixelArt);
+            Assert.True(Turning(smooth) < 0.8 * Turning(plain), $"{Turning(smooth)} against {Turning(plain)}");
+            Assert.Equal(0, Differ(raster, Draw(smooth, 8), 8));
+            Assert.Equal(plain.Shapes.Count, smooth.Shapes.Count);
+            for (int k = 0; k < plain.Shapes.Count; k++)
+            {
+                Assert.Equal(plain.Shapes[k].Color, smooth.Shapes[k].Color);
+                foreach (ContourMeasure contour in new PathMeasure(smooth.Shapes[k].Path, true).Contours)
+                {
+                    for (float d = 0; d <= contour.Length; d += 0.1f)
+                    {
+                        Vector2 p = contour.GetPosition(d);
+                        Assert.True(Near(plain.Shapes[k].Path, p, 0.52f), $"{p} moved more than half a pixel");
+                    }
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public void TheOptimisationIsTheSameEveryTime()
+    {
+        using Raster<Rgba8> raster = Tiles(1);
+        TraceResult a = raster.Trace(TraceOptions.PixelArt), b = raster.Trace(TraceOptions.PixelArt);
+        Assert.Equal(a.Shapes.Count, b.Shapes.Count);
+        for (int k = 0; k < a.Shapes.Count; k++)
+        {
+            Assert.Equal(a.Shapes[k].Path.Points.ToArray(), b.Shapes[k].Path.Points.ToArray());
+            Assert.Equal(a.Shapes[k].Path.Verbs.ToArray(), b.Shapes[k].Path.Verbs.ToArray());
+        }
+    }
+
+    [Fact]
+    public void ExactIsNotOptimised()
+    {
+        using Raster<Rgba8> raster = Sprite(Face);
+        TraceOptions exact = TraceOptions.PixelArt with { Exact = true };
+        TraceResult plain = PixelArtTracer.Trace(raster, exact, CancellationToken.None, optimize: false);
+        TraceResult traced = raster.Trace(exact);
+        Assert.Equal(plain.Shapes.Count, traced.Shapes.Count);
+        for (int k = 0; k < plain.Shapes.Count; k++)
+        {
+            Assert.Equal(plain.Shapes[k].Path.Points.ToArray(), traced.Shapes[k].Path.Points.ToArray());
+        }
+    }
+
+    /// <summary>How far the outlines turn in all, in radians, from their tangents every fiftieth of a pixel.</summary>
+    private static double Turning(TraceResult result)
+    {
+        double turning = 0;
+        foreach (TracedShape shape in result.Shapes)
+        {
+            foreach (ContourMeasure contour in new PathMeasure(shape.Path, true).Contours)
+            {
+                Vector2 previous = contour.GetTangent(0);
+                for (float d = 0.02f; d <= contour.Length; d += 0.02f)
+                {
+                    Vector2 t = contour.GetTangent(d);
+                    turning += Math.Abs(Math.Atan2((previous.X * t.Y) - (previous.Y * t.X), Vector2.Dot(previous, t)));
+                    previous = t;
+                }
+            }
+        }
+
+        return turning;
+    }
+
+    /// <summary>Whether <paramref name="p"/> is within <paramref name="distance"/> of the outline of <paramref name="path"/>.</summary>
+    private static bool Near(Path path, Vector2 p, float distance)
+    {
+        foreach (ContourMeasure contour in new PathMeasure(path, true).Contours)
+        {
+            for (float d = 0; d <= contour.Length; d += 0.02f)
+            {
+                if (Vector2.Distance(contour.GetPosition(d), p) <= distance)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private static Raster<Rgba8> Draw(TraceResult result, int scale)
     {
         Raster<Rgba8> drawn = Raster.Create(result.Width * scale, result.Height * scale, Rgba8.Transparent);
