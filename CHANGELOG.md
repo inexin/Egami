@@ -37,6 +37,10 @@ waits for its gates. Additive to 1.3.
   with RDOQ, refines motion with two half-sample SAD steps and one quarter-sample SATD step, and runs AVX2/SSE2/Vector128 SAD,
   SATD, interpolation and quantization kernels; the shared forward transform gained 4x4 and even/odd-split 16x16/32x32 kernels,
   which make HEIC encoding a few percent faster with byte-identical output.
+- Egami.Video.H264: average bitrate (one and two passes) pays an overspend back over a third of a second instead of two.
+  With two, 60-frame clips of still 60 fps scenes (johnny, kristen_sara at 2000 and 600 kbit/s) ended 47–57 % over the
+  target; now 46 of the 48 runs on the eight clips are within 3.4 % and the other two within 5.0 %. Constant bitrate,
+  constant quality and quantizer output is byte-identical.
 - Egami.Video.Hevc compiles Egami.Heic's HEVC encoder and decoder files in as internal source, so a Video release does not wait
   for an Egami.Heic release; it still installs beside Egami.Heic 1.4.0. HEIC output is unchanged.
 

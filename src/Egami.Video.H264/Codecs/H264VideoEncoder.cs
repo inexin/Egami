@@ -180,6 +180,7 @@ internal sealed class H264VideoEncoder : IVideoEncoder
                 InterFromKeyProbe = true,
                 BufferPull = 8,
                 BufferStepPull = 2,
+                HorizonFrames = options.RateControl == RateControlMode.Bitrate ? Math.Max(1, (int)Math.Round(fps * HorizonSeconds)) : null,
                 FirstPass = options.RateControl == RateControlMode.Bitrate && options.FirstPassStats is { } stats ? FirstPassComplexities(stats) : null,
             },
         };
@@ -187,6 +188,13 @@ internal sealed class H264VideoEncoder : IVideoEncoder
     }
 
     public VideoTrackInfo Track { get; private set; }
+
+    /// <summary>
+    /// The seconds over which average bitrate (one or two passes) pays back an overspend; constant bitrate keeps the core's 2 s,
+    /// as its buffer steers it. With 2 s, 60-frame clips of still 60 fps scenes ended 47–57 % over the target; a third of a
+    /// second keeps them within a few percent.
+    /// </summary>
+    internal static double HorizonSeconds { get; set; } = 1 / 3.0;
 
     /// <summary>Gets the frame coder once the first frame is in, for tests.</summary>
     internal H264FrameCoder? Coder => _coder;

@@ -30,6 +30,40 @@ public sealed class EncoderRateTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AStillSceneLandsNearTheTarget(bool twoPass)
+    {
+        // One second of a still 60 fps scene: the key frame's overspend must be paid back within the second, not over two (with
+        // two, one and two passes ended 23 % over).
+        Rational rate = new(60, 1);
+        long bitrate = 200_000;
+        List<VideoFrame> frames = [.. Enumerable.Range(0, 60).Select(i => (VideoFrame)new YuvVideoFrame(Still(i), new MediaTime(i, rate.Reciprocal())))];
+        FirstPassStats? stats = twoPass ? VideoWriter.AnalyzeFirstPass(frames, cancellationToken: TestContext.Current.CancellationToken) : null;
+        using IVideoEncoder encoder = H264Codec.Instance.CreateEncoder(Options(RateControlMode.Bitrate, bitrate, null) with { Width = 320, Height = 192, FrameRate = rate, FirstPassStats = stats }, MediaContext.Default);
+        long bits = 0;
+        foreach (VideoFrame frame in frames)
+        {
+            encoder.Send(frame);
+            while (encoder.TryReceive(out EncodedPacket? packet))
+            {
+                bits += packet.Data.Length * 8L;
+                packet.Dispose();
+            }
+        }
+
+        encoder.Flush();
+        while (encoder.TryReceive(out EncodedPacket? packet))
+        {
+            bits += packet.Data.Length * 8L;
+            packet.Dispose();
+        }
+
+        frames.ForEach(f => f.Dispose());
+        Assert.InRange(bits / (double)bitrate, 0.9, 1.1);
+    }
+
+    [Theory]
     [InlineData(LatencyMode.Realtime)]
     [InlineData(LatencyMode.Quality)]
     public void ConstantBitrateNeverRunsTheBufferDry(LatencyMode latency)
@@ -109,6 +143,23 @@ public sealed class EncoderRateTests
         Effort = 2,
         H264 = new H264EncoderOptions { BFrames = bFrames },
     };
+
+    /// <summary>A still scene of 320x192 with a camera's noise, new in every frame.</summary>
+    private static YuvRaster<byte> Still(int frame)
+    {
+        YuvRaster<byte> picture = EncoderInterTests.Moving(320, 192, 0);
+        Random random = new(frame);
+        for (int y = 0; y < 192; y++)
+        {
+            Span<byte> row = picture.Y.Row(y);
+            for (int x = 0; x < 320; x++)
+            {
+                row[x] = (byte)Math.Clamp(row[x] + random.Next(-2, 3), 0, 255);
+            }
+        }
+
+        return picture;
+    }
 
     /// <summary>The moving texture, cut to a different picture at frame 60.</summary>
     private static YuvRaster<byte> Picture(int width, int height, int frame) =>
