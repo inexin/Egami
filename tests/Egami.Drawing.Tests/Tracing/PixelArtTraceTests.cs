@@ -117,6 +117,26 @@ public class PixelArtTraceTests
     }
 
     [Fact]
+    public void ADitherBesideAFlatAreaKeepsNeitherDiagonal()
+    {
+        // A checker of single pixels in the left half, flat background in the right. The sparse-pixels window reaches four
+        // pixels up and left and three past the block, so a block four pixels from the flat area sees only the checker: its
+        // votes tie, as everywhere inside the checker.
+        string[] rows = new string[16];
+        for (int y = 0; y < rows.Length; y++)
+        {
+            rows[y] = (y % 2 == 0 ? "K.K.K.K." : ".K.K.K.K") + "........";
+        }
+
+        using Raster<Rgba8> raster = Sprite(rows);
+        byte[] diagonals = PixelArtTracer.Diagonals(raster);
+        for (int y = 4; y < 10; y++)
+        {
+            Assert.Equal(0, diagonals[(y * 15) + 4]);
+        }
+    }
+
+    [Fact]
     public void ShadingBlocksKeepNoDiagonal()
     {
         // Two near-blacks (similar in YUV) and black: the block is fully joined, a shading, so neither diagonal stays.

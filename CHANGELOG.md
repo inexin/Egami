@@ -106,6 +106,24 @@ pixel-art images become vector shapes, and line art becomes stroked centre lines
   left out, and an image of more than 256 colors throws `ArgumentException`. `TraceOptions.Exact` keeps the pixel squares
   instead, merged into one shape per color, and `TraceOptions.PixelArt` is the preset. A 1000 × 800 sprite sheet traces in
   about 0.1 s.
+- Black-and-white tracing is faster (follow-up to the egami-compare gates), with the same shapes: 8-bit RGB images are read
+  in place instead of through a 16-bit copy, noise removal finds its regions' sizes from the labelling's runs, scans for
+  neighbours in parallel and hands its regions on, so they are not labelled twice, the boundary scan skips equal rows by
+  vector compare, and the levels pass runs in parallel. Path data numbers are written through integers. Native `egami trace`
+  on a 12-megapixel drawing takes 0.19 s instead of 0.47 s (1.2 × potrace 1.16), 4 megapixels 0.10 s (1.4 ×).
+- Logo mode keeps blunt corners (a bend of half the corner angle or more, all at one point, as on hexagons and octagons)
+  and finds sharp tips further out, past where their antialiased sides round off. On the egami-compare gates' 24 synthetic
+  logos the edges lie a mean 0.045 pixels from the true outlines (was 0.076), at most 0.44 (was 0.60).
+- The palette of a grayscale, color or logo trace is found from the inside of flat areas only, so the colors JPEG noise
+  rings around edges no longer take palette entries, and it is cut into more colors than wanted and merged back by least
+  added error (Ward), so a noisy large color no longer crowds out a small distinct one. On the egami-compare gates' JPEG
+  posters the palettes now match the drawn colors, with 3 to 10 times fewer anchors than before.
+- Grayscale and color traces give a soft edge (a blend three or more pixels wide, as JPEG and blur leave) a band of the
+  color between its sides, while `Colors` allows, so it fades in a step. On the egami-compare gates' posters the trace
+  now has a lower error than VTracer 0.6.5 at no more anchors on 32 of 40 (was 24).
+- Pixel-art mode's sparse-pixels window reaches 4 pixels up and left of the crossing and 3 down and right past it (it
+  reached 3 and 4), so a dither beside a flat area no longer counts the flat area in. On the egami-compare gates' 13
+  sprites the trace keeps the same diagonal as Inkscape 1.4's pixel-art trace at 96.5 % of crossings (was 93.8 %).
 
 ## Egami.Fonts (unreleased)
 

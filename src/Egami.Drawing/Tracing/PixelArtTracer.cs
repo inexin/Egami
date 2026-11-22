@@ -25,9 +25,12 @@ internal static class PixelArtTracer
     // An edge between colors at most this far apart in YUV is shading, not a contour.
     private const float ShadingLimit = 100 / 255f;
 
-    // The islands vote, and the sparse pixels window (8 by 8 pixels around the 2 by 2 block).
+    // The islands vote, and the sparse pixels window: 8 by 8 pixels around the 2 by 2 block, from WindowLead pixels above and
+    // left of its top-left pixel. An even window cannot center on the block's pixels; reaching one further up and left than
+    // down and right is the reading whose choices match Inkscape's pixel-art trace (on a dither beside a flat area, it does not
+    // count the flat area in, so the dither's crossings tie and both diagonals go).
     private const int IslandVote = 5;
-    private const int Window = 8;
+    private const int Window = 8, WindowLead = 4;
 
     // The shortest straight leg, in quarter pixels, either side of a turn that stays a sharp corner: one pixel edge.
     private const int MinLeg = 4;
@@ -342,8 +345,8 @@ internal static class PixelArtTracer
                         vote2 += length2 - length1;
                     }
 
-                    int size1 = Component(edges, w, x - 3, y - 3, a1, stack, seen, around);
-                    int size2 = Component(edges, w, x - 3, y - 3, a2, stack, seen, around);
+                    int size1 = Component(edges, w, x - WindowLead, y - WindowLead, a1, stack, seen, around);
+                    int size2 = Component(edges, w, x - WindowLead, y - WindowLead, a2, stack, seen, around);
                     if (size1 < size2)
                     {
                         vote1 += size2 - size1;

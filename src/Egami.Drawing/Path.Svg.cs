@@ -473,6 +473,50 @@ public sealed partial class Path
                 return r == 0 ? 0 : r;
             }
 
+            // A rounded value as the format string writes it, through integers when it fits: custom number formats are slow.
+            int Format(double value, char[] into)
+            {
+                double units = Math.Round(value * scale);
+                if (format.Precision > 9 || Math.Abs(units) >= 1e15)
+                {
+                    value.TryFormat(into, out int slow, numberFormat, CultureInfo.InvariantCulture);
+                    return slow;
+                }
+
+                long k = (long)units;
+                int n = 0;
+                if (k < 0)
+                {
+                    into[n++] = '-';
+                    k = -k;
+                }
+
+                long unit = (long)scale;
+                (long whole, long fraction) = Math.DivRem(k, unit);
+                whole.TryFormat(into.AsSpan(n), out int digits, default, CultureInfo.InvariantCulture);
+                n += digits;
+                if (fraction != 0)
+                {
+                    into[n++] = '.';
+                    int places = format.Precision;
+                    while (fraction % 10 == 0)
+                    {
+                        fraction /= 10;
+                        places--;
+                    }
+
+                    for (int d = places - 1; d >= 0; d--)
+                    {
+                        into[n + d] = (char)('0' + (fraction % 10));
+                        fraction /= 10;
+                    }
+
+                    n += places;
+                }
+
+                return n;
+            }
+
             // Where a reader lands after reading that number: it parses a float and, for a relative command, adds it in float.
             float Lands(double value, float from) => relative ? (float)value + from : (float)value;
 
@@ -494,7 +538,7 @@ public sealed partial class Path
 
                 for (int i = 0; i < args.Length; i++)
                 {
-                    args[i].TryFormat(buffer, out int written, numberFormat, CultureInfo.InvariantCulture);
+                    int written = Format(args[i], buffer);
                     ReadOnlySpan<char> number = buffer.AsSpan(0, written);
                     if (format.Compact)
                     {
