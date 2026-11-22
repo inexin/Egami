@@ -184,7 +184,6 @@ public sealed class H264EncoderTests
         Assert.Throws<ArgumentException>(() => codec.CreateEncoder(
             new VideoEncoderOptions { Width = 32, Height = 32, H264 = new H264EncoderOptions { Profile = H264Profile.ConstrainedBaseline, Entropy = H264EntropyCoder.Cabac } },
             MediaContext.Default));
-        Assert.Throws<NotSupportedException>(() => codec.CreateDecoder(new VideoTrackInfo { Number = 1, Kind = TrackKind.Video, CodecId = CodecIds.Avc, TimeBase = new Rational(1, 25), Width = 32, Height = 32 }, null, MediaContext.Default));
         Assert.Equal(CodecIds.Avc, codec.CodecId);
         Assert.Equal(HardwareVideoCodecs.IsAvailable(CodecIds.Avc, HardwareDirection.Encode), codec.CanEncode);
     }

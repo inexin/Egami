@@ -73,9 +73,28 @@ public class VideoHardware
         VideoWriterOptions streaming = options with { RateControl = RateControlMode.ConstantBitrate, Bitrate = 2_000_000, KeyframeInterval = 30 };
         #endregion
 
-        using VideoReader reader = VideoReader.Open("duck-gpu.mp4", context: MediaContext.Default.WithH264());
-        Assert.Equal(CodecIds.Avc, reader.Track.CodecId);
-        Assert.Equal(30, reader.ReadFrames().Select(f => { f.Dispose(); return 0; }).Count());
         Assert.Equal(2_000_000, streaming.Bitrate);
+        Assert.SkipUnless(HardwareVideoCodecs.IsAvailable(CodecIds.Avc, HardwareDirection.Decode), "No GPU decodes H.264.");
+        int count = 0;
+
+        #region decode
+        // Decode H.264 on the GPU where there is one: the hardware codec takes the software codec's place in the context.
+        MediaContext context = MediaContext.Default.WithH264();
+        if (HardwareVideoCodecs.IsAvailable(CodecIds.Avc, HardwareDirection.Decode))
+        {
+            context = context.WithCodec(HardwareVideoCodecs.H264);
+        }
+
+        using VideoReader reader = VideoReader.Open("duck-gpu.mp4", context: context);
+        foreach (YuvVideoFrame frame in reader.ReadFrames())
+        {
+            using (frame)
+            {
+                count++; // frame.Planes holds the 8-bit 4:2:0 picture, the same samples Egami's software decoder gives
+            }
+        }
+        #endregion
+
+        Assert.Equal(30, count);
     }
 }

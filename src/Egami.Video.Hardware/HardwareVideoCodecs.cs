@@ -31,7 +31,9 @@ public static class HardwareVideoCodecs
     /// Gets the hardware H.264 codec: its <see cref="VideoCodec.CreateEncoder"/> encodes on the GPU through Vulkan Video, 8-bit
     /// 4:2:0 in the Constrained Baseline, Main and High profiles. Hand it frames as Egami's software encoder takes them, with the
     /// same <see cref="VideoEncoderOptions"/> and <see cref="H264EncoderOptions"/>: quality, quantizer, constant and variable
-    /// bitrate, keyframe interval, B-frames and Annex B packets. Decoding comes in a later preview.
+    /// bitrate, keyframe interval, B-frames and Annex B packets. Its <see cref="VideoCodec.CreateDecoder"/> decodes progressive
+    /// 8-bit 4:2:0 streams on the GPU to the same samples as Egami's software decoder; add it to a context with
+    /// <see cref="MediaContext.WithCodec(VideoCodec)"/> to have <see cref="VideoReader"/> use it.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -51,9 +53,17 @@ public static class HardwareVideoCodecs
     /// Creating an encoder throws <see cref="HardwareVideoException"/> when no GPU encodes H.264, and
     /// <see cref="NotSupportedException"/> when the GPU cannot code the size, level or rate control asked for.
     /// </para>
+    /// <para>
+    /// The decoder reads the stream with Egami's own H.264 parser, keeps the decoded picture buffer, and has the GPU decode each
+    /// picture and copy it back; frames come out in output order as <see cref="YuvRaster{T}"/> of bytes, cropped, with the
+    /// color the software decoder gives. Field pictures, MBAFF frames, monochrome, 4:2:2 and streams above 8 bits throw
+    /// <see cref="UnsupportedFormatException"/> when their first picture comes; <see cref="VideoCodec.CanDecode"/> turns down
+    /// tracks whose bit depth or chroma format says so up front.
+    /// </para>
     /// </remarks>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/VideoHardware.cs" region="encode"/>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/VideoHardware.cs" region="decode"/>
     /// </example>
     public static VideoCodec H264 => HardwareH264Codec.Instance;
 

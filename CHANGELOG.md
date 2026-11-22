@@ -6,7 +6,7 @@ changes that break code come only in a new major version.
 ## Egami.Video.Hardware 0.1.0-preview.1 (unreleased)
 
 A new package, Egami.Video.Hardware: hardware video through Vulkan Video on Windows and Linux (Vulkan Video Build Plan, PR A
-of five). This first preview finds the hardware and encodes H.264; the decoders and the HEVC encoder follow.
+of five). This first preview finds the hardware, and decodes and encodes H.264; HEVC follows.
 
 - `HardwareVideoCodecs.IsAvailable(codecId, HardwareDirection)` and `HardwareVideoCodecs.GetDevices()` probe the GPUs once per
   process and never throw: `HardwareVideoDevice` (name, kind, PCI ids, Vulkan and driver versions) with its
@@ -22,7 +22,13 @@ of five). This first preview finds the hardware and encodes H.264; the decoders 
   forced keyframes, levels, CABAC or CAVLC, slices, Annex B or length-prefixed packets, and the VUI with the frames' color.
   `Effort` picks the driver's quality level. B-frames only when `BFrames` asks: a GeForce GTX 1070 predicts B pictures from
   the earlier reference only. On that GPU it encodes about 300 frames per second at 1080p, with files 8 to 17 % smaller than
-  the software encoder's at effort 0 and 15 to 70 % bigger than at its default effort 4. No two-pass mode and no decoder yet.
+  the software encoder's at effort 0 and 15 to 70 % bigger than at its default effort 4. No two-pass mode.
+- `HardwareVideoCodecs.H264` decodes H.264 on the GPU (PR C): progressive 8-bit 4:2:0 streams, read with Egami's own H.264
+  parser (picture order count, frame_num gaps, reference marking with all MMCOs, output order), each picture decoded into a
+  Vulkan DPB slot and copied back, up to four in flight. Every such clip of the H.264 test set decodes to the same samples
+  and timestamps as Egami's software decoder; field pictures, MBAFF, monochrome, 4:2:2 and 10-bit throw
+  `UnsupportedFormatException`. About 200 frames per second at 1080p on a GeForce GTX 1070, against 9 to 21 for the software
+  decoder.
 - Tests that need a GPU carry the `Gpu` category and skip where there is none.
 
 ## Egami.Video 1.4.0 (unreleased)

@@ -24,4 +24,9 @@
     <ProjectReference Include="..\..\src\Egami.Video.H264\Egami.Video.H264.csproj" />
   </ItemGroup>
 
+  <!-- The H.264 test set: the hardware decoder must match the software decoder on it. -->
+  <ItemGroup>
+    <None Include="../video/corpus/h264/*.h264" LinkBase="corpus/h264" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

@@ -23,6 +23,13 @@
     <ProjectReference Include="..\Egami.Video\Egami.Video.csproj" />
   </ItemGroup>
 
+  <!-- Egami's H.264 parameter set and slice header readers, compiled in as internal source as Egami.Heic shares the NAL code:
+       the hardware decoder reads the stream with the software decoder's own parser. -->
+  <ItemGroup>
+    <Compile Include="..\Shared\Nal\NalBitReader.cs;..\Shared\Nal\NalErrors.cs;..\Shared\Nal\NalFraming.cs;..\Shared\Nal\NalVui.cs;..\Shared\Nal\NalSei.cs;..\Shared\Nal\NalBumpingBuffer.cs" Link="Shared\Nal\%(Filename)%(Extension)" />
+    <Compile Include="..\Egami.Video.H264\Codecs\H264\H264Sps.cs;..\Egami.Video.H264\Codecs\H264\H264Pps.cs;..\Egami.Video.H264\Codecs\H264\H264SliceHeader.cs;..\Egami.Video.H264\Codecs\H264\H264Vui.cs;..\Egami.Video.H264\Codecs\H264\H264ScalingLists.cs;..\Egami.Video.H264\Codecs\H264\H264Dequant.cs;..\Egami.Video.H264\Codecs\H264\H264Sei.cs;..\Egami.Video.H264\Codecs\H264\NalErrors.cs;..\Egami.Video.H264\Codecs\H264\H264Config.cs" Link="Shared\H264\%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Egami.Video.Hardware.Tests" />
   </ItemGroup>
