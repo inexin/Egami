@@ -226,13 +226,53 @@ internal sealed class HevcMotionSearch
         Math.Min(VectorBits(mvx - (short)_mvp0, mvy - (_mvp0 >> 16)), VectorBits(mvx - (short)_mvp1, mvy - (_mvp1 >> 16)));
 
     /// <summary>The sum of absolute differences of two w by h blocks.</summary>
+    /// <remarks>Rows of 16 or more widen into one 32-bit sum, summed once at the end; rows of 8 go two to a 256-bit step.</remarks>
     internal static long Sad(ushort[] a, int atA, int strideA, ushort[] b, int atB, int strideB, int w, int h)
     {
+        ref ushort a0 = ref MemoryMarshal.GetArrayDataReference(a);
+        ref ushort b0 = ref MemoryMarshal.GetArrayDataReference(b);
+        if (Vector256.IsHardwareAccelerated && (w & 15) == 0)
+        {
+            Vector256<uint> total = Vector256<uint>.Zero;
+            for (int r = 0; r < h; r++)
+            {
+                ref ushort pa = ref Unsafe.Add(ref a0, atA + (r * strideA));
+                ref ushort pb = ref Unsafe.Add(ref b0, atB + (r * strideB));
+                Vector256<ushort> acc = Vector256<ushort>.Zero;
+                for (int k = 0; k < w; k += 16)
+                {
+                    Vector256<ushort> va = Vector256.LoadUnsafe(ref pa, (nuint)k), vb = Vector256.LoadUnsafe(ref pb, (nuint)k);
+                    acc += Vector256.Max(va, vb) - Vector256.Min(va, vb);
+                }
+
+                (Vector256<uint> lo, Vector256<uint> hi) = Vector256.Widen(acc);
+                total += lo + hi;
+            }
+
+            return Vector256.Sum(total);
+        }
+
+        if (Vector256.IsHardwareAccelerated && w == 8 && (h & 1) == 0)
+        {
+            Vector256<uint> total = Vector256<uint>.Zero;
+            for (int r = 0; r < h; r += 2)
+            {
+                Vector256<ushort> va = Vector256.Create(Vector128.LoadUnsafe(ref a0, (nuint)(atA + (r * strideA))),
+                    Vector128.LoadUnsafe(ref a0, (nuint)(atA + ((r + 1) * strideA))));
+                Vector256<ushort> vb = Vector256.Create(Vector128.LoadUnsafe(ref b0, (nuint)(atB + (r * strideB))),
+                    Vector128.LoadUnsafe(ref b0, (nuint)(atB + ((r + 1) * strideB))));
+                (Vector256<uint> lo, Vector256<uint> hi) = Vector256.Widen(Vector256.Max(va, vb) - Vector256.Min(va, vb));
+                total += lo + hi;
+            }
+
+            return Vector256.Sum(total);
+        }
+
         long sum = 0;
         for (int r = 0; r < h; r++)
         {
-            ref ushort pa = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(a), atA + (r * strideA));
-            ref ushort pb = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(b), atB + (r * strideB));
+            ref ushort pa = ref Unsafe.Add(ref a0, atA + (r * strideA));
+            ref ushort pb = ref Unsafe.Add(ref b0, atB + (r * strideB));
             int k = 0;
             if (w >= 16)
             {

@@ -81,6 +81,13 @@ internal sealed record HevcInterProfile
     /// <summary>Gets whether a skipped coding unit is not split further (early skip).</summary>
     internal bool EarlySkip { get; init; } = true;
 
+    /// <summary>
+    /// Gets whether a CTB's coding units shallower than the co-located CTBs of the first reference of each list (the least depth
+    /// they used, one less where that reference coded at a QP no higher and its mean depth is under 1.5 times its least) are split
+    /// without trying them whole.
+    /// </summary>
+    internal bool CoLocatedDepth { get; init; }
+
     /// <summary>Gets whether the split of a coding unit is not tried when merging it already costs less than the skips of that size around it.</summary>
     internal bool SplitStatistics { get; init; } = true;
 

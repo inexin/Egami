@@ -23,6 +23,7 @@ internal sealed partial class HevcCtuSearch
     private HevcMotionPredictor? _predictor;
     private int _ctb;
     private int _lambdaMe;
+    private int _minDepth;
 
     /// <summary>Gets or sets what the CTU searches of a P picture share, or null for an I picture.</summary>
     internal HevcInterContext? InterContext
@@ -62,7 +63,52 @@ internal sealed partial class HevcCtuSearch
 
         coded = true;
         _ctb = ((yCtb >> _sps.CtbLog2Size) * _sps.WidthInCtbs) + (xCtb >> _sps.CtbLog2Size);
+        _minDepth = _interContext.Profile.CoLocatedDepth ? CoLocatedDepth(xCtb, yCtb) : 0;
         InterQuadtree(xCtb, yCtb, _sps.CtbLog2Size, 0, cus, out _);
+    }
+
+    /// <summary>
+    /// The least coding tree depth worth trying whole in a CTB, from the co-located CTBs of the first reference of each list: the
+    /// least depth any of them used, one less where that reference's QP was no higher than this CTB's and its mean depth under
+    /// 1.5 times its least.
+    /// </summary>
+    private int CoLocatedDepth(int xCtb, int yCtb)
+    {
+        int size = 1 << _sps.CtbLog2Size;
+        int x4 = xCtb >> 2, y4 = yCtb >> 2, w4 = Math.Min(size, _sps.Width - xCtb + 3) >> 2, h4 = Math.Min(size, _sps.Height - yCtb + 3) >> 2;
+        int qp = QgQp(xCtb, yCtb), result = int.MaxValue;
+        HevcSliceRefs refs = _interContext!.Refs;
+        for (int list = 0; list < 2; list++)
+        {
+            if (refs.Lists[list].Length == 0)
+            {
+                continue;
+            }
+
+            HevcPicture reference = refs.Lists[list][0].Picture;
+            int stride = reference.Width4, least = int.MaxValue, sum = 0, qpSum = 0;
+            for (int y = 0; y < h4; y++)
+            {
+                int at = ((y4 + y) * stride) + x4;
+                for (int x = 0; x < w4; x++)
+                {
+                    int d = reference.CtDepth[at + x];
+                    least = Math.Min(least, d);
+                    sum += d;
+                    qpSum += reference.QpY[at + x];
+                }
+            }
+
+            int blocks = w4 * h4;
+            if (least > 0 && qp >= (double)qpSum / blocks && sum < 1.5 * least * blocks)
+            {
+                least--;
+            }
+
+            result = Math.Min(result, least);
+        }
+
+        return result == int.MaxValue ? 0 : result;
     }
 
     /// <summary>What a coding quadtree node's decision tells its parent: the list 0 references it used and whether it chose intra anywhere.</summary>
@@ -86,6 +132,7 @@ internal sealed partial class HevcCtuSearch
         bool mustSplit = canSplit && (!inside || log2 > profile.MaxCuLog2);
         bool canStop = inside && !mustSplit;
         canSplit &= mustSplit || log2 > profile.MinCuLog2;
+        canStop &= !canSplit || depth >= _minDepth;
         bool flagCoded = inside && log2 > _sps.MinCbLog2Size;
 
         if (_pps.CuQpDeltaEnabled && log2 >= _log2MinCuQpDeltaSize)
