@@ -66,15 +66,6 @@ internal sealed record HevcInterProfile
     /// <summary>Gets whether the halves search only their start vectors at whole samples (2Nx2N's, the merge candidates and AMVP's), then refine.</summary>
     internal bool HalvesStartsOnly { get; init; } = true;
 
-    /// <summary>Gets the log2 size of the smallest coding unit whose halves are searched (3: 8x8, whose halves are 8x4 and 4x8).</summary>
-    internal int HalvesMinLog2 { get; init; } = 3;
-
-    /// <summary>
-    /// Gets whether, where the four smaller units were tried, only the halves along their motion are searched: 2NxN when the
-    /// upper two and the lower two move alike more than the left two and the right two do, Nx2N the other way, both on a tie.
-    /// </summary>
-    internal bool HalvesOrientation { get; init; }
-
     /// <summary>Gets whether each half also weighs merging with a neighbour (its merge candidates by SATD) against its searched motion.</summary>
     internal bool HalvesMerges { get; init; } = true;
 
