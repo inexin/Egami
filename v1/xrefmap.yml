@@ -22886,6 +22886,12 @@ references:
   commentId: F:Egami.Drawing.Tracing.TraceMode.Logo
   fullName: Egami.Drawing.Tracing.TraceMode.Logo
   nameWithType: TraceMode.Logo
+- uid: Egami.Drawing.Tracing.TraceMode.PixelArt
+  name: PixelArt
+  href: api/Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_PixelArt
+  commentId: F:Egami.Drawing.Tracing.TraceMode.PixelArt
+  fullName: Egami.Drawing.Tracing.TraceMode.PixelArt
+  nameWithType: TraceMode.PixelArt
 - uid: Egami.Drawing.Tracing.TraceOptions
   name: TraceOptions
   href: api/Egami.Drawing.Tracing.TraceOptions.html
@@ -22944,6 +22950,19 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Tracing.TraceOptions.Default
   nameWithType: TraceOptions.Default
+- uid: Egami.Drawing.Tracing.TraceOptions.Exact
+  name: Exact
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Exact
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Exact
+  fullName: Egami.Drawing.Tracing.TraceOptions.Exact
+  nameWithType: TraceOptions.Exact
+- uid: Egami.Drawing.Tracing.TraceOptions.Exact*
+  name: Exact
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Exact_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Exact
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Exact
+  nameWithType: TraceOptions.Exact
 - uid: Egami.Drawing.Tracing.TraceOptions.IgnoreWhite
   name: IgnoreWhite
   href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_IgnoreWhite
@@ -23061,6 +23080,19 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Tracing.TraceOptions.Photo
   nameWithType: TraceOptions.Photo
+- uid: Egami.Drawing.Tracing.TraceOptions.PixelArt
+  name: PixelArt
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_PixelArt
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.PixelArt
+  fullName: Egami.Drawing.Tracing.TraceOptions.PixelArt
+  nameWithType: TraceOptions.PixelArt
+- uid: Egami.Drawing.Tracing.TraceOptions.PixelArt*
+  name: PixelArt
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_PixelArt_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.PixelArt
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.PixelArt
+  nameWithType: TraceOptions.PixelArt
 - uid: Egami.Drawing.Tracing.TraceOptions.Poster
   name: Poster
   href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Poster
