@@ -11,7 +11,7 @@ namespace Egami.Video.Benchmarks;
 /// encode time (frames read into memory first, best of --runs; wall clock and the process's CPU time, which a busy machine
 /// skews less with one thread), the output size and the bitrate, for comparing with x264.
 /// Options: --out=file.h264 --quality=Q --quantizer=Q --effort=E --threads=N (--one-thread for 1) --bitrate=BITS --cbr --two-pass --realtime
-/// --bframes=N --profile=baseline|main|high --cavlc --no-aq --frames=N --runs=N.
+/// --bframes=N --profile=baseline|main|high --cavlc --no-aq --frames=N --runs=N --horizon=SECONDS.
 /// In a build that counts (<see cref="H264EncodeStats.Enabled"/>), the JSON also carries the first run's work counters by
 /// picture type ("stats") and, by picture kind (I, P, referenced B, B), the pictures' bits split into parts and the shares of
 /// macroblock kinds ("pictures").
@@ -41,6 +41,11 @@ internal static class H264EncodeTiming
 
                 frames.Add(frame);
             }
+        }
+
+        if (Value("horizon") is { } horizon)
+        {
+            H264VideoEncoder.HorizonSeconds = double.Parse(horizon, CultureInfo.InvariantCulture);
         }
 
         int threads = Flag("one-thread") ? 1 : Number("threads") ?? Environment.ProcessorCount;
