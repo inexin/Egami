@@ -5,48 +5,36 @@ changes that break code come only in a new major version.
 
 ## Egami.Video 1.4.0 (unreleased)
 
-An HEVC encoder in Egami.Video.Hevc, in progress (HEVC encoder Build Plan, PRs A to E of seven): the release that ships it
-waits for its gates. Additive to 1.3.
+An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
 
-- `HevcCodec.CanEncode` is true and `HevcCodec.CreateEncoder` encodes 4:2:0 progressive video in the Main and Main 10
-  profiles, on the shared encoder core with the HEIC encoder's CTU search, its CTB rows as wavefront substreams: the same
-  bytes on any number of threads. `HevcEncoderOptions` (`VideoEncoderOptions.Hevc`, `VideoWriterOptions.Hevc`) sets the
-  `HevcProfile` (by default Main 10 for 16-bit planes, else Main), the level (else the lowest Main tier level the size, frame
-  rate, bitrate and buffer fit), quantizer limits, adaptive quantization, B-frames and Annex B packets. Quality 0 to 100 is on
-  the H.264 encoder's scale (default 60), Quantizer 0 to 51, Effort 0 to 10 (default 4). Packets are length-prefixed with the
-  parameter sets in the track's hvcC record (an hvc1 sample entry in MP4 and MOV), or Annex B; the VUI carries the colour,
-  range and frame rate. Keyframes are IDR pictures and the others P pictures (PR B) predicted from up to the effort's number of
-  previous pictures: motion search on half- and quarter-sample planes, merge and skip with early skip, AMVP and temporal motion
-  vector prediction, 2Nx2N and (by effort) Nx2N/2NxN partitions ranked by SATD with full RD on the best one or two, inter
-  transform trees, and intra coding units in P pictures where the residual calls for them. B pictures (PR C) come in closed
-  groups after each IDR picture, by default three between P pictures from effort 1 (`HevcEncoderOptions.BFrames`, 0 to 16,
-  in `LatencyMode.Quality`), from effort 3 in a pyramid whose middle picture is a reference coded at a coarser step; the
-  reference picture sets and the decoded picture buffer size follow the level. B pictures predict from list 0, list 1 or both
-  (bi-prediction with joint refinement), with merge, AMVP and temporal vectors from list 1; their search starts from the last
-  P picture's vectors scaled to the distance, ranks one list against both by SATD and codes a runner-up within 17/16 in full,
-  and the frame analysis plans B pictures and their quantizers as the H.264 encoder does. Rate control and perceptual tools
-  (PR D) as the H.264 encoder's: constant quality, quantizer, one- and two-pass bitrate and constant bitrate with the buffer
-  model; adaptive quantization through cu_qp_delta with flat groups (letterbox bars, blank areas) out of the picture's mean,
-  the frame tree from effort 1 and the quantizer-aware block tree from effort 5, and I and P pictures' RD λ scaled by 0.8
-  (better on SSIM and PSNR together than the H.264 encoder's 0.6). A frame's `VideoFrame.Hdr` goes into each IDR access unit
-  as mastering display colour volume and content light level SEI messages (and so to MP4 players and FFmpeg). The lookahead's
-  analysis (shared with the other encoders, whose output is unchanged) runs its block rows as a wavefront on the context's
-  threads, and the wavefront waits no longer sleep, so more threads help: the same bytes on any number. Egami's decoder, FFmpeg and the HM reference decoder decode every test stream to the encoder's own
-  reconstruction, bit for bit (tools/video/check-hevc-encoder.py); tools/video/time-hevc-encoder.py measures BD-rate and speed
-  against x265 and Egami's H.264 encoder. The search prices trial codings from static rate tables and codes only the kept one
-  with RDOQ, refines motion with two half-sample SAD steps and one quarter-sample SATD step, and runs AVX2/SSE2/Vector128 SAD,
-  SATD, interpolation and quantization kernels; the shared forward transform gained 4x4 and even/odd-split 16x16/32x32 kernels,
-  which make HEIC encoding a few percent faster with byte-identical output. A speed round (PR E) makes effort 4 1.2 to 1.3
-  times faster with the same or fewer bits (2.2 to 2.5 times x265 medium's cycles at one thread, from 2.7 to 3.3): 8-bit luma
-  SAD on byte planes with PSADBW, 8-bit SATD with two 8x8 Hadamard transforms in one vector, vector half-sample filtering, SAO
-  statistics and SAD kernels, AMVP predictors kept from the search, reference planes reused once a reference leaves the
-  buffer, and from effort 2 to 5 a CTB's coding units shallower than its co-located CTBs in the first references split without
-  being tried whole (7 to 10 % less work, and 0.5 % fewer bits at effort 4). Output is otherwise byte-identical. Allocation
-  budget tests guard the encoder's steady state, and the `hevcenc` fuzz target in tests/Egami.Video.Fuzz drives its options
-  and input paths. A second speed round (task 16) drops Nx2N/2NxN partitions at effort 4 (they stay from effort 5) and copies
-  the search's snapshot rows and block maps as fixed-size moves: effort 4 runs 1.5 times x265 medium's one-thread cycles at
-  quality 50 and 1.8 times at 34 (from 2.2 and 2.5), for 1.4 % more bits (BD-rate on PSNR-Y, still 2.1 % under x265 medium
-  and 12.2 % under the H.264 encoder at effort 4). Other efforts, and HEIC, are byte-identical.
+- **Encoding.** `HevcCodec.CanEncode` is true: `VideoWriter` (or `HevcCodec.CreateEncoder` for packets) encodes 4:2:0
+  progressive video in the Main and Main 10 profiles, Main 10 by default for 16-bit planes. Quality 0 to 100 is on the H.264
+  encoder's scale (default 60), Quantizer 0 to 51, Effort 0 to 10 (default 4). `HevcEncoderOptions` (`VideoEncoderOptions.Hevc`,
+  `VideoWriterOptions.Hevc`) sets the `HevcProfile`, the level (else the lowest Main tier level the size, frame rate, bitrate
+  and buffer fit), quantizer limits, adaptive quantization, B-frames and Annex B packets. Packets are otherwise
+  length-prefixed with the parameter sets in the track's hvcC record (an hvc1 sample entry in MP4 and MOV); the VUI carries
+  the colour, range and frame rate.
+- **Pictures.** IDR keyframes; P pictures from up to four earlier pictures by effort, with quarter-sample motion search, merge
+  and skip, AMVP and temporal vector prediction, 2Nx2N and (at efforts 2, 3 and from 5) Nx2N/2NxN partitions, inter
+  transform trees and intra coding units where the residual calls for them; B pictures, three between P pictures by default
+  (`HevcEncoderOptions.BFrames`, 0 to 16, in `LatencyMode.Quality`), from effort 3 in a pyramid, with bi-prediction and joint
+  refinement. The frame analysis plans B pictures and their quantizers as the H.264 encoder does.
+- **Rate control and perceptual tools** as the H.264 encoder's: constant quality, quantizer, one- and two-pass bitrate and
+  constant bitrate with the buffer model; adaptive quantization through cu_qp_delta, leaving flat areas (letterbox bars, blank
+  areas) out of the picture's mean; the frame tree from effort 1 and the quantizer-aware block tree from effort 5. A frame's
+  `VideoFrame.Hdr` goes into each IDR access unit as mastering display colour volume and content light level SEI messages.
+- **Threads.** CTB rows are wavefront substreams, and the lookahead's analysis (shared with the other encoders, whose output is
+  unchanged) runs as a wavefront too: the same bytes on any number of threads.
+- **Conformance.** Egami's decoder, FFmpeg and the HM reference decoder decode every test stream to the encoder's own
+  reconstruction, bit for bit (tools/video/check-hevc-encoder.py).
+- **Compression and speed** (tools/video/time-hevc-encoder.py, four Xiph clips at 720p against x265 3.6): at effort 4, 2.1 %
+  fewer bits than x265 --preset medium for the same PSNR-Y (2.9 % for the same SSIM), 8.4 % fewer at effort 5, and 12.2 % fewer
+  than Egami's H.264 encoder at effort 4; 1.5 times x265 medium's one-thread CPU cycles a frame at quality 50 and 1.8 times at
+  34. The search prices trial codings from static rate tables and codes only the kept one with RDOQ, and runs AVX2/SSE2/
+  Vector128 SAD, SATD, interpolation and quantization kernels; the shared forward transform gained 4x4 and even/odd-split
+  16x16/32x32 kernels, which make HEIC encoding a few percent faster with byte-identical output.
+- Allocation budget tests guard the encoder's steady state, and the `hevcenc` fuzz target in tests/Egami.Video.Fuzz drives its
+  options and input paths.
 - Egami.Video.H264: average bitrate (one and two passes) pays an overspend back over a third of a second instead of two.
   With two, 60-frame clips of still 60 fps scenes (johnny, kristen_sara at 2000 and 600 kbit/s) ended 47–57 % over the
   target; now 46 of the 48 runs on the eight clips are within 3.4 % and the other two within 5.0 %. Constant bitrate,

@@ -52,26 +52,81 @@ set. Seeking goes back to the IRAP picture before the target.
 ## Encoding
 
 `HevcCodec.Instance` encodes through `VideoWriter` (or `CreateEncoder` for packets): 4:2:0 progressive frames with an even
-width and height, in the Main profile for 8-bit frames and Main 10 for 16-bit planes. `Quality` (0 to 100, default 60, on the
-H.264 encoder's scale) and `Effort` (0 to 10, default 4) work as for Egami's other encoders. `HevcEncoderOptions` holds the
-HEVC settings: the `HevcProfile`, the level (the lowest Main tier level that the frame size and rate fit, unless set), QP
-limits, adaptive quantization, B-frames and Annex B packets for raw streams. Packets are otherwise length-prefixed with the
-parameter sets in the track's hvcC record, which MP4 and MOV write as an hvc1 sample entry, the one Apple players need. Each
-picture's CTB rows are wavefront substreams coded in parallel, the lookahead's analysis runs as a wavefront too, and the
-stream is the same on any number of threads. Rate control works as for the H.264 encoder: constant quality (the default),
-a fixed quantizer, an average bitrate (one pass, or two with `FirstPassStats`) and constant bitrate with a buffer model.
-Adaptive quantization codes busy areas coarser and flat ones finer, leaving letterbox bars out of the picture's mean; from
-effort 5 a block tree codes the blocks later pictures predict from finer. A frame's `Hdr` metadata goes into every IDR
-access unit as mastering display and content light level SEI messages. Every
-picture decodes in Egami's decoder, FFmpeg's and the reference decoder HM to the encoder's own reconstruction, sample for
-sample.
+width and height, in the Main profile for 8-bit frames and Main 10 for 16-bit planes (other frames are converted). `Quality`
+(0 to 100, default 60, on the H.264 encoder's scale: QP 51 - 0.56 × quality) and `Effort` (0 to 10, default 4) work as for
+Egami's other encoders. `HevcEncoderOptions` (`VideoWriterOptions.Hevc`, `VideoEncoderOptions.Hevc`) holds the HEVC settings,
+each with a default that suits most uses:
 
-The encoder is in progress: keyframes are IDR pictures, coded with the HEIC encoder's search; P pictures predict from earlier
-ones, with motion search, merge and skip modes and intra blocks where they pay; and B pictures between them (three by default
-from effort 1, `BFrames` sets how many, `LatencyMode.Quality` only) predict from both sides, from effort 3 in a pyramid whose
-middle picture the others predict from. The release gates follow.
+- `Profile`: Main or Main 10, by default from the first frame. 8-bit frames coded as Main 10 keep their values.
+- `Level`: by default the lowest Main tier level that the frame size, rate and bitrate fit; a stream that does not fit the
+  level given is refused when the encoder is made.
+- `MinQuantizer` and `MaxQuantizer`: the QP range rate control may use.
+- `AdaptiveQuantization` (on): busy areas are coded coarser and flat ones finer, which looks better at the same size but
+  lowers PSNR; letterbox bars and blank areas are left out of the picture's mean. Turn it off to measure PSNR.
+- `BFrames`: the most B-frames between two reference frames, 3 by default (none at effort 0).
+- `AnnexB`: start-code packets with the parameter sets in every keyframe, for raw `.h265` files, MPEG-TS and RTP. By default
+  packets are length-prefixed with the parameter sets in the track's hvcC record, which MP4 and MOV write as an hvc1 sample
+  entry (the one Apple players need) and Matroska as its codec private data.
+
+Keyframes are IDR pictures, every 10 seconds unless `KeyframeInterval` is set, and at scene cuts unless `SceneCutKeyframes` is
+off. P pictures predict from up to three earlier pictures at effort 4 (one at 0 and 1, two at 2 and 3, four from 6), with
+motion search to a quarter sample, merge and skip modes, and intra blocks where they pay. B pictures predict from both sides
+and take fewer bits; they need `LatencyMode.Quality` (the default), because they are coded out of order and packets carry
+decode timestamps. From effort 3 a run of two or three B pictures is a pyramid whose middle picture the others predict from.
+`LatencyMode.Realtime` turns B pictures and the lookahead off, so each packet comes out as soon as its frame goes in.
+
+Rate control works as for the H.264 encoder: constant quality (the default), a fixed `Quantizer`, an average `Bitrate` (one
+pass, or two with `FirstPassStats`) and `RateControlMode.ConstantBitrate` with a buffer model, whose bitrate and buffer the
+level chosen then fits too. From effort 5 a block tree codes the blocks later pictures predict from finer. A frame's `Hdr`
+metadata goes into every IDR access unit as mastering display and content light level SEI messages, and MP4 writes it into
+mdcv and clli boxes as well.
+
+Each picture's CTB rows are wavefront substreams coded in parallel on `EgamiContext.MaxParallelism` threads, and the
+lookahead's analysis runs as a wavefront too; the stream is the same on any number of threads. Every picture decodes in
+Egami's decoder, FFmpeg's and the reference decoder HM to the encoder's own reconstruction, sample for sample.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoHevc.cs#encode)]
+
+### Compression and speed
+
+The encoder is measured against x265 3.6's medium preset on four Xiph test clips (crowd_run, ducks_take_off, park_joy and
+old_town_cross at 720p, 50 frames a second, 60 frames), both tuned for PSNR. At effort 4 it needs 2.1 % fewer bits than x265
+medium for the same PSNR on average (from 7.0 % fewer on old_town_cross to 1.1 % more on park_joy), and with adaptive
+quantization on, as both encoders default to, 2.9 % fewer for the same SSIM. At effort 5 it needs 8.4 % fewer for the same
+PSNR. Against Egami's own H.264 encoder at effort 4 it saves 12.2 % of the bits on average (x265 medium saves 10.3 % on the
+same clips). It is slower: on one thread, with x265 at the CRF that gives the same PSNR-Y and no adaptive quantization,
+effort 4 takes 1.5 times x265 medium's CPU cycles a frame at quality 50 (1.2 to 2.3 by clip) and 1.8 times at quality 34
+(1.6 to 2.4), and 2.5 and 2.8 times its instructions. Cycles vary by up to a third between runs on a busy machine.
+
+#### Speed by effort
+
+<!-- LADDER -->
+
+tools/video/time-hevc-encoder.py and check-hevc-encoder.py in the repository repeat these measurements, and egami-compare's
+video/native/hevc-encode-gate.py runs them as release gates.
+
+## Recipes
+
+Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.
+
+### Re-encode an H.264 video as HEVC
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoHevc.cs#cookbook-hevc-from-h264)]
+
+The decoder's 4:2:0 planes go to the encoder as they are, without a trip through RGB. Audio tracks are not copied here; see
+[Video](video.md) for muxing.
+
+### Make an HDR10 video
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoHevc.cs#cookbook-hevc-hdr10)]
+
+16-bit planes holding 10 bits pick Main 10. The PQ transfer and BT.2020 primaries come from the frame's colour code points.
+
+### Send a live stream as raw .h265
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoHevc.cs#cookbook-hevc-live)]
+
+Annex B packets can be written back to back; any HEVC decoder, and `HevcFormat`, reads the file.
 
 ## Patents
 
