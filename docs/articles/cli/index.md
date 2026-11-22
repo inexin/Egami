@@ -6,7 +6,7 @@ WMF, EMF and [Egami.Formats.Extended](../formats/extended.md)'s PCX, SGI, Sun ra
 KTX, DPX, Cineon, FITS and camera RAW included. It has three layers:
 
 - **Single commands** for everyday jobs: `info`, `convert`, `resize`, `thumbnail`, `crop`, `rotate`, `flip`, `auto-orient`,
-  `compare`, `stats`, `frames`, `metadata`, `color`, `text`, `overlay`, `montage` and `formats`.
+  `compare`, `stats`, `frames`, `metadata`, `color`, `text`, `overlay`, `montage`, `trace` and `formats`.
 - **`run`**, which chains any number of steps over each image. Every Egami operation is a step, and the same steps can be
   saved as a JSON workflow file.
 - **Batches**: every command takes many files, globs and folders, and works on several at once.
@@ -222,6 +222,21 @@ the call names.
 ```sh
 egami ocr scan.png --engine-command "tesseract {image} {output} -l {langs} --dpi {dpi} hocr" --lang eng
 egami ocr "scans/*.png" --engine-command "tesseract {image} {output} -l {langs} hocr" --lang eng+nor -o "text/{name}.hocr"
+```
+
+## Tracing to SVG
+
+`trace` traces images into vector shapes ([Bitmap tracing](../guides/tracing.md)) and writes them as SVG: to standard output
+by default, or to `-o`'s file, folder or template. `--preset` starts from one of the `TraceOptions` presets (`default`,
+`black-and-white`, `logo`, `poster`, `photo`, `line-art`, `sketch`), and each setting has an option that changes it:
+`--mode`, `--colors`, `--palette`, `--layering`, `--threshold`, `--path-fidelity`, `--corners`, `--noise`, `--ignore-white`,
+`--smoothing`, `--snap-lines`, `--snap-arcs` and `--stroke-width`. `--preview-png` also writes the trace drawn as a PNG the
+image's size, and `--precision` sets the SVG's decimal places.
+
+```sh
+egami trace logo.png --preset logo --colors 4 -o logo.svg --preview-png logo-trace.png
+egami trace signature.png --preset black-and-white > signature.svg
+egami trace "scans/*.png" --preset sketch -o "svg/{name}.svg" --preview-png "previews/{name}.png"
 ```
 
 ## Other tools

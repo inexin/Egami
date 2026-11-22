@@ -1966,6 +1966,113 @@
       }
     },
     {
+      "name": "trace",
+      "title": "egami trace",
+      "description": "Trace images into vector shapes (logos, line art, scans, posters, photos) and write them as SVG.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write the SVG: a file, a folder, a template with {name}, {ext}, {dir} and {index}, or - (the default for one input) for standard output."
+          },
+          "preset": {
+            "type": "string",
+            "description": "The starting settings: default, black-and-white, logo, poster, photo, line-art, sketch. default (black and white with a white background) by default; the options below change it."
+          },
+          "mode": {
+            "type": "string",
+            "description": "How pixels become shapes: black-and-white, grayscale, color, logo or centerline (strokes along the middle of lines)."
+          },
+          "colors": {
+            "type": "integer",
+            "description": "The most colors (gray levels in grayscale) to reduce the image to, 2 to 256 (grayscale, color, logo)."
+          },
+          "palette": {
+            "type": "string",
+            "description": "Fixed colors instead, CSS colors separated by commas or spaces, such as \"black, #c00, white\" (grayscale, color, logo)."
+          },
+          "layering": {
+            "type": "string",
+            "description": "stacked (each color layer covers those above it, the default) or abutting (each color only its own area)."
+          },
+          "threshold": {
+            "type": "number",
+            "description": "The level that splits ink from paper, 0 (black) to 1 (white); found by Otsu's method by default (black-and-white, centerline)."
+          },
+          "path_fidelity": {
+            "type": "number",
+            "description": "How closely curves follow the pixels, 0 (fewest curves) to 1 (tightest)."
+          },
+          "corners": {
+            "type": "number",
+            "description": "How readily corners stay sharp, 0 (round every corner) to 1 (a polygon)."
+          },
+          "noise": {
+            "type": "integer",
+            "description": "The smallest region kept, in pixels; smaller ones merge into those around them."
+          },
+          "ignore_white": {
+            "type": "boolean",
+            "description": "Leave out white: no white background shape, and no white color layer."
+          },
+          "smoothing": {
+            "type": "number",
+            "description": "Edge-keeping smoothing before the colors are found, 0 to 1, for photos (grayscale, color)."
+          },
+          "snap_lines": {
+            "type": "boolean",
+            "description": "Make straight runs lines (grayscale, color, logo; on by default)."
+          },
+          "snap_arcs": {
+            "type": "boolean",
+            "description": "Make runs on a circle arcs, and round outlines circles (grayscale, color, logo; on by default)."
+          },
+          "stroke_width": {
+            "type": "number",
+            "description": "One pen width in pixels for every stroke, instead of the width each stroke's ink covers (centerline)."
+          },
+          "precision": {
+            "type": "integer",
+            "description": "Decimal places of the SVG's coordinates."
+          },
+          "preview_png": {
+            "type": "string",
+            "description": "Also write the trace drawn as a PNG, the image's size: a file, a folder or a template with {name}."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
       "name": "formats",
       "title": "egami formats",
       "description": "List the formats egami reads and writes, or one format's writer settings for --set.",

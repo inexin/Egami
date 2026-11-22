@@ -62,6 +62,24 @@ public class Tracing
     }
 
     [Fact]
+    public void Presets()
+    {
+        using Raster<Rgba8> logo = Logo();
+        using Raster<Rgba8> sketch = Signature();
+
+        #region presets
+        // A preset for the kind of image, then any change with `with`.
+        TraceResult badge = logo.Trace(TraceOptions.Logo with { Colors = 4, IgnoreWhite = true });
+        TraceResult poster = logo.Trace(TraceOptions.Poster);
+        TraceResult lines = sketch.Trace(TraceOptions.LineArt with { StrokeWidth = 2 });
+        #endregion
+
+        Assert.Equal(2, badge.Palette.Count);
+        Assert.NotEmpty(poster.Shapes);
+        Assert.All(lines.Shapes.Where(s => s.Kind == TracedShapeKind.Stroke), s => Assert.Equal(2, s.StrokeWidth));
+    }
+
+    [Fact]
     public void Color()
     {
         using Raster<Rgba8> logo = Logo();
