@@ -837,11 +837,11 @@ internal sealed partial class HevcCtuSearch
             {
                 if (save)
                 {
-                    plane.AsSpan(at + (r * stride), w).CopyTo(saved.AsSpan(r * 64));
+                    HevcCopy.Run(plane, at + (r * stride), saved, r * 64, w);
                 }
                 else
                 {
-                    saved.AsSpan(r * 64, w).CopyTo(plane.AsSpan(at + (r * stride)));
+                    HevcCopy.Run(saved, r * 64, plane, at + (r * stride), w);
                 }
             }
         }
@@ -1049,7 +1049,7 @@ internal sealed partial class HevcCtuSearch
         {
             for (int r = 0; r < n; r++)
             {
-                _prediction.AsSpan(r * n, n).CopyTo(plane.AsSpan(at + (r * stride)));
+                HevcCopy.Run(_prediction, r * n, plane, at + (r * stride), n);
             }
 
             return new BlockResult(null, false, weight * predicted, 0);

@@ -43,7 +43,10 @@ waits for its gates. Additive to 1.3.
   buffer, and from effort 2 to 5 a CTB's coding units shallower than its co-located CTBs in the first references split without
   being tried whole (7 to 10 % less work, and 0.5 % fewer bits at effort 4). Output is otherwise byte-identical. Allocation
   budget tests guard the encoder's steady state, and the `hevcenc` fuzz target in tests/Egami.Video.Fuzz drives its options
-  and input paths.
+  and input paths. A second speed round (task 16) drops Nx2N/2NxN partitions at effort 4 (they stay from effort 5) and copies
+  the search's snapshot rows and block maps as fixed-size moves: effort 4 runs 1.5 times x265 medium's one-thread cycles at
+  quality 50 and 1.8 times at 34 (from 2.2 and 2.5), for 1.4 % more bits (BD-rate on PSNR-Y, still 2.1 % under x265 medium
+  and 12.2 % under the H.264 encoder at effort 4). Other efforts, and HEIC, are byte-identical.
 - Egami.Video.H264: average bitrate (one and two passes) pays an overspend back over a third of a second instead of two.
   With two, 60-frame clips of still 60 fps scenes (johnny, kristen_sara at 2000 and 600 kbit/s) ended 47–57 % over the
   target; now 46 of the 48 runs on the eight clips are within 3.4 % and the other two within 5.0 %. Constant bitrate,
