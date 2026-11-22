@@ -78,8 +78,10 @@ internal static class ColorTracer
         }
 
         // Regions that touch across a pixel edge.
-        // (Each set's root is its least region whatever order the pairs are joined in, so the order of the pairs is free.)
-        HashSet<long> pairs = [];
+        // (Each set's root is its least region whatever order the pairs are joined in, so the order of the pairs is free.) The
+        // pairs are sorted and deduplicated rather than hashed: a long's hash folds the two region numbers, which lie close
+        // together, into few values.
+        List<long> pairs = [];
         int w = image.Width;
         int[] regions = tracer.Regions;
         long lastRight = -1, lastDown = -1;
@@ -110,7 +112,18 @@ internal static class ColorTracer
             }
         }
 
-        long[] adjacent = [.. pairs];
+        pairs.Sort();
+        long[] adjacent = new long[pairs.Count];
+        int unique = 0;
+        foreach (long pair in pairs)
+        {
+            if (unique == 0 || pair != adjacent[unique - 1])
+            {
+                adjacent[unique++] = pair;
+            }
+        }
+
+        adjacent = adjacent[..unique];
         List<TracedShape>[] layers = new List<TracedShape>[order.Length];
         ParallelOptions parallel = new() { CancellationToken = cancellationToken };
         Parallel.For(0, order.Length, parallel, layer =>
