@@ -22,9 +22,9 @@ internal static class Thinning
             }
         }
 
-        // Each sub-iteration only reads the map while it marks, so the marking runs in parallel, in chunks of the live pixels.
-        bool[] marked = [];
-        ParallelOptions parallel = new() { CancellationToken = cancellationToken };
+        // Each sub-iteration marks all the pixels it removes before removing any; the marks live in a rented array, and the live
+        // pixels are compacted in place.
+        bool[] marked = System.Buffers.ArrayPool<bool>.Shared.Rent(Math.Max(1, alive.Count));
         bool changed = true;
         while (changed)
         {
@@ -38,25 +38,15 @@ internal static class Thinning
                     break;
                 }
 
-                if (marked.Length < count)
+                for (int j = 0; j < count; j++)
                 {
-                    marked = new bool[count];
+                    marked[j] = Removable(map, width, height, alive[j], pass);
                 }
-
-                bool[] marks = marked;
-                int sub = pass;
-                Parallel.ForEach(System.Collections.Concurrent.Partitioner.Create(0, count, 4096), parallel, range =>
-                {
-                    for (int j = range.Item1; j < range.Item2; j++)
-                    {
-                        marks[j] = Removable(map, width, height, alive[j], sub);
-                    }
-                });
 
                 int kept = 0;
                 for (int j = 0; j < count; j++)
                 {
-                    if (marks[j])
+                    if (marked[j])
                     {
                         map[alive[j]] = 0;
                     }
@@ -74,6 +64,7 @@ internal static class Thinning
             }
         }
 
+        System.Buffers.ArrayPool<bool>.Shared.Return(marked);
         RemoveStairs(map, width, height, alive);
         return map;
     }
@@ -81,7 +72,15 @@ internal static class Thinning
     /// <summary>The neighbours of pixel i, P2 (north) to P9 (north-west) clockwise as in the paper, as bits 0 to 7.</summary>
     internal static int Neighbours(byte[] map, int width, int height, int i)
     {
-        int x = i % width, y = i / width;
+        int y = i / width, x = i - (y * width);
+        if (x > 0 && x + 1 < width && y > 0 && y + 1 < height)
+        {
+            // Inside the image every neighbour is there to read.
+            int up = i - width, down = i + width;
+            return (map[up] != 0 ? 1 : 0) | (map[up + 1] != 0 ? 2 : 0) | (map[i + 1] != 0 ? 4 : 0) | (map[down + 1] != 0 ? 8 : 0)
+                | (map[down] != 0 ? 16 : 0) | (map[down - 1] != 0 ? 32 : 0) | (map[i - 1] != 0 ? 64 : 0) | (map[up - 1] != 0 ? 128 : 0);
+        }
+
         int bits = 0;
         for (int k = 0; k < 8; k++)
         {

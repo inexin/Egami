@@ -15,7 +15,7 @@ public class TraceAllocationTests
     [InlineData(TraceMode.Grayscale, 34)]
     [InlineData(TraceMode.Color, 34)]
     [InlineData(TraceMode.Logo, 235)]
-    [InlineData(TraceMode.Centerline, 74)]
+    [InlineData(TraceMode.Centerline, 70)]
     public void AllocationsPerPixelStayWithinBudget(TraceMode mode, double budget)
     {
         Assert.SkipUnless(Environment.GetEnvironmentVariable("EGAMI_ALLOCATION_TESTS") == "1", "Allocation budgets run on demand: set EGAMI_ALLOCATION_TESTS=1.");

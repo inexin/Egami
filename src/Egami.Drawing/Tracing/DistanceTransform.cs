@@ -1,3 +1,5 @@
+using System.Buffers;
+
 namespace Egami.Drawing.Tracing;
 
 /// <summary>
@@ -23,57 +25,64 @@ internal static class DistanceTransform
         int longest = Math.Max(width, height);
         ParallelOptions parallel = new() { CancellationToken = cancellationToken };
 
-        // Each column, then each row, is transformed on its own, so they run in parallel with a set of buffers per thread.
+        // Each column, then each row, is transformed on its own, so they run in parallel: one chunk of them per processor, each
+        // with buffers rented from the shared pools.
+        int chunks = Math.Max(1, Math.Min(Environment.ProcessorCount, longest));
+
         // Down each column: the distance to the nearest seed in the column, and its row.
-        Parallel.For(
-            0,
-            width,
-            parallel,
-            () => new Work(longest),
-            (x, _, w) =>
+        Parallel.For(0, chunks, parallel, chunk =>
+        {
+            double[] doubles = ArrayPool<double>.Shared.Rent((3 * longest) + 1);
+            int[] ints = ArrayPool<int>.Shared.Rent(3 * longest);
+            Span<double> f = doubles.AsSpan(0, height), output = doubles.AsSpan(longest, longest), z = doubles.AsSpan(2 * longest, longest + 1);
+            Span<int> from = ints.AsSpan(0, longest), where = ints.AsSpan(longest, longest), v = ints.AsSpan(2 * longest, longest);
+            for (int x = (int)((long)width * chunk / chunks); x < (int)((long)width * (chunk + 1) / chunks); x++)
             {
                 for (int y = 0; y < height; y++)
                 {
-                    w.F[y] = seeds[(y * width) + x] ? 0 : Far;
-                    w.From[y] = y;
+                    f[y] = seeds[(y * width) + x] ? 0 : Far;
+                    from[y] = y;
                 }
 
-                Envelope(w.F.AsSpan(0, height), w.From, w.Output, w.Where, w.V, w.Z);
+                Envelope(f, from, output, where, v, z);
                 for (int y = 0; y < height; y++)
                 {
-                    d[(y * width) + x] = w.Output[y];
-                    arg[(y * width) + x] = w.Output[y] >= Far ? -1 : (w.Where[y] * width) + x;
+                    d[(y * width) + x] = output[y];
+                    arg[(y * width) + x] = output[y] >= Far ? -1 : (where[y] * width) + x;
                 }
+            }
 
-                return w;
-            },
-            _ => { });
+            ArrayPool<double>.Shared.Return(doubles);
+            ArrayPool<int>.Shared.Return(ints);
+        });
 
         // Along each row of the column distances.
-        Parallel.For(
-            0,
-            height,
-            parallel,
-            () => new Work(longest),
-            (y, _, w) =>
+        Parallel.For(0, chunks, parallel, chunk =>
+        {
+            double[] doubles = ArrayPool<double>.Shared.Rent((3 * longest) + 1);
+            int[] ints = ArrayPool<int>.Shared.Rent(3 * longest);
+            Span<double> f = doubles.AsSpan(0, width), output = doubles.AsSpan(longest, longest), z = doubles.AsSpan(2 * longest, longest + 1);
+            Span<int> from = ints.AsSpan(0, longest), where = ints.AsSpan(longest, longest), v = ints.AsSpan(2 * longest, longest);
+            for (int y = (int)((long)height * chunk / chunks); y < (int)((long)height * (chunk + 1) / chunks); y++)
             {
                 int row = y * width;
                 for (int x = 0; x < width; x++)
                 {
-                    w.F[x] = d[row + x];
-                    w.From[x] = arg[row + x];
+                    f[x] = d[row + x];
+                    from[x] = arg[row + x];
                 }
 
-                Envelope(w.F.AsSpan(0, width), w.From, w.Output, w.Where, w.V, w.Z);
+                Envelope(f, from, output, where, v, z);
                 for (int x = 0; x < width; x++)
                 {
-                    d[row + x] = Math.Min(w.Output[x], Far);
-                    arg[row + x] = w.Output[x] >= Far ? -1 : w.Where[x];
+                    d[row + x] = Math.Min(output[x], Far);
+                    arg[row + x] = output[x] >= Far ? -1 : where[x];
                 }
+            }
 
-                return w;
-            },
-            _ => { });
+            ArrayPool<double>.Shared.Return(doubles);
+            ArrayPool<int>.Shared.Return(ints);
+        });
 
         return d;
     }
@@ -82,7 +91,7 @@ internal static class DistanceTransform
     /// The one-dimensional transform: output[q] = min over p of (q − p)² + f[p], with where[q] = from[p] for the minimizing p.
     /// The parabolas' lower envelope is built left to right (v holds their roots, z the bounds between them), then read off.
     /// </summary>
-    private static void Envelope(ReadOnlySpan<double> f, int[] from, double[] output, int[] where, int[] v, double[] z)
+    private static void Envelope(ReadOnlySpan<double> f, ReadOnlySpan<int> from, Span<double> output, Span<int> where, Span<int> v, Span<double> z)
     {
         int n = f.Length;
         int k = 0;
@@ -122,21 +131,5 @@ internal static class DistanceTransform
     private static double Intersection(ReadOnlySpan<double> f, int q, int p)
     {
         return ((f[q] + ((double)q * q)) - (f[p] + ((double)p * p))) / (2.0 * (q - p));
-    }
-
-    /// <summary>One thread's buffers for <see cref="Envelope"/>.</summary>
-    private sealed class Work(int length)
-    {
-        public double[] F { get; } = new double[length];
-
-        public double[] Output { get; } = new double[length];
-
-        public int[] From { get; } = new int[length];
-
-        public int[] Where { get; } = new int[length];
-
-        public int[] V { get; } = new int[length];
-
-        public double[] Z { get; } = new double[length + 1];
     }
 }

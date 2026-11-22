@@ -67,9 +67,10 @@ PixelArt mode.
 - Centerline tracing of an image that is ink everywhere no longer puts points two billion pixels off the image: the image's
   edge counts as paper (found by the new trace fuzz target).
 - Egami.Svg writes a trace as SVG through `SvgCanvas`: `result.ToSvg()` and `result.SaveSvg(path)` (or a stream).
-- Speed (Build Plan PR F): the distance transforms, region labelling (by runs) and per-pixel passes run in parallel, for
-  the same shapes as before. A 3000 × 2400 drawing traces in about 0.16 s in black and white, 0.25 s in color or
-  grayscale, 0.3 s as centre lines and 0.7 s in logo mode, 1.6 to 2.9 × faster than PR E.
+- Speed (Build Plan PR F): the distance transforms, region labelling (by runs) and per-pixel passes run in parallel, with
+  their buffers pooled, for the same shapes as before. A 3000 × 2400 drawing traces in about 0.15 s in black and white,
+  0.24 s in color or grayscale, 0.34 s as centre lines and 0.66 s in logo mode, 1.9 to 3.1 × faster than PR E, and no
+  mode allocates more than it did.
 
 ## Egami.Fonts (unreleased)
 

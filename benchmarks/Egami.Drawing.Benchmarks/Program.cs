@@ -10,7 +10,8 @@ using Egami.Tests.Memory;
 // Run all:      dotnet run -c Release --project benchmarks/Egami.Drawing.Benchmarks -- --filter "*"
 // Run a class:  dotnet run -c Release --project benchmarks/Egami.Drawing.Benchmarks -- --filter "*Fill*"
 // Peak memory of cells and clip masks, with the Phase 2.2 harness: -- --peak
-// Quick tracing timings, the median of five runs per mode and size, with a hash of each trace's output: -- --time-trace
+// Quick tracing timings, the median of five runs per mode and size, the bytes the last run allocated (all threads) and a
+// hash of each trace's output: -- --time-trace
 if (args is ["--time-trace", ..])
 {
     TimeTrace(args.Length > 1 ? args[1] : null);
@@ -49,14 +50,14 @@ static void TimeTrace(string? only)
             double[] times = new double[5];
             for (int i = 0; i < times.Length; i++)
             {
-                long allocated = GC.GetAllocatedBytesForCurrentThread();
+                long allocated = GC.GetTotalAllocatedBytes(precise: true);
                 System.Diagnostics.Stopwatch clock = System.Diagnostics.Stopwatch.StartNew();
                 result = Egami.Drawing.Tracing.RasterTraceExtensions.Trace(scene, options);
                 times[i] = clock.Elapsed.TotalMilliseconds;
                 if (i == times.Length - 1)
                 {
                     Array.Sort(times);
-                    Console.WriteLine($"{mode,-13} {scene.Width}x{scene.Height}: {times[2],8:F1} ms  {(GC.GetAllocatedBytesForCurrentThread() - allocated) / 1048576.0,7:F1} MB  {result.Shapes.Count,4} shapes  hash {Egami.Benchmarks.TraceScenes.Hash(result):x16}");
+                    Console.WriteLine($"{mode,-13} {scene.Width}x{scene.Height}: {times[2],8:F1} ms  {(GC.GetTotalAllocatedBytes(precise: true) - allocated) / 1048576.0,7:F1} MB  {result.Shapes.Count,4} shapes  hash {Egami.Benchmarks.TraceScenes.Hash(result):x16}");
                 }
             }
         }

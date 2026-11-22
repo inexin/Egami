@@ -653,14 +653,13 @@ internal sealed class LabelImage
         // depends only on where the scan first meets it, so any order of joining gives the same numbers.
         int width = Width, height = Height;
         byte[] labels = Labels;
-        List<int> runStart = [];
-        List<int> parent = [];
+        using RunTable runs = new();
         int previousFirst = 0, previousEnd = 0;
         for (int y = 0; y < height; y++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             int row = y * width;
-            int first = runStart.Count;
+            int first = runs.Count;
             int above = previousFirst;
             for (int x = 0; x < width;)
             {
@@ -671,9 +670,8 @@ internal sealed class LabelImage
                     end++;
                 }
 
-                int run = runStart.Count;
-                runStart.Add(row + x);
-                parent.Add(run);
+                int run = runs.Add(row + x);
+                int[] runStart = runs.Start;
 
                 // The runs above that overlap columns x to end − 1.
                 while (above < previousEnd && RunEnd(runStart, above, previousEnd, width) <= x)
@@ -685,11 +683,7 @@ internal sealed class LabelImage
                 {
                     if (labels[runStart[a]] == c)
                     {
-                        int ra = Find(parent, a), rb = Find(parent, run);
-                        if (ra != rb)
-                        {
-                            parent[Math.Max(ra, rb)] = Math.Min(ra, rb);
-                        }
+                        runs.Join(a, run);
                     }
                 }
 
@@ -701,18 +695,11 @@ internal sealed class LabelImage
                 x = end;
             }
 
-            (previousFirst, previousEnd) = (first, runStart.Count);
+            (previousFirst, previousEnd) = (first, runs.Count);
         }
 
         // Number the regions in the order their first runs come.
-        int runs = runStart.Count;
-        int[] number = new int[runs];
-        int count = 0;
-        for (int r = 0; r < runs; r++)
-        {
-            int root = Find(parent, r);
-            number[r] = root == r ? count++ : number[root];
-        }
+        int[] number = runs.Number(out int count);
 
         ParallelOptions parallel = new() { CancellationToken = cancellationToken };
         Parallel.For(0, height, parallel, y =>
@@ -723,11 +710,12 @@ internal sealed class LabelImage
             }
         });
 
+        System.Buffers.ArrayPool<int>.Shared.Return(number);
         return count;
     }
 
     /// <summary>The index one past the last pixel's column of run <paramref name="run"/>, whose row's runs end at <paramref name="last"/>.</summary>
-    private static int RunEnd(List<int> runStart, int run, int last, int width)
+    private static int RunEnd(int[] runStart, int run, int last, int width)
     {
         int start = runStart[run];
         int end = run + 1 < last ? runStart[run + 1] : ((start / width) + 1) * width;
@@ -902,24 +890,6 @@ internal sealed class LabelImage
     }
 
     private static byte ToByte(double value) => (byte)Math.Clamp((int)Math.Round(value), 0, 255);
-
-    private static int Find(List<int> parent, int i)
-    {
-        int root = i;
-        while (parent[root] != root)
-        {
-            root = parent[root];
-        }
-
-        while (parent[i] != root)
-        {
-            int next = parent[i];
-            parent[i] = root;
-            i = next;
-        }
-
-        return root;
-    }
 
     private static int Find(int[] parent, int i)
     {

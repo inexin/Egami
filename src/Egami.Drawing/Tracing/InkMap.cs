@@ -213,13 +213,13 @@ internal sealed class InkMap
         // it, and each set's root is its earliest run, so any order of joining gives the same numbers.
         int width = Width, height = Height;
         byte[] ink = _ink;
-        List<int> start = [], parent = [];
+        using RunTable runs = new();
         int previousFirst = 0, previousEnd = 0;
         for (int y = 0; y < height; y++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             int row = y * width;
-            int first = start.Count;
+            int first = runs.Count;
             int above = previousFirst;
             for (int x = 0; x < width;)
             {
@@ -230,9 +230,8 @@ internal sealed class InkMap
                     stop++;
                 }
 
-                int run = start.Count;
-                start.Add(x);
-                parent.Add(run);
+                int run = runs.Add(x);
+                int[] start = runs.Start;
 
                 // The runs above that reach columns x − d to stop − 1 + d, d one for ink and none for paper.
                 int d = c != 0 ? 1 : 0;
@@ -245,11 +244,7 @@ internal sealed class InkMap
                 {
                     if (ink[row - width + start[a]] == c)
                     {
-                        int ra = FindList(parent, a), rb = FindList(parent, run);
-                        if (ra != rb)
-                        {
-                            parent[Math.Max(ra, rb)] = Math.Min(ra, rb);
-                        }
+                        runs.Join(a, run);
                     }
                 }
 
@@ -257,19 +252,11 @@ internal sealed class InkMap
                 x = stop;
             }
 
-            (previousFirst, previousEnd) = (first, start.Count);
+            (previousFirst, previousEnd) = (first, runs.Count);
         }
 
         // Number the regions in the order their first runs come.
-        int runs = start.Count;
-        int[] number = new int[runs];
-        int count = 0;
-        for (int r = 0; r < runs; r++)
-        {
-            int root = FindList(parent, r);
-            number[r] = root == r ? count++ : number[root];
-        }
-
+        int[] number = runs.Number(out int count);
         Parallel.For(0, height, new ParallelOptions { CancellationToken = cancellationToken }, y =>
         {
             for (int i = y * width; i < (y + 1) * width; i++)
@@ -278,25 +265,8 @@ internal sealed class InkMap
             }
         });
 
+        System.Buffers.ArrayPool<int>.Shared.Return(number);
         return count;
-    }
-
-    private static int FindList(List<int> parent, int i)
-    {
-        int root = i;
-        while (parent[root] != root)
-        {
-            root = parent[root];
-        }
-
-        while (parent[i] != root)
-        {
-            int next = parent[i];
-            parent[i] = root;
-            i = next;
-        }
-
-        return root;
     }
 
     private static int Find(int[] parent, int i)
