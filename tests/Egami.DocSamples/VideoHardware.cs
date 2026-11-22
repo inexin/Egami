@@ -1,4 +1,7 @@
+using Egami.Pixels;
 using Egami.Video;
+using Egami.Video.Codecs;
+using Egami.Video.Containers;
 using Egami.Video.Hardware;
 
 namespace Egami.DocSamples;
@@ -45,5 +48,34 @@ public class VideoHardware
         #endregion
 
         Assert.Equal(devices.Count == 0, HardwareVideoCodecs.UnavailableReason is not null);
+    }
+
+    [Fact]
+    public void Encode()
+    {
+        Assert.SkipUnless(HardwareVideoCodecs.IsAvailable(CodecIds.Avc, HardwareDirection.Encode), "No GPU encodes H.264.");
+        using SampleFiles files = new();
+        using Raster<Rgb8> duck = Raster.Load<Rgb8>("duck.png");
+
+        #region encode
+        // H.264 on the GPU, in MP4: the same options as Egami's software encoder. Effort picks the driver's quality level.
+        VideoWriterOptions options = new() { Codec = HardwareVideoCodecs.H264, FrameRate = new Rational(30, 1), Quality = 60 };
+        using (VideoWriter writer = VideoWriter.Create("duck-gpu.mp4", options))
+        {
+            for (int i = 0; i < 30; i++)
+            {
+                using Raster<Rgb8> frame = duck.Derive(ops => ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+                writer.WriteFrame(frame);
+            }
+        }
+
+        // A stream at 2 Mbit/s with a keyframe every second.
+        VideoWriterOptions streaming = options with { RateControl = RateControlMode.ConstantBitrate, Bitrate = 2_000_000, KeyframeInterval = 30 };
+        #endregion
+
+        using VideoReader reader = VideoReader.Open("duck-gpu.mp4", context: MediaContext.Default.WithH264());
+        Assert.Equal(CodecIds.Avc, reader.Track.CodecId);
+        Assert.Equal(30, reader.ReadFrames().Select(f => { f.Dispose(); return 0; }).Count());
+        Assert.Equal(2_000_000, streaming.Bitrate);
     }
 }
