@@ -15,7 +15,7 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
   length-prefixed with the parameter sets in the track's hvcC record (an hvc1 sample entry in MP4 and MOV); the VUI carries
   the colour, range and frame rate.
 - **Pictures.** IDR keyframes; P pictures from up to four earlier pictures by effort, with quarter-sample motion search, merge
-  and skip, AMVP and temporal vector prediction, 2Nx2N and (at efforts 2, 3 and from 5) Nx2N/2NxN partitions, inter
+  and skip, AMVP and temporal vector prediction, 2Nx2N and (at effort 2 and from 5) Nx2N/2NxN partitions, inter
   transform trees and intra coding units where the residual calls for them; B pictures, three between P pictures by default
   (`HevcEncoderOptions.BFrames`, 0 to 16, in `LatencyMode.Quality`), from effort 3 in a pyramid, with bi-prediction and joint
   refinement. The frame analysis plans B pictures and their quantizers as the H.264 encoder does.
