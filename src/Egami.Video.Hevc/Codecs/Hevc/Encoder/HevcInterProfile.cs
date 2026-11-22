@@ -84,7 +84,7 @@ internal sealed record HevcInterProfile
     /// <summary>
     /// Gets whether a CTB's coding units shallower than the co-located CTBs of the first reference of each list (the least depth
     /// they used, one less where that reference coded at a QP no higher and its mean depth is under 1.5 times its least) are split
-    /// without trying them whole.
+    /// without trying them whole. On at efforts 2 to 5: at 4 and 5 it saves 7 to 10 % of the work and a little rate.
     /// </summary>
     internal bool CoLocatedDepth { get; init; }
 
@@ -149,10 +149,10 @@ internal sealed record HevcInterProfile
     {
         0 => new() { MinCuLog2 = 4, MaxCuLog2 = 5, References = 1, MergeCandidates = 2, Halves = false, TransformDepth = 0, SearchRange = 16, QuarterSamples = false, SecondCandidateRatio = 0 },
         1 => new() { MinCuLog2 = 4, MaxCuLog2 = 5, References = 1, MergeCandidates = 2, Halves = false, TransformDepth = 0, SearchRange = 24, SecondCandidateRatio = 0 },
-        2 => new() { References = 2, MergeCandidates = 2, SearchRange = 32, SecondCandidateRatio = 0 },
-        3 => new() { References = 2, MergeCandidates = 3, SearchRange = 48, TransformSplit = true },
-        4 => new() { TransformSplit = true },
-        5 => new() { BReferences = 2, References = 3, MergeCandidates = 4, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false },
+        2 => new() { CoLocatedDepth = true, References = 2, MergeCandidates = 2, SearchRange = 32, SecondCandidateRatio = 0 },
+        3 => new() { CoLocatedDepth = true, References = 2, MergeCandidates = 3, SearchRange = 48, TransformSplit = true },
+        4 => new() { CoLocatedDepth = true, TransformSplit = true },
+        5 => new() { CoLocatedDepth = true, BReferences = 2, References = 3, MergeCandidates = 4, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false },
         6 => new() { BReferences = 2, References = 4, MergeCandidates = 5, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false },
         7 => new() { BReferences = 2, References = 4, MergeCandidates = 5, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false, SecondCandidateRatio = 1.5 },
         8 => new() { BReferences = 2, HalvesStartsOnly = false, References = 4, MergeCandidates = 5, TransformDepth = 3, TransformSplit = true, FullIntra = true, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false, SecondCandidateRatio = 2, IntraGate = false, HalvesGate = false },
