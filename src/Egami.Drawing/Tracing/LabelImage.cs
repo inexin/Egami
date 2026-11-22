@@ -148,6 +148,86 @@ internal sealed class LabelImage
                 }
             }
         });
+
+        // Along a shallow edge the pixels on either side are blends too, so the test above misses some; a pixel that lies
+        // nearer the line between two colors around it than its own color is a blend of those two and takes the nearer.
+        byte[] second = [.. Labels];
+        Parallel.For(0, Height, parallel, y =>
+        {
+            Span<int> around = stackalloc int[9];
+            for (int x = 0; x < Width; x++)
+            {
+                int i = (y * Width) + x;
+                int own = second[i], count = 0;
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    for (int dx = -1; dx <= 1; dx++)
+                    {
+                        int nx = x + dx, ny = y + dy;
+                        if ((uint)nx < (uint)Width && (uint)ny < (uint)Height)
+                        {
+                            int label = second[(ny * Width) + nx];
+                            if (label != own && !around[..count].Contains(label))
+                            {
+                                around[count++] = label;
+                            }
+                        }
+                    }
+                }
+
+                if (count >= 2)
+                {
+                    Labels[i] = (byte)Unblend(Rgb[3 * i], Rgb[(3 * i) + 1], Rgb[(3 * i) + 2], own, around[..count], pr, pg, pb);
+                }
+            }
+        });
+    }
+
+    /// <summary>
+    /// The label a pixel of color (r, g, b) labelled <paramref name="own"/> takes: when it lies within a quarter of its distance
+    /// to its own color from the line between two of the <paramref name="around"/> colors, well inside it, the nearer of the two;
+    /// otherwise its own.
+    /// </summary>
+    private static int Unblend(int r, int g, int b, int own, ReadOnlySpan<int> around, int[] pr, int[] pg, int[] pb)
+    {
+        double or = r - pr[own], og = g - pg[own], ob = b - pb[own];
+        double ownDistance = (or * or) + (og * og) + (ob * ob);
+        if (ownDistance < 24 * 24)
+        {
+            return own;
+        }
+
+        int best = own;
+        double bestResidual = ownDistance / 16;
+        for (int m = 0; m < around.Length; m++)
+        {
+            for (int n = m + 1; n < around.Length; n++)
+            {
+                int a = around[m], c = around[n];
+                double dr = pr[c] - pr[a], dg = pg[c] - pg[a], db = pb[c] - pb[a];
+                double length = (dr * dr) + (dg * dg) + (db * db);
+                if (length < 40 * 40)
+                {
+                    continue;
+                }
+
+                double qr = r - pr[a], qg = g - pg[a], qb = b - pb[a];
+                double t = ((qr * dr) + (qg * dg) + (qb * db)) / length;
+                if (t is < 0.05 or > 0.95)
+                {
+                    continue;
+                }
+
+                double er = qr - (t * dr), eg = qg - (t * dg), eb = qb - (t * db);
+                double residual = (er * er) + (eg * eg) + (eb * eb);
+                if (residual < bestResidual)
+                {
+                    (best, bestResidual) = (t < 0.5 ? a : c, residual);
+                }
+            }
+        }
+
+        return best;
     }
 
     /// <summary>

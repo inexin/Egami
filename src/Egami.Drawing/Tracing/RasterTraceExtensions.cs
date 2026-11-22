@@ -87,7 +87,7 @@ public static class RasterTraceExtensions
             default:
                 {
                     // Other pixel types are read through a 16-bit copy, which keeps their precision for the threshold.
-                    if (options.Mode == TraceMode.BlackAndWhite)
+                    if (options.Mode is TraceMode.BlackAndWhite or TraceMode.Centerline)
                     {
                         options = options with { Threshold = options.Threshold ?? raster.FindThreshold() };
                     }

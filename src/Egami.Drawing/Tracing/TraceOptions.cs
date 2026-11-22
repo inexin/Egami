@@ -20,6 +20,7 @@ public sealed record class TraceOptions
     private readonly Rgba8[]? _palette;
     private readonly TraceLayering _layering = TraceLayering.Stacked;
     private readonly float _smoothing;
+    private readonly float? _strokeWidth;
 
     /// <summary>
     /// Gets the defaults: black and white at the Otsu threshold, with the paper traced as a white background shape, curves within
@@ -41,7 +42,7 @@ public sealed record class TraceOptions
     /// <summary>
     /// Gets the level that splits ink from paper, from 0 (black) to 1 (white): a pixel is ink when its intensity, over white by
     /// its alpha, is at most this. <see langword="null"/> (the default) finds it with Otsu's method, as
-    /// <see cref="Raster.FindThreshold"/> does. Used in black and white only.
+    /// <see cref="Raster.FindThreshold"/> does. Used in black and white and centerline only.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The level is outside 0 to 1.</exception>
     public float? Threshold
@@ -85,7 +86,7 @@ public sealed record class TraceOptions
     }
 
     /// <summary>
-    /// Gets whether white areas are left out. In black and white, when <see langword="false"/> (the default), a white shape the
+    /// Gets whether white areas are left out. In black and white and centerline, when <see langword="false"/> (the default), a white shape the
     /// size of the image comes first, under the ink, wherever the image has paper. In grayscale, color and logo, the layer of each
     /// palette color whose red, green and blue are all at least 240 is left out, and its areas stay empty in the other layers;
     /// in logo, that includes the transparency the art encloses, which is otherwise traced as white.
@@ -145,6 +146,17 @@ public sealed record class TraceOptions
     {
         get => _smoothing;
         init => _smoothing = Unit(value, nameof(Smoothing));
+    }
+
+    /// <summary>
+    /// Gets the pen width of every stroke a <see cref="TraceMode.Centerline"/> trace gives, in pixels, or <see langword="null"/>
+    /// (the default) to give each stroke the width its ink covers. Not used in the other modes.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The width is not positive and finite.</exception>
+    public float? StrokeWidth
+    {
+        get => _strokeWidth;
+        init => _strokeWidth = value is null || (value > 0 && float.IsFinite(value.Value)) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The stroke width must be positive and finite.");
     }
 
     private static float Unit(float value, string name)

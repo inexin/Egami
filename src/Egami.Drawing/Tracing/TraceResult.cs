@@ -49,7 +49,7 @@ public sealed class TraceResult
     /// <summary>Gets the traced image's height in pixels.</summary>
     public int Height { get; }
 
-    /// <summary>Draws the shapes on a canvas, back to front, in the canvas's current transform and clip.</summary>
+    /// <summary>Draws the shapes on a canvas, back to front, in the canvas's current transform and clip; strokes have round caps and joins.</summary>
     /// <param name="canvas">The canvas.</param>
     /// <exception cref="ArgumentNullException"><paramref name="canvas"/> is <see langword="null"/>.</exception>
     /// <example>
@@ -62,7 +62,7 @@ public sealed class TraceResult
         {
             if (shape.Kind == TracedShapeKind.Stroke)
             {
-                canvas.StrokePath(shape.Path, new Stroke(shape.StrokeWidth), shape.Color);
+                canvas.StrokePath(shape.Path, new Stroke(shape.StrokeWidth) { Cap = LineCap.Round, Join = LineJoin.Round }, shape.Color);
             }
             else
             {

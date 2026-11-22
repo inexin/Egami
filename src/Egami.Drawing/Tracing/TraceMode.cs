@@ -31,4 +31,12 @@ public enum TraceMode
     /// transparency the art encloses is traced as white. An image that is not flat color (a photo, a gradient) is refused.
     /// </summary>
     Logo,
+
+    /// <summary>
+    /// For line art, sketches and handwriting: splits ink from paper at <see cref="TraceOptions.Threshold"/> as
+    /// <see cref="BlackAndWhite"/> does, then traces the middle of each stroke as an open path, stroked with the width its ink
+    /// covers (or <see cref="TraceOptions.StrokeWidth"/>), joined straight through crossings and junctions. A dot becomes a small
+    /// filled disc.
+    /// </summary>
+    Centerline,
 }

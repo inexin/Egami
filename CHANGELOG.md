@@ -30,9 +30,9 @@ waits for B pictures, rate control tuning and its gates. Additive to 1.3.
 
 ## Egami.Drawing and Egami.Svg 1.5.0 (unreleased)
 
-Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PRs A to C of seven): black-and-white, grayscale, color and
-logo images become vector shapes. Additive to 1.4.0; the later PRs add Centerline and PixelArt modes, presets and an
-`egami trace` command.
+Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PRs A to D of seven): black-and-white, grayscale, color and
+logo images become vector shapes, and line art becomes stroked centre lines. Additive to 1.4.0; the later PRs add a
+PixelArt mode, presets and an `egami trace` command.
 
 - `raster.Trace(options)` (namespace `Egami.Drawing.Tracing`, also `Trace<TPixel>` and `TraceAsync` with a cancellation
   token) traces a raster's first frame and returns a `TraceResult`: `TracedShape`s back to front (a `Path`, an `Rgba8`
@@ -53,6 +53,13 @@ logo images become vector shapes. Additive to 1.4.0; the later PRs add Centerlin
   a cubic B-spline, and marching squares on a grid up to 4 × finer places the edges, for rounder curves than color mode
   on small art (synthetic logos: mean edge error 0.06 px, max 0.45 px, at 1 ×). Transparency around the art is left
   out and transparency it encloses traced as white; a photo or gradient throws `ArgumentException`.
+- `TraceMode.Centerline` traces line art, sketches and handwriting as stroked open paths along the middle of each line:
+  Zhang–Suen thinning, a graph of lines between ends and junctions, spurs and split crossings cleaned up by the
+  Felzenszwalb–Huttenlocher distance transform, lines continued straight through junctions, points moved to the middle of
+  the ink and each stroke given the width its ink covers (or `TraceOptions.StrokeWidth`). On strokes drawn from known paths
+  the centre lines lie within 0.04 to 0.08 px on average and the widths within 4 % from 1 × to 4 ×. `TraceResult.Draw`
+  strokes with round caps and joins.
+- Color and grayscale tracing no longer leave slivers of a third color along shallow antialiased edges of large drawings.
 - Egami.Svg writes a trace as SVG through `SvgCanvas`: `result.ToSvg()` and `result.SaveSvg(path)` (or a stream).
 - Speed is not tuned yet (Build Plan PR F): a 3000 × 3000 drawing traces in about 0.7 s in black and white and 1 s in
   color.

@@ -1,11 +1,12 @@
 # Bitmap tracing
 
-Bitmap tracing turns a raster into filled vector shapes: a scanned signature, line art or a logo comes back as `Path` objects
+Bitmap tracing turns a raster into vector shapes: a scanned signature, line art or a logo comes back as `Path` objects
 with a color each, ready to draw at any size, record as a `Picture`, or save as SVG. It is part of Egami.Drawing, in the
 namespace `Egami.Drawing.Tracing`; Egami.Svg adds the SVG output.
 
-Four modes trace filled shapes: black and white, grayscale, color and logo. Centre-line and pixel-art modes come in later 1.x
-versions, as new `TraceMode` values; traced output may also improve between minor versions.
+Four modes trace filled shapes: black and white, grayscale, color and logo. Centerline traces line art as stroked lines. A
+pixel-art mode comes in a later 1.x version, as a new `TraceMode` value; traced output may also improve between minor
+versions.
 
 ## Tracing a raster
 
@@ -15,7 +16,8 @@ traced image's `Width` and `Height`.
 [!code-csharp[](../../../tests/Egami.DocSamples/Tracing.cs#trace)]
 
 - Each `TracedShape` has a `Path`, a `Color` (`Rgba8`), a `Kind` (`TracedShapeKind.Fill` or `Stroke`) and, for a stroke, a
-  `StrokeWidth`. The black-and-white, grayscale, color and logo modes give filled shapes only.
+  `StrokeWidth`. The black-and-white, grayscale, color and logo modes give filled shapes only; centerline gives strokes,
+  drawn with round caps and joins.
 - Coordinates are the raster's pixels, y down, with pixel (0, 0) covering the square from (0, 0) to (1, 1), as on a
   [canvas](drawing.md#a-canvas).
 - In black and white, one shape is one ink region: its outer edge and its holes. A region inside another region's hole comes
@@ -35,18 +37,19 @@ traced image's `Width` and `Height`.
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| `Mode` | `BlackAndWhite` | How pixels become shapes: `BlackAndWhite`, `Grayscale`, `Color` or `Logo`. |
-| `Threshold` | `null` | Black and white: the level from 0 (black) to 1 (white) that splits ink from paper. A pixel is ink when its intensity, over white by its alpha, is at most this. `null` finds it with Otsu's method, as `Raster.FindThreshold` does. |
+| `Mode` | `BlackAndWhite` | How pixels become shapes: `BlackAndWhite`, `Grayscale`, `Color`, `Logo` or `Centerline`. |
+| `Threshold` | `null` | Black and white and centerline: the level from 0 (black) to 1 (white) that splits ink from paper. A pixel is ink when its intensity, over white by its alpha, is at most this. `null` finds it with Otsu's method, as `Raster.FindThreshold` does. |
 | `Colors` | 8 | Grayscale, color and logo: the most colors (gray levels) the image is reduced to, 2 to 256. An image with fewer flat colors gets fewer. |
 | `Palette` | `null` | Grayscale, color and logo: fixed colors to reduce the image to instead; the shapes take them exactly. |
 | `Layering` | `Stacked` | Grayscale, color and logo: how the layers fit together (see below). |
 | `Smoothing` | 0 | Grayscale and color: edge-keeping smoothing before the colors are found, from 0 to 1, for photos. Not used in logo. |
+| `StrokeWidth` | `null` | Centerline: one pen width for every stroke, in pixels; `null` gives each stroke the width its ink covers. |
 | `PathFidelity` | 0.5 | How closely the curves follow the pixel edges: 0 gives the fewest curves, 1 the closest fit. 0.5 is a tolerance of half a pixel. |
 | `Corners` | 0.25 | How readily corners stay sharp: 0 rounds every corner, 1 keeps every corner (the outline is a polygon). 0.25 keeps any turn of more than 60 degrees. |
 | `SnapToLines` | `true` | Straight runs of an outline become lines. |
 | `SnapToArcs` | `true` | Runs on a circle become circular arcs, and round outlines circles. |
 | `Noise` | 2 | The smallest region kept, in pixels. Smaller regions merge into the regions around them, smallest first (in grayscale and color, into the neighbour they share the most edge with), so a speck inside a small hole goes before the hole. 0 or 1 keeps everything. |
-| `IgnoreWhite` | `false` | Leaves out white: in black and white the white shape that otherwise comes first, under the ink, the size of the image; in grayscale, color and logo the layer of each color whose red, green and blue are all at least 240, whose areas stay empty (in logo, also the transparency the art encloses). |
+| `IgnoreWhite` | `false` | Leaves out white: in black and white and centerline the white shape that otherwise comes first, under the ink, the size of the image; in grayscale, color and logo the layer of each color whose red, green and blue are all at least 240, whose areas stay empty (in logo, also the transparency the art encloses). |
 
 `TraceOptions.Default` is the defaults. `TraceOptions.BlackAndWhite` is the defaults with `IgnoreWhite`: the ink alone.
 
@@ -84,6 +87,24 @@ color mode on small art: a disc of radius 6 keeps its radius to about 0.05 pixel
   one of its colors nor a blend of two, it is a photo or a gradient (trace it with `TraceMode.Color`), or it has more flat
   colors than `Colors` allows. JPEG noise on a flat logo is fine.
 - Small images are sampled finer, up to 4 × 4 samples a pixel, so a 100-pixel icon has as smooth an outline as a large one.
+
+## Centerline
+
+`TraceMode.Centerline` is for line art, sketches and handwriting: instead of the outline of each ink region, it traces the
+middle of each stroke as an open path, a `TracedShapeKind.Stroke` shape with the `StrokeWidth` its ink covers. Drawn with a
+round pen, the strokes cover the ink again, and an editor can move, restyle or thin them like hand-drawn lines.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tracing.cs#centerline)]
+
+- Ink is split from paper at `Threshold`, as in black and white, and `Noise` drops specks first.
+- Lines that cross run straight through each other, as two strokes; where a line ends on another, as in a T, it ends on the
+  other's centre line. A closed loop, such as the letter O, is one closed stroke.
+- Each stroke has one width: the ink it covers over its length, allowing for its round ends. `StrokeWidth` sets one width for
+  all of them instead, for a single pen.
+- A dot too small to have a direction becomes a filled disc of its area.
+- On strokes drawn from known paths, the traced centre lines lie within about 0.05 to 0.1 pixels of the drawn ones on
+  average and the widths within 5 %. Filled areas wider than a pen stroke come back as very wide strokes: trace those in
+  black and white.
 
 ## Shapes and paths
 
@@ -129,6 +150,17 @@ Each mode follows the same steps, written from the papers in the [references](..
 
 A traced circle keeps its size to a few hundredths of a pixel when its edge is antialiased: a disc of radius 30 comes back
 with a radius of 29.95.
+
+Centerline mode replaces steps 2 to 4:
+
+1. **Skeleton.** The ink is thinned to lines one pixel wide, after T. Y. Zhang and C. Y. Suen, "A fast parallel algorithm for
+   thinning digital patterns" (1984), and read as a graph of lines between ends and junctions.
+2. **Clean-up.** Each pixel's distance to the paper, from P. F. Felzenszwalb and D. P. Huttenlocher's exact distance
+   transform, "Distance transforms of sampled functions" (2012), tells how thick the ink is there: branches shorter than
+   that are thinning's spurs and go, and forks closer together than that are one crossing. Lines that meet nearly straight
+   continue through a junction.
+3. **Centres and widths.** Each point moves across the stroke to the middle of its ink, each free end out to half a pen width
+   inside the ink's end, and each stroke takes the width that covers the ink nearest its skeleton.
 
 Logo mode replaces steps 1 and 3:
 
