@@ -6,7 +6,9 @@ namespace Egami.Drawing.Tracing;
 /// <param name="Lines">Whether straight runs become lines.</param>
 /// <param name="Arcs">Whether runs on a circle become circular arcs, and round outlines circles.</param>
 /// <param name="Reach">How many points either side a corner's turn is measured over: about one point per pixel gives 3.</param>
-internal sealed record CurveSettings(double Tolerance, double CornerAngle, bool Lines, bool Arcs, int Reach = 3)
+/// <param name="MildCornerAngle">The turn, in radians, above which a bend that is all at one point (it turns as much over
+/// twice the reach) is a corner too; π for none.</param>
+internal sealed record CurveSettings(double Tolerance, double CornerAngle, bool Lines, bool Arcs, int Reach = 3, double MildCornerAngle = Math.PI)
 {
     /// <summary>The distance within which points count as on one line or one circle.</summary>
     internal double SnapTolerance => Math.Min(0.3, 0.6 * Tolerance);
@@ -44,7 +46,7 @@ internal static class CubicFitter
         }
 
         List<int> breaks = [0];
-        breaks.AddRange(Corners(points, false, settings.CornerAngle, settings.Reach));
+        breaks.AddRange(Corners(points, false, settings.CornerAngle, settings.Reach, settings.MildCornerAngle));
         breaks.Add(n - 1);
         Vec[] p = Prepare(points, false, breaks, settings.Reach);
         for (int k = 0; k + 1 < breaks.Count; k++)
@@ -99,7 +101,7 @@ internal static class CubicFitter
             return new FittedCurve(points[0], segments, true);
         }
 
-        List<int> corners = Corners(points, true, settings.CornerAngle, settings.Reach);
+        List<int> corners = Corners(points, true, settings.CornerAngle, settings.Reach, settings.MildCornerAngle);
         if (corners.Count == 0 && settings.CornerAngle <= 0)
         {
             corners.Add(0);
@@ -142,26 +144,30 @@ internal static class CubicFitter
     /// The corners of a run: points where the direction turns by more than <paramref name="cornerAngle"/> over a few points on
     /// either side, the sharpest of any close together.
     /// </summary>
-    internal static List<int> Corners(Vec[] p, bool closed, double cornerAngle, int reach = Reach)
+    internal static List<int> Corners(Vec[] p, bool closed, double cornerAngle, int reach = Reach, double mildAngle = Math.PI)
     {
         int n = p.Length;
         List<int> corners = [];
-        if (n < 3 || cornerAngle >= Math.PI)
+        if (n < 3 || Math.Min(cornerAngle, mildAngle) >= Math.PI)
         {
             return corners;
         }
 
         // The turn over a few points either side and over twice as many: a real corner turns at both reaches, a staircase step or a
-        // speck of noise only at the shorter one.
+        // speck of noise only at the shorter one. A curve turns about twice as much over twice the reach; a corner, all of whose
+        // turn is at one point, about the same, so above the mild angle it is a corner too.
         double[] turn = new double[n];
+        bool[] corner = new bool[n];
         for (int i = 0; i < n; i++)
         {
-            turn[i] = Math.Min(Turn(p, closed, i, reach), Turn(p, closed, i, 2 * reach));
+            double near = Turn(p, closed, i, reach), far = Turn(p, closed, i, 2 * reach);
+            turn[i] = Math.Min(near, far);
+            corner[i] = turn[i] > cornerAngle || (turn[i] > mildAngle && far < 1.25 * near && near < 1.25 * far);
         }
 
         for (int i = 0; i < n; i++)
         {
-            if (turn[i] <= cornerAngle || turn[i] < 1e-6)
+            if (!corner[i] || turn[i] < 1e-6)
             {
                 continue;
             }
@@ -249,9 +255,20 @@ internal static class CubicFitter
                 continue;
             }
 
+            // A sharp corner rounds off further from its tip: where its sides come within about a pixel of each other. Dense
+            // points skip that far, and the tip may then lie further out.
+            int skipHere = skip;
+            double reachOut = 1.5;
+            if (reach > 3)
+            {
+                double half = Math.Max(0.1, (Math.PI - Turn(points, closed, c, reach)) / 2);
+                skipHere = Math.Max(skip, (int)(reach / 3.0 * 0.5 / Math.Sin(half)));
+                reachOut = Math.Max(reachOut, 1 / Math.Sin(half));
+            }
+
             // The points on each side, up to the next break.
             List<Vec> left = [], right = [];
-            for (int j = 1; j <= side + skip; j++)
+            for (int j = 1; j <= side + skipHere; j++)
             {
                 int i = closed ? (c - j + n) % n : c - j;
                 if (i < 0 || fixedPoint[i])
@@ -259,13 +276,13 @@ internal static class CubicFitter
                     break;
                 }
 
-                if (j > skip)
+                if (j > skipHere)
                 {
                     left.Add(p[i]);
                 }
             }
 
-            for (int j = 1; j <= side + skip; j++)
+            for (int j = 1; j <= side + skipHere; j++)
             {
                 int i = closed ? (c + j) % n : c + j;
                 if (i >= n || fixedPoint[i])
@@ -273,13 +290,13 @@ internal static class CubicFitter
                     break;
                 }
 
-                if (j > skip)
+                if (j > skipHere)
                 {
                     right.Add(p[i]);
                 }
             }
 
-            if (left.Count >= 2 && right.Count >= 2 && Intersect(FitLine(left), FitLine(right), out Vec meet) && (meet - p[c]).Length <= 1.5)
+            if (left.Count >= 2 && right.Count >= 2 && Intersect(FitLine(left), FitLine(right), out Vec meet) && (meet - p[c]).Length <= reachOut)
             {
                 p[c] = meet;
             }

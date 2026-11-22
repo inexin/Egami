@@ -104,6 +104,9 @@ pixel-art images become vector shapes, and line art becomes stroked centre lines
   neighbours in parallel and hands its regions on, so they are not labelled twice, the boundary scan skips equal rows by
   vector compare, and the levels pass runs in parallel. Path data numbers are written through integers. Native `egami trace`
   on a 12-megapixel drawing takes 0.19 s instead of 0.47 s (1.2 × potrace 1.16), 4 megapixels 0.10 s (1.4 ×).
+- Logo mode keeps blunt corners (a bend of half the corner angle or more, all at one point, as on hexagons and octagons)
+  and finds sharp tips further out, past where their antialiased sides round off. On the egami-compare gates' 24 synthetic
+  logos the edges lie a mean 0.045 pixels from the true outlines (was 0.076), at most 0.44 (was 0.60).
 
 ## Egami.Fonts (unreleased)
 

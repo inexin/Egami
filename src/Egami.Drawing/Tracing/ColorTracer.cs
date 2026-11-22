@@ -43,6 +43,13 @@ internal static class ColorTracer
             settings = settings with { Reach = 3 * scale };
         }
 
+        if (margins is not null && settings.CornerAngle < Math.PI)
+        {
+            // Logo mode's edges are exact enough to tell a blunt corner from a curve: one turning half the corner angle at a
+            // single point is a corner too.
+            settings = settings with { MildCornerAngle = settings.CornerAngle / 2 };
+        }
+
         bool[] skip = new bool[image.Palette.Length];
         for (int k = 0; k < skip.Length; k++)
         {
