@@ -22970,6 +22970,32 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Tracing.TraceOptions.Layering
   nameWithType: TraceOptions.Layering
+- uid: Egami.Drawing.Tracing.TraceOptions.LineArt
+  name: LineArt
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_LineArt
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.LineArt
+  fullName: Egami.Drawing.Tracing.TraceOptions.LineArt
+  nameWithType: TraceOptions.LineArt
+- uid: Egami.Drawing.Tracing.TraceOptions.LineArt*
+  name: LineArt
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_LineArt_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.LineArt
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.LineArt
+  nameWithType: TraceOptions.LineArt
+- uid: Egami.Drawing.Tracing.TraceOptions.Logo
+  name: Logo
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Logo
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Logo
+  fullName: Egami.Drawing.Tracing.TraceOptions.Logo
+  nameWithType: TraceOptions.Logo
+- uid: Egami.Drawing.Tracing.TraceOptions.Logo*
+  name: Logo
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Logo_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Logo
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Logo
+  nameWithType: TraceOptions.Logo
 - uid: Egami.Drawing.Tracing.TraceOptions.Mode
   name: Mode
   href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Mode
@@ -23022,6 +23048,45 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Tracing.TraceOptions.PathFidelity
   nameWithType: TraceOptions.PathFidelity
+- uid: Egami.Drawing.Tracing.TraceOptions.Photo
+  name: Photo
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Photo
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Photo
+  fullName: Egami.Drawing.Tracing.TraceOptions.Photo
+  nameWithType: TraceOptions.Photo
+- uid: Egami.Drawing.Tracing.TraceOptions.Photo*
+  name: Photo
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Photo_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Photo
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Photo
+  nameWithType: TraceOptions.Photo
+- uid: Egami.Drawing.Tracing.TraceOptions.Poster
+  name: Poster
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Poster
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Poster
+  fullName: Egami.Drawing.Tracing.TraceOptions.Poster
+  nameWithType: TraceOptions.Poster
+- uid: Egami.Drawing.Tracing.TraceOptions.Poster*
+  name: Poster
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Poster_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Poster
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Poster
+  nameWithType: TraceOptions.Poster
+- uid: Egami.Drawing.Tracing.TraceOptions.Sketch
+  name: Sketch
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Sketch
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.Sketch
+  fullName: Egami.Drawing.Tracing.TraceOptions.Sketch
+  nameWithType: TraceOptions.Sketch
+- uid: Egami.Drawing.Tracing.TraceOptions.Sketch*
+  name: Sketch
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Sketch_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.Sketch
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.Sketch
+  nameWithType: TraceOptions.Sketch
 - uid: Egami.Drawing.Tracing.TraceOptions.Smoothing
   name: Smoothing
   href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Smoothing

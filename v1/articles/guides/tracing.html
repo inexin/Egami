@@ -89,7 +89,8 @@
 
 <p>Bitmap tracing turns a raster into vector shapes: a scanned signature, line art or a logo comes back as <code>Path</code> objects
 with a color each, ready to draw at any size, record as a <code>Picture</code>, or save as SVG. It is part of Egami.Drawing, in the
-namespace <code>Egami.Drawing.Tracing</code>; Egami.Svg adds the SVG output.</p>
+namespace <code>Egami.Drawing.Tracing</code>; Egami.Svg adds the SVG output, and <a href="#from-the-command-line"><code>egami trace</code></a> does it all
+from a shell.</p>
 <p>Four modes trace filled shapes: black and white, grayscale, color and logo. Centerline traces line art as stroked lines. A
 pixel-art mode comes in a later 1.x version, as a new <code>TraceMode</code> value; traced output may also improve between minor
 versions.</p>
@@ -214,7 +215,63 @@ TraceResult polygon = scan.Trace(TraceOptions.BlackAndWhite with { Corners = 1 }
 </tr>
 </tbody>
 </table>
-<p><code>TraceOptions.Default</code> is the defaults. <code>TraceOptions.BlackAndWhite</code> is the defaults with <code>IgnoreWhite</code>: the ink alone.</p>
+<h2 id="presets">Presets</h2>
+<p>Each preset is a <code>TraceOptions</code> to start from, for one kind of image; change any setting with <code>with</code>.</p>
+<pre><code class="lang-csharp">// A preset for the kind of image, then any change with `with`.
+TraceResult badge = logo.Trace(TraceOptions.Logo with { Colors = 4, IgnoreWhite = true });
+TraceResult poster = logo.Trace(TraceOptions.Poster);
+TraceResult lines = sketch.Trace(TraceOptions.LineArt with { StrokeWidth = 2 });
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>For</th>
+<th>Settings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Default</code></td>
+<td>Scans to keep as a page</td>
+<td>The defaults: black and white, with the paper as a white shape under the ink.</td>
+</tr>
+<tr>
+<td><code>BlackAndWhite</code></td>
+<td>Signatures, stamps, black-and-white logos</td>
+<td>The defaults with <code>IgnoreWhite</code>: the ink alone.</td>
+</tr>
+<tr>
+<td><code>Logo</code></td>
+<td>Flat-color logos, icons and badges</td>
+<td><code>Logo</code> mode, up to 8 colors, stacked; white is traced.</td>
+</tr>
+<tr>
+<td><code>Poster</code></td>
+<td>Posters and illustrations, or photos as a few bold areas</td>
+<td><code>Color</code> mode, 6 colors, <code>Smoothing</code> 0.3, <code>Noise</code> 16.</td>
+</tr>
+<tr>
+<td><code>Photo</code></td>
+<td>Photos and painted art</td>
+<td><code>Color</code> mode, 16 colors, <code>Smoothing</code> 0.6, <code>Noise</code> 8, <code>PathFidelity</code> 0.3, no line or arc snapping.</td>
+</tr>
+<tr>
+<td><code>LineArt</code></td>
+<td>Clean line art, diagrams and handwriting</td>
+<td><code>Centerline</code> mode with <code>IgnoreWhite</code>.</td>
+</tr>
+<tr>
+<td><code>Sketch</code></td>
+<td>Pencil sketches and grainy scans</td>
+<td><code>Centerline</code> mode with <code>IgnoreWhite</code>, <code>Noise</code> 8 and <code>PathFidelity</code> 0.3.</td>
+</tr>
+</tbody>
+</table>
+<p>The color presets were set on test photos: over five of them, a <code>Photo</code> trace drawn back differs from the photo by 2.9 %
+of full scale on average and a <code>Poster</code> trace by 3.5 %, against 2.75 % for color mode's defaults, with a fifth and a twelfth
+of its shapes (647 and 292 against 3444). A photo gives hundreds of shapes or more; fewer <code>Colors</code> or a larger <code>Noise</code> give fewer. <code>Sketch</code> drops the
+grain of a scanned pencil drawing that <code>LineArt</code> would trace as dots and short strokes.</p>
 <h2 id="grayscale-and-color">Grayscale and color</h2>
 <p><code>TraceMode.Color</code> finds the image's own flat colors, at most <code>Colors</code> of them, and traces each as a layer of shapes;
 <code>TraceMode.Grayscale</code> does the same with gray levels. Pixels along antialiased or blurred edges are blends of the colors on
@@ -338,7 +395,15 @@ element per shape, back to front, in an SVG the size of the traced image. <code>
 TraceResult result = scan.Trace(TraceOptions.BlackAndWhite);
 string markup = result.ToSvg(new SvgWriteOptions { Precision = 2 });
 result.SaveSvg(file);
-</code></pre><h2 id="how-tracing-works">How tracing works</h2>
+</code></pre><h2 id="from-the-command-line">From the command line</h2>
+<p><a href="../cli/commands.html#trace"><code>egami trace</code></a> traces images and writes SVG, from a preset (<code>--preset logo</code>, <code>poster</code>,
+<code>line-art</code>, ...) with any setting changed by its option (<code>--colors</code>, <code>--palette</code>, <code>--layering</code>, <code>--corners</code>,
+<code>--path-fidelity</code>, <code>--noise</code>, <code>--ignore-white</code>, <code>--stroke-width</code>, ...). <code>--preview-png</code> also writes the trace drawn as a PNG,
+to compare with the image.</p>
+<pre><code class="lang-sh">egami trace logo.png --preset logo --colors 4 -o logo.svg --preview-png logo-trace.png
+egami trace &quot;scans/*.png&quot; --preset line-art --stroke-width 2 -o &quot;svg/{name}.svg&quot;
+</code></pre>
+<h2 id="how-tracing-works">How tracing works</h2>
 <p>Each mode follows the same steps, written from the papers in the <a href="../../references.md">references</a>:</p>
 <ol>
 <li><strong>Labels.</strong> Black and white splits ink from paper at the threshold; ink pixels that touch only at a corner belong together

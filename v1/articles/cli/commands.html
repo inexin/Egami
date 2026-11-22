@@ -139,6 +139,7 @@ Commands:
   text &lt;inputs&gt;                     Draw a caption or watermark on images, with any font and script, wrapped to fit (2.8.2 layout).
   overlay &lt;inputs&gt;                  Lay an image (a logo, a watermark, an SVG) on images, placed by anchor, with opacity and a blend mode.
   montage &lt;inputs&gt;                  Lay images out on a contact sheet: a grid of tiles, optionally labeled with their file names.
+  trace &lt;inputs&gt;                    Trace images into vector shapes (logos, line art, scans, posters, photos) and write them as SVG.
   formats &lt;format&gt;                  List the formats egami reads and writes, or one format's writer settings for --set.
   mcp                               Serve egami's commands as tools to an AI assistant over the Model Context Protocol, on standard input and output. Tools read and write only inside the folders the assistant opened and those given with --allow, and never replace an input unless asked.
 </code></pre>
@@ -773,6 +774,39 @@ Options:
   --label-size &lt;pixels&gt;                The label size in pixels. [default: 13]
   --set &lt;fmt.key=value&gt;                Writer settings as fmt.key=value.
   --quality &lt;0-100&gt;                    Lossy quality from 0 to 100.
+</code></pre>
+<h2 id="trace">trace</h2>
+<pre><code class="lang-text">Description:
+  Trace images into vector shapes (logos, line art, scans, posters, photos) and write them as SVG.
+
+Usage:
+  egami trace &lt;inputs&gt;... [options]
+
+Arguments:
+  &lt;inputs&gt;  Image files, globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output &lt;path&gt;                  Where to write the SVG: a file, a folder, a template with {name}, {ext}, {dir} and {index}, or - (the default for one input) for standard output.
+  -p, --preset &lt;preset&gt;                The starting settings: default, black-and-white, logo, poster, photo, line-art, sketch. default (black and white with a white background) by default; the options below change it.
+  -m, --mode &lt;mode&gt;                    How pixels become shapes: black-and-white, grayscale, color, logo or centerline (strokes along the middle of lines).
+  -c, --colors &lt;count&gt;                 The most colors (gray levels in grayscale) to reduce the image to, 2 to 256 (grayscale, color, logo).
+  --palette &lt;colors&gt;                   Fixed colors instead, CSS colors separated by commas or spaces, such as &quot;black, #c00, white&quot; (grayscale, color, logo).
+  --layering &lt;stacked|abutting&gt;        stacked (each color layer covers those above it, the default) or abutting (each color only its own area).
+  -t, --threshold &lt;0-1&gt;                The level that splits ink from paper, 0 (black) to 1 (white); found by Otsu's method by default (black-and-white, centerline).
+  --path-fidelity &lt;0-1&gt;                How closely curves follow the pixels, 0 (fewest curves) to 1 (tightest).
+  --corners &lt;0-1&gt;                      How readily corners stay sharp, 0 (round every corner) to 1 (a polygon).
+  --noise &lt;pixels&gt;                     The smallest region kept, in pixels; smaller ones merge into those around them.
+  --ignore-white                       Leave out white: no white background shape, and no white color layer.
+  --smoothing &lt;0-1&gt;                    Edge-keeping smoothing before the colors are found, 0 to 1, for photos (grayscale, color).
+  --snap-lines                         Make straight runs lines (grayscale, color, logo; on by default).
+  --snap-arcs                          Make runs on a circle arcs, and round outlines circles (grayscale, color, logo; on by default).
+  --stroke-width &lt;pixels&gt;              One pen width in pixels for every stroke, instead of the width each stroke's ink covers (centerline).
+  --precision &lt;digits&gt;                 Decimal places of the SVG's coordinates.
+  --preview-png &lt;path&gt;                 Also write the trace drawn as a PNG, the image's size: a file, a folder or a template with {name}.
+  -r, --recursive                      Take every image in folders given as inputs, at any depth.
+  -j, --jobs &lt;count&gt;                   How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                           Allow outputs to replace their inputs.
+  --fail-fast                          Stop at the first file that fails.
 </code></pre>
 <h2 id="formats">formats</h2>
 <pre><code class="lang-text">Description:
