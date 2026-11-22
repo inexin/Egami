@@ -122,6 +122,13 @@ Enum TraceMode  <a class="header-action link-secondary" title="View source" href
   <dd><p>Splits the image into ink and paper at <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Threshold">Threshold</a> and traces the ink as black shapes, with smooth
 curves and sharp corners fitted to the pixel edges.</p>
 </dd>
+    <dt id="Egami_Drawing_Tracing_TraceMode_Centerline"><code>Centerline = 4</code></dt>
+  
+  <dd><p>For line art, sketches and handwriting: splits ink from paper at <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Threshold">Threshold</a> as
+<a class="xref" href="Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_BlackAndWhite">BlackAndWhite</a> does, then traces the middle of each stroke as an open path, stroked with the width its ink
+covers (or <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_StrokeWidth">StrokeWidth</a>), joined straight through crossings and junctions. A dot becomes a small
+filled disc.</p>
+</dd>
     <dt id="Egami_Drawing_Tracing_TraceMode_Color"><code>Color = 2</code></dt>
   
   <dd><p>Reduces the image to <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Colors">Colors</a> of its own flat colors (or to <a class="xref" href="Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Palette">Palette</a>),

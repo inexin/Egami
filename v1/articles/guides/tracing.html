@@ -87,11 +87,12 @@
         <article data-uid="">
 <h1 id="bitmap-tracing">Bitmap tracing</h1>
 
-<p>Bitmap tracing turns a raster into filled vector shapes: a scanned signature, line art or a logo comes back as <code>Path</code> objects
+<p>Bitmap tracing turns a raster into vector shapes: a scanned signature, line art or a logo comes back as <code>Path</code> objects
 with a color each, ready to draw at any size, record as a <code>Picture</code>, or save as SVG. It is part of Egami.Drawing, in the
 namespace <code>Egami.Drawing.Tracing</code>; Egami.Svg adds the SVG output.</p>
-<p>Four modes trace filled shapes: black and white, grayscale, color and logo. Centre-line and pixel-art modes come in later 1.x
-versions, as new <code>TraceMode</code> values; traced output may also improve between minor versions.</p>
+<p>Four modes trace filled shapes: black and white, grayscale, color and logo. Centerline traces line art as stroked lines. A
+pixel-art mode comes in a later 1.x version, as a new <code>TraceMode</code> value; traced output may also improve between minor
+versions.</p>
 <h2 id="tracing-a-raster">Tracing a raster</h2>
 <p><code>raster.Trace(options)</code> traces the raster's first frame and returns a <code>TraceResult</code>: its <code>Shapes</code>, back to front, and the
 traced image's <code>Width</code> and <code>Height</code>.</p>
@@ -108,7 +109,8 @@ Path ink = result.ToPath(Rgba8.Black).Transform(Matrix3x2.CreateScale(0.5f));
 </code></pre>
 <ul>
 <li>Each <code>TracedShape</code> has a <code>Path</code>, a <code>Color</code> (<code>Rgba8</code>), a <code>Kind</code> (<code>TracedShapeKind.Fill</code> or <code>Stroke</code>) and, for a stroke, a
-<code>StrokeWidth</code>. The black-and-white, grayscale, color and logo modes give filled shapes only.</li>
+<code>StrokeWidth</code>. The black-and-white, grayscale, color and logo modes give filled shapes only; centerline gives strokes,
+drawn with round caps and joins.</li>
 <li>Coordinates are the raster's pixels, y down, with pixel (0, 0) covering the square from (0, 0) to (1, 1), as on a
 <a href="drawing.html#a-canvas">canvas</a>.</li>
 <li>In black and white, one shape is one ink region: its outer edge and its holes. A region inside another region's hole comes
@@ -148,12 +150,12 @@ TraceResult polygon = scan.Trace(TraceOptions.BlackAndWhite with { Corners = 1 }
 <tr>
 <td><code>Mode</code></td>
 <td><code>BlackAndWhite</code></td>
-<td>How pixels become shapes: <code>BlackAndWhite</code>, <code>Grayscale</code>, <code>Color</code> or <code>Logo</code>.</td>
+<td>How pixels become shapes: <code>BlackAndWhite</code>, <code>Grayscale</code>, <code>Color</code>, <code>Logo</code> or <code>Centerline</code>.</td>
 </tr>
 <tr>
 <td><code>Threshold</code></td>
 <td><code>null</code></td>
-<td>Black and white: the level from 0 (black) to 1 (white) that splits ink from paper. A pixel is ink when its intensity, over white by its alpha, is at most this. <code>null</code> finds it with Otsu's method, as <code>Raster.FindThreshold</code> does.</td>
+<td>Black and white and centerline: the level from 0 (black) to 1 (white) that splits ink from paper. A pixel is ink when its intensity, over white by its alpha, is at most this. <code>null</code> finds it with Otsu's method, as <code>Raster.FindThreshold</code> does.</td>
 </tr>
 <tr>
 <td><code>Colors</code></td>
@@ -174,6 +176,11 @@ TraceResult polygon = scan.Trace(TraceOptions.BlackAndWhite with { Corners = 1 }
 <td><code>Smoothing</code></td>
 <td>0</td>
 <td>Grayscale and color: edge-keeping smoothing before the colors are found, from 0 to 1, for photos. Not used in logo.</td>
+</tr>
+<tr>
+<td><code>StrokeWidth</code></td>
+<td><code>null</code></td>
+<td>Centerline: one pen width for every stroke, in pixels; <code>null</code> gives each stroke the width its ink covers.</td>
 </tr>
 <tr>
 <td><code>PathFidelity</code></td>
@@ -203,7 +210,7 @@ TraceResult polygon = scan.Trace(TraceOptions.BlackAndWhite with { Corners = 1 }
 <tr>
 <td><code>IgnoreWhite</code></td>
 <td><code>false</code></td>
-<td>Leaves out white: in black and white the white shape that otherwise comes first, under the ink, the size of the image; in grayscale, color and logo the layer of each color whose red, green and blue are all at least 240, whose areas stay empty (in logo, also the transparency the art encloses).</td>
+<td>Leaves out white: in black and white and centerline the white shape that otherwise comes first, under the ink, the size of the image; in grayscale, color and logo the layer of each color whose red, green and blue are all at least 240, whose areas stay empty (in logo, also the transparency the art encloses).</td>
 </tr>
 </tbody>
 </table>
@@ -267,6 +274,31 @@ one of its colors nor a blend of two, it is a photo or a gradient (trace it with
 colors than <code>Colors</code> allows. JPEG noise on a flat logo is fine.</li>
 <li>Small images are sampled finer, up to 4 × 4 samples a pixel, so a 100-pixel icon has as smooth an outline as a large one.</li>
 </ul>
+<h2 id="centerline">Centerline</h2>
+<p><code>TraceMode.Centerline</code> is for line art, sketches and handwriting: instead of the outline of each ink region, it traces the
+middle of each stroke as an open path, a <code>TracedShapeKind.Stroke</code> shape with the <code>StrokeWidth</code> its ink covers. Drawn with a
+round pen, the strokes cover the ink again, and an editor can move, restyle or thin them like hand-drawn lines.</p>
+<pre><code class="lang-csharp">// Line art as strokes: the middle of each line, with the width its ink covers.
+TraceResult lines = sketch.Trace(new TraceOptions { Mode = TraceMode.Centerline, IgnoreWhite = true });
+foreach (TracedShape stroke in lines.Shapes)
+{
+    Console.WriteLine($&quot;{stroke.Kind} {stroke.StrokeWidth:F1} px {stroke.Path.Bounds}&quot;);
+}
+
+// Or every stroke with one pen, for a plotter or an engraving machine.
+TraceResult pen = sketch.Trace(new TraceOptions { Mode = TraceMode.Centerline, StrokeWidth = 1, IgnoreWhite = true });
+</code></pre>
+<ul>
+<li>Ink is split from paper at <code>Threshold</code>, as in black and white, and <code>Noise</code> drops specks first.</li>
+<li>Lines that cross run straight through each other, as two strokes; where a line ends on another, as in a T, it ends on the
+other's centre line. A closed loop, such as the letter O, is one closed stroke.</li>
+<li>Each stroke has one width: the ink it covers over its length, allowing for its round ends. <code>StrokeWidth</code> sets one width for
+all of them instead, for a single pen.</li>
+<li>A dot too small to have a direction becomes a filled disc of its area.</li>
+<li>On strokes drawn from known paths, the traced centre lines lie within about 0.05 to 0.1 pixels of the drawn ones on
+average and the widths within 5 %. Filled areas wider than a pen stroke come back as very wide strokes: trace those in
+black and white.</li>
+</ul>
 <h2 id="shapes-and-paths">Shapes and paths</h2>
 <pre><code class="lang-csharp">// TraceOptions.Default also gives a white shape for the paper, under the ink.
 TraceResult result = scan.Trace();
@@ -325,6 +357,17 @@ worst point until every point is within the <code>PathFidelity</code> tolerance.
 </ol>
 <p>A traced circle keeps its size to a few hundredths of a pixel when its edge is antialiased: a disc of radius 30 comes back
 with a radius of 29.95.</p>
+<p>Centerline mode replaces steps 2 to 4:</p>
+<ol>
+<li><strong>Skeleton.</strong> The ink is thinned to lines one pixel wide, after T. Y. Zhang and C. Y. Suen, &quot;A fast parallel algorithm for
+thinning digital patterns&quot; (1984), and read as a graph of lines between ends and junctions.</li>
+<li><strong>Clean-up.</strong> Each pixel's distance to the paper, from P. F. Felzenszwalb and D. P. Huttenlocher's exact distance
+transform, &quot;Distance transforms of sampled functions&quot; (2012), tells how thick the ink is there: branches shorter than
+that are thinning's spurs and go, and forks closer together than that are one crossing. Lines that meet nearly straight
+continue through a junction.</li>
+<li><strong>Centres and widths.</strong> Each point moves across the stroke to the middle of its ink, each free end out to half a pen width
+inside the ink's end, and each stroke takes the width that covers the ink nearest its skeleton.</li>
+</ol>
 <p>Logo mode replaces steps 1 and 3:</p>
 <ol>
 <li><strong>Coverage.</strong> Each pixel is split into up to three shares: its flat color, or a blend of two colors (its own and a

@@ -22862,6 +22862,12 @@ references:
   commentId: F:Egami.Drawing.Tracing.TraceMode.BlackAndWhite
   fullName: Egami.Drawing.Tracing.TraceMode.BlackAndWhite
   nameWithType: TraceMode.BlackAndWhite
+- uid: Egami.Drawing.Tracing.TraceMode.Centerline
+  name: Centerline
+  href: api/Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_Centerline
+  commentId: F:Egami.Drawing.Tracing.TraceMode.Centerline
+  fullName: Egami.Drawing.Tracing.TraceMode.Centerline
+  nameWithType: TraceMode.Centerline
 - uid: Egami.Drawing.Tracing.TraceMode.Color
   name: Color
   href: api/Egami.Drawing.Tracing.TraceMode.html#Egami_Drawing_Tracing_TraceMode_Color
@@ -23055,6 +23061,19 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Tracing.TraceOptions.SnapToLines
   nameWithType: TraceOptions.SnapToLines
+- uid: Egami.Drawing.Tracing.TraceOptions.StrokeWidth
+  name: StrokeWidth
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_StrokeWidth
+  commentId: P:Egami.Drawing.Tracing.TraceOptions.StrokeWidth
+  fullName: Egami.Drawing.Tracing.TraceOptions.StrokeWidth
+  nameWithType: TraceOptions.StrokeWidth
+- uid: Egami.Drawing.Tracing.TraceOptions.StrokeWidth*
+  name: StrokeWidth
+  href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_StrokeWidth_
+  commentId: Overload:Egami.Drawing.Tracing.TraceOptions.StrokeWidth
+  isSpec: "True"
+  fullName: Egami.Drawing.Tracing.TraceOptions.StrokeWidth
+  nameWithType: TraceOptions.StrokeWidth
 - uid: Egami.Drawing.Tracing.TraceOptions.Threshold
   name: Threshold
   href: api/Egami.Drawing.Tracing.TraceOptions.html#Egami_Drawing_Tracing_TraceOptions_Threshold
