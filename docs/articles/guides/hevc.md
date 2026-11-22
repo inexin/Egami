@@ -61,9 +61,10 @@ picture's CTB rows are wavefront substreams coded in parallel, and the stream is
 picture decodes in Egami's decoder, FFmpeg's and the reference decoder HM to the encoder's own reconstruction, sample for
 sample.
 
-The encoder is in progress: keyframes are IDR pictures, coded with the HEIC encoder's search, and the other pictures are P
-pictures predicted from earlier ones, with motion search, merge and skip modes and intra blocks where they pay. B pictures
-follow.
+The encoder is in progress: keyframes are IDR pictures, coded with the HEIC encoder's search; P pictures predict from earlier
+ones, with motion search, merge and skip modes and intra blocks where they pay; and B pictures between them (three by default
+from effort 1, `BFrames` sets how many, `LatencyMode.Quality` only) predict from both sides, from effort 3 in a pyramid whose
+middle picture the others predict from. Rate control tuning and the release gates follow.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/VideoHevc.cs#encode)]
 

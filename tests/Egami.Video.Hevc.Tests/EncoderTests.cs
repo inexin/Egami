@@ -50,6 +50,41 @@ public sealed class EncoderTests
         Dispose(packets);
     }
 
+    /// <summary>B pictures (in a pyramid of three or two, or a run of seven without one) decode to the reconstruction, shown in order.</summary>
+    [Theory]
+    [InlineData(3, 4, 2)]
+    [InlineData(2, 4, 2)]
+    [InlineData(7, 4, 1)]
+    [InlineData(3, 1, 1)]
+    [InlineData(3, 6, 2)]
+    public void BPicturesDecodeToTheReconstruction(int bFrames, int effort, int reorder)
+    {
+        VideoEncoderOptions options = new()
+        {
+            Width = 96,
+            Height = 64,
+            KeyframeInterval = 11,
+            Effort = effort,
+            Hevc = new HevcEncoderOptions { BFrames = bFrames },
+        };
+        int bPictures = 0, reorderPics = 0;
+        (List<EncodedPacket> packets, List<ushort[]> recon, VideoTrackInfo track) = Encode(options, 16, i => Picture(96, 64, i, 8), inspect: encoder =>
+        {
+            bPictures = encoder.Coder!.BPictures;
+            reorderPics = encoder.Coder.Settings.MaxNumReorderPics;
+        });
+        Assert.True(bPictures > 0);
+        Assert.Equal(reorder, reorderPics);
+        List<ushort[]> decoded = Decode(track, packets);
+        Assert.Equal(16, decoded.Count);
+        for (int i = 0; i < decoded.Count; i++)
+        {
+            Assert.True(decoded[i].AsSpan().SequenceEqual(recon[i]), $"Frame {i} decodes differently from the encoder's reconstruction.");
+        }
+
+        Dispose(packets);
+    }
+
     [Theory]
     [InlineData(66, 38)]
     [InlineData(2, 2)]
@@ -241,7 +276,7 @@ public sealed class EncoderTests
     }
 
     internal static (List<EncodedPacket> Packets, List<ushort[]> Recon, VideoTrackInfo Track) Encode(VideoEncoderOptions options, int frames,
-        Func<int, YuvRaster> make, MediaContext? context = null)
+        Func<int, YuvRaster> make, MediaContext? context = null, Action<HevcVideoEncoder>? inspect = null)
     {
         using HevcVideoEncoder encoder = (HevcVideoEncoder)HevcCodec.Instance.CreateEncoder(options, context ?? MediaContext.Default);
         List<EncodedPacket> packets = [];
@@ -264,6 +299,7 @@ public sealed class EncoderTests
             packets.Add(packet);
         }
 
+        inspect?.Invoke(encoder);
         return (packets, recon, encoder.Track);
     }
 

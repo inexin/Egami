@@ -14,7 +14,7 @@ log rate over the metric.
 
 x265 runs on one thread with --pools 1 --frame-threads 1 --no-wpp (its lookahead runs on that thread too). --x265 names the
 x265 configurations: a preset, or a preset and more options after a colon ("medium:--bframes 0" measures x265 without B
-pictures, which the encoder does not code before PR C).
+pictures).
 
 Cycles and instructions are user-mode counts from Linux perf: Egami's at --runs 1 and 3 and x265's at N and 2N frames, the
 difference over the extra frames, so start-up and the JIT drop out; each count is the least of --repeats runs. x265 is matched to

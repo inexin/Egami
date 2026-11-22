@@ -53,6 +53,16 @@ internal static class HevcLevels
         return 62;
     }
 
+    /// <summary>
+    /// The most pictures the decoded picture buffer of a level holds at a size (A.4.2, maxDpbPicBuf 6), the current one
+    /// included: more for pictures well below the level's largest.
+    /// </summary>
+    internal static int MaxDpbSize(Level level, int width, int height)
+    {
+        long samples = (long)((width + 7) & ~7) * ((height + 7) & ~7);
+        return samples <= level.MaxLumaPs >> 2 ? 16 : samples <= level.MaxLumaPs >> 1 ? 12 : samples <= (3 * level.MaxLumaPs) >> 2 ? 8 : 6;
+    }
+
     /// <summary>Why a stream does not fit a level, or null when it does. The coded size is the frame's rounded up to 8.</summary>
     internal static string? Misfit(Level level, int width, int height, Demand demand)
     {

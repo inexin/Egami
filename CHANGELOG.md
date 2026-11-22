@@ -5,7 +5,7 @@ changes that break code come only in a new major version.
 
 ## Egami.Video 1.4.0 (unreleased)
 
-An HEVC encoder in Egami.Video.Hevc, in progress (HEVC encoder Build Plan, PRs A and B of seven): the release that ships it
+An HEVC encoder in Egami.Video.Hevc, in progress (HEVC encoder Build Plan, PRs A to C of seven): the release that ships it
 waits for B pictures, rate control tuning and its gates. Additive to 1.3.
 
 - `HevcCodec.CanEncode` is true and `HevcCodec.CreateEncoder` encodes 4:2:0 progressive video in the Main and Main 10
@@ -18,8 +18,13 @@ waits for B pictures, rate control tuning and its gates. Additive to 1.3.
   range and frame rate. Keyframes are IDR pictures and the others P pictures (PR B) predicted from up to the effort's number of
   previous pictures: motion search on half- and quarter-sample planes, merge and skip with early skip, AMVP and temporal motion
   vector prediction, 2Nx2N and (by effort) Nx2N/2NxN partitions ranked by SATD with full RD on the best one or two, inter
-  transform trees, and intra coding units in P pictures where the residual calls for them. `HevcEncoderOptions.BFrames` takes
-  effect with B pictures. Egami's decoder, FFmpeg and the HM reference decoder decode every test stream to the encoder's own
+  transform trees, and intra coding units in P pictures where the residual calls for them. B pictures (PR C) come in closed
+  groups after each IDR picture, by default three between P pictures from effort 1 (`HevcEncoderOptions.BFrames`, 0 to 16,
+  in `LatencyMode.Quality`), from effort 3 in a pyramid whose middle picture is a reference coded at a coarser step; the
+  reference picture sets and the decoded picture buffer size follow the level. B pictures predict from list 0, list 1 or both
+  (bi-prediction with joint refinement), with merge, AMVP and temporal vectors from list 1; their search starts from the last
+  P picture's vectors scaled to the distance, ranks one list against both by SATD and codes a runner-up within 17/16 in full,
+  and the frame analysis plans B pictures and their quantizers as the H.264 encoder does. Egami's decoder, FFmpeg and the HM reference decoder decode every test stream to the encoder's own
   reconstruction, bit for bit (tools/video/check-hevc-encoder.py); tools/video/time-hevc-encoder.py measures BD-rate and speed
   against x265 and Egami's H.264 encoder. The search prices trial codings from static rate tables and codes only the kept one
   with RDOQ, refines motion with two half-sample SAD steps and one quarter-sample SATD step, and runs AVX2/SSE2/Vector128 SAD,

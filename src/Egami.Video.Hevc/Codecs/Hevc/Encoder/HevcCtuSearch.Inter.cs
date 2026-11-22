@@ -159,6 +159,20 @@ internal sealed partial class HevcCtuSearch
             Save(best, x0, y0, size);
         }
 
+        // A B picture's runner-up between one list and both, coded in full when near the best.
+        if (_wholeAlternative.Cost != 0)
+        {
+            HevcEncodeStats.Add(HevcEncodeStat.InterCandidates);
+            InterChoice alternative = _wholeAlternative;
+            HevcCodingUnit alternativeCu = TryInter(x0, y0, log2, depth, flagCoded, alternative, !profile.RdoqKeptOnly, ref dirty, before, out double alternativeCost);
+            current = alternativeCost < bestCost;
+            if (current)
+            {
+                (bestCu, bestCost, bestChoice) = (alternativeCu, alternativeCost, alternative);
+                Save(best, x0, y0, size);
+            }
+        }
+
         // The halves, seeded with 2Nx2N's vector: the better one by SATD coded in full when it is near 2Nx2N's.
         if (profile.Halves && (!profile.HalvesGate || (bestCu.RootCbf && (!childrenTried || splitCost < bestCost))))
         {
@@ -397,7 +411,7 @@ internal sealed partial class HevcCtuSearch
     {
         for (int j = 0; j < i; j++)
         {
-            if (list[j].Mv0 == list[i].Mv0 && list[j].RefIdx0 == list[i].RefIdx0)
+            if (HevcMotionPredictor.SameMotion(list[j], list[i]))
             {
                 return rank[j];
             }
@@ -407,22 +421,37 @@ internal sealed partial class HevcCtuSearch
         return RankCost(x, y, w, h, list[i]);
     }
 
-    /// <summary>The rough cost of a unit's motion: SATD of its luma prediction (quarter samples averaged) in 1/256.</summary>
+    /// <summary>
+    /// The rough cost of a unit's motion: SATD of its luma prediction (quarter samples averaged, both lists' predictions averaged
+    /// again) in 1/256.
+    /// </summary>
     private long RankCost(int x, int y, int w, int h, in HevcPredictionUnit pu)
     {
-        HevcReference reference = _interContext!.References[Math.Max(pu.RefIdx0, 0)];
-        int mvx = (short)pu.Mv0, mvy = pu.Mv0 >> 16;
+        if ((pu.Flags & 1) != 0)
+        {
+            RoughBlock(0, pu.RefIdx0, pu.Mv0, x, y, w, h, _rankBlock);
+            if ((pu.Flags & 2) != 0)
+            {
+                RoughBlock(1, pu.RefIdx1, pu.Mv1, x, y, w, h, _rankBlock1);
+                Average(_rankBlock, _rankBlock1, _rankBlock, w, h);
+            }
+        }
+        else
+        {
+            RoughBlock(1, pu.RefIdx1, pu.Mv1, x, y, w, h, _rankBlock);
+        }
 
-        // Vectors far outside the picture rank as the nearest block inside the search planes.
-        int margin = HevcReference.Pad - 8;
-        mvx = Math.Clamp(mvx, (-margin - x) * 4, (reference.Width + margin - w - x) * 4);
-        mvy = Math.Clamp(mvy, (-margin - y) * 4, (reference.Height + margin - h - y) * 4);
-        reference.Block(x, y, mvx, mvy, w, h, _rankBlock, 64);
         int stride = _picture.Widths[0];
         return HevcMotionSearch.Satd(_source.Planes[0], (y * stride) + x, stride, _rankBlock, 0, 64, w, h) << 8;
     }
 
-    /// <summary>The motion search of 2Nx2N in the references of <paramref name="refMask"/> (every active one when it names none).</summary>
+    // A B picture's 2Nx2N runner-up between one list and both, when near the best (its Cost 0 when there is none).
+    private InterChoice _wholeAlternative;
+
+    /// <summary>
+    /// The motion search of 2Nx2N in the references of <paramref name="refMask"/> (every active one when it names none); in a B
+    /// picture in both lists, with <see cref="_wholeAlternative"/>.
+    /// </summary>
     private InterChoice SearchWhole(int x0, int y0, int log2, int refMask)
     {
         int size = 1 << log2;
@@ -433,6 +462,20 @@ internal sealed partial class HevcCtuSearch
         }
 
         HevcMotionPredictor.Unit unit = new(x0, y0, size, x0, y0, size, size, 0, HevcCodingUnit.Part2Nx2N);
+        _wholeAlternative = default;
+        if (_interContext.B)
+        {
+            HevcInterProfile profile = _interContext.Profile;
+            HevcPredictionUnit b = SearchUnitB(unit, NoSeed, NoSeed, false, false, profile.BiRefine, out long bCost, out HevcPredictionUnit alternative,
+                out long alternativeCost);
+            if (alternativeCost != long.MaxValue && profile.BAlternative)
+            {
+                _wholeAlternative = new InterChoice { PartMode = HevcCodingUnit.Part2Nx2N, U0 = alternative, Cost = alternativeCost };
+            }
+
+            return new InterChoice { PartMode = HevcCodingUnit.Part2Nx2N, U0 = b, Cost = bCost };
+        }
+
         HevcPredictionUnit pu = SearchUnit(unit, refMask, 0, false, out long cost);
         return new InterChoice { PartMode = HevcCodingUnit.Part2Nx2N, U0 = pu, Cost = cost };
     }
@@ -446,6 +489,8 @@ internal sealed partial class HevcCtuSearch
     {
         int size = 1 << log2, count = 0;
         int seed = whole.U0.Mv0, seedRef = 1 << Math.Max(whole.U0.RefIdx0, 0);
+        bool b = _interContext!.B;
+        int seed0 = _lastMv0, seed1 = _lastMv1;
         int mask = profile.HalvesGate ? seedRef : refMask | seedRef;
 
         // The second half predicts from the first's motion, which the block maps must hold meanwhile.
@@ -462,7 +507,9 @@ internal sealed partial class HevcCtuSearch
             {
                 (int px, int py, int pw, int ph) = HevcCodingUnit.UnitRect(x0, y0, log2, partMode, part);
                 HevcMotionPredictor.Unit unit = new(x0, y0, size, px, py, pw, ph, part, partMode);
-                HevcPredictionUnit found = SearchUnit(unit, mask, seed, profile.HalvesMerges, out long partCost, profile.HalvesStartsOnly);
+                HevcPredictionUnit found = b
+                    ? SearchUnitB(unit, seed0, seed1, profile.HalvesMerges, profile.HalvesStartsOnly, false, out long partCost, out _, out _)
+                    : SearchUnit(unit, mask, seed, profile.HalvesMerges, out partCost, profile.HalvesStartsOnly);
                 choice.Cost += partCost;
                 if (part == 0)
                 {
@@ -939,7 +986,8 @@ internal sealed partial class HevcCtuSearch
 
         long predicted = Sse(source, plane, at, stride, n, n);
         int bitDepth = c == 0 ? _sps.BitDepthLuma : _sps.BitDepthChroma;
-        BlockResult result = Quantized(c, plane, source, at, stride, log2, 1, Qp(c, qp), bitDepth, false, lambda, weight, _levels, true, rdoq);
+        bool plain = _interContext!.B && !_interContext.Referenced && _interContext.Profile.PlainB;
+        BlockResult result = Quantized(c, plane, source, at, stride, log2, 1, Qp(c, qp), bitDepth, false, lambda, weight, _levels, true, rdoq && !plain);
         if (result.Levels is not null && result.Distortion + (lambda * result.Bits / Nal.CabacCost.Bit) >= weight * predicted)
         {
             for (int r = 0; r < n; r++)

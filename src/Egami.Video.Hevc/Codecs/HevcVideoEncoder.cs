@@ -29,6 +29,9 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
     private readonly CoreSettings _settings;
     private readonly int _effort;
     private readonly int _level;
+    private readonly int _bFrames;
+    private readonly bool _pyramid;
+    private readonly int _references;
     private EncoderPictures? _pictures;
     private HevcFrameCoder? _coder;
     private EncoderCore? _core;
@@ -97,10 +100,28 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
             throw new ArgumentException($"The stream does not fit its level: {why}.", nameof(options));
         }
 
+        // B-frames as the H.264 encoder plans them (HEVC encoder Build Plan, PR C): three from effort 1, in a pyramid whose
+        // middle one is a reference from effort 3. The decoded picture buffer holds the P pictures' references, the P picture
+        // after a run, the pyramid's middle B picture and the picture being decoded; fewer references where the level's buffer
+        // is smaller.
+        int bFrames = options.LatencyMode != LatencyMode.Quality ? 0 : hevc.BFrames ?? (effort >= 1 ? 3 : 0);
+        bool pyramid = bFrames is 2 or 3 && effort >= 3;
+        int dpb = HevcLevels.MaxDpbSize(HevcLevels.Of(_level), options.Width, options.Height);
+        int references = HevcInterProfile.For(effort).References;
+        int Buffer(int refs, bool middle) => refs + (bFrames > 0 ? 1 : 0) + (middle ? 1 : 0) + 1;
+        while (references > 1 && Buffer(references, pyramid) > dpb)
+        {
+            references--;
+        }
+
+        pyramid &= Buffer(references, true) <= dpb;
         _options = options;
         _hevc = hevc;
         _context = context;
         _effort = effort;
+        _bFrames = bFrames;
+        _pyramid = pyramid;
+        _references = references;
         _settings = new CoreSettings
         {
             Width = options.Width,
@@ -111,9 +132,15 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
             SceneCuts = options.SceneCutKeyframes,
             Parallelism = context.Egami.MaxParallelism,
 
-            // Every picture is coded intra until inter coding comes (HEVC encoder Build Plan, PRs B and C), so frames go in display
-            // order; HevcEncoderOptions.BFrames then takes effect.
-            BFrames = 0,
+            BFrames = bFrames,
+            BPyramid = pyramid,
+
+            // As the H.264 encoder: with a pyramid every run has its full count of B-frames; without one runs follow the content.
+            AdaptiveBFrames = !pyramid,
+
+            // A pyramid's middle B picture a coarser step than the default 1.15, as the H.264 encoder's (H.264 compression plan, PR D).
+            BReferenceStep = 1.3,
+            MacroblockTree = TreeStrength,
             Rate = new RateSettings
             {
                 Mode = options.RateControl,
@@ -126,6 +153,7 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
                 FrameRate = fps,
                 Pixels = (long)options.Width * options.Height,
                 Steps = HevcFrameCoder.QpSteps,
+                PlanWholeGroupAhead = bFrames > 0,
                 ProbeQuantizer = 26,
                 InterFromKeyProbe = true,
                 BufferPull = 8,
@@ -140,6 +168,12 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
 
     /// <summary>Gets the frame coder once the first frame is in, for tests.</summary>
     internal HevcFrameCoder? Coder => _coder;
+
+    /// <summary>
+    /// The frame-level tree's strength (<see cref="CoreSettings.MacroblockTree"/>), the H.264 encoder's: a frame's step falls by
+    /// 2^(-0.25) for each doubling of its content's worth through reuse.
+    /// </summary>
+    internal const double TreeStrength = 0.25;
 
     /// <summary>The QP for a quality of 0 to 100, as the H.264 encoder's: 51 at 0, 23 at 50, 0 at 100 or so.</summary>
     internal static int QualityToQp(int quality) => Math.Clamp((int)Math.Round(51 - (0.56 * quality)), 0, 51);
@@ -186,7 +220,7 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
                 LevelIdc = HevcLevels.Of(_level).Idc,
                 Timing = Timing(_options.FrameRate),
             };
-            _coder = new HevcFrameCoder(settings, _hevc.AnnexB);
+            _coder = new HevcFrameCoder(settings, _hevc.AnnexB, _bFrames, _pyramid, _references);
             Track = MakeTrack(profile, color, frame.Hdr, _coder);
             _pictures = new EncoderPictures(_options.Width, _options.Height, EncoderPictures.Vp8Color, _context.Egami)
             {
