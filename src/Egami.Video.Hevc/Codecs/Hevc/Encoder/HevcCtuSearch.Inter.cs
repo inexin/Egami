@@ -50,6 +50,15 @@ internal sealed partial class HevcCtuSearch
                 _motionSearch.Range = profile.SearchRange;
                 _motionSearch.SquareSubpel = profile.SquareSubpel;
                 _motionSearch.QuarterSamples = profile.QuarterSamples;
+                if (_sps.BitDepthLuma == 8)
+                {
+                    lock (value)
+                    {
+                        value.Source8 ??= HevcReference.Bytes(_source.Planes[0]);
+                    }
+                }
+
+                _motionSearch.Source8 = value.Source8;
             }
         }
     }

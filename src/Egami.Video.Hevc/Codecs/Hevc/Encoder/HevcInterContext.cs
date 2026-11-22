@@ -43,6 +43,9 @@ internal sealed class HevcInterContext
     /// <summary>Gets whether later pictures predict from this one.</summary>
     internal bool Referenced { get; init; } = true;
 
+    /// <summary>Gets or sets the source luma as bytes when it has 8 bits (made by the first CTU search that needs it), else null.</summary>
+    internal byte[]? Source8 { get; set; }
+
     /// <summary>Gets the inter profile.</summary>
     internal HevcInterProfile Profile { get; }
 

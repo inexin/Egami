@@ -2,6 +2,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 using Egami.Heic.Hevc;
 
@@ -37,6 +38,9 @@ internal sealed class HevcMotionSearch
 
     /// <summary>Gets or sets whether the half and quarter steps try all eight neighbours rather than four.</summary>
     internal bool SquareSubpel { get; set; }
+
+    /// <summary>Gets or sets the source luma as bytes (8-bit luma), for the SAD against references' byte planes, or null.</summary>
+    internal byte[]? Source8 { get; set; }
 
     /// <summary>Gets or sets whether the quarter-sample step runs (else the search stops at half samples).</summary>
     internal bool QuarterSamples { get; set; } = true;
@@ -193,7 +197,7 @@ internal sealed class HevcMotionSearch
         }
 
         HevcEncodeStats.Add(HevcEncodeStat.IntegerCosts);
-        long sad = Sad(_source, (_y * _sourceStride) + _x, _sourceStride, _reference.Planes[0], _reference.At(_x + p.X, _y + p.Y), _reference.Stride, _w, _h);
+        long sad = PlaneSad(0, _reference.At(_x + p.X, _y + p.Y));
         long cost = (sad << 8) + (_lambda * (long)MvBits(p.X * 4, p.Y * 4));
         if (cost < best)
         {
@@ -209,9 +213,17 @@ internal sealed class HevcMotionSearch
     {
         HevcEncodeStats.Add(HevcEncodeStat.IntegerCosts);
         int hx = ((4 * _x) + mvx) >> 1, hy = ((4 * _y) + mvy) >> 1;
-        ushort[] plane = _reference.Planes[(hx & 1) + (2 * (hy & 1))];
-        long sad = Sad(_source, (_y * _sourceStride) + _x, _sourceStride, plane, _reference.At(hx >> 1, hy >> 1), _reference.Stride, _w, _h);
+        long sad = PlaneSad((hx & 1) + (2 * (hy & 1)), _reference.At(hx >> 1, hy >> 1));
         return (sad << 8) + (_lambda * (long)MvBits(mvx, mvy));
+    }
+
+    /// <summary>The SAD of the unit against one of the reference's half-sample planes at an index: in bytes where both sides have them.</summary>
+    private long PlaneSad(int plane, int at)
+    {
+        int atSource = (_y * _sourceStride) + _x;
+        return Source8 is { } source8 && _reference.Planes8 is { } planes8 && (_w & 7) == 0
+            ? Sad8(source8, atSource, _sourceStride, planes8[plane], at, _reference.Stride, _w, _h)
+            : Sad(_source, atSource, _sourceStride, _reference.Planes[plane], at, _reference.Stride, _w, _h);
     }
 
     private long SubpelCost(int mvx, int mvy)
@@ -298,6 +310,85 @@ internal sealed class HevcMotionSearch
             for (; k < w; k++)
             {
                 sum += Math.Abs(Unsafe.Add(ref pa, k) - Unsafe.Add(ref pb, k));
+            }
+        }
+
+        return sum;
+    }
+
+    /// <summary>The sum of absolute differences of two w by h blocks of bytes, w a multiple of 8 (PSADBW where there is SSE2).</summary>
+    internal static long Sad8(byte[] a, int atA, int strideA, byte[] b, int atB, int strideB, int w, int h)
+    {
+        ref byte a0 = ref MemoryMarshal.GetArrayDataReference(a);
+        ref byte b0 = ref MemoryMarshal.GetArrayDataReference(b);
+        if (Avx2.IsSupported && (w & 31) == 0)
+        {
+            Vector256<ulong> total = Vector256<ulong>.Zero;
+            for (int r = 0; r < h; r++)
+            {
+                ref byte pa = ref Unsafe.Add(ref a0, atA + (r * strideA));
+                ref byte pb = ref Unsafe.Add(ref b0, atB + (r * strideB));
+                for (int k = 0; k < w; k += 32)
+                {
+                    total += Avx2.SumAbsoluteDifferences(Vector256.LoadUnsafe(ref pa, (nuint)k), Vector256.LoadUnsafe(ref pb, (nuint)k)).AsUInt64();
+                }
+            }
+
+            return (long)Vector256.Sum(total);
+        }
+
+        if (Sse2.IsSupported)
+        {
+            Vector128<ulong> total = Vector128<ulong>.Zero;
+            if (w == 8)
+            {
+                int r = 0;
+                for (; r + 2 <= h; r += 2)
+                {
+                    Vector128<byte> va = Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref a0, atA + (r * strideA))),
+                        Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref a0, atA + ((r + 1) * strideA)))).AsByte();
+                    Vector128<byte> vb = Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref b0, atB + (r * strideB))),
+                        Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref b0, atB + ((r + 1) * strideB)))).AsByte();
+                    total += Sse2.SumAbsoluteDifferences(va, vb).AsUInt64();
+                }
+
+                if (r < h)
+                {
+                    Vector128<byte> va = Vector128.CreateScalar(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref a0, atA + (r * strideA)))).AsByte();
+                    Vector128<byte> vb = Vector128.CreateScalar(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref b0, atB + (r * strideB)))).AsByte();
+                    total += Sse2.SumAbsoluteDifferences(va, vb).AsUInt64();
+                }
+
+                return (long)Vector128.Sum(total);
+            }
+
+            for (int r = 0; r < h; r++)
+            {
+                ref byte pa = ref Unsafe.Add(ref a0, atA + (r * strideA));
+                ref byte pb = ref Unsafe.Add(ref b0, atB + (r * strideB));
+                int k = 0;
+                for (; k + 16 <= w; k += 16)
+                {
+                    total += Sse2.SumAbsoluteDifferences(Vector128.LoadUnsafe(ref pa, (nuint)k), Vector128.LoadUnsafe(ref pb, (nuint)k)).AsUInt64();
+                }
+
+                if (k < w)
+                {
+                    Vector128<byte> va = Vector128.CreateScalar(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref pa, k))).AsByte();
+                    Vector128<byte> vb = Vector128.CreateScalar(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref pb, k))).AsByte();
+                    total += Sse2.SumAbsoluteDifferences(va, vb).AsUInt64();
+                }
+            }
+
+            return (long)Vector128.Sum(total);
+        }
+
+        long sum = 0;
+        for (int r = 0; r < h; r++)
+        {
+            for (int k = 0; k < w; k++)
+            {
+                sum += Math.Abs(Unsafe.Add(ref a0, atA + (r * strideA) + k) - Unsafe.Add(ref b0, atB + (r * strideB) + k));
             }
         }
 
