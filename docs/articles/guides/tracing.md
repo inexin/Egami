@@ -5,9 +5,8 @@ with a color each, ready to draw at any size, record as a `Picture`, or save as 
 namespace `Egami.Drawing.Tracing`; Egami.Svg adds the SVG output, and [`egami trace`](#from-the-command-line) does it all
 from a shell.
 
-Four modes trace filled shapes: black and white, grayscale, color and logo. Centerline traces line art as stroked lines. A
-pixel-art mode comes in a later 1.x version, as a new `TraceMode` value; traced output may also improve between minor
-versions.
+Five modes trace filled shapes: black and white, grayscale, color, logo and pixel art. Centerline traces line art as stroked
+lines. Traced output may improve between minor versions.
 
 ## Tracing a raster
 
@@ -17,7 +16,7 @@ traced image's `Width` and `Height`.
 [!code-csharp[](../../../tests/Egami.DocSamples/Tracing.cs#trace)]
 
 - Each `TracedShape` has a `Path`, a `Color` (`Rgba8`), a `Kind` (`TracedShapeKind.Fill` or `Stroke`) and, for a stroke, a
-  `StrokeWidth`. The black-and-white, grayscale, color and logo modes give filled shapes only; centerline gives strokes,
+  `StrokeWidth`. The black-and-white, grayscale, color, logo and pixel-art modes give filled shapes only; centerline gives strokes,
   drawn with round caps and joins.
 - Coordinates are the raster's pixels, y down, with pixel (0, 0) covering the square from (0, 0) to (1, 1), as on a
   [canvas](drawing.md#a-canvas).
@@ -38,13 +37,14 @@ traced image's `Width` and `Height`.
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| `Mode` | `BlackAndWhite` | How pixels become shapes: `BlackAndWhite`, `Grayscale`, `Color`, `Logo` or `Centerline`. |
+| `Mode` | `BlackAndWhite` | How pixels become shapes: `BlackAndWhite`, `Grayscale`, `Color`, `Logo`, `Centerline` or `PixelArt`. |
 | `Threshold` | `null` | Black and white and centerline: the level from 0 (black) to 1 (white) that splits ink from paper. A pixel is ink when its intensity, over white by its alpha, is at most this. `null` finds it with Otsu's method, as `Raster.FindThreshold` does. |
 | `Colors` | 8 | Grayscale, color and logo: the most colors (gray levels) the image is reduced to, 2 to 256. An image with fewer flat colors gets fewer. |
 | `Palette` | `null` | Grayscale, color and logo: fixed colors to reduce the image to instead; the shapes take them exactly. |
-| `Layering` | `Stacked` | Grayscale, color and logo: how the layers fit together (see below). |
+| `Layering` | `Stacked` | Grayscale, color, logo and pixel art: how the layers fit together (see below). |
 | `Smoothing` | 0 | Grayscale and color: edge-keeping smoothing before the colors are found, from 0 to 1, for photos. Not used in logo. |
 | `StrokeWidth` | `null` | Centerline: one pen width for every stroke, in pixels; `null` gives each stroke the width its ink covers. |
+| `Exact` | `false` | Pixel art: the pixel squares, merged into one shape per color, instead of smooth shapes. |
 | `PathFidelity` | 0.5 | How closely the curves follow the pixel edges: 0 gives the fewest curves, 1 the closest fit. 0.5 is a tolerance of half a pixel. |
 | `Corners` | 0.25 | How readily corners stay sharp: 0 rounds every corner, 1 keeps every corner (the outline is a polygon). 0.25 keeps any turn of more than 60 degrees. |
 | `SnapToLines` | `true` | Straight runs of an outline become lines. |
@@ -67,6 +67,7 @@ Each preset is a `TraceOptions` to start from, for one kind of image; change any
 | `Photo` | Photos and painted art | `Color` mode, 16 colors, `Smoothing` 0.6, `Noise` 8, `PathFidelity` 0.3, no line or arc snapping. |
 | `LineArt` | Clean line art, diagrams and handwriting | `Centerline` mode with `IgnoreWhite`. |
 | `Sketch` | Pencil sketches and grainy scans | `Centerline` mode with `IgnoreWhite`, `Noise` 8 and `PathFidelity` 0.3. |
+| `PixelArt` | Sprites, icons and other pixel art | `PixelArt` mode, stacked. |
 
 The color presets were set on test photos: over five of them, a `Photo` trace drawn back differs from the photo by 2.9 %
 of full scale on average and a `Poster` trace by 3.5 %, against 2.75 % for color mode's defaults, with a fifth and a twelfth
@@ -126,6 +127,27 @@ round pen, the strokes cover the ink again, and an editor can move, restyle or t
   average and the widths within 5 %. Filled areas wider than a pen stroke come back as very wide strokes: trace those in
   black and white.
 
+## Pixel art
+
+`TraceMode.PixelArt` is for sprites, icons and other art drawn pixel by pixel, after J. Kopf and D. Lischinski's
+"Depixelizing Pixel Art" (2011). It reads each pixel as a cell of one flat color and decides which diagonal neighbours belong
+together, so a line drawn in single diagonal steps comes back as one smooth band rather than a chain of squares, and an
+upscaled sprite has no blocks and no blur.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Tracing.cs#pixelart)]
+
+- Each of the image's own colors becomes one shape, stacked or abutting as `Layering` says; every pixel's center stays in
+  its own color. `Colors`, `Palette`, `Noise`, `Smoothing` and the fit settings are not used: pixel art keeps every pixel
+  and its exact color.
+- Edges between blocks at least a pixel long on both sides keep their corners: a 3 by 3 block stays square. Smaller details
+  round off: a single pixel becomes a dot, a 2 by 2 block a disc, and the end of a line one pixel wide a round cap.
+- Pixels under half alpha are left out, as `IgnoreWhite` leaves out white.
+- An image of more than 256 colors (a photo, a gradient, a sprite scaled with smoothing) is refused with an
+  `ArgumentException`: trace it with `TraceMode.Color` instead.
+- `Exact` keeps the pixel squares, merged into one shape per color with straight edges on the pixel grid: drawn back at its
+  size, the trace is the image again.
+- Long diagonal edges drawn in steps keep a slight ripple, one per step.
+
 ## Shapes and paths
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Tracing.cs#shapes)]
@@ -153,13 +175,14 @@ element per shape, back to front, in an SVG the size of the traced image. `SvgWr
 ## From the command line
 
 [`egami trace`](../cli/commands.md#trace) traces images and writes SVG, from a preset (`--preset logo`, `poster`,
-`line-art`, ...) with any setting changed by its option (`--colors`, `--palette`, `--layering`, `--corners`,
-`--path-fidelity`, `--noise`, `--ignore-white`, `--stroke-width`, ...). `--preview-png` also writes the trace drawn as a PNG,
+`line-art`, `pixel-art`, ...) with any setting changed by its option (`--colors`, `--palette`, `--layering`, `--corners`,
+`--path-fidelity`, `--noise`, `--ignore-white`, `--stroke-width`, `--exact`, ...). `--preview-png` also writes the trace drawn as a PNG,
 to compare with the image.
 
 ```sh
 egami trace logo.png --preset logo --colors 4 -o logo.svg --preview-png logo-trace.png
 egami trace "scans/*.png" --preset line-art --stroke-width 2 -o "svg/{name}.svg"
+egami trace sprite.png --mode pixel-art -o sprite.svg
 ```
 
 ## How tracing works
@@ -206,3 +229,20 @@ Logo mode replaces steps 1 and 3:
 3. **Iso-lines.** The fields are sampled on a finer grid and each sample takes the color whose field leads there; the edge
    between two samples sits where the two fields cross, as in W. Lorensen and H. Cline's marching cubes (1987) in two
    dimensions. The rest is the color-mode walk and fit, scaled back to the image's pixels.
+
+Pixel-art mode replaces steps 1 to 5:
+
+1. **Similarity graph.** Each pixel is joined to each of its eight neighbours whose color is close in YUV (within 48/255 in
+   Y, 7/255 in U and 6/255 in V, the limits of the hqx filters).
+2. **Diagonals.** Where two diagonals of a 2 by 2 block cross, a block whose four pixels are all joined is shading and keeps
+   neither. Otherwise each diagonal gets votes: the one on the longer curve (a run of pixels with two joins each) gets the
+   difference in length, the one joining the smaller set of pixels in an 8 by 8 window gets the difference in size, and one
+   with an end that has no other join gets 5. The diagonal with more votes stays; on a tie neither does.
+3. **Cells.** Each pixel's square is reshaped so that two pixels joined along a diagonal share an edge, half a pixel's
+   diagonal long, and the two pixels the diagonal passes cut a corner each: the simplified Voronoi diagram of the pixels and
+   their joins, whose nodes lie on quarter pixels.
+4. **Curves.** The cell edges between colors run from junction to junction; a right angle between straight legs of a pixel
+   or more, cut or not, becomes a sharp corner, and the rest becomes a quadratic B-spline through the nodes. Where three
+   colors meet, the two edges that are contours (or the two most nearly straight) join in one smooth curve and the third
+   ends on it. `Exact` skips steps 1 to 4 and keeps the pixel edges.
+5. **Shapes.** The curves around each color's cells become its shape, stacked or abutting as in color mode.

@@ -39,4 +39,13 @@ public enum TraceMode
     /// filled disc.
     /// </summary>
     Centerline,
+
+    /// <summary>
+    /// For pixel art, sprites and icons drawn pixel by pixel, after Kopf and Lischinski's "Depixelizing Pixel Art": each pixel
+    /// joins its neighbours of similar color, crossing diagonals are settled by which reads as a line, and the edges between
+    /// colors become smooth curves that keep corners of two pixels or more sharp, for art that scales up without blocks. Each of
+    /// the image's own colors becomes one shape; <see cref="TraceOptions.Exact"/> keeps the pixel squares instead. Pixels under
+    /// half alpha are left out. An image of more than 256 colors (a photo, a gradient) is refused.
+    /// </summary>
+    PixelArt,
 }

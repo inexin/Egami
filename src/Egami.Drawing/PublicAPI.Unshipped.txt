@@ -74,3 +74,7 @@ static Egami.Drawing.Tracing.TraceOptions.Logo.get -> Egami.Drawing.Tracing.Trac
 static Egami.Drawing.Tracing.TraceOptions.Photo.get -> Egami.Drawing.Tracing.TraceOptions!
 static Egami.Drawing.Tracing.TraceOptions.Poster.get -> Egami.Drawing.Tracing.TraceOptions!
 static Egami.Drawing.Tracing.TraceOptions.Sketch.get -> Egami.Drawing.Tracing.TraceOptions!
+Egami.Drawing.Tracing.TraceMode.PixelArt = 5 -> Egami.Drawing.Tracing.TraceMode
+Egami.Drawing.Tracing.TraceOptions.Exact.get -> bool
+Egami.Drawing.Tracing.TraceOptions.Exact.init -> void
+static Egami.Drawing.Tracing.TraceOptions.PixelArt.get -> Egami.Drawing.Tracing.TraceOptions!

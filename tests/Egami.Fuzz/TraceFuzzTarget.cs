@@ -8,10 +8,10 @@ namespace Egami.Fuzz;
 
 /// <summary>
 /// The trace fuzz target (Bitmap Tracing PR F): the first eight bytes pick the options, the rest is an image (any format Egami
-/// reads) of at most 256 by 256 pixels, which is traced in each of the five modes with those options. Logo mode may refuse an
-/// image that is not flat-color art with an <see cref="ArgumentException"/>; nothing else may throw, every point traced must be
-/// finite and every curve lie near the image (within the corner reach and the fit tolerance; a centre-line dot's centre on
-/// it). The result is then drawn back.
+/// reads) of at most 256 by 256 pixels, which is traced in each of the modes with those options. Logo mode may refuse an image
+/// that is not flat-color art, and pixel art mode one of more than 256 colors, with an <see cref="ArgumentException"/>; nothing
+/// else may throw, every point traced must be finite and every curve lie near the image (within the corner reach and the fit
+/// tolerance; a centre-line dot's centre on it). The result is then drawn back.
 /// </summary>
 internal static class TraceFuzzTarget
 {
@@ -81,6 +81,7 @@ internal static class TraceFuzzTarget
             SnapToArcs = (a & 16) != 0,
             Smoothing = (a & 32) != 0 ? g / 255f : 0,
             StrokeWidth = (a & 64) != 0 ? 0.25f + (h & 31) : null,
+            Exact = (a & 128) != 0,
         };
     }
 
@@ -92,9 +93,10 @@ internal static class TraceFuzzTarget
         {
             result = raster.Trace(options, s_context);
         }
-        catch (ArgumentException) when (options.Mode == TraceMode.Logo)
+        catch (ArgumentException) when (options.Mode is TraceMode.Logo or TraceMode.PixelArt)
         {
-            // Logo mode refuses images that are not flat-color art, and too large a palette with transparency.
+            // Logo mode refuses images that are not flat-color art, and too large a palette with transparency; pixel art mode
+            // refuses images of more than 256 colors.
             return;
         }
 
