@@ -21,8 +21,8 @@ You need the .NET 10 SDK, version 10.0.403 or later (`global.json` sets the mini
 them (NU1903) because warnings are errors.
 
 ```sh
-dotnet build Egami.slnx
-dotnet test Egami.slnx
+dotnet build Egami.slnx -c Release
+python tools/run-tests.py                          # every test project with xUnit's own runner, as CI runs them
 dotnet format Egami.slnx --verify-no-changes      # formatting; CI fails if this reports changes
 python tools/check-docs.py                         # docs are complete for src/Egami; pass a folder for another package
 python tools/update-public-api.py                  # adds new public API to PublicAPI.Unshipped.txt
@@ -50,6 +50,12 @@ clips) carry `[Trait("Category", "Slow")]`. `tools/test.py` leaves them out unle
 filter and CI run them. Mark a new test `Slow` when it takes more than about 5 seconds in a Release build.
 
 To test the SIMD fallback paths locally, run the tests with `DOTNET_EnableHWIntrinsic=0`.
+
+CI runs the tests with `tools/run-tests.py`, which runs each built test assembly with xUnit v3's own runner (`dotnet exec`),
+not with `dotnet test`. The VSTest adapter behind `dotnet test` (xunit.runner.visualstudio 4.0.1) silently drops a failed
+test whose message holds U+0000-U+0008, U+000B, U+000E-U+001F, a lone surrogate or U+FFFE, and exits 0 when those are the
+only failures, so a red test can look green. `tools/test.py` uses `dotnet test` for speed while you work; run
+`python tools/run-tests.py` (add `-p <project>` for one project, and runner filters after `--`) when you need exact results.
 
 CI on a pull request builds and tests on Linux x64 and runs the format, public API, dependency, docs, provenance and sign-off
 checks. Dependabot's own commits need no sign-off, and its pull requests skip the provenance check and the Claude review. Pushes to `main`, a nightly run and manual runs add Linux arm64, Windows and macOS, the tests with AVX-512, AVX2 or all

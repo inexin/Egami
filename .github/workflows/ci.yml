@@ -31,7 +31,8 @@ jobs:
         with:
           global-json-file: global.json
       - run: dotnet build Egami.slnx -c Release
-      - run: dotnet test Egami.slnx -c Release --no-build
+      # xUnit's own runner, not dotnet test: see tools/run-tests.py for why.
+      - run: python3 tools/run-tests.py
 
   build-test:
     name: Build and test (${{ matrix.name }})
@@ -41,7 +42,7 @@ jobs:
       matrix:
         include:
           - { name: linux-arm64, os: ubuntu-24.04-arm }
-          - { name: windows-x64, os: windows-latest }
+          - { name: windows-x64, os: windows-latest, python: python }
           - { name: macos-arm64, os: macos-latest }
     runs-on: ${{ matrix.os }}
     steps:
@@ -50,7 +51,7 @@ jobs:
         with:
           global-json-file: global.json
       - run: dotnet build Egami.slnx -c Release
-      - run: dotnet test Egami.slnx -c Release --no-build
+      - run: ${{ matrix.python || 'python3' }} tools/run-tests.py
 
   simd-fallbacks:
     # Runs the tests with each level of hardware intrinsics turned off, so every SIMD fallback path is covered.
@@ -70,7 +71,7 @@ jobs:
         with:
           global-json-file: global.json
       - run: dotnet build Egami.slnx -c Release
-      - run: env "${{ matrix.var }}=0" dotnet test Egami.slnx -c Release --no-build
+      - run: env "${{ matrix.var }}=0" python3 tools/run-tests.py
 
   checks:
     name: Format, API and dependency checks
@@ -142,7 +143,7 @@ jobs:
         run: gcc -O2 -Wall -Werror -o "$RUNNER_TEMP/pngdecode" tools/libpng-check/pngdecode.c -lpng
       - run: dotnet build tests/Egami.Tests -c Release
       - name: Compare with libpng
-        run: dotnet test tests/Egami.Tests -c Release --no-build --filter "FullyQualifiedName~LibpngTests"
+        run: python3 tools/run-tests.py -p Egami.Tests -- -class Egami.Tests.Formats.Png.LibpngTests
         env:
           EGAMI_LIBPNG_DECODER: ${{ runner.temp }}/pngdecode
           EGAMI_PNGCHECK: pngcheck
