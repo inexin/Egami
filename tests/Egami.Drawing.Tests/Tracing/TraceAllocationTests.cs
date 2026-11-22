@@ -16,13 +16,24 @@ public class TraceAllocationTests
     [InlineData(TraceMode.Color, 34)]
     [InlineData(TraceMode.Logo, 235)]
     [InlineData(TraceMode.Centerline, 70)]
+    [InlineData(TraceMode.PixelArt, 80)]
     public void AllocationsPerPixelStayWithinBudget(TraceMode mode, double budget)
     {
         Assert.SkipUnless(Environment.GetEnvironmentVariable("EGAMI_ALLOCATION_TESTS") == "1", "Allocation budgets run on demand: set EGAMI_ALLOCATION_TESTS=1.");
-        TraceOptions options = mode == TraceMode.Logo ? TraceOptions.Logo : new TraceOptions { Mode = mode, Colors = 4 };
+        TraceOptions options = mode switch
+        {
+            TraceMode.Logo => TraceOptions.Logo,
+            TraceMode.PixelArt => TraceOptions.PixelArt,
+            _ => new TraceOptions { Mode = mode, Colors = 4 },
+        };
         double Measure(int scale)
         {
-            using Raster<Rgba8> raster = mode == TraceMode.Centerline ? CenterlineTraceTests.Drawing(scale * 1.25f).Raster : ColorTraceTests.Logo(scale);
+            using Raster<Rgba8> raster = mode switch
+            {
+                TraceMode.Centerline => CenterlineTraceTests.Drawing(scale * 1.25f).Raster,
+                TraceMode.PixelArt => PixelArtTraceTests.Tiles(scale),
+                _ => ColorTraceTests.Logo(scale),
+            };
             raster.Trace(options);
             long fewest = long.MaxValue;
             for (int i = 0; i < 3; i++)

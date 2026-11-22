@@ -27,6 +27,7 @@ internal static class TraceCommand
         ("photo", TraceOptions.Photo),
         ("line-art", TraceOptions.LineArt),
         ("sketch", TraceOptions.Sketch),
+        ("pixel-art", TraceOptions.PixelArt),
     ];
 
     public static Command Create(CliSession session)
@@ -42,7 +43,7 @@ internal static class TraceCommand
             Description = $"The starting settings: {string.Join(", ", Presets.Select(p => p.Name))}. default (black and white with a white background) by default; the options below change it.",
             HelpName = "preset",
         };
-        Option<string?> mode = new("--mode", "-m") { Description = "How pixels become shapes: black-and-white, grayscale, color, logo or centerline (strokes along the middle of lines).", HelpName = "mode" };
+        Option<string?> mode = new("--mode", "-m") { Description = "How pixels become shapes: black-and-white, grayscale, color, logo, centerline (strokes along the middle of lines) or pixel-art (smooth shapes from sprites and other pixel art).", HelpName = "mode" };
         Option<int?> colors = new("--colors", "-c") { Description = "The most colors (gray levels in grayscale) to reduce the image to, 2 to 256 (grayscale, color, logo).", HelpName = "count" };
         Option<string?> palette = new("--palette") { Description = "Fixed colors instead, CSS colors separated by commas or spaces, such as \"black, #c00, white\" (grayscale, color, logo).", HelpName = "colors" };
         Option<string?> layering = new("--layering") { Description = "stacked (each color layer covers those above it, the default) or abutting (each color only its own area).", HelpName = "stacked|abutting" };
@@ -55,11 +56,12 @@ internal static class TraceCommand
         Option<bool?> snapLines = new("--snap-lines") { Description = "Make straight runs lines (grayscale, color, logo; on by default)." };
         Option<bool?> snapArcs = new("--snap-arcs") { Description = "Make runs on a circle arcs, and round outlines circles (grayscale, color, logo; on by default)." };
         Option<float?> strokeWidth = new("--stroke-width") { Description = "One pen width in pixels for every stroke, instead of the width each stroke's ink covers (centerline).", HelpName = "pixels" };
+        Option<bool?> exact = new("--exact") { Description = "Keep the pixel squares, one shape per color with straight edges, instead of smoothing them (pixel-art)." };
         Option<int?> precision = new("--precision") { Description = "Decimal places of the SVG's coordinates.", HelpName = "digits" };
         Option<string?> preview = new("--preview-png") { Description = "Also write the trace drawn as a PNG, the image's size: a file, a folder or a template with {name}.", HelpName = "path" };
-        Command command = new("trace", "Trace images into vector shapes (logos, line art, scans, posters, photos) and write them as SVG.");
+        Command command = new("trace", "Trace images into vector shapes (logos, line art, scans, posters, photos, pixel art) and write them as SVG.");
         command.Arguments.Add(options.Inputs);
-        foreach (Option option in (Option[])[output, preset, mode, colors, palette, layering, threshold, fidelity, corners, noise, ignoreWhite, smoothing, snapLines, snapArcs, strokeWidth, precision, preview])
+        foreach (Option option in (Option[])[output, preset, mode, colors, palette, layering, threshold, fidelity, corners, noise, ignoreWhite, smoothing, snapLines, snapArcs, strokeWidth, exact, precision, preview])
         {
             command.Options.Add(option);
         }
@@ -70,7 +72,7 @@ internal static class TraceCommand
         command.Options.Add(options.FailFast);
         command.SetAction(result =>
         {
-            TraceOptions trace = Options(result, preset, mode, colors, palette, layering, threshold, fidelity, corners, noise, ignoreWhite, smoothing, snapLines, snapArcs, strokeWidth);
+            TraceOptions trace = Options(result, preset, mode, colors, palette, layering, threshold, fidelity, corners, noise, ignoreWhite, smoothing, snapLines, snapArcs, strokeWidth, exact);
             SvgWriteOptions svg = Checked(() => result.GetValue(precision) is { } digits ? new SvgWriteOptions { Precision = digits } : SvgWriteOptions.Default, "--precision");
             List<InputFile> inputs = options.ExpandInputs(session, result);
             OutputTemplate template = Hosting.OutputTemplate.Parse(result.GetValue(output) ?? "-");
@@ -138,7 +140,8 @@ internal static class TraceCommand
         Option<float?> smoothing,
         Option<bool?> snapLines,
         Option<bool?> snapArcs,
-        Option<float?> strokeWidth)
+        Option<float?> strokeWidth,
+        Option<bool?> exact)
     {
         TraceOptions trace = TraceOptions.Default;
         if (result.GetValue(preset) is { } name)
@@ -174,6 +177,7 @@ internal static class TraceCommand
         trace = Set(trace, result.GetValue(snapLines), static (t, v) => t with { SnapToLines = v }, "--snap-lines");
         trace = Set(trace, result.GetValue(snapArcs), static (t, v) => t with { SnapToArcs = v }, "--snap-arcs");
         trace = Set(trace, result.GetValue(strokeWidth), static (t, v) => t with { StrokeWidth = v }, "--stroke-width");
+        trace = Set(trace, result.GetValue(exact), static (t, v) => t with { Exact = v }, "--exact");
         return trace;
     }
 

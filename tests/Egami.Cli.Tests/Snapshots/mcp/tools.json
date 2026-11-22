@@ -1968,7 +1968,7 @@
     {
       "name": "trace",
       "title": "egami trace",
-      "description": "Trace images into vector shapes (logos, line art, scans, posters, photos) and write them as SVG.",
+      "description": "Trace images into vector shapes (logos, line art, scans, posters, photos, pixel art) and write them as SVG.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1985,11 +1985,11 @@
           },
           "preset": {
             "type": "string",
-            "description": "The starting settings: default, black-and-white, logo, poster, photo, line-art, sketch. default (black and white with a white background) by default; the options below change it."
+            "description": "The starting settings: default, black-and-white, logo, poster, photo, line-art, sketch, pixel-art. default (black and white with a white background) by default; the options below change it."
           },
           "mode": {
             "type": "string",
-            "description": "How pixels become shapes: black-and-white, grayscale, color, logo or centerline (strokes along the middle of lines)."
+            "description": "How pixels become shapes: black-and-white, grayscale, color, logo, centerline (strokes along the middle of lines) or pixel-art (smooth shapes from sprites and other pixel art)."
           },
           "colors": {
             "type": "integer",
@@ -2038,6 +2038,10 @@
           "stroke_width": {
             "type": "number",
             "description": "One pen width in pixels for every stroke, instead of the width each stroke's ink covers (centerline)."
+          },
+          "exact": {
+            "type": "boolean",
+            "description": "Keep the pixel squares, one shape per color with straight edges, instead of smoothing them (pixel-art)."
           },
           "precision": {
             "type": "integer",

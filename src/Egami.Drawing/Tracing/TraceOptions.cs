@@ -71,6 +71,12 @@ public sealed record class TraceOptions
     /// </summary>
     public static TraceOptions Sketch { get; } = new() { Mode = TraceMode.Centerline, IgnoreWhite = true, Noise = 8, PathFidelity = 0.3f };
 
+    /// <summary>
+    /// Gets <see cref="TraceMode.PixelArt"/>, stacked: sprites, icons and other pixel art as smooth shapes, one per color, that
+    /// scale up without blocks. Set <see cref="Exact"/> for the pixel squares instead.
+    /// </summary>
+    public static TraceOptions PixelArt { get; } = new() { Mode = TraceMode.PixelArt };
+
     /// <summary>Gets how pixels are turned into shapes. Defaults to <see cref="TraceMode.BlackAndWhite"/>.</summary>
     /// <exception cref="ArgumentOutOfRangeException">The mode is not defined.</exception>
     public TraceMode Mode
@@ -187,6 +193,12 @@ public sealed record class TraceOptions
         get => _smoothing;
         init => _smoothing = Unit(value, nameof(Smoothing));
     }
+
+    /// <summary>
+    /// Gets whether a <see cref="TraceMode.PixelArt"/> trace keeps the pixel squares, merged into one shape per color with
+    /// straight edges, instead of smoothing them. Defaults to <see langword="false"/>. Not used in the other modes.
+    /// </summary>
+    public bool Exact { get; init; }
 
     /// <summary>
     /// Gets the pen width of every stroke a <see cref="TraceMode.Centerline"/> trace gives, in pixels, or <see langword="null"/>

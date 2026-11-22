@@ -8,7 +8,7 @@ namespace Egami.Drawing.Tests.Tracing;
 /// <summary>The <see cref="TraceOptions"/> presets: what each sets, and that each suits the art it is named for.</summary>
 public class PresetTests
 {
-    public static TheoryData<string> Names() => ["Default", "BlackAndWhite", "Logo", "Poster", "Photo", "LineArt", "Sketch"];
+    public static TheoryData<string> Names() => ["Default", "BlackAndWhite", "Logo", "Poster", "Photo", "LineArt", "Sketch", "PixelArt"];
 
     [Fact]
     public void PresetsSetTheirModes()
@@ -25,6 +25,8 @@ public class PresetTests
         Assert.Equal(TraceMode.Centerline, TraceOptions.LineArt.Mode);
         Assert.Equal(TraceMode.Centerline, TraceOptions.Sketch.Mode);
         Assert.True(TraceOptions.Sketch.Noise > TraceOptions.LineArt.Noise);
+        Assert.Equal(TraceMode.PixelArt, TraceOptions.PixelArt.Mode);
+        Assert.False(TraceOptions.PixelArt.Exact);
 
         // A preset is a value: with changes a copy and leaves the preset alone.
         TraceOptions four = TraceOptions.Logo with { Colors = 4 };

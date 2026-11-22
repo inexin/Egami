@@ -54,7 +54,7 @@ Commands:
   text <inputs>                     Draw a caption or watermark on images, with any font and script, wrapped to fit (2.8.2 layout).
   overlay <inputs>                  Lay an image (a logo, a watermark, an SVG) on images, placed by anchor, with opacity and a blend mode.
   montage <inputs>                  Lay images out on a contact sheet: a grid of tiles, optionally labeled with their file names.
-  trace <inputs>                    Trace images into vector shapes (logos, line art, scans, posters, photos) and write them as SVG.
+  trace <inputs>                    Trace images into vector shapes (logos, line art, scans, posters, photos, pixel art) and write them as SVG.
   formats <format>                  List the formats egami reads and writes, or one format's writer settings for --set.
   mcp                               Serve egami's commands as tools to an AI assistant over the Model Context Protocol, on standard input and output. Tools read and write only inside the folders the assistant opened and those given with --allow, and never replace an input unless asked.
 ```
@@ -767,7 +767,7 @@ Options:
 
 ```text
 Description:
-  Trace images into vector shapes (logos, line art, scans, posters, photos) and write them as SVG.
+  Trace images into vector shapes (logos, line art, scans, posters, photos, pixel art) and write them as SVG.
 
 Usage:
   egami trace <inputs>... [options]
@@ -777,8 +777,8 @@ Arguments:
 
 Options:
   -o, --output <path>                  Where to write the SVG: a file, a folder, a template with {name}, {ext}, {dir} and {index}, or - (the default for one input) for standard output.
-  -p, --preset <preset>                The starting settings: default, black-and-white, logo, poster, photo, line-art, sketch. default (black and white with a white background) by default; the options below change it.
-  -m, --mode <mode>                    How pixels become shapes: black-and-white, grayscale, color, logo or centerline (strokes along the middle of lines).
+  -p, --preset <preset>                The starting settings: default, black-and-white, logo, poster, photo, line-art, sketch, pixel-art. default (black and white with a white background) by default; the options below change it.
+  -m, --mode <mode>                    How pixels become shapes: black-and-white, grayscale, color, logo, centerline (strokes along the middle of lines) or pixel-art (smooth shapes from sprites and other pixel art).
   -c, --colors <count>                 The most colors (gray levels in grayscale) to reduce the image to, 2 to 256 (grayscale, color, logo).
   --palette <colors>                   Fixed colors instead, CSS colors separated by commas or spaces, such as "black, #c00, white" (grayscale, color, logo).
   --layering <stacked|abutting>        stacked (each color layer covers those above it, the default) or abutting (each color only its own area).
@@ -791,6 +791,7 @@ Options:
   --snap-lines                         Make straight runs lines (grayscale, color, logo; on by default).
   --snap-arcs                          Make runs on a circle arcs, and round outlines circles (grayscale, color, logo; on by default).
   --stroke-width <pixels>              One pen width in pixels for every stroke, instead of the width each stroke's ink covers (centerline).
+  --exact                              Keep the pixel squares, one shape per color with straight edges, instead of smoothing them (pixel-art).
   --precision <digits>                 Decimal places of the SVG's coordinates.
   --preview-png <path>                 Also write the trace drawn as a PNG, the image's size: a file, a folder or a template with {name}.
   -r, --recursive                      Take every image in folders given as inputs, at any depth.

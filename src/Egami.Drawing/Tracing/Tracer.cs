@@ -16,6 +16,11 @@ internal static class Tracer
         }
 
         cancellationToken.ThrowIfCancellationRequested();
+        if (options.Mode == TraceMode.PixelArt)
+        {
+            return PixelArtTracer.Trace(raster, options, cancellationToken);
+        }
+
         if (options.Mode == TraceMode.Logo)
         {
             return LogoTracer.Trace(raster, options, cancellationToken);

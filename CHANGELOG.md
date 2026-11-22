@@ -35,9 +35,9 @@ waits for B pictures, rate control tuning and its gates. Additive to 1.3.
 
 ## Egami.Drawing and Egami.Svg 1.5.0 (unreleased)
 
-Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PRs A to F of seven): black-and-white, grayscale, color and
-logo images become vector shapes, and line art becomes stroked centre lines. Additive to 1.4.0; the last PR adds a
-PixelArt mode.
+Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PRs A to G1): black-and-white, grayscale, color, logo and
+pixel-art images become vector shapes, and line art becomes stroked centre lines. Additive to 1.4.0; a last PR (G2) smooths
+the steps of long pixel-art diagonals further.
 
 - `raster.Trace(options)` (namespace `Egami.Drawing.Tracing`, also `Trace<TPixel>` and `TraceAsync` with a cancellation
   token) traces a raster's first frame and returns a `TraceResult`: `TracedShape`s back to front (a `Path`, an `Rgba8`
@@ -76,6 +76,14 @@ PixelArt mode.
   their buffers pooled, for the same shapes as before. A 3000 × 2400 drawing traces in about 0.15 s in black and white,
   0.24 s in color or grayscale, 0.34 s as centre lines and 0.66 s in logo mode, 1.9 to 3.1 × faster than PR E, and no
   mode allocates more than it did.
+- `TraceMode.PixelArt` (Build Plan PR G1) traces sprites and other pixel art after Kopf and Lischinski, "Depixelizing Pixel
+  Art" (2011): a graph joins each pixel to its neighbours of similar color in YUV, crossing diagonals are settled by the
+  paper's curves, sparse pixels and islands votes, the cells are reshaped into the simplified Voronoi diagram on quarter
+  pixels, and the edges between colors become quadratic B-splines, joined smoothly where three colors meet, that keep
+  corners between straight legs of a pixel or more. One shape per color, stacked or abutting; pixels under half alpha are
+  left out, and an image of more than 256 colors throws `ArgumentException`. `TraceOptions.Exact` keeps the pixel squares
+  instead, merged into one shape per color, and `TraceOptions.PixelArt` is the preset. A 1000 × 800 sprite sheet traces in
+  about 0.1 s.
 
 ## Egami.Fonts (unreleased)
 
@@ -113,9 +121,9 @@ Additive to 1.4.0. `.ehyp` files that 1.5.0-preview.1 wrote are version 1 and mu
 ## Egami.Cli (unreleased)
 
 - `egami trace` traces images into vector shapes with Egami.Drawing's bitmap tracing and writes SVG: `--preset` (`default`,
-  `black-and-white`, `logo`, `poster`, `photo`, `line-art`, `sketch`) with `--mode`, `--colors`, `--palette`, `--layering`,
-  `--threshold`, `--path-fidelity`, `--corners`, `--noise`, `--ignore-white`, `--smoothing`, `--snap-lines`, `--snap-arcs`,
-  `--stroke-width` and `--precision`, and `--preview-png` for the trace drawn as a PNG. `egami mcp` offers it as the `trace`
+  `black-and-white`, `logo`, `poster`, `photo`, `line-art`, `sketch`, `pixel-art`) with `--mode`, `--colors`, `--palette`,
+  `--layering`, `--threshold`, `--path-fidelity`, `--corners`, `--noise`, `--ignore-white`, `--smoothing`, `--snap-lines`,
+  `--snap-arcs`, `--stroke-width`, `--exact` and `--precision`, and `--preview-png` for the trace drawn as a PNG. `egami mcp` offers it as the `trace`
   tool.
 
 ## Egami (unreleased)

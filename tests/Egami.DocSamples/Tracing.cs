@@ -162,6 +162,32 @@ public class Tracing
     }
 
     [Fact]
+    public void PixelArt()
+    {
+        using Raster<Rgba8> sprite = Sprite();
+
+        #region pixelart
+        // A sprite as smooth shapes, one per color: diagonal steps become curves, blocks keep their corners.
+        TraceResult smooth = sprite.Trace(TraceOptions.PixelArt);
+
+        // Upscaling: draw the shapes eight times larger, with no blocks and no blur.
+        using Raster<Rgba8> large = Raster.Create(sprite.Width * 8, sprite.Height * 8, Rgba8.Transparent);
+        using (RasterCanvas<Rgba8> canvas = large.CreateCanvas())
+        {
+            canvas.Scale(8);
+            smooth.Draw(canvas);
+        }
+
+        // Or the pixel squares themselves, merged into one shape per color: a crisp vector copy of the sprite.
+        TraceResult squares = sprite.Trace(TraceOptions.PixelArt with { Exact = true });
+        #endregion
+
+        Assert.Equal(3, smooth.Shapes.Count);
+        Assert.Equal(3, squares.Shapes.Count);
+        Assert.Equal(new Rgba8(250, 210, 30, 255), large.GetPixel(44, 44));
+    }
+
+    [Fact]
     public void Shapes()
     {
         using Raster<Rgba8> scan = Signature();
@@ -244,6 +270,35 @@ public class Tracing
         canvas.FillCircle(new Vector2(40, 45), 30, new Rgba8(220, 30, 30, 255));
         canvas.FillRect(new RectF(60, 20, 45, 50), new Rgba8(20, 60, 200, 255));
         return raster;
+    }
+
+    /// <summary>A small original sprite: a round face, its outline drawn in single diagonal steps.</summary>
+    private static Raster<Rgba8> Sprite()
+    {
+        string[] rows =
+        [
+            "...KKKKK...",
+            "..KYYYYYK..",
+            ".KYYYYYYYK.",
+            "KYYKYYYKYYK",
+            "KYYKYYYKYYK",
+            "KYYYYYYYYYK",
+            "KYKYYYYYKYK",
+            "KYYKKKKKYYK",
+            ".KYYYYYYYK.",
+            "..KYYYYYK..",
+            "...KKKKK...",
+        ];
+        Raster<Rgba8> sprite = Raster.Create(rows[0].Length, rows.Length, Rgba8.White);
+        for (int y = 0; y < rows.Length; y++)
+        {
+            for (int x = 0; x < rows[y].Length; x++)
+            {
+                sprite.SetPixel(x, y, rows[y][x] switch { 'K' => new Rgba8(20, 20, 20, 255), 'Y' => new Rgba8(250, 210, 30, 255), _ => Rgba8.White });
+            }
+        }
+
+        return sprite;
     }
 
     private static Raster<Rgba8> Signature()
