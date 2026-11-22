@@ -38,14 +38,15 @@ internal sealed partial class HevcSnapshot
     }
 
     private static void Copy<T>(T[] map, T[] saved, int at, int savedAt, int count, bool capture)
+        where T : unmanaged
     {
         if (capture)
         {
-            map.AsSpan(at, count).CopyTo(saved.AsSpan(savedAt));
+            HevcCopy.Run(map, at, saved, savedAt, count);
         }
         else
         {
-            saved.AsSpan(savedAt, count).CopyTo(map.AsSpan(at));
+            HevcCopy.Run(saved, savedAt, map, at, count);
         }
     }
 }

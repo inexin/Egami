@@ -67,15 +67,14 @@ internal sealed partial class HevcSnapshot(HevcPicture picture)
         ushort[] plane = picture.Planes[c], saved = _samples[c];
         for (int y = 0; y < height; y++)
         {
-            Span<ushort> row = plane.AsSpan(((y0 + y) * stride) + x0, width);
-            Span<ushort> copy = saved.AsSpan(y * 64, width);
+            int at = ((y0 + y) * stride) + x0;
             if (capture)
             {
-                row.CopyTo(copy);
+                HevcCopy.Run(plane, at, saved, y * 64, width);
             }
             else
             {
-                copy.CopyTo(row);
+                HevcCopy.Run(saved, y * 64, plane, at, width);
             }
         }
     }
@@ -89,17 +88,17 @@ internal sealed partial class HevcSnapshot(HevcPicture picture)
             int at = ((y4 + y) * picture.Width4) + x4;
             if (capture)
             {
-                picture.IntraMode.AsSpan(at, w4).CopyTo(_modes.AsSpan(y * 16));
-                picture.CtDepth.AsSpan(at, w4).CopyTo(_depths.AsSpan(y * 16));
-                picture.QpY.AsSpan(at, w4).CopyTo(_qps.AsSpan(y * 16));
-                picture.Flags.AsSpan(at, w4).CopyTo(_flags.AsSpan(y * 16));
+                HevcCopy.Run(picture.IntraMode, at, _modes, y * 16, w4);
+                HevcCopy.Run(picture.CtDepth, at, _depths, y * 16, w4);
+                HevcCopy.Run(picture.QpY, at, _qps, y * 16, w4);
+                HevcCopy.Run(picture.Flags, at, _flags, y * 16, w4);
             }
             else
             {
-                _modes.AsSpan(y * 16, w4).CopyTo(picture.IntraMode.AsSpan(at));
-                _depths.AsSpan(y * 16, w4).CopyTo(picture.CtDepth.AsSpan(at));
-                _qps.AsSpan(y * 16, w4).CopyTo(picture.QpY.AsSpan(at));
-                _flags.AsSpan(y * 16, w4).CopyTo(picture.Flags.AsSpan(at));
+                HevcCopy.Run(_modes, y * 16, picture.IntraMode, at, w4);
+                HevcCopy.Run(_depths, y * 16, picture.CtDepth, at, w4);
+                HevcCopy.Run(_qps, y * 16, picture.QpY, at, w4);
+                HevcCopy.Run(_flags, y * 16, picture.Flags, at, w4);
             }
         }
 

@@ -562,7 +562,7 @@ internal sealed partial class HevcCtuSearch
     {
         for (int r = 0; r < height; r++)
         {
-            from.AsSpan(at + (r * stride), width).CopyTo(to.AsSpan(at + (r * stride)));
+            HevcCopy.Run(from, at + (r * stride), to, at + (r * stride), width);
         }
     }
 

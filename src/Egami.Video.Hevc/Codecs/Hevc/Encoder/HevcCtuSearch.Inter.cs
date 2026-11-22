@@ -190,11 +190,13 @@ internal sealed partial class HevcCtuSearch
         List<HevcCodingUnit> splitCus = [];
         NodeInfo children = new(0, false);
         bool childrenTried = false;
+        int orientation = 0;
         if (canSplit && !(profile.SplitStatistics && bestCost < AverageSkipCost(depth)))
         {
             Restore(before, x0, y0, size);
             splitCost = InterSplit(x0, y0, log2, depth, flagCoded, splitCus, out children);
             Save(_splitBest[depth], x0, y0, size);
+            orientation = profile.HalvesOrientation ? ChildOrientation(x0, y0, log2) : 0;
             dirty = true;
             current = false;
             childrenTried = true;
@@ -230,10 +232,10 @@ internal sealed partial class HevcCtuSearch
         }
 
         // The halves, seeded with 2Nx2N's vector: the better one by SATD coded in full when it is near 2Nx2N's.
-        if (profile.Halves && (!profile.HalvesGate || (bestCu.RootCbf && (!childrenTried || splitCost < bestCost))))
+        if (profile.Halves && log2 >= profile.HalvesMinLog2 && (!profile.HalvesGate || (bestCu.RootCbf && (!childrenTried || splitCost < bestCost))))
         {
             Span<InterChoice> halves = stackalloc InterChoice[2];
-            int count = SearchHalves(x0, y0, log2, profile, whole, children.RefMask, ref dirty, before, halves);
+            int count = orientation < 0 ? 0 : SearchHalves(x0, y0, log2, profile, whole, children.RefMask, orientation, ref dirty, before, halves);
             current = false;
             double ratio = profile.SecondCandidateRatio;
             for (int i = 0; i < count; i++)
@@ -385,6 +387,49 @@ internal sealed partial class HevcCtuSearch
 
         info = new NodeInfo(mask, intra);
         return cost;
+    }
+
+    /// <summary>
+    /// Which halves the four smaller units just decided point to: <see cref="HevcCodingUnit.Part2NxN"/> when the upper pair and the
+    /// lower pair move more alike than the left and right pairs, <see cref="HevcCodingUnit.PartNx2N"/> the other way, 0 on a tie.
+    /// </summary>
+    private int ChildOrientation(int x0, int y0, int log2)
+    {
+        int half = 1 << (log2 - 1);
+        int a = MotionAt(x0, y0), b = MotionAt(x0 + half, y0), c = MotionAt(x0, y0 + half), d = MotionAt(x0 + half, y0 + half);
+        long across = Apart(a, b) + Apart(c, d), down = Apart(a, c) + Apart(b, d);
+        return across == 0 && down == 0 ? -1 : across < down ? HevcCodingUnit.Part2NxN : down < across ? HevcCodingUnit.PartNx2N : 0;
+    }
+
+    /// <summary>The 4x4 block index at a luma sample, for <see cref="Apart"/>.</summary>
+    private int MotionAt(int x, int y) => ((y >> 2) * _picture.Width4) + (x >> 2);
+
+    /// <summary>How far apart the motion of two 4x4 blocks is: the vector distance in quarter samples, large across references or intra.</summary>
+    private long Apart(int a, int b)
+    {
+        long far = 1 << 16, sum = 0;
+        if (_picture.PredFlags[a] != _picture.PredFlags[b] || _picture.PredFlags[a] == 0)
+        {
+            return far;
+        }
+
+        for (int l = 0; l < 2; l++)
+        {
+            if ((_picture.PredFlags[a] & (1 << l)) == 0)
+            {
+                continue;
+            }
+
+            if (_picture.RefIdx[l][a] != _picture.RefIdx[l][b])
+            {
+                return far;
+            }
+
+            int u = _picture.Mv[l][a], v = _picture.Mv[l][b];
+            sum += Math.Abs((short)u - (short)v) + Math.Abs((u >> 16) - (v >> 16));
+        }
+
+        return sum;
     }
 
     /// <summary>The rate of split_cu_flag 0 when it is coded, in 1/32768 bits, the contexts moved on with it.</summary>
@@ -540,8 +585,8 @@ internal sealed partial class HevcCtuSearch
     /// The motion search of the 2NxN and Nx2N halves, each seeded with 2Nx2N's vector (in its reference only, with the halves
     /// gate); fills <paramref name="choices"/> sorted by rough cost and gives how many there are.
     /// </summary>
-    private int SearchHalves(int x0, int y0, int log2, HevcInterProfile profile, in InterChoice whole, int refMask, ref bool dirty, HevcSnapshot before,
-        Span<InterChoice> choices)
+    private int SearchHalves(int x0, int y0, int log2, HevcInterProfile profile, in InterChoice whole, int refMask, int orientation, ref bool dirty,
+        HevcSnapshot before, Span<InterChoice> choices)
     {
         int size = 1 << log2, count = 0;
         int seed = whole.U0.Mv0, seedRef = 1 << Math.Max(whole.U0.RefIdx0, 0);
@@ -552,6 +597,11 @@ internal sealed partial class HevcCtuSearch
         // The second half predicts from the first's motion, which the block maps must hold meanwhile.
         foreach (int partMode in (ReadOnlySpan<int>)[HevcCodingUnit.Part2NxN, HevcCodingUnit.PartNx2N])
         {
+            if (orientation != 0 && orientation != partMode)
+            {
+                continue;
+            }
+
             if (dirty)
             {
                 Restore(before, x0, y0, size);
@@ -837,11 +887,11 @@ internal sealed partial class HevcCtuSearch
             {
                 if (save)
                 {
-                    plane.AsSpan(at + (r * stride), w).CopyTo(saved.AsSpan(r * 64));
+                    HevcCopy.Run(plane, at + (r * stride), saved, r * 64, w);
                 }
                 else
                 {
-                    saved.AsSpan(r * 64, w).CopyTo(plane.AsSpan(at + (r * stride)));
+                    HevcCopy.Run(saved, r * 64, plane, at + (r * stride), w);
                 }
             }
         }
@@ -1049,7 +1099,7 @@ internal sealed partial class HevcCtuSearch
         {
             for (int r = 0; r < n; r++)
             {
-                _prediction.AsSpan(r * n, n).CopyTo(plane.AsSpan(at + (r * stride)));
+                HevcCopy.Run(_prediction, r * n, plane, at + (r * stride), n);
             }
 
             return new BlockResult(null, false, weight * predicted, 0);
