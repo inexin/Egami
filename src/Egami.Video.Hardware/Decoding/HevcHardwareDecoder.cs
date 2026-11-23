@@ -1462,9 +1462,19 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
         job.Picture = null;
         pic.Job = -1;
         long status = 0;
-        VkCheck.ThrowIfFailed(
-            _device.Commands.vkGetQueryPoolResults(_device.Raw, _queryPool!.Value, (uint)jobIndex, 1, 8, &status, 8, VkQueryResultFlagBits.WAIT_BIT | VkQueryResultFlagBits.WITH_STATUS_BIT_KHR | VkQueryResultFlagBits._64_BIT),
-            "vkGetQueryPoolResults");
+
+        // The fence has signalled, so the status is there unless the driver gave up on the picture (a broken stream can make it
+        // time out): a status that is not ready is a failed decode, where waiting for it would never end.
+        VkResult queried = _device.Commands.vkGetQueryPoolResults(_device.Raw, _queryPool!.Value, (uint)jobIndex, 1, 8, &status, 8, VkQueryResultFlagBits.WITH_STATUS_BIT_KHR | VkQueryResultFlagBits._64_BIT);
+        if (queried != VkResult.NOT_READY)
+        {
+            VkCheck.ThrowIfFailed(queried, "vkGetQueryPoolResults");
+        }
+        else
+        {
+            status = 0;
+        }
+
         if (status <= 0)
         {
             string message = $"The GPU failed to decode the picture with order count {pic.Poc} (status {status}).";

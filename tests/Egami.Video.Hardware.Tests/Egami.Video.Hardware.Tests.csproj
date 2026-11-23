@@ -29,6 +29,7 @@
   <ItemGroup>
     <None Include="../video/corpus/h264/*.h264" LinkBase="corpus/h264" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/hevc/*.h265;../video/corpus/hevc/*.mp4" LinkBase="corpus/hevc" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/fuzz-regressions/hardware/*" LinkBase="fuzz-regressions" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
