@@ -1,5 +1,1 @@
 #nullable enable
-Egami.Svg.SvgTraceExtensions
-static Egami.Svg.SvgTraceExtensions.SaveSvg(this Egami.Drawing.Tracing.TraceResult! result, System.IO.Stream! stream, Egami.Svg.SvgWriteOptions? options = null) -> void
-static Egami.Svg.SvgTraceExtensions.SaveSvg(this Egami.Drawing.Tracing.TraceResult! result, string! path, Egami.Svg.SvgWriteOptions? options = null) -> void
-static Egami.Svg.SvgTraceExtensions.ToSvg(this Egami.Drawing.Tracing.TraceResult! result, Egami.Svg.SvgWriteOptions? options = null) -> string!
