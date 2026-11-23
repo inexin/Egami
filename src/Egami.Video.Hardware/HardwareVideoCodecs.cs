@@ -56,8 +56,9 @@ public static class HardwareVideoCodecs
     /// <para>
     /// The decoder reads the stream with Egami's own H.264 parser, keeps the decoded picture buffer, and has the GPU decode each
     /// picture and copy it back; frames come out in output order as <see cref="YuvRaster{T}"/> of bytes, cropped, with the
-    /// color the software decoder gives. Field pictures, MBAFF frames, monochrome, 4:2:2 and streams above 8 bits throw
-    /// <see cref="UnsupportedFormatException"/> when their first picture comes; <see cref="VideoCodec.CanDecode"/> turns down
+    /// color the software decoder gives. Field pictures, MBAFF frames, monochrome, 4:2:2, streams above 8 bits and streams whose
+    /// size, level or reference pictures go beyond the GPU throw <see cref="UnsupportedFormatException"/> when their first
+    /// picture comes; <see cref="VideoCodec.CanDecode"/> turns down
     /// tracks whose bit depth or chroma format says so up front.
     /// </para>
     /// </remarks>
@@ -92,7 +93,8 @@ public static class HardwareVideoCodecs
     /// sets, and has the GPU decode each picture and copy it back. Frames come out in output order at the conformance window,
     /// with the color the software decoder gives: <see cref="YuvRaster{T}"/> of bytes for 8-bit streams and of
     /// <see cref="ushort"/> holding 10 bits for Main 10. Monochrome, 4:2:2, 4:4:4, 12-bit streams and the coding tools of the
-    /// format range extensions throw <see cref="UnsupportedFormatException"/> when their first picture comes;
+    /// format range extensions throw <see cref="UnsupportedFormatException"/> when their first picture comes, as do streams
+    /// whose size, level or reference pictures go beyond the GPU;
     /// <see cref="VideoCodec.CanDecode"/> turns down tracks whose bit depth or chroma format already rules them out. As in the
     /// software decoder, decoding starts at an IRAP picture, the leading pictures a CRA picture skips at the start are not
     /// output, and layers above the base (Dolby Vision enhancement layers) are skipped.

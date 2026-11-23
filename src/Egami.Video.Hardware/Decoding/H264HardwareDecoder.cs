@@ -926,19 +926,19 @@ internal sealed unsafe class H264HardwareDecoder : IVideoDecoder
         uint width = (uint)sps.Width, height = (uint)sps.Height;
         if (width < caps.minCodedExtent.width || height < caps.minCodedExtent.height || width > caps.maxCodedExtent.width || height > caps.maxCodedExtent.height)
         {
-            throw new NotSupportedException(
+            throw H264Errors.Beyond(
                 $"{_device.Physical.Name} decodes H.264 from {caps.minCodedExtent.width}x{caps.minCodedExtent.height} to {caps.maxCodedExtent.width}x{caps.maxCodedExtent.height}; {width}x{height} is outside that.");
         }
 
         if (LevelIndex(sps.LevelIdc) > (int)Caps.H264.maxLevelIdc)
         {
-            throw new NotSupportedException($"{_device.Physical.Name} decodes H.264 up to level index {(int)Caps.H264.maxLevelIdc}; this stream has level_idc {sps.LevelIdc}.");
+            throw H264Errors.Beyond($"{_device.Physical.Name} decodes H.264 up to level index {(int)Caps.H264.maxLevelIdc}; this stream has level_idc {sps.LevelIdc}.");
         }
 
         int slots = SlotsFor(sps);
         if (slots > caps.maxDpbSlots || slots - 1 > caps.maxActiveReferencePictures)
         {
-            throw new NotSupportedException($"{_device.Physical.Name} keeps {caps.maxDpbSlots} pictures; the stream needs {slots}.");
+            throw H264Errors.Beyond($"{_device.Physical.Name} keeps {caps.maxDpbSlots} pictures; the stream needs {slots}.");
         }
 
         _codedWidth = AlignUp(width, Math.Max(1u, caps.pictureAccessGranularity.width));
@@ -1125,29 +1125,28 @@ internal sealed unsafe class H264HardwareDecoder : IVideoDecoder
         target->use_default_scaling_matrix_mask = 0;
     }
 
-    /// <summary>The Std level enumerator of a level_idc (Table A-1); level 1b (9) is taken as 1.1.</summary>
-    private static int LevelIndex(int levelIdc) => levelIdc switch
+    /// <summary>
+    /// The Std level enumerator of a level_idc (Table A-1); level 1b (9) is taken as 1.1, and a value that names no level as the
+    /// next level up.
+    /// </summary>
+    private static int LevelIndex(int levelIdc)
     {
-        <= 10 => levelIdc == 9 ? 1 : 0,
-        11 => 1,
-        12 => 2,
-        13 => 3,
-        20 => 4,
-        21 => 5,
-        22 => 6,
-        30 => 7,
-        31 => 8,
-        32 => 9,
-        40 => 10,
-        41 => 11,
-        42 => 12,
-        50 => 13,
-        51 => 14,
-        52 => 15,
-        60 => 16,
-        61 => 17,
-        _ => 18,
-    };
+        if (levelIdc == 9)
+        {
+            return 1;
+        }
+
+        ReadOnlySpan<byte> levels = [10, 11, 12, 13, 20, 21, 22, 30, 31, 32, 40, 41, 42, 50, 51, 52, 60, 61, 62];
+        for (int i = 0; i < levels.Length; i++)
+        {
+            if (levels[i] >= levelIdc)
+            {
+                return i;
+            }
+        }
+
+        return levels.Length - 1;
+    }
 
     /// <summary>Records and submits the decoding of the current picture into its slot, and the copy of the slot to host memory.</summary>
     private void Submit(Picture pic, H264SliceHeader h)

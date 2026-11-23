@@ -903,20 +903,20 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
         uint width = (uint)sps.Width, height = (uint)sps.Height;
         if (width > caps.maxCodedExtent.width || height > caps.maxCodedExtent.height)
         {
-            throw new NotSupportedException(
+            throw HevcErrors.Beyond(
                 $"{_device.Physical.Name} decodes HEVC up to {caps.maxCodedExtent.width}x{caps.maxCodedExtent.height}; {width}x{height} is larger.");
         }
 
         // Level 8.5 (general_level_idc 255) puts no limits on the stream; the GPU is tried at its own highest level.
         if (sps.ProfileTierLevel.LevelIdc != 255 && LevelIndex(sps.ProfileTierLevel.LevelIdc) > (int)capabilities.H265.maxLevelIdc)
         {
-            throw new NotSupportedException($"{_device.Physical.Name} decodes HEVC up to level index {(int)capabilities.H265.maxLevelIdc}; this stream has general_level_idc {sps.ProfileTierLevel.LevelIdc}.");
+            throw HevcErrors.Beyond($"{_device.Physical.Name} decodes HEVC up to level index {(int)capabilities.H265.maxLevelIdc}; this stream has general_level_idc {sps.ProfileTierLevel.LevelIdc}.");
         }
 
         int slots = (int)Math.Min((uint)SlotsFor(sps), caps.maxDpbSlots);
         if (slots < sps.MaxDecPicBuffering || slots - 1 > caps.maxActiveReferencePictures + 1)
         {
-            throw new NotSupportedException($"{_device.Physical.Name} keeps {caps.maxDpbSlots} pictures; the stream needs {SlotsFor(sps)}.");
+            throw HevcErrors.Beyond($"{_device.Physical.Name} keeps {caps.maxDpbSlots} pictures; the stream needs {SlotsFor(sps)}.");
         }
 
         VkFormat format = bitDepth == 8 ? VkFormat.G8_B8R8_2PLANE_420_UNORM : VkFormat.G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
