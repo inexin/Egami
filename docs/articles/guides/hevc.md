@@ -100,7 +100,44 @@ effort 4 takes 1.5 times x265 medium's CPU cycles a frame at quality 50 (1.2 to 
 
 #### Speed by effort
 
-<!-- LADDER -->
+Effort trades time for size. BD-rate is against x265 medium on the same four clips over four qualities and 60 frames, on
+PSNR-Y (adaptive quantization off) and on SSIM-Y (on): the mean of the clips and, for PSNR, the worst clip. Effort 4's speed is
+above; the other efforts' times are not yet measured on a quiet machine, so only their rough order is given.
+
+| Effort | BD-rate PSNR (mean) | PSNR (worst clip) | BD-rate SSIM (mean) | Time |
+|---:|---:|---:|---:|---|
+| 0 | +108.9 % | +188.7 % | +81.1 % | under x265 medium's |
+| 1 | +24.7 % | +36.0 % | +15.4 % | under x265 medium's |
+| 2 | +8.5 % | +16.3 % | +6.8 % | about effort 4's |
+| 3 | −3.6 % | +0.5 % | −4.9 % | about effort 4's |
+| 4 (default) | −2.1 % | +1.1 % | −2.9 % | 1.5 to 1.8 × x265 medium |
+| 5 | −8.4 % | −4.5 % | −12.5 % | about 3 × effort 4 |
+| 6 | −8.5 % | −4.4 % | −11.3 % | about 4 × effort 4 |
+| 7 | −8.6 % | −4.3 % | −11.2 % | about 4 × effort 4 |
+| 8 | −11.0 % | −7.2 % | −13.3 % | about 8 × effort 4 |
+| 9 | −16.1 % | −8.8 % | −19.2 % | about 12 × effort 4 |
+| 10 | −16.1 % | −8.7 % | −19.2 % | about 20 × effort 4 |
+
+The ladder is not yet in order everywhere: effort 3 currently needs fewer bits than effort 4 for about the same time, efforts
+6 and 7 save no more than 5, and effort 10 no more than 9. A tuning round will even it out; until then effort 3 or 5 suits
+smaller files, and 9 the smallest.
+
+What each effort adds:
+
+- **0**: 16x16 and 32x32 coding units, one reference, two merge candidates, no B pictures, motion to half samples only and no SAO.
+- **1**: B pictures (three between P pictures), quarter-sample motion, 8x8 intra units and SAO.
+- **2**: two references, inter coding units from 8x8 to 64x64, Nx2N and 2NxN partitions, RDOQ, and a CTB's units split at
+  least as deep as the co-located ones in the references (to effort 5).
+- **3**: B pyramids, three merge candidates, inter transform tree splits, and the intra search's NxN units; no Nx2N and 2NxN.
+- **4** (default): three references, a wider search range, and in the intra search a transform tree search with coarser
+  rough mode steps and no most probable mode candidates.
+- **5**: Nx2N and 2NxN again, two references for B pictures, four merge candidates, transform trees two levels deep,
+  square sub-sample search, RDOQ on every trial, and the block tree.
+- **6**: four references, five merge candidates, and every split tried.
+- **7**: the second candidate coded when it is within 1.5 times the best.
+- **8**: intra searched in full in P and B pictures, transform trees three levels deep, and halves searched from every start.
+- **9**: no early skip and a wider search range.
+- **10**: the widest search range and every intra mode.
 
 tools/video/time-hevc-encoder.py and check-hevc-encoder.py in the repository repeat these measurements, and egami-compare's
 video/native/hevc-encode-gate.py runs them as release gates.
