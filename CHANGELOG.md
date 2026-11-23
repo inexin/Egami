@@ -193,7 +193,7 @@ Additive to 1.4.0. `.ehyp` files that 1.5.0-preview.1 wrote are version 1 and mu
 
 ## Egami (unreleased)
 
-Fixed: damaged files the nightly fuzz runs found (issues 351 and 360 to 367). Every one is reported as an `EgamiException`, and a
+Fixed: damaged files the nightly fuzz runs found (issues 351, 360 to 367 and 380). Every one is reported as an `EgamiException`, and a
 Strict incremental decode now succeeds or fails as the whole decode does.
 
 - JPEG XL: a lossless frame with a channel coded smaller than the frame, adaptive LF smoothing on a frame with subsampled
@@ -211,6 +211,11 @@ Strict incremental decode now succeeds or fails as the whole decode does.
   Strict incremental decode reported a truncated block.
 - TGA: a TGA 2.0 extension area that starts inside the pixel data was used on a seekable input and ignored on one that cannot
   seek, giving different alpha. It is damage now: Strict throws `CorruptDataException`, Lenient warns `Tga.ExtensionInPixels`.
+  A footer is one only when it starts after the pixel data, as a stream that cannot seek finds it: a run-length file whose
+  pixels reach into what looked like a footer has none (issue 380), and an extension area that starts inside the pixels but
+  does not fit before the footer is ignored on both inputs. On a seekable run-length file an alpha type that changes the
+  pixels (none, ignore or premultiplied) is applied once the pixels' end is known, so such top-down files decode whole rather
+  than a row at a time.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
