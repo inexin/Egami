@@ -82,6 +82,13 @@ public sealed class HevcCodec : VideoCodec
     /// others are converted. The width and height must be even. Packets are length-prefixed with the parameter sets in the
     /// track's hvcC record (MP4 writes it as an hvc1 sample entry), or Annex B with <see cref="HevcEncoderOptions.AnnexB"/>.
     /// The output is the same on any number of threads.
+    /// <para>
+    /// <see cref="VideoEncoderOptions.Quality"/> (0 to 100, default 60) maps to QP 51 - 0.56 × quality, as for the H.264 encoder;
+    /// <see cref="VideoEncoderOptions.Effort"/> (0 to 10, default 4) trades speed for size. Every rate control mode works:
+    /// constant quality, quantizer, one- and two-pass bitrate and constant bitrate. B-frames come only with
+    /// <see cref="LatencyMode.Quality"/>. A frame's <see cref="VideoFrame.Hdr"/> goes into every IDR access unit as mastering
+    /// display and content light level SEI messages.
+    /// </para>
     /// </remarks>
     /// <exception cref="ArgumentException">The options do not make a valid stream, such as an odd size or a level too small for it.</exception>
     /// <example>

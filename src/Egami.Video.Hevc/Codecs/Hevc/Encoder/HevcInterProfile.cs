@@ -150,7 +150,7 @@ internal sealed record HevcInterProfile
         0 => new() { MinCuLog2 = 4, MaxCuLog2 = 5, References = 1, MergeCandidates = 2, Halves = false, TransformDepth = 0, SearchRange = 16, QuarterSamples = false, SecondCandidateRatio = 0 },
         1 => new() { MinCuLog2 = 4, MaxCuLog2 = 5, References = 1, MergeCandidates = 2, Halves = false, TransformDepth = 0, SearchRange = 24, SecondCandidateRatio = 0 },
         2 => new() { CoLocatedDepth = true, References = 2, MergeCandidates = 2, SearchRange = 32, SecondCandidateRatio = 0 },
-        3 => new() { CoLocatedDepth = true, References = 2, MergeCandidates = 3, SearchRange = 48, TransformSplit = true },
+        3 => new() { CoLocatedDepth = true, References = 2, MergeCandidates = 3, SearchRange = 48, TransformSplit = true, Halves = false },
         4 => new() { CoLocatedDepth = true, TransformSplit = true, Halves = false },
         5 => new() { CoLocatedDepth = true, BReferences = 2, References = 3, MergeCandidates = 4, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false },
         6 => new() { BReferences = 2, References = 4, MergeCandidates = 5, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false },
