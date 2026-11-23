@@ -83,6 +83,31 @@ internal static class NalUnits
     }
 
     /// <summary>The end of a unit without the zero bytes a following four-byte start code or trailing padding leaves.</summary>
+    /// <summary>
+    /// The HEVC decoder configuration record (hvcC, ISO/IEC 14496-15 8.3.3) of an 8-bit 4:2:0 stream with one temporal layer and
+    /// 4-byte NAL unit lengths: the profile, tier and level copied from the SPS, then the VPS, SPS and PPS arrays.
+    /// </summary>
+    internal static byte[] HvcC(byte[] vps, byte[] sps, byte[] pps)
+    {
+        // The SPS RBSP after its 2-byte header: 4 bits VPS id, 3 bits sub-layers, 1 bit nesting, then 12 bytes of
+        // profile_tier_level: profile space, tier and profile, 32 compatibility flags, 48 constraint flags, level.
+        byte[] rbsp = Egami.Nal.NalFraming.Unescape(sps);
+        List<byte> b = [1];
+        b.AddRange(rbsp.AsSpan(3, 12));
+        b.AddRange([0xF0, 0x00, 0xFC, 0xFC | 1, 0xF8, 0xF8, 0, 0, (1 << 3) | (1 << 2) | 3, 3]);
+        foreach ((int type, byte[] nal) in new[] { (32, vps), (33, sps), (34, pps) })
+        {
+            b.Add((byte)(0x80 | type));
+            b.Add(0);
+            b.Add(1);
+            b.Add((byte)(nal.Length >> 8));
+            b.Add((byte)nal.Length);
+            b.AddRange(nal);
+        }
+
+        return [.. b];
+    }
+
     private static int TrimZeros(ReadOnlySpan<byte> stream, int start, int end)
     {
         while (end > start && stream[end - 1] == 0)

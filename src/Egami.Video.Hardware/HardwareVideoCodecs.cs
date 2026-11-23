@@ -68,6 +68,43 @@ public static class HardwareVideoCodecs
     public static VideoCodec H264 => HardwareH264Codec.Instance;
 
     /// <summary>
+    /// Gets the hardware HEVC codec: its <see cref="VideoCodec.CreateEncoder"/> encodes 4:2:0 HEVC in the Main and Main 10
+    /// profiles on the GPU with the options of Egami's software HEVC encoder, and its <see cref="VideoCodec.CreateDecoder"/>
+    /// decodes 4:2:0 Main and Main 10 streams to the same samples as Egami's software decoder; add it to a context with
+    /// <see cref="MediaContext.WithCodec(VideoCodec)"/> to have <see cref="VideoReader"/> use it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The encoder takes <see cref="VideoEncoderOptions"/> and <see cref="HevcEncoderOptions"/> as the software encoder does:
+    /// <see cref="VideoEncoderOptions.Quality"/> or <see cref="VideoEncoderOptions.Quantizer"/> give a constant QP on the
+    /// software encoder's scale, the bitrate modes use the driver's rate control, and <see cref="VideoEncoderOptions.Effort"/>
+    /// picks the driver's quality level (4, the default, is its best). YUV frames are coded as they are and RGB frames
+    /// converted to BT.601. The driver writes the VPS, SPS and PPS from Egami's values. B-frames are written only where
+    /// <see cref="HevcEncoderOptions.BFrames"/> asks and the GPU codes B pictures. Without a
+    /// <see cref="HevcEncoderOptions.Profile"/>, frames of 16-bit planes are coded as Main 10 and the rest as Main, as by the
+    /// software encoder. First-pass statistics throw; scene cuts do not start keyframes, and HDR SEI messages are not written
+    /// (the track carries the HDR metadata). The output differs between GPUs and drivers. Creating an encoder throws
+    /// <see cref="HardwareVideoException"/> when no GPU encodes HEVC, and <see cref="NotSupportedException"/> when the GPU
+    /// cannot code the profile, size, level or rate control asked for.
+    /// </para>
+    /// <para>
+    /// The decoder reads the stream with Egami's own HEVC parser, keeps the decoded picture buffer with its reference picture
+    /// sets, and has the GPU decode each picture and copy it back. Frames come out in output order at the conformance window,
+    /// with the color the software decoder gives: <see cref="YuvRaster{T}"/> of bytes for 8-bit streams and of
+    /// <see cref="ushort"/> holding 10 bits for Main 10. Monochrome, 4:2:2, 4:4:4, 12-bit streams and the coding tools of the
+    /// format range extensions throw <see cref="UnsupportedFormatException"/> when their first picture comes;
+    /// <see cref="VideoCodec.CanDecode"/> turns down tracks whose bit depth or chroma format already rules them out. As in the
+    /// software decoder, decoding starts at an IRAP picture, the leading pictures a CRA picture skips at the start are not
+    /// output, and layers above the base (Dolby Vision enhancement layers) are skipped.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/VideoHardware.cs" region="encodehevc"/>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/VideoHardware.cs" region="decodehevc"/>
+    /// </example>
+    public static VideoCodec Hevc => HardwareHevcCodec.Instance;
+
+    /// <summary>
     /// Gets why <see cref="GetDevices"/> found no device with hardware video, such as a missing Vulkan loader or a driver without
     /// Vulkan Video; <see langword="null"/> when a device was found.
     /// </summary>

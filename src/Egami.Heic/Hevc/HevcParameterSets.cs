@@ -121,6 +121,12 @@ internal sealed class HevcVps
     /// <summary>Gets vps_video_parameter_set_id.</summary>
     internal int Id { get; private set; }
 
+    /// <summary>Gets vps_max_sub_layers_minus1.</summary>
+    internal int MaxSubLayersMinus1 { get; private set; }
+
+    /// <summary>Gets vps_temporal_id_nesting_flag.</summary>
+    internal bool TemporalIdNesting { get; private set; }
+
     internal static HevcVps Read(NalBitReader r)
     {
         HevcVps vps = new() { Id = (int)r.U(4, "vps_video_parameter_set_id") };
@@ -133,7 +139,8 @@ internal sealed class HevcVps
             throw HevcErrors.Corrupt($"vps_max_sub_layers_minus1 is {maxSubLayersMinus1}, more than 6.");
         }
 
-        r.Flag("vps_temporal_id_nesting_flag");
+        vps.MaxSubLayersMinus1 = maxSubLayersMinus1;
+        vps.TemporalIdNesting = r.Flag("vps_temporal_id_nesting_flag");
         r.U(16, "vps_reserved_0xffff_16bits");
         HevcProfileTierLevel.Read(r, true, maxSubLayersMinus1);
         bool orderingInfo = r.Flag("vps_sub_layer_ordering_info_present_flag");
@@ -344,6 +351,12 @@ internal sealed class HevcScalingList
     /// <summary>Gets the default lists (used when scaling lists are on but none is coded).</summary>
     internal static HevcScalingList Default { get; } = CreateDefault();
 
+    /// <summary>Gets the coded list of a sizeId and matrixId in up-right diagonal scan order, as the syntax has it.</summary>
+    internal ReadOnlySpan<byte> Coded(int sizeId, int matrixId) => _lists[sizeId][matrixId];
+
+    /// <summary>Gets the DC value (scaling_list_dc_coef_minus8 + 8) of a 16x16 or 32x32 list.</summary>
+    internal int Dc(int sizeId, int matrixId) => _dc[sizeId, matrixId];
+
     /// <summary>Gets the factors by sizeId (transform size 4 &lt;&lt; sizeId) and matrixId, each in raster order.</summary>
     internal int[][][] Factors { get; private set; } = [];
 
@@ -485,6 +498,27 @@ internal sealed class HevcShortTermRps
     /// <summary>Gets how many of the pictures the current picture uses.</summary>
     internal int NumUsed => Used.Count(u => u);
 
+    /// <summary>Gets inter_ref_pic_set_prediction_flag.</summary>
+    internal bool Predicted { get; private set; }
+
+    /// <summary>Gets delta_idx_minus1 of a predicted set.</summary>
+    internal int DeltaIdxMinus1 { get; private set; }
+
+    /// <summary>Gets delta_rps_sign of a predicted set.</summary>
+    internal bool DeltaRpsSign { get; private set; }
+
+    /// <summary>Gets abs_delta_rps_minus1 of a predicted set.</summary>
+    internal int AbsDeltaRpsMinus1 { get; private set; }
+
+    /// <summary>Gets used_by_curr_pic_flag[j] of a predicted set, bit j.</summary>
+    internal uint UsedByCurrPicFlags { get; private set; }
+
+    /// <summary>Gets use_delta_flag[j] of a predicted set, bit j (1 where used_by_curr_pic_flag infers it).</summary>
+    internal uint UseDeltaFlags { get; private set; }
+
+    /// <summary>Gets NumDeltaPocs of the set a predicted set is predicted from, or 0.</summary>
+    internal int RefNumDeltaPocs { get; private set; }
+
     /// <summary>Reads st_ref_pic_set(idx), predicting from <paramref name="sets"/> when inter_ref_pic_set_prediction_flag is set.</summary>
     internal static HevcShortTermRps Read(NalBitReader r, int idx, IReadOnlyList<HevcShortTermRps> sets, int numInSps)
     {
@@ -495,12 +529,20 @@ internal sealed class HevcShortTermRps
             uint deltaIdx = idx == numInSps ? r.Ue("delta_idx_minus1", (uint)(idx - 1)) + 1 : 1;
             HevcShortTermRps reference = sets[idx - (int)deltaIdx];
             bool sign = r.Flag("delta_rps_sign");
-            int deltaRps = (sign ? -1 : 1) * (int)(r.Ue("abs_delta_rps_minus1", 32767) + 1);
+            int absMinus1 = (int)r.Ue("abs_delta_rps_minus1", 32767);
+            int deltaRps = (sign ? -1 : 1) * (absMinus1 + 1);
+            rps.Predicted = true;
+            rps.DeltaIdxMinus1 = (int)deltaIdx - 1;
+            rps.DeltaRpsSign = sign;
+            rps.AbsDeltaRpsMinus1 = absMinus1;
+            rps.RefNumDeltaPocs = reference.Deltas.Length;
             List<(int Delta, bool Used)> pictures = [];
             for (int j = 0; j <= reference.Deltas.Length; j++)
             {
                 bool used = r.Flag("used_by_curr_pic_flag");
                 bool useDelta = used || r.Flag("use_delta_flag");
+                rps.UsedByCurrPicFlags |= used ? 1u << j : 0;
+                rps.UseDeltaFlags |= useDelta ? 1u << j : 0;
                 if (useDelta)
                 {
                     int delta = deltaRps + (j < reference.Deltas.Length ? reference.Deltas[j] : 0);

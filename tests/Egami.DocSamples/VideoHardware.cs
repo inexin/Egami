@@ -97,4 +97,48 @@ public class VideoHardware
 
         Assert.Equal(30, count);
     }
+
+    [Fact]
+    public void Hevc()
+    {
+        Assert.SkipUnless(HardwareVideoCodecs.IsAvailable(CodecIds.Hevc, HardwareDirection.Encode), "No GPU encodes HEVC.");
+        using SampleFiles files = new();
+        using Raster<Rgb8> duck = Raster.Load<Rgb8>("duck.png");
+
+        #region encodehevc
+        // HEVC on the GPU, in MP4: the software HEVC encoder's options: Main, or Main 10 for 10-bit frames.
+        VideoWriterOptions options = new() { Codec = HardwareVideoCodecs.Hevc, FrameRate = new Rational(30, 1), Quality = 60 };
+        using (VideoWriter writer = VideoWriter.Create("duck-gpu-hevc.mp4", options))
+        {
+            for (int i = 0; i < 30; i++)
+            {
+                using Raster<Rgb8> frame = duck.Derive(ops => ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+                writer.WriteFrame(frame);
+            }
+        }
+        #endregion
+
+        Assert.SkipUnless(HardwareVideoCodecs.IsAvailable(CodecIds.Hevc, HardwareDirection.Decode), "No GPU decodes HEVC.");
+        int count = 0;
+
+        #region decodehevc
+        // Decode HEVC (Main or Main 10) on the GPU where there is one, else with Egami's software decoder.
+        MediaContext context = MediaContext.Default.WithHevc();
+        if (HardwareVideoCodecs.IsAvailable(CodecIds.Hevc, HardwareDirection.Decode))
+        {
+            context = context.WithCodec(HardwareVideoCodecs.Hevc);
+        }
+
+        using VideoReader reader = VideoReader.Open("duck-gpu-hevc.mp4", context: context);
+        foreach (YuvVideoFrame frame in reader.ReadFrames())
+        {
+            using (frame)
+            {
+                count++; // 8-bit streams give YuvRaster<byte>, Main 10 streams YuvRaster<ushort>
+            }
+        }
+        #endregion
+
+        Assert.Equal(30, count);
+    }
 }

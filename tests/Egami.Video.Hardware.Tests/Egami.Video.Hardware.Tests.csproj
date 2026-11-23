@@ -22,11 +22,13 @@
     <ProjectReference Include="..\..\src\Egami.Video.Hardware\Egami.Video.Hardware.csproj" />
     <!-- Egami's software decoder checks what the hardware encoder writes. -->
     <ProjectReference Include="..\..\src\Egami.Video.H264\Egami.Video.H264.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Video.Hevc\Egami.Video.Hevc.csproj" />
   </ItemGroup>
 
-  <!-- The H.264 test set: the hardware decoder must match the software decoder on it. -->
+  <!-- The H.264 and HEVC test sets: the hardware decoders must match the software decoders on them. -->
   <ItemGroup>
     <None Include="../video/corpus/h264/*.h264" LinkBase="corpus/h264" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../video/corpus/hevc/*.h265;../video/corpus/hevc/*.mp4" LinkBase="corpus/hevc" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

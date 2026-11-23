@@ -1,8 +1,7 @@
 # Egami.Video.Hardware
 
 Egami.Video.Hardware decodes and encodes video on the GPU's video engine through Vulkan Video, on Windows and Linux. It is a
-preview: this release finds the hardware, reports what it can do, and decodes and encodes H.264; HEVC follows in the next
-previews.
+preview: this release finds the hardware, reports what it can do, and decodes and encodes H.264 and HEVC.
 
 - `HardwareVideoCodecs.IsAvailable(codecId, direction)` says whether a GPU can decode or encode a codec. It never throws.
 - `HardwareVideoCodecs.GetDevices()` lists the GPUs and their profiles: H.264 and HEVC (Main, Main 10), picture size limits,
@@ -11,6 +10,8 @@ previews.
   `VideoWriterOptions.Codec`. On a GeForce GTX 1070 it writes about 300 frames per second at 1080p.
 - It also decodes progressive 8-bit 4:2:0 H.264, to the same samples as Egami's software decoder: add it with
   `MediaContext.WithCodec` and `VideoReader` uses it. On a GeForce GTX 1070 it reads about 200 frames per second at 1080p.
+- `HardwareVideoCodecs.Hevc` does the same for HEVC: it encodes Main and Main 10 with the software HEVC encoder's options, and
+  decodes 4:2:0 Main and Main 10 to the same samples as Egami's software decoder.
 - Needs a GPU driver with Vulkan 1.3 and Vulkan Video (current NVIDIA, AMD and Intel drivers) and a 64-bit process. Without
   one, hardware video is simply not available.
 
