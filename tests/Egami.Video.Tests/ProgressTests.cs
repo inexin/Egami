@@ -429,12 +429,33 @@ public class ProgressTests
         return packets;
     }
 
+    /// <summary>
+    /// The bytes the test thread allocates in a run of <paramref name="action"/>, after a run to warm up, with no full garbage
+    /// collection from the warm-up to the end. A full collection (which the tests running beside this one bring on) can trim
+    /// the shared array pool, and the run then allocates afresh the arrays it would have rented, several kilobytes: so a run
+    /// with one is measured again, and the fewest bytes of the runs without one are taken.
+    /// </summary>
     private static long Allocated(Action action)
     {
-        action();
-        long before = GC.GetAllocatedBytesForCurrentThread();
-        action();
-        return GC.GetAllocatedBytesForCurrentThread() - before;
+        long fewest = long.MaxValue, fewestClean = long.MaxValue;
+        for (int run = 0; run < 30 && (run < 3 || fewestClean == long.MaxValue); run++)
+        {
+            // The pool is trimmed from the finalizer thread after a full collection: let a trim already under way finish, then
+            // warm up, so that the run measured starts from a full pool.
+            GC.WaitForPendingFinalizers();
+            int collections = GC.CollectionCount(2);
+            action();
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            action();
+            long bytes = GC.GetAllocatedBytesForCurrentThread() - before;
+            fewest = Math.Min(fewest, bytes);
+            if (GC.CollectionCount(2) == collections)
+            {
+                fewestClean = Math.Min(fewestClean, bytes);
+            }
+        }
+
+        return fewestClean == long.MaxValue ? fewest : fewestClean;
     }
 
     private static long ManualRemux(string input, string output)
