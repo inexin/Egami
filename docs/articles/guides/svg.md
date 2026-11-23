@@ -118,6 +118,18 @@ default case.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#render-tree)]
 
+## Animation
+
+SVG files can animate themselves with SMIL elements: `animate`, `set`, `animateTransform`, `animateMotion` and `discard`.
+Egami.Svg draws the document as it looks at any moment: set `SvgRenderOptions.Time` when you call `Rasterize` or `Draw`, or
+take the render tree then with `SvgDocument.RenderTreeAt`. Without a time it draws the static document, as if no animation
+had begun. `SvgDocument.Animation`, an `SvgAnimationInfo`, says whether the document animates, when its last animation ends
+and, when every animation repeats forever, the period after which the whole picture loops, so you know which frames to draw.
+Animations that wait for a click, a key or a wall-clock time never begin, as in a browser nobody touches. `animate` and `set`
+are drawn so far; the other three are timed but do not yet change the picture.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#animation)]
+
 ## Untrusted files
 
 An SVG file is untrusted input. A load honors the context's `SafetyLimits`: the file, after gzip, is bounded by

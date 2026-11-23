@@ -3,6 +3,7 @@ using System.Numerics;
 using Egami.Css;
 using Egami.Drawing;
 using Egami.Pixels;
+using Egami.Svg.Animation;
 using Egami.Svg.Reading;
 using Egami.Svg.Styling;
 using Egami.Svg.Values;
@@ -64,6 +65,7 @@ internal sealed partial class SvgResolver
     private SvgReport _report;
     private readonly SvgStyler _styler;
     private readonly SvgGeometry _geometry;
+    private readonly SvgAnimationFrame? _frame;
     private readonly SvgLimits _limits;
     private readonly IReadOnlyList<string> _languages;
     private readonly Dictionary<SvgElement, (SvgStyle Style, CssComputedStyle Css)> _original = new(IdentityComparer.Instance);
@@ -76,7 +78,7 @@ internal sealed partial class SvgResolver
     private int _depth;
     private long _elements;
 
-    public SvgResolver(SvgDocument document, SvgReport report, IReadOnlyList<string>? languages = null)
+    public SvgResolver(SvgDocument document, SvgReport report, IReadOnlyList<string>? languages = null, SvgAnimationFrame? frame = null)
     {
         _document = document;
         _options = document.Options;
@@ -84,9 +86,16 @@ internal sealed partial class SvgResolver
         _limits = new SvgLimits(_options.EffectiveContext.Limits);
         _languages = languages ?? ["en"];
         Vector2 size = document.Size;
-        _styler = new SvgStyler(document, report, new CssMediaContext { Width = size.X, Height = size.Y });
-        _geometry = new SvgGeometry(report);
+        _styler = new SvgStyler(document, report, new CssMediaContext { Width = size.X, Height = size.Y }, frame);
+        _geometry = new SvgGeometry(report) { Frame = frame };
+        _frame = frame;
     }
+
+    /// <summary>An attribute in no namespace as the render tree is built from it: animated at the frame's time, else as written.</summary>
+    private string? Attr(SvgElement element, string name) => _geometry.Attribute(element, name);
+
+    /// <summary>An element's href or xlink:href, animated at the frame's time, else as written.</summary>
+    private string? Href(SvgElement element) => _geometry.Href(element);
 
     /// <summary>Resolves the whole document into its root group, in the root's user units scaled to <see cref="SvgDocument.Size"/>.</summary>
     public SvgGroup Resolve()
@@ -94,6 +103,12 @@ internal sealed partial class SvgResolver
         SvgElement root = _document.Root;
         Vector2 size = _document.Size;
         RectF? viewBox = _document.ViewBox;
+        if (_frame is not null && _frame.TryGet(root, "viewBox", out string? animatedViewBox))
+        {
+            // An animated viewBox moves the content inside the document's fixed size.
+            viewBox = animatedViewBox is not null && SvgViewBox.TryParse(animatedViewBox, out RectF vb0) && vb0.Width > 0 && vb0.Height > 0 ? vb0 : viewBox;
+        }
+
         (SvgStyle style, CssComputedStyle css) = Style(root, SvgStyle.Initial, null);
         if (style.DisplayNone || !Conditions(root))
         {
@@ -134,7 +149,7 @@ internal sealed partial class SvgResolver
         {
             // Drawn alone, a symbol's viewport is its viewBox at scale 1, so Draw can fit the viewBox into its box.
             SvgLength side = new(100, SvgUnit.Percent);
-            if (element.Attributes["viewBox"] is string vb && SvgViewBox.TryParse(vb, out RectF box) && box.Width > 0 && box.Height > 0)
+            if (Attr(element, "viewBox") is string vb && SvgViewBox.TryParse(vb, out RectF box) && box.Width > 0 && box.Height > 0)
             {
                 return Symbol(element, null, context, new SvgLength(box.Width, SvgUnit.Px), new SvgLength(box.Height, SvgUnit.Px)) is SvgGroup g
                     ? g with { Transform = Matrix3x2.CreateTranslation(box.X, box.Y) * g.Transform }
@@ -291,7 +306,7 @@ internal sealed partial class SvgResolver
         RectF viewport = new(0, 0, width, height);
         Matrix3x2 viewBoxTransform = Matrix3x2.Identity;
         Vector2 inner = new(width, height);
-        if (content.Attributes["viewBox"] is string vbText)
+        if (Attr(content, "viewBox") is string vbText)
         {
             if (SvgViewBox.TryParse(vbText, out RectF viewBox))
             {
@@ -427,7 +442,7 @@ internal sealed partial class SvgResolver
     /// <summary>The element a reference attribute (href) names, reported when missing.</summary>
     private SvgElement? Reference(SvgElement element, string what)
     {
-        string? href = element.Attributes["href"] ?? element.Attributes.Get("href", SvgNamespaces.XLink);
+        string? href = Href(element);
         if (href is null)
         {
             return null;
@@ -516,7 +531,7 @@ internal sealed partial class SvgResolver
                     continue;
                 }
 
-                string? href = inner.Attributes["href"] ?? inner.Attributes.Get("href", SvgNamespaces.XLink);
+                string? href = Href(inner);
                 if (href is null || SvgStyleValues.LocalId(href) is not string id || _document.FindById(id) is not SvgElement next)
                 {
                     continue;
@@ -566,12 +581,12 @@ internal sealed partial class SvgResolver
     private bool Conditions(SvgElement element)
     {
         // Egami supports no extensions, so any requiredExtensions, even an empty one, fails, as in browsers.
-        if (element.Attributes["requiredExtensions"] is not null)
+        if (Attr(element, "requiredExtensions") is not null)
         {
             return false;
         }
 
-        if (element.Attributes["requiredFeatures"] is string features)
+        if (Attr(element, "requiredFeatures") is string features)
         {
             foreach (string feature in features.Split(' '))
             {
@@ -582,7 +597,7 @@ internal sealed partial class SvgResolver
             }
         }
 
-        if (element.Attributes["systemLanguage"] is string languages)
+        if (Attr(element, "systemLanguage") is string languages)
         {
             bool any = false;
             foreach (string language in languages.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
@@ -612,7 +627,7 @@ internal sealed partial class SvgResolver
 
     private SvgAspectRatio Aspect(SvgElement element)
     {
-        if (element.Attributes["preserveAspectRatio"] is string text)
+        if (Attr(element, "preserveAspectRatio") is string text)
         {
             if (SvgAspectRatio.TryParse(text, out SvgAspectRatio aspect))
             {
@@ -627,7 +642,7 @@ internal sealed partial class SvgResolver
 
     private Matrix3x2 RootTransform(SvgElement root, SvgStyle style, RectF box)
     {
-        if (root.Attributes["transform"] is not string text)
+        if (Attr(root, "transform") is not string text)
         {
             return Matrix3x2.Identity;
         }
@@ -660,7 +675,7 @@ internal sealed partial class SvgResolver
         {
             transform = m;
         }
-        else if (element.Attributes[attribute] is string text)
+        else if (Attr(element, attribute) is string text)
         {
             if (!SvgTransforms.TryParse(text, out transform))
             {
@@ -691,7 +706,7 @@ internal sealed partial class SvgResolver
             return node with { Opacity = 0 };
         }
 
-        string? classes = element.Attributes["class"];
+        string? classes = Attr(element, "class");
         return node with
         {
             Element = element,

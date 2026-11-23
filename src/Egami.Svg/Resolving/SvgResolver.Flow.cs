@@ -76,8 +76,8 @@ internal sealed partial class SvgResolver
         List<(Path Path, SvgTextSpan Span, TextDecorationLines Line)> decorations = [];
         if (shapes.Count == 0)
         {
-            float x = element.Attributes["x"] is string xs && SvgLength.TryParse(FirstValue(xs), out SvgLength lx) ? lx.ToPixels(context.Lengths, SvgAxis.X) : 0;
-            float y = element.Attributes["y"] is string ys && SvgLength.TryParse(FirstValue(ys), out SvgLength ly) ? ly.ToPixels(context.Lengths, SvgAxis.Y) : 0;
+            float x = Attr(element, "x") is string xs && SvgLength.TryParse(FirstValue(xs), out SvgLength lx) ? lx.ToPixels(context.Lengths, SvgAxis.X) : 0;
+            float y = Attr(element, "y") is string ys && SvgLength.TryParse(FirstValue(ys), out SvgLength ly) ? ly.ToPixels(context.Lengths, SvgAxis.Y) : 0;
             float size = inlineSize!.Value;
             TextLayout layout = paragraph.Layout(size);
             float left = x - (anchor switch { "middle" => size / 2, "end" => size, _ => 0 });

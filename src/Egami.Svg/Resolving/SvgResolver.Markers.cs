@@ -44,7 +44,7 @@ internal sealed partial class SvgResolver
         }
 
         float scale = 1;
-        if (marker.Attributes["markerUnits"] != "userSpaceOnUse")
+        if (Attr(marker, "markerUnits") != "userSpaceOnUse")
         {
             scale = style.StrokeWidth.ToPixels(context.Lengths, SvgAxis.Other);
             if (!(scale > 0))
@@ -64,7 +64,7 @@ internal sealed partial class SvgResolver
         }
 
         RectF? viewBox = null;
-        if (marker.Attributes["viewBox"] is string vbText)
+        if (Attr(marker, "viewBox") is string vbText)
         {
             if (!SvgViewBox.TryParse(vbText, out RectF vb) || vb.Width <= 0 || vb.Height <= 0)
             {
@@ -137,7 +137,7 @@ internal sealed partial class SvgResolver
     /// <summary>The orient attribute: auto, auto-start-reverse, or an angle (a number of degrees, or deg, grad, rad or turn).</summary>
     private (string Kind, float Degrees) Orient(SvgElement marker)
     {
-        string? text = marker.Attributes["orient"]?.Trim();
+        string? text = Attr(marker, "orient")?.Trim();
         if (text is null)
         {
             return ("angle", 0);

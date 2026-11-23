@@ -3,6 +3,26 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Svg 1.6.0 (unreleased)
+
+SVG animation, stage A (roadmap 2.10.1): SMIL timing and values, drawn at a chosen time.
+
+- `SvgRenderOptions.Time` draws a document as it looks at that moment of its SMIL animations, in `Rasterize`, `Draw` and
+  `Draw` by id; `SvgDocument.RenderTreeAt(TimeSpan)` gives the render tree then. With no time set the output is the static
+  document, byte for byte the same as 1.5.0.
+- `SvgDocument.Animation` (`SvgAnimationInfo`) says whether a document animates, when its last animation ends, the period
+  after which it loops (when every animation repeats forever, up to 10 s) and whether some animation waits for a click, key
+  or wall-clock time, which never comes.
+- Timing per SMIL 3.0 and SVG Animations: begin and end lists with offset, syncbase and repeat values, `dur`, `min`, `max`,
+  `restart`, `repeatCount`, `repeatDur` and `fill`. Dependency cycles that never move time forward are cut with an
+  `Svg.AnimationCycle` warning; runaway timelines stop at a work limit with `Svg.AnimationLimit`.
+- `animate` and `set` change numbers, lengths, lists, colors, paints, path data (morphing when the commands match), keywords
+  and references, with `calcMode` (discrete, linear, paced, spline), `keyTimes`, `keySplines`, from, to, by and values,
+  `additive` and `accumulate`, in the SMIL sandwich. Animated presentation attributes still lose to CSS rules. Animations in
+  error are skipped with `Svg.BadAnimation`. `animateTransform`, `animateMotion` and `discard` are read for timing but not yet
+  drawn (stage B).
+- A new fuzz target, `svg-timeline`, builds timelines and draws frames from mutated animated documents.
+
 ## Egami.Video.Hardware 0.1.0-preview.1 (unreleased)
 
 A new package, Egami.Video.Hardware: hardware video through Vulkan Video on Windows and Linux (Vulkan Video Build Plan, PR A

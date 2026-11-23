@@ -50,7 +50,7 @@ internal sealed partial class SvgResolver
         SvgElement current = start;
         while (chain.Count < SvgLimits.MaxReferenceDepth)
         {
-            string? href = current.Attributes["href"] ?? current.Attributes.Get("href", SvgNamespaces.XLink);
+            string? href = Href(current);
             SvgElement? next = href is not null && SvgStyleValues.LocalId(href) is string id ? _document.FindById(id) : null;
             if (next is null || chain.Contains(next) || !next.IsSvgOrBare(_document))
             {
@@ -70,11 +70,11 @@ internal sealed partial class SvgResolver
         return chain;
     }
 
-    private static string? Inherited(List<SvgElement> chain, string attribute, string? ns = null)
+    private string? Inherited(List<SvgElement> chain, string attribute, string? ns = null)
     {
         foreach (SvgElement element in chain)
         {
-            if (element.Attributes.Get(attribute, ns) is string value)
+            if ((ns is null ? Attr(element, attribute) : element.Attributes.Get(attribute, ns)) is string value)
             {
                 return value;
             }
@@ -201,7 +201,7 @@ internal sealed partial class SvgResolver
             {
                 // A missing or unreadable offset repeats the previous one, as resvg reads stops.
                 float offset = last;
-                if (stop.Attributes["offset"] is string text)
+                if (Attr(stop, "offset") is string text)
                 {
                     ReadOnlySpan<char> t = text.AsSpan().Trim();
                     bool percent = t.EndsWith("%");

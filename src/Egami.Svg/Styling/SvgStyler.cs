@@ -1,4 +1,5 @@
 using Egami.Css;
+using Egami.Svg.Animation;
 using Egami.Svg.Reading;
 
 namespace Egami.Svg.Styling;
@@ -25,10 +26,12 @@ internal sealed class SvgStyler
     private readonly SvgReport _report;
     private readonly Dictionary<(string Name, string Value), CssDeclaration> _hints = [];
     private readonly Dictionary<string, IReadOnlyList<CssDeclaration>> _inline = new(StringComparer.Ordinal);
+    private readonly SvgAnimationFrame? _frame;
 
-    public SvgStyler(SvgDocument document, SvgReport report, CssMediaContext media)
+    public SvgStyler(SvgDocument document, SvgReport report, CssMediaContext media, SvgAnimationFrame? frame = null)
     {
         _report = report;
+        _frame = frame;
         List<(CssStyleSheet, CssOrigin)> sheets = [(s_userAgent, CssOrigin.UserAgent)];
         foreach (SvgElement element in Descendants(document.Root))
         {
@@ -97,6 +100,8 @@ internal sealed class SvgStyler
 
     private List<CssDeclaration>? Hints(SvgElement element)
     {
+        // SMIL animating a presentation attribute replaces its presentation hint, so CSS rules still win over it.
+        IReadOnlyDictionary<string, string>? animated = _frame?.For(element);
         List<CssDeclaration>? hints = null;
         foreach (SvgAttribute attribute in element.Attributes)
         {
@@ -107,25 +112,42 @@ internal sealed class SvgStyler
 
             if (SvgProperties.Presentation.Contains(attribute.Name))
             {
-                // Presentation attributes take CSS values, but not !important or more than the one value.
-                if (attribute.Value.Contains('!', StringComparison.Ordinal) || attribute.Value.Contains(';', StringComparison.Ordinal))
-                {
-                    _report.Warn("Svg.BadAttribute", $"The {element.Name}'s {attribute.Name} \"{Resolving.SvgGeometry.Clip(attribute.Value)}\" is not a value; it is ignored.", element);
-                    continue;
-                }
+                string value = animated is not null && animated.TryGetValue(attribute.Name, out string? now) ? now : attribute.Value;
+                Hint(element, attribute.Name, value, ref hints);
+            }
+        }
 
-                // Files repeat the same few values thousands of times; each is parsed once per document.
-                if (!_hints.TryGetValue((attribute.Name, attribute.Value), out CssDeclaration? hint))
+        if (animated is not null)
+        {
+            foreach ((string name, string value) in animated)
+            {
+                if (SvgProperties.Presentation.Contains(name) && !element.Attributes.Contains(name))
                 {
-                    hint = CssDeclaration.Create(attribute.Name, attribute.Value);
-                    _hints[(attribute.Name, attribute.Value)] = hint;
+                    Hint(element, name, value, ref hints);
                 }
-
-                (hints ??= []).Add(hint);
             }
         }
 
         return hints;
+    }
+
+    private void Hint(SvgElement element, string name, string value, ref List<CssDeclaration>? hints)
+    {
+        // Presentation attributes take CSS values, but not !important or more than the one value.
+        if (value.Contains('!', StringComparison.Ordinal) || value.Contains(';', StringComparison.Ordinal))
+        {
+            _report.Warn("Svg.BadAttribute", $"The {element.Name}'s {name} \"{Resolving.SvgGeometry.Clip(value)}\" is not a value; it is ignored.", element);
+            return;
+        }
+
+        // Files repeat the same few values thousands of times; each is parsed once per document.
+        if (!_hints.TryGetValue((name, value), out CssDeclaration? hint))
+        {
+            hint = CssDeclaration.Create(name, value);
+            _hints[(name, value)] = hint;
+        }
+
+        (hints ??= []).Add(hint);
     }
 
     private IReadOnlyList<CssDeclaration>? Inline(SvgElement element)

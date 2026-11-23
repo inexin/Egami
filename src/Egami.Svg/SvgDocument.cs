@@ -2,6 +2,7 @@ using System.Numerics;
 
 using Egami.Drawing;
 using Egami.Pixels;
+using Egami.Svg.Animation;
 using Egami.Svg.Reading;
 using Egami.Svg.Rendering;
 using Egami.Svg.Resolving;
@@ -38,6 +39,11 @@ public sealed class SvgDocument
     private SvgGroup? _tree;
     private int _treeVersion = -1;
     private IReadOnlyList<string> _treeLanguages = ["en"];
+    private readonly Lock _timelineLock = new();
+    private SvgTimeline? _timeline;
+    private SvgAnimationInfo? _animation;
+    private int _timelineVersion = -1;
+    private HashSet<string>? _frameDiagnostics;
 
     /// <summary>Initializes a new instance of the <see cref="SvgDocument"/> class around a root element made in code.</summary>
     /// <param name="root">The root, an <c>svg</c> element without a parent or another document.</param>
@@ -173,6 +179,44 @@ public sealed class SvgDocument
     public SvgGroup RenderTree => Tree(null);
 
     /// <summary>
+    /// Gets what the document's SMIL animations do over time: whether there are any, how long they play, whether they loop and
+    /// whether some wait for a user event. Found from the animation elements' timing on first use after an edit; what cannot be
+    /// read is reported to the context's diagnostics then.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="animation"/>
+    /// </example>
+    public SvgAnimationInfo Animation
+    {
+        get
+        {
+            lock (_timelineLock)
+            {
+                Timeline(0);
+                return _animation!;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the render tree at a moment of the document's SMIL animations: the animate and set elements' values at
+    /// <paramref name="time"/> replace the attribute values they animate, as a browser shows the document that long after it
+    /// loaded with nobody touching it. The element tree is not edited. A document without animations gives
+    /// <see cref="RenderTree"/>. Like it, the tree is immutable and safe to read from many threads.
+    /// </summary>
+    /// <param name="time">The time since the document began; not negative.</param>
+    /// <returns>The render tree at that time.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="time"/> is negative.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="animation"/>
+    /// </example>
+    public SvgGroup RenderTreeAt(TimeSpan time)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(time, TimeSpan.Zero);
+        return TreeAt(time, null);
+    }
+
+    /// <summary>
     /// Draws the document on a canvas: at its own size from the canvas's origin, or fitted into <paramref name="box"/> by the
     /// root's preserveAspectRatio. Drawing calls only the public canvas API, so a raster canvas, a PDF page, SvgCanvas or a
     /// PictureRecorder receive the same calls. It never throws on content.
@@ -187,7 +231,7 @@ public sealed class SvgDocument
     {
         ArgumentNullException.ThrowIfNull(canvas);
         options ??= SvgRenderOptions.Default;
-        SvgGroup tree = Tree(options.Languages);
+        SvgGroup tree = options.Time is TimeSpan time ? TreeAt(time, options.Languages) : Tree(options.Languages);
         int count = canvas.Save();
         if (box is RectF target)
         {
@@ -232,7 +276,7 @@ public sealed class SvgDocument
         options ??= SvgRenderOptions.Default;
         SvgElement element = FindById(id) ?? throw new ArgumentException("No element has the id " + id + ".", nameof(id));
         SvgReport report = new(strict: false);
-        SvgNode? node = new SvgResolver(this, report, options.Languages).ResolveElement(element);
+        SvgNode? node = new SvgResolver(this, report, options.Languages, options.Time is TimeSpan time ? Frame(time) : null).ResolveElement(element);
         report.Deliver(Options.EffectiveContext);
         if (node is null)
         {
@@ -329,7 +373,7 @@ public sealed class SvgDocument
         if (size.X > 0 && size.Y > 0 && SvgRenderer.IsFinite(scale))
         {
             canvas.Concat(scale);
-            SvgRenderer.Draw(canvas, Tree(options.Languages), options);
+            SvgRenderer.Draw(canvas, options.Time is TimeSpan time ? TreeAt(time, options.Languages) : Tree(options.Languages), options);
         }
 
         return raster;
@@ -410,6 +454,90 @@ public sealed class SvgDocument
 
             return _tree;
         }
+    }
+
+    /// <summary>
+    /// The render tree at a time: the static tree when nothing is animated then, else one resolved with that moment's values.
+    /// Diagnostics a frame raises are delivered once per document, so drawing many frames does not repeat them.
+    /// </summary>
+    private SvgGroup TreeAt(TimeSpan time, IReadOnlyList<string>? languages)
+    {
+        SvgAnimationFrame? frame = Frame(time);
+        if (frame is null || frame.IsEmpty)
+        {
+            return Tree(languages);
+        }
+
+        SvgReport report = new(strict: false);
+        SvgGroup tree = new SvgResolver(this, report, languages ?? _treeLanguages, frame).Resolve();
+        List<EgamiDiagnostic> fresh = [];
+        lock (_timelineLock)
+        {
+            foreach (EgamiDiagnostic diagnostic in report.Warnings)
+            {
+                _frameDiagnostics ??= new HashSet<string>(StringComparer.Ordinal);
+                if (_frameDiagnostics.Add(diagnostic.Id + " " + diagnostic.Message))
+                {
+                    fresh.Add(diagnostic);
+                }
+            }
+        }
+
+        if (fresh.Count > 0 && Options.EffectiveContext.Diagnostics is not null)
+        {
+            using DiagnosticReporter reporter = Options.EffectiveContext.StartDiagnostics();
+            foreach (EgamiDiagnostic diagnostic in fresh)
+            {
+                reporter.Report(diagnostic);
+            }
+        }
+
+        return tree;
+    }
+
+    /// <summary>The animated values at a time, or null when the document has no animations.</summary>
+    private SvgAnimationFrame? Frame(TimeSpan time)
+    {
+        double seconds = time.TotalSeconds;
+        SvgTimeline timeline;
+        lock (_timelineLock)
+        {
+            timeline = Timeline(seconds);
+        }
+
+        if (timeline.Animations.Count == 0)
+        {
+            return null;
+        }
+
+        SvgBaseValues bases = new(this);
+        return SvgAnimationFrame.Compute(timeline, seconds, bases.Get);
+    }
+
+    /// <summary>
+    /// The timeline, built after an edit, and again over a longer horizon when a time past the current one is asked for. Called
+    /// under the timeline lock.
+    /// </summary>
+    private SvgTimeline Timeline(double seconds)
+    {
+        if (_timeline is null || _timelineVersion != Version)
+        {
+            SvgReport report = new(strict: false);
+            _timeline = SvgTimeline.Build(this, report);
+            _animation = SvgAnimationInfo.From(_timeline);
+            _timelineVersion = Version;
+            _frameDiagnostics?.Clear();
+            report.Deliver(Options.EffectiveContext);
+        }
+
+        if (seconds >= _timeline.Horizon && _timeline.Animations.Count > 0 && !_timeline.Truncated)
+        {
+            // Built again to past the time asked for; what the first build reported is not reported again.
+            double horizon = Math.Max(seconds + SvgTimeline.MinHorizon, _timeline.Horizon * 2);
+            _timeline = SvgTimeline.Build(this, new SvgReport(strict: false), horizon);
+        }
+
+        return _timeline;
     }
 
     private SvgAspectRatio RootAspect() =>
