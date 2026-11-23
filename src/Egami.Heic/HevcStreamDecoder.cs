@@ -161,7 +161,8 @@ public sealed class HevcStreamDecoder : IDisposable
     /// <summary>Copies the next picture in output order into <paramref name="destination"/>, cropped to its conformance window.</summary>
     /// <param name="destination">
     /// A raster of the frame's size (<see cref="NextFrame"/>) and chroma format: 8-bit for an 8-bit stream, else 16-bit of the
-    /// stream's bit depth. Its color is left as it is.
+    /// stream's bit depth, or for a 9-bit or 11-bit stream (bit depths a <see cref="YuvRaster{T}"/> does not have) of 10 or 12
+    /// bits, with the samples shifted up one bit. Its color is left as it is.
     /// </param>
     /// <param name="info">What the frame was.</param>
     /// <returns>True when a frame was copied; false when none is ready.</returns>
@@ -177,7 +178,9 @@ public sealed class HevcStreamDecoder : IDisposable
         }
 
         info = Info(next.Picture);
-        if (destination.Width != info.Width || destination.Height != info.Height || destination.ChromaFormat != info.Chroma || destination.BitDepth != info.BitDepth)
+        int shift = destination.BitDepth - info.BitDepth;
+        if (destination.Width != info.Width || destination.Height != info.Height || destination.ChromaFormat != info.Chroma
+            || (shift != 0 && !(shift == 1 && info.BitDepth is 9 or 11 && destination is YuvRaster<ushort>)))
         {
             throw new ArgumentException($"The destination must be {info.BitDepth}-bit {info.Chroma} at {info.Width}×{info.Height}; it is "
                 + $"{destination.BitDepth}-bit {destination.ChromaFormat} at {destination.Width}×{destination.Height}.", nameof(destination));
@@ -207,7 +210,19 @@ public sealed class HevcStreamDecoder : IDisposable
                     YuvPlane<ushort> target = c == 0 ? words.Y : c == 1 ? words.U! : words.V!;
                     for (int y = 0; y < height; y++)
                     {
-                        plane.AsSpan(((top + y) * stride) + left, width).CopyTo(target.Row(y));
+                        ReadOnlySpan<ushort> source = plane.AsSpan(((top + y) * stride) + left, width);
+                        if (shift == 0)
+                        {
+                            source.CopyTo(target.Row(y));
+                        }
+                        else
+                        {
+                            Span<ushort> row = target.Row(y);
+                            for (int x = 0; x < source.Length; x++)
+                            {
+                                row[x] = (ushort)(source[x] << shift);
+                            }
+                        }
                     }
                 }
                 else

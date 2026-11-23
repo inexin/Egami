@@ -50,3 +50,10 @@ static Egami.Video.Hardware.HardwareVideoCodecs.H264.get -> Egami.Video.Codecs.V
 static Egami.Video.Hardware.HardwareVideoCodecs.Hevc.get -> Egami.Video.Codecs.VideoCodec!
 static Egami.Video.Hardware.HardwareVideoCodecs.IsAvailable(string! codecId, Egami.Video.Hardware.HardwareDirection direction) -> bool
 static Egami.Video.Hardware.HardwareVideoCodecs.UnavailableReason.get -> string?
+Egami.Video.Hardware.HardwareMediaContextExtensions
+static Egami.Video.Hardware.HardwareMediaContextExtensions.WithHardwareCodecs(this Egami.Video.MediaContext! context, Egami.Video.Hardware.HardwareUse use = Egami.Video.Hardware.HardwareUse.Decode) -> Egami.Video.MediaContext!
+Egami.Video.Hardware.HardwareUse
+Egami.Video.Hardware.HardwareUse.All = Egami.Video.Hardware.HardwareUse.Decode | Egami.Video.Hardware.HardwareUse.Encode -> Egami.Video.Hardware.HardwareUse
+Egami.Video.Hardware.HardwareUse.Decode = 1 -> Egami.Video.Hardware.HardwareUse
+Egami.Video.Hardware.HardwareUse.Encode = 2 -> Egami.Video.Hardware.HardwareUse
+Egami.Video.Hardware.HardwareUse.None = 0 -> Egami.Video.Hardware.HardwareUse

@@ -45,7 +45,7 @@ public sealed class McpTests : IAsyncDisposable
             "info", "remux", "trim", "concat", "segment", "timestamps", "extract", "embed", "metadata",
             "subs_convert", "subs_shift", "subs_sync", "subs_extract", "subs_embed", "frames", "encode", "run",
             "thumbnail", "scenes", "analyze", "waveform", "spectrum", "generate", "sheet", "animate", "hash", "compare", "verify", "audio",
-            "join", "fade", "overlay", "pip", "stack", "speed", "reverse", "loop", "freeze", "slideshow", "stabilize", "edit", "formats",
+            "join", "fade", "overlay", "pip", "stack", "speed", "reverse", "loop", "freeze", "slideshow", "stabilize", "edit", "formats", "hwprobe",
         ];
         Assert.Equal(expected, tools.Select(t => t.Name));
         foreach (McpClientTool tool in tools)

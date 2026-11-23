@@ -6,7 +6,7 @@ changes that break code come only in a new major version.
 ## Egami.Video.Hardware 0.1.0-preview.1 (unreleased)
 
 A new package, Egami.Video.Hardware: hardware video through Vulkan Video on Windows and Linux (Vulkan Video Build Plan, PR A
-of five). This first preview finds the hardware, and decodes and encodes H.264 and HEVC.
+of five). This first preview finds the hardware, decodes and encodes H.264 and HEVC, and plugs into `MediaContext`.
 
 - `HardwareVideoCodecs.IsAvailable(codecId, HardwareDirection)` and `HardwareVideoCodecs.GetDevices()` probe the GPUs once per
   process and never throw: `HardwareVideoDevice` (name, kind, PCI ids, Vulkan and driver versions) with its
@@ -38,6 +38,11 @@ of five). This first preview finds the hardware, and decodes and encodes H.264 a
   1080p, with files 25 to 67 % smaller than the software encoder's at effort 0 and up to 25 % bigger than at effort 4, and
   decodes about 430 frames per second at 720p. The shared HEVC parser (Egami.Heic) keeps a few more syntax values for it. Both hardware decoders now copy
   slice data out of the packets they are sent, which callers such as `VideoReader` dispose and reuse at once.
+- `MediaContext.WithHardwareCodecs(HardwareUse)` (PR E) wraps the context's H.264 and HEVC codecs: tracks decode on the GPU
+  where it can and with the software decoder otherwise (tracks it turns down, scaled decoding, and streams refused at their
+  first picture, whose packets are sent again), with the same frames. `HardwareUse.Encode` also encodes on the GPU,
+  falling back to software for first-pass statistics and what the GPU cannot code. Without a GPU the context is unchanged.
+- `egami-video hwprobe` lists the GPUs and their video profiles, as text or `--json`, and as an MCP tool.
 - Tests that need a GPU carry the `Gpu` category and skip where there is none.
 
 ## Egami.Video 1.4.0 (unreleased)
@@ -78,6 +83,8 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
   constant quality and quantizer output is byte-identical.
 - Egami.Video.Hevc compiles Egami.Heic's HEVC encoder and decoder files in as internal source, so a Video release does not wait
   for an Egami.Heic release; it still installs beside Egami.Heic 1.4.0. HEIC output is unchanged.
+- Egami.Video.Hevc: 9-bit and 11-bit streams decode to 10-bit and 12-bit frames, with the samples shifted up one bit;
+  they threw `ArgumentOutOfRangeException` (found by fuzzing). `HevcStreamDecoder.TryReceiveFrame` takes such rasters.
 
 ## Egami.Drawing and Egami.Svg 1.5.0 (unreleased)
 

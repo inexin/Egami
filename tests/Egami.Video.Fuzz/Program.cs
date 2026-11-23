@@ -8,6 +8,7 @@ using Egami.Video.Audio.Filters;
 using Egami.Video.Codecs;
 using Egami.Video.Containers;
 using Egami.Video.Filters;
+using Egami.Video.Hardware;
 using Egami.Video.Subtitles;
 
 using SharpFuzz;
@@ -23,6 +24,12 @@ using SharpFuzz;
 if (args is ["seeds", string seedDirectory])
 {
     Seeds.Write(seedDirectory);
+    return;
+}
+
+if (args is ["mutate", string mutateTarget, string seconds, string findings, .. string[] seedDirectories])
+{
+    Mutate(Target(mutateTarget), double.Parse(seconds, System.Globalization.CultureInfo.InvariantCulture), findings, seedDirectories);
     return;
 }
 
@@ -103,9 +110,10 @@ static Action<Stream> Target(string name) => name switch
     "ffv1enc" => EncodeFfv1,
     "h264enc" => EncodeH264,
     "hevcenc" => EncodeHevc,
+    "hwdecode" => ReadHardware,
     "afilters" => FilterAudio,
     "deinterlace" => Deinterlace,
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, adts, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, hevc, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, h264enc, hevcenc, afilters, deinterlace."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: avi, mkv, y4m, ivf, webm, mp4, obu, ac3, adts, mp4mux, mjpeg, vp8, vp9, vp9raw, h264, hevc, av1, av1raw, wav, flac, ogg, aiff, caf, opusraw, vorbisraw, vp8enc, mp3, mp3raw, ac3raw, alac, opusenc, subs, subtrack, vp9enc, av1enc, trim, ffv1, ffv1raw, ffv1enc, h264enc, hevcenc, hwdecode, afilters, deinterlace."),
 };
 
 static MediaContext Context() => MediaContext.Default with
@@ -1239,6 +1247,116 @@ static void ReadHevc(Stream stream)
     ReadVideo(new MemoryStream(data), "HEIC", Context().WithHevc());
     MediaContext threaded = Context().WithHevc() with { Egami = Context().Egami with { MaxParallelism = 2 } };
     ReadVideo(new MemoryStream(data), "HEIC", threaded);
+}
+
+// A raw H.264 or HEVC stream, MP4 or Matroska file decoded on the GPU (Egami.Video.Hardware): through WithHardwareCodecs,
+// with the software decoders as the fallback, and again with the hardware codecs alone, each as for H.264. Needs a GPU with
+// Vulkan Video; AFL++ in Docker has none, so this target runs with "mutate" on the host instead.
+static void ReadHardware(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    string codec = "H.264";
+    try
+    {
+        using IDemuxer demuxer = MediaFile.OpenDemuxer(new MemoryStream(data), Context().WithH264().WithHevc());
+        codec = demuxer.Info.VideoTrack?.CodecId == CodecIds.Hevc ? "HEVC" : "H.264";
+    }
+    catch (EgamiException)
+    {
+    }
+
+    ReadVideo(new MemoryStream(data), codec, Context().WithH264().WithHevc().WithHardwareCodecs());
+    ReadVideo(new MemoryStream(data), codec, Context().WithH264().WithHevc().WithCodec(HardwareVideoCodecs.H264).WithCodec(HardwareVideoCodecs.Hevc));
+}
+
+// A fuzz loop without AFL++, for targets AFL++ cannot run (the GPU ones): seeds mutated at random (bit flips, bytes set,
+// chunks cut, copied and spliced from another seed), each run on a worker thread. Inputs that throw anything but an
+// EgamiException, or take over 30 s, are saved in the findings directory.
+static void Mutate(Action<Stream> run, double seconds, string findings, string[] seedDirectories)
+{
+    byte[][] seeds = [.. seedDirectories.SelectMany(Directory.GetFiles).Select(File.ReadAllBytes)];
+    Directory.CreateDirectory(findings);
+    Random random = new(Environment.TickCount);
+    System.Diagnostics.Stopwatch clock = System.Diagnostics.Stopwatch.StartNew();
+    int runs = 0, crashes = 0, hangs = 0;
+    while (clock.Elapsed.TotalSeconds < seconds)
+    {
+        byte[] input = Mutated(seeds, random);
+        Exception? failure = null;
+        Thread worker = new(() =>
+        {
+            try
+            {
+                run(new MemoryStream(input));
+            }
+            catch (EgamiException)
+            {
+            }
+            catch (Exception e)
+            {
+                failure = e;
+            }
+        }, 16 << 20);
+        worker.Start();
+        runs++;
+        if (!worker.Join(TimeSpan.FromSeconds(30)))
+        {
+            hangs++;
+            File.WriteAllBytes(Path.Combine(findings, $"hang-{runs}.bin"), input);
+            Console.WriteLine($"Run {runs}: hang, saved; stopping, as the worker still runs.");
+            break;
+        }
+
+        if (failure is not null)
+        {
+            crashes++;
+            File.WriteAllBytes(Path.Combine(findings, $"crash-{runs}.bin"), input);
+            Console.WriteLine($"Run {runs}: {failure.GetType().Name}: {failure.Message}");
+        }
+
+        if (runs % 200 == 0)
+        {
+            Console.WriteLine($"{clock.Elapsed.TotalSeconds:F0}s {runs} runs, {crashes} crashes, {hangs} hangs");
+        }
+    }
+
+    Console.WriteLine($"{runs} runs in {clock.Elapsed.TotalSeconds:F0}s: {crashes} crashes, {hangs} hangs.");
+}
+
+static byte[] Mutated(byte[][] seeds, Random random)
+{
+    List<byte> data = [.. seeds[random.Next(seeds.Length)]];
+    int edits = 1 << random.Next(5);
+    for (int i = 0; i < edits && data.Count > 0; i++)
+    {
+        int at = random.Next(data.Count);
+        switch (random.Next(6))
+        {
+            case 0:
+                data[at] ^= (byte)(1 << random.Next(8));
+                break;
+            case 1:
+                data[at] = (byte)(random.Next(3) switch { 0 => 0, 1 => 0xFF, _ => random.Next(256) });
+                break;
+            case 2:
+                data.RemoveRange(at, Math.Min(data.Count - at, 1 + random.Next(64)));
+                break;
+            case 3:
+                int from = random.Next(data.Count), length = Math.Min(data.Count - from, 1 + random.Next(256));
+                data.InsertRange(at, data.GetRange(from, length));
+                break;
+            case 4:
+                byte[] other = seeds[random.Next(seeds.Length)];
+                int start = random.Next(other.Length);
+                data.InsertRange(at, other.AsSpan(start, Math.Min(other.Length - start, 1 + random.Next(512))).ToArray());
+                break;
+            default:
+                data[at] = (byte)(data[at] + random.Next(-4, 5));
+                break;
+        }
+    }
+
+    return [.. data];
 }
 
 static void ReadVideo(Stream stream, string codec, MediaContext? baseContext = null)

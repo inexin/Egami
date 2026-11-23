@@ -6,8 +6,9 @@ Vulkan driver, on Windows and Linux. A hardware encoder runs many times faster t
 idle; the price is bigger files at the same quality than Egami's own encoders at their default effort, and output that
 differs between GPU models and driver versions.
 
-The package is a preview. It finds the hardware, reports what it can do, and decodes and encodes H.264 and HEVC. Egami.Video's software codecs stay the default: hardware is used only when an app
-asks for it.
+The package is a preview. It finds the hardware, reports what it can do, decodes and encodes H.264 and HEVC, and plugs into
+`MediaContext` so that readers use the GPU where it can and the software codecs elsewhere. Egami.Video's software codecs
+stay the default: hardware is used only when an app asks for it.
 
 ## What it needs
 
@@ -139,6 +140,25 @@ picture.
 
 What to expect on a GeForce GTX 1070: about 430 frames per second for a 720p 8-bit stream and 335 for Main 10, against
 about 21 for Egami's software decoder on one thread and 80 on all of a 12-core CPU.
+
+## Using the GPU wherever it can
+
+`WithHardwareCodecs`, an extension method in `HardwareMediaContextExtensions`, registers the hardware codecs in a `MediaContext`
+in front of the software ones, so that readers decode H.264 and HEVC on the GPU without any other change. Call it after
+`WithH264` and `WithHevc`: it wraps the codecs registered for those ids and keeps them for whatever the GPU cannot do. A track
+the hardware turns down up front (a bit depth or chroma format it does not decode), scaled decoding, and a stream the hardware
+refuses at its first picture go to the software decoder; in the last case the packets sent so far are sent to it again. The
+frames are the same either way. On a machine without a GPU or driver the context is returned unchanged.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoHardware.cs#withhardware)]
+
+Encoding stays in software unless `HardwareUse.All` (or `Encode`) asks for the GPU, since hardware output is bigger at the
+same quality and differs between GPUs. With it, the context's codec encodes on the GPU and moves to the software encoder for
+first-pass statistics and for profiles, sizes, levels or rate control the GPU cannot code.
+
+## The hwprobe command
+
+`egami-video hwprobe` prints the devices and profiles `GetDevices` lists, or why there are none; `--json` writes them as JSON.
 
 ## Errors
 

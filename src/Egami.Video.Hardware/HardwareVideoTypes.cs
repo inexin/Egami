@@ -13,6 +13,29 @@ public enum HardwareDirection
     Encode,
 }
 
+/// <summary>What <see cref="HardwareMediaContextExtensions.WithHardwareCodecs"/> uses the GPU for.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/VideoHardware.cs" region="withhardware"/>
+/// </example>
+[Flags]
+public enum HardwareUse
+{
+    /// <summary>Nothing: the context is returned as it is.</summary>
+    None = 0,
+
+    /// <summary>Decoding: tracks the GPU decodes are decoded on it, to the same samples as the software decoders give.</summary>
+    Decode = 1,
+
+    /// <summary>
+    /// Encoding: encoders are made on the GPU where it codes the options asked for. The output differs from Egami's software
+    /// encoders.
+    /// </summary>
+    Encode = 2,
+
+    /// <summary>Decoding and encoding.</summary>
+    All = Decode | Encode,
+}
+
 /// <summary>The rate control modes a hardware encoder offers.</summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/VideoHardware.cs" region="devices"/>

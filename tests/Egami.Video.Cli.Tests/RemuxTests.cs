@@ -98,6 +98,18 @@ public sealed class RemuxTests
         Assert.Equal(0, tool.Run("formats", "--json").Code);
     }
 
+    [Fact]
+    public void Hwprobe()
+    {
+        using Tool tool = new();
+        ToolRun run = tool.Run("hwprobe");
+        Assert.Equal(0, run.Code);
+        Assert.Contains(Egami.Video.Hardware.HardwareVideoCodecs.GetDevices().Count == 0 ? "No hardware video: " : " decode ", run.Text, StringComparison.Ordinal);
+        ToolRun json = tool.Run("hwprobe", "--json");
+        Assert.Equal(0, json.Code);
+        Assert.Contains("\"devices\"", json.Text, StringComparison.Ordinal);
+    }
+
     /// <summary>Each packet's track kind, timestamp in seconds and hash, in file order per track.</summary>
     internal static List<string> Packets(string path)
     {

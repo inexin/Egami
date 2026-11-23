@@ -30,6 +30,7 @@
   <!-- Egami.Video, and what egami run's steps and the contact sheet need (Video CLI design Q7). -->
   <ItemGroup>
     <ProjectReference Include="..\Egami.Video\Egami.Video.csproj" />
+    <ProjectReference Include="..\Egami.Video.Hardware\Egami.Video.Hardware.csproj" />
     <ProjectReference Include="..\Egami\Egami.csproj" />
     <ProjectReference Include="..\Egami.Drawing\Egami.Drawing.csproj" />
     <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />

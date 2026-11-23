@@ -12,6 +12,8 @@ preview: this release finds the hardware, reports what it can do, and decodes an
   `MediaContext.WithCodec` and `VideoReader` uses it. On a GeForce GTX 1070 it reads about 200 frames per second at 1080p.
 - `HardwareVideoCodecs.Hevc` does the same for HEVC: it encodes Main and Main 10 with the software HEVC encoder's options, and
   decodes 4:2:0 Main and Main 10 to the same samples as Egami's software decoder.
+- `MediaContext.Default.WithH264().WithHevc().WithHardwareCodecs()` decodes on the GPU wherever it can and with the software
+  codecs elsewhere; `HardwareUse.All` encodes there too. `egami-video hwprobe` lists the hardware.
 - Needs a GPU driver with Vulkan 1.3 and Vulkan Video (current NVIDIA, AMD and Intel drivers) and a 64-bit process. Without
   one, hardware video is simply not available.
 

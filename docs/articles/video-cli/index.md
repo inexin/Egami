@@ -67,6 +67,7 @@ With the `egami` tool installed too, `egami video info clip.mkv` runs `egami-vid
 | `stabilize` | Take the shake out of a clip, in two passes | `vidstabdetect`, `vidstabtransform` |
 | `edit` | Render an edit file: clips, transitions, layers and effects | `-filter_complex` |
 | `formats` | The containers and codecs this build reads and writes | `ffmpeg -formats` |
+| `hwprobe` | The GPUs whose video engines Egami.Video.Hardware can use, with their codecs, profiles and limits | `ffmpeg -hwaccels` |
 
 Commands that copy packets (`remux`, `trim`, `concat`, `segment`, `timestamps`, `extract`, `embed`, `metadata`) never decode, so
 they work on any codec, H.264 and AAC included. Commands that decode need a codec Egami.Video decodes: Motion JPEG, VP8, VP9, AV1,
