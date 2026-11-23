@@ -7,14 +7,14 @@ formats and features that otherwise take several of these libraries. Another lib
 better](#when-another-library-fits-better) says which.
 
 Facts about the other libraries come from their own NuGet pages, licence files and documentation, linked in
-[Sources](#sources), as of 14 November 2026. A cell says "not documented" when we could not find the answer there; it does
+[Sources](#sources), as of 23 November 2026. A cell says "not documented" when we could not find the answer there; it does
 not mean the library lacks the feature. If something here is wrong or out of date, please open an issue.
 
 ## At a glance
 
 | | Egami | ImageSharp | SkiaSharp | Magick.NET | NetVips | System.Drawing.Common |
 | --- | --- | --- | --- | --- | --- | --- |
-| Version compared | 1.5 | 4.1.3 | 4.156.0 | 15.1.0 (Q16) | 3.2.0 | 10.0 |
+| Version compared | 1.5 | 4.1.3 | 4.157.0 | 15.1.0 (Q16) | 3.2.0 | 11.0 |
 | Licence | MIT | Six Labors Split License 1.0 (see below) | MIT | Apache-2.0 | MIT; libvips is LGPL-2.1-or-later | MIT |
 | Native code | None | None | Google's Skia | ImageMagick | libvips | Windows GDI+ |
 | Operating systems | Every OS .NET 10 runs on | Every OS .NET runs on (fully managed) | Windows, macOS, Linux, Android, iOS, Mac Catalyst, tvOS, Tizen, WebAssembly | Windows, Linux (glibc and musl), macOS on arm64 | Windows, Linux (glibc and musl), macOS | Windows only |
@@ -64,18 +64,23 @@ documented set of built-in codecs.
 | AVIF | RW | – | – ³ | RW ¹ | RW | – |
 | HEIC | RW (Egami.Heic) | – | – ³ | RW ¹ | – ² | – |
 | JPEG XL | RW | – | – ³ | RW ¹ | – ² | – |
-| JPEG 2000 | R | – | – | RW ¹ | – ² | – |
+| JPEG 2000 | R, High-Throughput (HTJ2K) too | – | – | RW ¹ | – ² | – |
 | OpenEXR | RW | RW | – | RW ¹ | – ² | – |
 | Radiance HDR | RW | – | – | RW | – ² | – |
 | PSD and PSB | R, layers included | – | – | RW | – | – |
 | SVG | RW and draws (Egami.Svg) | – | R (separate Svg.Skia package) | R ¹ | R | – |
 | Camera RAW | R, and writes DNG (Egami.Formats.Extended) | – | – ³ | R ¹ | – ² | – |
 | DDS | RW (Egami.Formats.Extended) | – | – | RW | – | – |
+| KTX and KTX 2 | R, and writes KTX 2 (Egami.Formats.Extended) | – | – | – | – | – |
+| JPEG-LS | RW (Egami.Formats.Extended) | – | – | – | – | – |
+| DPX and Cineon | RW (Egami.Formats.Extended) | – | – | RW | – ² | – |
+| FITS | RW (Egami.Formats.Extended) | – | – | RW | – ² | – |
+| DICOM | RW in preview (Egami.Formats.Extended) | – | – | R | – ² | – |
 | EMF and WMF | R (Egami.Metafiles) | – | – | R ¹ | – | R |
 | PDF | Read, render and write with [Egap.Pdf](https://github.com/inexin/Egap) | – | Writes PDF documents | RW with Ghostscript | – ² | – |
 
 The SkiaSharp column is the build SkiaSharp 4.156.0 ships: the codecs in Skia's source at the revision it pins, with the
-build options SkiaSharp's native build scripts set. The NetVips column is the NetVips.Native 8.18.7 binaries, from the build
+build options SkiaSharp's native build scripts set. SkiaSharp 4.157.0's release notes (Skia m157) list no codec changes. The NetVips column is the NetVips.Native 8.18.7 binaries, from the build
 script and library list of the project that makes them.
 
 ¹ ImageMagick needs a delegate library for this format, and Magick.NET's documentation does not say which delegates its
@@ -97,6 +102,8 @@ builds leave them off.
 | HDR, gain maps and Ultra HDR | Yes | Not documented | Not documented | Not documented | Ultra HDR | No |
 | Vector drawing (paths, gradients, clips) | Egami.Drawing | ImageSharp.Drawing | Yes | Drawables API | Basic shapes and flood fill | Yes, through `Graphics` |
 | Text with complex-script shaping | Egami.Fonts | SixLabors.Fonts | With SkiaSharp.HarfBuzz | Not documented | Not documented | GDI+ text |
+| Hyphenation and optimal line breaking | Egami.Fonts: built-in patterns for 35 languages, Knuth-Plass line breaking | Hyphen markers at break opportunities (SixLabors.Fonts); automatic hyphenation not documented | Not documented | Not documented | Not documented | Not documented |
+| Bitmap tracing into vector shapes | Egami.Drawing, written as SVG by Egami.Svg or `egami trace` | – | – | – | – | – |
 | Animation | GIF, APNG, WebP, AVIF, JPEG XL | GIF, APNG, WebP | Decodes GIF and WebP frames | GIF, APNG, MNG | GIF, WebP | GIF frames |
 | Low-memory streaming of large images | Row streaming and `Raster.Transcode` | Not documented | Not documented | Memory limits with disk paging | Yes, its core design | No |
 | Barcodes | Egami.Barcodes | – | – | – | – | – |
@@ -126,14 +133,16 @@ and more than 5% slower in 10. [Performance](performance.md) has the tips that k
 
 ## Sources
 
-Checked on 14 November 2026.
+Checked on 23 November 2026.
 
 - ImageSharp: [NuGet](https://www.nuget.org/packages/SixLabors.ImageSharp), [licence](https://github.com/SixLabors/ImageSharp/blob/main/LICENSE),
   [pricing](https://sixlabors.com/pricing/), [formats](https://docs.sixlabors.com/articles/imagesharp/imageformats.html),
   [releases](https://github.com/SixLabors/ImageSharp/releases), [IPTC](https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Metadata.Profiles.Iptc.html)
   and [XMP](https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Metadata.Profiles.Xmp.html) profiles,
-  [ImageSharp.Drawing](https://docs.sixlabors.com/articles/imagesharp.drawing/gettingstarted.html).
+  [ImageSharp.Drawing](https://docs.sixlabors.com/articles/imagesharp.drawing/gettingstarted.html),
+  SixLabors.Fonts [TextOptions](https://docs.sixlabors.com/api/Fonts/SixLabors.Fonts.TextOptions.html).
 - SkiaSharp: [NuGet](https://www.nuget.org/packages/SkiaSharp), [repository](https://github.com/mono/SkiaSharp),
+  [4.157.0 release notes](https://mono.github.io/SkiaSharp/docs/releases/4.157.0.html),
   [SKPixmap.Encode](https://learn.microsoft.com/dotnet/api/skiasharp.skpixmap.encode),
   [SKColorSpace](https://learn.microsoft.com/dotnet/api/skiasharp.skcolorspace),
   [SKDocument.CreatePdf](https://learn.microsoft.com/dotnet/api/skiasharp.skdocument.createpdf),

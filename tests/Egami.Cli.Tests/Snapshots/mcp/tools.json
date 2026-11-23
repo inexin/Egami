@@ -2103,7 +2103,7 @@
     "io.modelcontextprotocol/serverInfo": {
       "name": "egami",
       "title": "Egami",
-      "version": "1.5.0-preview.1",
+      "version": "1.5.0",
       "websiteUrl": "https://inexin.github.io/Egami/"
     }
   },
