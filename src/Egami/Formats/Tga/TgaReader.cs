@@ -168,8 +168,10 @@ internal sealed partial class TgaReader : IFormatReader
             return;
         }
 
+        // Raw pixels end at a known place: a footer that starts before that is pixel data, as a stream that cannot seek sees it.
         Span<byte> footer = stackalloc byte[FooterLength];
-        if (!input.TryReadAt(length - FooterLength, footer) || !footer[8..].SequenceEqual(FooterSignature))
+        if ((!header.Rle && length - FooterLength < input.Position + ((long)header.Width * header.Height * header.BytesPerPixel))
+            || !input.TryReadAt(length - FooterLength, footer) || !footer[8..].SequenceEqual(FooterSignature))
         {
             return;
         }
@@ -203,11 +205,28 @@ internal sealed partial class TgaReader : IFormatReader
         {
             bool strict = options.Recovery == RecoveryMode.Strict;
             using Decoder<TPixel> decoder = new(input, header, strict);
+            // Run-length pixels may reach into what looked like a footer, which then is none; an alpha type that changes the
+            // pixels waits until that is known, as on a stream that cannot seek.
+            byte[]? deferred = header.Rle && header.AlphaChangesPixels ? header.Extension : null;
+            if (deferred is not null)
+            {
+                header.Extension = null;
+            }
+
             decoder.Run(raster);
             if (header.FooterAfterPixels)
             {
                 ReadTrailingFooter(input, header, strict);
                 decoder.FixAlphaAfterwards(raster);
+            }
+            else if (deferred is not null && !decoder.IsDamaged)
+            {
+                // Damaged pixels end nowhere certain, and a stream that cannot seek then has no footer either.
+                header.Extension = deferred;
+                if (decoder.CheckExtension(input.Position))
+                {
+                    decoder.FixAlphaAfterwards(raster);
+                }
             }
             else
             {
@@ -269,7 +288,7 @@ internal sealed partial class TgaReader : IFormatReader
             {
                 header.Extension = rest.AsSpan((int)offset, ExtensionLength).ToArray();
             }
-            else if (at >= HeaderLength && at < start)
+            else if (at >= HeaderLength && at < start && at + ExtensionLength <= start + length - FooterLength)
             {
                 // The bytes it points at have gone by; a seekable file reports the same (Decoder.CheckExtension).
                 ExtensionInPixels(input, header, strict, at);
@@ -413,6 +432,9 @@ internal sealed partial class TgaReader : IFormatReader
             ? MapEntry == 32 || (MapEntry == 16 && AttributeBits == 1)
             : Gray ? Depth == 16 : Depth == 32 || (Depth == 16 && AttributeBits == 1);
 
+        /// <summary>Gets whether the 2.0 alpha type changes the decoded pixels: it says alpha bits are not alpha, or premultiplied.</summary>
+        public bool AlphaChangesPixels => HasAlphaBits && AttributeBits > 0 && AlphaType is TgaAlphaType.None or TgaAlphaType.UndefinedIgnore or TgaAlphaType.Premultiplied;
+
         public TgaAlphaType? AlphaType => Extension is { } e && BinaryPrimitives.ReadUInt16LittleEndian(e) >= ExtensionLength && e[494] <= 4 ? (TgaAlphaType)e[494] : null;
 
         /// <summary>Gets whether the alpha bits are alpha: the descriptor's attribute bits say so, unless the 2.0 alpha type says none.</summary>
@@ -437,6 +459,9 @@ internal sealed partial class TgaReader : IFormatReader
         private bool _repeat;
         private bool _pastPalette;
         private bool _disposed;
+
+        /// <summary>Gets whether damage stopped the decode before the last row.</summary>
+        public bool IsDamaged => _damaged;
 
         /// <summary>Gets the bytes of one stored row.</summary>
         public Span<byte> Stored => _stored.AsSpan(0, header.Width * header.BytesPerPixel);
@@ -584,16 +609,30 @@ internal sealed partial class TgaReader : IFormatReader
         }
 
         /// <summary>
-        /// Checks that an extension area read through the footer of a seekable file starts after the pixels, which end at
-        /// <paramref name="pixelEnd"/>. One inside them (found by fuzzing) is damage; a stream that cannot seek looks for the
-        /// extension after the pixels and reports the same, so both decodes agree.
+        /// Checks the footer and extension area of a seekable file against the end of the pixels, <paramref name="pixelEnd"/>, as a
+        /// stream that cannot seek finds them after the pixels, so both decodes agree (found by fuzzing). A footer that starts
+        /// inside the pixels is pixel data and is dropped; an extension area inside them is damage. Returns whether the
+        /// extension area is kept.
         /// </summary>
-        public void CheckExtension(long pixelEnd)
+        public bool CheckExtension(long pixelEnd)
         {
-            if (!_damaged && header.Extension is not null && header.ExtensionOffset < pixelEnd)
+            if (header.Extension is null)
+            {
+                return false;
+            }
+
+            if (input.Length is long length && length - FooterLength < pixelEnd)
+            {
+                header.Extension = null;
+                return false;
+            }
+
+            if (!_damaged && header.ExtensionOffset < pixelEnd)
             {
                 ExtensionInPixels(input, header, strict, header.ExtensionOffset);
             }
+
+            return true;
         }
 
         /// <summary>Notes damage found at stored row <paramref name="row"/>: the rows from there on are left black.</summary>

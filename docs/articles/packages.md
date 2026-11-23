@@ -1,6 +1,6 @@
 # Packages
 
-Egami is a family of packages. Each is fully managed C# with no dependencies outside the family, and you add only the ones you
+Egami is a family of packages. Each is fully managed C# with no dependencies outside the family (Egami.Video.Hardware also calls the GPU driver), and you add only the ones you
 use. Packages at 1.0 or above keep their public API compatible within the major version; packages at 0.x may still change.
 Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended, Egami.Cli and Egami.Cli.Host share
 one version and release together; the other packages have versions of their own. Each package name links to its source code.
@@ -43,6 +43,7 @@ one version and release together; the other packages have versions of their own.
 | [Egami.Video](https://github.com/inexin/Egami/tree/main/src/Egami.Video) | 1.3 | Reads and writes video and audio with Egami rasters as frames: MP4, WebM, Matroska, AVI, IVF, YUV4MPEG2, Ogg, WAV, FLAC, MP3, AIFF and CAF; AV1, VP9 and VP8 decode and encode, Motion JPEG, Opus, Vorbis, FLAC, MP3, AC-3, AAC LC and ALAC; subtitles, smart cut and scene detection | Egami | [Video](guides/video.md) |
 | [Egami.Video.H264](https://github.com/inexin/Egami/tree/main/src/Egami.Video.H264) | 1.3 | H.264 (AVC) decoding and encoding for Egami.Video. Decodes Constrained Baseline, Main, High, High 10 and High 4:2:2, progressive and interlaced (PAFF and MBAFF), in MP4, MOV, Matroska, AVI and raw .h264 files; encodes 8-bit 4:2:0 in Constrained Baseline, Main and High. Opt-in because H.264 is covered by patents | Egami.Video, the same version | [H.264](guides/h264.md) |
 | [Egami.Video.Hevc](https://github.com/inexin/Egami/tree/main/src/Egami.Video.Hevc) | 1.3 | HEVC (H.265) decoding and encoding for Egami.Video: decodes Main, Main 10, Main 12 and the range extensions to 12 bits in MP4, MOV, Matroska and raw .h265 files, through Egami.Heic's decoder; encodes 4:2:0 Main and Main 10. Opt-in because HEVC is covered by patents | Egami.Video, the same version, and Egami.Heic | [HEVC](guides/hevc.md) |
+| [Egami.Video.Hardware](https://github.com/inexin/Egami/tree/main/src/Egami.Video.Hardware) | 0.1 preview | Hardware video through Vulkan Video, opt-in: finds the GPU's H.264 and HEVC decoders and encoders and their limits; the hardware codecs follow in the next previews. The one package that calls native code: the Vulkan loader the GPU driver installs, nothing shipped | Egami.Video | [Hardware video](guides/video-hardware.md) |
 
 ## Command-line tools
 

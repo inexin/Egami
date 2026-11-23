@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Egami.Video.Hardware</RootNamespace>
+    <PackageId>Egami.Video.Hardware</PackageId>
+    <!-- Its own version, a preview until the hardware codecs are complete (GPU acceleration design; Lars, 2026-11-21). -->
+    <Version>0.1.0-preview.1</Version>
+    <Description>Hardware video decoding and encoding for Egami.Video through Vulkan Video: finds the GPU's H.264 and HEVC decoders and encoders through the Vulkan loader that ships with the graphics driver. Ships no native code. Egami's software codecs stay the default; hardware is opt-in.</Description>
+    <PackageTags>$(EgamiPackageTags);video;hardware;gpu;vulkan;h264;hevc</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+    <!-- The Vulkan bindings: structs passed by pointer and function pointers loaded from the driver. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!-- Build-time analyzer only; ships nothing. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Egami.Video\Egami.Video.csproj" />
+  </ItemGroup>
+
+  <!-- Egami's H.264 parameter set and slice header readers, compiled in as internal source as Egami.Heic shares the NAL code:
+       the hardware decoder reads the stream with the software decoder's own parser. -->
+  <ItemGroup>
+    <Compile Include="..\Shared\Nal\NalBitReader.cs;..\Shared\Nal\NalErrors.cs;..\Shared\Nal\NalFraming.cs;..\Shared\Nal\NalVui.cs;..\Shared\Nal\NalSei.cs;..\Shared\Nal\NalBumpingBuffer.cs" Link="Shared\Nal\%(Filename)%(Extension)" />
+    <Compile Include="..\Egami.Video.H264\Codecs\H264\H264Sps.cs;..\Egami.Video.H264\Codecs\H264\H264Pps.cs;..\Egami.Video.H264\Codecs\H264\H264SliceHeader.cs;..\Egami.Video.H264\Codecs\H264\H264Vui.cs;..\Egami.Video.H264\Codecs\H264\H264ScalingLists.cs;..\Egami.Video.H264\Codecs\H264\H264Dequant.cs;..\Egami.Video.H264\Codecs\H264\H264Sei.cs;..\Egami.Video.H264\Codecs\H264\NalErrors.cs;..\Egami.Video.H264\Codecs\H264\H264Config.cs" Link="Shared\H264\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Video.Hardware.Tests" />
+  </ItemGroup>
+
+</Project>

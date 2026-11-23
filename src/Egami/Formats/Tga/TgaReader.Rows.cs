@@ -100,11 +100,30 @@ internal sealed partial class TgaReader : IRowSourceReader, IIncrementalFormatRe
 
         if (header.TopDown)
         {
-            return true;
+            // Run-length pixels may reach into what looked like a footer, so an alpha type in it that changes the pixels waits
+            // for the end of the pixels (Decode).
+            return !(seekable && header.Rle && header.HasAlphaBits && header.AttributeBits > 0 && FooterAlphaChangesPixels(input, input.Length!.Value));
         }
 
         long offset = HeaderLength + bytes[0] + ((long)header.MapLength * ((header.MapEntry + 7) / 8));
         return !header.Rle && seekable && offset + ((long)header.Width * header.Height * header.BytesPerPixel) <= input.Length;
+    }
+
+    /// <summary>Returns whether a seekable file's footer points at an extension area whose alpha type changes the pixels.</summary>
+    private static bool FooterAlphaChangesPixels(EgamiInput input, long length)
+    {
+        Span<byte> footer = stackalloc byte[FooterLength];
+        if (length < HeaderLength + FooterLength || !input.TryReadAt(length - FooterLength, footer) || !footer[8..].SequenceEqual(FooterSignature))
+        {
+            return false;
+        }
+
+        long offset = BinaryPrimitives.ReadUInt32LittleEndian(footer);
+        Span<byte> size = stackalloc byte[2];
+        Span<byte> type = stackalloc byte[1];
+        return offset >= HeaderLength && offset + ExtensionLength <= length - FooterLength
+            && input.TryReadAt(offset, size) && BinaryPrimitives.ReadUInt16LittleEndian(size) >= ExtensionLength
+            && input.TryReadAt(offset + ExtensionLength - 1, type) && (TgaAlphaType)type[0] is TgaAlphaType.None or TgaAlphaType.UndefinedIgnore or TgaAlphaType.Premultiplied;
     }
 
     /// <summary>Returns what a streaming read holds: one stored row and one natural row.</summary>

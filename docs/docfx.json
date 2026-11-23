@@ -50,6 +50,10 @@
         {
           "src": "../src/Egami.Video",
           "files": [ "Egami.Video.csproj" ]
+        },
+        {
+          "src": "../src/Egami.Video.Hardware",
+          "files": [ "Egami.Video.Hardware.csproj" ]
         }
       ],
       "dest": "api",

@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- The binding tests take struct addresses and call Vulkan through function pointers. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3.mtp-off" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Egami.Video.Hardware\Egami.Video.Hardware.csproj" />
+    <!-- Egami's software decoder checks what the hardware encoder writes. -->
+    <ProjectReference Include="..\..\src\Egami.Video.H264\Egami.Video.H264.csproj" />
+  </ItemGroup>
+
+  <!-- The H.264 test set: the hardware decoder must match the software decoder on it. -->
+  <ItemGroup>
+    <None Include="../video/corpus/h264/*.h264" LinkBase="corpus/h264" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
