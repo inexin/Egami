@@ -813,6 +813,7 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
 
     private void Emit(Picture picture)
     {
+        picture.Emitted = true;
         _untimed.Add(picture);
         _emitted.Enqueue(picture);
     }
@@ -828,11 +829,19 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
         _untimed.Clear();
     }
 
-    /// <summary>Empties the buffer without output; pictures that waited for it are dropped.</summary>
+    /// <summary>
+    /// Empties the buffer without output; pictures that waited for it are dropped. Pictures already output stay in the output
+    /// queue with their frames (a flush outputs pictures that are still references, and leaves them in the buffer).
+    /// </summary>
     private void ClearBuffer()
     {
         foreach (Picture p in _dpb.Pictures())
         {
+            if (p.Emitted)
+            {
+                continue;
+            }
+
             p.Output = false;
             p.Raster?.Dispose();
             p.Raster = null;
@@ -1692,6 +1701,9 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
         public bool Generated { get; set; }
 
         public bool Output { get; set; }
+
+        /// <summary>Gets or sets whether the picture is in the output queue.</summary>
+        public bool Emitted { get; set; }
 
         public int Slot { get; set; } = -1;
 
