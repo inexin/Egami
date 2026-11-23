@@ -34,7 +34,7 @@ Egami.Fonts.Layout.Hyphenator
 Egami.Fonts.Layout.Hyphenator.GetPoints(System.ReadOnlySpan<char> word, System.Span<int> points) -> int
 Egami.Fonts.Layout.Hyphenator.MinAfter.get -> int
 Egami.Fonts.Layout.Hyphenator.MinBefore.get -> int
-Egami.Fonts.Layout.Hyphenator.Save(System.IO.Stream! output) -> void
+Egami.Fonts.Layout.Hyphenator.Save(System.IO.Stream! stream) -> void
 Egami.Fonts.Layout.Hyphenator.WithExceptions(System.Collections.Generic.IEnumerable<string!>! words) -> Egami.Fonts.Layout.Hyphenator!
 Egami.Fonts.Layout.Hyphens
 Egami.Fonts.Layout.Hyphens.Auto = 2 -> Egami.Fonts.Layout.Hyphens

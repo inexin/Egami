@@ -60,7 +60,7 @@ and no `Configuration`.
   `MinMax`, `ZScale`, `Asinh` or `None` for the physical values; `Image` picks an HDU or cube plane; `Rgb` reads a
   three-plane cube as `RgbF32`); `FitsDetails.Header` keeps every card. `FitsFile.Load` lists every HDU and reads values.
   Tile-compressed images (RICE_1, GZIP_1, GZIP_2, PLIO_1) read; HCOMPRESS throws. Save writes BITPIX 8, 16 or -32
-  (`FitsWriterOptions.Bitpix`, `Keywords`).
+  (`FitsWriterOptions.Bitpix`, `Cards`).
 - RAW: Load develops a DNG into `Rgb16` sRGB (or straight into the RGB space `ConvertColorTo` names); `RawReaderOptions`
   (`Output` = `Developed`, `HalfSize`, `Preview` or `Mosaic`; `WhiteBalance`, `Temperature`, `Tint`, `Exposure`, `Demosaic`,
   `Highlights`, `LuminanceNoiseReduction`, `ColorNoiseReduction`, `LensCorrections`, `ApplyProfile`) sets it; `RawDetails`

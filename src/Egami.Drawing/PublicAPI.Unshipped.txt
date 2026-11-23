@@ -78,3 +78,4 @@ Egami.Drawing.Tracing.TraceMode.PixelArt = 5 -> Egami.Drawing.Tracing.TraceMode
 Egami.Drawing.Tracing.TraceOptions.Exact.get -> bool
 Egami.Drawing.Tracing.TraceOptions.Exact.init -> void
 static Egami.Drawing.Tracing.TraceOptions.PixelArt.get -> Egami.Drawing.Tracing.TraceOptions!
+static Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync<TPixel>(this Egami.Raster<TPixel>! raster, Egami.Drawing.Tracing.TraceOptions? options = null, Egami.EgamiContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Drawing.Tracing.TraceResult!>!

@@ -1,8 +1,4 @@
 #nullable enable
-const Egami.Compression.Zstandard.DefaultLevel = 3 -> int
-const Egami.Compression.Zstandard.MaxLevel = 22 -> int
-const Egami.Compression.Zstandard.MinLevel = 1 -> int
-Egami.Compression.Zstandard
 [EGAMIX001]Egami.Formats.SampleColor
 [EGAMIX001]Egami.Formats.SampleColor.Gray = 1 -> Egami.Formats.SampleColor
 [EGAMIX001]Egami.Formats.SampleColor.Rgb = 2 -> Egami.Formats.SampleColor
@@ -26,9 +22,6 @@ Egami.Compression.Zstandard
 [EGAMIX001]Egami.Formats.SampleImage.Samples.get -> System.Memory<int>
 [EGAMIX001]Egami.Formats.SampleImage.Width.get -> int
 [EGAMIX001]override Egami.Formats.SampleComponent.GetHashCode() -> int
-static Egami.Compression.Zstandard.Compress(System.ReadOnlySpan<byte> source, System.Span<byte> destination, int level = 3) -> int
-static Egami.Compression.Zstandard.Decompress(System.ReadOnlySpan<byte> source, System.Span<byte> destination) -> int
-static Egami.Compression.Zstandard.MaxCompressedLength(int length) -> int
 Egami.Formats.Jpeg2000.Jpeg2000Container.Jph = 3 -> Egami.Formats.Jpeg2000.Jpeg2000Container
 Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput.get -> bool
 Egami.Formats.Jpeg2000.Jpeg2000Details.HighThroughput.set -> void

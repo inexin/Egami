@@ -22,7 +22,7 @@ traced image's `Width` and `Height`.
   [canvas](drawing.md#a-canvas).
 - In black and white, one shape is one ink region: its outer edge and its holes. A region inside another region's hole comes
   after it. `Palette` lists the shapes' colors, each once, back to front.
-- `Trace` (in `RasterTraceExtensions`) works on any pixel type; `Trace<TPixel>` is the same for a typed raster. `TraceAsync` traces on a worker thread and
+- `Trace` (in `RasterTraceExtensions`) works on any pixel type; `Trace<TPixel>` is the same for a typed raster. `TraceAsync`, for either, traces on a worker thread and
   takes a `CancellationToken`, checked between rows and between outlines.
 - The raster's `EgamiContext` (or one you pass) limits the size: a raster larger than `SafetyLimits.MaxPixels` throws
   `LimitExceededException`.

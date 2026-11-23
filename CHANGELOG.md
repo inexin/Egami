@@ -86,7 +86,7 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
 - Egami.Video.Hevc: 9-bit and 11-bit streams decode to 10-bit and 12-bit frames, with the samples shifted up one bit;
   they threw `ArgumentOutOfRangeException` (found by fuzzing). `HevcStreamDecoder.TryReceiveFrame` takes such rasters.
 
-## Egami train 1.5.0 (unreleased)
+## Egami train 1.5.0 (2026-11-23)
 
 The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and
 Egami.Cli) moves to 1.5.0 together. It adds API and removes none, so code built against 1.4.0 keeps working. New since
@@ -103,9 +103,20 @@ list the changes since 1.5.0-preview.1 package by package; the 1.5.0-preview.1 s
 - DICOM stays `[Experimental]` (EGAMIX001), and `SampleImage` with it; the `egami` command reads and writes DICOM only with
   `--preview-formats`.
 - Egami.Svg has its trace output as the only change, and Egami.Css none; it ships as 1.5.0 to keep the train together.
-  Egami.Heic depends on exactly Egami 1.5.0. Egami.Fonts.Substitutes stays at 1.1.0.
+  Egami.Heic and Egami.Formats.Extended depend on exactly Egami 1.5.0. Egami.Fonts.Substitutes stays at 1.1.0.
 
-## Egami 1.5.0 (unreleased)
+## Egami 1.5.0 (2026-11-23)
+
+Changed since 1.5.0-preview.1 (API review before 1.5.0; these members are new in the 1.5 train, so 1.4.0 code is
+unaffected):
+
+- `Egami.Compression.Zstandard` is internal again. Egami.Formats.Extended's KTX reader and writer reach it through
+  `InternalsVisibleTo`, so Egami.Formats.Extended now depends on exactly the Egami it was built with, as Egami.Heic does.
+- Egami.Formats.Extended: `FitsFile.Load` takes `ReaderOptions` (lenient recovery ends the HDU list at a damaged header after
+  the primary one, strict throws) and has a `ReadOnlyMemory<byte>` overload. `Texture.Load` takes `ReaderOptions` (also
+  `DdsReaderOptions` or `KtxReaderOptions`); options that pick one surface, mip or region are ignored.
+- Egami.Formats.Extended renames: `FitsWriterOptions.Keywords` is `Cards`; `Texture.Save`'s stream parameter is `stream`
+  (was `output`). `DicomElement.GetStrings` returns `string[]`, as `GetNumbers`, `GetIntegers` and `GetTags` return arrays.
 
 Fixed since 1.5.0-preview.1: damaged files the nightly fuzz runs found (issues 351, 360 to 367 and 380). Every one is
 reported as an `EgamiException`, and a Strict incremental decode now succeeds or fails as the whole decode does.
@@ -131,10 +142,12 @@ reported as an `EgamiException`, and a Strict incremental decode now succeeds or
   pixels (none, ignore or premultiplied) is applied once the pixels' end is known, so such top-down files decode whole rather
   than a row at a time.
 
-## Egami.Drawing and Egami.Svg 1.5.0 (unreleased)
+## Egami.Drawing and Egami.Svg 1.5.0 (2026-11-23)
 
 Bitmap tracing, new since 1.5.0-preview.1: black-and-white, grayscale, color, logo and
 pixel-art images become vector shapes, and line art becomes stroked centre lines. Additive to 1.4.0.
+
+Changed since 1.5.0-preview.1: `TraceAsync<TPixel>` for a typed raster, beside `TraceAsync` for any raster.
 
 - `raster.Trace(options)` (namespace `Egami.Drawing.Tracing`, also `Trace<TPixel>` and `TraceAsync` with a cancellation
   token) traces a raster's first frame and returns a `TraceResult`: `TracedShape`s back to front (a `Path`, an `Rgba8`
@@ -205,10 +218,12 @@ pixel-art images become vector shapes, and line art becomes stroked centre lines
   reached 3 and 4), so a dither beside a flat area no longer counts the flat area in. On the egami-compare gates' 13
   sprites the trace keeps the same diagonal as Inkscape 1.4's pixel-art trace at 96.5 % of crossings (was 93.8 %).
 
-## Egami.Fonts 1.5.0 (unreleased)
+## Egami.Fonts 1.5.0 (2026-11-23)
 
 Built-in hyphenation dictionaries and optimal line breaking, new since 1.5.0-preview.1. Additive to 1.4.0. `.ehyp` files
 that 1.5.0-preview.1 wrote are version 1 and must be compiled again.
+
+Changed since 1.5.0-preview.1: `Hyphenator.Save`'s parameter is `stream` (was `output`), as in every other `Save`.
 
 - `HyphenationDictionaries.BuiltIn`: hyph-utf8's patterns for 35 languages, compiled into Egami.Fonts (1.3 MB) and each
   loaded the first time it is used, in at most 0.6 ms (German, the largest). They are en-US, en-GB, de-1996, de-1901,
@@ -238,7 +253,7 @@ that 1.5.0-preview.1 wrote are version 1 and must be compiled again.
   one, so kerning and ligatures across a color change stay; a ligature joining two styles takes its first character's.
   Decorations shared by two spans (one `TextDecoration` instance) now break where the text's color or shadows change.
 
-## Egami.Cli 1.5.0 (unreleased)
+## Egami.Cli 1.5.0 (2026-11-23)
 
 New since 1.5.0-preview.1:
 

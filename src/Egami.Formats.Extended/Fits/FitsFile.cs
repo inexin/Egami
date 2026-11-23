@@ -13,16 +13,14 @@ namespace Egami.Formats.Extended.Fits;
 /// </example>
 public sealed class FitsFile
 {
-    private readonly byte[] _data;
-    private readonly int _length;
+    private readonly ReadOnlyMemory<byte> _data;
     private readonly EgamiContext _context;
     private readonly EgamiInput _limits;
 
-    private FitsFile(byte[] data, int length, List<FitsHdu> hdus, EgamiContext context, EgamiInput limits)
+    private FitsFile(ReadOnlyMemory<byte> data, List<FitsHdu> hdus, EgamiContext context, EgamiInput limits)
     {
         _limits = limits;
         _data = data;
-        _length = length;
         _context = context;
         Hdus = hdus;
     }
@@ -36,40 +34,85 @@ public sealed class FitsFile
     /// <summary>Reads a FITS file from a path.</summary>
     /// <param name="path">The file.</param>
     /// <param name="context">The context whose safety limits apply, or <see langword="null"/> for the default.</param>
+    /// <param name="options">
+    /// How to read: with <see cref="RecoveryMode.Lenient"/> (the default) a damaged header after the primary one ends the HDU
+    /// list; with <see cref="RecoveryMode.Strict"/> it throws.
+    /// </param>
     /// <returns>The file, its headers read.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="fits-file"/>
+    /// </example>
     /// <exception cref="ArgumentNullException"><paramref name="path"/> is <see langword="null"/>.</exception>
-    /// <exception cref="CorruptDataException">The primary header is not FITS or is damaged.</exception>
-    public static FitsFile Load(string path, EgamiContext? context = null)
+    /// <exception cref="CorruptDataException">The primary header is not FITS or is damaged, or a later one is and the read is strict.</exception>
+    public static FitsFile Load(string path, EgamiContext? context = null, ReaderOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(path);
         using FileStream stream = File.OpenRead(path);
-        return Load(stream, context);
+        return Load(stream, context, options);
     }
 
     /// <summary>Reads a FITS file from a stream, to its end.</summary>
-    /// <param name="stream">The stream.</param>
+    /// <param name="stream">The stream. It is left open.</param>
     /// <param name="context">The context whose safety limits apply, or <see langword="null"/> for the default.</param>
+    /// <param name="options">
+    /// How to read: with <see cref="RecoveryMode.Lenient"/> (the default) a damaged header after the primary one ends the HDU
+    /// list; with <see cref="RecoveryMode.Strict"/> it throws.
+    /// </param>
     /// <returns>The file, its headers read.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="fits-file"/>
+    /// </example>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <see langword="null"/>.</exception>
-    /// <exception cref="CorruptDataException">The primary header is not FITS or is damaged.</exception>
-    public static FitsFile Load(Stream stream, EgamiContext? context = null)
+    /// <exception cref="CorruptDataException">The primary header is not FITS or is damaged, or a later one is and the read is strict.</exception>
+    public static FitsFile Load(Stream stream, EgamiContext? context = null, ReaderOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(stream);
         EgamiContext limits = context ?? EgamiContext.Default;
-        EgamiInput input = new(stream, limits, default);
+        using EgamiInput input = new(stream, limits, default);
         byte[] data = InputData.ReadToEnd(input, Array.MaxLength, out int length);
-        EgamiInput headers = new(new MemoryStream(data, 0, length, false), limits, default);
+        return Read(data.AsMemory(0, length), limits, options ?? ReaderOptions.Default);
+    }
+
+    /// <summary>Reads a FITS file held in memory. The file keeps referring to <paramref name="data"/> instead of copying it.</summary>
+    /// <param name="data">The file's bytes.</param>
+    /// <param name="context">The context whose safety limits apply, or <see langword="null"/> for the default.</param>
+    /// <param name="options">
+    /// How to read: with <see cref="RecoveryMode.Lenient"/> (the default) a damaged header after the primary one ends the HDU
+    /// list; with <see cref="RecoveryMode.Strict"/> it throws.
+    /// </param>
+    /// <returns>The file, its headers read.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="fits-file"/>
+    /// </example>
+    /// <exception cref="CorruptDataException">The primary header is not FITS or is damaged, or a later one is and the read is strict.</exception>
+    public static FitsFile Load(ReadOnlyMemory<byte> data, EgamiContext? context = null, ReaderOptions? options = null)
+    {
+        return Read(data, context ?? EgamiContext.Default, options ?? ReaderOptions.Default);
+    }
+
+    private static FitsFile Read(ReadOnlyMemory<byte> data, EgamiContext limits, ReaderOptions options)
+    {
+        EgamiInput headers = new(Raster.AsStream(data), limits, default);
         List<FitsHdu> hdus = [];
         for (int index = 0; ; index++)
         {
-            FitsHdu? hdu = FitsHeaderReader.Read(headers, index);
+            FitsHdu? hdu;
+            try
+            {
+                hdu = FitsHeaderReader.Read(headers, index);
+            }
+            catch (CorruptDataException) when (index > 0 && options.Recovery == RecoveryMode.Lenient)
+            {
+                break;
+            }
+
             if (hdu is null)
             {
                 break;
             }
 
             hdus.Add(hdu);
-            if (hdu.DataStart + hdu.PaddedLength >= length)
+            if (hdu.DataStart + hdu.PaddedLength >= data.Length)
             {
                 break;
             }
@@ -77,7 +120,7 @@ public sealed class FitsFile
             headers.Skip(hdu.PaddedLength);
         }
 
-        return new FitsFile(data, length, hdus, limits, headers);
+        return new FitsFile(data, hdus, limits, headers);
     }
 
     /// <summary>
@@ -156,8 +199,8 @@ public sealed class FitsFile
     private void Decode<T>(FitsHdu hdu, Span<T> values)
         where T : unmanaged, System.Numerics.IFloatingPointIeee754<T>
     {
-        long start = Math.Min(hdu.DataStart, _length);
-        ReadOnlySpan<byte> data = _data.AsSpan((int)start, (int)Math.Min(hdu.DataLength, _length - start));
+        long start = Math.Min(hdu.DataStart, _data.Length);
+        ReadOnlySpan<byte> data = _data.Span.Slice((int)start, (int)Math.Min(hdu.DataLength, _data.Length - start));
         if (hdu.Kind == FitsHduKind.CompressedImage)
         {
             FitsTiles.Decode(data, hdu, values);

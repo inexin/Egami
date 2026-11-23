@@ -88,7 +88,7 @@ public sealed class DicomElement
     /// </summary>
     /// <returns>The values; none when the value is empty.</returns>
     /// <exception cref="InvalidOperationException">The VR holds bytes or items, not values: OB, UN, SQ or encapsulated pixel data.</exception>
-    public IReadOnlyList<string> GetStrings()
+    public string[] GetStrings()
     {
         if (IsText(VR))
         {
@@ -340,8 +340,8 @@ public sealed class DicomElement
             throw new InvalidOperationException($"{Tag} is {VR}, not {vr}.");
         }
 
-        IReadOnlyList<string> values = GetStrings();
-        return values.Count == 0 || values[0].Length == 0 ? null : values[0];
+        string[] values = GetStrings();
+        return values.Length == 0 || values[0].Length == 0 ? null : values[0];
     }
 
     private static long ParseInteger(string value)

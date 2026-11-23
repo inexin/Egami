@@ -170,6 +170,23 @@ public sealed class FitsReaderTests
     }
 
     [Fact]
+    public void FitsFileLoadsFromMemoryAndRecoversFromADamagedExtension()
+    {
+        byte[] good = [.. Empty(), .. Extension(-32, [3, 1], [0.5, 1.5, 2.5])];
+        FitsFile fromMemory = FitsFile.Load(good.AsMemory(), TestImages.Context);
+        Assert.Equal(2, fromMemory.Hdus.Count);
+        Assert.Equal([0.5, 1.5, 2.5], fromMemory.ReadValues(fromMemory.Hdus[1]));
+
+        // A third header cut off before its END card: lenient keeps the two HDUs before it, strict throws.
+        byte[] damaged = [.. good, .. Pad(System.Text.Encoding.ASCII.GetBytes("XTENSION= 'IMAGE   '".PadRight(80)))];
+        Assert.Equal(2, FitsFile.Load(damaged.AsMemory(), TestImages.Context).Hdus.Count);
+        Assert.Equal(2, FitsFile.Load(new MemoryStream(damaged), TestImages.Context, ReaderOptions.Default).Hdus.Count);
+        ReaderOptions strict = new() { Recovery = RecoveryMode.Strict };
+        Assert.Throws<CorruptDataException>(() => FitsFile.Load(damaged.AsMemory(), TestImages.Context, strict));
+        Assert.Throws<CorruptDataException>(() => FitsFile.Load(new byte[2880].AsMemory(), TestImages.Context));
+    }
+
+    [Fact]
     public void ParsesHeaderCards()
     {
         string[] cards =
