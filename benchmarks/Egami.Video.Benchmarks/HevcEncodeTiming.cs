@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
 
+using Egami.Heic.Hevc;
 using Egami.Video.Codecs;
 using Egami.Video.Codecs.Hevc.Encoder;
 
@@ -79,20 +80,14 @@ internal static class HevcEncodeTiming
         if (Value("inter") is { } inter)
         {
             // --inter=Name:value,... changes the inter profile of every effort, for measuring one setting (HevcInterProfile).
-            HevcInterProfile.Adjust = profile =>
-            {
-                HevcInterProfile changed = profile with { };
-                foreach (string pair in inter.Split(','))
-                {
-                    string[] parts = pair.Split(':');
-                    System.Reflection.PropertyInfo property = typeof(HevcInterProfile).GetProperty(parts[0],
-                        System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
-                    property.SetValue(changed, Convert.ChangeType(parts[1] switch { "true" or "on" => "True", "false" or "off" => "False", _ => parts[1] },
-                        property.PropertyType, CultureInfo.InvariantCulture));
-                }
+            HevcInterProfile.Adjust = profile => Changed(profile, inter);
+        }
 
-                return changed;
-            };
+        if (Value("intra") is { } intra)
+        {
+            // --intra=Name:value,... changes the intra profile (HevcEncoderProfile) of I pictures and, before the inter profile
+            // reduces it, of P and B pictures' intra search.
+            HevcEncoderProfile.Adjust = profile => Changed(profile, intra);
         }
 
         MediaContext context = new() { Egami = EgamiContext.Default with { MaxParallelism = threads } };
@@ -175,5 +170,22 @@ internal static class HevcEncodeTiming
                 output.Write(packet.Data.Span);
             }
         }
+    }
+
+    /// <summary>A copy of a profile record with the properties a Name:value,... list names set by reflection.</summary>
+    private static T Changed<T>(T profile, string list)
+        where T : class
+    {
+        T changed = (T)typeof(T).GetMethod("<Clone>$")!.Invoke(profile, null)!;
+        foreach (string pair in list.Split(','))
+        {
+            string[] parts = pair.Split(':');
+            System.Reflection.PropertyInfo property = typeof(T).GetProperty(parts[0],
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            property.SetValue(changed, Convert.ChangeType(parts[1] switch { "true" or "on" => "True", "false" or "off" => "False", _ => parts[1] },
+                property.PropertyType, CultureInfo.InvariantCulture));
+        }
+
+        return changed;
     }
 }

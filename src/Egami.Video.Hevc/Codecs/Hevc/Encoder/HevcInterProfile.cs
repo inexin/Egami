@@ -121,8 +121,18 @@ internal sealed record HevcInterProfile
     /// </summary>
     internal bool TrialTransformSplit { get; init; } = true;
 
+    /// <summary>
+    /// Gets a change this encoder makes to the HEIC encoder's intra profile of the effort (<see cref="HevcEncoderProfile"/>), for its
+    /// I pictures and, before <see cref="IntraProfile"/> reduces it, the intra search of P and B pictures; null keeps it. HEIC's own
+    /// profile stays as it is, so HEIC output does not change.
+    /// </summary>
+    internal Func<HevcEncoderProfile, HevcEncoderProfile>? Intra { get; init; }
+
+    /// <summary>The intra search of an I picture: the HEIC encoder's profile of the effort with <see cref="Intra"/>.</summary>
+    internal HevcEncoderProfile KeyProfile(HevcEncoderProfile intra) => Intra is { } change ? change(intra) : intra;
+
     /// <summary>The intra search of a P picture's coding units: the I pictures' unless <see cref="FullIntra"/> is off.</summary>
-    internal HevcEncoderProfile IntraProfile(HevcEncoderProfile intra) => FullIntra ? intra : intra with
+    internal HevcEncoderProfile IntraProfile(HevcEncoderProfile intra) => FullIntra ? KeyProfile(intra) : KeyProfile(intra) with
     {
         NxN = false,
         SmallCandidates = 1,
@@ -145,13 +155,28 @@ internal sealed record HevcInterProfile
     /// <summary>Gets the profile for an effort from 0 to 10.</summary>
     internal static HevcInterProfile For(int effort) => Adjust is { } adjust ? adjust(Plain(effort)) : Plain(effort);
 
+    /// <summary>
+    /// The intra search of efforts 1 to 3: the HEIC encoder's of effort 3 with effort 4's rough mode steps and no most probable mode
+    /// candidates. Efforts 1 and 2 start from HEIC's own cheaper profiles, so it sets the fields where they differ.
+    /// </summary>
+    private static HevcEncoderProfile LadderIntra(HevcEncoderProfile intra) => intra with
+    {
+        NxN = true,
+        RoughStep = 4,
+        SmallCandidates = 3,
+        LargeCandidates = 2,
+        MostProbableCandidates = false,
+        Rdoq = true,
+        TransformSkip = true,
+    };
+
     private static HevcInterProfile Plain(int effort) => Math.Clamp(effort, 0, 10) switch
     {
         0 => new() { MinCuLog2 = 4, MaxCuLog2 = 5, References = 1, MergeCandidates = 2, Halves = false, TransformDepth = 0, SearchRange = 16, QuarterSamples = false, SecondCandidateRatio = 0 },
-        1 => new() { MinCuLog2 = 4, MaxCuLog2 = 5, References = 1, MergeCandidates = 2, Halves = false, TransformDepth = 0, SearchRange = 24, SecondCandidateRatio = 0 },
-        2 => new() { CoLocatedDepth = true, References = 2, MergeCandidates = 2, SearchRange = 32, SecondCandidateRatio = 0 },
-        3 => new() { CoLocatedDepth = true, References = 2, MergeCandidates = 3, SearchRange = 48, TransformSplit = true, Halves = false },
-        4 => new() { CoLocatedDepth = true, TransformSplit = true, Halves = false },
+        1 => new() { CoLocatedDepth = true, MinCuLog2 = 4, References = 2, MergeCandidates = 3, SearchRange = 48, Halves = false, SecondCandidateRatio = 0, Intra = LadderIntra },
+        2 => new() { CoLocatedDepth = true, MinCuLog2 = 4, References = 2, MergeCandidates = 3, SearchRange = 48, TransformSplit = true, Halves = false, SecondCandidateRatio = 0, Intra = LadderIntra },
+        3 => new() { CoLocatedDepth = true, References = 2, MergeCandidates = 3, SearchRange = 48, TransformSplit = true, Halves = false, SecondCandidateRatio = 0, Intra = LadderIntra },
+        4 => new() { CoLocatedDepth = true, TransformSplit = true, Halves = false, Intra = static intra => intra with { MostProbableCandidates = true, TransformSearch = false, MaxCuLog2 = 5 } },
         5 => new() { CoLocatedDepth = true, BReferences = 2, References = 3, MergeCandidates = 4, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false },
         6 => new() { BReferences = 2, References = 4, MergeCandidates = 5, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false },
         7 => new() { BReferences = 2, References = 4, MergeCandidates = 5, TransformDepth = 2, TransformSplit = true, SquareSubpel = true, RdoqKeptOnly = false, SplitStatistics = false, SecondCandidateRatio = 1.5 },
