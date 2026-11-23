@@ -10,7 +10,7 @@ namespace Egami.Formats.Extended.Fits;
 /// <summary>
 /// Writes an uncompressed FITS primary HDU: gray as a 2-axis image, colour as a cube of three planes (red, green, blue), 8-bit,
 /// unsigned 16-bit (stored with <c>BZERO</c> 32768) or float samples, the picture's bottom row first, as FITS stores it. The
-/// keywords of a raster read from FITS and those of <see cref="FitsWriterOptions.Keywords"/> follow the structural ones.
+/// keywords of a raster read from FITS and those of <see cref="FitsWriterOptions.Cards"/> follow the structural ones.
 /// </summary>
 internal sealed class FitsWriter : ExtendedWriter
 {
@@ -63,7 +63,7 @@ internal sealed class FitsWriter : ExtendedWriter
 
         IEnumerable<FitsCard> kept = details?.Header ?? (IEnumerable<FitsCard>)[];
         bool stretched = details is not null && details.Stretch != FitsStretch.None;
-        foreach (FitsCard card in kept.Concat(options.Keywords))
+        foreach (FitsCard card in kept.Concat(options.Cards))
         {
             string key = card.Keyword.ToUpperInvariant();
             if (Structural.Contains(key) || key.StartsWith("NAXIS", StringComparison.Ordinal) || (stretched && key is "DATAMIN" or "DATAMAX" or "BUNIT"))

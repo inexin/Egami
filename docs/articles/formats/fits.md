@@ -53,7 +53,9 @@ have no value. `GetString`, `GetInteger`, `GetReal` and `GetLogical` find a card
 which HDU and plane the raster is, its BITPIX, its tile compression, and the stretch with its limits. The world coordinate
 cards (`CRVAL1`, `CD1_1` and the rest) are kept as cards; Egami does not compute sky positions from them.
 
-`FitsFile` is for code that wants the file rather than a picture. `FitsFile.Load` reads every HDU's header (tables included),
+`FitsFile` is for code that wants the file rather than a picture. `FitsFile.Load` reads every HDU's header (tables included)
+from a path, a stream or memory; with `ReaderOptions.Recovery` lenient (the default) a damaged header after the primary one
+ends the list, and strict throws.
 `Hdus` lists them as `FitsHdu`s with their kind (a `FitsHduKind`), BITPIX, axes and compression, `ReadValues` gives an image's physical values as
 `double`, and `ReadPlane` gives one plane as an unstretched `Raster<GrayF32>`.
 
@@ -81,7 +83,7 @@ pixels write a 2D image; colour pixels write a cube of three planes, red, green 
 A raster read from FITS keeps its header cards: everything but the cards the structure needs (such as `SIMPLE`, `BITPIX`,
 `NAXISn`, `BSCALE`, `BZERO`, `BLANK`, `EXTEND` and the extension and compression keywords), which the writer makes again. A raster loaded
 with a stretch no longer holds the physical values, so `DATAMIN`, `DATAMAX` and `BUNIT` are dropped from it.
-`FitsWriterOptions.Keywords` adds more cards. Long strings are written as CONTINUE cards, keywords longer than eight characters
+`FitsWriterOptions.Cards` adds more cards. Long strings are written as CONTINUE cards, keywords longer than eight characters
 as HIERARCH, and characters outside printable ASCII are dropped, as the standard asks.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/FormatsExtended.cs#fits-save)]

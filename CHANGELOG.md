@@ -91,6 +91,8 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
 Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PRs A to G2): black-and-white, grayscale, color, logo and
 pixel-art images become vector shapes, and line art becomes stroked centre lines. Additive to 1.4.0.
 
+Changed since 1.5.0-preview.1: `TraceAsync<TPixel>` for a typed raster, beside `TraceAsync` for any raster.
+
 - `raster.Trace(options)` (namespace `Egami.Drawing.Tracing`, also `Trace<TPixel>` and `TraceAsync` with a cancellation
   token) traces a raster's first frame and returns a `TraceResult`: `TracedShape`s back to front (a `Path`, an `Rgba8`
   color, `TracedShapeKind.Fill` or `Stroke`) and their `Palette`, with `Draw(canvas)`, `ToPicture()` and `ToPath(color)`.
@@ -165,6 +167,8 @@ pixel-art images become vector shapes, and line art becomes stroked centre lines
 Built-in hyphenation dictionaries and optimal line breaking, after 1.5.0-preview.1 (Hyphenation Build Plan tasks 5 to 8).
 Additive to 1.4.0. `.ehyp` files that 1.5.0-preview.1 wrote are version 1 and must be compiled again.
 
+Changed since 1.5.0-preview.1: `Hyphenator.Save`'s parameter is `stream` (was `output`), as in every other `Save`.
+
 - `HyphenationDictionaries.BuiltIn`: hyph-utf8's patterns for 35 languages, compiled into Egami.Fonts (1.3 MB) and each
   loaded the first time it is used, in at most 0.6 ms (German, the largest). They are en-US, en-GB, de-1996, de-1901,
   de-CH-1901, fr, nb, nn, da, es, pt, gl, it, nl, eu, la, ga, cy, pl, sk, sl, hr, bg, uk, be, et, lt, sq, el-monoton, af,
@@ -202,6 +206,16 @@ Additive to 1.4.0. `.ehyp` files that 1.5.0-preview.1 wrote are version 1 and mu
   tool.
 
 ## Egami (unreleased)
+
+Changed since 1.5.0-preview.1 (API review before 1.5.0; these members are new in the 1.5 train, so 1.4.0 code is unaffected):
+
+- `Egami.Compression.Zstandard` is internal again. Egami.Formats.Extended's KTX reader and writer reach it through
+  `InternalsVisibleTo`, so Egami.Formats.Extended now depends on exactly the Egami it was built with, as Egami.Heic does.
+- Egami.Formats.Extended: `FitsFile.Load` takes `ReaderOptions` (lenient recovery ends the HDU list at a damaged header after
+  the primary one, strict throws) and has a `ReadOnlyMemory<byte>` overload. `Texture.Load` takes `ReaderOptions` (also
+  `DdsReaderOptions` or `KtxReaderOptions`); options that pick one surface, mip or region are ignored.
+- Egami.Formats.Extended renames: `FitsWriterOptions.Keywords` is `Cards`; `Texture.Save`'s stream parameter is `stream`
+  (was `output`). `DicomElement.GetStrings` returns `string[]`, as `GetNumbers`, `GetIntegers` and `GetTags` return arrays.
 
 Fixed: damaged files the nightly fuzz runs found (issues 351, 360 to 367 and 380). Every one is reported as an `EgamiException`, and a
 Strict incremental decode now succeeds or fails as the whole decode does.

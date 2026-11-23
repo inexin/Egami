@@ -16,7 +16,7 @@
 [EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetNumbers() -> double[]!
 [EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetPersonName() -> Egami.Formats.Extended.Dicom.DicomPersonName?
 [EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetString() -> string!
-[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetStrings() -> System.Collections.Generic.IReadOnlyList<string!>!
+[EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetStrings() -> string![]!
 [EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetTags() -> Egami.Formats.Extended.Dicom.DicomTag[]!
 [EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.GetTime() -> System.TimeOnly?
 [EGAMIX001]Egami.Formats.Extended.Dicom.DicomElement.IsEmpty.get -> bool
@@ -376,8 +376,8 @@ Egami.Formats.Extended.Fits.FitsWriterOptions
 Egami.Formats.Extended.Fits.FitsWriterOptions.Bitpix.get -> int?
 Egami.Formats.Extended.Fits.FitsWriterOptions.Bitpix.init -> void
 Egami.Formats.Extended.Fits.FitsWriterOptions.FitsWriterOptions() -> void
-Egami.Formats.Extended.Fits.FitsWriterOptions.Keywords.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Extended.Fits.FitsCard!>!
-Egami.Formats.Extended.Fits.FitsWriterOptions.Keywords.init -> void
+Egami.Formats.Extended.Fits.FitsWriterOptions.Cards.get -> System.Collections.Generic.IReadOnlyList<Egami.Formats.Extended.Fits.FitsCard!>!
+Egami.Formats.Extended.Fits.FitsWriterOptions.Cards.init -> void
 Egami.Formats.Extended.JpegLs.JpegLsColorTransform
 Egami.Formats.Extended.JpegLs.JpegLsColorTransform.Hp1 = 1 -> Egami.Formats.Extended.JpegLs.JpegLsColorTransform
 Egami.Formats.Extended.JpegLs.JpegLsColorTransform.Hp2 = 2 -> Egami.Formats.Extended.JpegLs.JpegLsColorTransform
@@ -588,7 +588,7 @@ Egami.Formats.Extended.Textures.Texture.MipHeight(int mip) -> int
 Egami.Formats.Extended.Textures.Texture.MipLevels.get -> int
 Egami.Formats.Extended.Textures.Texture.MipWidth(int mip) -> int
 Egami.Formats.Extended.Textures.Texture.Save(string! path, Egami.Formats.WriterOptions? options = null) -> void
-Egami.Formats.Extended.Textures.Texture.Save(System.IO.Stream! output, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options = null) -> void
+Egami.Formats.Extended.Textures.Texture.Save(System.IO.Stream! stream, Egami.Formats.FormatInfo! format, Egami.Formats.WriterOptions? options = null) -> void
 Egami.Formats.Extended.Textures.Texture.SetImage(Egami.Raster! image, int mip = 0, int layer = 0, int face = 0, int slice = 0) -> void
 Egami.Formats.Extended.Textures.Texture.TrimMips(int mipLevels) -> void
 Egami.Formats.Extended.Textures.Texture.Width.get -> int
@@ -628,8 +628,9 @@ static Egami.Formats.Extended.ExtendedContextExtensions.WithKtx(this Egami.Egami
 static Egami.Formats.Extended.ExtendedContextExtensions.WithKtx2(this Egami.EgamiContext! context) -> Egami.EgamiContext!
 static Egami.Formats.Extended.Fits.FitsCard.operator !=(Egami.Formats.Extended.Fits.FitsCard? left, Egami.Formats.Extended.Fits.FitsCard? right) -> bool
 static Egami.Formats.Extended.Fits.FitsCard.operator ==(Egami.Formats.Extended.Fits.FitsCard? left, Egami.Formats.Extended.Fits.FitsCard? right) -> bool
-static Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Fits.FitsFile!
-static Egami.Formats.Extended.Fits.FitsFile.Load(string! path, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Fits.FitsFile!
+static Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.Extended.Fits.FitsFile!
+static Egami.Formats.Extended.Fits.FitsFile.Load(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.Extended.Fits.FitsFile!
+static Egami.Formats.Extended.Fits.FitsFile.Load(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.Extended.Fits.FitsFile!
 static Egami.Formats.Extended.Fits.FitsFormat.Info.get -> Egami.Formats.FormatInfo!
 static Egami.Formats.Extended.Fits.FitsReaderOptions.Default.get -> Egami.Formats.Extended.Fits.FitsReaderOptions!
 static Egami.Formats.Extended.Fits.FitsReaderOptions.operator !=(Egami.Formats.Extended.Fits.FitsReaderOptions? left, Egami.Formats.Extended.Fits.FitsReaderOptions? right) -> bool
@@ -644,9 +645,9 @@ static Egami.Formats.Extended.Ktx.KtxReaderOptions.operator !=(Egami.Formats.Ext
 static Egami.Formats.Extended.Ktx.KtxReaderOptions.operator ==(Egami.Formats.Extended.Ktx.KtxReaderOptions? left, Egami.Formats.Extended.Ktx.KtxReaderOptions? right) -> bool
 static Egami.Formats.Extended.Textures.Texture.FromSlices(System.Collections.Generic.IReadOnlyList<Egami.Raster!>! slices) -> Egami.Formats.Extended.Textures.Texture!
 static Egami.Formats.Extended.Textures.Texture.FromSurfaces(System.Collections.Generic.IReadOnlyList<Egami.Raster!>! surfaces, bool cube = false) -> Egami.Formats.Extended.Textures.Texture!
-static Egami.Formats.Extended.Textures.Texture.Load(string! path, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Textures.Texture!
-static Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Textures.Texture!
-static Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null) -> Egami.Formats.Extended.Textures.Texture!
+static Egami.Formats.Extended.Textures.Texture.Load(string! path, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.Extended.Textures.Texture!
+static Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream! stream, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.Extended.Textures.Texture!
+static Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null, Egami.Formats.ReaderOptions? options = null) -> Egami.Formats.Extended.Textures.Texture!
 ~[EGAMIX001]override Egami.Formats.Extended.Dicom.DicomTag.Equals(object obj) -> bool
 [EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails
 [EGAMIX001]Egami.Formats.Extended.Dicom.DicomDetails.BitsStored.get -> int

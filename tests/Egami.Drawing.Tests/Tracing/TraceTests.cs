@@ -303,6 +303,29 @@ public class TraceTests
     }
 
     [Fact]
+    public async Task TypedTraceAsyncMatchesTypedTrace()
+    {
+        using Raster<RgbaF32> floats = Raster.Create(20, 20, new RgbaF32(1, 1, 1, 1));
+        for (int y = 5; y < 15; y++)
+        {
+            for (int x = 5; x < 15; x++)
+            {
+                floats.SetPixel(x, y, new RgbaF32(0, 0, 0, 1));
+            }
+        }
+
+        TraceResult typed = await floats.TraceAsync(TraceOptions.BlackAndWhite, cancellationToken: Ct);
+        TracedShape shape = Assert.Single(typed.Shapes);
+        Assert.Equal(PathEffectTests.Area(floats.Trace(TraceOptions.BlackAndWhite).Shapes[0].Path), PathEffectTests.Area(shape.Path), 1e-6);
+        TraceResult untyped = await ((Raster)floats).TraceAsync(TraceOptions.BlackAndWhite, cancellationToken: Ct);
+        Assert.Single(untyped.Shapes);
+
+        using CancellationTokenSource cancelled = new();
+        await cancelled.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => floats.TraceAsync(cancellationToken: cancelled.Token));
+    }
+
+    [Fact]
     public void ContextLimitsApply()
     {
         using Raster<Rgba8> raster = Raster.Create(30, 30, Rgba8.White);
