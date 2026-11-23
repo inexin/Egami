@@ -152,6 +152,7 @@ internal static class VideoCli
         root.Subcommands.Add(EditCommands.Edit(session));
 
         root.Subcommands.Add(FormatsCommand.Create(session));
+        root.Subcommands.Add(HwprobeCommand.Create(session));
         root.Subcommands.Add(FfmpegMode.CreateFfmpeg(session));
         root.Subcommands.Add(FfmpegMode.CreateFfprobe(session));
         root.Subcommands.Add(Mcp.VideoMcpCommand.Create(session));

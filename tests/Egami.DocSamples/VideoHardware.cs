@@ -141,4 +141,48 @@ public class VideoHardware
 
         Assert.Equal(30, count);
     }
+
+    [Fact]
+    public void WithHardware()
+    {
+        using SampleFiles files = new();
+        VideoWriterOptions options = new() { Codec = HevcCodec.Instance, FrameRate = new Rational(30, 1), Quality = 50, Effort = 0 };
+        using (VideoWriter writer = VideoWriter.Create("clip.mp4", options))
+        {
+            using Raster<Rgb8> duck = Raster.Load<Rgb8>("duck.png");
+            for (int i = 0; i < 4; i++)
+            {
+                using Raster<Rgb8> frame = duck.Derive(ops => ops.Crop(new Rect(i * 4, 0, 320, 240)));
+                writer.WriteFrame(frame);
+            }
+        }
+
+        int count = 0;
+
+        #region withhardware
+        // Decode H.264 and HEVC on the GPU wherever it can, with the software codecs for the rest: register the software
+        // codecs first, then the hardware ones. On a machine without a GPU the context stays as it was. At startup,
+        // MediaContext.SetDefault(context) makes it the context every reader uses.
+        MediaContext context = MediaContext.Default.WithH264().WithHevc().WithHardwareCodecs();
+        using (VideoReader reader = VideoReader.Open("clip.mp4", context: context))
+        {
+            foreach (YuvVideoFrame frame in reader.ReadFrames())
+            {
+                using (frame)
+                {
+                    count++; // the same samples as the software decoder gives, from whichever decoded it
+                }
+            }
+        }
+
+        // Encode on the GPU too: VideoWriter takes the codec the context holds for HEVC, which encodes on the GPU where it
+        // can code the options and in software where it cannot.
+        MediaContext both = MediaContext.Default.WithH264().WithHevc().WithHardwareCodecs(HardwareUse.All);
+        VideoCodec hevc = both.Codecs.First(c => c.CodecId == CodecIds.Hevc);
+        VideoWriterOptions fast = new() { Codec = hevc, FrameRate = new Rational(30, 1), Quality = 60 };
+        #endregion
+
+        Assert.Equal(4, count);
+        Assert.True(fast.Codec.CanEncode);
+    }
 }

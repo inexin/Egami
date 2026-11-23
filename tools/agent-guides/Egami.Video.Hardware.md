@@ -21,6 +21,11 @@ Namespaces: `Egami.Video.Hardware`, with `Egami.Video` (`CodecIds`, `VideoWriter
 - `HardwareVideoCodecs.Hevc`: the same for HEVC. It encodes 4:2:0 in the Main and Main 10 profiles with `VideoEncoderOptions` and
   `HevcEncoderOptions`, and decodes 4:2:0 Main and Main 10 streams to the same samples as the software decoder:
   `MediaContext.Default.WithHevc().WithCodec(HardwareVideoCodecs.Hevc)`.
+- `context.WithHardwareCodecs(HardwareUse use = HardwareUse.Decode)`: wraps the H.264 and HEVC codecs already in the context
+  so that tracks decode on the GPU where it can, in software otherwise, with the same frames. Call it after `WithH264()` and
+  `WithHevc()`. `HardwareUse.All` also encodes on the GPU, falling back to software for what the GPU cannot code. Returns
+  the context unchanged without a GPU.
+- `egami-video hwprobe [--json]` lists the devices and profiles from a shell.
 - `HardwareVideoException`: the driver refused or failed an operation; `ResultCode` is the negative `VkResult`.
 
 ## Samples
@@ -49,6 +54,10 @@ Decode HEVC on the GPU, with the software decoder where there is no GPU:
 
 {{sample VideoHardware.cs#decodehevc}}
 
+Use the GPU wherever it can, the software codecs elsewhere:
+
+{{sample VideoHardware.cs#withhardware}}
+
 ## Common mistakes
 
 - Assuming hardware exists. Servers, CI runners and 32-bit processes have none: check `IsAvailable` and keep the software
@@ -58,6 +67,8 @@ Decode HEVC on the GPU, with the software decoder where there is no GPU:
 - Asking `HardwareVideoCodecs.H264` for two-pass encoding (`FirstPassStats`): it throws.
 - Decoding interlaced (field or MBAFF), monochrome, 4:2:2 or 10-bit H.264 with it: `UnsupportedFormatException`. Use the
   software decoder.
+- Calling `WithHardwareCodecs()` before `WithH264()` or `WithHevc()`: the software codec registered later replaces the
+  hardware one.
 - Calling `WithCodec(HardwareVideoCodecs.H264)` before `WithH264()`, or `WithCodec(HardwareVideoCodecs.Hevc)` before
   `WithHevc()`: the software codec then replaces it.
 - Turning B-frames on by default. Some GPUs predict B pictures from the earlier reference only and files get bigger; they are

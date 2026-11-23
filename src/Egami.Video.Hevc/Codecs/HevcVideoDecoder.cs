@@ -243,7 +243,7 @@ internal sealed class HevcVideoDecoder : IVideoDecoder
                 : new YuvColor(next.Height <= 576 ? YuvMatrix.Bt601 : YuvMatrix.Bt709, color.FullRange ? YuvRange.Full : YuvRange.Limited, siting);
             YuvRaster raster = next.BitDepth == 8
                 ? YuvRaster.Create(next.Width, next.Height, next.Chroma, yuvColor, false, _egami)
-                : YuvRaster.Create(next.Width, next.Height, next.Chroma, next.BitDepth, yuvColor, false, _egami);
+                : YuvRaster.Create(next.Width, next.Height, next.Chroma, next.BitDepth is 9 or 11 ? next.BitDepth + 1 : next.BitDepth, yuvColor, false, _egami);
             try
             {
                 _decoder.TryReceiveFrame(raster, out _);

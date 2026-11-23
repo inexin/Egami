@@ -37,6 +37,14 @@ if (args is ["--encode-hevc", .. string[] hevcEncode])
     return;
 }
 
+// Time the GPU's H.264 and HEVC encoding and decoding against the software codecs (Vulkan Video PR E):
+// -- --time-hardware <clip.y4m>... [--frames=N] [--qp=N]
+if (args is ["--time-hardware", .. string[] hardware])
+{
+    HardwareTiming.Run(hardware);
+    return;
+}
+
 // Time H.264 decoding (V7 speed gate): -- --time-h264 <file.h264>...
 if (args is ["--time-h264", .. string[] h264])
 {

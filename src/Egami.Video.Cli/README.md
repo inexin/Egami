@@ -2,7 +2,7 @@
 
 The `egami-video` command: inspect, remux, cut, join and convert video and audio files from a shell or a build script with
 [Egami.Video](https://github.com/inexin/Egami), a fully managed video library for .NET. It does the jobs people reach for
-ffprobe and ffmpeg for, without native code.
+ffprobe and ffmpeg for, without native code (only `hwprobe` asks the GPU driver what its video engine does).
 
 ```sh
 dotnet tool install --global Egami.Video.Cli
@@ -16,7 +16,7 @@ egami-video ffmpeg -i in.avi -c copy out.mkv
 
 - Commands: info, remux, trim, concat, segment, timestamps, extract, embed, metadata, subs, frames, encode, run, thumbnail, scenes,
   analyze, waveform, spectrum, generate, sheet, animate, hash, compare, verify and audio; editing with join, fade, overlay
-  (green screens with `--key auto`), pip, stack, speed, reverse, loop, freeze, slideshow, stabilize and edit; and formats.
+  (green screens with `--key auto`), pip, stack, speed, reverse, loop, freeze, slideshow, stabilize and edit; formats; and hwprobe, which lists the GPU video engines.
 - `--deinterlace` turns interlaced video progressive on encode, run, frames and the editing commands.
 - Reads AVI, Matroska and WebM, MP4 and QuickTime, IVF, YUV4MPEG2, raw AV1, WAV, FLAC and Ogg; decodes Motion JPEG, VP8, VP9, FFV1,
   AV1, PCM, FLAC, Opus and Vorbis; copies any track as packets, H.264 and HEVC included.

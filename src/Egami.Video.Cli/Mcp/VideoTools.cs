@@ -31,7 +31,7 @@ internal static class VideoTools
             WebsiteUrl = "https://inexin.github.io/Egami/",
             Instructions = "egami-video inspects, remuxes, cuts, joins and converts video and audio files on this computer with Egami.Video, a fully managed .NET library; it also exports frames, makes thumbnails, contact sheets and animations, and checks clips. "
                 + "Every tool is an egami-video command; paths are files, globs or folders inside the folders the user allowed, and outputs never replace inputs unless in_place is true. "
-                + "Start with info, which answers in JSON; formats lists the containers and codecs. Times are seconds, [HH:]MM:SS[.mmm] or #frame; tracks are v, a, s, a:1, s:eng or a track number. "
+                + "Start with info, which answers in JSON; formats lists the containers and codecs, hwprobe the GPU video engines. Times are seconds, [HH:]MM:SS[.mmm] or #frame; tracks are v, a, s, a:1, s:eng or a track number. "
                 + "Video jobs can take a while: they send progress notifications and stop when the call is cancelled, leaving no partial file. "
                 + "Every result is an object: exitCode (0 success, 1 a file failed or compare found a difference, 2 a usage error, 3 a safety limit), written (the files written), output (the command's JSON or text) and messages (warnings and errors).",
             CreateRoot = () => VideoCli.CreateRoot(new VideoSession(new CliConsole(() => Stream.Null, () => Stream.Null, TextWriter.Null, TextWriter.Null), ".", _ => null)),
@@ -39,7 +39,7 @@ internal static class VideoTools
             Failure = VideoSession.FailureOf,
             Excluded = new HashSet<string>(McpToolSet.DefaultExcluded, StringComparer.Ordinal) { "--progress", "--progress-format" },
             NotTools = new HashSet<string>(StringComparer.Ordinal) { "mcp", "ffmpeg", "ffprobe" },
-            ReadOnly = new HashSet<string>(StringComparer.Ordinal) { "info", "formats", "hash", "compare", "verify", "scenes", "analyze" },
+            ReadOnly = new HashSet<string>(StringComparer.Ordinal) { "info", "formats", "hwprobe", "hash", "compare", "verify", "scenes", "analyze" },
             Needed = new HashSet<(string, string)> { ("compare", "reference") },
             Checks = new HashSet<string>(StringComparer.Ordinal) { "compare", "verify" },
             Preview = Preview,
