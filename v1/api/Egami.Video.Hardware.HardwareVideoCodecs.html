@@ -176,13 +176,15 @@ in 4:2:0.
 
   <h3 id="Egami_Video_Hardware_HardwareVideoCodecs_H264" data-uid="Egami.Video.Hardware.HardwareVideoCodecs.H264">
   H264
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L68"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the hardware H.264 codec: its <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_">CreateEncoder(VideoEncoderOptions, MediaContext)</a> encodes on the GPU through Vulkan Video, 8-bit
 4:2:0 in the Constrained Baseline, Main and High profiles. Hand it frames as Egami's software encoder takes them, with the
 same <a class="xref" href="Egami.Video.Codecs.VideoEncoderOptions.html">VideoEncoderOptions</a> and <a class="xref" href="Egami.Video.Codecs.H264EncoderOptions.html">H264EncoderOptions</a>: quality, quantizer, constant and variable
-bitrate, keyframe interval, B-frames and Annex B packets. Decoding comes in a later preview.</p>
+bitrate, keyframe interval, B-frames and Annex B packets. Its <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CreateDecoder_Egami_Video_VideoTrackInfo_Egami_Video_Codecs_VideoDecoderOptions_Egami_Video_MediaContext_">CreateDecoder(VideoTrackInfo, VideoDecoderOptions?, MediaContext)</a> decodes progressive
+8-bit 4:2:0 streams on the GPU to the same samples as Egami's software decoder; add it to a context with
+<a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_WithCodec_Egami_Video_Codecs_VideoCodec_">WithCodec(VideoCodec)</a> to have <a class="xref" href="Egami.Video.VideoReader.html">VideoReader</a> use it.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -216,6 +218,21 @@ using (VideoWriter writer = VideoWriter.Create("duck-gpu.mp4", options))
 
 // A stream at 2 Mbit/s with a keyframe every second.
 VideoWriterOptions streaming = options with { RateControl = RateControlMode.ConstantBitrate, Bitrate = 2_000_000, KeyframeInterval = 30 };</code></pre>
+<pre><code class="lang-csharp">// Decode H.264 on the GPU where there is one: the hardware codec takes the software codec's place in the context.
+MediaContext context = MediaContext.Default.WithH264();
+if (HardwareVideoCodecs.IsAvailable(CodecIds.Avc, HardwareDirection.Decode))
+{
+    context = context.WithCodec(HardwareVideoCodecs.H264);
+}
+
+using VideoReader reader = VideoReader.Open("duck-gpu.mp4", context: context);
+foreach (YuvVideoFrame frame in reader.ReadFrames())
+{
+    using (frame)
+    {
+        count++; // frame.Planes holds the 8-bit 4:2:0 picture, the same samples Egami's software decoder gives
+    }
+}</code></pre>
 
 
   <h4 class="section" id="Egami_Video_Hardware_HardwareVideoCodecs_H264_remarks">Remarks</h4>
@@ -236,6 +253,13 @@ HDR SEI messages are not written (the track carries the HDR metadata). The outpu
 Creating an encoder throws <a class="xref" href="Egami.Video.Hardware.HardwareVideoException.html">HardwareVideoException</a> when no GPU encodes H.264, and
 <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a> when the GPU cannot code the size, level or rate control asked for.
 </p>
+<p>
+The decoder reads the stream with Egami's own H.264 parser, keeps the decoded picture buffer, and has the GPU decode each
+picture and copy it back; frames come out in output order as <a class="xref" href="Egami.YuvRaster-1.html">YuvRaster&lt;TSample&gt;</a> of bytes, cropped, with the
+color the software decoder gives. Field pictures, MBAFF frames, monochrome, 4:2:2 and streams above 8 bits throw
+<a class="xref" href="Egami.UnsupportedFormatException.html">UnsupportedFormatException</a> when their first picture comes; <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CanDecode_Egami_Video_TrackInfo_">CanDecode(TrackInfo)</a> turns down
+tracks whose bit depth or chroma format says so up front.
+</p>
 </div>
 
 
@@ -245,7 +269,7 @@ Creating an encoder throws <a class="xref" href="Egami.Video.Hardware.HardwareVi
 
   <h3 id="Egami_Video_Hardware_HardwareVideoCodecs_UnavailableReason" data-uid="Egami.Video.Hardware.HardwareVideoCodecs.UnavailableReason">
   UnavailableReason
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L77"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets why <a class="xref" href="Egami.Video.Hardware.HardwareVideoCodecs.html#Egami_Video_Hardware_HardwareVideoCodecs_GetDevices">GetDevices()</a> found no device with hardware video, such as a missing Vulkan loader or a driver without
@@ -300,7 +324,7 @@ foreach (HardwareVideoDevice device in devices)
 
   <h3 id="Egami_Video_Hardware_HardwareVideoCodecs_GetDevices" data-uid="Egami.Video.Hardware.HardwareVideoCodecs.GetDevices">
   GetDevices()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L84"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the GPUs with hardware video codecs Egami can use, and their profiles.</p>
@@ -351,7 +375,7 @@ foreach (HardwareVideoDevice device in devices)
 
   <h3 id="Egami_Video_Hardware_HardwareVideoCodecs_IsAvailable_System_String_Egami_Video_Hardware_HardwareDirection_" data-uid="Egami.Video.Hardware.HardwareVideoCodecs.IsAvailable(System.String,Egami.Video.Hardware.HardwareDirection)">
   IsAvailable(string, HardwareDirection)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video.Hardware/HardwareVideoCodecs.cs/#L94"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns whether some GPU on this machine decodes or encodes <code class="paramref">codecId</code> in hardware.</p>
