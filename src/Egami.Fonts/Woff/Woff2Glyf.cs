@@ -6,9 +6,10 @@ using Egami.Fonts.Subsetting;
 namespace Egami.Fonts.Woff;
 
 /// <summary>
-/// Rebuilds standard 'glyf' and 'loca' tables from WOFF2's transformed glyf (W3C WOFF 2.0, section 5.1): the seven sub-streams,
-/// the bounding box and overlap bitmaps, and points in the triplet encoding. Each glyph is written in the compact simple-glyph
-/// form with repeated flags and padded to four bytes, as the reference decoder writes it.
+/// WOFF2's transformed glyf (W3C WOFF 2.0, section 5.1): the seven sub-streams, the bounding box and overlap bitmaps, and points
+/// in the triplet encoding. <see cref="Rebuild"/> writes standard 'glyf' and 'loca' tables from it, each glyph in the compact
+/// simple-glyph form with repeated flags and padded to four bytes, as the reference decoder writes it; <see cref="Transform"/>
+/// writes it from 'glyf' and 'loca', and <see cref="TransformHmtx"/> the hmtx transform (section 5.4).
 /// </summary>
 internal static class Woff2Glyf
 {
@@ -237,6 +238,434 @@ internal static class Woff2Glyf
         }
 
         return new Result(glyf.ToArray(), locaBytes, xMin);
+    }
+
+    /// <summary>A transformed glyf table and each glyph's xMin, as a decoder rebuilds it (0 for an empty glyph).</summary>
+    public sealed record Transformed(byte[] Data, short[] XMin);
+
+    /// <summary>
+    /// Writes the transformed glyf from standard 'glyf' and 'loca' tables: bounding boxes only where they differ from the points'
+    /// and always for composites, and the overlap bitmap when a simple glyph's first flag has OVERLAP_SIMPLE.
+    /// </summary>
+    /// <param name="glyf">The glyf table.</param>
+    /// <param name="loca">The loca table.</param>
+    /// <param name="glyphCount">maxp's numGlyphs.</param>
+    /// <param name="indexFormat">head's indexToLocFormat: 0 short, 1 long.</param>
+    /// <returns>The transformed table, or null when the rebuilt glyf would not fit the short loca format.</returns>
+    /// <exception cref="CorruptDataException">loca or a glyph cannot be read.</exception>
+    public static Transformed? Transform(ReadOnlySpan<byte> glyf, ReadOnlySpan<byte> loca, int glyphCount, int indexFormat)
+    {
+        if (indexFormat is not (0 or 1))
+        {
+            throw FontErrors.Corrupt(0, $"head gives loca format {indexFormat}.");
+        }
+
+        int entry = indexFormat == 0 ? 2 : 4;
+        if (loca.Length < (glyphCount + 1) * entry)
+        {
+            throw FontErrors.Corrupt(0, $"The loca table holds fewer than {glyphCount + 1} offsets.");
+        }
+
+        var nContours = new ByteWriter(glyphCount * 2);
+        var nPoints = new ByteWriter(glyphCount * 4);
+        var flags = new ByteWriter(glyf.Length / 3);
+        var glyphs = new ByteWriter(glyf.Length * 3 / 4);
+        var composites = new ByteWriter(64);
+        var bboxes = new ByteWriter(64);
+        var instructions = new Slices(glyphCount);
+        byte[] bboxBitmap = new byte[4 * ((glyphCount + 31) / 32)];
+        byte[] overlap = new byte[(glyphCount + 7) / 8];
+        bool anyOverlap = false;
+        var xMin = new short[glyphCount];
+        long rebuilt = 0;
+        var scratch = new GlyphScratch();
+        for (int g = 0; g < glyphCount; g++)
+        {
+            uint start = LocaAt(loca, g, indexFormat), end = LocaAt(loca, g + 1, indexFormat);
+            if (end < start || end > glyf.Length)
+            {
+                throw FontErrors.Corrupt(0, $"loca gives glyph {g} the bytes {start} to {end} of a {glyf.Length}-byte glyf table.");
+            }
+
+            if (end - start < 10)
+            {
+                // Empty (or too short to hold a header, which readers draw empty too).
+                nContours.U16(0);
+                continue;
+            }
+
+            ReadOnlySpan<byte> data = glyf[(int)start..(int)end];
+            var r = new FontReader(data, start);
+            int contours = r.ReadInt16();
+            short x0 = r.ReadInt16(), y0 = r.ReadInt16(), x1 = r.ReadInt16(), y1 = r.ReadInt16();
+            if (contours == 0)
+            {
+                nContours.U16(0);
+                continue;
+            }
+
+            if (contours < 0)
+            {
+                if (contours != -1)
+                {
+                    throw FontErrors.Corrupt(start, $"Glyph {g} has {contours} contours.");
+                }
+
+                nContours.U16(0xFFFF);
+                int componentStart = r.Position, flagWord;
+                bool haveInstructions = false;
+                do
+                {
+                    flagWord = r.ReadUInt16();
+                    r.Skip(2 + ComponentArgumentBytes(flagWord));
+                    haveInstructions |= (flagWord & HaveInstructions) != 0;
+                }
+                while ((flagWord & MoreComponents) != 0);
+
+                composites.Bytes(data[componentStart..r.Position]);
+                int size = 10 + (r.Position - componentStart);
+                if (haveInstructions)
+                {
+                    int length = r.ReadUInt16();
+                    Write255UInt16(glyphs, length);
+                    instructions.Add((int)start + r.Position, length);
+                    r.Skip(length);
+                    size += 2 + length;
+                }
+
+                bboxBitmap[g >> 3] |= (byte)(0x80 >> (g & 7));
+                WriteBox(bboxes, x0, y0, x1, y1);
+                xMin[g] = x0;
+                rebuilt += (size + 3) & ~3;
+                continue;
+            }
+
+            nContours.U16(contours);
+            rebuilt += TransformSimple(ref r, start, g, contours, (x0, y0, x1, y1), scratch, nPoints, flags, glyphs, instructions, bboxes, bboxBitmap, overlap, ref anyOverlap);
+            xMin[g] = x0;
+        }
+
+        if (indexFormat == 0 && rebuilt > 0x1FFFE)
+        {
+            return null;
+        }
+
+        var w = new ByteWriter(36 + nContours.Length + nPoints.Length + flags.Length + glyphs.Length + composites.Length + bboxBitmap.Length + bboxes.Length + instructions.Length + (anyOverlap ? overlap.Length : 0));
+        w.U16(0);
+        w.U16(anyOverlap ? 1 : 0);
+        w.U16(glyphCount);
+        w.U16(indexFormat);
+        w.U32((uint)nContours.Length);
+        w.U32((uint)nPoints.Length);
+        w.U32((uint)flags.Length);
+        w.U32((uint)glyphs.Length);
+        w.U32((uint)composites.Length);
+        w.U32((uint)(bboxBitmap.Length + bboxes.Length));
+        w.U32((uint)instructions.Length);
+        w.Bytes(nContours.Written);
+        w.Bytes(nPoints.Written);
+        w.Bytes(flags.Written);
+        w.Bytes(glyphs.Written);
+        w.Bytes(composites.Written);
+        w.Bytes(bboxBitmap);
+        w.Bytes(bboxes.Written);
+        instructions.CopyTo(w, glyf);
+        if (anyOverlap)
+        {
+            w.Bytes(overlap);
+        }
+
+        return new Transformed(w.Take(), xMin);
+    }
+
+    /// <summary>
+    /// Writes the transformed hmtx (version 1): the bearings that equal each glyph's xMin are left out, the proportional and
+    /// monospaced runs each as a whole.
+    /// </summary>
+    /// <returns>The table, or null when no run can be left out or hmtx has not exactly the length hhea and maxp give.</returns>
+    public static byte[]? TransformHmtx(ReadOnlySpan<byte> hmtx, int metrics, int glyphs, short[] xMin)
+    {
+        if (metrics < 1 || metrics > glyphs || glyphs > xMin.Length || hmtx.Length != (metrics * 4) + ((glyphs - metrics) * 2))
+        {
+            return null;
+        }
+
+        bool proportional = true, monospaced = glyphs > metrics;
+        for (int i = 0; i < metrics && proportional; i++)
+        {
+            proportional = BinaryPrimitives.ReadInt16BigEndian(hmtx[((i * 4) + 2)..]) == xMin[i];
+        }
+
+        for (int i = metrics; i < glyphs && monospaced; i++)
+        {
+            monospaced = BinaryPrimitives.ReadInt16BigEndian(hmtx[((metrics * 4) + ((i - metrics) * 2))..]) == xMin[i];
+        }
+
+        if (!proportional && !monospaced)
+        {
+            return null;
+        }
+
+        var w = new ByteWriter(1 + hmtx.Length);
+        w.U8((proportional ? 1 : 0) | (monospaced ? 2 : 0));
+        for (int i = 0; i < metrics; i++)
+        {
+            w.Bytes(hmtx.Slice(i * 4, 2));
+        }
+
+        if (!proportional)
+        {
+            for (int i = 0; i < metrics; i++)
+            {
+                w.Bytes(hmtx.Slice((i * 4) + 2, 2));
+            }
+        }
+
+        if (!monospaced)
+        {
+            w.Bytes(hmtx[(metrics * 4)..]);
+        }
+
+        return w.ToArray();
+    }
+
+    /// <summary>Writes a 255UInt16 as the reference encoder does: one byte below 253, two below 762, else three.</summary>
+    internal static void Write255UInt16(ByteWriter w, int value)
+    {
+        if (value < 253)
+        {
+            w.U8(value);
+        }
+        else if (value < 506)
+        {
+            w.U8(255);
+            w.U8(value - 253);
+        }
+        else if (value < 762)
+        {
+            w.U8(254);
+            w.U8(value - 506);
+        }
+        else
+        {
+            w.U8(253);
+            w.U16(value);
+        }
+    }
+
+    // One simple glyph: contour point counts, a flag and triplet per point, the instructions, and the box when the points' box
+    // differs. Returns the length the decoder rebuilds it to, padded to four bytes.
+    private static long TransformSimple(ref FontReader r, long glyphAt, int g, int contours, (short X0, short Y0, short X1, short Y1) box, GlyphScratch s, ByteWriter nPoints, ByteWriter flagStream, ByteWriter glyphs, Slices instructions, ByteWriter bboxes, byte[] bboxBitmap, byte[] overlap, ref bool anyOverlap)
+    {
+        int previous = -1;
+        for (int c = 0; c < contours; c++)
+        {
+            int last = r.ReadUInt16();
+            if (last < previous)
+            {
+                throw FontErrors.Corrupt(glyphAt, $"Glyph {g}'s contour ends go backwards.");
+            }
+
+            Write255UInt16(nPoints, last - previous);
+            previous = last;
+        }
+
+        int count = previous + 1;
+        int instructionLength = r.ReadUInt16();
+        int codeAt = (int)glyphAt + r.Position;
+        r.Skip(instructionLength);
+        s.Ensure(count);
+        byte[] f = s.Flags;
+        for (int p = 0; p < count;)
+        {
+            byte flag = r.ReadByte();
+            f[p++] = flag;
+            if ((flag & Repeat) != 0)
+            {
+                int times = r.ReadByte();
+                if (times > count - p)
+                {
+                    throw FontErrors.Corrupt(glyphAt, $"Glyph {g}'s flags repeat past its {count} points.");
+                }
+
+                for (int k = 0; k < times; k++)
+                {
+                    f[p++] = flag;
+                }
+            }
+        }
+
+        int[] dx = s.Dx, dy = s.Dy;
+        for (int p = 0; p < count; p++)
+        {
+            int flag = f[p];
+            dx[p] = (flag & XShort) != 0 ? ((flag & XSame) != 0 ? r.ReadByte() : -r.ReadByte()) : (flag & XSame) != 0 ? 0 : r.ReadInt16();
+        }
+
+        for (int p = 0; p < count; p++)
+        {
+            int flag = f[p];
+            dy[p] = (flag & YShort) != 0 ? ((flag & YSame) != 0 ? r.ReadByte() : -r.ReadByte()) : (flag & YSame) != 0 ? 0 : r.ReadInt16();
+        }
+
+        // Each point's flag and triplet, the points' box, and the rebuilt glyph's flag, x and y bytes as WriteSimple writes them.
+        bool overlapping = count > 0 && (f[0] & OverlapSimple) != 0;
+        int x = 0, y = 0, minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
+        int flagBytes = 0, coordinateBytes = 0, lastFlag = -1, repeat = 0;
+        for (int p = 0; p < count; p++)
+        {
+            int ddx = dx[p], ddy = dy[p];
+            x += ddx;
+            y += ddy;
+            minX = Math.Min(minX, x);
+            minY = Math.Min(minY, y);
+            maxX = Math.Max(maxX, x);
+            maxY = Math.Max(maxY, y);
+            bool on = (f[p] & OnCurve) != 0;
+            WriteTriplet(flagStream, glyphs, ddx, ddy, on);
+
+            int rebuiltFlag = (on ? OnCurve : 0) | (overlapping && p == 0 ? OverlapSimple : 0);
+            rebuiltFlag |= ddx == 0 ? XSame : ddx is > -256 and < 256 ? XShort | (ddx > 0 ? XSame : 0) : 0;
+            rebuiltFlag |= ddy == 0 ? YSame : ddy is > -256 and < 256 ? YShort | (ddy > 0 ? YSame : 0) : 0;
+            coordinateBytes += (ddx == 0 ? 0 : ddx is > -256 and < 256 ? 1 : 2) + (ddy == 0 ? 0 : ddy is > -256 and < 256 ? 1 : 2);
+            if (rebuiltFlag == lastFlag && repeat != 255)
+            {
+                flagBytes += repeat == 0 ? 1 : 0;
+                repeat++;
+            }
+            else
+            {
+                flagBytes++;
+                repeat = 0;
+            }
+
+            lastFlag = rebuiltFlag;
+        }
+
+        Write255UInt16(glyphs, instructionLength);
+        instructions.Add(codeAt, instructionLength);
+        if (count == 0)
+        {
+            minX = minY = maxX = maxY = 0;
+        }
+
+        if (Clamp16(minX) != box.X0 || Clamp16(minY) != box.Y0 || Clamp16(maxX) != box.X1 || Clamp16(maxY) != box.Y1)
+        {
+            bboxBitmap[g >> 3] |= (byte)(0x80 >> (g & 7));
+            WriteBox(bboxes, box.X0, box.Y0, box.X1, box.Y1);
+        }
+
+        if (overlapping)
+        {
+            overlap[g >> 3] |= (byte)(0x80 >> (g & 7));
+            anyOverlap = true;
+        }
+
+        long size = 10 + (2L * contours) + 2 + instructionLength + flagBytes + coordinateBytes;
+        return (size + 3) & ~3L;
+    }
+
+    // One point in the triplet encoding (WOFF 2.0, section 5.2): the flag's top bit set for an off-curve point, its low seven bits
+    // choosing how many bytes the deltas take; bit 0 of the index is x's sign and bit 1 y's, set for positive.
+    private static void WriteTriplet(ByteWriter flags, ByteWriter glyphs, int dx, int dy, bool on)
+    {
+        int ax = Math.Abs(dx), ay = Math.Abs(dy);
+        int xSign = dx >= 0 ? 1 : 0, ySign = dy >= 0 ? 1 : 0;
+        int onBit = on ? 0 : 0x80;
+        if (dx == 0 && ay < 1280)
+        {
+            flags.U8(onBit | ((ay >> 8) << 1) | ySign);
+            glyphs.U8(ay & 0xFF);
+        }
+        else if (dy == 0 && ax < 1280)
+        {
+            flags.U8(onBit | (10 + ((ax >> 8) << 1) + xSign));
+            glyphs.U8(ax & 0xFF);
+        }
+        else if (ax <= 64 && ay <= 64)
+        {
+            flags.U8(onBit | (20 + ((ax - 1) & 0x30) + (((ay - 1) & 0x30) >> 2) + (ySign << 1) + xSign));
+            glyphs.U8((((ax - 1) & 0x0F) << 4) | ((ay - 1) & 0x0F));
+        }
+        else if (ax <= 768 && ay <= 768)
+        {
+            flags.U8(onBit | (84 + (12 * ((ax - 1) >> 8)) + (((ay - 1) >> 8) << 2) + (ySign << 1) + xSign));
+            glyphs.U8((ax - 1) & 0xFF);
+            glyphs.U8((ay - 1) & 0xFF);
+        }
+        else if (ax < 4096 && ay < 4096)
+        {
+            flags.U8(onBit | (120 + (ySign << 1) + xSign));
+            glyphs.U8(ax >> 4);
+            glyphs.U8(((ax & 0x0F) << 4) | (ay >> 8));
+            glyphs.U8(ay & 0xFF);
+        }
+        else
+        {
+            flags.U8(onBit | (124 + (ySign << 1) + xSign));
+            glyphs.U16(ax);
+            glyphs.U16(ay);
+        }
+    }
+
+    private static void WriteBox(ByteWriter w, short x0, short y0, short x1, short y1)
+    {
+        w.U16(x0);
+        w.U16(y0);
+        w.U16(x1);
+        w.U16(y1);
+    }
+
+    private static uint LocaAt(ReadOnlySpan<byte> loca, int index, int indexFormat) =>
+        indexFormat == 0 ? BinaryPrimitives.ReadUInt16BigEndian(loca[(index * 2)..]) * 2u : BinaryPrimitives.ReadUInt32BigEndian(loca[(index * 4)..]);
+
+    // Per-point buffers reused across the glyphs of one table.
+    // The instructions of each glyph, as offsets into glyf: they go to the stream unchanged, so they are copied once, at the end.
+    private sealed class Slices(int capacity)
+    {
+        private readonly int[] _at = new int[capacity];
+        private readonly int[] _length = new int[capacity];
+        private int _count;
+
+        public int Length { get; private set; }
+
+        public void Add(int at, int length)
+        {
+            if (length > 0)
+            {
+                _at[_count] = at;
+                _length[_count++] = length;
+                Length += length;
+            }
+        }
+
+        public void CopyTo(ByteWriter w, ReadOnlySpan<byte> glyf)
+        {
+            for (int i = 0; i < _count; i++)
+            {
+                w.Bytes(glyf.Slice(_at[i], _length[i]));
+            }
+        }
+    }
+
+    private sealed class GlyphScratch
+    {
+        public byte[] Flags { get; private set; } = new byte[256];
+
+        public int[] Dx { get; private set; } = new int[256];
+
+        public int[] Dy { get; private set; } = new int[256];
+
+        public void Ensure(int count)
+        {
+            if (count > Flags.Length)
+            {
+                int size = Math.Max(count, Flags.Length * 2);
+                Flags = new byte[size];
+                Dx = new int[size];
+                Dy = new int[size];
+            }
+        }
     }
 
     /// <summary>Decodes one point's deltas from its flag (bit 7 cleared) and the bytes it takes from the glyph stream.</summary>

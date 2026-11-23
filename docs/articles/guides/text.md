@@ -305,6 +305,21 @@ default features), and GSUB, GPOS and GDEF are copied unchanged. The copied tabl
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-layout)]
 
+## Web fonts
+
+`WebFontWriter.Write` writes a face, a subset or font data as a web font: WOFF2 by default, WOFF 1.0 with
+`WebFontOptions.Format`. Both keep every table, so the file reads back as the font it came from; WOFF2 stores glyf and loca in its
+compact transformed form and leaves out the hmtx bearings each glyph's bounding box gives (`TransformGlyf`, `TransformHmtx`), and
+its glyphs read back the same, laid out as WOFF2 decoders lay them out. A collection (TTC or OTC) becomes a WOFF2 collection whose
+faces share their tables; a face of a collection becomes a single font. Compression is .NET's own: Brotli at quality 11 and zlib
+at level 9 or 8, whichever is smaller, giving files within about 0.5 % of Google's woff2_compress and fontTools'.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#webfont)]
+
+The metadata and private data blocks of a WOFF or WOFF2 source are kept unless `Metadata` or `PrivateData` replace them; an empty
+value writes none. A glyf table the writer cannot read is stored untransformed, with a `Font.TransformSkipped` warning. A bare CFF
+font has no sfnt tables and throws `ArgumentException`; subset it to OpenType CFF first.
+
 ## Font data for PDF
 
 A PDF font reaches its glyphs in ways a text layout never does: by glyph name, by CID, through one particular cmap subtable or
@@ -361,6 +376,13 @@ Short answers to common tasks in this area. Each one compiles and runs in Egami'
 
 A `GlyphRun` from the shaper carries the text and a cluster per glyph, in visual order; that is all a PDF writer needs for
 ToUnicode and ActualText.
+
+### A web font for one page
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#webfont-subset)]
+
+The layout closure keeps the forms the text can take (ligatures, contextual forms), so the browser shapes it as the full face
+would; a PDF, which shapes nothing, needs only the glyphs drawn.
 
 ### A variable font in a PDF
 

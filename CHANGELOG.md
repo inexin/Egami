@@ -86,6 +86,26 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
 - Egami.Video.Hevc: 9-bit and 11-bit streams decode to 10-bit and 12-bit frames, with the samples shifted up one bit;
   they threw `ArgumentOutOfRangeException` (found by fuzzing). `HevcStreamDecoder.TryReceiveFrame` takes such rasters.
 
+## Egami.Fonts 1.6.0 (unreleased)
+
+WOFF and WOFF2 writing (roadmap 2.7.7). Additive to 1.5.0.
+
+- `WebFontWriter.Write` writes a `Typeface`, a `FontSubset` or sfnt or collection bytes as WOFF2 (the default) or WOFF 1.0
+  (`WebFontOptions.Format`), to a byte array or a stream. Every table is kept. WOFF2 stores glyf and loca in the transformed
+  form (bounding boxes only where the points do not give them, the overlap bitmap when a glyph needs it) and leaves out the hmtx
+  bearings that equal each glyph's xMin; `TransformGlyf` and `TransformHmtx` turn them off. As woff2_compress does, WOFF2
+  sets bit 11 of head's flags (a lossless modifying transform). A WOFF2 file read back gives the
+  same glyf and loca bytes as Google's woff2_decompress gives for woff2_compress's file of the same font.
+- Collections (TTC and OTC) become WOFF2 collections that share tables as the collection does; WOFF 1.0 holds a single font
+  and throws `ArgumentException` for one. A face of a collection is written as a single font.
+- The metadata and private data blocks of a WOFF or WOFF2 source are kept unless `WebFontOptions.Metadata` or `PrivateData`
+  replace them. The file's version is head's fontRevision; WOFF checksums are computed, whatever the source's directory says.
+- Compression is .NET's own Brotli (quality 11, 4 MB window) and zlib (the smallest of levels 9 and 8 with the default and
+  filtered strategies, tables stored raw when that is not smaller). WOFF2 files are within 0.5 % of woff2_compress's with the hmtx transform off, and WOFF files within 0.5 % of
+  fontTools' at zlib level 9, on the test fonts.
+- A glyf table the writer cannot read is stored untransformed with the new `Font.TransformSkipped` warning. A bare CFF font
+  throws `ArgumentException`. Input and output are bounded by the context's `SafetyLimits.MaxTotalBytes`.
+
 ## Egami train 1.5.0 (2026-11-23)
 
 The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and

@@ -19,6 +19,9 @@ internal sealed class ByteWriter
 
     public byte[] ToArray() => _buffer.AsSpan(0, Length).ToArray();
 
+    /// <summary>The written bytes without a copy when the buffer is exactly full; the writer must not be used afterwards.</summary>
+    public byte[] Take() => Length == _buffer.Length ? _buffer : ToArray();
+
     public void U8(int value)
     {
         Ensure(1);
