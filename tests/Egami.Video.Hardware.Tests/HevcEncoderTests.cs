@@ -1,5 +1,6 @@
 using Egami.Pixels;
 using Egami.Video.Codecs;
+using Egami.Video.Containers;
 using Egami.Video.Hardware.Encoding;
 using Egami.Video.Hardware.Vulkan.Native;
 
@@ -55,6 +56,8 @@ public sealed class HevcEncoderTests
                 ReadOnlySpan<byte> hvcC = track.CodecPrivate.Span;
                 Assert.Equal(1, hvcC[0]);
                 Assert.Equal(1, hvcC[1] & 31);
+                Assert.Equal(0, hvcC[17] & 7);
+                Assert.Equal(0, hvcC[18] & 7);
                 Assert.Equal(3, hvcC[21] & 3);
                 Assert.Equal(3, hvcC[22]);
                 Assert.Equal(32, hvcC[23] & 63);
@@ -176,6 +179,40 @@ public sealed class HevcEncoderTests
             }
 
             return picture;
+        }
+    }
+
+    [Fact]
+    public void MainTenMp4SaysTenBitsInItsConfiguration()
+    {
+        RequireEncoder();
+        Assert.SkipUnless(
+            HardwareVideoCodecs.GetDevices().Any(d => d.Profiles.Any(p => p.CodecId == CodecIds.Hevc && p.Direction == HardwareDirection.Encode && p.BitDepth == 10)),
+            "No GPU encodes HEVC Main 10.");
+        string path = Path.Combine(Path.GetTempPath(), $"egami-hw-main10-{Guid.NewGuid():N}.mp4");
+        try
+        {
+            VideoWriterOptions options = new() { Codec = HardwareVideoCodecs.Hevc, FrameRate = new Rational(25, 1), Hevc = new HevcEncoderOptions { Profile = HevcProfile.Main10 } };
+            using (VideoWriter writer = VideoWriter.Create(path, options))
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    using YuvRaster<byte> picture = H264EncoderTests.Picture(192, 128, i);
+                    using YuvVideoFrame frame = new(picture, new MediaTime(i, new Rational(1, 25)));
+                    writer.WriteFrame(frame);
+                }
+            }
+
+            // HEVCDecoderConfigurationRecord: general_profile_idc 2 (Main 10), bitDepthLumaMinus8 and bitDepthChromaMinus8 2.
+            using IDemuxer demuxer = MediaFile.OpenDemuxer(path, MediaContext.Default.WithHevc());
+            ReadOnlySpan<byte> hvcC = demuxer.Info.VideoTrack!.CodecPrivate.Span;
+            Assert.Equal(2, hvcC[1] & 31);
+            Assert.Equal(2, hvcC[17] & 7);
+            Assert.Equal(2, hvcC[18] & 7);
+        }
+        finally
+        {
+            File.Delete(path);
         }
     }
 

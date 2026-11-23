@@ -994,7 +994,7 @@ internal sealed unsafe class HevcHardwareEncoder : IVideoEncoder
         Number = 1,
         Kind = TrackKind.Video,
         CodecId = CodecIds.Hevc,
-        CodecPrivate = _hevc.AnnexB || _sps.Length == 0 ? ReadOnlyMemory<byte>.Empty : NalUnits.HvcC(_vps, _sps, _pps),
+        CodecPrivate = _hevc.AnnexB || _sps.Length == 0 ? ReadOnlyMemory<byte>.Empty : NalUnits.HvcC(_vps, _sps, _pps, _depth),
         TimeBase = _timeBase,
         Width = _options.Width,
         Height = _options.Height,
