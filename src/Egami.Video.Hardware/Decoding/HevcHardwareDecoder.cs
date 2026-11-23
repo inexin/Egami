@@ -44,7 +44,7 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
     private readonly byte[]?[] _spsRbsp = new byte[]?[16];
     private readonly byte[]?[] _ppsRbsp = new byte[]?[64];
     private readonly NalBumpingBuffer<Picture> _dpb = new();
-    private readonly List<ReadOnlyMemory<byte>> _slices = [];
+    private readonly SliceBuffer _slices = new();
     private readonly List<Picture> _untimed = [];
     private readonly List<Picture> _stCurrBefore = [];
     private readonly List<Picture> _stCurrAfter = [];

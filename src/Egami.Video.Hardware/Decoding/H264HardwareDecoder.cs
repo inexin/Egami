@@ -40,7 +40,7 @@ internal sealed unsafe class H264HardwareDecoder : IVideoDecoder
     private readonly byte[]?[] _ppsRbsp = new byte[]?[256];
     private readonly H264Pps?[] _pps = new H264Pps?[256];
     private readonly NalBumpingBuffer<Picture> _dpb = new();
-    private readonly List<ReadOnlyMemory<byte>> _slices = [];
+    private readonly SliceBuffer _slices = new();
     private readonly List<Picture> _untimed = [];
 
     // The session and the pictures of the current size.

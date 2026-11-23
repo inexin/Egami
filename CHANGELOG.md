@@ -36,7 +36,8 @@ of five). This first preview finds the hardware, and decodes and encodes H.264 a
   `VideoEncoderOptions` and `HevcEncoderOptions`: constant QP, the driver's constant and variable bitrate, keyframes, levels,
   Annex B or length-prefixed packets with an hvcC record. On a GeForce GTX 1070 it encodes about 150 frames per second at
   1080p, with files 25 to 67 % smaller than the software encoder's at effort 0 and up to 25 % bigger than at effort 4, and
-  decodes about 430 frames per second at 720p. The shared HEVC parser (Egami.Heic) keeps a few more syntax values for it.
+  decodes about 430 frames per second at 720p. The shared HEVC parser (Egami.Heic) keeps a few more syntax values for it. Both hardware decoders now copy
+  slice data out of the packets they are sent, which callers such as `VideoReader` dispose and reuse at once.
 - Tests that need a GPU carry the `Gpu` category and skip where there is none.
 
 ## Egami.Video 1.4.0 (unreleased)
