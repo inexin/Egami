@@ -93,7 +93,7 @@ formats and features that otherwise take several of these libraries. Another lib
 .NET Framework, GPU drawing, ImageMagick's format list or libvips's low-memory pipeline; <a href="#when-another-library-fits-better">When another library fits
 better</a> says which.</p>
 <p>Facts about the other libraries come from their own NuGet pages, licence files and documentation, linked in
-<a href="#sources">Sources</a>, as of 14 November 2026. A cell says &quot;not documented&quot; when we could not find the answer there; it does
+<a href="#sources">Sources</a>, as of 23 November 2026. A cell says &quot;not documented&quot; when we could not find the answer there; it does
 not mean the library lacks the feature. If something here is wrong or out of date, please open an issue.</p>
 <h2 id="at-a-glance">At a glance</h2>
 <table>
@@ -113,10 +113,10 @@ not mean the library lacks the feature. If something here is wrong or out of dat
 <td>Version compared</td>
 <td>1.5</td>
 <td>4.1.3</td>
-<td>4.156.0</td>
+<td>4.157.0</td>
 <td>15.1.0 (Q16)</td>
 <td>3.2.0</td>
-<td>10.0</td>
+<td>11.0</td>
 </tr>
 <tr>
 <td>Licence</td>
@@ -339,7 +339,7 @@ documented set of built-in codecs.</p>
 </tr>
 <tr>
 <td>JPEG 2000</td>
-<td>R</td>
+<td>R, High-Throughput (HTJ2K) too</td>
 <td>–</td>
 <td>–</td>
 <td>RW ¹</td>
@@ -401,6 +401,51 @@ documented set of built-in codecs.</p>
 <td>–</td>
 </tr>
 <tr>
+<td>KTX and KTX 2</td>
+<td>R, and writes KTX 2 (Egami.Formats.Extended)</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td>JPEG-LS</td>
+<td>RW (Egami.Formats.Extended)</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td>DPX and Cineon</td>
+<td>RW (Egami.Formats.Extended)</td>
+<td>–</td>
+<td>–</td>
+<td>RW</td>
+<td>– ²</td>
+<td>–</td>
+</tr>
+<tr>
+<td>FITS</td>
+<td>RW (Egami.Formats.Extended)</td>
+<td>–</td>
+<td>–</td>
+<td>RW</td>
+<td>– ²</td>
+<td>–</td>
+</tr>
+<tr>
+<td>DICOM</td>
+<td>RW in preview (Egami.Formats.Extended)</td>
+<td>–</td>
+<td>–</td>
+<td>R</td>
+<td>– ²</td>
+<td>–</td>
+</tr>
+<tr>
 <td>EMF and WMF</td>
 <td>R (Egami.Metafiles)</td>
 <td>–</td>
@@ -421,7 +466,7 @@ documented set of built-in codecs.</p>
 </tbody>
 </table>
 <p>The SkiaSharp column is the build SkiaSharp 4.156.0 ships: the codecs in Skia's source at the revision it pins, with the
-build options SkiaSharp's native build scripts set. The NetVips column is the NetVips.Native 8.18.7 binaries, from the build
+build options SkiaSharp's native build scripts set. SkiaSharp 4.157.0's release notes (Skia m157) list no codec changes. The NetVips column is the NetVips.Native 8.18.7 binaries, from the build
 script and library list of the project that makes them.</p>
 <p>¹ ImageMagick needs a delegate library for this format, and Magick.NET's documentation does not say which delegates its
 packages include.</p>
@@ -498,6 +543,24 @@ builds leave them off.</p>
 <td>GDI+ text</td>
 </tr>
 <tr>
+<td>Hyphenation and optimal line breaking</td>
+<td>Egami.Fonts: built-in patterns for 35 languages, Knuth-Plass line breaking</td>
+<td>Hyphen markers at break opportunities (SixLabors.Fonts); automatic hyphenation not documented</td>
+<td>Not documented</td>
+<td>Not documented</td>
+<td>Not documented</td>
+<td>Not documented</td>
+</tr>
+<tr>
+<td>Bitmap tracing into vector shapes</td>
+<td>Egami.Drawing, written as SVG by Egami.Svg or <code>egami trace</code></td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
 <td>Animation</td>
 <td>GIF, APNG, WebP, AVIF, JPEG XL</td>
 <td>GIF, APNG, WebP</td>
@@ -564,14 +627,16 @@ Egami's <a href="guides/system-drawing.html">System.Drawing drop-in</a> and then
 piece.</li>
 </ul>
 <h2 id="sources">Sources</h2>
-<p>Checked on 14 November 2026.</p>
+<p>Checked on 23 November 2026.</p>
 <ul>
 <li>ImageSharp: <a href="https://www.nuget.org/packages/SixLabors.ImageSharp">NuGet</a>, <a href="https://github.com/SixLabors/ImageSharp/blob/main/LICENSE">licence</a>,
 <a href="https://sixlabors.com/pricing/">pricing</a>, <a href="https://docs.sixlabors.com/articles/imagesharp/imageformats.html">formats</a>,
 <a href="https://github.com/SixLabors/ImageSharp/releases">releases</a>, <a href="https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Metadata.Profiles.Iptc.html">IPTC</a>
 and <a href="https://docs.sixlabors.com/api/ImageSharp/SixLabors.ImageSharp.Metadata.Profiles.Xmp.html">XMP</a> profiles,
-<a href="https://docs.sixlabors.com/articles/imagesharp.drawing/gettingstarted.html">ImageSharp.Drawing</a>.</li>
+<a href="https://docs.sixlabors.com/articles/imagesharp.drawing/gettingstarted.html">ImageSharp.Drawing</a>,
+SixLabors.Fonts <a href="https://docs.sixlabors.com/api/Fonts/SixLabors.Fonts.TextOptions.html">TextOptions</a>.</li>
 <li>SkiaSharp: <a href="https://www.nuget.org/packages/SkiaSharp">NuGet</a>, <a href="https://github.com/mono/SkiaSharp">repository</a>,
+<a href="https://mono.github.io/SkiaSharp/docs/releases/4.157.0.html">4.157.0 release notes</a>,
 <a href="https://learn.microsoft.com/dotnet/api/skiasharp.skpixmap.encode">SKPixmap.Encode</a>,
 <a href="https://learn.microsoft.com/dotnet/api/skiasharp.skcolorspace">SKColorSpace</a>,
 <a href="https://learn.microsoft.com/dotnet/api/skiasharp.skdocument.createpdf">SKDocument.CreatePdf</a>,
