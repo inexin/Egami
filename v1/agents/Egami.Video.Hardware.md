@@ -37,6 +37,11 @@ and no `Configuration`.
 - `HardwareVideoCodecs.Hevc`: the same for HEVC. It encodes 4:2:0 in the Main and Main 10 profiles with `VideoEncoderOptions` and
   `HevcEncoderOptions`, and decodes 4:2:0 Main and Main 10 streams to the same samples as the software decoder:
   `MediaContext.Default.WithHevc().WithCodec(HardwareVideoCodecs.Hevc)`.
+- `context.WithHardwareCodecs(HardwareUse use = HardwareUse.Decode)`: wraps the H.264 and HEVC codecs already in the context
+  so that tracks decode on the GPU where it can, in software otherwise, with the same frames. Call it after `WithH264()` and
+  `WithHevc()`. `HardwareUse.All` also encodes on the GPU, falling back to software for what the GPU cannot code. Returns
+  the context unchanged without a GPU.
+- `egami-video hwprobe [--json]` lists the devices and profiles from a shell.
 - `HardwareVideoException`: the driver refused or failed an operation; `ResultCode` is the negative `VkResult`.
 
 ## Samples
@@ -145,6 +150,31 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 }
 ```
 
+Use the GPU wherever it can, the software codecs elsewhere:
+
+```csharp
+// Decode H.264 and HEVC on the GPU wherever it can, with the software codecs for the rest: register the software
+// codecs first, then the hardware ones. On a machine without a GPU the context stays as it was. At startup,
+// MediaContext.SetDefault(context) makes it the context every reader uses.
+MediaContext context = MediaContext.Default.WithH264().WithHevc().WithHardwareCodecs();
+using (VideoReader reader = VideoReader.Open("clip.mp4", context: context))
+{
+    foreach (YuvVideoFrame frame in reader.ReadFrames())
+    {
+        using (frame)
+        {
+            count++; // the same samples as the software decoder gives, from whichever decoded it
+        }
+    }
+}
+
+// Encode on the GPU too: VideoWriter takes the codec the context holds for HEVC, which encodes on the GPU where it
+// can code the options and in software where it cannot.
+MediaContext both = MediaContext.Default.WithH264().WithHevc().WithHardwareCodecs(HardwareUse.All);
+VideoCodec hevc = both.Codecs.First(c => c.CodecId == CodecIds.Hevc);
+VideoWriterOptions fast = new() { Codec = hevc, FrameRate = new Rational(30, 1), Quality = 60 };
+```
+
 ## Common mistakes
 
 - Assuming hardware exists. Servers, CI runners and 32-bit processes have none: check `IsAvailable` and keep the software
@@ -154,6 +184,8 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 - Asking `HardwareVideoCodecs.H264` for two-pass encoding (`FirstPassStats`): it throws.
 - Decoding interlaced (field or MBAFF), monochrome, 4:2:2 or 10-bit H.264 with it: `UnsupportedFormatException`. Use the
   software decoder.
+- Calling `WithHardwareCodecs()` before `WithH264()` or `WithHevc()`: the software codec registered later replaces the
+  hardware one.
 - Calling `WithCodec(HardwareVideoCodecs.H264)` before `WithH264()`, or `WithCodec(HardwareVideoCodecs.Hevc)` before
   `WithHevc()`: the software codec then replaces it.
 - Turning B-frames on by default. Some GPUs predict B pictures from the earlier reference only and files get bigger; they are

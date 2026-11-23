@@ -304,6 +304,11 @@ egami-video audio in.mkv -o sound.flac
 <td>The containers and codecs this build reads and writes</td>
 <td><code>ffmpeg -formats</code></td>
 </tr>
+<tr>
+<td><code>hwprobe</code></td>
+<td>The GPUs whose video engines Egami.Video.Hardware can use, with their codecs, profiles and limits</td>
+<td><code>ffmpeg -hwaccels</code></td>
+</tr>
 </tbody>
 </table>
 <p>Commands that copy packets (<code>remux</code>, <code>trim</code>, <code>concat</code>, <code>segment</code>, <code>timestamps</code>, <code>extract</code>, <code>embed</code>, <code>metadata</code>) never decode, so

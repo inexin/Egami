@@ -19441,6 +19441,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hardware.HardwareMediaContextExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hardware.HardwareMediaContextExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hardware.HardwareMediaContextExtensions",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Hardware.HardwareMediaContextExtensions.yml\" sourcestartlinenumber=\"1\">Registers the GPU's video codecs with a <xref href=\"Egami.Video.MediaContext\" data-throw-if-not-resolved=\"false\"></xref>, with the software codecs as the fallback.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Video.Hardware.HardwareRateControl.yml",
       "output": {
         ".html": {
@@ -19452,6 +19466,20 @@
       "IsMRef": true,
       "Title": "Egami.Video.Hardware.HardwareRateControl",
       "Summary": "<p sourcefile=\"api/Egami.Video.Hardware.HardwareRateControl.yml\" sourcestartlinenumber=\"1\">The rate control modes a hardware encoder offers.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Video.Hardware.HardwareUse.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Video.Hardware.HardwareUse.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Video.Hardware.HardwareUse",
+      "Summary": "<p sourcefile=\"api/Egami.Video.Hardware.HardwareUse.yml\" sourcestartlinenumber=\"1\">What <xref href=\"Egami.Video.Hardware.HardwareMediaContextExtensions.WithHardwareCodecs(Egami.Video.MediaContext%2cEgami.Video.Hardware.HardwareUse)\" data-throw-if-not-resolved=\"false\"></xref> uses the GPU for.</p>\n"
     },
     {
       "type": "ManagedReference",

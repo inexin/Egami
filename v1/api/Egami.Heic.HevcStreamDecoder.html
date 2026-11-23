@@ -279,7 +279,7 @@ while (decoder.NextFrame is HevcFrameInfo next)
 
   <h3 id="Egami_Heic_HevcStreamDecoder_Dispose" data-uid="Egami.Heic.HevcStreamDecoder.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L237"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L252"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Drops the pictures.</p>
@@ -333,7 +333,7 @@ while (decoder.NextFrame is HevcFrameInfo next)
 
   <h3 id="Egami_Heic_HevcStreamDecoder_Reset" data-uid="Egami.Heic.HevcStreamDecoder.Reset">
   Reset()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L228"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L243"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Drops the pictures, decoded and waiting, and the parameter sets' pictures; the next data must start at an IRAP picture.</p>
@@ -446,7 +446,7 @@ the NAL unit size fields that <a class="xref" href="Egami.Heic.HevcStreamDecoder
 
   <h3 id="Egami_Heic_HevcStreamDecoder_TryReceiveFrame_Egami_YuvRaster_Egami_Heic_HevcFrameInfo__" data-uid="Egami.Heic.HevcStreamDecoder.TryReceiveFrame(Egami.YuvRaster,Egami.Heic.HevcFrameInfo@)">
   TryReceiveFrame(YuvRaster, out HevcFrameInfo)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L169"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Heic/HevcStreamDecoder.cs/#L170"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Copies the next picture in output order into <code class="paramref">destination</code>, cropped to its conformance window.</p>
@@ -461,7 +461,8 @@ the NAL unit size fields that <a class="xref" href="Egami.Heic.HevcStreamDecoder
   <dl class="parameters">
     <dt><code>destination</code> <a class="xref" href="Egami.YuvRaster.html">YuvRaster</a></dt>
     <dd><p>A raster of the frame's size (<a class="xref" href="Egami.Heic.HevcStreamDecoder.html#Egami_Heic_HevcStreamDecoder_NextFrame">NextFrame</a>) and chroma format: 8-bit for an 8-bit stream, else 16-bit of the
-stream's bit depth. Its color is left as it is.</p>
+stream's bit depth, or for a 9-bit or 11-bit stream (bit depths a <a class="xref" href="Egami.YuvRaster-1.html">YuvRaster&lt;TSample&gt;</a> does not have) of 10 or 12
+bits, with the samples shifted up one bit. Its color is left as it is.</p>
 </dd>
     <dt><code>info</code> <a class="xref" href="Egami.Heic.HevcFrameInfo.html">HevcFrameInfo</a></dt>
     <dd><p>What the frame was.</p>

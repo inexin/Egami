@@ -95,6 +95,11 @@
 Classes
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Hardware.HardwareMediaContextExtensions.html">HardwareMediaContextExtensions</a></dt>
+      <dd><p>Registers the GPU's video codecs with a <a class="xref" href="Egami.Video.MediaContext.html">MediaContext</a>, with the software codecs as the fallback.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Hardware.HardwareVideoCodecs.html">HardwareVideoCodecs</a></dt>
       <dd><p>Finds the hardware video codecs of the machine's GPUs. The first call asks the GPU driver through Vulkan Video and keeps the
 answer for the life of the process; it never throws, and on a machine without a usable GPU or driver it finds nothing.</p>
@@ -131,6 +136,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Hardware.HardwareRateControl.html">HardwareRateControl</a></dt>
       <dd><p>The rate control modes a hardware encoder offers.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Hardware.HardwareUse.html">HardwareUse</a></dt>
+      <dd><p>What <a class="xref" href="Egami.Video.Hardware.HardwareMediaContextExtensions.html#Egami_Video_Hardware_HardwareMediaContextExtensions_WithHardwareCodecs_Egami_Video_MediaContext_Egami_Video_Hardware_HardwareUse_">WithHardwareCodecs(MediaContext, HardwareUse)</a> uses the GPU for.</p>
 </dd>
     </dl>
 

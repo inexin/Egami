@@ -133671,6 +133671,25 @@ references:
   commentId: F:Egami.Video.Hardware.HardwareDirection.Encode
   fullName: Egami.Video.Hardware.HardwareDirection.Encode
   nameWithType: HardwareDirection.Encode
+- uid: Egami.Video.Hardware.HardwareMediaContextExtensions
+  name: HardwareMediaContextExtensions
+  href: api/Egami.Video.Hardware.HardwareMediaContextExtensions.html
+  commentId: T:Egami.Video.Hardware.HardwareMediaContextExtensions
+  fullName: Egami.Video.Hardware.HardwareMediaContextExtensions
+  nameWithType: HardwareMediaContextExtensions
+- uid: Egami.Video.Hardware.HardwareMediaContextExtensions.WithHardwareCodecs(Egami.Video.MediaContext,Egami.Video.Hardware.HardwareUse)
+  name: WithHardwareCodecs(MediaContext, HardwareUse)
+  href: api/Egami.Video.Hardware.HardwareMediaContextExtensions.html#Egami_Video_Hardware_HardwareMediaContextExtensions_WithHardwareCodecs_Egami_Video_MediaContext_Egami_Video_Hardware_HardwareUse_
+  commentId: M:Egami.Video.Hardware.HardwareMediaContextExtensions.WithHardwareCodecs(Egami.Video.MediaContext,Egami.Video.Hardware.HardwareUse)
+  fullName: Egami.Video.Hardware.HardwareMediaContextExtensions.WithHardwareCodecs(Egami.Video.MediaContext, Egami.Video.Hardware.HardwareUse)
+  nameWithType: HardwareMediaContextExtensions.WithHardwareCodecs(MediaContext, HardwareUse)
+- uid: Egami.Video.Hardware.HardwareMediaContextExtensions.WithHardwareCodecs*
+  name: WithHardwareCodecs
+  href: api/Egami.Video.Hardware.HardwareMediaContextExtensions.html#Egami_Video_Hardware_HardwareMediaContextExtensions_WithHardwareCodecs_
+  commentId: Overload:Egami.Video.Hardware.HardwareMediaContextExtensions.WithHardwareCodecs
+  isSpec: "True"
+  fullName: Egami.Video.Hardware.HardwareMediaContextExtensions.WithHardwareCodecs
+  nameWithType: HardwareMediaContextExtensions.WithHardwareCodecs
 - uid: Egami.Video.Hardware.HardwareRateControl
   name: HardwareRateControl
   href: api/Egami.Video.Hardware.HardwareRateControl.html
@@ -133701,6 +133720,36 @@ references:
   commentId: F:Egami.Video.Hardware.HardwareRateControl.VariableBitrate
   fullName: Egami.Video.Hardware.HardwareRateControl.VariableBitrate
   nameWithType: HardwareRateControl.VariableBitrate
+- uid: Egami.Video.Hardware.HardwareUse
+  name: HardwareUse
+  href: api/Egami.Video.Hardware.HardwareUse.html
+  commentId: T:Egami.Video.Hardware.HardwareUse
+  fullName: Egami.Video.Hardware.HardwareUse
+  nameWithType: HardwareUse
+- uid: Egami.Video.Hardware.HardwareUse.All
+  name: All
+  href: api/Egami.Video.Hardware.HardwareUse.html#Egami_Video_Hardware_HardwareUse_All
+  commentId: F:Egami.Video.Hardware.HardwareUse.All
+  fullName: Egami.Video.Hardware.HardwareUse.All
+  nameWithType: HardwareUse.All
+- uid: Egami.Video.Hardware.HardwareUse.Decode
+  name: Decode
+  href: api/Egami.Video.Hardware.HardwareUse.html#Egami_Video_Hardware_HardwareUse_Decode
+  commentId: F:Egami.Video.Hardware.HardwareUse.Decode
+  fullName: Egami.Video.Hardware.HardwareUse.Decode
+  nameWithType: HardwareUse.Decode
+- uid: Egami.Video.Hardware.HardwareUse.Encode
+  name: Encode
+  href: api/Egami.Video.Hardware.HardwareUse.html#Egami_Video_Hardware_HardwareUse_Encode
+  commentId: F:Egami.Video.Hardware.HardwareUse.Encode
+  fullName: Egami.Video.Hardware.HardwareUse.Encode
+  nameWithType: HardwareUse.Encode
+- uid: Egami.Video.Hardware.HardwareUse.None
+  name: None
+  href: api/Egami.Video.Hardware.HardwareUse.html#Egami_Video_Hardware_HardwareUse_None
+  commentId: F:Egami.Video.Hardware.HardwareUse.None
+  fullName: Egami.Video.Hardware.HardwareUse.None
+  nameWithType: HardwareUse.None
 - uid: Egami.Video.Hardware.HardwareVideoCodecs
   name: HardwareVideoCodecs
   href: api/Egami.Video.Hardware.HardwareVideoCodecs.html
