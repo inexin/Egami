@@ -1,0 +1,4 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'>
+  <rect width='10' height='10'><discard id='a' begin='b.begin+1s'/><discard id='b' begin='0s; a.begin-3s'/></rect>
+  <circle cx='15' cy='15' r='4'><discard begin='a.begin+0.5s'/><set attributeName='r' to='2' begin='b.begin'/></circle>
+</svg>

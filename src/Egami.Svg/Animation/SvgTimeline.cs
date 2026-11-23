@@ -348,6 +348,8 @@ internal sealed class SvgTimeline
     /// </summary>
     private List<SvgInterval> Intervals(SvgAnimation a, out bool reachesHorizon)
     {
+        // Every call counts toward the work budget, discard included, so Resolve's passes always end.
+        _work++;
         reachesHorizon = false;
         List<SvgInterval> intervals = [];
         List<double> begins = Instances(a, a.Begin, out _);

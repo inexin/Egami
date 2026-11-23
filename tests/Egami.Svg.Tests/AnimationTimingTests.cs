@@ -307,6 +307,19 @@ public class AnimationTimingTests
     public void HugeRepeatCountsStayFinite() =>
         AssertIntervals(Intervals("<rect><animate id='a' attributeName='x' from='0' to='1' dur='1ms' repeatCount='1e9'/></rect>"), (0, 1e6));
 
+    [Fact(Timeout = 30_000)]
+    public async Task DiscardLoopsStopAtTheBudget()
+    {
+        // Discards only: each pass moves the pair's begins back until one drops below the horizon, then starts over, forever.
+        const string Body = "<rect><discard id='a' begin='b.begin+1s'/><discard id='b' begin='0s; a.begin-3s'/></rect>";
+        (SvgTimeline timeline, SvgReport report) = await Task.Run(() => (Timeline(Body, out SvgReport r), r), TestContext.Current.CancellationToken);
+        Assert.True(timeline.Truncated);
+        Assert.Contains(report.Warnings, w => w.Id == "Svg.AnimationLimit");
+        SvgDocument document = SvgDocument.Parse($"<svg xmlns='http://www.w3.org/2000/svg'>{Body}</svg>");
+        SvgAnimationInfo info = await Task.Run(() => document.Animation, TestContext.Current.CancellationToken);
+        Assert.True(info.HasAnimations);
+    }
+
     [Fact]
     public void DiscardIsAMoment() =>
         AssertIntervals(Intervals("<rect><discard id='a' begin='2s'/></rect>"), (2, double.PositiveInfinity));
