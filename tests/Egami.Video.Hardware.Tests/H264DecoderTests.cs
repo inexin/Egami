@@ -72,6 +72,28 @@ public sealed class H264DecoderTests
         }
     }
 
+    [Theory]
+    [InlineData(14, true)]
+    [InlineData(75, false)]
+    [InlineData(255, false)]
+    public void LevelsAreReadAsTheNextLevelUp(int levelIdc, bool decodes)
+    {
+        RequireDecoder();
+        byte[] stream = File.ReadAllBytes(Path.Combine(Corpus, "cabac-slices.h264"));
+        int sps = stream.AsSpan().IndexOf((ReadOnlySpan<byte>)[0, 0, 1, 0x67]);
+        stream[sps + 6] = (byte)levelIdc;
+        if (!decodes)
+        {
+            // Beyond level 6.2: no GPU decodes it, and the error says so in terms the fallback to software understands.
+            Assert.Throws<UnsupportedFormatException>(() => Decode(stream, HardwareVideoCodecs.H264));
+            return;
+        }
+
+        List<YuvVideoFrame> frames = Decode(stream, HardwareVideoCodecs.H264);
+        Assert.NotEmpty(frames);
+        frames.ForEach(f => f.Dispose());
+    }
+
     [Fact]
     public void ResetRestartsAtTheNextKeyframe()
     {

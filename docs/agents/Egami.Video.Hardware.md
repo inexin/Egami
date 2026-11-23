@@ -2,10 +2,10 @@
 # Egami.Video.Hardware: guide for coding agents
 
 Egami.Video.Hardware reaches the GPU's video engine through Vulkan Video on Windows and Linux. This preview finds the hardware,
-lists what it can do (H.264 and HEVC, decode and encode), and decodes and encodes H.264; HEVC comes in later previews. It is Egami's only package that calls native code, and only the Vulkan loader the GPU driver installs.
+lists what it can do (H.264 and HEVC, decode and encode), and decodes and encodes H.264 and HEVC. It is Egami's only package that calls native code, and only the Vulkan loader the GPU driver installs.
 
 Namespaces: `Egami.Video.Hardware`, with `Egami.Video` (`CodecIds`, `VideoWriter`) and `Egami.Video.Codecs`
-(`H264EncoderOptions`).
+(`H264EncoderOptions`, `HevcEncoderOptions`).
 
 ## Egami's vocabulary
 
@@ -34,6 +34,9 @@ and no `Configuration`.
   `CreateEncoder` with the same `VideoEncoderOptions` and `H264EncoderOptions` as the software encoder. It decodes
   progressive 8-bit 4:2:0 streams to the same samples as the software decoder: `MediaContext.Default.WithH264().WithCodec(
   HardwareVideoCodecs.H264)` makes `VideoReader` use it.
+- `HardwareVideoCodecs.Hevc`: the same for HEVC. It encodes 4:2:0 in the Main and Main 10 profiles with `VideoEncoderOptions` and
+  `HevcEncoderOptions`, and decodes 4:2:0 Main and Main 10 streams to the same samples as the software decoder:
+  `MediaContext.Default.WithHevc().WithCodec(HardwareVideoCodecs.Hevc)`.
 - `HardwareVideoException`: the driver refused or failed an operation; `ResultCode` is the negative `VkResult`.
 
 ## Samples
@@ -107,6 +110,41 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 }
 ```
 
+Encode HEVC on the GPU:
+
+```csharp
+// HEVC on the GPU, in MP4: the software HEVC encoder's options: Main, or Main 10 for 10-bit frames.
+VideoWriterOptions options = new() { Codec = HardwareVideoCodecs.Hevc, FrameRate = new Rational(30, 1), Quality = 60 };
+using (VideoWriter writer = VideoWriter.Create("duck-gpu-hevc.mp4", options))
+{
+    for (int i = 0; i < 30; i++)
+    {
+        using Raster<Rgb8> frame = duck.Derive(ops => ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+        writer.WriteFrame(frame);
+    }
+}
+```
+
+Decode HEVC on the GPU, with the software decoder where there is no GPU:
+
+```csharp
+// Decode HEVC (Main or Main 10) on the GPU where there is one, else with Egami's software decoder.
+MediaContext context = MediaContext.Default.WithHevc();
+if (HardwareVideoCodecs.IsAvailable(CodecIds.Hevc, HardwareDirection.Decode))
+{
+    context = context.WithCodec(HardwareVideoCodecs.Hevc);
+}
+
+using VideoReader reader = VideoReader.Open("duck-gpu-hevc.mp4", context: context);
+foreach (YuvVideoFrame frame in reader.ReadFrames())
+{
+    using (frame)
+    {
+        count++; // 8-bit streams give YuvRaster<byte>, Main 10 streams YuvRaster<ushort>
+    }
+}
+```
+
 ## Common mistakes
 
 - Assuming hardware exists. Servers, CI runners and 32-bit processes have none: check `IsAvailable` and keep the software
@@ -116,7 +154,8 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 - Asking `HardwareVideoCodecs.H264` for two-pass encoding (`FirstPassStats`): it throws.
 - Decoding interlaced (field or MBAFF), monochrome, 4:2:2 or 10-bit H.264 with it: `UnsupportedFormatException`. Use the
   software decoder.
-- Calling `WithCodec(HardwareVideoCodecs.H264)` before `WithH264()`: the software codec then replaces it.
+- Calling `WithCodec(HardwareVideoCodecs.H264)` before `WithH264()`, or `WithCodec(HardwareVideoCodecs.Hevc)` before
+  `WithHevc()`: the software codec then replaces it.
 - Turning B-frames on by default. Some GPUs predict B pictures from the earlier reference only and files get bigger; they are
   off unless `H264EncoderOptions.BFrames` asks.
 

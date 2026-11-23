@@ -6,8 +6,7 @@ Vulkan driver, on Windows and Linux. A hardware encoder runs many times faster t
 idle; the price is bigger files at the same quality than Egami's own encoders at their default effort, and output that
 differs between GPU models and driver versions.
 
-The package is a preview. It finds the hardware, reports what it can do, and decodes and encodes H.264; HEVC follows in
-the next previews. Egami.Video's software codecs stay the default: hardware is used only when an app
+The package is a preview. It finds the hardware, reports what it can do, and decodes and encodes H.264 and HEVC. Egami.Video's software codecs stay the default: hardware is used only when an app
 asks for it.
 
 ## What it needs
@@ -101,6 +100,45 @@ software decoder for those.
 
 What to expect on a GeForce GTX 1070: about 200 frames per second at 1080p and 450 at 720p, on streams of 60 to 220 Mbit/s,
 against 9 frames per second at 1080p for Egami's software decoder on one thread and 18 to 21 on all of a 12-core CPU.
+
+## Encoding HEVC
+
+`HardwareVideoCodecs.Hevc` encodes HEVC the same way, with `VideoEncoderOptions` and `HevcEncoderOptions` as Egami's
+software HEVC encoder takes them. It writes 4:2:0 in the Main and Main 10 profiles, in MP4, Matroska or a raw `.h265`
+stream. As with the software encoder, `HevcProfile` picks the profile, and without one frames of 16-bit planes are coded as
+Main 10 and the rest as Main; 8-bit frames coded as Main 10 are shifted up. A GPU without Main 10 encoding throws
+`NotSupportedException`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoHardware.cs#encodehevc)]
+
+The options map as for H.264: `Quality` is a constant QP on the software HEVC encoder's scale (Quality 60 is QP 17), the
+bitrate modes use the driver's rate control, `MinQuantizer` and `MaxQuantizer` bound the QP, and `Effort` picks the
+driver's quality level. B-frames come only where `HevcEncoderOptions.BFrames` asks and the GPU codes B pictures; a GeForce
+GTX 1070 codes none. The driver writes the VPS, SPS and PPS from Egami's values, with coding tree blocks of the largest
+size the GPU codes, AMP, SAO and temporal motion vector prediction on. Pictures smaller than the GPU's smallest are coded
+at its smallest size and cropped.
+
+What to expect on a GeForce GTX 1070 at constant QP: about 150 frames per second at 1080p and 300 to 570 at 720p at the
+default effort 4, and two to three times that at effort 0, against 6 to 33 frames per second for Egami's software HEVC
+encoder. Its files are 25 to 67 % smaller than the software encoder's at effort 0 at the same quality, and from 17 %
+smaller to 25 % bigger than at effort 4. Main 10 runs about 10 % slower, with files 23 to 39 % bigger than the software
+encoder's Main 10 at effort 4.
+
+## Decoding HEVC
+
+`HardwareVideoCodecs.Hevc` decodes 4:2:0 streams in the Main and Main 10 profiles. Add it after `WithHevc`, as for H.264:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoHardware.cs#decodehevc)]
+
+Egami's own HEVC parser works out picture order, the reference picture sets and output order; the GPU decodes each
+picture. The frames are the same, sample for sample, as those of Egami's software decoder, on every 4:2:0 Main and Main 10
+clip of Egami's HEVC test set, wavefronts, slices, open GOPs, lossless and weighted prediction among them: 8-bit
+streams as `YuvRaster<byte>`, Main 10 as `YuvRaster<ushort>` holding 10 bits, with the timestamps, color and HDR metadata
+the software decoder gives. Monochrome, 4:2:2, 4:4:4 and 12-bit streams throw `UnsupportedFormatException` at their first
+picture.
+
+What to expect on a GeForce GTX 1070: about 430 frames per second for a 720p 8-bit stream and 335 for Main 10, against
+about 21 for Egami's software decoder on one thread and 80 on all of a 12-core CPU.
 
 ## Errors
 

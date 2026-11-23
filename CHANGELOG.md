@@ -6,7 +6,7 @@ changes that break code come only in a new major version.
 ## Egami.Video.Hardware 0.1.0-preview.1 (unreleased)
 
 A new package, Egami.Video.Hardware: hardware video through Vulkan Video on Windows and Linux (Vulkan Video Build Plan, PR A
-of five). This first preview finds the hardware, and decodes and encodes H.264; HEVC follows.
+of five). This first preview finds the hardware, and decodes and encodes H.264 and HEVC.
 
 - `HardwareVideoCodecs.IsAvailable(codecId, HardwareDirection)` and `HardwareVideoCodecs.GetDevices()` probe the GPUs once per
   process and never throw: `HardwareVideoDevice` (name, kind, PCI ids, Vulkan and driver versions) with its
@@ -29,6 +29,15 @@ of five). This first preview finds the hardware, and decodes and encodes H.264; 
   and timestamps as Egami's software decoder; field pictures, MBAFF, monochrome, 4:2:2 and 10-bit throw
   `UnsupportedFormatException`. About 200 frames per second at 1080p on a GeForce GTX 1070, against 9 to 21 for the software
   decoder.
+- `HardwareVideoCodecs.Hevc` decodes and encodes HEVC on the GPU (PR D). The decoder takes 4:2:0 Main and Main 10 streams,
+  read with Egami's own HEVC parser (picture order count, reference picture sets, bumping), and every such clip of the HEVC
+  test set decodes to the same samples, timestamps, color and HDR metadata as Egami's software decoder; monochrome, 4:2:2,
+  4:4:4 and 12-bit throw `UnsupportedFormatException`. The encoder writes Main and Main 10 with the software encoder's
+  `VideoEncoderOptions` and `HevcEncoderOptions`: constant QP, the driver's constant and variable bitrate, keyframes, levels,
+  Annex B or length-prefixed packets with an hvcC record. On a GeForce GTX 1070 it encodes about 150 frames per second at
+  1080p, with files 25 to 67 % smaller than the software encoder's at effort 0 and up to 25 % bigger than at effort 4, and
+  decodes about 430 frames per second at 720p. The shared HEVC parser (Egami.Heic) keeps a few more syntax values for it. Both hardware decoders now copy
+  slice data out of the packets they are sent, which callers such as `VideoReader` dispose and reuse at once.
 - Tests that need a GPU carry the `Gpu` category and skip where there is none.
 
 ## Egami.Video 1.4.0 (unreleased)

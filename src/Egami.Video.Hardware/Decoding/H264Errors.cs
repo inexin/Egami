@@ -16,4 +16,7 @@ internal static class H264Errors
 
     internal static UnsupportedFormatException Unsupported(string what) =>
         new($"H.264: {what} The hardware decoder does not decode it (it decodes progressive 8-bit 4:2:0 streams); Egami.Video.H264 may.");
+
+    /// <summary>A stream larger than the GPU decodes: its size, level or number of reference pictures.</summary>
+    internal static UnsupportedFormatException Beyond(string what) => new($"H.264: {what} Egami.Video.H264 may decode it.");
 }

@@ -75,6 +75,12 @@ internal sealed class HevcSliceHeader
     /// <summary>Gets the short-term reference picture set the slice uses (empty for an IDR picture).</summary>
     internal HevcShortTermRps ShortTermRps { get; private set; } = HevcShortTermRps.Empty;
 
+    /// <summary>Gets short_term_ref_pic_set_sps_flag: whether the set is one of the SPS's rather than coded in the header.</summary>
+    internal bool ShortTermRpsFromSps { get; private set; }
+
+    /// <summary>Gets the bits of the st_ref_pic_set() coded in the header, or 0.</summary>
+    internal int ShortTermRpsBits { get; private set; }
+
     /// <summary>Gets the long-term pictures of the slice (7.4.7.1): PocLsbLt, UsedByCurrPicLt, and DeltaPocMsbCycleLt or -1 when not sent.</summary>
     internal (int PocLsb, bool Used, int MsbCycle)[] LongTerm { get; private set; } = [];
 
@@ -205,6 +211,8 @@ internal sealed class HevcSliceHeader
         PicOutput = s.PicOutput;
         PocLsb = s.PocLsb;
         ShortTermRps = s.ShortTermRps;
+        ShortTermRpsFromSps = s.ShortTermRpsFromSps;
+        ShortTermRpsBits = s.ShortTermRpsBits;
         LongTerm = s.LongTerm;
         TemporalMvp = s.TemporalMvp;
         NumRefIdxL0 = s.NumRefIdxL0;
@@ -238,9 +246,12 @@ internal sealed class HevcSliceHeader
         {
             PocLsb = (int)r.U(sps.Log2MaxPocLsb, "slice_pic_order_cnt_lsb");
             HevcShortTermRps rps;
-            if (!r.Flag("short_term_ref_pic_set_sps_flag"))
+            ShortTermRpsFromSps = r.Flag("short_term_ref_pic_set_sps_flag");
+            if (!ShortTermRpsFromSps)
             {
+                long start = r.BitPosition;
                 rps = HevcShortTermRps.Read(r, sps.ShortTermRps.Count, sps.ShortTermRps, sps.ShortTermRps.Count);
+                ShortTermRpsBits = (int)(r.BitPosition - start);
             }
             else
             {

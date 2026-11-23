@@ -23,11 +23,13 @@
     <ProjectReference Include="..\Egami.Video\Egami.Video.csproj" />
   </ItemGroup>
 
-  <!-- Egami's H.264 parameter set and slice header readers, compiled in as internal source as Egami.Heic shares the NAL code:
-       the hardware decoder reads the stream with the software decoder's own parser. -->
+  <!-- Egami's H.264 and HEVC parameter set and slice header readers, compiled in as internal source as Egami.Heic shares the NAL
+       code: the hardware decoders read the stream with the software decoders' own parsers. NalErrors, H264Errors and HevcErrors
+       are the package's own. -->
   <ItemGroup>
     <Compile Include="..\Shared\Nal\NalBitReader.cs;..\Shared\Nal\NalErrors.cs;..\Shared\Nal\NalFraming.cs;..\Shared\Nal\NalVui.cs;..\Shared\Nal\NalSei.cs;..\Shared\Nal\NalBumpingBuffer.cs" Link="Shared\Nal\%(Filename)%(Extension)" />
-    <Compile Include="..\Egami.Video.H264\Codecs\H264\H264Sps.cs;..\Egami.Video.H264\Codecs\H264\H264Pps.cs;..\Egami.Video.H264\Codecs\H264\H264SliceHeader.cs;..\Egami.Video.H264\Codecs\H264\H264Vui.cs;..\Egami.Video.H264\Codecs\H264\H264ScalingLists.cs;..\Egami.Video.H264\Codecs\H264\H264Dequant.cs;..\Egami.Video.H264\Codecs\H264\H264Sei.cs;..\Egami.Video.H264\Codecs\H264\NalErrors.cs;..\Egami.Video.H264\Codecs\H264\H264Config.cs" Link="Shared\H264\%(Filename)%(Extension)" />
+    <Compile Include="..\Egami.Video.H264\Codecs\H264\H264Sps.cs;..\Egami.Video.H264\Codecs\H264\H264Pps.cs;..\Egami.Video.H264\Codecs\H264\H264SliceHeader.cs;..\Egami.Video.H264\Codecs\H264\H264Vui.cs;..\Egami.Video.H264\Codecs\H264\H264ScalingLists.cs;..\Egami.Video.H264\Codecs\H264\H264Dequant.cs;..\Egami.Video.H264\Codecs\H264\H264Sei.cs;..\Egami.Video.H264\Codecs\H264\H264Config.cs" Link="Shared\H264\%(Filename)%(Extension)" />
+    <Compile Include="..\Egami.Heic\Hevc\HevcNal.cs;..\Egami.Heic\Hevc\HevcParameterSetStore.cs;..\Egami.Heic\Hevc\HevcParameterSets.cs;..\Egami.Heic\Hevc\HevcSps.cs;..\Egami.Heic\Hevc\HevcPps.cs;..\Egami.Heic\Hevc\HevcSliceHeader.cs;..\Egami.Heic\Hevc\HevcSei.cs;..\Egami.Heic\Hevc\HevcScan.cs;..\Egami.Video.Hevc\Codecs\HevcSeiMessages.cs;..\Egami.Video.Hevc\Codecs\Hevc\Encoder\HevcLevels.cs" Link="Shared\Hevc\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

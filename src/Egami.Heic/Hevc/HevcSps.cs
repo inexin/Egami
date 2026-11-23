@@ -8,6 +8,15 @@ internal sealed class HevcSps
     /// <summary>Gets sps_seq_parameter_set_id.</summary>
     internal int Id { get; private set; }
 
+    /// <summary>Gets sps_video_parameter_set_id.</summary>
+    internal int VpsId { get; private set; }
+
+    /// <summary>Gets sps_max_sub_layers_minus1.</summary>
+    internal int MaxSubLayersMinus1 { get; private set; }
+
+    /// <summary>Gets sps_temporal_id_nesting_flag.</summary>
+    internal bool TemporalIdNesting { get; private set; }
+
     /// <summary>Gets the profile, tier and level.</summary>
     internal HevcProfileTierLevel ProfileTierLevel { get; private set; } = null!;
 
@@ -179,14 +188,15 @@ internal sealed class HevcSps
     internal static HevcSps Read(NalBitReader r)
     {
         HevcSps sps = new();
-        r.U(4, "sps_video_parameter_set_id");
+        sps.VpsId = (int)r.U(4, "sps_video_parameter_set_id");
         int maxSubLayersMinus1 = (int)r.U(3, "sps_max_sub_layers_minus1");
+        sps.MaxSubLayersMinus1 = maxSubLayersMinus1;
         if (maxSubLayersMinus1 > 6)
         {
             throw HevcErrors.Corrupt($"sps_max_sub_layers_minus1 is {maxSubLayersMinus1}, more than 6.");
         }
 
-        r.Flag("sps_temporal_id_nesting_flag");
+        sps.TemporalIdNesting = r.Flag("sps_temporal_id_nesting_flag");
         sps.ProfileTierLevel = HevcProfileTierLevel.Read(r, true, maxSubLayersMinus1);
         sps.Id = (int)r.Ue("sps_seq_parameter_set_id", 15);
         sps.ChromaFormatIdc = (int)r.Ue("chroma_format_idc", 3);
