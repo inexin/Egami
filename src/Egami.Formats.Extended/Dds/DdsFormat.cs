@@ -138,7 +138,7 @@ public sealed class DdsDetails : FormatDetails
     }
 
     /// <inheritdoc/>
-    protected override void PixelsChanged() => Mips = null;
+    protected internal override void PixelsChanged() => Mips = null;
 }
 
 /// <summary>The stored mips 1 and on of a surface a load read at mip 0, filled once its last row has decoded.</summary>

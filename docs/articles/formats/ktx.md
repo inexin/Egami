@@ -126,7 +126,9 @@ the shortcut it allows stays close to a full BC1 encode, so a transcoder never t
 ## Textures
 
 `Texture` (namespace `Egami.Formats.Extended.Textures`) holds a whole texture: every layer, cube face and depth slice at every
-mip, loaded with `Texture.Load` from DDS, KTX or KTX 2 whether or not the formats are registered. `GetImage` and `SetImage` reach
+mip, loaded with `Texture.Load` from DDS, KTX or KTX 2 whether or not the formats are registered. Reader options apply as for
+a raster (`DdsReaderOptions` or `KtxReaderOptions` too, such as `ReconstructNormalZ`), but those that pick one surface, mip or
+region are ignored: the texture holds every image. `GetImage` and `SetImage` reach
 one image by mip, layer, face and slice; `GenerateMips` makes the mips again from mip 0 (2D textures and cube maps) and
 `TrimMips` drops the smallest. `Save` writes DDS or KTX 2 with exactly the mips the texture holds, so a texture with hand-made
 mips, or a volume, survives a round trip; the writer options choose the format as for a raster. A volume saves to either

@@ -3,14 +3,11 @@ using Egami.Compression.Zstd;
 namespace Egami.Compression;
 
 /// <summary>
-/// Zstandard (RFC 8878) compression in managed code: the codec TIFF's ZSTD compression uses, for format plugins and apps that
-/// need it too, such as KTX 2's supercompressed mip levels. Both directions work on spans the caller sizes, and each thread
-/// keeps its tables, so a warm call allocates nothing.
+/// Zstandard (RFC 8878) compression in managed code: the codec TIFF's ZSTD compression uses, shared with Egami.Formats.Extended
+/// for KTX 2's supercompressed mip levels. Both directions work on spans the caller sizes, and each thread keeps its tables, so
+/// a warm call allocates nothing.
 /// </summary>
-/// <example>
-/// <code language="csharp" source="../../../tests/Egami.DocSamples/Compression.cs" region="zstandard"/>
-/// </example>
-public static class Zstandard
+internal static class Zstandard
 {
     /// <summary>The lowest compression level, the fastest.</summary>
     public const int MinLevel = ZstdEncoder.MinLevel;

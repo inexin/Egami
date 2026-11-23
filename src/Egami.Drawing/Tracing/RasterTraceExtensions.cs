@@ -73,6 +73,33 @@ public static class RasterTraceExtensions
         return Task.Run(() => TraceAny(raster, options, context, cancellationToken), cancellationToken);
     }
 
+    /// <summary>
+    /// Traces a raster's first frame into shapes on a worker thread, as <see cref="Trace{TPixel}(Raster{TPixel}, TraceOptions?, EgamiContext?)"/>
+    /// does.
+    /// </summary>
+    /// <typeparam name="TPixel">The raster's pixel type.</typeparam>
+    /// <param name="raster">The raster; it must not change or be disposed until the task completes.</param>
+    /// <param name="options">The settings, or <see langword="null"/> for <see cref="TraceOptions.Default"/>.</param>
+    /// <param name="context">The context whose limits apply, or <see langword="null"/> for the raster's.</param>
+    /// <param name="cancellationToken">Cancels the trace; it is checked between rows and between outlines.</param>
+    /// <returns>The shapes.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="raster"/> is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException">The trace was cancelled.</exception>
+    /// <exception cref="LimitExceededException">The raster is larger than the context's <see cref="SafetyLimits.MaxPixels"/>.</exception>
+    /// <exception cref="ArgumentException">In <see cref="TraceMode.Logo"/>, the image is not flat-color art (a photo or a
+    /// gradient), or it has transparency and <see cref="TraceOptions.Palette"/> has more than 254 colors.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/Tracing.cs" region="async"/>
+    /// </example>
+    public static Task<TraceResult> TraceAsync<TPixel>(this Raster<TPixel> raster, TraceOptions? options = null, EgamiContext? context = null, CancellationToken cancellationToken = default)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        ArgumentNullException.ThrowIfNull(raster);
+        TraceOptions settings = options ?? TraceOptions.Default;
+        EgamiContext limits = context ?? raster.Context;
+        return Task.Run(() => Tracer.Trace(raster, settings, limits, cancellationToken), cancellationToken);
+    }
+
     private static TraceResult TraceAny(Raster raster, TraceOptions? options, EgamiContext? context, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(raster);

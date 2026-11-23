@@ -54,6 +54,35 @@ public class TextureTests
     }
 
     [Fact]
+    public void ReaderOptionsKeepEveryImage()
+    {
+        using Texture plain = Texture.Load(KtxFiles.Corpus("rgba8-srgb-mips.ktx2"), Context);
+        KtxReaderOptions picking = new() { MipLevel = 1, Surface = 0, Region = new Rect(0, 0, 1, 1), MinimumSize = new Size(1, 1), Recovery = RecoveryMode.Strict };
+        foreach (ReaderOptions options in (ReaderOptions[])[picking, new ReaderOptions { Recovery = RecoveryMode.Strict }])
+        {
+            using Texture texture = Texture.Load(KtxFiles.Corpus("rgba8-srgb-mips.ktx2"), Context, options);
+            Assert.Equal((plain.Width, plain.Height, plain.MipLevels), (texture.Width, texture.Height, texture.MipLevels));
+            for (int m = 0; m < plain.MipLevels; m++)
+            {
+                using Raster<Rgba8> a = plain.GetImage(m).As<Rgba8>();
+                using Raster<Rgba8> b = texture.GetImage(m).As<Rgba8>();
+                TestImages.AssertEqual(a, b);
+            }
+        }
+
+        Raster<Rgba8>[] faces = [.. Enumerable.Range(0, 6).Select(i => Raster.Create<Rgba8>(4, 4, new Rgba8((byte)(i * 40), 0, 0, 255)))];
+        using MemoryStream cube = new();
+        Raster.SaveAll(faces, cube, DdsFormat.Info, new DdsWriterOptions { Cube = true, Format = DdsTextureFormat.Rgba8 });
+        foreach (Raster<Rgba8> face in faces)
+        {
+            face.Dispose();
+        }
+
+        using Texture dds = Texture.Load(cube.ToArray().AsMemory(), Context, new DdsReaderOptions { Surface = 2, MipLevel = 1 });
+        Assert.Equal((true, 6, 3), (dds.IsCube, dds.Faces, dds.MipLevels));
+    }
+
+    [Fact]
     public void LoadsDdsCubeMapsWithMips()
     {
         Raster<Rgba8>[] faces = [.. Enumerable.Range(0, 6).Select(i => Raster.Create<Rgba8>(8, 8, new Rgba8((byte)(i * 40), 0, 0, 255)))];

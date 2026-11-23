@@ -921,7 +921,7 @@ public class FormatsExtended
         // with it, and Keywords adds more.
         using (FileStream output = File.Create("m51-copy.fits"))
         {
-            values.Save(output, FitsFormat.Info, new FitsWriterOptions { Keywords = [new FitsCard("HISTORY", null, "dark subtracted")] });
+            values.Save(output, FitsFormat.Info, new FitsWriterOptions { Cards = [new FitsCard("HISTORY", null, "dark subtracted")] });
         }
 
         // A colour image becomes a three-plane cube; Bitpix picks the depth.
