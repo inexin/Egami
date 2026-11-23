@@ -7576,84 +7576,6 @@ references:
   isSpec: "True"
   fullName: Egami.Colors.YCbCrColor.Y
   nameWithType: YCbCrColor.Y
-- uid: Egami.Compression
-  name: Egami.Compression
-  href: api/Egami.Compression.html
-  commentId: N:Egami.Compression
-  fullName: Egami.Compression
-  nameWithType: Egami.Compression
-- uid: Egami.Compression.Zstandard
-  name: Zstandard
-  href: api/Egami.Compression.Zstandard.html
-  commentId: T:Egami.Compression.Zstandard
-  fullName: Egami.Compression.Zstandard
-  nameWithType: Zstandard
-- uid: Egami.Compression.Zstandard.Compress(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Int32)
-  name: Compress(ReadOnlySpan<byte>, Span<byte>, int)
-  href: api/Egami.Compression.Zstandard.html#Egami_Compression_Zstandard_Compress_System_ReadOnlySpan_System_Byte__System_Span_System_Byte__System_Int32_
-  commentId: M:Egami.Compression.Zstandard.Compress(System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Int32)
-  name.vb: Compress(ReadOnlySpan(Of Byte), Span(Of Byte), Integer)
-  fullName: Egami.Compression.Zstandard.Compress(System.ReadOnlySpan<byte>, System.Span<byte>, int)
-  fullName.vb: Egami.Compression.Zstandard.Compress(System.ReadOnlySpan(Of Byte), System.Span(Of Byte), Integer)
-  nameWithType: Zstandard.Compress(ReadOnlySpan<byte>, Span<byte>, int)
-  nameWithType.vb: Zstandard.Compress(ReadOnlySpan(Of Byte), Span(Of Byte), Integer)
-- uid: Egami.Compression.Zstandard.Compress*
-  name: Compress
-  href: api/Egami.Compression.Zstandard.html#Egami_Compression_Zstandard_Compress_
-  commentId: Overload:Egami.Compression.Zstandard.Compress
-  isSpec: "True"
-  fullName: Egami.Compression.Zstandard.Compress
-  nameWithType: Zstandard.Compress
-- uid: Egami.Compression.Zstandard.Decompress(System.ReadOnlySpan{System.Byte},System.Span{System.Byte})
-  name: Decompress(ReadOnlySpan<byte>, Span<byte>)
-  href: api/Egami.Compression.Zstandard.html#Egami_Compression_Zstandard_Decompress_System_ReadOnlySpan_System_Byte__System_Span_System_Byte__
-  commentId: M:Egami.Compression.Zstandard.Decompress(System.ReadOnlySpan{System.Byte},System.Span{System.Byte})
-  name.vb: Decompress(ReadOnlySpan(Of Byte), Span(Of Byte))
-  fullName: Egami.Compression.Zstandard.Decompress(System.ReadOnlySpan<byte>, System.Span<byte>)
-  fullName.vb: Egami.Compression.Zstandard.Decompress(System.ReadOnlySpan(Of Byte), System.Span(Of Byte))
-  nameWithType: Zstandard.Decompress(ReadOnlySpan<byte>, Span<byte>)
-  nameWithType.vb: Zstandard.Decompress(ReadOnlySpan(Of Byte), Span(Of Byte))
-- uid: Egami.Compression.Zstandard.Decompress*
-  name: Decompress
-  href: api/Egami.Compression.Zstandard.html#Egami_Compression_Zstandard_Decompress_
-  commentId: Overload:Egami.Compression.Zstandard.Decompress
-  isSpec: "True"
-  fullName: Egami.Compression.Zstandard.Decompress
-  nameWithType: Zstandard.Decompress
-- uid: Egami.Compression.Zstandard.DefaultLevel
-  name: DefaultLevel
-  href: api/Egami.Compression.Zstandard.html#Egami_Compression_Zstandard_DefaultLevel
-  commentId: F:Egami.Compression.Zstandard.DefaultLevel
-  fullName: Egami.Compression.Zstandard.DefaultLevel
-  nameWithType: Zstandard.DefaultLevel
-- uid: Egami.Compression.Zstandard.MaxCompressedLength(System.Int32)
-  name: MaxCompressedLength(int)
-  href: api/Egami.Compression.Zstandard.html#Egami_Compression_Zstandard_MaxCompressedLength_System_Int32_
-  commentId: M:Egami.Compression.Zstandard.MaxCompressedLength(System.Int32)
-  name.vb: MaxCompressedLength(Integer)
-  fullName: Egami.Compression.Zstandard.MaxCompressedLength(int)
-  fullName.vb: Egami.Compression.Zstandard.MaxCompressedLength(Integer)
-  nameWithType: Zstandard.MaxCompressedLength(int)
-  nameWithType.vb: Zstandard.MaxCompressedLength(Integer)
-- uid: Egami.Compression.Zstandard.MaxCompressedLength*
-  name: MaxCompressedLength
-  href: api/Egami.Compression.Zstandard.html#Egami_Compression_Zstandard_MaxCompressedLength_
-  commentId: Overload:Egami.Compression.Zstandard.MaxCompressedLength
-  isSpec: "True"
-  fullName: Egami.Compression.Zstandard.MaxCompressedLength
-  nameWithType: Zstandard.MaxCompressedLength
-- uid: Egami.Compression.Zstandard.MaxLevel
-  name: MaxLevel
-  href: api/Egami.Compression.Zstandard.html#Egami_Compression_Zstandard_MaxLevel
-  commentId: F:Egami.Compression.Zstandard.MaxLevel
-  fullName: Egami.Compression.Zstandard.MaxLevel
-  nameWithType: Zstandard.MaxLevel
-- uid: Egami.Compression.Zstandard.MinLevel
-  name: MinLevel
-  href: api/Egami.Compression.Zstandard.html#Egami_Compression_Zstandard_MinLevel
-  commentId: F:Egami.Compression.Zstandard.MinLevel
-  fullName: Egami.Compression.Zstandard.MinLevel
-  nameWithType: Zstandard.MinLevel
 - uid: Egami.CorruptDataException
   name: CorruptDataException
   href: api/Egami.CorruptDataException.html
@@ -22823,6 +22745,15 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync
   nameWithType: RasterTraceExtensions.TraceAsync
+- uid: Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync``1(Egami.Raster{``0},Egami.Drawing.Tracing.TraceOptions,Egami.EgamiContext,System.Threading.CancellationToken)
+  name: TraceAsync<TPixel>(Raster<TPixel>, TraceOptions?, EgamiContext?, CancellationToken)
+  href: api/Egami.Drawing.Tracing.RasterTraceExtensions.html#Egami_Drawing_Tracing_RasterTraceExtensions_TraceAsync__1_Egami_Raster___0__Egami_Drawing_Tracing_TraceOptions_Egami_EgamiContext_System_Threading_CancellationToken_
+  commentId: M:Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync``1(Egami.Raster{``0},Egami.Drawing.Tracing.TraceOptions,Egami.EgamiContext,System.Threading.CancellationToken)
+  name.vb: TraceAsync(Of TPixel)(Raster(Of TPixel), TraceOptions, EgamiContext, CancellationToken)
+  fullName: Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync<TPixel>(Egami.Raster<TPixel>, Egami.Drawing.Tracing.TraceOptions?, Egami.EgamiContext?, System.Threading.CancellationToken)
+  fullName.vb: Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync(Of TPixel)(Egami.Raster(Of TPixel), Egami.Drawing.Tracing.TraceOptions, Egami.EgamiContext, System.Threading.CancellationToken)
+  nameWithType: RasterTraceExtensions.TraceAsync<TPixel>(Raster<TPixel>, TraceOptions?, EgamiContext?, CancellationToken)
+  nameWithType.vb: RasterTraceExtensions.TraceAsync(Of TPixel)(Raster(Of TPixel), TraceOptions, EgamiContext, CancellationToken)
 - uid: Egami.Drawing.Tracing.RasterTraceExtensions.Trace``1(Egami.Raster{``0},Egami.Drawing.Tracing.TraceOptions,Egami.EgamiContext)
   name: Trace<TPixel>(Raster<TPixel>, TraceOptions?, EgamiContext?)
   href: api/Egami.Drawing.Tracing.RasterTraceExtensions.html#Egami_Drawing_Tracing_RasterTraceExtensions_Trace__1_Egami_Raster___0__Egami_Drawing_Tracing_TraceOptions_Egami_EgamiContext_
@@ -48711,24 +48642,33 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Fits.FitsFile.Hdus
   nameWithType: FitsFile.Hdus
-- uid: Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream,Egami.EgamiContext)
-  name: Load(Stream, EgamiContext?)
-  href: api/Egami.Formats.Extended.Fits.FitsFile.html#Egami_Formats_Extended_Fits_FitsFile_Load_System_IO_Stream_Egami_EgamiContext_
-  commentId: M:Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream,Egami.EgamiContext)
-  name.vb: Load(Stream, EgamiContext)
-  fullName: Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream, Egami.EgamiContext?)
-  fullName.vb: Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream, Egami.EgamiContext)
-  nameWithType: FitsFile.Load(Stream, EgamiContext?)
-  nameWithType.vb: FitsFile.Load(Stream, EgamiContext)
-- uid: Egami.Formats.Extended.Fits.FitsFile.Load(System.String,Egami.EgamiContext)
-  name: Load(string, EgamiContext?)
-  href: api/Egami.Formats.Extended.Fits.FitsFile.html#Egami_Formats_Extended_Fits_FitsFile_Load_System_String_Egami_EgamiContext_
-  commentId: M:Egami.Formats.Extended.Fits.FitsFile.Load(System.String,Egami.EgamiContext)
-  name.vb: Load(String, EgamiContext)
-  fullName: Egami.Formats.Extended.Fits.FitsFile.Load(string, Egami.EgamiContext?)
-  fullName.vb: Egami.Formats.Extended.Fits.FitsFile.Load(String, Egami.EgamiContext)
-  nameWithType: FitsFile.Load(string, EgamiContext?)
-  nameWithType.vb: FitsFile.Load(String, EgamiContext)
+- uid: Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name: Load(Stream, EgamiContext?, ReaderOptions?)
+  href: api/Egami.Formats.Extended.Fits.FitsFile.html#Egami_Formats_Extended_Fits_FitsFile_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_
+  commentId: M:Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name.vb: Load(Stream, EgamiContext, ReaderOptions)
+  fullName: Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream, Egami.EgamiContext?, Egami.Formats.ReaderOptions?)
+  fullName.vb: Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream, Egami.EgamiContext, Egami.Formats.ReaderOptions)
+  nameWithType: FitsFile.Load(Stream, EgamiContext?, ReaderOptions?)
+  nameWithType.vb: FitsFile.Load(Stream, EgamiContext, ReaderOptions)
+- uid: Egami.Formats.Extended.Fits.FitsFile.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name: Load(ReadOnlyMemory<byte>, EgamiContext?, ReaderOptions?)
+  href: api/Egami.Formats.Extended.Fits.FitsFile.html#Egami_Formats_Extended_Fits_FitsFile_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_
+  commentId: M:Egami.Formats.Extended.Fits.FitsFile.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name.vb: Load(ReadOnlyMemory(Of Byte), EgamiContext, ReaderOptions)
+  fullName: Egami.Formats.Extended.Fits.FitsFile.Load(System.ReadOnlyMemory<byte>, Egami.EgamiContext?, Egami.Formats.ReaderOptions?)
+  fullName.vb: Egami.Formats.Extended.Fits.FitsFile.Load(System.ReadOnlyMemory(Of Byte), Egami.EgamiContext, Egami.Formats.ReaderOptions)
+  nameWithType: FitsFile.Load(ReadOnlyMemory<byte>, EgamiContext?, ReaderOptions?)
+  nameWithType.vb: FitsFile.Load(ReadOnlyMemory(Of Byte), EgamiContext, ReaderOptions)
+- uid: Egami.Formats.Extended.Fits.FitsFile.Load(System.String,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name: Load(string, EgamiContext?, ReaderOptions?)
+  href: api/Egami.Formats.Extended.Fits.FitsFile.html#Egami_Formats_Extended_Fits_FitsFile_Load_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_
+  commentId: M:Egami.Formats.Extended.Fits.FitsFile.Load(System.String,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name.vb: Load(String, EgamiContext, ReaderOptions)
+  fullName: Egami.Formats.Extended.Fits.FitsFile.Load(string, Egami.EgamiContext?, Egami.Formats.ReaderOptions?)
+  fullName.vb: Egami.Formats.Extended.Fits.FitsFile.Load(String, Egami.EgamiContext, Egami.Formats.ReaderOptions)
+  nameWithType: FitsFile.Load(string, EgamiContext?, ReaderOptions?)
+  nameWithType.vb: FitsFile.Load(String, EgamiContext, ReaderOptions)
 - uid: Egami.Formats.Extended.Fits.FitsFile.Load*
   name: Load
   href: api/Egami.Formats.Extended.Fits.FitsFile.html#Egami_Formats_Extended_Fits_FitsFile_Load_
@@ -49235,6 +49175,19 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Fits.FitsWriterOptions.Bitpix
   nameWithType: FitsWriterOptions.Bitpix
+- uid: Egami.Formats.Extended.Fits.FitsWriterOptions.Cards
+  name: Cards
+  href: api/Egami.Formats.Extended.Fits.FitsWriterOptions.html#Egami_Formats_Extended_Fits_FitsWriterOptions_Cards
+  commentId: P:Egami.Formats.Extended.Fits.FitsWriterOptions.Cards
+  fullName: Egami.Formats.Extended.Fits.FitsWriterOptions.Cards
+  nameWithType: FitsWriterOptions.Cards
+- uid: Egami.Formats.Extended.Fits.FitsWriterOptions.Cards*
+  name: Cards
+  href: api/Egami.Formats.Extended.Fits.FitsWriterOptions.html#Egami_Formats_Extended_Fits_FitsWriterOptions_Cards_
+  commentId: Overload:Egami.Formats.Extended.Fits.FitsWriterOptions.Cards
+  isSpec: "True"
+  fullName: Egami.Formats.Extended.Fits.FitsWriterOptions.Cards
+  nameWithType: FitsWriterOptions.Cards
 - uid: Egami.Formats.Extended.Fits.FitsWriterOptions.Default
   name: Default
   href: api/Egami.Formats.Extended.Fits.FitsWriterOptions.html#Egami_Formats_Extended_Fits_FitsWriterOptions_Default
@@ -49248,19 +49201,6 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Fits.FitsWriterOptions.Default
   nameWithType: FitsWriterOptions.Default
-- uid: Egami.Formats.Extended.Fits.FitsWriterOptions.Keywords
-  name: Keywords
-  href: api/Egami.Formats.Extended.Fits.FitsWriterOptions.html#Egami_Formats_Extended_Fits_FitsWriterOptions_Keywords
-  commentId: P:Egami.Formats.Extended.Fits.FitsWriterOptions.Keywords
-  fullName: Egami.Formats.Extended.Fits.FitsWriterOptions.Keywords
-  nameWithType: FitsWriterOptions.Keywords
-- uid: Egami.Formats.Extended.Fits.FitsWriterOptions.Keywords*
-  name: Keywords
-  href: api/Egami.Formats.Extended.Fits.FitsWriterOptions.html#Egami_Formats_Extended_Fits_FitsWriterOptions_Keywords_
-  commentId: Overload:Egami.Formats.Extended.Fits.FitsWriterOptions.Keywords
-  isSpec: "True"
-  fullName: Egami.Formats.Extended.Fits.FitsWriterOptions.Keywords
-  nameWithType: FitsWriterOptions.Keywords
 - uid: Egami.Formats.Extended.JpegLs
   name: Egami.Formats.Extended.JpegLs
   href: api/Egami.Formats.Extended.JpegLs.html
@@ -52087,33 +52027,33 @@ references:
   isSpec: "True"
   fullName: Egami.Formats.Extended.Textures.Texture.Layers
   nameWithType: Texture.Layers
-- uid: Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream,Egami.EgamiContext)
-  name: Load(Stream, EgamiContext?)
-  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Load_System_IO_Stream_Egami_EgamiContext_
-  commentId: M:Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream,Egami.EgamiContext)
-  name.vb: Load(Stream, EgamiContext)
-  fullName: Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream, Egami.EgamiContext?)
-  fullName.vb: Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream, Egami.EgamiContext)
-  nameWithType: Texture.Load(Stream, EgamiContext?)
-  nameWithType.vb: Texture.Load(Stream, EgamiContext)
-- uid: Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext)
-  name: Load(ReadOnlyMemory<byte>, EgamiContext?)
-  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_
-  commentId: M:Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext)
-  name.vb: Load(ReadOnlyMemory(Of Byte), EgamiContext)
-  fullName: Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory<byte>, Egami.EgamiContext?)
-  fullName.vb: Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory(Of Byte), Egami.EgamiContext)
-  nameWithType: Texture.Load(ReadOnlyMemory<byte>, EgamiContext?)
-  nameWithType.vb: Texture.Load(ReadOnlyMemory(Of Byte), EgamiContext)
-- uid: Egami.Formats.Extended.Textures.Texture.Load(System.String,Egami.EgamiContext)
-  name: Load(string, EgamiContext?)
-  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Load_System_String_Egami_EgamiContext_
-  commentId: M:Egami.Formats.Extended.Textures.Texture.Load(System.String,Egami.EgamiContext)
-  name.vb: Load(String, EgamiContext)
-  fullName: Egami.Formats.Extended.Textures.Texture.Load(string, Egami.EgamiContext?)
-  fullName.vb: Egami.Formats.Extended.Textures.Texture.Load(String, Egami.EgamiContext)
-  nameWithType: Texture.Load(string, EgamiContext?)
-  nameWithType.vb: Texture.Load(String, EgamiContext)
+- uid: Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name: Load(Stream, EgamiContext?, ReaderOptions?)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name.vb: Load(Stream, EgamiContext, ReaderOptions)
+  fullName: Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream, Egami.EgamiContext?, Egami.Formats.ReaderOptions?)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream, Egami.EgamiContext, Egami.Formats.ReaderOptions)
+  nameWithType: Texture.Load(Stream, EgamiContext?, ReaderOptions?)
+  nameWithType.vb: Texture.Load(Stream, EgamiContext, ReaderOptions)
+- uid: Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name: Load(ReadOnlyMemory<byte>, EgamiContext?, ReaderOptions?)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name.vb: Load(ReadOnlyMemory(Of Byte), EgamiContext, ReaderOptions)
+  fullName: Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory<byte>, Egami.EgamiContext?, Egami.Formats.ReaderOptions?)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory(Of Byte), Egami.EgamiContext, Egami.Formats.ReaderOptions)
+  nameWithType: Texture.Load(ReadOnlyMemory<byte>, EgamiContext?, ReaderOptions?)
+  nameWithType.vb: Texture.Load(ReadOnlyMemory(Of Byte), EgamiContext, ReaderOptions)
+- uid: Egami.Formats.Extended.Textures.Texture.Load(System.String,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name: Load(string, EgamiContext?, ReaderOptions?)
+  href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Load_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_
+  commentId: M:Egami.Formats.Extended.Textures.Texture.Load(System.String,Egami.EgamiContext,Egami.Formats.ReaderOptions)
+  name.vb: Load(String, EgamiContext, ReaderOptions)
+  fullName: Egami.Formats.Extended.Textures.Texture.Load(string, Egami.EgamiContext?, Egami.Formats.ReaderOptions?)
+  fullName.vb: Egami.Formats.Extended.Textures.Texture.Load(String, Egami.EgamiContext, Egami.Formats.ReaderOptions)
+  nameWithType: Texture.Load(string, EgamiContext?, ReaderOptions?)
+  nameWithType.vb: Texture.Load(String, EgamiContext, ReaderOptions)
 - uid: Egami.Formats.Extended.Textures.Texture.Load*
   name: Load
   href: api/Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_Load_

@@ -115,7 +115,7 @@ drawn with round caps and joins.</li>
 <a href="drawing.html#a-canvas">canvas</a>.</li>
 <li>In black and white, one shape is one ink region: its outer edge and its holes. A region inside another region's hole comes
 after it. <code>Palette</code> lists the shapes' colors, each once, back to front.</li>
-<li><code>Trace</code> (in <code>RasterTraceExtensions</code>) works on any pixel type; <code>Trace&lt;TPixel&gt;</code> is the same for a typed raster. <code>TraceAsync</code> traces on a worker thread and
+<li><code>Trace</code> (in <code>RasterTraceExtensions</code>) works on any pixel type; <code>Trace&lt;TPixel&gt;</code> is the same for a typed raster. <code>TraceAsync</code>, for either, traces on a worker thread and
 takes a <code>CancellationToken</code>, checked between rows and between outlines.</li>
 <li>The raster's <code>EgamiContext</code> (or one you pass) limits the size: a raster larger than <code>SafetyLimits.MaxPixels</code> throws
 <code>LimitExceededException</code>.</li>

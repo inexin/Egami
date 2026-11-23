@@ -295,7 +295,9 @@ ASTC is missing, <code>EacRg11</code> for normal maps.</li>
 </ul>
 <h2 id="textures">Textures</h2>
 <p><code>Texture</code> (namespace <code>Egami.Formats.Extended.Textures</code>) holds a whole texture: every layer, cube face and depth slice at every
-mip, loaded with <code>Texture.Load</code> from DDS, KTX or KTX 2 whether or not the formats are registered. <code>GetImage</code> and <code>SetImage</code> reach
+mip, loaded with <code>Texture.Load</code> from DDS, KTX or KTX 2 whether or not the formats are registered. Reader options apply as for
+a raster (<code>DdsReaderOptions</code> or <code>KtxReaderOptions</code> too, such as <code>ReconstructNormalZ</code>), but those that pick one surface, mip or
+region are ignored: the texture holds every image. <code>GetImage</code> and <code>SetImage</code> reach
 one image by mip, layer, face and slice; <code>GenerateMips</code> makes the mips again from mip 0 (2D textures and cube maps) and
 <code>TrimMips</code> drops the smallest. <code>Save</code> writes DDS or KTX 2 with exactly the mips the texture holds, so a texture with hand-made
 mips, or a volume, survives a round trip; the writer options choose the format as for a raster. A volume saves to either

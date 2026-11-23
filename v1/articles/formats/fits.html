@@ -193,7 +193,9 @@ using Raster colour = Raster.Load(&quot;m51-rgb.fits&quot;, context, new FitsRea
 have no value. <code>GetString</code>, <code>GetInteger</code>, <code>GetReal</code> and <code>GetLogical</code> find a card's value by keyword. <code>FitsDetails</code> also keeps
 which HDU and plane the raster is, its BITPIX, its tile compression, and the stretch with its limits. The world coordinate
 cards (<code>CRVAL1</code>, <code>CD1_1</code> and the rest) are kept as cards; Egami does not compute sky positions from them.</p>
-<p><code>FitsFile</code> is for code that wants the file rather than a picture. <code>FitsFile.Load</code> reads every HDU's header (tables included),
+<p><code>FitsFile</code> is for code that wants the file rather than a picture. <code>FitsFile.Load</code> reads every HDU's header (tables included)
+from a path, a stream or memory; with <code>ReaderOptions.Recovery</code> lenient (the default) a damaged header after the primary one
+ends the list, and strict throws.
 <code>Hdus</code> lists them as <code>FitsHdu</code>s with their kind (a <code>FitsHduKind</code>), BITPIX, axes and compression, <code>ReadValues</code> gives an image's physical values as
 <code>double</code>, and <code>ReadPlane</code> gives one plane as an unstretched <code>Raster&lt;GrayF32&gt;</code>.</p>
 <pre><code class="lang-csharp">// FitsFile lists every HDU with its header, tables included, and reads an image's values in file order.
@@ -225,13 +227,13 @@ pixels write a 2D image; colour pixels write a cube of three planes, red, green 
 <p>A raster read from FITS keeps its header cards: everything but the cards the structure needs (such as <code>SIMPLE</code>, <code>BITPIX</code>,
 <code>NAXISn</code>, <code>BSCALE</code>, <code>BZERO</code>, <code>BLANK</code>, <code>EXTEND</code> and the extension and compression keywords), which the writer makes again. A raster loaded
 with a stretch no longer holds the physical values, so <code>DATAMIN</code>, <code>DATAMAX</code> and <code>BUNIT</code> are dropped from it.
-<code>FitsWriterOptions.Keywords</code> adds more cards. Long strings are written as CONTINUE cards, keywords longer than eight characters
+<code>FitsWriterOptions.Cards</code> adds more cards. Long strings are written as CONTINUE cards, keywords longer than eight characters
 as HIERARCH, and characters outside printable ASCII are dropped, as the standard asks.</p>
 <pre><code class="lang-csharp">// BITPIX follows the pixel type: -32 for floating point, 16 for 16-bit, 8 otherwise. The cards of a loaded header go
 // with it, and Keywords adds more.
 using (FileStream output = File.Create(&quot;m51-copy.fits&quot;))
 {
-    values.Save(output, FitsFormat.Info, new FitsWriterOptions { Keywords = [new FitsCard(&quot;HISTORY&quot;, null, &quot;dark subtracted&quot;)] });
+    values.Save(output, FitsFormat.Info, new FitsWriterOptions { Cards = [new FitsCard(&quot;HISTORY&quot;, null, &quot;dark subtracted&quot;)] });
 }
 
 // A colour image becomes a three-plane cube; Bitpix picks the depth.

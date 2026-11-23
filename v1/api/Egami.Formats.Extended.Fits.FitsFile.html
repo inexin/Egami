@@ -170,7 +170,7 @@ using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
 
   <h3 id="Egami_Formats_Extended_Fits_FitsFile_FirstImage" data-uid="Egami.Formats.Extended.Fits.FitsFile.FirstImage">
   FirstImage
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L32"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the first HDU that holds an image, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
@@ -202,7 +202,7 @@ using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
 
   <h3 id="Egami_Formats_Extended_Fits_FitsFile_Hdus" data-uid="Egami.Formats.Extended.Fits.FitsFile.Hdus">
   Hdus
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L31"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L29"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets every HDU, the primary one first.</p>
@@ -236,9 +236,9 @@ using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
 
   <a id="Egami_Formats_Extended_Fits_FitsFile_Load_" data-uid="Egami.Formats.Extended.Fits.FitsFile.Load*"></a>
 
-  <h3 id="Egami_Formats_Extended_Fits_FitsFile_Load_System_IO_Stream_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream,Egami.EgamiContext)">
-  Load(Stream, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  <h3 id="Egami_Formats_Extended_Fits_FitsFile_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.Extended.Fits.FitsFile.Load(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Load(Stream, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L67"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads a FITS file from a stream, to its end.</p>
@@ -246,16 +246,20 @@ using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static FitsFile Load(Stream stream, EgamiContext? context = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public static FitsFile Load(Stream stream, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream.</p>
+    <dd><p>The stream. It is left open.</p>
 </dd>
     <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
     <dd><p>The context whose safety limits apply, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read: with <a class="xref" href="Egami.Formats.RecoveryMode.html#Egami_Formats_RecoveryMode_Lenient">Lenient</a> (the default) a damaged header after the primary one ends the HDU
+list; with <a class="xref" href="Egami.Formats.RecoveryMode.html#Egami_Formats_RecoveryMode_Strict">Strict</a> it throws.</p>
 </dd>
   </dl>
 
@@ -271,6 +275,19 @@ using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
 
 
 
+  <h4 class="section" id="Egami_Formats_Extended_Fits_FitsFile_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// FitsFile lists every HDU with its header, tables included, and reads an image's values in file order.
+FitsFile file = FitsFile.Load("m51.fits");
+foreach (FitsHdu hdu in file.Hdus)
+{
+    Console.WriteLine($"HDU {hdu.Index}: {hdu.Kind}, {string.Join(" × ", hdu.Axes)}");
+}
+
+FitsHdu image = file.FirstImage!;
+double exposure = image.Header.GetReal("EXPTIME") ?? 0;
+double[] counts = file.ReadValues(image);
+using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
+
 
 
   <h4 class="section">Exceptions</h4>
@@ -279,7 +296,7 @@ using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
     <dd><p><code class="paramref">stream</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
 </dd>
     <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
-    <dd><p>The primary header is not FITS or is damaged.</p>
+    <dd><p>The primary header is not FITS or is damaged, or a later one is and the read is strict.</p>
 </dd>
   </dl>
 
@@ -287,9 +304,74 @@ using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
 
   <a id="Egami_Formats_Extended_Fits_FitsFile_Load_" data-uid="Egami.Formats.Extended.Fits.FitsFile.Load*"></a>
 
-  <h3 id="Egami_Formats_Extended_Fits_FitsFile_Load_System_String_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.Fits.FitsFile.Load(System.String,Egami.EgamiContext)">
-  Load(string, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  <h3 id="Egami_Formats_Extended_Fits_FitsFile_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.Extended.Fits.FitsFile.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Load(ReadOnlyMemory&lt;byte&gt;, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a FITS file held in memory. The file keeps referring to <code class="paramref">data</code> instead of copying it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static FitsFile Load(ReadOnlyMemory&lt;byte&gt; data, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The file's bytes.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context whose safety limits apply, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read: with <a class="xref" href="Egami.Formats.RecoveryMode.html#Egami_Formats_RecoveryMode_Lenient">Lenient</a> (the default) a damaged header after the primary one ends the HDU
+list; with <a class="xref" href="Egami.Formats.RecoveryMode.html#Egami_Formats_RecoveryMode_Strict">Strict</a> it throws.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Formats.Extended.Fits.FitsFile.html">FitsFile</a></dt>
+    <dd><p>The file, its headers read.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Formats_Extended_Fits_FitsFile_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// FitsFile lists every HDU with its header, tables included, and reads an image's values in file order.
+FitsFile file = FitsFile.Load("m51.fits");
+foreach (FitsHdu hdu in file.Hdus)
+{
+    Console.WriteLine($"HDU {hdu.Index}: {hdu.Kind}, {string.Join(" × ", hdu.Axes)}");
+}
+
+FitsHdu image = file.FirstImage!;
+double exposure = image.Header.GetReal("EXPTIME") ?? 0;
+double[] counts = file.ReadValues(image);
+using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>The primary header is not FITS or is damaged, or a later one is and the read is strict.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Formats_Extended_Fits_FitsFile_Load_" data-uid="Egami.Formats.Extended.Fits.FitsFile.Load*"></a>
+
+  <h3 id="Egami_Formats_Extended_Fits_FitsFile_Load_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.Extended.Fits.FitsFile.Load(System.String,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Load(string, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L47"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads a FITS file from a path.</p>
@@ -297,7 +379,7 @@ using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static FitsFile Load(string path, EgamiContext? context = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public static FitsFile Load(string path, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -308,6 +390,10 @@ using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
     <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
     <dd><p>The context whose safety limits apply, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default.</p>
 </dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read: with <a class="xref" href="Egami.Formats.RecoveryMode.html#Egami_Formats_RecoveryMode_Lenient">Lenient</a> (the default) a damaged header after the primary one ends the HDU
+list; with <a class="xref" href="Egami.Formats.RecoveryMode.html#Egami_Formats_RecoveryMode_Strict">Strict</a> it throws.</p>
+</dd>
   </dl>
 
   <h4 class="section">Returns</h4>
@@ -322,6 +408,19 @@ using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
 
 
 
+  <h4 class="section" id="Egami_Formats_Extended_Fits_FitsFile_Load_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// FitsFile lists every HDU with its header, tables included, and reads an image's values in file order.
+FitsFile file = FitsFile.Load("m51.fits");
+foreach (FitsHdu hdu in file.Hdus)
+{
+    Console.WriteLine($"HDU {hdu.Index}: {hdu.Kind}, {string.Join(" × ", hdu.Axes)}");
+}
+
+FitsHdu image = file.FirstImage!;
+double exposure = image.Header.GetReal("EXPTIME") ?? 0;
+double[] counts = file.ReadValues(image);
+using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
+
 
 
   <h4 class="section">Exceptions</h4>
@@ -330,7 +429,7 @@ using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
     <dd><p><code class="paramref">path</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
 </dd>
     <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
-    <dd><p>The primary header is not FITS or is damaged.</p>
+    <dd><p>The primary header is not FITS or is damaged, or a later one is and the read is strict.</p>
 </dd>
   </dl>
 
@@ -340,7 +439,7 @@ using Raster&lt;GrayF32&gt; plane = file.ReadPlane(image);</code></pre>
 
   <h3 id="Egami_Formats_Extended_Fits_FitsFile_ReadPlane_Egami_Formats_Extended_Fits_FitsHdu_System_Int32_" data-uid="Egami.Formats.Extended.Fits.FitsFile.ReadPlane(Egami.Formats.Extended.Fits.FitsHdu,System.Int32)">
   ReadPlane(FitsHdu, int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L110"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L153"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns one plane of an image HDU as physical values in <code>GrayF32</code>, the file's first row at the bottom as Load gives
@@ -395,7 +494,7 @@ it.</p>
 
   <h3 id="Egami_Formats_Extended_Fits_FitsFile_ReadValues_Egami_Formats_Extended_Fits_FitsHdu_" data-uid="Egami.Formats.Extended.Fits.FitsFile.ReadValues(Egami.Formats.Extended.Fits.FitsHdu)">
   ReadValues(FitsHdu)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L91"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFile.cs/#L134"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns an image HDU's physical values, every plane, in the file's order: along a row first, then up the rows from the

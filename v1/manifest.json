@@ -1241,34 +1241,6 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "api/Egami.Compression.Zstandard.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/Egami.Compression.Zstandard.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "Egami.Compression.Zstandard",
-      "Summary": "<p sourcefile=\"api/Egami.Compression.Zstandard.yml\" sourcestartlinenumber=\"1\">Zstandard (RFC 8878) compression in managed code: the codec TIFF's ZSTD compression uses, for format plugins and apps that\nneed it too, such as KTX 2's supercompressed mip levels. Both directions work on spans the caller sizes, and each thread\nkeeps its tables, so a warm call allocates nothing.</p>\n"
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "api/Egami.Compression.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/Egami.Compression.html"
-        }
-      },
-      "version": "",
-      "Uid": null,
-      "IsMRef": true,
-      "Title": "Egami.Compression",
-      "Summary": null
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "api/Egami.CorruptDataException.yml",
       "output": {
         ".html": {

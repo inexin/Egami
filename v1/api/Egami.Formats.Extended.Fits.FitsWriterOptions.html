@@ -155,7 +155,7 @@ Class FitsWriterOptions  <a class="header-action link-secondary" title="View sou
 // with it, and Keywords adds more.
 using (FileStream output = File.Create("m51-copy.fits"))
 {
-    values.Save(output, FitsFormat.Info, new FitsWriterOptions { Keywords = [new FitsCard("HISTORY", null, "dark subtracted")] });
+    values.Save(output, FitsFormat.Info, new FitsWriterOptions { Cards = [new FitsCard("HISTORY", null, "dark subtracted")] });
 }
 
 // A colour image becomes a three-plane cube; Bitpix picks the depth.
@@ -205,6 +205,39 @@ for float.</p>
 
 
 
+  <a id="Egami_Formats_Extended_Fits_FitsWriterOptions_Cards_" data-uid="Egami.Formats.Extended.Fits.FitsWriterOptions.Cards*"></a>
+
+  <h3 id="Egami_Formats_Extended_Fits_FitsWriterOptions_Cards" data-uid="Egami.Formats.Extended.Fits.FitsWriterOptions.Cards">
+  Cards
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFormat.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets cards to add to the header, after those of a raster read from FITS (<a class="xref" href="Egami.Formats.Extended.Fits.FitsDetails.html#Egami_Formats_Extended_Fits_FitsDetails_Header">Header</a>). A card
+with a keyword the structure needs, such as <code>BITPIX</code> or <code>NAXIS1</code>, is ignored.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;FitsCard&gt; Cards { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Formats.Extended.Fits.FitsCard.html">FitsCard</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Formats_Extended_Fits_FitsWriterOptions_Default_" data-uid="Egami.Formats.Extended.Fits.FitsWriterOptions.Default*"></a>
 
   <h3 id="Egami_Formats_Extended_Fits_FitsWriterOptions_Default" data-uid="Egami.Formats.Extended.Fits.FitsWriterOptions.Default">
@@ -227,39 +260,6 @@ for float.</p>
   <h4 class="section">Property Value</h4>
   <dl class="parameters">
     <dt><a class="xref" href="Egami.Formats.Extended.Fits.FitsWriterOptions.html">FitsWriterOptions</a></dt>
-    <dd></dd>
-  </dl>
-
-
-
-
-
-
-
-
-  <a id="Egami_Formats_Extended_Fits_FitsWriterOptions_Keywords_" data-uid="Egami.Formats.Extended.Fits.FitsWriterOptions.Keywords*"></a>
-
-  <h3 id="Egami_Formats_Extended_Fits_FitsWriterOptions_Keywords" data-uid="Egami.Formats.Extended.Fits.FitsWriterOptions.Keywords">
-  Keywords
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Fits/FitsFormat.cs/#L121"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Gets keyword cards to add to the header, after those of a raster read from FITS (<a class="xref" href="Egami.Formats.Extended.Fits.FitsDetails.html#Egami_Formats_Extended_Fits_FitsDetails_Header">Header</a>). A card
-with a keyword the structure needs, such as <code>BITPIX</code> or <code>NAXIS1</code>, is ignored.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;FitsCard&gt; Keywords { get; init; }</code></pre>
-  </div>
-
-
-
-
-
-  <h4 class="section">Property Value</h4>
-  <dl class="parameters">
-    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Formats.Extended.Fits.FitsCard.html">FitsCard</a>&gt;</dt>
     <dd></dd>
   </dl>
 

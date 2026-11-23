@@ -444,7 +444,7 @@ and half as many (at least one) at each mip after it, as both file formats store
 
   <h3 id="Egami_Formats_Extended_Textures_Texture_Dispose" data-uid="Egami.Formats.Extended.Textures.Texture.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L310"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L356"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Disposes every image.</p>
@@ -565,7 +565,7 @@ face by face. The texture takes ownership of the rasters. <a class="xref" href="
 
   <h3 id="Egami_Formats_Extended_Textures_Texture_GenerateMips_System_Int32_Egami_Operations_ColorSpace_" data-uid="Egami.Formats.Extended.Textures.Texture.GenerateMips(System.Int32,Egami.Operations.ColorSpace)">
   GenerateMips(int, ColorSpace)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L218"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L264"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Replaces the mips after mip 0 with new ones made from it with <a class="xref" href="Egami.MipChain.html">MipChain</a>: each the average of 2 × 2 blocks of
@@ -609,7 +609,7 @@ in linear light, right for sRGB colour.</p>
 
   <h3 id="Egami_Formats_Extended_Textures_Texture_GetImage_System_Int32_System_Int32_System_Int32_System_Int32_" data-uid="Egami.Formats.Extended.Textures.Texture.GetImage(System.Int32,System.Int32,System.Int32,System.Int32)">
   GetImage(int, int, int, int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L174"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L220"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets one image. The texture keeps owning it; edit it in place or replace it with <a class="xref" href="Egami.Formats.Extended.Textures.Texture.html#Egami_Formats_Extended_Textures_Texture_SetImage_Egami_Raster_System_Int32_System_Int32_System_Int32_System_Int32_">SetImage(Raster, int, int, int, int)</a>.</p>
@@ -661,9 +661,9 @@ in linear light, right for sRGB colour.</p>
 
   <a id="Egami_Formats_Extended_Textures_Texture_Load_" data-uid="Egami.Formats.Extended.Textures.Texture.Load*"></a>
 
-  <h3 id="Egami_Formats_Extended_Textures_Texture_Load_System_IO_Stream_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream,Egami.EgamiContext)">
-  Load(Stream, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.Extended.Textures.Texture.Load(System.IO.Stream,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Load(Stream, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L130"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Loads every image of a DDS, KTX or KTX 2 file from a stream, read to its end.</p>
@@ -671,16 +671,22 @@ in linear light, right for sRGB colour.</p>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static Texture Load(Stream stream, EgamiContext? context = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Texture Load(Stream stream, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream.</p>
+    <dd><p>The stream. It is left open.</p>
 </dd>
     <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
     <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default; the texture formats need not be registered in it.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults: <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Recovery">Recovery</a>, color conversion and HDR
+decoding apply, as do <a class="xref" href="Egami.Formats.Extended.Dds.DdsReaderOptions.html#Egami_Formats_Extended_Dds_DdsReaderOptions_ReconstructNormalZ">ReconstructNormalZ</a>, <a class="xref" href="Egami.Formats.Extended.Ktx.KtxReaderOptions.html#Egami_Formats_Extended_Ktx_KtxReaderOptions_ReconstructNormalZ">ReconstructNormalZ</a>
+and <a class="xref" href="Egami.Formats.Extended.Ktx.KtxReaderOptions.html#Egami_Formats_Extended_Ktx_KtxReaderOptions_KeepStoredLayout">KeepStoredLayout</a> when the options are of the file's format. The choice of surface, mip
+level, region, minimum size and frames is ignored: a texture holds every image.</p>
 </dd>
   </dl>
 
@@ -696,6 +702,23 @@ in linear light, right for sRGB colour.</p>
 
 
 
+  <h4 class="section" id="Egami_Formats_Extended_Textures_Texture_Load_System_IO_Stream_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Every layer, face, depth slice and mip of a DDS, KTX or KTX 2 file.
+using Texture sky = Texture.Load("sky.ktx2");
+Console.WriteLine($"{sky.Width}×{sky.Height}, {sky.Layers} layer(s) of {sky.Faces} face(s), {sky.MipLevels} mips");
+
+// Edit one face, make the mips again from mip 0, and save to DDS or KTX 2 with exactly those mips.
+Raster top = sky.GetImage(mip: 0, face: 2);
+sky.SetImage(top.Derive(x =&gt; x.Grayscale(), CancellationToken.None), mip: 0, face: 2);
+sky.GenerateMips(colorSpace: ColorSpace.Linear);
+sky.Save("sky-edited.dds", new DdsWriterOptions { Format = DdsTextureFormat.Bc7 });
+sky.Save("sky-edited.ktx2", new Ktx2WriterOptions { Format = KtxTextureFormat.Bc7 });
+
+// Or build one from images: here a texture array of two layers with its mip chain.
+using Texture array = Texture.FromSurfaces([Raster.Load("duck.png"), Raster.Load("duck.png")]);
+array.GenerateMips();
+array.Save("ducks.ktx2");</code></pre>
+
 
 
   <h4 class="section">Exceptions</h4>
@@ -709,9 +732,9 @@ in linear light, right for sRGB colour.</p>
 
   <a id="Egami_Formats_Extended_Textures_Texture_Load_" data-uid="Egami.Formats.Extended.Textures.Texture.Load*"></a>
 
-  <h3 id="Egami_Formats_Extended_Textures_Texture_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_" data-uid="Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext)">
-  Load(ReadOnlyMemory&lt;byte&gt;, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L125"><i class="bi bi-code-slash"></i></a>
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.Extended.Textures.Texture.Load(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Load(ReadOnlyMemory&lt;byte&gt;, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L152"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Loads every image of a DDS, KTX or KTX 2 file in memory.</p>
@@ -719,7 +742,7 @@ in linear light, right for sRGB colour.</p>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static Texture Load(ReadOnlyMemory&lt;byte&gt; data, EgamiContext? context = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Texture Load(ReadOnlyMemory&lt;byte&gt; data, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -730,6 +753,12 @@ in linear light, right for sRGB colour.</p>
     <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
     <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default; the texture formats need not be registered in it.</p>
 </dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults: <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Recovery">Recovery</a>, color conversion and HDR
+decoding apply, as do <a class="xref" href="Egami.Formats.Extended.Dds.DdsReaderOptions.html#Egami_Formats_Extended_Dds_DdsReaderOptions_ReconstructNormalZ">ReconstructNormalZ</a>, <a class="xref" href="Egami.Formats.Extended.Ktx.KtxReaderOptions.html#Egami_Formats_Extended_Ktx_KtxReaderOptions_ReconstructNormalZ">ReconstructNormalZ</a>
+and <a class="xref" href="Egami.Formats.Extended.Ktx.KtxReaderOptions.html#Egami_Formats_Extended_Ktx_KtxReaderOptions_KeepStoredLayout">KeepStoredLayout</a> when the options are of the file's format. The choice of surface, mip
+level, region, minimum size and frames is ignored: a texture holds every image.</p>
+</dd>
   </dl>
 
   <h4 class="section">Returns</h4>
@@ -743,6 +772,23 @@ in linear light, right for sRGB colour.</p>
 
 
 
+
+  <h4 class="section" id="Egami_Formats_Extended_Textures_Texture_Load_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Every layer, face, depth slice and mip of a DDS, KTX or KTX 2 file.
+using Texture sky = Texture.Load("sky.ktx2");
+Console.WriteLine($"{sky.Width}×{sky.Height}, {sky.Layers} layer(s) of {sky.Faces} face(s), {sky.MipLevels} mips");
+
+// Edit one face, make the mips again from mip 0, and save to DDS or KTX 2 with exactly those mips.
+Raster top = sky.GetImage(mip: 0, face: 2);
+sky.SetImage(top.Derive(x =&gt; x.Grayscale(), CancellationToken.None), mip: 0, face: 2);
+sky.GenerateMips(colorSpace: ColorSpace.Linear);
+sky.Save("sky-edited.dds", new DdsWriterOptions { Format = DdsTextureFormat.Bc7 });
+sky.Save("sky-edited.ktx2", new Ktx2WriterOptions { Format = KtxTextureFormat.Bc7 });
+
+// Or build one from images: here a texture array of two layers with its mip chain.
+using Texture array = Texture.FromSurfaces([Raster.Load("duck.png"), Raster.Load("duck.png")]);
+array.GenerateMips();
+array.Save("ducks.ktx2");</code></pre>
 
 
 
@@ -757,9 +803,9 @@ in linear light, right for sRGB colour.</p>
 
   <a id="Egami_Formats_Extended_Textures_Texture_Load_" data-uid="Egami.Formats.Extended.Textures.Texture.Load*"></a>
 
-  <h3 id="Egami_Formats_Extended_Textures_Texture_Load_System_String_Egami_EgamiContext_" data-uid="Egami.Formats.Extended.Textures.Texture.Load(System.String,Egami.EgamiContext)">
-  Load(string, EgamiContext?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L101"><i class="bi bi-code-slash"></i></a>
+  <h3 id="Egami_Formats_Extended_Textures_Texture_Load_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions_" data-uid="Egami.Formats.Extended.Textures.Texture.Load(System.String,Egami.EgamiContext,Egami.Formats.ReaderOptions)">
+  Load(string, EgamiContext?, ReaderOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L110"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Loads every image of a DDS, KTX or KTX 2 file.</p>
@@ -767,7 +813,7 @@ in linear light, right for sRGB colour.</p>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public static Texture Load(string path, EgamiContext? context = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public static Texture Load(string path, EgamiContext? context = null, ReaderOptions? options = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
@@ -777,6 +823,12 @@ in linear light, right for sRGB colour.</p>
 </dd>
     <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
     <dd><p>The context, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the default; the texture formats need not be registered in it.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Formats.ReaderOptions.html">ReaderOptions</a></dt>
+    <dd><p>How to read, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults: <a class="xref" href="Egami.Formats.ReaderOptions.html#Egami_Formats_ReaderOptions_Recovery">Recovery</a>, color conversion and HDR
+decoding apply, as do <a class="xref" href="Egami.Formats.Extended.Dds.DdsReaderOptions.html#Egami_Formats_Extended_Dds_DdsReaderOptions_ReconstructNormalZ">ReconstructNormalZ</a>, <a class="xref" href="Egami.Formats.Extended.Ktx.KtxReaderOptions.html#Egami_Formats_Extended_Ktx_KtxReaderOptions_ReconstructNormalZ">ReconstructNormalZ</a>
+and <a class="xref" href="Egami.Formats.Extended.Ktx.KtxReaderOptions.html#Egami_Formats_Extended_Ktx_KtxReaderOptions_KeepStoredLayout">KeepStoredLayout</a> when the options are of the file's format. The choice of surface, mip
+level, region, minimum size and frames is ignored: a texture holds every image.</p>
 </dd>
   </dl>
 
@@ -791,6 +843,23 @@ in linear light, right for sRGB colour.</p>
 
 
 
+
+  <h4 class="section" id="Egami_Formats_Extended_Textures_Texture_Load_System_String_Egami_EgamiContext_Egami_Formats_ReaderOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Every layer, face, depth slice and mip of a DDS, KTX or KTX 2 file.
+using Texture sky = Texture.Load("sky.ktx2");
+Console.WriteLine($"{sky.Width}×{sky.Height}, {sky.Layers} layer(s) of {sky.Faces} face(s), {sky.MipLevels} mips");
+
+// Edit one face, make the mips again from mip 0, and save to DDS or KTX 2 with exactly those mips.
+Raster top = sky.GetImage(mip: 0, face: 2);
+sky.SetImage(top.Derive(x =&gt; x.Grayscale(), CancellationToken.None), mip: 0, face: 2);
+sky.GenerateMips(colorSpace: ColorSpace.Linear);
+sky.Save("sky-edited.dds", new DdsWriterOptions { Format = DdsTextureFormat.Bc7 });
+sky.Save("sky-edited.ktx2", new Ktx2WriterOptions { Format = KtxTextureFormat.Bc7 });
+
+// Or build one from images: here a texture array of two layers with its mip chain.
+using Texture array = Texture.FromSurfaces([Raster.Load("duck.png"), Raster.Load("duck.png")]);
+array.GenerateMips();
+array.Save("ducks.ktx2");</code></pre>
 
 
 
@@ -807,7 +876,7 @@ in linear light, right for sRGB colour.</p>
 
   <h3 id="Egami_Formats_Extended_Textures_Texture_MipDepth_System_Int32_" data-uid="Egami.Formats.Extended.Textures.Texture.MipDepth(System.Int32)">
   MipDepth(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L211"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the number of depth slices of a mip level: 1 unless the texture is a volume.</p>
@@ -846,7 +915,7 @@ in linear light, right for sRGB colour.</p>
 
   <h3 id="Egami_Formats_Extended_Textures_Texture_MipHeight_System_Int32_" data-uid="Egami.Formats.Extended.Textures.Texture.MipHeight(System.Int32)">
   MipHeight(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L206"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the height of a mip level.</p>
@@ -885,7 +954,7 @@ in linear light, right for sRGB colour.</p>
 
   <h3 id="Egami_Formats_Extended_Textures_Texture_MipWidth_System_Int32_" data-uid="Egami.Formats.Extended.Textures.Texture.MipWidth(System.Int32)">
   MipWidth(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L155"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L201"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the width of a mip level.</p>
@@ -924,7 +993,7 @@ in linear light, right for sRGB colour.</p>
 
   <h3 id="Egami_Formats_Extended_Textures_Texture_Save_System_IO_Stream_Egami_Formats_FormatInfo_Egami_Formats_WriterOptions_" data-uid="Egami.Formats.Extended.Textures.Texture.Save(System.IO.Stream,Egami.Formats.FormatInfo,Egami.Formats.WriterOptions)">
   Save(Stream, FormatInfo, WriterOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L297"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L343"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Saves the texture with every image and mip it holds, in <a class="xref" href="Egami.Formats.Extended.Dds.DdsFormat.html#Egami_Formats_Extended_Dds_DdsFormat_Info">Info</a> or <a class="xref" href="Egami.Formats.Extended.Ktx.Ktx2Format.html#Egami_Formats_Extended_Ktx_Ktx2Format_Info">Info</a>. The
@@ -934,13 +1003,13 @@ texture's mips, and their cube flag is ignored: the texture's own layout is writ
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Save(Stream output, FormatInfo format, WriterOptions? options = null)</code></pre>
+    <pre><code class="lang-csharp hljs">public void Save(Stream stream, FormatInfo format, WriterOptions? options = null)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
-    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream.</p>
+    <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
+    <dd><p>The stream. It is left open.</p>
 </dd>
     <dt><code>format</code> <a class="xref" href="Egami.Formats.FormatInfo.html">FormatInfo</a></dt>
     <dd><p><a class="xref" href="Egami.Formats.Extended.Dds.DdsFormat.html#Egami_Formats_Extended_Dds_DdsFormat_Info">Info</a> or <a class="xref" href="Egami.Formats.Extended.Ktx.Ktx2Format.html#Egami_Formats_Extended_Ktx_Ktx2Format_Info">Info</a>.</p>
@@ -988,7 +1057,7 @@ array.Save("ducks.ktx2");</code></pre>
 
   <h3 id="Egami_Formats_Extended_Textures_Texture_Save_System_String_Egami_Formats_WriterOptions_" data-uid="Egami.Formats.Extended.Textures.Texture.Save(System.String,Egami.Formats.WriterOptions)">
   Save(string, WriterOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L272"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L318"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Saves the texture as DDS or KTX 2, chosen by the file's extension (<code>.dds</code> or <code>.ktx2</code>), with every image and
@@ -1048,7 +1117,7 @@ array.Save("ducks.ktx2");</code></pre>
 
   <h3 id="Egami_Formats_Extended_Textures_Texture_SetImage_Egami_Raster_System_Int32_System_Int32_System_Int32_System_Int32_" data-uid="Egami.Formats.Extended.Textures.Texture.SetImage(Egami.Raster,System.Int32,System.Int32,System.Int32,System.Int32)">
   SetImage(Raster, int, int, int, int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L191"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L237"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Replaces one image with a raster of the mip level's size, which the texture then owns; it disposes the image it replaces.
@@ -1103,7 +1172,7 @@ The new image may be of another pixel type; saving converts it to the file's for
 
   <h3 id="Egami_Formats_Extended_Textures_Texture_TrimMips_System_Int32_" data-uid="Egami.Formats.Extended.Textures.Texture.TrimMips(System.Int32)">
   TrimMips(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L252"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Formats.Extended/Textures/Texture.cs/#L298"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Keeps the first <code class="paramref">mipLevels</code> mip levels and disposes the rest.</p>
