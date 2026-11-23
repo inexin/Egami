@@ -99,4 +99,30 @@ public sealed class FuzzHarnessTests
             SvgFuzzTarget.Run(File.ReadAllBytes(file));
         }
     }
+
+    [Fact]
+    public void TimelineSeedsRunAndMutationsNeverCrash()
+    {
+        string folder = Path.Combine(TestSvg.Root, "tests", "images", "fuzz", "svg-timeline-seeds");
+        List<byte[]> seeds = [.. Directory.GetFiles(folder).Order(StringComparer.Ordinal).Select(File.ReadAllBytes)];
+        Assert.True(seeds.Count >= 6);
+        foreach (byte[] seed in seeds)
+        {
+            SvgFuzzTarget.Timeline(seed);
+        }
+
+        Random random = new(2101);
+        for (int iteration = 0; iteration < 300; iteration++)
+        {
+            byte[] input = Mutate(seeds[random.Next(seeds.Count)], random);
+            try
+            {
+                SvgFuzzTarget.Timeline(input);
+            }
+            catch (Exception e)
+            {
+                Assert.Fail($"Iteration {iteration} threw {e.GetType().Name}: {e.Message}\nInput (base64): {Convert.ToBase64String(input)}\n{e.StackTrace}");
+            }
+        }
+    }
 }
