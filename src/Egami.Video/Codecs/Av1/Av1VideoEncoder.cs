@@ -88,6 +88,7 @@ internal sealed class Av1VideoEncoder : IVideoEncoder
         _context = context;
         _settings = new CoreSettings
         {
+            Cancellation = options.CancellationToken,
             Width = options.Width,
             Height = options.Height,
             FrameRate = options.FrameRate,

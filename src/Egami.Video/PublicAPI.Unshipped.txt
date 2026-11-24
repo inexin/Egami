@@ -30,3 +30,7 @@ override Egami.Video.Codecs.HevcEncoderOptions.ToString() -> string!
 static Egami.Video.Codecs.HevcEncoderOptions.Default.get -> Egami.Video.Codecs.HevcEncoderOptions!
 static Egami.Video.Codecs.HevcEncoderOptions.operator !=(Egami.Video.Codecs.HevcEncoderOptions? left, Egami.Video.Codecs.HevcEncoderOptions? right) -> bool
 static Egami.Video.Codecs.HevcEncoderOptions.operator ==(Egami.Video.Codecs.HevcEncoderOptions? left, Egami.Video.Codecs.HevcEncoderOptions? right) -> bool
+Egami.Video.Codecs.VideoEncoderOptions.CancellationToken.get -> System.Threading.CancellationToken
+Egami.Video.Codecs.VideoEncoderOptions.CancellationToken.init -> void
+Egami.Video.VideoWriterOptions.CancellationToken.get -> System.Threading.CancellationToken
+Egami.Video.VideoWriterOptions.CancellationToken.init -> void

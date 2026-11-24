@@ -268,12 +268,15 @@ public sealed class VideoWriter : IDisposable
         }
     }
 
-    /// <summary>Finishes the file and closes it.</summary>
+    /// <summary>Finishes the file and closes it; after <see cref="VideoWriterOptions.CancellationToken"/> is cancelled, only closes it.</summary>
     public void Dispose()
     {
         try
         {
-            Finish();
+            if (!_options.CancellationToken.IsCancellationRequested)
+            {
+                Finish();
+            }
         }
         finally
         {
@@ -315,6 +318,7 @@ public sealed class VideoWriter : IDisposable
             Ffv1 = _options.Ffv1,
             H264 = _options.H264,
             Hevc = _options.Hevc,
+            CancellationToken = _options.CancellationToken,
         },
         _context);
 
@@ -538,4 +542,12 @@ public sealed record VideoWriterOptions
 
     /// <summary>Gets the audio track's bits per sample, or 0 for the codec's default.</summary>
     public int AudioBitsPerSample { get; init; }
+
+    /// <summary>
+    /// Gets the token that stops the video encoder (<see cref="VideoEncoderOptions.CancellationToken"/>), or
+    /// <see cref="CancellationToken.None"/> (the default) for none. Once it is cancelled, <see cref="VideoWriter.WriteFrame(VideoFrame)"/>
+    /// and <see cref="VideoWriter.Finish"/> throw <see cref="OperationCanceledException"/>, an H.264 or HEVC encoder within a row
+    /// of blocks of the frame it is coding. The file is left unfinished; dispose the writer.
+    /// </summary>
+    public CancellationToken CancellationToken { get; init; }
 }

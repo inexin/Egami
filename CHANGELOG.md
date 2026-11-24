@@ -76,6 +76,11 @@ Egami.Css:
 - `CssOrigin.Animation` and `CssCascadedStyle.WithAnimationValues` put animated values in the cascade, above every normal
   declaration and below every important one. A style sheet given the animation origin is refused.
 
+## Egami.Heic 1.6.0 (unreleased)
+
+- A cancelled HEIC save stops within a CTB row of the image it is coding, also on one thread, where it went on to the end
+  of the image. Output is unchanged.
+
 ## Egami.Video.Hardware 0.1.0-preview.1 (unreleased)
 
 A new package, Egami.Video.Hardware: hardware video through Vulkan Video on Windows and Linux (Vulkan Video Build Plan, PR A
@@ -160,6 +165,13 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
   for an Egami.Heic release; it still installs beside Egami.Heic 1.4.0. HEIC output is unchanged.
 - Egami.Video.Hevc: 9-bit and 11-bit streams decode to 10-bit and 12-bit frames, with the samples shifted up one bit;
   they threw `ArgumentOutOfRangeException` (found by fuzzing). `HevcStreamDecoder.TryReceiveFrame` takes such rasters.
+- **Stopping an encode.** `VideoEncoderOptions.CancellationToken` and `VideoWriterOptions.CancellationToken` stop an encoder:
+  once cancelled, `Send` and `Flush` (`WriteFrame` and `Finish`) throw `OperationCanceledException`. The H.264 and HEVC
+  encoders stop within a row of blocks of the frame they are coding, VP8, VP9 and AV1 before the next frame they code, and
+  the others before the next frame sent. `VideoEdit.Render` and smart trims pass their token to the encoder, so they no
+  longer finish the frames the lookahead holds before stopping. A cancelled `VideoWriter` closes the file without finishing it.
+- `MediaFile.Probe` reports the bit depth and chroma subsampling of H.264 and HEVC tracks in MP4, MOV and Matroska, read from
+  their avcC and hvcC records; a 10-bit HEVC MP4 said 0.
 
 ## Egami.Video.Cli 1.4.0 (unreleased)
 

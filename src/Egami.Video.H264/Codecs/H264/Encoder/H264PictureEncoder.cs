@@ -76,6 +76,9 @@ internal sealed class H264PictureEncoder
     /// <summary>Gets or sets whether macroblocks' QPs follow their energy (adaptive quantization).</summary>
     public bool AdaptiveQuantization { get; set; }
 
+    /// <summary>Gets or sets the token that stops a picture at its next macroblock row.</summary>
+    public CancellationToken Cancellation { get; set; }
+
     /// <summary>
     /// Gets or sets the block macroblock tree's step offsets for the next picture, one per macroblock in base-2 logarithms of
     /// the step (<see cref="Encoding.FrameDecision.BlockOffsets"/>), added to adaptive quantization's; null for none.
@@ -325,7 +328,14 @@ internal sealed class H264PictureEncoder
         }
         else
         {
-            Parallel.ForEach(_slices, new ParallelOptions { MaxDegreeOfParallelism = _config.Parallelism }, Code);
+            try
+            {
+                Parallel.ForEach(_slices, new ParallelOptions { MaxDegreeOfParallelism = _config.Parallelism }, Code);
+            }
+            catch (AggregateException e) when (Cancellation.IsCancellationRequested && e.InnerExceptions.All(x => x is OperationCanceledException))
+            {
+                throw new OperationCanceledException(Cancellation);
+            }
         }
     }
 
@@ -663,6 +673,11 @@ internal sealed class H264PictureEncoder
     private H264MbCode Code(SliceCoder slice, int addr, int qp, bool predicted)
     {
         int mbX = addr % _config.WidthMbs, mbY = addr / _config.WidthMbs;
+        if (mbX == 0)
+        {
+            Cancellation.ThrowIfCancellationRequested();
+        }
+
         int mbQp = Math.Clamp(qp + _qpOffsets[addr], MinQp, MaxQp);
 
         // A one-step change from the QP the last macroblock coded is not worth its mb_qp_delta (H.264 compression Build Plan,

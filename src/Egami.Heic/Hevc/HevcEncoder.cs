@@ -152,6 +152,13 @@ internal static class HevcEncoder
                 int row;
                 while ((row = Interlocked.Increment(ref next)) < rows)
                 {
+                    // A cancelled encode stops at the next CTB row, as a wait for the row above would.
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        Interlocked.CompareExchange(ref failure, new OperationCanceledException(cancellationToken), null);
+                        return;
+                    }
+
                     if (wavefronts || row == 0)
                     {
                         // The row above must be two CTBs ahead: its contexts after the second, its samples above-right.

@@ -97,6 +97,9 @@ internal sealed record CoreSettings
 
     public int Parallelism { get; init; } = 1;
 
+    /// <summary>The token checked before each frame is taken in, analysed or coded.</summary>
+    public CancellationToken Cancellation { get; init; }
+
     /// <summary>How much better than intra the group's first frame must predict its last for an alternate reference (VP8: 4 times).</summary>
     public double AltRefReach { get; init; } = 4;
 
@@ -330,6 +333,8 @@ internal sealed class EncoderCore : IDisposable
             throw new InvalidOperationException("The encoder was flushed; no more frames can be sent.");
         }
 
+        _settings.Cancellation.ThrowIfCancellationRequested();
+
         YuvRaster<byte> picture = _pictures.Import(frame, _alpha);
         YuvRaster? full = _settings.FullPictures ? _pictures.ImportFull(frame) : null;
         FrameStats stats = _analyzer.Analyze(picture);
@@ -374,6 +379,7 @@ internal sealed class EncoderCore : IDisposable
     /// <summary>Codes every frame still held.</summary>
     public void Flush()
     {
+        _settings.Cancellation.ThrowIfCancellationRequested();
         _flushing = true;
         while (_queue.Count > 0)
         {
@@ -385,6 +391,7 @@ internal sealed class EncoderCore : IDisposable
 
     private void CodeNext()
     {
+        _settings.Cancellation.ThrowIfCancellationRequested();
         Pending frame = _queue[0];
         if (frame.Index == 0 && _rate.WantsProbe)
         {

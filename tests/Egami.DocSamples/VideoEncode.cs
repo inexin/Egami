@@ -295,4 +295,42 @@ public class VideoEncode
 
         Assert.True(stream.Length > 0);
     }
+
+    [Fact]
+    public void Cancel()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgb8> duck = Raster.Load<Rgb8>("duck.png");
+        bool cancelled = false;
+
+        #region video-encode-cancel
+        // A Stop button cancels the token; the encoder stops within the frame it is coding, even during Finish.
+        using CancellationTokenSource stop = new();
+        VideoWriterOptions options = new() { Codec = VideoCodecs.Vp9, Effort = 8, CancellationToken = stop.Token };
+        try
+        {
+            using VideoWriter writer = VideoWriter.Create("duck.webm", options);
+            for (int i = 0; i < 30; i++)
+            {
+                if (i == 10)
+                {
+                    stop.Cancel(); // the user pressed Stop
+                }
+
+                using Raster<Rgb8> frame = duck.Derive(ops => ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+                writer.WriteFrame(frame);
+            }
+
+            writer.Finish();
+        }
+        catch (OperationCanceledException)
+        {
+            File.Delete("duck.webm"); // unfinished
+            cancelled = true;
+        }
+        #endregion
+
+        Assert.True(cancelled);
+        Assert.False(File.Exists("duck.webm"));
+    }
 }
