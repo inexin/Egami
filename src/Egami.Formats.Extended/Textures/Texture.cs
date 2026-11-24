@@ -96,38 +96,66 @@ public sealed class Texture : IDisposable
     /// <summary>Loads every image of a DDS, KTX or KTX 2 file.</summary>
     /// <param name="path">The file.</param>
     /// <param name="context">The context, or <see langword="null"/> for the default; the texture formats need not be registered in it.</param>
+    /// <param name="options">
+    /// How to read, or <see langword="null"/> for the defaults: <see cref="ReaderOptions.Recovery"/>, color conversion and HDR
+    /// decoding apply, as do <see cref="DdsReaderOptions.ReconstructNormalZ"/>, <see cref="KtxReaderOptions.ReconstructNormalZ"/>
+    /// and <see cref="KtxReaderOptions.KeepStoredLayout"/> when the options are of the file's format. The choice of surface, mip
+    /// level, region, minimum size and frames is ignored: a texture holds every image.
+    /// </param>
     /// <returns>The texture.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="texture"/>
+    /// </example>
     /// <exception cref="UnsupportedFormatException">The file is not DDS, KTX or KTX 2.</exception>
-    public static Texture Load(string path, EgamiContext? context = null)
+    public static Texture Load(string path, EgamiContext? context = null, ReaderOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(path);
-        return Load(File.ReadAllBytes(path), context);
+        return Load(File.ReadAllBytes(path), context, options);
     }
 
     /// <summary>Loads every image of a DDS, KTX or KTX 2 file from a stream, read to its end.</summary>
-    /// <param name="stream">The stream.</param>
+    /// <param name="stream">The stream. It is left open.</param>
     /// <param name="context">The context, or <see langword="null"/> for the default; the texture formats need not be registered in it.</param>
+    /// <param name="options">
+    /// How to read, or <see langword="null"/> for the defaults: <see cref="ReaderOptions.Recovery"/>, color conversion and HDR
+    /// decoding apply, as do <see cref="DdsReaderOptions.ReconstructNormalZ"/>, <see cref="KtxReaderOptions.ReconstructNormalZ"/>
+    /// and <see cref="KtxReaderOptions.KeepStoredLayout"/> when the options are of the file's format. The choice of surface, mip
+    /// level, region, minimum size and frames is ignored: a texture holds every image.
+    /// </param>
     /// <returns>The texture.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="texture"/>
+    /// </example>
     /// <exception cref="UnsupportedFormatException">The data is not DDS, KTX or KTX 2.</exception>
-    public static Texture Load(Stream stream, EgamiContext? context = null)
+    public static Texture Load(Stream stream, EgamiContext? context = null, ReaderOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(stream);
         using MemoryStream data = new();
         stream.CopyTo(data);
-        return Load(data.GetBuffer().AsMemory(0, (int)data.Length), context);
+        return Load(data.GetBuffer().AsMemory(0, (int)data.Length), context, options);
     }
 
     /// <summary>Loads every image of a DDS, KTX or KTX 2 file in memory.</summary>
     /// <param name="data">The file's bytes.</param>
     /// <param name="context">The context, or <see langword="null"/> for the default; the texture formats need not be registered in it.</param>
+    /// <param name="options">
+    /// How to read, or <see langword="null"/> for the defaults: <see cref="ReaderOptions.Recovery"/>, color conversion and HDR
+    /// decoding apply, as do <see cref="DdsReaderOptions.ReconstructNormalZ"/>, <see cref="KtxReaderOptions.ReconstructNormalZ"/>
+    /// and <see cref="KtxReaderOptions.KeepStoredLayout"/> when the options are of the file's format. The choice of surface, mip
+    /// level, region, minimum size and frames is ignored: a texture holds every image.
+    /// </param>
     /// <returns>The texture.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="texture"/>
+    /// </example>
     /// <exception cref="UnsupportedFormatException">The data is not DDS, KTX or KTX 2.</exception>
-    public static Texture Load(ReadOnlyMemory<byte> data, EgamiContext? context = null)
+    public static Texture Load(ReadOnlyMemory<byte> data, EgamiContext? context = null, ReaderOptions? options = null)
     {
+        options ??= ReaderOptions.Default;
         ReadOnlySpan<byte> head = data.Span[..Math.Min(data.Length, 16)];
         if (DdsFormat.Info.Matches(head))
         {
-            using RasterList all = Raster.LoadAll(data, DdsFormat.Info, context, new DdsReaderOptions { IncludeMipLevels = true });
+            using RasterList all = Raster.LoadAll(data, DdsFormat.Info, context, ForTexture(options as DdsReaderOptions ?? Copy<DdsReaderOptions>(options)));
             DdsDetails details = (DdsDetails)all[0].Metadata.FormatDetails!;
             bool volume = details.Dimension == DdsDimension.Texture3D;
             int faces = details.IsCube ? 6 : 1;
@@ -139,7 +167,7 @@ public sealed class Texture : IDisposable
         {
             if (format.Matches(head))
             {
-                using RasterList all = Raster.LoadAll(data, format, context, new KtxReaderOptions { IncludeMipLevels = true });
+                using RasterList all = Raster.LoadAll(data, format, context, ForTexture(options as KtxReaderOptions ?? Copy<KtxReaderOptions>(options)));
                 KtxDetails details = (KtxDetails)all[0].Metadata.FormatDetails!;
                 return Gather(all, details.Depth, details.Layers, details.IsCube, details.MipLevels,
                     r => ((KtxDetails)r.Metadata.FormatDetails!).Surface, r => ((KtxDetails)r.Metadata.FormatDetails!).MipLevel);
@@ -148,6 +176,24 @@ public sealed class Texture : IDisposable
 
         throw new UnsupportedFormatException("A texture loads from DDS, KTX or KTX 2; the data is none of them.");
     }
+
+    /// <summary>The format's own options with the general settings of <paramref name="options"/>.</summary>
+    private static T Copy<T>(ReaderOptions options)
+        where T : ReaderOptions, new() => new()
+        {
+            Recovery = options.Recovery,
+            ReadMetadata = options.ReadMetadata,
+            ConvertColorTo = options.ConvertColorTo,
+            Hdr = options.Hdr,
+        };
+
+    /// <summary>The options with every surface and mip level asked for and nothing that would pick or crop one.</summary>
+    private static DdsReaderOptions ForTexture(DdsReaderOptions options) =>
+        options with { IncludeMipLevels = true, Surface = null, MipLevel = null, Region = null, MinimumSize = null, Frames = Range.All };
+
+    /// <inheritdoc cref="ForTexture(DdsReaderOptions)"/>
+    private static KtxReaderOptions ForTexture(KtxReaderOptions options) =>
+        options with { IncludeMipLevels = true, Surface = null, MipLevel = null, Region = null, MinimumSize = null, Frames = Range.All };
 
     /// <summary>Returns the width of a mip level.</summary>
     /// <param name="mip">The mip level.</param>
@@ -287,23 +333,23 @@ public sealed class Texture : IDisposable
     /// options choose the format, effort and so on as for a raster; their mip count, when not 0, keeps only that many of the
     /// texture's mips, and their cube flag is ignored: the texture's own layout is written.
     /// </summary>
-    /// <param name="output">The stream.</param>
+    /// <param name="stream">The stream. It is left open.</param>
     /// <param name="format"><see cref="DdsFormat.Info"/> or <see cref="Ktx2Format.Info"/>.</param>
     /// <param name="options"><see cref="DdsWriterOptions"/> or <see cref="Ktx2WriterOptions"/>, or <see langword="null"/> for the defaults.</param>
     /// <exception cref="NotSupportedException">The format is not DDS or KTX 2, or DDS is asked to hold an array of volumes.</exception>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/FormatsExtended.cs" region="texture"/>
     /// </example>
-    public void Save(Stream output, FormatInfo format, WriterOptions? options = null)
+    public void Save(Stream stream, FormatInfo format, WriterOptions? options = null)
     {
-        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(stream);
         ArgumentNullException.ThrowIfNull(format);
         if (format.Writer is not ITextureWriter writer)
         {
             throw new NotSupportedException($"A texture saves as DDS or KTX 2, not {format.Name}.");
         }
 
-        writer.WriteTexture(this, output, options ?? WriterOptions.Default);
+        writer.WriteTexture(this, stream, options ?? WriterOptions.Default);
     }
 
     /// <summary>Disposes every image.</summary>

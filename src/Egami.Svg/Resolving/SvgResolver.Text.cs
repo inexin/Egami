@@ -261,7 +261,7 @@ internal sealed partial class SvgResolver
     /// The x, y, dx and dy lists given to each character: an element's list covers its own characters and its descendants', and
     /// a descendant's list overrides it (textPath's lists are ignored).
     /// </summary>
-    private static SvgCharPosition[] Positions(SvgTextTree tree, Dictionary<SvgTextTree, (SvgStyle Style, CssComputedStyle Css)> styles, int count, in SvgContext context)
+    private SvgCharPosition[] Positions(SvgTextTree tree, Dictionary<SvgTextTree, (SvgStyle Style, CssComputedStyle Css)> styles, int count, in SvgContext context)
     {
         SvgCharPosition[] list = new SvgCharPosition[count];
         int offset = 0;
@@ -284,7 +284,7 @@ internal sealed partial class SvgResolver
             foreach ((string name, SvgAxis axis) in (ReadOnlySpan<(string, SvgAxis)>)[("x", SvgAxis.X), ("y", SvgAxis.Y), ("dx", SvgAxis.X), ("dy", SvgAxis.Y)])
             {
                 lengths.Clear();
-                if (node.Element!.Attributes[name] is not string text || !SvgLength.TryParseList(text, lengths))
+                if (Attr(node.Element!, name) is not string text || !SvgLength.TryParseList(text, lengths))
                 {
                     continue;
                 }
@@ -316,7 +316,7 @@ internal sealed partial class SvgResolver
     }
 
     /// <summary>Each character's rotation: an element's rotate list, its last value repeated over the rest of its characters.</summary>
-    private static float[] Rotations(SvgTextTree tree, int count)
+    private float[] Rotations(SvgTextTree tree, int count)
     {
         float[] list = new float[count];
         float last = 0;
@@ -331,7 +331,7 @@ internal sealed partial class SvgResolver
             }
 
             values.Clear();
-            if (node.Element!.Attributes["rotate"] is not string text || !SvgNumbers.TryParseList(text, values))
+            if (Attr(node.Element!, "rotate") is not string text || !SvgNumbers.TryParseList(text, values))
             {
                 continue;
             }
@@ -525,7 +525,7 @@ internal sealed partial class SvgResolver
         }
 
         bool kerning = Keyword(css, "font-kerning") != "none";
-        if (element.Attributes["kerning"] is string kerningText && SvgLength.TryParse(kerningText, out SvgLength k) && k.Value == 0)
+        if (Attr(element, "kerning") is string kerningText && SvgLength.TryParse(kerningText, out SvgLength k) && k.Value == 0)
         {
             kerning = false;
         }
@@ -537,7 +537,7 @@ internal sealed partial class SvgResolver
         }
 
         float? textLength = null;
-        if (element.Attributes["textLength"] is string tl && SvgLength.TryParse(tl, out SvgLength length) && length.Value >= 0)
+        if (Attr(element, "textLength") is string tl && SvgLength.TryParse(tl, out SvgLength length) && length.Value >= 0)
         {
             textLength = length.ToPixels(lengths, SvgAxis.Other);
         }
@@ -556,7 +556,7 @@ internal sealed partial class SvgResolver
             LetterSpacing = Spacing(node, root, styles, "letter-spacing", context),
             WordSpacing = Spacing(node, root, styles, "word-spacing", context),
             TextLength = textLength,
-            SpacingAndGlyphs = element.Attributes["lengthAdjust"]?.Trim() == "spacingAndGlyphs",
+            SpacingAndGlyphs = Attr(element, "lengthAdjust")?.Trim() == "spacingAndGlyphs",
             Underline = Decoration(node, root, styles, "underline"),
             Overline = Decoration(node, root, styles, "overline"),
             LineThrough = Decoration(node, root, styles, "line-through"),
@@ -735,13 +735,13 @@ internal sealed partial class SvgResolver
     private SvgTextPathFlow? TextPath(SvgElement textPath, SvgStyle style, in SvgContext context)
     {
         Path? path = null;
-        if (textPath.Attributes["path"] is string d && Path.TryParseSvg(d, out Path? own))
+        if (Attr(textPath, "path") is string d && Path.TryParseSvg(d, out Path? own))
         {
             path = own;
         }
         else
         {
-            string? href = textPath.Attributes["href"] ?? textPath.Attributes.Get("href", SvgNamespaces.XLink);
+            string? href = Href(textPath);
             if (href is not null && SvgStyleValues.LocalId(href) is string id && _document.FindById(id) is SvgElement target && target.IsSvgOrBare(_document))
             {
                 (SvgStyle targetStyle, _) = OriginalStyle(target);
@@ -770,7 +770,7 @@ internal sealed partial class SvgResolver
         }
 
         float offset = 0;
-        if (textPath.Attributes["startOffset"] is string so && SvgLength.TryParse(so, out SvgLength start))
+        if (Attr(textPath, "startOffset") is string so && SvgLength.TryParse(so, out SvgLength start))
         {
             offset = start.IsPercent ? new PathMeasure(path).TotalLength * start.Value / 100 : start.ToPixels(context.Lengths with { FontSize = style.FontSize }, SvgAxis.Other);
         }

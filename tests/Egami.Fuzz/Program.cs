@@ -88,7 +88,8 @@ using DrawingPath = Egami.Drawing.Path;
 // icc target also builds the ink set of an n-colour profile and converts through it both ways.
 // The css target (Phase 2.10, CssFuzzTarget.cs) parses its bytes as a style sheet and a declaration list, matches, cascades and
 // computes them over a small tree and runs every value parser; Egami.Css never throws on input. The svg target (SvgFuzzTarget.cs)
-// loads an SVG document under small limits, draws it, saves and loads it again, and loads it strictly.
+// loads an SVG document under small limits, draws it, saves and loads it again, and loads it strictly. The svg-timeline target
+// (SVG animation stage A) builds an animated document's SMIL timeline and draws it at a few times.
 // The trace target (Bitmap Tracing PR F, TraceFuzzTarget.cs) reads options from its first eight bytes and an image of at most
 // 256 by 256 pixels from the rest, and traces it in every mode; every point must be finite and on the image.
 // The hocr and alto targets (Egami 2.12, OcrFuzzTarget.cs) read OCR results, which must write back in both formats and read
@@ -202,6 +203,7 @@ static Action<Stream> Target(string name) => name switch
     "fontdata" => FontData,
     "subset" => SubsetFont,
     "woff2" => LoadFont,
+    "webfont-write" => WriteWebFont,
     "gvar" => LoadVariable,
     "cff2" => LoadVariable,
     "colr" => LoadColor,
@@ -250,6 +252,7 @@ static Action<Stream> Target(string name) => name switch
     "cli-run" => stream => Egami.Fuzz.CliFuzzTarget.Run(ReadAll(stream)),
     "cli-mcp" => stream => Egami.Fuzz.CliFuzzTarget.Mcp(ReadAll(stream)),
     "svg" => stream => Egami.Fuzz.SvgFuzzTarget.Run(ReadAll(stream)),
+    "svg-timeline" => stream => Egami.Fuzz.SvgFuzzTarget.Timeline(ReadAll(stream)),
     "trace" => stream => Egami.Fuzz.TraceFuzzTarget.Run(ReadAll(stream)),
     "wmf" or "emf" => stream => Egami.Fuzz.MetafileFuzzTarget.Run(ReadAll(stream)),
     "emfplus" => stream => Egami.Fuzz.MetafileFuzzTarget.RunPlus(ReadAll(stream)),
@@ -258,7 +261,7 @@ static Action<Stream> Target(string name) => name switch
         => stream => Egami.Fuzz.BarcodeFuzzTarget.Encode(name["barcode-".Length..], ReadAll(stream)),
     "barcode-read" => stream => Egami.Fuzz.BarcodeFuzzTarget.Read(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, hevcstream, heic-write, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, jxl-frames, jxl-partial, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, lossless-write, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, psdlayers, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, trace, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, hevcstream, heic-write, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, jxl-frames, jxl-partial, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, lossless-write, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, psdlayers, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, svg-timeline, trace, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
 };
 
 static EgamiContext Context()
@@ -2596,6 +2599,58 @@ static void SubsetFont(Stream stream)
         if (readA && (!readB || !a.SameAs(b)))
         {
             throw new InvalidOperationException($"Glyph {old} changed in the subset.");
+        }
+    }
+}
+
+// WOFF and WOFF2 writing (Phase 2.7.7): what `font` or `woff2` loads is written as WOFF2 (or WOFF, by the last byte), with the
+// transforms the last byte picks, and loaded again; the writer may throw only EgamiException or ArgumentException, and every
+// glyph of the first face that read before must read the same, with the same advance.
+static void WriteWebFont(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    int hash = data.Length > 0 ? data[^1] : 0;
+    var options = new Egami.Fonts.WebFontOptions
+    {
+        Format = (hash & 1) != 0 ? Egami.Fonts.WebFontFormat.Woff : Egami.Fonts.WebFontFormat.Woff2,
+        TransformGlyf = (hash & 2) == 0,
+        TransformHmtx = (hash & 4) == 0,
+        Context = Context(),
+    };
+    byte[] web;
+    try
+    {
+        web = Egami.Fonts.WebFontWriter.Write(data, options);
+    }
+    catch (Exception e) when (e is EgamiException or ArgumentException)
+    {
+        return;
+    }
+
+    Egami.Fonts.Typeface face, again;
+    try
+    {
+        face = Egami.Fonts.Typeface.FromMemory(data, 0, new Egami.Fonts.FontLoadOptions { Context = Context() });
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    again = Egami.Fonts.Typeface.FromMemory(web, 0, new Egami.Fonts.FontLoadOptions { Context = Context() });
+    for (int g = 0; g < Math.Min(face.GlyphCount, 60); g++)
+    {
+        var a = new RecordingSink();
+        var b = new RecordingSink();
+        bool readA = face.GetGlyphOutline((ushort)g, a), readB = again.GetGlyphOutline((ushort)g, b);
+        if (readA && (!readB || !a.SameAs(b)))
+        {
+            throw new InvalidOperationException($"Glyph {g} changed in the web font.");
+        }
+
+        if (face.GetAdvance((ushort)g) != again.GetAdvance((ushort)g))
+        {
+            throw new InvalidOperationException($"Glyph {g}'s advance changed in the web font.");
         }
     }
 }

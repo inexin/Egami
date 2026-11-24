@@ -1055,3 +1055,83 @@ virtual Egami.Drawing.PlaceholderPainter.Invoke(Egami.Drawing.Canvas! canvas, in
 ~override Egami.Drawing.RoundRect.Equals(object obj) -> bool
 ~override Egami.Drawing.SpriteTransform.Equals(object obj) -> bool
 ~override Egami.Drawing.SpriteTransform.ToString() -> string
+Egami.Drawing.Tracing.RasterTraceExtensions
+Egami.Drawing.Tracing.TraceLayering
+Egami.Drawing.Tracing.TraceLayering.Abutting = 1 -> Egami.Drawing.Tracing.TraceLayering
+Egami.Drawing.Tracing.TraceLayering.Stacked = 0 -> Egami.Drawing.Tracing.TraceLayering
+Egami.Drawing.Tracing.TraceMode
+Egami.Drawing.Tracing.TraceMode.BlackAndWhite = 0 -> Egami.Drawing.Tracing.TraceMode
+Egami.Drawing.Tracing.TraceMode.Color = 2 -> Egami.Drawing.Tracing.TraceMode
+Egami.Drawing.Tracing.TraceMode.Logo = 3 -> Egami.Drawing.Tracing.TraceMode
+Egami.Drawing.Tracing.TraceMode.Grayscale = 1 -> Egami.Drawing.Tracing.TraceMode
+Egami.Drawing.Tracing.TraceOptions
+Egami.Drawing.Tracing.TraceOptions.<Clone>$() -> Egami.Drawing.Tracing.TraceOptions!
+Egami.Drawing.Tracing.TraceOptions.Colors.get -> int
+Egami.Drawing.Tracing.TraceOptions.Colors.init -> void
+Egami.Drawing.Tracing.TraceOptions.Corners.get -> float
+Egami.Drawing.Tracing.TraceOptions.Corners.init -> void
+Egami.Drawing.Tracing.TraceOptions.Equals(Egami.Drawing.Tracing.TraceOptions? other) -> bool
+Egami.Drawing.Tracing.TraceOptions.IgnoreWhite.get -> bool
+Egami.Drawing.Tracing.TraceOptions.IgnoreWhite.init -> void
+Egami.Drawing.Tracing.TraceOptions.Layering.get -> Egami.Drawing.Tracing.TraceLayering
+Egami.Drawing.Tracing.TraceOptions.Layering.init -> void
+Egami.Drawing.Tracing.TraceOptions.Mode.get -> Egami.Drawing.Tracing.TraceMode
+Egami.Drawing.Tracing.TraceOptions.Mode.init -> void
+Egami.Drawing.Tracing.TraceOptions.Noise.get -> int
+Egami.Drawing.Tracing.TraceOptions.Noise.init -> void
+Egami.Drawing.Tracing.TraceOptions.Palette.get -> System.Collections.Generic.IReadOnlyList<Egami.Pixels.Rgba8>?
+Egami.Drawing.Tracing.TraceOptions.Palette.init -> void
+Egami.Drawing.Tracing.TraceOptions.PathFidelity.get -> float
+Egami.Drawing.Tracing.TraceOptions.PathFidelity.init -> void
+Egami.Drawing.Tracing.TraceOptions.Smoothing.get -> float
+Egami.Drawing.Tracing.TraceOptions.Smoothing.init -> void
+Egami.Drawing.Tracing.TraceOptions.SnapToArcs.get -> bool
+Egami.Drawing.Tracing.TraceOptions.SnapToArcs.init -> void
+Egami.Drawing.Tracing.TraceOptions.SnapToLines.get -> bool
+Egami.Drawing.Tracing.TraceOptions.SnapToLines.init -> void
+Egami.Drawing.Tracing.TraceOptions.Threshold.get -> float?
+Egami.Drawing.Tracing.TraceOptions.Threshold.init -> void
+Egami.Drawing.Tracing.TraceOptions.TraceOptions() -> void
+Egami.Drawing.Tracing.TraceResult
+Egami.Drawing.Tracing.TraceResult.Draw(Egami.Drawing.Canvas! canvas) -> void
+Egami.Drawing.Tracing.TraceResult.Height.get -> int
+Egami.Drawing.Tracing.TraceResult.Palette.get -> System.Collections.Generic.IReadOnlyList<Egami.Pixels.Rgba8>!
+Egami.Drawing.Tracing.TraceResult.Shapes.get -> System.Collections.Generic.IReadOnlyList<Egami.Drawing.Tracing.TracedShape!>!
+Egami.Drawing.Tracing.TraceResult.ToPath(Egami.Pixels.Rgba8 color) -> Egami.Drawing.Path!
+Egami.Drawing.Tracing.TraceResult.ToPicture() -> Egami.Drawing.Picture!
+Egami.Drawing.Tracing.TraceResult.TraceResult(System.Collections.Generic.IEnumerable<Egami.Drawing.Tracing.TracedShape!>! shapes, int width, int height) -> void
+Egami.Drawing.Tracing.TraceResult.Width.get -> int
+Egami.Drawing.Tracing.TracedShape
+Egami.Drawing.Tracing.TracedShape.Color.get -> Egami.Pixels.Rgba8
+Egami.Drawing.Tracing.TracedShape.Kind.get -> Egami.Drawing.Tracing.TracedShapeKind
+Egami.Drawing.Tracing.TracedShape.Path.get -> Egami.Drawing.Path!
+Egami.Drawing.Tracing.TracedShape.StrokeWidth.get -> float
+Egami.Drawing.Tracing.TracedShape.TracedShape(Egami.Drawing.Path! path, Egami.Pixels.Rgba8 color, Egami.Drawing.Tracing.TracedShapeKind kind = Egami.Drawing.Tracing.TracedShapeKind.Fill, float strokeWidth = 0) -> void
+Egami.Drawing.Tracing.TracedShapeKind
+Egami.Drawing.Tracing.TracedShapeKind.Fill = 0 -> Egami.Drawing.Tracing.TracedShapeKind
+Egami.Drawing.Tracing.TracedShapeKind.Stroke = 1 -> Egami.Drawing.Tracing.TracedShapeKind
+override Egami.Drawing.Tracing.TraceOptions.Equals(object? obj) -> bool
+override Egami.Drawing.Tracing.TraceOptions.GetHashCode() -> int
+override Egami.Drawing.Tracing.TraceOptions.ToString() -> string!
+override Egami.Drawing.Tracing.TraceResult.ToString() -> string!
+override Egami.Drawing.Tracing.TracedShape.ToString() -> string!
+static Egami.Drawing.Tracing.RasterTraceExtensions.Trace(this Egami.Raster! raster, Egami.Drawing.Tracing.TraceOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Drawing.Tracing.TraceResult!
+static Egami.Drawing.Tracing.RasterTraceExtensions.Trace<TPixel>(this Egami.Raster<TPixel>! raster, Egami.Drawing.Tracing.TraceOptions? options = null, Egami.EgamiContext? context = null) -> Egami.Drawing.Tracing.TraceResult!
+static Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync(this Egami.Raster! raster, Egami.Drawing.Tracing.TraceOptions? options = null, Egami.EgamiContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Drawing.Tracing.TraceResult!>!
+static Egami.Drawing.Tracing.TraceOptions.BlackAndWhite.get -> Egami.Drawing.Tracing.TraceOptions!
+static Egami.Drawing.Tracing.TraceOptions.Default.get -> Egami.Drawing.Tracing.TraceOptions!
+static Egami.Drawing.Tracing.TraceOptions.operator !=(Egami.Drawing.Tracing.TraceOptions? left, Egami.Drawing.Tracing.TraceOptions? right) -> bool
+static Egami.Drawing.Tracing.TraceOptions.operator ==(Egami.Drawing.Tracing.TraceOptions? left, Egami.Drawing.Tracing.TraceOptions? right) -> bool
+Egami.Drawing.Tracing.TraceMode.Centerline = 4 -> Egami.Drawing.Tracing.TraceMode
+Egami.Drawing.Tracing.TraceOptions.StrokeWidth.get -> float?
+Egami.Drawing.Tracing.TraceOptions.StrokeWidth.init -> void
+static Egami.Drawing.Tracing.TraceOptions.LineArt.get -> Egami.Drawing.Tracing.TraceOptions!
+static Egami.Drawing.Tracing.TraceOptions.Logo.get -> Egami.Drawing.Tracing.TraceOptions!
+static Egami.Drawing.Tracing.TraceOptions.Photo.get -> Egami.Drawing.Tracing.TraceOptions!
+static Egami.Drawing.Tracing.TraceOptions.Poster.get -> Egami.Drawing.Tracing.TraceOptions!
+static Egami.Drawing.Tracing.TraceOptions.Sketch.get -> Egami.Drawing.Tracing.TraceOptions!
+Egami.Drawing.Tracing.TraceMode.PixelArt = 5 -> Egami.Drawing.Tracing.TraceMode
+Egami.Drawing.Tracing.TraceOptions.Exact.get -> bool
+Egami.Drawing.Tracing.TraceOptions.Exact.init -> void
+static Egami.Drawing.Tracing.TraceOptions.PixelArt.get -> Egami.Drawing.Tracing.TraceOptions!
+static Egami.Drawing.Tracing.RasterTraceExtensions.TraceAsync<TPixel>(this Egami.Raster<TPixel>! raster, Egami.Drawing.Tracing.TraceOptions? options = null, Egami.EgamiContext? context = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Egami.Drawing.Tracing.TraceResult!>!

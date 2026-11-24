@@ -1,5 +1,10 @@
 #nullable enable
-Egami.Svg.SvgTraceExtensions
-static Egami.Svg.SvgTraceExtensions.SaveSvg(this Egami.Drawing.Tracing.TraceResult! result, System.IO.Stream! stream, Egami.Svg.SvgWriteOptions? options = null) -> void
-static Egami.Svg.SvgTraceExtensions.SaveSvg(this Egami.Drawing.Tracing.TraceResult! result, string! path, Egami.Svg.SvgWriteOptions? options = null) -> void
-static Egami.Svg.SvgTraceExtensions.ToSvg(this Egami.Drawing.Tracing.TraceResult! result, Egami.Svg.SvgWriteOptions? options = null) -> string!
+Egami.Svg.SvgAnimationInfo
+Egami.Svg.SvgAnimationInfo.Duration.get -> System.TimeSpan?
+Egami.Svg.SvgAnimationInfo.HasAnimations.get -> bool
+Egami.Svg.SvgAnimationInfo.HasEventTriggers.get -> bool
+Egami.Svg.SvgAnimationInfo.LoopPeriod.get -> System.TimeSpan?
+Egami.Svg.SvgDocument.Animation.get -> Egami.Svg.SvgAnimationInfo!
+Egami.Svg.SvgDocument.RenderTreeAt(System.TimeSpan time) -> Egami.Svg.SvgGroup!
+Egami.Svg.SvgRenderOptions.Time.get -> System.TimeSpan?
+Egami.Svg.SvgRenderOptions.Time.init -> void

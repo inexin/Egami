@@ -3,6 +3,26 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami.Svg 1.6.0 (unreleased)
+
+SVG animation, stage A (roadmap 2.10.1): SMIL timing and values, drawn at a chosen time.
+
+- `SvgRenderOptions.Time` draws a document as it looks at that moment of its SMIL animations, in `Rasterize`, `Draw` and
+  `Draw` by id; `SvgDocument.RenderTreeAt(TimeSpan)` gives the render tree then. With no time set the output is the static
+  document, byte for byte the same as 1.5.0.
+- `SvgDocument.Animation` (`SvgAnimationInfo`) says whether a document animates, when its last animation ends, the period
+  after which it loops (when every animation repeats forever, up to 10 s) and whether some animation waits for a click, key
+  or wall-clock time, which never comes.
+- Timing per SMIL 3.0 and SVG Animations: begin and end lists with offset, syncbase and repeat values, `dur`, `min`, `max`,
+  `restart`, `repeatCount`, `repeatDur` and `fill`. Dependency cycles that never move time forward are cut with an
+  `Svg.AnimationCycle` warning; runaway timelines stop at a work limit with `Svg.AnimationLimit`.
+- `animate` and `set` change numbers, lengths, lists, colors, paints, path data (morphing when the commands match), keywords
+  and references, with `calcMode` (discrete, linear, paced, spline), `keyTimes`, `keySplines`, from, to, by and values,
+  `additive` and `accumulate`, in the SMIL sandwich. Animated presentation attributes still lose to CSS rules. Animations in
+  error are skipped with `Svg.BadAnimation`. `animateTransform`, `animateMotion` and `discard` are read for timing but not yet
+  drawn (stage B).
+- A new fuzz target, `svg-timeline`, builds timelines and draws frames from mutated animated documents.
+
 ## Egami.Video.Hardware 0.1.0-preview.1 (unreleased)
 
 A new package, Egami.Video.Hardware: hardware video through Vulkan Video on Windows and Linux (Vulkan Video Build Plan, PR A
@@ -88,10 +108,88 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
 - Egami.Video.Hevc: 9-bit and 11-bit streams decode to 10-bit and 12-bit frames, with the samples shifted up one bit;
   they threw `ArgumentOutOfRangeException` (found by fuzzing). `HevcStreamDecoder.TryReceiveFrame` takes such rasters.
 
-## Egami.Drawing and Egami.Svg 1.5.0 (unreleased)
+## Egami.Fonts 1.6.0 (unreleased)
 
-Bitmap tracing (Egami hub 2.6.6, Bitmap Tracing Build Plan PRs A to G2): black-and-white, grayscale, color, logo and
+WOFF and WOFF2 writing (roadmap 2.7.7). Additive to 1.5.0.
+
+- `WebFontWriter.Write` writes a `Typeface`, a `FontSubset` or sfnt or collection bytes as WOFF2 (the default) or WOFF 1.0
+  (`WebFontOptions.Format`), to a byte array or a stream. Every table is kept. WOFF2 stores glyf and loca in the transformed
+  form (bounding boxes only where the points do not give them, the overlap bitmap when a glyph needs it) and leaves out the hmtx
+  bearings that equal each glyph's xMin; `TransformGlyf` and `TransformHmtx` turn them off. As woff2_compress does, WOFF2
+  sets bit 11 of head's flags (a lossless modifying transform). A WOFF2 file read back gives the
+  same glyf and loca bytes as Google's woff2_decompress gives for woff2_compress's file of the same font.
+- Collections (TTC and OTC) become WOFF2 collections that share tables as the collection does; WOFF 1.0 holds a single font
+  and throws `ArgumentException` for one. A face of a collection is written as a single font.
+- The metadata and private data blocks of a WOFF or WOFF2 source are kept unless `WebFontOptions.Metadata` or `PrivateData`
+  replace them. The file's version is head's fontRevision; WOFF checksums are computed, whatever the source's directory says.
+- Compression is .NET's own Brotli (quality 11, 4 MB window) and zlib (the smallest of levels 9 and 8 with the default and
+  filtered strategies, tables stored raw when that is not smaller). WOFF2 files are within 0.5 % of woff2_compress's with the hmtx transform off, and WOFF files within 0.5 % of
+  fontTools' at zlib level 9, on the test fonts.
+- A glyf table the writer cannot read is stored untransformed with the new `Font.TransformSkipped` warning. A bare CFF font
+  throws `ArgumentException`. Input and output are bounded by the context's `SafetyLimits.MaxTotalBytes`.
+
+## Egami train 1.5.0 (2026-11-23)
+
+The release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and
+Egami.Cli) moves to 1.5.0 together. It adds API and removes none, so code built against 1.4.0 keeps working. New since
+1.4.0: bitmap tracing into vector shapes (Egami.Drawing, written as SVG by Egami.Svg and as `egami trace`), automatic
+hyphenation with built-in dictionaries for 35 languages and optimal (Knuth-Plass) line breaking, math layout data for
+equations, faster JPEG and JPEG XL encoding and decoding, KTX and KTX 2 textures, more RAW cameras (CR3, Panasonic, SRW),
+PSD flattening extras, JPEG-LS, High-Throughput JPEG 2000, DPX, Cineon and FITS, and DICOM in preview. The sections below
+list the changes since 1.5.0-preview.1 package by package; the 1.5.0-preview.1 sections after them list the rest.
+
+- Since 1.5.0-preview.1: bitmap tracing and `egami trace`, the built-in hyphenation dictionaries and optimal line breaking,
+  a fix for style changes in the middle of a shaped run, and fixes for damaged files the fuzz runs found. A few members
+  added in the preview were renamed or changed before they became stable; each package's section lists them. `.ehyp` files
+  that 1.5.0-preview.1 wrote must be compiled again.
+- DICOM stays `[Experimental]` (EGAMIX001), and `SampleImage` with it; the `egami` command reads and writes DICOM only with
+  `--preview-formats`.
+- Egami.Svg has its trace output as the only change, and Egami.Css none; it ships as 1.5.0 to keep the train together.
+  Egami.Heic and Egami.Formats.Extended depend on exactly Egami 1.5.0. Egami.Fonts.Substitutes stays at 1.1.0.
+
+## Egami 1.5.0 (2026-11-23)
+
+Changed since 1.5.0-preview.1 (API review before 1.5.0; these members are new in the 1.5 train, so 1.4.0 code is
+unaffected):
+
+- `Egami.Compression.Zstandard` is internal again. Egami.Formats.Extended's KTX reader and writer reach it through
+  `InternalsVisibleTo`, so Egami.Formats.Extended now depends on exactly the Egami it was built with, as Egami.Heic does.
+- Egami.Formats.Extended: `FitsFile.Load` takes `ReaderOptions` (lenient recovery ends the HDU list at a damaged header after
+  the primary one, strict throws) and has a `ReadOnlyMemory<byte>` overload. `Texture.Load` takes `ReaderOptions` (also
+  `DdsReaderOptions` or `KtxReaderOptions`); options that pick one surface, mip or region are ignored.
+- Egami.Formats.Extended renames: `FitsWriterOptions.Keywords` is `Cards`; `Texture.Save`'s stream parameter is `stream`
+  (was `output`). `DicomElement.GetStrings` returns `string[]`, as `GetNumbers`, `GetIntegers` and `GetTags` return arrays.
+
+Fixed since 1.5.0-preview.1: damaged files the nightly fuzz runs found (issues 351, 360 to 367 and 380). Every one is
+reported as an `EgamiException`, and a Strict incremental decode now succeeds or fails as the whole decode does.
+
+- JPEG XL: a lossless frame with a channel coded smaller than the frame, adaptive LF smoothing on a frame with subsampled
+  chroma (skipped now, as libjxl does), and a varblock that does not fit its subsampled chroma group threw
+  `ArgumentOutOfRangeException` or `IndexOutOfRangeException`. A lossless Modular frame coded as YCbCr no longer skips its
+  color transform. A cropped frame is held to `MaxWidth`, `MaxHeight` and `MaxPixels` like the image: a 122-byte file with a
+  2797 × 3156 frame in a 71 × 40 image took seconds to load.
+- JPEG 2000: Part 2 features the reader refuses (SIZ Rsiz bit 15, CAP, Part 2 marker segments, arbitrary wavelets, trellis
+  quantization, other ROI styles) and components over 30 bits throw `UnsupportedFormatException` instead of
+  `NotSupportedException`, so `Raster.Load` callers that catch `EgamiException` see them.
+- BMP: an OS/2 Huffman or other whole-read BMP whose header claims more pixel bytes than the file holds was checked against
+  `MaxTotalBytes` at the claimed size when the input's length was unknown (an incremental decode), and at the real size when
+  known; it is now read in chunks and checked at what arrived.
+- GIF: an application extension with an empty identifier block was taken as complete before its sub-blocks had arrived, so a
+  Strict incremental decode reported a truncated block.
+- TGA: a TGA 2.0 extension area that starts inside the pixel data was used on a seekable input and ignored on one that cannot
+  seek, giving different alpha. It is damage now: Strict throws `CorruptDataException`, Lenient warns `Tga.ExtensionInPixels`.
+  A footer is one only when it starts after the pixel data, as a stream that cannot seek finds it: a run-length file whose
+  pixels reach into what looked like a footer has none (issue 380), and an extension area that starts inside the pixels but
+  does not fit before the footer is ignored on both inputs. On a seekable run-length file an alpha type that changes the
+  pixels (none, ignore or premultiplied) is applied once the pixels' end is known, so such top-down files decode whole rather
+  than a row at a time.
+
+## Egami.Drawing and Egami.Svg 1.5.0 (2026-11-23)
+
+Bitmap tracing, new since 1.5.0-preview.1: black-and-white, grayscale, color, logo and
 pixel-art images become vector shapes, and line art becomes stroked centre lines. Additive to 1.4.0.
+
+Changed since 1.5.0-preview.1: `TraceAsync<TPixel>` for a typed raster, beside `TraceAsync` for any raster.
 
 - `raster.Trace(options)` (namespace `Egami.Drawing.Tracing`, also `Trace<TPixel>` and `TraceAsync` with a cancellation
   token) traces a raster's first frame and returns a `TraceResult`: `TracedShape`s back to front (a `Path`, an `Rgba8`
@@ -126,24 +224,24 @@ pixel-art images become vector shapes, and line art becomes stroked centre lines
 - Centerline tracing of an image that is ink everywhere no longer puts points two billion pixels off the image: the image's
   edge counts as paper (found by the new trace fuzz target).
 - Egami.Svg writes a trace as SVG through `SvgCanvas`: `result.ToSvg()` and `result.SaveSvg(path)` (or a stream).
-- Speed (Build Plan PR F): the distance transforms, region labelling (by runs) and per-pixel passes run in parallel, with
+- Speed: the distance transforms, region labelling (by runs) and per-pixel passes run in parallel, with
   their buffers pooled, for the same shapes as before. A 3000 × 2400 drawing traces in about 0.15 s in black and white,
-  0.24 s in color or grayscale, 0.34 s as centre lines and 0.66 s in logo mode, 1.9 to 3.1 × faster than PR E, and no
-  mode allocates more than it did. Stacked color and grayscale layers find the regions that touch by sorting instead of
-  hashing (PR G2), which a noisy image had made very slow: 512 × 512 noise in 16 colors takes 0.39 s instead of 32 s, with
+  0.24 s in color or grayscale, 0.34 s as centre lines and 0.66 s in logo mode, 1.9 to 3.1 × faster than the first
+  version, and no mode allocates more than it did. Stacked color and grayscale layers find the regions that touch by sorting
+  instead of hashing, which a noisy image had made very slow: 512 × 512 noise in 16 colors takes 0.39 s instead of 32 s, with
   the same shapes.
-- `TraceMode.PixelArt` (Build Plan PR G1) traces sprites and other pixel art after Kopf and Lischinski, "Depixelizing Pixel
+- `TraceMode.PixelArt` traces sprites and other pixel art after Kopf and Lischinski, "Depixelizing Pixel
   Art" (2011): a graph joins each pixel to its neighbours of similar color in YUV, crossing diagonals are settled by the
   paper's curves, sparse pixels and islands votes, the cells are reshaped into the simplified Voronoi diagram on quarter
   pixels, and the edges between colors become quadratic B-splines, joined smoothly where three colors meet, that keep
-  corners between straight legs of a pixel or more. The paper's spline optimisation (PR G2) then straightens the steps:
+  corners between straight legs of a pixel or more. The paper's spline optimisation then straightens the steps:
   the nodes move, from a fixed seed, to lower the curve's turning plus the fourth power of their distance from where they
   started (in quarter pixels), within half a pixel and never so far that a pixel center comes within 0.15 pixels of the
   curve. One shape per color, stacked or abutting; pixels under half alpha are
   left out, and an image of more than 256 colors throws `ArgumentException`. `TraceOptions.Exact` keeps the pixel squares
   instead, merged into one shape per color, and `TraceOptions.PixelArt` is the preset. A 1000 × 800 sprite sheet traces in
   about 0.1 s.
-- Black-and-white tracing is faster (follow-up to the egami-compare gates), with the same shapes: 8-bit RGB images are read
+- Black-and-white tracing is faster, with the same shapes: 8-bit RGB images are read
   in place instead of through a 16-bit copy, noise removal finds its regions' sizes from the labelling's runs, scans for
   neighbours in parallel and hands its regions on, so they are not labelled twice, the boundary scan skips equal rows by
   vector compare, and the levels pass runs in parallel. Path data numbers are written through integers. Native `egami trace`
@@ -162,10 +260,12 @@ pixel-art images become vector shapes, and line art becomes stroked centre lines
   reached 3 and 4), so a dither beside a flat area no longer counts the flat area in. On the egami-compare gates' 13
   sprites the trace keeps the same diagonal as Inkscape 1.4's pixel-art trace at 96.5 % of crossings (was 93.8 %).
 
-## Egami.Fonts (unreleased)
+## Egami.Fonts 1.5.0 (2026-11-23)
 
-Built-in hyphenation dictionaries and optimal line breaking, after 1.5.0-preview.1 (Hyphenation Build Plan tasks 5 to 8).
-Additive to 1.4.0. `.ehyp` files that 1.5.0-preview.1 wrote are version 1 and must be compiled again.
+Built-in hyphenation dictionaries and optimal line breaking, new since 1.5.0-preview.1. Additive to 1.4.0. `.ehyp` files
+that 1.5.0-preview.1 wrote are version 1 and must be compiled again.
+
+Changed since 1.5.0-preview.1: `Hyphenator.Save`'s parameter is `stream` (was `output`), as in every other `Save`.
 
 - `HyphenationDictionaries.BuiltIn`: hyph-utf8's patterns for 35 languages, compiled into Egami.Fonts (1.3 MB) and each
   loaded the first time it is used, in at most 0.6 ms (German, the largest). They are en-US, en-GB, de-1996, de-1901,
@@ -195,39 +295,15 @@ Additive to 1.4.0. `.ehyp` files that 1.5.0-preview.1 wrote are version 1 and mu
   one, so kerning and ligatures across a color change stay; a ligature joining two styles takes its first character's.
   Decorations shared by two spans (one `TextDecoration` instance) now break where the text's color or shadows change.
 
-## Egami.Cli (unreleased)
+## Egami.Cli 1.5.0 (2026-11-23)
+
+New since 1.5.0-preview.1:
 
 - `egami trace` traces images into vector shapes with Egami.Drawing's bitmap tracing and writes SVG: `--preset` (`default`,
   `black-and-white`, `logo`, `poster`, `photo`, `line-art`, `sketch`, `pixel-art`) with `--mode`, `--colors`, `--palette`,
   `--layering`, `--threshold`, `--path-fidelity`, `--corners`, `--noise`, `--ignore-white`, `--smoothing`, `--snap-lines`,
-  `--snap-arcs`, `--stroke-width`, `--exact` and `--precision`, and `--preview-png` for the trace drawn as a PNG. `egami mcp` offers it as the `trace`
-  tool.
-
-## Egami (unreleased)
-
-Fixed: damaged files the nightly fuzz runs found (issues 351, 360 to 367 and 380). Every one is reported as an `EgamiException`, and a
-Strict incremental decode now succeeds or fails as the whole decode does.
-
-- JPEG XL: a lossless frame with a channel coded smaller than the frame, adaptive LF smoothing on a frame with subsampled
-  chroma (skipped now, as libjxl does), and a varblock that does not fit its subsampled chroma group threw
-  `ArgumentOutOfRangeException` or `IndexOutOfRangeException`. A lossless Modular frame coded as YCbCr no longer skips its
-  color transform. A cropped frame is held to `MaxWidth`, `MaxHeight` and `MaxPixels` like the image: a 122-byte file with a
-  2797 × 3156 frame in a 71 × 40 image took seconds to load.
-- JPEG 2000: Part 2 features the reader refuses (SIZ Rsiz bit 15, CAP, Part 2 marker segments, arbitrary wavelets, trellis
-  quantization, other ROI styles) and components over 30 bits throw `UnsupportedFormatException` instead of
-  `NotSupportedException`, so `Raster.Load` callers that catch `EgamiException` see them.
-- BMP: an OS/2 Huffman or other whole-read BMP whose header claims more pixel bytes than the file holds was checked against
-  `MaxTotalBytes` at the claimed size when the input's length was unknown (an incremental decode), and at the real size when
-  known; it is now read in chunks and checked at what arrived.
-- GIF: an application extension with an empty identifier block was taken as complete before its sub-blocks had arrived, so a
-  Strict incremental decode reported a truncated block.
-- TGA: a TGA 2.0 extension area that starts inside the pixel data was used on a seekable input and ignored on one that cannot
-  seek, giving different alpha. It is damage now: Strict throws `CorruptDataException`, Lenient warns `Tga.ExtensionInPixels`.
-  A footer is one only when it starts after the pixel data, as a stream that cannot seek finds it: a run-length file whose
-  pixels reach into what looked like a footer has none (issue 380), and an extension area that starts inside the pixels but
-  does not fit before the footer is ignored on both inputs. On a seekable run-length file an alpha type that changes the
-  pixels (none, ignore or premultiplied) is applied once the pixels' end is known, so such top-down files decode whole rather
-  than a row at a time.
+  `--snap-arcs`, `--stroke-width`, `--exact` and `--precision`, and `--preview-png` for the trace drawn as a PNG. `egami mcp`
+  offers it as the `trace` tool.
 
 ## Egami train 1.5.0-preview.1 and Egami.Fonts.Substitutes 1.1.0 (2026-11-13)
 
@@ -285,7 +361,7 @@ Faster JPEG XL lossless decoding. Pixels are unchanged.
   on all threads, without a float copy. On 24 threads docs (lossless) loads in 12 ms instead of 39, article-2x in 44 instead of
   152; on one thread lossless decoding takes 8–20 % fewer instructions.
 
-API review of the new formats (DICOM Build Plan task 26). These change only API added since 1.4.0, so no released code breaks.
+API review of the new formats. These change only API added since 1.4.0, so no released code breaks.
 
 - `JpegLsWriter` is internal: save a raster with `JpegLsFormat.Info` and `JpegLsWriterOptions.BitsPerSample` instead.
 - `FitsDetails.Low` and `High` are now `StretchLow` and `StretchHigh`.
@@ -300,14 +376,14 @@ API review of the new formats (DICOM Build Plan task 26). These change only API 
 - Docs: `Jpeg2000Details.HighThroughput` says Egami writes no JPEG 2000, and the DPX page says Cineon loads take
   `DpxReaderOptions`.
 
-DICOM and science formats in the `egami` command (DICOM Build Plan task 25).
+DICOM and science formats in the `egami` command.
 
 - `--preview-formats` now adds DICOM: `egami info`, `convert`, `run` and the rest read DICOM files as a viewer shows their first
   frame, and save rasters as Secondary Capture. Without the option `egami` neither lists nor reads DICOM. JPEG-LS, DPX,
   Cineon and FITS need no option, as before.
 - The Egami.Formats.Extended README, the extended formats page and the CLI guide list DPX, Cineon, FITS and the DICOM preview.
 
-DICOM fixes found by the pydicom and GDCM gates (DICOM Build Plan task 20).
+DICOM fixes found by the pydicom and GDCM gates.
 
 - A file whose 128-byte preamble holds a TIFF header (PS3.10 allows it; pydicom's MR_small.dcm has one) loaded as TIFF and
   failed: `WithDicom()` now puts DICOM ahead of the other formats.
@@ -319,7 +395,7 @@ DICOM fixes found by the pydicom and GDCM gates (DICOM Build Plan task 20).
   lossless JPEG), now load through the in-place path JPEG frames of Bits Stored already took, and a frame whose display is
   its decoded values is not mapped at all: a load is within 5 % of the bare codec's.
 
-DICOM writing, a preview (DICOM Build Plan stage E, tasks 21 and 22). Additive; every new type is `[Experimental]`
+DICOM writing, a preview. Additive; every new type is `[Experimental]`
 (`EGAMIX001`).
 
 - Saving a raster with `DicomFormat.Info` writes a Secondary Capture image: gray as MONOCHROME2, colour as RGB, 8 or 16 bits,
@@ -334,7 +410,7 @@ DICOM writing, a preview (DICOM Build Plan stage E, tasks 21 and 22). Additive; 
   and `DicomTransferSyntax.RleLossless`, `JpegBaseline`, `JpegExtended`, `JpegLossless`, `JpegLsLossless`,
   `JpegLsNearLossless`, `JpegXlLossless` and `JpegXl`.
 
-DICOM pixel data, a preview (DICOM Build Plan stage D, tasks 17 to 19). Additive; every new type is `[Experimental]`
+DICOM pixel data, a preview. Additive; every new type is `[Experimental]`
 (`EGAMIX001`).
 
 - `Raster.Load` of a DICOM file (registered with `WithDicom()`) decodes a frame: native data at 1, 8, 16 and 32 bits
@@ -353,7 +429,7 @@ DICOM pixel data, a preview (DICOM Build Plan stage D, tasks 17 to 19). Additive
   transfer syntaxes throw `NotSupportedException`.
 - The `dicom` fuzz target decodes the first frames every way, with new pixel-data seeds.
 
-High-Throughput JPEG 2000 (DICOM and science formats, task 23).
+High-Throughput JPEG 2000.
 
 - The JPEG 2000 reader decodes HTJ2K (ITU-T T.814 | ISO/IEC 15444-15): the HT block coder's cleanup, SigProp and MagRef
   passes, placeholder passes, HT and Part 1 code-blocks mixed in one tile-component, and the CAP and CPF markers. JPH files,
@@ -367,7 +443,7 @@ High-Throughput JPEG 2000 (DICOM and science formats, task 23).
   `ArgumentOutOfRangeException` where a component's sample under a tile's first row belongs to the tile above (found by
   fuzzing).
 
-JPEG-LS in Egami.Formats.Extended (DICOM and science formats, stage A).
+JPEG-LS in Egami.Formats.Extended.
 
 - `JpegLsFormat` reads and writes JPEG-LS (ITU-T T.87, .jls): lossless and near-lossless coding of 2 to 16-bit samples in
   every interleave mode, restart markers, preset coding parameters, mapping tables (palettes), subsampled components, sizes
@@ -376,7 +452,7 @@ JPEG-LS in Egami.Formats.Extended (DICOM and science formats, stage A).
 - `JpegLsWriterOptions` sets NEAR, the interleave mode, the colour transform, the bits of a sample and the restart interval,
   and `JpegLsDetails` keeps what the file said. Files decode exactly in CharLS, and lossless files are the size CharLS writes.
 
-PSD flattening extras, stage A (roadmap 2.3.13). No API changes.
+PSD flattening extras, part 1. No API changes.
 
 - `PsdDocument.Flatten`, and Load when it flattens, apply fill opacity inside the formula of Photoshop's eight special modes,
   give Photoshop's Vivid Light and Hard Mix at pure black and white, use the combined mask Photoshop stores for a
@@ -390,7 +466,7 @@ PSD flattening extras, stage A (roadmap 2.3.13). No API changes.
   mean error of 30 levels to 0.2, the feathered-mask file from 31 to 0.75, and the knockout file from 12 dB PSNR to 59 dB.
 - A Load of the stored composite allocates the same for any height; it allocated about 113 bytes a row (150 for PackBits).
 
-PSD flattening extras, stage B (roadmap 2.3.13). No API changes.
+PSD flattening extras, part 2. No API changes.
 
 - Gradient fill layers are drawn: linear, radial, angle, reflected and diamond, with angle, scale, offset, reverse and
   alignment with the layer, color and transparency stops with midpoints, smoothness, and Photoshop 2022's Classic,
@@ -403,7 +479,7 @@ PSD flattening extras, stage B (roadmap 2.3.13). No API changes.
   exposure file from 32.6 dB to 45.7 dB, and a thinned gradient fill from 8.2 dB to 55.3 dB. psd.md lists the settings no
   public Photoshop-saved file checks.
 
-PSD flattening extras, stage C (roadmap 2.3.13).
+PSD flattening extras, part 3.
 
 - Layer effects are drawn: drop and inner shadow, outer and inner glow, bevel and emboss, satin, color, gradient and pattern
   overlays and strokes (outside, inside or centered; color, gradient or pattern), from the lfx2, lmfx and lfxs descriptors
@@ -416,7 +492,7 @@ PSD flattening extras, stage C (roadmap 2.3.13).
   12 to 28.5 dB. psd.md lists the settings no public Photoshop-saved file checks. Files without effects flatten as fast as
   before and allocate no more.
 
-DICOM dataset reading, a preview (DICOM Build Plan stage D, first part). Additive; every new type is `[Experimental]`
+DICOM dataset reading, a preview. Additive; every new type is `[Experimental]`
 (`EGAMIX001`).
 
 - `DicomFile.Load` in Egami.Formats.Extended (namespace `Egami.Formats.Extended.Dicom`) reads DICOM PS3.10 files and bare
@@ -439,7 +515,7 @@ Stored samples (DICOM and science formats, stage D0). Additive API; loading a `R
   offset. JPEG 2000's signed components come back signed, as two's-complement values, not offset by half their range. A
   `FormatInfo` overload reads a codestream taken out of a container without detecting it.
 
-DPX and Cineon (DICOM and science formats, stage B). All additive.
+DPX and Cineon. All additive.
 
 - `DpxFormat` and `CineonFormat` in Egami.Formats.Extended, registered by `WithExtendedFormats()`, `WithDpx()` and
   `WithCineon()`, read DPX (SMPTE ST 268, versions 1.0 to 3.0) and Cineon 4.5 in either byte order: 1, 8, 10, 12 and 16-bit
@@ -452,7 +528,7 @@ DPX and Cineon (DICOM and science formats, stage B). All additive.
   Cineon (10-bit RGB). `DpxDetails` and `CineonDetails` keep the transfer, colorimetric and the file, film and television
   fields (timecode, frame rate, slate), and the writers write them back.
 
-FITS (DICOM and science formats, stage C). All additive.
+FITS. All additive.
 
 - `FitsFormat` in Egami.Formats.Extended, registered by `WithExtendedFormats()` and `WithFits()`, reads FITS (Standard 4.0):
   the primary HDU and every `IMAGE` extension, BITPIX 8, 16, 32, 64, -32 and -64 with BSCALE, BZERO and BLANK, each plane of
@@ -496,7 +572,7 @@ Smaller DNGs from lossy NEFs (RAW follow-up). No API changes.
   differently from run to run. Each is filled from the stored samples around it; filling in place on several threads let
   one fill read another's result.
 
-Faster lossless JPEG XL encoding (roadmap 2.4.11). No API changes; every file is byte for byte the same as before.
+Faster lossless JPEG XL encoding. No API changes; every file is byte for byte the same as before.
 
 - Effort 1 splits planes with vector code and writes its bits two codes at a time without branches.
 - The weighted predictor works a row at a time without branches, which removes most of the encoder's branch mispredictions,
@@ -528,7 +604,7 @@ libjpeg-turbo's `cjpeg` with the same settings.
   Egami now takes 0.91 to 1.07 times cjpeg's time at quality 75 (1.69 times before) and 0.55 to 0.58 times with optimized
   tables at quality 90 4:4:4.
 
-JPEG XL metadata boxes (roadmap 2.4.11). No API changes.
+JPEG XL metadata boxes. No API changes.
 
 - The JPEG XL writer puts Exif and XMP in Brotli-compressed `brob` boxes, at Brotli quality 9 as cjxl does, in lossless and
   lossy files (recompressed JPEGs already used `brob`, at quality 4, and now use 9 too). Pixels and metadata read back as before;
@@ -536,7 +612,7 @@ JPEG XL metadata boxes (roadmap 2.4.11). No API changes.
   three wesaturate photos at distance 1 were 6.2 to 7 KB larger than cjxl's and are now within 0.15 % at effort 3, 5 and 7.
   A reader that does not open `brob` boxes no longer sees the Exif and XMP of Egami's files, as with cjxl's.
 
-Faster lossy JPEG XL encoding (roadmap 2.4.11). No API changes; every file is byte for byte the same as before.
+Faster lossy JPEG XL encoding. No API changes; every file is byte for byte the same as before.
 
 - The vector DCTs keep 4×4, 4×8, 8×8 and 16-point transforms in registers, multiply by 0.5 and 0.25 instead of dividing,
   read each block straight from the plane instead of copying it out first, and start the inverse of a transposed varblock
@@ -551,7 +627,7 @@ Faster lossy JPEG XL encoding (roadmap 2.4.11). No API changes; every file is by
   cjxl's, from 2.5 to 3.9), efforts 5 and 7 about 2 to 3 % fewer. Allocation-budget tests now cap what an encode allocates
   per pixel.
 
-Faster JPEG XL decoding of lossy images, group by group (roadmap 2.4.11). No API changes; decoded pixels are the same as
+Faster JPEG XL decoding of lossy images, group by group. No API changes; decoded pixels are the same as
 before.
 
 - A VarDCT frame alone in its file (single-pass or progressive, with or without straight alpha) decodes in libjxl's
@@ -568,7 +644,7 @@ before.
   decodes straight into pixels too, and allocates about 16 bytes a pixel instead of 55. Modular frames and subsampled JPEG
   recompressions run the filters in tiles; the decoder no longer filters a whole frame at once.
 
-Faster JPEG XL decoding of entropy-coded data and Modular images (roadmap 2.4.11). No API changes; decoded pixels are the
+Faster JPEG XL decoding of entropy-coded data and Modular images. No API changes; decoded pixels are the
 same as before.
 
 - Modular channels decode by the shape of their MA tree, as libjxl's decoder does: a channel with one leaf has no tree walk
@@ -584,7 +660,7 @@ same as before.
 - JPEG reconstruction reports a `jbrd` box whose data is not valid Brotli, or whose scan names a missing component, as
   damaged data instead of crashing (found by fuzzing).
 
-KTX and KTX 2 textures, stage A (reading; roadmap 2.3.11). All additive.
+KTX and KTX 2 textures: reading. All additive.
 
 - `KtxFormat` (.ktx) and `Ktx2Format` (.ktx2) in Egami.Formats.Extended, registered by `WithExtendedFormats()`, `WithKtx()`
   and `WithKtx2()`, read KTX 1.1 (both byte orders) and KTX 2.0 (uncompressed, or Zstandard and zlib supercompressed): the
@@ -598,7 +674,7 @@ KTX and KTX 2 textures, stage A (reading; roadmap 2.3.11). All additive.
 - `Egami.Compression.Zstandard` in core Egami makes the managed Zstandard codec public: `Compress`, `Decompress` and
   `MaxCompressedLength`.
 
-More RAW cameras (RAW coverage plan, PR A). Egami.Formats.Extended adds the `.rwl` extension and its MIME type
+More RAW cameras. Egami.Formats.Extended adds the `.rwl` extension and its MIME type
 (`image/x-leica-rwl`) to `RawFormat.Info`; no other API changes.
 
 - Leica RWL files and Panasonic's older RAW files load: the RW2 reader takes files without a RawFormat tag (0x0118), whose data
@@ -618,7 +694,7 @@ More RAW cameras (RAW coverage plan, PR A). Egami.Formats.Extended adds the `.rw
   for the same file to 1.2 times (90th percentile from 12 to 4.3 times), so the same setting now reduces about as much as on
   Adobe's DNG of the file.
 
-Canon CR3 develops (RAW coverage, Build Plan tasks 8 to 12). No API changes.
+Canon CR3 develops. No API changes.
 
 - The CRX codec of CR3's sensor data decodes, lossless and C-RAW (quantised 5/3 wavelet, both quantiser versions), its tiles
   and planes in parallel. Over the five corpus CR3s (EOS 250D, M50 C-RAW, R6, 1D X Mark III and PowerShot SX70 HS) the mosaic
@@ -632,7 +708,7 @@ Canon CR3 develops (RAW coverage, Build Plan tasks 8 to 12). No API changes.
 - DNG writing widens BitsPerSample to hold the white level, so a CR3 whose white is 16384 over 14-bit data (EOS R6, R5 crop)
   passes dng_validate.
 
-KTX stage B (ETC, EAC and ASTC; roadmap 2.3.11). No API changes.
+KTX: ETC, EAC and ASTC. No API changes.
 
 - KTX and KTX 2 read ETC1, ETC2 (RGB8, RGB8A1 and RGBA8, UNORM and sRGB) and EAC R11 and RG11 (unsigned and signed), exactly
   as the Khronos Data Format Specification says, and ASTC in all 14 2D footprints, LDR (UNORM and sRGB, to `Rgba8`) and HDR
@@ -640,7 +716,7 @@ KTX stage B (ETC, EAC and ASTC; roadmap 2.3.11). No API changes.
 - Internal ETC1, ETC2, EAC and ASTC LDR block encoders (effort 0 to 6) for the KTX writer to come; their output does not depend
   on the number of threads.
 
-Samsung SRW (RAW coverage, Build Plan tasks 13 to 15). Egami.Formats.Extended adds the `.srw` extension and its MIME type
+Samsung SRW. Egami.Formats.Extended adds the `.srw` extension and its MIME type
 (`image/x-samsung-srw`) to `RawFormat.Info`; no other API changes.
 
 - SRW files load, develop and convert to DNG: 12-bit packed (both bit orders) and 16-bit uncompressed data, and Samsung's V0,
@@ -654,7 +730,7 @@ Samsung SRW (RAW coverage, Build Plan tasks 13 to 15). Egami.Formats.Extended ad
   Adobe DNG Converter does; Samsung writes the time and f-number themselves) and ends an EXIF ASCII value without one in NUL,
   so converted SRWs of the NX3000, NX3300, NX mini and NX500 pass dng_validate.
 
-KTX stage C (Basis Universal; roadmap 2.3.11). No API changes.
+KTX: Basis Universal. No API changes.
 
 - KTX 2 reads Basis Universal: ETC1S (BasisLZ supercompression, with or without an alpha slice, and ETC1S video, whose
   P-frames decode from the last I-frame), UASTC LDR 4 × 4 in all 19 modes (to `Rgba8`, or `Rgb8` when the descriptor has no
@@ -664,7 +740,7 @@ KTX stage C (Basis Universal; roadmap 2.3.11). No API changes.
   with optional rate-distortion optimization for Zstandard) encoders for the KTX writer to come; their output does not depend
   on the number of threads, and ETC1S files they make pass `ktx validate` and decode the same in libktx.
 
-KTX stage D (writing and whole textures; roadmap 2.3.11). Additive.
+KTX: writing and whole textures. Additive.
 
 - `Ktx2Format` writes KTX 2.0 through Save and SaveAll with `Ktx2WriterOptions`: `Format` (a `KtxTextureFormat`: the
   uncompressed formats, UINT and SINT, D16 and D32F, BC1 to BC7, ETC1, ETC2, EAC, ASTC LDR in all 14 footprints, ETC1S and

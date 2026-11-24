@@ -41,4 +41,14 @@
     <InternalsVisibleTo Include="Egami.Benchmarks" />
   </ItemGroup>
 
+  <!--
+    The KTX reader and writer use core Egami's internal Zstandard codec (InternalsVisibleTo in Egami.csproj), so the package
+    depends on exactly the Egami it was built with, as Egami.Heic does: [1.5.0], not 1.5.0 or later.
+  -->
+  <Target Name="PinEgamiVersion" AfterTargets="_GetProjectReferenceVersions">
+    <ItemGroup>
+      <_ProjectReferencesWithVersions Update="@(_ProjectReferencesWithVersions)" ProjectVersion="[%(_ProjectReferencesWithVersions.ProjectVersion)]" />
+    </ItemGroup>
+  </Target>
+
 </Project>

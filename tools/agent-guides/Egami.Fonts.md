@@ -18,6 +18,8 @@ draw.
 - `Paragraph.Create(text, ParagraphStyle)` and `paragraph.Layout(width)`: wrapped lines; `canvas.DrawText(text, rect, style)` and
   `canvas.DrawTextLayout` draw them.
 - `TextShaper.Shape(text, font, ShapingOptions)`: shaped runs with bidi and fallback, for your own layout.
+- `FontSubsetter.Subset(face, glyphs, SubsetOptions)`: a font with only some glyphs; `WebFontWriter.Write(face or subset)`
+  writes WOFF2 (or WOFF with `WebFontOptions.Format`).
 - Egami.Fonts.Substitutes: bundled metric-compatible stand-ins for Arial, Times New Roman, Courier New, Calibri and Cambria.
 
 ## Samples
@@ -45,6 +47,10 @@ Drawing paragraphs:
 Mixed scripts with fallback fonts:
 
 {{sample Shaping.cs#shape}}
+
+A web font with only the characters a page uses:
+
+{{sample Text.cs#webfont-subset}}
 
 ## Common mistakes
 

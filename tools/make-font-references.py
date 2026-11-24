@@ -6,7 +6,9 @@ when .cache/fonts/NotoSansCJKsc-Regular.otf exists, and fonts with symbol, Mac R
 tools/fontref/dump.py writes one gzipped JSON per face of them; tools/fontref/derive_272.py builds 2.7.2's variable, color and web
 fonts from the downloads in .cache/fonts (tests/fonts/README.md lists them) and tools/fontref/dump_272.py their references;
 tools/fontref/derive_273.py builds 2.7.3's fonts (Font DICT matrices, a format 2 cmap, a custom CFF encoding) and
-tools/fontref/dump_273.py writes FreeType's and fontTools' font data (names, CIDs, cmaps, built-in encodings, CFF outlines).
+tools/fontref/dump_273.py writes FreeType's and fontTools' font data (names, CIDs, cmaps, built-in encodings, CFF outlines);
+tools/fontref/dump_277.py encodes the WOFF and WOFF2 writer's test fonts with woff2_compress and fontTools (2.7.7): the reference
+sizes and woff2_decompress's tables.
 
 Usage, from the repo root with Docker running:
   python tools/make-font-references.py
@@ -29,3 +31,4 @@ docker("python", "/w/tools/fontref/derive_272.py", "/w")
 docker("python", "/w/tools/fontref/dump_272.py", "/w")
 docker("python", "/w/tools/fontref/derive_273.py", "/w")
 docker("python", "/w/tools/fontref/dump_273.py", "/w")
+docker("python", "/w/tools/fontref/dump_277.py", "/w")

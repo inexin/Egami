@@ -236,11 +236,11 @@ public sealed class Hyphenator
     /// Writes the compiled patterns, exceptions and minimums in Egami's own form (<c>.ehyp</c>), which
     /// <see cref="Load(Stream, HyphenationFormat)"/> reads back far faster than it parses pattern text.
     /// </summary>
-    /// <param name="output">The stream to write to; it is left open.</param>
-    public void Save(Stream output)
+    /// <param name="stream">The stream to write to; it is left open.</param>
+    public void Save(Stream stream)
     {
-        ArgumentNullException.ThrowIfNull(output);
-        CompiledHyphenation.Write(this, output);
+        ArgumentNullException.ThrowIfNull(stream);
+        CompiledHyphenation.Write(this, stream);
     }
 
     /// <summary>A copy with other source details, for the compiled form.</summary>

@@ -136,7 +136,7 @@ public sealed class FitsWriterTests
             Stretch = FitsStretch.None,
         };
         string note = string.Concat(Enumerable.Repeat("a long note ", 12));
-        byte[] file = TestImages.Save(raster, "FITS", new FitsWriterOptions { Keywords = [new FitsCard("NOTE", note), new FitsCard("observer", "Lars"), new FitsCard("BZERO", 5.0)] });
+        byte[] file = TestImages.Save(raster, "FITS", new FitsWriterOptions { Cards = [new FitsCard("NOTE", note), new FitsCard("observer", "Lars"), new FitsCard("BZERO", 5.0)] });
         FitsHeader header = FitsFile.Load(new MemoryStream(file)).Hdus[0].Header;
         Assert.Equal(-32, header.GetInteger("BITPIX"));
         Assert.Equal(3, header.GetInteger("NAXIS1"));

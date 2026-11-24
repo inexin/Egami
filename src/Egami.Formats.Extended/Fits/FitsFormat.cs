@@ -115,10 +115,10 @@ public sealed class FitsWriterOptions : WriterOptions
     public int? Bitpix { get; init; }
 
     /// <summary>
-    /// Gets keyword cards to add to the header, after those of a raster read from FITS (<see cref="FitsDetails.Header"/>). A card
+    /// Gets cards to add to the header, after those of a raster read from FITS (<see cref="FitsDetails.Header"/>). A card
     /// with a keyword the structure needs, such as <c>BITPIX</c> or <c>NAXIS1</c>, is ignored.
     /// </summary>
-    public IReadOnlyList<FitsCard> Keywords { get; init; } = [];
+    public IReadOnlyList<FitsCard> Cards { get; init; } = [];
 }
 
 /// <summary>

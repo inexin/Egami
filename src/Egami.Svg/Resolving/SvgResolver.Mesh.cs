@@ -36,7 +36,7 @@ internal sealed partial class SvgResolver
         SvgLengthContext lengths = context.Lengths;
         float Start(string name, SvgAxis axis)
         {
-            string text = mesh.Attributes[name] ?? "0";
+            string text = Attr(mesh, name) ?? "0";
             if (!SvgLength.TryParse(text, out SvgLength l))
             {
                 _report.Warn("Svg.BadAttribute", $"The mesh gradient's {name} \"{SvgGeometry.Clip(text)}\" is not a length; 0 is used.", mesh);
@@ -167,9 +167,9 @@ internal sealed partial class SvgResolver
 
             SvgElement s = stops[stop++];
             Vector2 start = corners[e] ?? edges[(e + 3) % 4]![3];
-            if (!SvgMesh.TryEdge(s.Attributes["path"], start, corners[(e + 1) % 4], out Vector2[] edge))
+            if (!SvgMesh.TryEdge(Attr(s, "path"), start, corners[(e + 1) % 4], out Vector2[] edge))
             {
-                _report.Warn("Svg.BadAttribute", $"A mesh stop's path \"{SvgGeometry.Clip(s.Attributes["path"] ?? "")}\" is not one c, C, l or L command; the mesh ends at it.", s);
+                _report.Warn("Svg.BadAttribute", $"A mesh stop's path \"{SvgGeometry.Clip(Attr(s, "path") ?? "")}\" is not one c, C, l or L command; the mesh ends at it.", s);
                 return null;
             }
 
