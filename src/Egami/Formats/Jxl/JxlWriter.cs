@@ -322,7 +322,7 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
 
             return plane;
         })];
-        byte[] codestream = JxlLosslessEncoder.Encode(new JxlEncodeInput { Width = map.Width, Height = map.Height, Color = planes, Effort = effort, Parallelism = parallelism });
+        byte[] codestream = JxlLosslessEncoder.Encode(new JxlEncodeInput { Width = map.Width, Height = map.Height, Color = planes, Effort = effort, Parallelism = parallelism, OwnsPlanes = true });
         using MemoryStream bundle = new();
         bundle.WriteByte(0);
         Span<byte> size = stackalloc byte[4];
@@ -503,7 +503,8 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
 
             RasterMetadata metadata = start.Metadata;
             bool strip = options.StripMetadata;
-            JxlEncodeInput input = _planes.ToInput(options.Effort) with { Parallelism = start.Context.MaxParallelism, Extras = extras };
+            // The planes are this encoder's own and not used after: the encode may transform them in place.
+            JxlEncodeInput input = _planes.ToInput(options.Effort) with { Parallelism = start.Context.MaxParallelism, Extras = extras, OwnsPlanes = true };
             (JxlColorEncoding color, byte[]? icc) = ColorOf(metadata, options, input.Color.Count == 1);
             int orientation = metadata.Exif?.Orientation is ImageOrientation o && (int)o is >= 1 and <= 8 ? (int)o : 1;
             input = input with { ColorEncoding = color, Icc = icc, Orientation = orientation };

@@ -1313,7 +1313,7 @@ internal sealed partial class JxlVarDctEncoder
             cb2[i] = (int)((b * 4096.0) + 0.5f) - cy2[i];
         }
 
-        List<JxlChannel> channels = [new JxlChannel(lw, lh, 0, 0) { Data = cy2 }, new JxlChannel(lw, lh, 0, 0) { Data = cx2 }, new JxlChannel(lw, lh, 0, 0) { Data = cb2 }];
+        List<JxlChannel> channels = [new JxlChannel(lw, lh, 0, 0, cy2), new JxlChannel(lw, lh, 0, 0, cx2), new JxlChannel(lw, lh, 0, 0, cb2)];
         for (int i = 0; i < _extraCount; i++)
         {
             // An LF frame's extra channels are subsampled as the image header says.
@@ -1446,7 +1446,7 @@ internal sealed partial class JxlVarDctEncoder
         for (int i = own; i < planes.Count; i++)
         {
             (int cw, int chh, int shift) = _extraSizes[i];
-            channels.Add(new JxlChannel(cw, chh, shift, shift) { Data = planes[i].Data });
+            channels.Add(new JxlChannel(cw, chh, shift, shift, planes[i].Data));
         }
 
         float[] distances = [.. planes.Select((p, i) => i == 0 && header.Alpha is not null ? _settings.AlphaDistance : 0f)];
@@ -1511,7 +1511,7 @@ internal sealed partial class JxlVarDctEncoder
         _patches = [.. info.Select((p, i) => new JxlPatch(3, places[i].X, places[i].Y, p.Width, p.Height, [.. p.Positions.Select(t => new JxlPatchTarget(t.X, t.Y, add))]))];
 
         int groupShift = JxlModularEncoder.GroupShift(rw, rh);
-        List<JxlChannel> channels = [new JxlChannel(rw, rh, 0, 0) { Data = cy }, new JxlChannel(rw, rh, 0, 0) { Data = cx }, new JxlChannel(rw, rh, 0, 0) { Data = cb }];
+        List<JxlChannel> channels = [new JxlChannel(rw, rh, 0, 0, cy), new JxlChannel(rw, rh, 0, 0, cx), new JxlChannel(rw, rh, 0, 0, cb)];
 
         // The extra channels are in every frame: zero here, as libjxl's placeholders, subsampled as the image header says.
         for (int i = 0; i < _extraCount; i++)

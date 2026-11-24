@@ -346,9 +346,12 @@ internal sealed class JxlAnsEncodingHistogram
         }
 
         JxlAnsEncodingHistogram best = result;
+        // A candidate that loses is tried again at the next shift: Rebalance rewrites every count of the alphabet.
+        JxlAnsEncodingHistogram? spare = null;
         void TryShift(int shift)
         {
-            JxlAnsEncodingHistogram n = new() { _alphabet = result._alphabet, _symbolCount = symbols, _counts = new int[histo.Counts.Length] };
+            JxlAnsEncodingHistogram n = spare ?? new() { _alphabet = result._alphabet, _symbolCount = symbols, _counts = new int[histo.Counts.Length] };
+            spare = null;
             n._symbols[0] = result._symbols[0];
             n._symbols[1] = result._symbols[1];
             n._method = Math.Min(shift, LogTab - 1) + 1;
@@ -362,7 +365,16 @@ internal sealed class JxlAnsEncodingHistogram
             n.Cost = size.Bits + n.EstimateDataBits(histo);
             if (n.Cost < best.Cost)
             {
+                if (best != result)
+                {
+                    spare = best;
+                }
+
                 best = n;
+            }
+            else
+            {
+                spare = n;
             }
         }
 
@@ -586,11 +598,16 @@ internal sealed class JxlAnsEncodingHistogram
     {
         int shift = _method - 1;
         // Room for a step of 2048 too, which libjxl's arrays leave out (a bin that large is normally the balancing one).
-        long[] balanceInc = new long[LogTab];
-        long[] balanceDec = new long[LogTab];
+        Span<long> balanceInc = stackalloc long[LogTab];
+        Span<long> balanceDec = stackalloc long[LogTab];
         (int Count, int StepLog, int DeltaLg2)[] ac = Allowed[shift];
         ushort[] ai = AllowedIndex[shift];
-        List<(int Freq, int CountIndex, int Bin)> bins = new(256);
+        // Each bin above the balancing one: its frequency, its index in the allowed counts and the symbol (on the stack, as
+        // this runs for every candidate shift of every histogram).
+        Span<int> freqs = stackalloc int[MaxAlphabet];
+        Span<int> indices = stackalloc int[MaxAlphabet];
+        Span<int> symbols = stackalloc int[MaxAlphabet];
+        int binCount = 0;
         double norm = (double)TabSize / histo.Total;
         int remainder = 0;
         long maxFreq = 0;
@@ -613,20 +630,33 @@ internal sealed class JxlAnsEncodingHistogram
             rest -= count;
             if (target > 1.0)
             {
-                bins.Add((freq, ai[count], n));
+                freqs[binCount] = freq;
+                indices[binCount] = ai[count];
+                symbols[binCount] = n;
+                binCount++;
             }
         }
 
-        bins.RemoveAt(bins.FindIndex(b => b.Bin == remainder));
+        // The balancing bin leaves the list, the others keeping their order.
+        int removed = symbols[..binCount].IndexOf(remainder);
+        if (removed < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(histo), "The largest bin has no allowed count.");
+        }
+
+        for (int i = removed + 1; i < binCount; i++)
+        {
+            freqs[i - 1] = freqs[i];
+            indices[i - 1] = indices[i];
+            symbols[i - 1] = symbols[i];
+        }
+
+        binCount--;
         rest += _counts[remainder];
 
-        if (bins.Count > 0)
+        if (binCount > 0)
         {
             int maxLog = ac[1].StepLog;
-            long DeltaInc((int Freq, int CountIndex, int Bin) a) => (a.Freq * (long)ac[a.CountIndex].DeltaLg2) - balanceInc[ac[a.CountIndex].StepLog];
-            // A count never goes to 0: libjxl's guard (the largest delta) can be outweighed when the balancing bin is nearly
-            // empty, as it is when every symbol has a count (streaming mode's add_missing_symbols).
-            long DeltaDec((int Freq, int CountIndex, int Bin) a) => ac[a.CountIndex + 1].Count == 0 ? long.MaxValue : (a.Freq * (long)ac[a.CountIndex + 1].DeltaLg2) - balanceDec[ac[a.CountIndex + 1].StepLog];
             while (true)
             {
                 for (int log = 0; log <= maxLog; log++)
@@ -651,49 +681,47 @@ internal sealed class JxlAnsEncodingHistogram
 
                 // The first bin whose step gains most per unit of change (std::max_element keeps the first of equals).
                 int bestInc = 0;
-                long bestIncKey = DeltaInc(bins[0]) >> ac[bins[0].CountIndex].StepLog;
-                for (int i = 1; i < bins.Count; i++)
+                long bestIncKey = DeltaInc(ac, balanceInc, freqs[0], indices[0]) >> ac[indices[0]].StepLog;
+                for (int i = 1; i < binCount; i++)
                 {
-                    long key = DeltaInc(bins[i]) >> ac[bins[i].CountIndex].StepLog;
+                    long key = DeltaInc(ac, balanceInc, freqs[i], indices[i]) >> ac[indices[i]].StepLog;
                     if (bestIncKey < key)
                     {
                         (bestInc, bestIncKey) = (i, key);
                     }
                 }
 
-                if (DeltaInc(bins[bestInc]) > 0)
+                if (DeltaInc(ac, balanceInc, freqs[bestInc], indices[bestInc]) > 0)
                 {
-                    (int f, int ci, int b) = bins[bestInc];
-                    rest -= 1 << ac[ci].StepLog;
-                    bins[bestInc] = (f, ci - 1, b);
+                    rest -= 1 << ac[indices[bestInc]].StepLog;
+                    indices[bestInc]--;
                 }
                 else
                 {
                     int bestDec = 0;
-                    long bestDecKey = DeltaDec(bins[0]) >> ac[bins[0].CountIndex + 1].StepLog;
-                    for (int i = 1; i < bins.Count; i++)
+                    long bestDecKey = DeltaDec(ac, balanceDec, freqs[0], indices[0]) >> ac[indices[0] + 1].StepLog;
+                    for (int i = 1; i < binCount; i++)
                     {
-                        long key = DeltaDec(bins[i]) >> ac[bins[i].CountIndex + 1].StepLog;
+                        long key = DeltaDec(ac, balanceDec, freqs[i], indices[i]) >> ac[indices[i] + 1].StepLog;
                         if (key < bestDecKey)
                         {
                             (bestDec, bestDecKey) = (i, key);
                         }
                     }
 
-                    if (DeltaDec(bins[bestDec]) >= 0)
+                    if (DeltaDec(ac, balanceDec, freqs[bestDec], indices[bestDec]) >= 0)
                     {
                         break;
                     }
 
-                    (int f, int ci, int b) = bins[bestDec];
-                    rest += 1 << ac[ci + 1].StepLog;
-                    bins[bestDec] = (f, ci + 1, b);
+                    rest += 1 << ac[indices[bestDec] + 1].StepLog;
+                    indices[bestDec]++;
                 }
             }
 
-            foreach ((_, int ci, int b) in bins)
+            for (int i = 0; i < binCount; i++)
             {
-                _counts[b] = ac[ci].Count;
+                _counts[symbols[i]] = ac[indices[i]].Count;
             }
 
             // The balancing bin needs room to grow its bit width; else the first bin of 12 bits takes its place.
@@ -712,6 +740,14 @@ internal sealed class JxlAnsEncodingHistogram
         _omit = remainder;
         return _counts[remainder] > 0;
     }
+
+    private static long DeltaInc((int Count, int StepLog, int DeltaLg2)[] ac, ReadOnlySpan<long> balanceInc, int freq, int index) =>
+        (freq * (long)ac[index].DeltaLg2) - balanceInc[ac[index].StepLog];
+
+    // A count never goes to 0: libjxl's guard (the largest delta) can be outweighed when the balancing bin is nearly empty, as
+    // it is when every symbol has a count (streaming mode's add_missing_symbols).
+    private static long DeltaDec((int Count, int StepLog, int DeltaLg2)[] ac, ReadOnlySpan<long> balanceDec, int freq, int index) =>
+        ac[index + 1].Count == 0 ? long.MaxValue : (freq * (long)ac[index + 1].DeltaLg2) - balanceDec[ac[index + 1].StepLog];
 }
 
 /// <summary>

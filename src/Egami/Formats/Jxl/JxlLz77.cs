@@ -1,3 +1,5 @@
+using System.Buffers;
+
 namespace Egami.Formats.Jxl;
 
 /// <summary>
@@ -127,6 +129,8 @@ internal static class JxlLz77
                 i += len - 1;
             }
 
+            chain.Return();
+            ArrayPool<float>.Shared.Return(cumulative);
             output.Add(o);
         }
 
@@ -175,18 +179,8 @@ internal static class JxlLz77
                 }
 
                 distSymbols.Clear();
-                chain.FindMatches(i, (l, d) =>
-                {
-                    while (distSymbols.Count <= l)
-                    {
-                        distSymbols.Add(d);
-                    }
-
-                    if (d < distSymbols[l])
-                    {
-                        distSymbols[l] = d;
-                    }
-                });
+                DistanceByLength sink = new(distSymbols);
+                chain.FindMatches(i, ref sink);
                 if (distSymbols.Count <= MinLength)
                 {
                     continue;
@@ -232,6 +226,8 @@ internal static class JxlLz77
             }
 
             o.Reverse();
+            chain.Return();
+            ArrayPool<float>.Shared.Return(cumulative);
             output.Add(o);
         }
 
@@ -249,9 +245,11 @@ internal static class JxlLz77
         return w;
     }
 
+    /// <summary>Gets each prefix's estimated bits, in a pooled array the caller returns.</summary>
     private static float[] Cumulative(SymbolCost sce, List<JxlToken> input)
     {
-        float[] cumulative = new float[input.Count + 1];
+        float[] cumulative = ArrayPool<float>.Shared.Rent(input.Count + 1);
+        cumulative[0] = 0;
         for (int i = 0; i < input.Count; i++)
         {
             (uint tok, int nbits, _) = JxlEntropyCode.Split(DefaultConfig, input[i].Value);
@@ -348,7 +346,7 @@ internal static class JxlLz77
         private readonly int _windowMask;
         private readonly int _minLength;
         private readonly int _maxLength;
-        private readonly int[] _head = new int[HashValues];
+        private readonly int[] _head = ArrayPool<int>.Shared.Rent(HashValues);
         private readonly int[] _chain;
         private readonly int[] _val;
         private readonly int[] _headz;
@@ -361,7 +359,7 @@ internal static class JxlLz77
         internal HashChain(List<JxlToken> tokens, int window, int minLength, int maxLength, int multiplier)
         {
             _size = tokens.Count;
-            _data = new uint[_size];
+            _data = ArrayPool<uint>.Shared.Rent(_size);
             for (int i = 0; i < _size; i++)
             {
                 _data[i] = tokens[i].Value;
@@ -370,20 +368,22 @@ internal static class JxlLz77
             _windowMask = window - 1;
             _minLength = minLength;
             _maxLength = maxLength;
-            Array.Fill(_head, -1);
-            _val = new int[window];
-            Array.Fill(_val, -1);
-            _chain = new int[window];
-            _chainz = new int[window];
+            // Pooled arrays, longer than asked for: only the first HashValues, window or window + 1 entries are used.
+            _head.AsSpan(0, HashValues).Fill(-1);
+            _val = ArrayPool<int>.Shared.Rent(window);
+            _val.AsSpan(0, window).Fill(-1);
+            _chain = ArrayPool<int>.Shared.Rent(window);
+            _chainz = ArrayPool<int>.Shared.Rent(window);
             for (int i = 0; i < window; i++)
             {
                 _chain[i] = i;
                 _chainz[i] = i;
             }
 
-            _zeros = new int[window];
-            _headz = new int[window + 1];
-            Array.Fill(_headz, -1);
+            _zeros = ArrayPool<int>.Shared.Rent(window);
+            _zeros.AsSpan(0, window).Clear();
+            _headz = ArrayPool<int>.Shared.Rent(window + 1);
+            _headz.AsSpan(0, window + 1).Fill(-1);
             if (multiplier != 0)
             {
                 // Counted down, so that when distances coincide the smallest code wins.
@@ -451,7 +451,8 @@ internal static class JxlLz77
             }
         }
 
-        internal void FindMatches(int pos, Action<int, int> found)
+        internal void FindMatches<TSink>(int pos, ref TSink found)
+            where TSink : struct, IMatchSink
         {
             int wpos = pos & _windowMask;
             int hash = Hash(pos);
@@ -495,7 +496,7 @@ internal static class JxlLz77
                     if (len >= _minLength && len + 2 >= bestLen)
                     {
                         int symbol = _special.TryGetValue(dist, out int code) ? code : _numSpecial + dist - 1;
-                        found(len, symbol);
+                        found.Found(len, symbol);
                         bestLen = Math.Max(bestLen, len);
                     }
                 }
@@ -536,15 +537,59 @@ internal static class JxlLz77
 
         internal (int Dist, int Len) FindMatch(int pos)
         {
-            int bestDist = 0, bestLen = 1;
-            FindMatches(pos, (len, dist) =>
+            LongestMatch best = new() { Len = 1 };
+            FindMatches(pos, ref best);
+            return (best.Dist, best.Len);
+        }
+
+        /// <summary>Gives the pooled arrays back; the chain is not used after.</summary>
+        internal void Return()
+        {
+            ArrayPool<uint>.Shared.Return(_data);
+            ArrayPool<int>.Shared.Return(_head);
+            ArrayPool<int>.Shared.Return(_val);
+            ArrayPool<int>.Shared.Return(_chain);
+            ArrayPool<int>.Shared.Return(_chainz);
+            ArrayPool<int>.Shared.Return(_zeros);
+            ArrayPool<int>.Shared.Return(_headz);
+        }
+    }
+
+    /// <summary>Takes the matches a hash chain finds, without a delegate per position.</summary>
+    private interface IMatchSink
+    {
+        void Found(int len, int symbol);
+    }
+
+    /// <summary>Keeps the longest match, the smallest distance symbol among equals.</summary>
+    private struct LongestMatch : IMatchSink
+    {
+        internal int Dist;
+        internal int Len;
+
+        public void Found(int len, int dist)
+        {
+            if (len > Len || (len == Len && Dist > dist))
             {
-                if (len > bestLen || (len == bestLen && bestDist > dist))
-                {
-                    (bestLen, bestDist) = (len, dist);
-                }
-            });
-            return (bestDist, bestLen);
+                (Len, Dist) = (len, dist);
+            }
+        }
+    }
+
+    /// <summary>Keeps, for each length, the smallest distance symbol of a match at least that long so far found at that length.</summary>
+    private readonly struct DistanceByLength(List<int> distSymbols) : IMatchSink
+    {
+        public void Found(int l, int d)
+        {
+            while (distSymbols.Count <= l)
+            {
+                distSymbols.Add(d);
+            }
+
+            if (d < distSymbols[l])
+            {
+                distSymbols[l] = d;
+            }
         }
     }
 }
