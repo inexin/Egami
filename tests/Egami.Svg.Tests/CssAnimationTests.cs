@@ -136,7 +136,13 @@ public class CssAnimationTests
     [InlineData("stroke-width", "1em", "0", "0.5em")]
     [InlineData("stroke-width", "1em", "48px", "32px")]
     [InlineData("stroke-width", "10%", "20%", "15%")]
-    [InlineData("stroke-width", "10%", "20px", "20px")]
+    [InlineData("stroke-width", "10%", "20px", "calc(5% + 10px)")]
+    [InlineData("stroke-width", "10%", "-20px", "calc(5% - 10px)")]
+    [InlineData("stroke-width", "50%", "1em", "calc(25% + 8px)")]
+    [InlineData("stroke-width", "calc(10% + 4px)", "20%", "calc(15% + 2px)")]
+    [InlineData("stroke-width", "calc(10% + 4px)", "4px", "calc(5% + 4px)")]
+    [InlineData("x", "40%", "0", "20%")]
+    [InlineData("translate", "50%", "10px", "calc(25% + 5px) 0px")]
     [InlineData("stroke-dasharray", "2 4", "4 8 12", "3 6 7 4 5 8")]
     [InlineData("opacity", "50%", "1", "0.75")]
     [InlineData("font-weight", "normal", "bold", "550")]
@@ -145,6 +151,39 @@ public class CssAnimationTests
     [InlineData("stroke-linecap", "round", "square", "square")]
     public void ValuesInterpolate(string property, string from, string to, string expected) =>
         Assert.Equal(expected, SvgCssValues.Interpolate(property, from, to, 0.5, s_context));
+
+    [Fact]
+    public void PercentagesAndLengthsAddIntoCalc()
+    {
+        Assert.Equal("calc(10% + 5px)", SvgCssValues.Composite("stroke-width", "10%", "5px", SvgCssComposite.Add, s_context));
+        Assert.Equal("calc(20% + 5px)", SvgCssValues.Composite("offset-distance", "calc(10% + 5px)", "10%", SvgCssComposite.Accumulate, s_context));
+    }
+
+    [Fact]
+    public void MixedPercentagesResolveWhereTheyAreUsed()
+    {
+        // x: 50% of the 100 wide viewport to 20px, halfway: calc(25% + 10px), 35.
+        SvgDocument geometry = Doc("@keyframes k { from { x: 50% } to { x: 20px } } #r { animation: k 2s linear }", "<rect id='r' width='10' height='10'/>");
+        Assert.Equal(35, Shape(geometry, 1).Path.Bounds.X, 2);
+
+        // translate: 50% of the 10 wide fill box to 20px, halfway: calc(25% + 10px), 12.5.
+        SvgDocument translate = Doc(
+            "@keyframes k { from { translate: 50% } to { translate: 20px } } #r { transform-box: fill-box; animation: k 2s linear }",
+            "<rect id='r' width='10' height='10'/>");
+        Assert.Equal(12.5f, Shape(translate, 1).Transform.M31, 2);
+
+        // offset-distance: 50% of a 100 long path to 10px, halfway: calc(25% + 5px), 30 along.
+        SvgDocument offset = Doc(
+            "@keyframes k { from { offset-distance: 50% } to { offset-distance: 10px } } #r { offset-path: path('M0 0 H100'); animation: k 2s linear }",
+            "<rect id='r' width='10' height='10'/>");
+        Assert.Equal(30, Shape(offset, 1).Transform.M31, 2);
+
+        // stroke-width: 10% of the normalized diagonal (100 here) to 2px, halfway: calc(5% + 1px), 6.
+        SvgDocument stroke = Doc(
+            "@keyframes k { from { stroke-width: 10% } to { stroke-width: 2px } } #r { stroke: black; animation: k 2s linear }",
+            "<rect id='r' width='10' height='10'/>");
+        Assert.Equal(6, Assert.IsType<Egami.Drawing.Stroke>(Shape(stroke, 1).Stroke).Width, 2);
+    }
 
     [Fact]
     public void DiscreteValuesFlipHalfway()

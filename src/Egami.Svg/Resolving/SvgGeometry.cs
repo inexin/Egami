@@ -38,14 +38,16 @@ internal sealed class SvgGeometry(SvgReport report)
     /// <summary>Reads a length without resolving it; false when missing, auto or unreadable.</summary>
     public bool Read(SvgElement element, string name, out SvgLength length)
     {
-        string? text = StyleValue?.Invoke(element, name) ?? Attribute(element, name);
+        string? style = StyleValue?.Invoke(element, name);
+        string? text = style ?? Attribute(element, name);
         if (text is null || text.AsSpan().Trim().Equals("auto", StringComparison.OrdinalIgnoreCase))
         {
             length = default;
             return false;
         }
 
-        if (SvgLength.TryParse(text, out length))
+        // A CSS value may be a calc() mixing a percentage and a length, as animations interpolate them; attributes may not.
+        if (style is not null ? SvgLength.TryParseCss(text, out length) : SvgLength.TryParse(text, out length))
         {
             return true;
         }

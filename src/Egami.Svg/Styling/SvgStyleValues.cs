@@ -111,7 +111,8 @@ internal static class SvgStyleValues
         length = default;
         if (!CssLength.TryParse(value, out CssLength css) || !double.IsFinite(css.Value))
         {
-            return false;
+            // A calc() mixing a percentage with absolute lengths, as CSS animations interpolate them (CSS Values 4).
+            return value is CssFunction && CssCalc.TryParse(value, out CssCalc? calc) && SvgLength.TryFromCalc(calc, out length);
         }
 
         SvgUnit? unit = css.Unit switch

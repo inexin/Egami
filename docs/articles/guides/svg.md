@@ -140,8 +140,10 @@ colors (in premultiplied sRGB), transform lists, `translate`, `rotate`, `scale`,
 `offset-path` and `offset-distance` interpolate; other values, custom properties among them, change halfway. Animated values
 win over every normal rule and lose to `!important` ones; where SMIL animates the same property, SMIL sets the value below
 and the CSS animation wins. Geometry properties such as `r` and `d` follow CSS animations; a static style sheet still does
-not set them. A percentage and a length in other units only meet through `calc()`, which SVG lengths here do not take, so
-such a pair changes halfway, as do transform lists that need matrices with percentages.
+not set them. A percentage and a length in other units interpolate as `calc()` mixes them, such as `calc(25% + 10px)`, and
+the percentage resolves where the value is used: against the viewport, the reference box, the path length or the font
+size. Lengths in SVG's CSS properties take such a `calc()` of percentages and absolute lengths in static style sheets too.
+Transform lists that need matrices and hold percentages still change halfway.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#css-animation)]
 

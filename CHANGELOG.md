@@ -38,10 +38,13 @@ SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation
   per-keyframe easing and `animation-composition` (replace, add, accumulate). Keyframe values are computed in the element's
   context; missing `from` and `to` keyframes take the value below. Numbers, lengths, colors (premultiplied sRGB), transform
   lists (function by function, else matrix decomposition), `translate`, `rotate`, `scale`, `d: path()`, `offset-path`,
-  `offset-distance` and `offset-rotate` interpolate; other values, custom properties included, change halfway. Animated
+  `offset-distance` and `offset-rotate` interpolate; a percentage and a length in another unit interpolate as `calc()`
+  mixes them, resolved where the value is used. Other values, custom properties included, change halfway. Animated
   values sit above normal rules and below `!important` ones, and over SMIL's values. `SvgAnimationInfo` counts them.
 - The `translate`, `rotate` and `scale` properties and `offset-path: path()` with `offset-distance` and `offset-rotate` now
   move elements, static ones too (CSS Transforms 2, Motion Path 1).
+- Lengths in SVG's CSS properties (`stroke-width`, `x`, `r`, `font-size`...) take a `calc()` of percentages and absolute
+  lengths, in static style sheets too.
 
 Egami.Css:
 

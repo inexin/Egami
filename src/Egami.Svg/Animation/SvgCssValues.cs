@@ -121,8 +121,8 @@ internal static class SvgCssValues
     /// <summary>Lists of lengths or numbers item by item; null when an item is not one or units cannot meet.</summary>
     private static string? Lengths(string a, string b, in SvgCssValueContext context, bool repeat, Func<double, double, double> f)
     {
-        List<CssLength>? x = LengthList(a);
-        List<CssLength>? y = LengthList(b);
+        List<LengthPercentage>? x = LengthList(a, context);
+        List<LengthPercentage>? y = LengthList(b, context);
         if (x is null || y is null || x.Count == 0 || y.Count == 0)
         {
             return null;
@@ -149,18 +149,18 @@ internal static class SvgCssValues
         StringBuilder builder = new();
         for (int i = 0; i < x.Count; i++)
         {
-            if (CombineLengths(x[i], y[i], context, f) is not CssLength r)
+            if (Combine(x[i], y[i], context, f) is not LengthPercentage r)
             {
                 return null;
             }
 
-            builder.Append(i == 0 ? "" : " ").Append(LengthText(r));
+            builder.Append(i == 0 ? "" : " ").Append(r.ToText(false));
         }
 
         return builder.ToString();
     }
 
-    private static List<CssLength> Repeat(List<CssLength> list, int count) => [.. Enumerable.Range(0, count).Select(i => list[i % list.Count])];
+    private static List<LengthPercentage> Repeat(List<LengthPercentage> list, int count) => [.. Enumerable.Range(0, count).Select(i => list[i % list.Count])];
 
     private static int Gcd(int a, int b)
     {
@@ -172,12 +172,12 @@ internal static class SvgCssValues
         return a;
     }
 
-    private static List<CssLength>? LengthList(string text)
+    private static List<LengthPercentage>? LengthList(string text, in SvgCssValueContext context)
     {
-        List<CssLength> lengths = [];
+        List<LengthPercentage> lengths = [];
         foreach (CssComponentValue value in Significant(text))
         {
-            if (!CssLength.TryParse(value, out CssLength length) || !double.IsFinite(length.Value))
+            if (ReadLength(value, context) is not LengthPercentage length)
             {
                 return null;
             }
@@ -188,10 +188,73 @@ internal static class SvgCssValues
         return lengths;
     }
 
+    private static LengthPercentage? ReadLength(CssComponentValue value, in SvgCssValueContext context)
+    {
+        if (CssLength.TryParse(value, out CssLength length))
+        {
+            return double.IsFinite(length.Value) ? LengthPercentage.Of(length) : null;
+        }
+
+        if (value is not CssFunction || !CssCalc.TryParse(value, out CssCalc? calc) || calc.IsNumber)
+        {
+            return null;
+        }
+
+        // calc() is linear in its percentages: evaluated with a percent worth 0 it gives the length part, with 1 the sum.
+        bool unknown = false;
+        SvgCssValueContext c = context;
+        double Evaluate(double percent) => calc.Resolve(unit =>
+        {
+            if (unit == CssUnit.Percent)
+            {
+                return percent;
+            }
+
+            double? px = Pixels(new CssLength(1, unit), c);
+            unknown |= px is null;
+            return px ?? 0;
+        });
+
+        double pixels = Evaluate(0);
+        double percentage = Evaluate(1) - pixels;
+        return unknown || !double.IsFinite(pixels) || !double.IsFinite(percentage) ? null : LengthPercentage.Mix(percentage, pixels);
+    }
+
+    // Two length-percentages combined by f: in one unit where they share one, else as a percentage and a px length mixed.
+    private static LengthPercentage? Combine(LengthPercentage a, LengthPercentage b, in SvgCssValueContext context, Func<double, double, double> f)
+    {
+        if (!a.Mixed && !b.Mixed && CombineLengths(a.Plain, b.Plain, context, f) is CssLength plain)
+        {
+            return LengthPercentage.Of(plain);
+        }
+
+        if (Split(a, context) is not (double pa, double xa) || Split(b, context) is not (double pb, double xb))
+        {
+            return null;
+        }
+
+        return LengthPercentage.Mix(f(pa, pb), f(xa, xb));
+    }
+
+    private static (double Percent, double Pixels)? Split(LengthPercentage value, in SvgCssValueContext context)
+    {
+        if (value.Mixed)
+        {
+            return (value.Percent, value.Pixels);
+        }
+
+        if (value.Plain.Unit == CssUnit.Percent)
+        {
+            return (value.Plain.Value, 0);
+        }
+
+        return Pixels(value.Plain, context) is double px ? (0, px) : null;
+    }
+
     /// <summary>
     /// Two lengths combined in one unit: the same unit (px and unitless count as one), the unit of the non-zero one when the
-    /// other is zero, else both in px (font and viewport units resolved through the context). A percentage meets another unit
-    /// only through calc(), which SVG lengths do not take, so that pair has no result.
+    /// other is zero, else both in px (font and viewport units resolved through the context). A percentage and another unit have
+    /// no result here; <see cref="Combine"/> keeps them apart, as calc() does.
     /// </summary>
     public static CssLength? CombineLengths(CssLength a, CssLength b, in SvgCssValueContext context, Func<double, double, double> f)
     {
@@ -336,24 +399,47 @@ internal static class SvgCssValues
 
     private static string? TranslateProperty(string a, string b, in SvgCssValueContext context, Func<double, double, double> f)
     {
-        if (!TryTranslate(a, out CssLength ax, out CssLength ay) || !TryTranslate(b, out CssLength bx, out CssLength by)
-            || CombineLengths(ax, bx, context, f) is not CssLength rx || CombineLengths(ay, by, context, f) is not CssLength ry)
+        if (!TryTranslate(a, context, out LengthPercentage ax, out LengthPercentage ay) || !TryTranslate(b, context, out LengthPercentage bx, out LengthPercentage by)
+            || Combine(ax, bx, context, f) is not LengthPercentage rx || Combine(ay, by, context, f) is not LengthPercentage ry)
         {
             return null;
         }
 
-        return PixelText(rx) + " " + PixelText(ry);
+        return rx.ToText(true) + " " + ry.ToText(true);
     }
 
-    private static bool TryTranslate(string text, out CssLength x, out CssLength y)
+    // The x and y of a translate value (none is 0 0), checked as the property's grammar says.
+    private static bool TryTranslate(string text, in SvgCssValueContext context, out LengthPercentage x, out LengthPercentage y)
     {
+        x = y = LengthPercentage.Of(new CssLength(0, CssUnit.Px));
         if (IsNone(text))
         {
-            x = y = new CssLength(0, CssUnit.Px);
             return true;
         }
 
-        return SvgAnimationProperties.TryTranslate(Parse(text), out x, out y);
+        if (!SvgAnimationProperties.TryTranslate(Parse(text), out _, out _))
+        {
+            return false;
+        }
+
+        List<CssComponentValue> items = Significant(text);
+        if (ReadLength(items[0], context) is not LengthPercentage first)
+        {
+            return false;
+        }
+
+        x = first;
+        if (items.Count > 1)
+        {
+            if (ReadLength(items[1], context) is not LengthPercentage second)
+            {
+                return false;
+            }
+
+            y = second;
+        }
+
+        return true;
     }
 
     // A length in a translate: unitless numbers are not lengths there, so they are written in px.
@@ -649,5 +735,38 @@ internal static class SvgCssValues
         }
 
         return underlying + " " + value;
+    }
+
+    /// <summary>
+    /// A length, percentage or number as an animation combines it: a plain value in its own unit, or (Mixed) a percentage
+    /// and a length in px together, as calc() holds them (CSS Values 4, "Combination of length-percentage"). The mixed form
+    /// keeps the percentage unresolved; whoever uses the value resolves it against its own reference.
+    /// </summary>
+    private readonly record struct LengthPercentage(CssLength Plain, double Percent, double Pixels, bool Mixed)
+    {
+        public static LengthPercentage Of(CssLength plain) => new(plain, 0, 0, false);
+
+        public static LengthPercentage Mix(double percent, double pixels) => new(default, percent, pixels, true);
+
+        /// <summary>The value as CSS text; <paramref name="pxNumbers"/> writes unitless numbers in px (where they are not lengths).</summary>
+        public string ToText(bool pxNumbers)
+        {
+            if (!Mixed)
+            {
+                return pxNumbers ? PixelText(Plain) : LengthText(Plain);
+            }
+
+            if (Pixels == 0)
+            {
+                return Format(Percent) + "%";
+            }
+
+            if (Percent == 0)
+            {
+                return Format(Pixels) + "px";
+            }
+
+            return "calc(" + Format(Percent) + "% " + (Pixels < 0 ? "- " : "+ ") + Format(Math.Abs(Pixels)) + "px)";
+        }
     }
 }

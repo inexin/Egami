@@ -1,4 +1,5 @@
 using Egami.Css;
+using Egami.Svg.Values;
 
 namespace Egami.Svg.Styling;
 
@@ -274,11 +275,11 @@ internal static class SvgAnimationProperties
         SvgStyleValues.IsKeyword(values, "none") || TryTranslate(values, out _, out _);
 
     /// <summary>The x and y of a translate value; false for none or an invalid or 3D one.</summary>
-    public static bool TryTranslate(IReadOnlyList<CssComponentValue> values, out CssLength x, out CssLength y)
+    public static bool TryTranslate(IReadOnlyList<CssComponentValue> values, out SvgLength x, out SvgLength y)
     {
         x = default;
-        y = new CssLength(0, CssUnit.Px);
-        List<CssLength> lengths = [];
+        y = new SvgLength(0, SvgUnit.Px);
+        List<SvgLength> lengths = [];
         foreach (CssComponentValue value in values)
         {
             if (value is CssTokenValue { Token.Kind: CssTokenKind.Whitespace })
@@ -286,7 +287,8 @@ internal static class SvgAnimationProperties
                 continue;
             }
 
-            if (!CssLength.TryParse(value, out CssLength length) || !double.IsFinite(length.Value) || (length.Unit == CssUnit.None && length.Value != 0))
+            // A length or percentage, or a calc() mixing them; a number only as 0.
+            if (!SvgStyleValues.TryLength(value, out SvgLength length) || !float.IsFinite(length.Value) || (length.Unit == SvgUnit.None && length.Value != 0))
             {
                 return false;
             }
@@ -294,7 +296,7 @@ internal static class SvgAnimationProperties
             lengths.Add(length);
         }
 
-        if (lengths.Count is < 1 or > 3 || (lengths.Count == 3 && (lengths[2].Value != 0 || lengths[2].Unit == CssUnit.Percent)))
+        if (lengths.Count is < 1 or > 3 || (lengths.Count == 3 && (lengths[2].Value != 0 || lengths[2].Offset != 0 || lengths[2].IsPercent)))
         {
             return false;
         }
