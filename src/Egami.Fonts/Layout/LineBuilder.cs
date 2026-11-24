@@ -213,7 +213,6 @@ internal sealed partial class LineBuilder
         int chosen = -1;
         int over = -1;
         bool shrinks = _paragraph.Style.SpaceShrink > 0 && float.IsFinite(width);
-        int previousEnd = -1;
         float previousWidth = 0;
         for (int i = k; i < breaks.Length; i++)
         {
@@ -223,7 +222,7 @@ internal sealed partial class LineBuilder
             {
                 // ParagraphStyle.SpaceShrink: the line may still fit with its word spaces shrunk.
                 if (!shrinks || !CanShrink(b.IsMandatory)
-                    || !FitsShrunk(start, ContentEnd(start, b.Index), w, width, previousEnd, previousWidth))
+                    || !FitsShrunk(start, ContentEnd(start, b.Index), w, width, i > k ? ContentEnd(start, breaks[i - 1].Index) : -1, previousWidth))
                 {
                     over = i;
                     break;
@@ -236,10 +235,7 @@ internal sealed partial class LineBuilder
                 break;
             }
 
-            if (shrinks)
-            {
-                (previousEnd, previousWidth) = (ContentEnd(start, b.Index), w);
-            }
+            previousWidth = w;
         }
 
         // Automatic hyphenation: only the piece that crosses the line's end is looked up, as browsers do.
@@ -254,7 +250,7 @@ internal sealed partial class LineBuilder
 
             if (over >= 0 && (auto.MaxConsecutiveLines == 0 || hyphenatedBefore < auto.MaxConsecutiveLines)
                 && (chosen < 0 || width - LineWidth(start, breaks[chosen]) > auto.Zone)
-                && Hyphenate(start, chosen >= 0 ? breaks[chosen].Index : start, breaks[over].Index, width, auto, shrinks && CanShrink(false), previousEnd, previousWidth) is int point)
+                && Hyphenate(start, chosen >= 0 ? breaks[chosen].Index : start, breaks[over].Index, width, auto, shrinks && CanShrink(false), chosen >= 0 ? ContentEnd(start, breaks[chosen].Index) : -1, previousWidth) is int point)
             {
                 return Hyphenated(start, point, true, hyphenatedBefore, auto, automatic: true);
             }
@@ -426,7 +422,8 @@ internal sealed partial class LineBuilder
             int[] counts = new int[_text.Length + 1];
             for (int i = 0; i < _text.Length; i++)
             {
-                bool space = !char.IsLowSurrogate(_text[i]) && IsShrinkableSpace(TextSegmenter.CodePointAt(_text, i, out _));
+                char c = _text[i];
+                bool space = c == ' ' || (c > 0xFF && !char.IsLowSurrogate(c) && IsShrinkableSpace(TextSegmenter.CodePointAt(_text, i, out _)));
                 widths[i + 1] = widths[i] + (space ? _m.Advance[i] + _m.Spacing[i] : 0);
                 counts[i + 1] = counts[i] + (space ? 1 : 0);
             }
