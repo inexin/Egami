@@ -85395,6 +85395,64 @@ references:
   commentId: N:Egami.Svg
   fullName: Egami.Svg
   nameWithType: Egami.Svg
+- uid: Egami.Svg.SvgAnimationInfo
+  name: SvgAnimationInfo
+  href: api/Egami.Svg.SvgAnimationInfo.html
+  commentId: T:Egami.Svg.SvgAnimationInfo
+  fullName: Egami.Svg.SvgAnimationInfo
+  nameWithType: SvgAnimationInfo
+- uid: Egami.Svg.SvgAnimationInfo.Duration
+  name: Duration
+  href: api/Egami.Svg.SvgAnimationInfo.html#Egami_Svg_SvgAnimationInfo_Duration
+  commentId: P:Egami.Svg.SvgAnimationInfo.Duration
+  fullName: Egami.Svg.SvgAnimationInfo.Duration
+  nameWithType: SvgAnimationInfo.Duration
+- uid: Egami.Svg.SvgAnimationInfo.Duration*
+  name: Duration
+  href: api/Egami.Svg.SvgAnimationInfo.html#Egami_Svg_SvgAnimationInfo_Duration_
+  commentId: Overload:Egami.Svg.SvgAnimationInfo.Duration
+  isSpec: "True"
+  fullName: Egami.Svg.SvgAnimationInfo.Duration
+  nameWithType: SvgAnimationInfo.Duration
+- uid: Egami.Svg.SvgAnimationInfo.HasAnimations
+  name: HasAnimations
+  href: api/Egami.Svg.SvgAnimationInfo.html#Egami_Svg_SvgAnimationInfo_HasAnimations
+  commentId: P:Egami.Svg.SvgAnimationInfo.HasAnimations
+  fullName: Egami.Svg.SvgAnimationInfo.HasAnimations
+  nameWithType: SvgAnimationInfo.HasAnimations
+- uid: Egami.Svg.SvgAnimationInfo.HasAnimations*
+  name: HasAnimations
+  href: api/Egami.Svg.SvgAnimationInfo.html#Egami_Svg_SvgAnimationInfo_HasAnimations_
+  commentId: Overload:Egami.Svg.SvgAnimationInfo.HasAnimations
+  isSpec: "True"
+  fullName: Egami.Svg.SvgAnimationInfo.HasAnimations
+  nameWithType: SvgAnimationInfo.HasAnimations
+- uid: Egami.Svg.SvgAnimationInfo.HasEventTriggers
+  name: HasEventTriggers
+  href: api/Egami.Svg.SvgAnimationInfo.html#Egami_Svg_SvgAnimationInfo_HasEventTriggers
+  commentId: P:Egami.Svg.SvgAnimationInfo.HasEventTriggers
+  fullName: Egami.Svg.SvgAnimationInfo.HasEventTriggers
+  nameWithType: SvgAnimationInfo.HasEventTriggers
+- uid: Egami.Svg.SvgAnimationInfo.HasEventTriggers*
+  name: HasEventTriggers
+  href: api/Egami.Svg.SvgAnimationInfo.html#Egami_Svg_SvgAnimationInfo_HasEventTriggers_
+  commentId: Overload:Egami.Svg.SvgAnimationInfo.HasEventTriggers
+  isSpec: "True"
+  fullName: Egami.Svg.SvgAnimationInfo.HasEventTriggers
+  nameWithType: SvgAnimationInfo.HasEventTriggers
+- uid: Egami.Svg.SvgAnimationInfo.LoopPeriod
+  name: LoopPeriod
+  href: api/Egami.Svg.SvgAnimationInfo.html#Egami_Svg_SvgAnimationInfo_LoopPeriod
+  commentId: P:Egami.Svg.SvgAnimationInfo.LoopPeriod
+  fullName: Egami.Svg.SvgAnimationInfo.LoopPeriod
+  nameWithType: SvgAnimationInfo.LoopPeriod
+- uid: Egami.Svg.SvgAnimationInfo.LoopPeriod*
+  name: LoopPeriod
+  href: api/Egami.Svg.SvgAnimationInfo.html#Egami_Svg_SvgAnimationInfo_LoopPeriod_
+  commentId: Overload:Egami.Svg.SvgAnimationInfo.LoopPeriod
+  isSpec: "True"
+  fullName: Egami.Svg.SvgAnimationInfo.LoopPeriod
+  nameWithType: SvgAnimationInfo.LoopPeriod
 - uid: Egami.Svg.SvgAttribute
   name: SvgAttribute
   href: api/Egami.Svg.SvgAttribute.html
@@ -86204,6 +86262,19 @@ references:
   fullName.vb: Egami.Svg.SvgDocument.New
   nameWithType: SvgDocument.SvgDocument
   nameWithType.vb: SvgDocument.New
+- uid: Egami.Svg.SvgDocument.Animation
+  name: Animation
+  href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Animation
+  commentId: P:Egami.Svg.SvgDocument.Animation
+  fullName: Egami.Svg.SvgDocument.Animation
+  nameWithType: SvgDocument.Animation
+- uid: Egami.Svg.SvgDocument.Animation*
+  name: Animation
+  href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Animation_
+  commentId: Overload:Egami.Svg.SvgDocument.Animation
+  isSpec: "True"
+  fullName: Egami.Svg.SvgDocument.Animation
+  nameWithType: SvgDocument.Animation
 - uid: Egami.Svg.SvgDocument.Description
   name: Description
   href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Description
@@ -86341,6 +86412,19 @@ references:
   isSpec: "True"
   fullName: Egami.Svg.SvgDocument.RenderTree
   nameWithType: SvgDocument.RenderTree
+- uid: Egami.Svg.SvgDocument.RenderTreeAt(System.TimeSpan)
+  name: RenderTreeAt(TimeSpan)
+  href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_RenderTreeAt_System_TimeSpan_
+  commentId: M:Egami.Svg.SvgDocument.RenderTreeAt(System.TimeSpan)
+  fullName: Egami.Svg.SvgDocument.RenderTreeAt(System.TimeSpan)
+  nameWithType: SvgDocument.RenderTreeAt(TimeSpan)
+- uid: Egami.Svg.SvgDocument.RenderTreeAt*
+  name: RenderTreeAt
+  href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_RenderTreeAt_
+  commentId: Overload:Egami.Svg.SvgDocument.RenderTreeAt
+  isSpec: "True"
+  fullName: Egami.Svg.SvgDocument.RenderTreeAt
+  nameWithType: SvgDocument.RenderTreeAt
 - uid: Egami.Svg.SvgDocument.Root
   name: Root
   href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Root
@@ -87709,6 +87793,19 @@ references:
   isSpec: "True"
   fullName: Egami.Svg.SvgRenderOptions.TextAsPaths
   nameWithType: SvgRenderOptions.TextAsPaths
+- uid: Egami.Svg.SvgRenderOptions.Time
+  name: Time
+  href: api/Egami.Svg.SvgRenderOptions.html#Egami_Svg_SvgRenderOptions_Time
+  commentId: P:Egami.Svg.SvgRenderOptions.Time
+  fullName: Egami.Svg.SvgRenderOptions.Time
+  nameWithType: SvgRenderOptions.Time
+- uid: Egami.Svg.SvgRenderOptions.Time*
+  name: Time
+  href: api/Egami.Svg.SvgRenderOptions.html#Egami_Svg_SvgRenderOptions_Time_
+  commentId: Overload:Egami.Svg.SvgRenderOptions.Time
+  isSpec: "True"
+  fullName: Egami.Svg.SvgRenderOptions.Time
+  nameWithType: SvgRenderOptions.Time
 - uid: Egami.Svg.SvgRenderOptions.Width
   name: Width
   href: api/Egami.Svg.SvgRenderOptions.html#Egami_Svg_SvgRenderOptions_Width

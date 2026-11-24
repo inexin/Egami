@@ -13211,6 +13211,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Svg.SvgAnimationInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Svg.SvgAnimationInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Svg.SvgAnimationInfo",
+      "Summary": "<p sourcefile=\"api/Egami.Svg.SvgAnimationInfo.yml\" sourcestartlinenumber=\"1\">What a document's SMIL animations do over time, as <xref href=\"Egami.Svg.SvgDocument.Animation\" data-throw-if-not-resolved=\"false\"></xref> finds them: whether it animates, how\nlong it plays and whether it loops. Animations that wait for a click, a key or a wall-clock time never begin, as in a browser\nnobody touches.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Svg.SvgAttribute.yml",
       "output": {
         ".html": {

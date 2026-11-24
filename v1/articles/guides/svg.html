@@ -262,6 +262,21 @@ static void Walk(SvgNode node, int depth)
 }
 
 Walk(document.RenderTree, 0);
+</code></pre><h2 id="animation">Animation</h2>
+<p>SVG files can animate themselves with SMIL elements: <code>animate</code>, <code>set</code>, <code>animateTransform</code>, <code>animateMotion</code> and <code>discard</code>.
+Egami.Svg draws the document as it looks at any moment: set <code>SvgRenderOptions.Time</code> when you call <code>Rasterize</code> or <code>Draw</code>, or
+take the render tree then with <code>SvgDocument.RenderTreeAt</code>. Without a time it draws the static document, as if no animation
+had begun. <code>SvgDocument.Animation</code>, an <code>SvgAnimationInfo</code>, says whether the document animates, when its last animation ends
+and, when every animation repeats forever, the period after which the whole picture loops, so you know which frames to draw.
+Animations that wait for a click, a key or a wall-clock time never begin, as in a browser nobody touches. <code>animate</code> and <code>set</code>
+are drawn so far; the other three are timed but do not yet change the picture.</p>
+<pre><code class="lang-csharp">// What the SMIL animations do: here a 2 s loop that never ends.
+SvgAnimationInfo info = document.Animation;
+Console.WriteLine($&quot;Animated: {info.HasAnimations}, loop: {info.LoopPeriod}, ends: {info.Duration?.ToString() ?? &quot;never&quot;}&quot;);
+
+// The document half a second in: the circle has moved, the element tree has not changed.
+using Raster&lt;Rgba8&gt; frame = document.Rasterize&lt;Rgba8&gt;(new SvgRenderOptions { Time = TimeSpan.FromSeconds(0.5) });
+SvgGroup tree = document.RenderTreeAt(TimeSpan.FromSeconds(0.5));
 </code></pre><h2 id="untrusted-files">Untrusted files</h2>
 <p>An SVG file is untrusted input. A load honors the context's <code>SafetyLimits</code>: the file, after gzip, is bounded by
 <code>MaxTotalBytes</code> (a gzip bomb stops there), entity expansion by <code>MaxMetadataBytes</code> (so a billion-laughs DTD stops), the number

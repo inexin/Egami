@@ -1340,9 +1340,24 @@ each page, a <code>ConvertColorTo</code> load) is one activity. A transcode that
 <td>A transcode of a stream that cannot seek kept the bytes it read to plan, and read them again</td>
 </tr>
 <tr>
+<td><code>Svg.AnimationCycle</code></td>
+<td>Warning</td>
+<td>The begin values of SMIL animations depend on each other in a loop that never moves time forward; those dependencies are ignored, as SMIL breaks cyclic dependencies (Egami.Svg)</td>
+</tr>
+<tr>
+<td><code>Svg.AnimationLimit</code></td>
+<td>Warning</td>
+<td>The SMIL animations' timing needs more interval steps than the timeline allows before the time asked for; later intervals are missing (Egami.Svg)</td>
+</tr>
+<tr>
 <td><code>Svg.Approximated</code></td>
 <td>Warning</td>
 <td>A blend mode or call SVG cannot express was written as the nearest SVG can draw, or left out (Egami.Svg's SvgCanvas)</td>
+</tr>
+<tr>
+<td><code>Svg.BadAnimation</code></td>
+<td>Warning</td>
+<td>An animation element's attribute cannot be read (begin, end, dur, repeatCount, keyTimes, keySplines, values) or names no target; the value is ignored, or the animation has no effect (Egami.Svg)</td>
 </tr>
 <tr>
 <td><code>Svg.BadAttribute</code></td>
