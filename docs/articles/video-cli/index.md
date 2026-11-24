@@ -201,7 +201,7 @@ by default), for `--duration`, or else for one loop or up to the end of its last
 
 ```sh
 egami-video encode "shots/*.jpg" --rate 2 -o slideshow.mkv
-egami-video encode spinner.svg --rate 30 --duration 6 --size 1280x720 -o spinner.webm --codec vp9
+egami-video encode spinner.svg --rate 30 --duration 4 --size 640x360 -o spinner.webm --codec vp9
 ```
 
 ## Steps on every frame
