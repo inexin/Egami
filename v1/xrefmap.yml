@@ -40211,6 +40211,170 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.VerticalMetrics.LineGap
   nameWithType: VerticalMetrics.LineGap
+- uid: Egami.Fonts.WebFontFormat
+  name: WebFontFormat
+  href: api/Egami.Fonts.WebFontFormat.html
+  commentId: T:Egami.Fonts.WebFontFormat
+  fullName: Egami.Fonts.WebFontFormat
+  nameWithType: WebFontFormat
+- uid: Egami.Fonts.WebFontFormat.Woff
+  name: Woff
+  href: api/Egami.Fonts.WebFontFormat.html#Egami_Fonts_WebFontFormat_Woff
+  commentId: F:Egami.Fonts.WebFontFormat.Woff
+  fullName: Egami.Fonts.WebFontFormat.Woff
+  nameWithType: WebFontFormat.Woff
+- uid: Egami.Fonts.WebFontFormat.Woff2
+  name: Woff2
+  href: api/Egami.Fonts.WebFontFormat.html#Egami_Fonts_WebFontFormat_Woff2
+  commentId: F:Egami.Fonts.WebFontFormat.Woff2
+  fullName: Egami.Fonts.WebFontFormat.Woff2
+  nameWithType: WebFontFormat.Woff2
+- uid: Egami.Fonts.WebFontOptions
+  name: WebFontOptions
+  href: api/Egami.Fonts.WebFontOptions.html
+  commentId: T:Egami.Fonts.WebFontOptions
+  fullName: Egami.Fonts.WebFontOptions
+  nameWithType: WebFontOptions
+- uid: Egami.Fonts.WebFontOptions.Context
+  name: Context
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_Context
+  commentId: P:Egami.Fonts.WebFontOptions.Context
+  fullName: Egami.Fonts.WebFontOptions.Context
+  nameWithType: WebFontOptions.Context
+- uid: Egami.Fonts.WebFontOptions.Context*
+  name: Context
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_Context_
+  commentId: Overload:Egami.Fonts.WebFontOptions.Context
+  isSpec: "True"
+  fullName: Egami.Fonts.WebFontOptions.Context
+  nameWithType: WebFontOptions.Context
+- uid: Egami.Fonts.WebFontOptions.Default
+  name: Default
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_Default
+  commentId: P:Egami.Fonts.WebFontOptions.Default
+  fullName: Egami.Fonts.WebFontOptions.Default
+  nameWithType: WebFontOptions.Default
+- uid: Egami.Fonts.WebFontOptions.Default*
+  name: Default
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_Default_
+  commentId: Overload:Egami.Fonts.WebFontOptions.Default
+  isSpec: "True"
+  fullName: Egami.Fonts.WebFontOptions.Default
+  nameWithType: WebFontOptions.Default
+- uid: Egami.Fonts.WebFontOptions.Format
+  name: Format
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_Format
+  commentId: P:Egami.Fonts.WebFontOptions.Format
+  fullName: Egami.Fonts.WebFontOptions.Format
+  nameWithType: WebFontOptions.Format
+- uid: Egami.Fonts.WebFontOptions.Format*
+  name: Format
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_Format_
+  commentId: Overload:Egami.Fonts.WebFontOptions.Format
+  isSpec: "True"
+  fullName: Egami.Fonts.WebFontOptions.Format
+  nameWithType: WebFontOptions.Format
+- uid: Egami.Fonts.WebFontOptions.Metadata
+  name: Metadata
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_Metadata
+  commentId: P:Egami.Fonts.WebFontOptions.Metadata
+  fullName: Egami.Fonts.WebFontOptions.Metadata
+  nameWithType: WebFontOptions.Metadata
+- uid: Egami.Fonts.WebFontOptions.Metadata*
+  name: Metadata
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_Metadata_
+  commentId: Overload:Egami.Fonts.WebFontOptions.Metadata
+  isSpec: "True"
+  fullName: Egami.Fonts.WebFontOptions.Metadata
+  nameWithType: WebFontOptions.Metadata
+- uid: Egami.Fonts.WebFontOptions.PrivateData
+  name: PrivateData
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_PrivateData
+  commentId: P:Egami.Fonts.WebFontOptions.PrivateData
+  fullName: Egami.Fonts.WebFontOptions.PrivateData
+  nameWithType: WebFontOptions.PrivateData
+- uid: Egami.Fonts.WebFontOptions.PrivateData*
+  name: PrivateData
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_PrivateData_
+  commentId: Overload:Egami.Fonts.WebFontOptions.PrivateData
+  isSpec: "True"
+  fullName: Egami.Fonts.WebFontOptions.PrivateData
+  nameWithType: WebFontOptions.PrivateData
+- uid: Egami.Fonts.WebFontOptions.TransformGlyf
+  name: TransformGlyf
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_TransformGlyf
+  commentId: P:Egami.Fonts.WebFontOptions.TransformGlyf
+  fullName: Egami.Fonts.WebFontOptions.TransformGlyf
+  nameWithType: WebFontOptions.TransformGlyf
+- uid: Egami.Fonts.WebFontOptions.TransformGlyf*
+  name: TransformGlyf
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_TransformGlyf_
+  commentId: Overload:Egami.Fonts.WebFontOptions.TransformGlyf
+  isSpec: "True"
+  fullName: Egami.Fonts.WebFontOptions.TransformGlyf
+  nameWithType: WebFontOptions.TransformGlyf
+- uid: Egami.Fonts.WebFontOptions.TransformHmtx
+  name: TransformHmtx
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_TransformHmtx
+  commentId: P:Egami.Fonts.WebFontOptions.TransformHmtx
+  fullName: Egami.Fonts.WebFontOptions.TransformHmtx
+  nameWithType: WebFontOptions.TransformHmtx
+- uid: Egami.Fonts.WebFontOptions.TransformHmtx*
+  name: TransformHmtx
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_TransformHmtx_
+  commentId: Overload:Egami.Fonts.WebFontOptions.TransformHmtx
+  isSpec: "True"
+  fullName: Egami.Fonts.WebFontOptions.TransformHmtx
+  nameWithType: WebFontOptions.TransformHmtx
+- uid: Egami.Fonts.WebFontWriter
+  name: WebFontWriter
+  href: api/Egami.Fonts.WebFontWriter.html
+  commentId: T:Egami.Fonts.WebFontWriter
+  fullName: Egami.Fonts.WebFontWriter
+  nameWithType: WebFontWriter
+- uid: Egami.Fonts.WebFontWriter.Write(Egami.Fonts.FontSubset,Egami.Fonts.WebFontOptions)
+  name: Write(FontSubset, WebFontOptions?)
+  href: api/Egami.Fonts.WebFontWriter.html#Egami_Fonts_WebFontWriter_Write_Egami_Fonts_FontSubset_Egami_Fonts_WebFontOptions_
+  commentId: M:Egami.Fonts.WebFontWriter.Write(Egami.Fonts.FontSubset,Egami.Fonts.WebFontOptions)
+  name.vb: Write(FontSubset, WebFontOptions)
+  fullName: Egami.Fonts.WebFontWriter.Write(Egami.Fonts.FontSubset, Egami.Fonts.WebFontOptions?)
+  fullName.vb: Egami.Fonts.WebFontWriter.Write(Egami.Fonts.FontSubset, Egami.Fonts.WebFontOptions)
+  nameWithType: WebFontWriter.Write(FontSubset, WebFontOptions?)
+  nameWithType.vb: WebFontWriter.Write(FontSubset, WebFontOptions)
+- uid: Egami.Fonts.WebFontWriter.Write(Egami.Fonts.Typeface,Egami.Fonts.WebFontOptions)
+  name: Write(Typeface, WebFontOptions?)
+  href: api/Egami.Fonts.WebFontWriter.html#Egami_Fonts_WebFontWriter_Write_Egami_Fonts_Typeface_Egami_Fonts_WebFontOptions_
+  commentId: M:Egami.Fonts.WebFontWriter.Write(Egami.Fonts.Typeface,Egami.Fonts.WebFontOptions)
+  name.vb: Write(Typeface, WebFontOptions)
+  fullName: Egami.Fonts.WebFontWriter.Write(Egami.Fonts.Typeface, Egami.Fonts.WebFontOptions?)
+  fullName.vb: Egami.Fonts.WebFontWriter.Write(Egami.Fonts.Typeface, Egami.Fonts.WebFontOptions)
+  nameWithType: WebFontWriter.Write(Typeface, WebFontOptions?)
+  nameWithType.vb: WebFontWriter.Write(Typeface, WebFontOptions)
+- uid: Egami.Fonts.WebFontWriter.Write(Egami.Fonts.Typeface,System.IO.Stream,Egami.Fonts.WebFontOptions)
+  name: Write(Typeface, Stream, WebFontOptions?)
+  href: api/Egami.Fonts.WebFontWriter.html#Egami_Fonts_WebFontWriter_Write_Egami_Fonts_Typeface_System_IO_Stream_Egami_Fonts_WebFontOptions_
+  commentId: M:Egami.Fonts.WebFontWriter.Write(Egami.Fonts.Typeface,System.IO.Stream,Egami.Fonts.WebFontOptions)
+  name.vb: Write(Typeface, Stream, WebFontOptions)
+  fullName: Egami.Fonts.WebFontWriter.Write(Egami.Fonts.Typeface, System.IO.Stream, Egami.Fonts.WebFontOptions?)
+  fullName.vb: Egami.Fonts.WebFontWriter.Write(Egami.Fonts.Typeface, System.IO.Stream, Egami.Fonts.WebFontOptions)
+  nameWithType: WebFontWriter.Write(Typeface, Stream, WebFontOptions?)
+  nameWithType.vb: WebFontWriter.Write(Typeface, Stream, WebFontOptions)
+- uid: Egami.Fonts.WebFontWriter.Write(System.ReadOnlyMemory{System.Byte},Egami.Fonts.WebFontOptions)
+  name: Write(ReadOnlyMemory<byte>, WebFontOptions?)
+  href: api/Egami.Fonts.WebFontWriter.html#Egami_Fonts_WebFontWriter_Write_System_ReadOnlyMemory_System_Byte__Egami_Fonts_WebFontOptions_
+  commentId: M:Egami.Fonts.WebFontWriter.Write(System.ReadOnlyMemory{System.Byte},Egami.Fonts.WebFontOptions)
+  name.vb: Write(ReadOnlyMemory(Of Byte), WebFontOptions)
+  fullName: Egami.Fonts.WebFontWriter.Write(System.ReadOnlyMemory<byte>, Egami.Fonts.WebFontOptions?)
+  fullName.vb: Egami.Fonts.WebFontWriter.Write(System.ReadOnlyMemory(Of Byte), Egami.Fonts.WebFontOptions)
+  nameWithType: WebFontWriter.Write(ReadOnlyMemory<byte>, WebFontOptions?)
+  nameWithType.vb: WebFontWriter.Write(ReadOnlyMemory(Of Byte), WebFontOptions)
+- uid: Egami.Fonts.WebFontWriter.Write*
+  name: Write
+  href: api/Egami.Fonts.WebFontWriter.html#Egami_Fonts_WebFontWriter_Write_
+  commentId: Overload:Egami.Fonts.WebFontWriter.Write
+  isSpec: "True"
+  fullName: Egami.Fonts.WebFontWriter.Write
+  nameWithType: WebFontWriter.Write
 - uid: Egami.Formats
   name: Egami.Formats
   href: api/Egami.Formats.html

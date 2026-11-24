@@ -540,6 +540,11 @@ each page, a <code>ConvertColorTo</code> load) is one activity. A transcode that
 <td>A font's layout tables drove shaping past its operation or length limits, as a hostile font can; the text is shaped as far as the limits allow (Egami.Fonts)</td>
 </tr>
 <tr>
+<td><code>Font.TransformSkipped</code></td>
+<td>Warning</td>
+<td><code>WebFontWriter</code> could not apply a WOFF2 transform (a glyf table it cannot read, a rebuilt glyf too long for the short loca format, faces sharing glyf but not loca); the tables are stored untransformed (Egami.Fonts)</td>
+</tr>
+<tr>
 <td><code>Gif.BlockTruncated</code></td>
 <td>Warning</td>
 <td>The file ends inside a block</td>

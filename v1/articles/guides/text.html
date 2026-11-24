@@ -579,7 +579,28 @@ default features), and GSUB, GPOS and GDEF are copied unchanged. The copied tabl
 ushort[] glyphs = [.. &quot;office&quot;.Select(c =&gt; face.GetGlyph(c))];
 FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
 GlyphRun shaped = new Font(subset.ToTypeface(), 12).Shape(&quot;office&quot;);
-</code></pre><h2 id="font-data-for-pdf">Font data for PDF</h2>
+</code></pre><h2 id="web-fonts">Web fonts</h2>
+<p><code>WebFontWriter.Write</code> writes a face, a subset or font data as a web font: WOFF2 by default, WOFF 1.0 with
+<code>WebFontOptions.Format</code>. Both keep every table, so the file reads back as the font it came from; WOFF2 stores glyf and loca in its
+compact transformed form and leaves out the hmtx bearings each glyph's bounding box gives (<code>TransformGlyf</code>, <code>TransformHmtx</code>), and
+its glyphs read back the same, laid out as WOFF2 decoders lay them out. A collection (TTC or OTC) becomes a WOFF2 collection whose
+faces share their tables; a face of a collection becomes a single font. Compression is .NET's own: Brotli at quality 11 and zlib
+at level 9 or 8, whichever is smaller, giving files within about 0.5 % of Google's woff2_compress and fontTools'.</p>
+<pre><code class="lang-csharp">// WOFF2 for the web: every table kept, glyf, loca and hmtx transformed, one Brotli stream; a third of the TTF's size.
+File.WriteAllBytes(System.IO.Path.Combine(folder, &quot;NotoSans-Regular.woff2&quot;), WebFontWriter.Write(face));
+
+// WOFF 1.0 for old browsers, with a metadata block naming the font's license.
+byte[] woff = WebFontWriter.Write(face, new WebFontOptions
+{
+    Format = WebFontFormat.Woff,
+    Metadata = &quot;&quot;&quot;&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;metadata version=&quot;1.0&quot;&gt;&lt;license url=&quot;https://openfontlicense.org&quot;/&gt;&lt;/metadata&gt;&quot;&quot;&quot;,
+});
+File.WriteAllBytes(System.IO.Path.Combine(folder, &quot;NotoSans-Regular.woff&quot;), woff);
+</code></pre>
+<p>The metadata and private data blocks of a WOFF or WOFF2 source are kept unless <code>Metadata</code> or <code>PrivateData</code> replace them; an empty
+value writes none. A glyf table the writer cannot read is stored untransformed, with a <code>Font.TransformSkipped</code> warning. A bare CFF
+font has no sfnt tables and throws <code>ArgumentException</code>; subset it to OpenType CFF first.</p>
+<h2 id="font-data-for-pdf">Font data for PDF</h2>
 <p>A PDF font reaches its glyphs in ways a text layout never does: by glyph name, by CID, through one particular cmap subtable or
 through the font program's own encoding. <code>Typeface</code> gives each as FreeType does, so a PDF reader built on Egami finds the glyphs
 PDFium finds.</p>
@@ -682,6 +703,16 @@ for (int i = 0; i &lt; run.Count; i++)
 </code></pre>
 <p>A <code>GlyphRun</code> from the shaper carries the text and a cluster per glyph, in visual order; that is all a PDF writer needs for
 ToUnicode and ActualText.</p>
+<h3 id="a-web-font-for-one-page">A web font for one page</h3>
+<pre><code class="lang-csharp">// A web font with only the characters a page uses, shaped as the full face shapes them: subset with the layout closure,
+// then write WOFF2. The subset keeps the glyph ids, so the layout tables need no rewriting.
+string page = &quot;Egami: managed imaging for .NET&quot;;
+ushort[] glyphs = [.. page.EnumerateRunes().Select(r =&gt; face.GetGlyph(r.Value)).Distinct()];
+FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+byte[] woff2 = WebFontWriter.Write(subset);
+</code></pre>
+<p>The layout closure keeps the forms the text can take (ligatures, contextual forms), so the browser shapes it as the full face
+would; a PDF, which shapes nothing, needs only the glyphs drawn.</p>
 <h3 id="a-variable-font-in-a-pdf">A variable font in a PDF</h3>
 <pre><code class="lang-csharp">// PDF has no variable fonts: embed a static instance at the position the page uses. The subset is an ordinary TrueType
 // font (glyf and hmtx at that position, no variation tables); its whole-unit advances are the ones to write in /W.

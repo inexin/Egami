@@ -284,6 +284,18 @@ stretchy glyphs. Get it from <a class="xref" href="Egami.Fonts.Typeface.html#Ega
       <dd><p>One axis of a variable font, from its fvar table.</p>
 </dd>
     </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.WebFontOptions.html">WebFontOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Fonts.WebFontWriter.html">WebFontWriter</a> writes a web font.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.WebFontWriter.html">WebFontWriter</a></dt>
+      <dd><p>Writes fonts as WOFF 1.0 and WOFF 2.0 files for the web, losslessly: every table of the font is kept, and a WOFF2 file read
+back gives the same tables but glyf and loca, whose glyphs read the same but may be laid out more compactly, and head, whose
+flags gain bit 11 (the font has been through a lossless modifying transform), as the reference encoder sets it.</p>
+</dd>
+    </dl>
     <h3 id="structs">
 Structs
 </h3>
@@ -495,6 +507,11 @@ embeds fonts, such as a PDF writer, decides what to do.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Fonts.TrueTypeTarget.html">TrueTypeTarget</a></dt>
       <dd><p>Which rasterizer the TrueType interpreter answers for: what GETINFO tells the font and how instructions are softened.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.WebFontFormat.html">WebFontFormat</a></dt>
+      <dd><p>The web font container <a class="xref" href="Egami.Fonts.WebFontWriter.html">WebFontWriter</a> writes.</p>
 </dd>
     </dl>
 
