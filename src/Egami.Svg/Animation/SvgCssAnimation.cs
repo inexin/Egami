@@ -162,7 +162,11 @@ internal sealed record class SvgCssAnimation(
             activeTime = Math.Max(Math.Min(local - Delay, active), 0);
         }
 
-        double overall = Duration == 0 ? (after ? Iterations : 0) : activeTime / Duration;
+        // Web Animations 1: at the end of a finite active interval the overall progress is the iteration count itself, not a
+        // division, which need not come back exact (0.1 * 3 / 0.1 is 3.0000000000000004).
+        double overall = Duration == 0 ? (after ? Iterations : 0)
+            : after && activeTime == active && double.IsFinite(Iterations) ? Iterations
+            : activeTime / Duration;
         double simple = double.IsInfinity(overall) ? 0 : overall % 1;
         if (simple == 0 && after && activeTime == active && Iterations != 0)
         {
