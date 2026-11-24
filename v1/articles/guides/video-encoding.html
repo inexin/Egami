@@ -377,7 +377,39 @@ muxer.Finish();
 hashes. <code>EgamiContext.MaxParallelism</code> on the <code>MediaContext</code> sets how many threads the encoder uses. VP9's tile columns depend
 on the frame width and <code>Vp9EncoderOptions.TileColumns</code>, never on the threads; AV1's are one per 4096 samples of width, so
 frames up to 4K are one tile, and its threads help little within a frame.</p>
+<h2 id="stopping-an-encode">Stopping an encode</h2>
+<p><code>VideoWriterOptions.CancellationToken</code> (or <code>VideoEncoderOptions.CancellationToken</code> for an encoder of your own) stops an encode
+that takes too long. Once the token is cancelled, <code>WriteFrame</code> and <code>Finish</code> (<code>Send</code> and <code>Flush</code>) throw
+<code>OperationCanceledException</code>. The H.264 and HEVC encoders stop within a row of blocks of the frame they are coding, so even a
+<code>Finish</code> at effort 10 that still holds a lookahead of frames returns at once; VP8, VP9 and AV1 stop before the next frame they
+code, and Motion JPEG, FFV1 and raw video before the next frame you send. The file is left unfinished, and the writer or
+encoder cannot go on: dispose it. <code>VideoEdit</code> and smart trims pass their own token to the encoder, so they stop the same way.
+Hardware encoders (Egami.Video.Hardware) do not check the token.</p>
+<pre><code class="lang-csharp">// A Stop button cancels the token; the encoder stops within the frame it is coding, even during Finish.
+using CancellationTokenSource stop = new();
+VideoWriterOptions options = new() { Codec = VideoCodecs.Vp9, Effort = 8, CancellationToken = stop.Token };
+try
+{
+    using VideoWriter writer = VideoWriter.Create(&quot;duck.webm&quot;, options);
+    for (int i = 0; i &lt; 30; i++)
+    {
+        if (i == 10)
+        {
+            stop.Cancel(); // the user pressed Stop
+        }
 
+        using Raster&lt;Rgb8&gt; frame = duck.Derive(ops =&gt; ops.Crop(new Rect(i * 4, i * 2, 320, 240)));
+        writer.WriteFrame(frame);
+    }
+
+    writer.Finish();
+}
+catch (OperationCanceledException)
+{
+    File.Delete(&quot;duck.webm&quot;); // unfinished
+    cancelled = true;
+}
+</code></pre>
 </article>
 
         <div class="contribution d-print-none">

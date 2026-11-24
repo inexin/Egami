@@ -560,7 +560,7 @@ using (VideoWriter writer = VideoWriter.Create(avi, "avi", options, leaveOpen: t
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/VideoWriter.cs/#L272"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Finishes the file and closes it.</p>
+  <div class="markdown level1 summary"><p>Finishes the file and closes it; after <a class="xref" href="Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_CancellationToken">CancellationToken</a> is cancelled, only closes it.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 

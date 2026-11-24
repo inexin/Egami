@@ -127664,6 +127664,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.Codecs.VideoEncoderOptions.BufferSize
   nameWithType: VideoEncoderOptions.BufferSize
+- uid: Egami.Video.Codecs.VideoEncoderOptions.CancellationToken
+  name: CancellationToken
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_CancellationToken
+  commentId: P:Egami.Video.Codecs.VideoEncoderOptions.CancellationToken
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.CancellationToken
+  nameWithType: VideoEncoderOptions.CancellationToken
+- uid: Egami.Video.Codecs.VideoEncoderOptions.CancellationToken*
+  name: CancellationToken
+  href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_CancellationToken_
+  commentId: Overload:Egami.Video.Codecs.VideoEncoderOptions.CancellationToken
+  isSpec: "True"
+  fullName: Egami.Video.Codecs.VideoEncoderOptions.CancellationToken
+  nameWithType: VideoEncoderOptions.CancellationToken
 - uid: Egami.Video.Codecs.VideoEncoderOptions.ChromaFormat
   name: ChromaFormat
   href: api/Egami.Video.Codecs.VideoEncoderOptions.html#Egami_Video_Codecs_VideoEncoderOptions_ChromaFormat
@@ -140879,6 +140892,19 @@ references:
   isSpec: "True"
   fullName: Egami.Video.VideoWriterOptions.BufferSize
   nameWithType: VideoWriterOptions.BufferSize
+- uid: Egami.Video.VideoWriterOptions.CancellationToken
+  name: CancellationToken
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_CancellationToken
+  commentId: P:Egami.Video.VideoWriterOptions.CancellationToken
+  fullName: Egami.Video.VideoWriterOptions.CancellationToken
+  nameWithType: VideoWriterOptions.CancellationToken
+- uid: Egami.Video.VideoWriterOptions.CancellationToken*
+  name: CancellationToken
+  href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_CancellationToken_
+  commentId: Overload:Egami.Video.VideoWriterOptions.CancellationToken
+  isSpec: "True"
+  fullName: Egami.Video.VideoWriterOptions.CancellationToken
+  nameWithType: VideoWriterOptions.CancellationToken
 - uid: Egami.Video.VideoWriterOptions.ChromaFormat
   name: ChromaFormat
   href: api/Egami.Video.VideoWriterOptions.html#Egami_Video_VideoWriterOptions_ChromaFormat

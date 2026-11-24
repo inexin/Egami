@@ -273,6 +273,42 @@ using IVideoEncoder rawEncoder = RawVideoCodec.Instance.CreateEncoder(options wi
 
 
 
+  <a id="Egami_Video_Codecs_VideoEncoderOptions_CancellationToken_" data-uid="Egami.Video.Codecs.VideoEncoderOptions.CancellationToken*"></a>
+
+  <h3 id="Egami_Video_Codecs_VideoEncoderOptions_CancellationToken" data-uid="Egami.Video.Codecs.VideoEncoderOptions.CancellationToken">
+  CancellationToken
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/VideoCodec.cs/#L215"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the token that stops the encoder, or <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken.none">None</a> (the default) for none. Once it is
+cancelled, <a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_Send_Egami_Video_VideoFrame_">Send(VideoFrame)</a> and <a class="xref" href="Egami.Video.Codecs.IVideoEncoder.html#Egami_Video_Codecs_IVideoEncoder_Flush">Flush()</a> throw
+<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.operationcanceledexception">OperationCanceledException</a>: the H.264 and HEVC encoders within a row of blocks of the frame they are coding,
+VP8, VP9 and AV1 before the next frame they code, and the others before the next frame sent. A cancelled encoder
+cannot go on; dispose it. Hardware encoders do not check it.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CancellationToken CancellationToken { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Video_Codecs_VideoEncoderOptions_ChromaFormat_" data-uid="Egami.Video.Codecs.VideoEncoderOptions.ChromaFormat*"></a>
 
   <h3 id="Egami_Video_Codecs_VideoEncoderOptions_ChromaFormat" data-uid="Egami.Video.Codecs.VideoEncoderOptions.ChromaFormat">
