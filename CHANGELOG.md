@@ -5,7 +5,7 @@ changes that break code come only in a new major version.
 
 ## Egami 1.6.0 (unreleased)
 
-EPS previews (roadmap 2.3.14, stage A).
+EPS previews (roadmap 2.3.14).
 
 - EPS is a built-in format (`EpsFormat.Info`, registered in `EgamiContext.Default`, read only): `Raster.Load` returns the
   preview the file carries, never running its PostScript: the TIFF preview behind the DOS binary header, its Windows metafile
@@ -16,6 +16,10 @@ EPS previews (roadmap 2.3.14, stage A).
 - `EpsFile` gives an EPS file's parts: the PostScript, the TIFF and metafile previews, the bounding box (`%%HiResBoundingBox`
   first, `(atend)` read from the trailer), creator, title and creation date, Photoshop's ICC profile, XMP packet and image
   resources, and warnings for damage. `EpsDetails` carries the same comments in a loaded raster's metadata.
+- Photoshop EPS files load at full resolution: the image Photoshop writes after its `%ImageData` comment (gray, bitmap, RGB
+  or CMYK; pixel- or line-interleaved; binary, hex or JPEG) comes before any preview, as `Gray8`, `Rgb8` or `Cmyk8`, with
+  `EpsPreviewKind.PhotoshopImage`. Lab and damaged data fall back to the preview with a warning.
+- The EPS format page, a recipe in the formats guide and a fuzz target (`eps`).
 - New diagnostics: `Eps.PreviewLoaded` on every load, and `Eps.*` warnings for damaged headers, sections and previews.
 
 ## Egami.Svg and Egami.Css 1.6.0 (unreleased)

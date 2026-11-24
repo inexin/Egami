@@ -147,6 +147,10 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Detect.Format` | Info | The format detected, and how |
 | `Eps.BoundingBoxInvalid` | Warning | An EPS file's `%%BoundingBox` is not four numbers enclosing an area, or says `(atend)` with none in the trailer; the file has no bounding box |
 | `Eps.ChecksumMismatch` | Warning | An EPS binary header's checksum does not match the header; its offsets were used anyway |
+| `Eps.ImageDataDamaged` | Warning | Photoshop's image in an EPS file could not be decoded; the file's TIFF, metafile or EPSI preview was loaded instead |
+| `Eps.ImageDataInvalid` | Warning | An EPS file's `%ImageData` comment is not a size, a depth of 1 or 8, a mode from 1 to 4, a block size and an encoding; Photoshop's image was left out |
+| `Eps.ImageDataSkipped` | Warning | Photoshop's image in an EPS file is Lab, which Egami does not decode from EPS; the file's preview was loaded instead |
+| `Eps.ImageDataTruncated` | Warning | Photoshop's image data in an EPS file ends before its last row; the missing samples are 0 |
 | `Eps.MetafileSkipped` | Warning | An EPS file's metafile preview was not drawn because no format in the context reads metafiles; its EPSI preview was loaded instead |
 | `Eps.NoPreview` | Debug | An EPS or PostScript file has no preview Egami can show, and PostScript is not run; the load fails with UnsupportedFormatException |
 | `Eps.NotPostScript` | Warning | The PostScript section an EPS binary header points at does not start with `%!`; its comments were not read |

@@ -57,6 +57,7 @@ SEEDS = {"png": "tests/images/pngsuite/*.png tests/images/fuzz/png-seeds/*.png",
          # DNGs Egami wrote (DNG writing PR B): every compression, preview setting, LinearRaw and float.
          "raw-written": "tests/images/fuzz/raw-written-seeds/*",
          "raw-tiff": "tests/images/fuzz/raw-seeds/*.pef tests/images/fuzz/raw-seeds/*.arw tests/images/fuzz/raw-seeds/*.orf tests/images/fuzz/raw-seeds/*.rw2",
+         "eps": "tests/images/fuzz/eps-seeds/*",
          "wmf": "tests/images/metafiles/synthetic/*.wmf", "emf": "tests/images/metafiles/synthetic/gdi-*.emf",
          "emfplus": "tests/images/fuzz/emfplus-seeds/*",
          "sysdrawing": "tests/images/bmp/rgb24.bmp tests/images/gif/loop-3.gif tests/images/ico/set.ico tests/images/pngsuite/basn6a08.png tests/images/pngsuite/basn3p04.png tests/images/metafiles/synthetic/gdi-shapes-basic.emf tests/images/metafiles/synthetic/gdi-shapes-basic.wmf",
@@ -74,7 +75,7 @@ cp -r /src/src /build/
 cp -r /src/tests/Egami.Fuzz /build/tests/
 mkdir -p /build/tests/fonts/derived && cp /src/tests/fonts/derived/NotoSansCJK-layout-subset.otf /build/tests/fonts/derived/
 cp /src/Directory.Build.props /src/Directory.Packages.props /src/global.json /build/
-mkdir -p /build/docs && cp -r /src/docs/schemas /build/docs/
+mkdir -p /build/docs && cp -r /src/docs/schemas /src/docs/agents /build/docs/
 cp /src/.editorconfig /build/ 2>/dev/null || true
 find /build -type d \\( -name bin -o -name obj \\) -prune -exec rm -rf {{}} +
 dotnet publish /build/tests/Egami.Fuzz -c Release -o /out -p:TreatWarningsAsErrors=false > /tmp/publish.log

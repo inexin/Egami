@@ -20,7 +20,7 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [QOI reference](https://github.com/phoboslab/qoi) | C | MIT | The whole QOI format | 1.5 |
 | [Pfim](https://github.com/nickbabcock/Pfim) | C# | MIT | Managed TGA and DDS readers | 1.5 |
 | [Go image packages](https://github.com/golang/go/tree/master/src/image) | Go | BSD-3 | Readable PNG, JPEG and GIF codecs | 1.1, 1.3, 1.4 |
-| [Pillow](https://github.com/python-pillow/Pillow) | C and Python | HPND | Resampling and color operations | 1.2 |
+| [Pillow](https://github.com/python-pillow/Pillow) | C and Python | HPND | Resampling and color operations; how EPS `%ImageData` is read | 1.2, 2.3.14 |
 | [ZXing](https://github.com/zxing/zxing) | Java | Apache 2.0 | Barcode reading and writing across 1D and 2D symbologies | 2.11 |
 | [ZXing.Net](https://github.com/micjahn/ZXing.Net) | C# | Apache 2.0 | A managed port of ZXing | 2.11 |
 | [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp) | C++ | Apache 2.0 | Fast, robust barcode detection and decoding | 2.11 |
@@ -170,6 +170,13 @@ system library, under the package-scoped exception to the no-native-code rule (m
 2026-11-21): the Vulkan loader the GPU driver installs, `vulkan-1.dll` on Windows and `libvulkan.so.1` on Linux, from which it
 takes only `vkGetInstanceProcAddr`. No native binary is shipped and no binding package is used. FFmpeg, GStreamer, Mesa and
 the GPU vendors' video samples (NVIDIA's Vulkan video samples among them) are never read.
+
+For EPS (2.3.14), Adobe's *Encapsulated PostScript File Format Specification* 3.0 (Technical Note 5002; Adobe's link is
+gone, so it was read from a mirror of Adobe's PDF at opennet.ru/docs/formats/ps3.pdf), the *PostScript Language Document Structuring Conventions Specification* 3.0
+(Technical Note 5001), Adobe's Photoshop File Format Specification and MS-WMF are the references, with
+[Pillow](https://github.com/python-pillow/Pillow) (HPND) as the listed library for how `%ImageData` is read. Ghostscript (AGPL)
+runs only as a black-box renderer in egami-compare to check Photoshop images; its source, and ImageMagick's, LibreOffice's and
+ExifTool's EPS code, are never read.
 
 For HEIC, libheif and libde265 (LGPL-3), FFmpeg's HEVC decoder and openHEVC (LGPL-2.1) and x265 (GPL-2) are never read; they
 only run as black-box tools in Docker to make test files and references. Nokia's HEIF code (non-commercial licence) is never
