@@ -88,7 +88,8 @@ using DrawingPath = Egami.Drawing.Path;
 // icc target also builds the ink set of an n-colour profile and converts through it both ways.
 // The css target (Phase 2.10, CssFuzzTarget.cs) parses its bytes as a style sheet and a declaration list, matches, cascades and
 // computes them over a small tree and runs every value parser; Egami.Css never throws on input. The svg target (SvgFuzzTarget.cs)
-// loads an SVG document under small limits, draws it, saves and loads it again, and loads it strictly.
+// loads an SVG document under small limits, draws it, saves and loads it again, and loads it strictly. The svg-timeline target
+// (SVG animation stage A) builds an animated document's SMIL timeline and draws it at a few times.
 // The trace target (Bitmap Tracing PR F, TraceFuzzTarget.cs) reads options from its first eight bytes and an image of at most
 // 256 by 256 pixels from the rest, and traces it in every mode; every point must be finite and on the image.
 // The hocr and alto targets (Egami 2.12, OcrFuzzTarget.cs) read OCR results, which must write back in both formats and read
@@ -250,6 +251,7 @@ static Action<Stream> Target(string name) => name switch
     "cli-run" => stream => Egami.Fuzz.CliFuzzTarget.Run(ReadAll(stream)),
     "cli-mcp" => stream => Egami.Fuzz.CliFuzzTarget.Mcp(ReadAll(stream)),
     "svg" => stream => Egami.Fuzz.SvgFuzzTarget.Run(ReadAll(stream)),
+    "svg-timeline" => stream => Egami.Fuzz.SvgFuzzTarget.Timeline(ReadAll(stream)),
     "trace" => stream => Egami.Fuzz.TraceFuzzTarget.Run(ReadAll(stream)),
     "wmf" or "emf" => stream => Egami.Fuzz.MetafileFuzzTarget.Run(ReadAll(stream)),
     "emfplus" => stream => Egami.Fuzz.MetafileFuzzTarget.RunPlus(ReadAll(stream)),
@@ -258,7 +260,7 @@ static Action<Stream> Target(string name) => name switch
         => stream => Egami.Fuzz.BarcodeFuzzTarget.Encode(name["barcode-".Length..], ReadAll(stream)),
     "barcode-read" => stream => Egami.Fuzz.BarcodeFuzzTarget.Read(ReadAll(stream)),
     "paragraph" => stream => Egami.Fuzz.ParagraphFuzzTarget.Run(ReadAll(stream), ParagraphFaces(), DrawParagraph),
-    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, hevcstream, heic-write, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, jxl-frames, jxl-partial, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, lossless-write, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, psdlayers, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, trace, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
+    _ => throw new ArgumentException($"Unknown fuzz target '{name}'. Targets: hinting, radiance, exr, gainmap, avif, avifbox, av1, av1stream, avif-write, heic, heicbox, hevc, hevcstream, heic-write, isobox, jxl, jxlbox, jxlentropy, jxl-write, jxl-jpeg, jxl-lossy, jxl-frames, jxl-partial, png, jpeg, jpeg-depth, jpeg-write, jpeg-transform, exif, icc, iptc, psd, xmp, rawprofile, gif, apng, lzw, bmp, tga, qoi, pnm, pfm, detect, stream, tiff, tiffcodec, lossless-write, webp, webpcodec, vp8video, jbig2, jbig2codec, ccitt, cube, jpeg2000, jpeg2000codec, font, cff, subset, woff2, gvar, cff2, colr, instance, svgpath, ico, icoentry, psdfile, psddata, psdlayers, egdr, inktiff, shaping, bidi, css, hocr, alto, paragraph, svg, svg-timeline, trace, wmf, emf, emfplus, sysdrawing, barcode-qr, barcode-datamatrix, barcode-pdf417, barcode-aztec, barcode-code128, barcode-code39, barcode-itf, barcode-eanupc, barcode-read."),
 };
 
 static EgamiContext Context()

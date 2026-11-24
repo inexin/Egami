@@ -1,3 +1,4 @@
+using Egami.Svg.Animation;
 using Egami.Svg.Reading;
 using Egami.Svg.Values;
 
@@ -13,6 +14,19 @@ internal sealed class SvgGeometry(SvgReport report)
     /// <summary>Gets or sets the lookup of a geometry property set by CSS for an element, or <see langword="null"/> for attributes only.</summary>
     public Func<SvgElement, string, string?>? StyleValue { get; set; }
 
+    /// <summary>Gets or sets the animated values that replace attribute values, or <see langword="null"/> for a static render.</summary>
+    public SvgAnimationFrame? Frame { get; set; }
+
+    /// <summary>An attribute in no namespace as the resolver reads it: its animated value when there is one, else the element's.</summary>
+    public string? Attribute(SvgElement element, string name) =>
+        Frame is SvgAnimationFrame frame && frame.TryGet(element, name, out string? value) ? value : element.Attributes[name];
+
+    /// <summary>An element's href (or xlink:href), its animated value when there is one.</summary>
+    public string? Href(SvgElement element) =>
+        Frame is SvgAnimationFrame frame && frame.TryGet(element, "href", out string? value)
+            ? value
+            : element.Attributes["href"] ?? element.Attributes.Get("href", SvgNamespaces.XLink);
+
     /// <summary>Reads a length; a missing or unreadable one is <paramref name="fallback"/>.</summary>
     public float Length(SvgElement element, string name, in SvgLengthContext context, SvgAxis axis, float fallback) =>
         Read(element, name, out SvgLength length) ? length.ToPixels(context, axis) : fallback;
@@ -24,7 +38,7 @@ internal sealed class SvgGeometry(SvgReport report)
     /// <summary>Reads a length without resolving it; false when missing, auto or unreadable.</summary>
     public bool Read(SvgElement element, string name, out SvgLength length)
     {
-        string? text = StyleValue?.Invoke(element, name) ?? element.Attributes[name];
+        string? text = StyleValue?.Invoke(element, name) ?? Attribute(element, name);
         if (text is null || text.AsSpan().Trim().Equals("auto", StringComparison.OrdinalIgnoreCase))
         {
             length = default;
@@ -57,7 +71,7 @@ internal sealed class SvgGeometry(SvgReport report)
             }
         }
 
-        return element.Attributes["d"];
+        return Attribute(element, "d");
     }
 
     /// <summary>Shortens a value for a message.</summary>

@@ -1,1 +1,10 @@
 #nullable enable
+Egami.Svg.SvgAnimationInfo
+Egami.Svg.SvgAnimationInfo.Duration.get -> System.TimeSpan?
+Egami.Svg.SvgAnimationInfo.HasAnimations.get -> bool
+Egami.Svg.SvgAnimationInfo.HasEventTriggers.get -> bool
+Egami.Svg.SvgAnimationInfo.LoopPeriod.get -> System.TimeSpan?
+Egami.Svg.SvgDocument.Animation.get -> Egami.Svg.SvgAnimationInfo!
+Egami.Svg.SvgDocument.RenderTreeAt(System.TimeSpan time) -> Egami.Svg.SvgGroup!
+Egami.Svg.SvgRenderOptions.Time.get -> System.TimeSpan?
+Egami.Svg.SvgRenderOptions.Time.init -> void

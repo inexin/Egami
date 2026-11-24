@@ -13,6 +13,7 @@ public sealed record class SvgRenderOptions
     private readonly int? _height;
     private readonly float _scale = 1;
     private readonly float _filterScale = 1;
+    private readonly TimeSpan? _time;
 
     /// <summary>Gets the defaults: the document's own size, transparent, no text as paths.</summary>
     public static SvgRenderOptions Default { get; } = new();
@@ -78,4 +79,18 @@ public sealed record class SvgRenderOptions
 
     /// <summary>Gets the context of the raster <see cref="SvgDocument.Rasterize{TPixel}(SvgRenderOptions?)"/> creates, for its limits and memory; or <see langword="null"/> for the document's.</summary>
     public EgamiContext? Context { get; init; }
+
+    /// <summary>
+    /// Gets the moment of the document's SMIL animations to draw, as <see cref="SvgDocument.RenderTreeAt(TimeSpan)"/> gives it,
+    /// or <see langword="null"/> (the default) for the static document: every attribute as written, with no animation applied.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is negative.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="animation"/>
+    /// </example>
+    public TimeSpan? Time
+    {
+        get => _time;
+        init => _time = value is null || value.Value >= TimeSpan.Zero ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The time must not be negative.");
+    }
 }

@@ -316,7 +316,10 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Streaming.BufferGrown` | Debug | An incremental decode's buffer grew past its first size to hold bytes not yet decoded |
 | `Streaming.ReadWhole` | Debug | A stream that cannot seek was read into memory whole, to find every image |
 | `Streaming.Replayed` | Debug | A transcode of a stream that cannot seek kept the bytes it read to plan, and read them again |
+| `Svg.AnimationCycle` | Warning | The begin values of SMIL animations depend on each other in a loop that never moves time forward; those dependencies are ignored, as SMIL breaks cyclic dependencies (Egami.Svg) |
+| `Svg.AnimationLimit` | Warning | The SMIL animations' timing needs more interval steps than the timeline allows before the time asked for; later intervals are missing (Egami.Svg) |
 | `Svg.Approximated` | Warning | A blend mode or call SVG cannot express was written as the nearest SVG can draw, or left out (Egami.Svg's SvgCanvas) |
+| `Svg.BadAnimation` | Warning | An animation element's attribute cannot be read (begin, end, dur, repeatCount, keyTimes, keySplines, values) or names no target; the value is ignored, or the animation has no effect (Egami.Svg) |
 | `Svg.BadAttribute` | Warning | An attribute's value cannot be read (a length, number, list, viewBox or keyword); it is ignored, as browsers ignore it (Egami.Svg) |
 | `Svg.BadPathData` | Warning | Path data breaks the grammar; the path is drawn up to the error, as SVG says (Egami.Svg) |
 | `Svg.BadReference` | Warning | A reference (href, url(#id) in fill, stroke, clip-path, mask, marker) names no element of the right kind, or forms a cycle; what refers to it draws as SVG says for a missing reference (Egami.Svg) |

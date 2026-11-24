@@ -398,4 +398,29 @@ public class Svg
         #endregion
         Assert.Equal(200, raster.Width);
     }
+
+    [Fact]
+    public void DrawAnAnimationAtATime()
+    {
+        SvgDocument document = SvgDocument.Parse("""
+            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="20">
+              <circle cx="10" cy="10" r="8" fill="#2a6">
+                <animate attributeName="cx" values="10;90;10" dur="2s" repeatCount="indefinite"/>
+              </circle>
+            </svg>
+            """);
+        #region animation
+        // What the SMIL animations do: here a 2 s loop that never ends.
+        SvgAnimationInfo info = document.Animation;
+        Console.WriteLine($"Animated: {info.HasAnimations}, loop: {info.LoopPeriod}, ends: {info.Duration?.ToString() ?? "never"}");
+
+        // The document half a second in: the circle has moved, the element tree has not changed.
+        using Raster<Rgba8> frame = document.Rasterize<Rgba8>(new SvgRenderOptions { Time = TimeSpan.FromSeconds(0.5) });
+        SvgGroup tree = document.RenderTreeAt(TimeSpan.FromSeconds(0.5));
+        #endregion
+        Assert.Equal(TimeSpan.FromSeconds(2), info.LoopPeriod);
+        Assert.Null(info.Duration);
+        Assert.Equal(100, frame.Width);
+        Assert.NotSame(document.RenderTree, tree);
+    }
 }

@@ -67,4 +67,45 @@ internal static class SvgFuzzTarget
         {
         }
     }
+
+    /// <summary>
+    /// The svg-timeline target (SVG animation stage A): the input is loaded as an SVG document; its SMIL timeline is built (the
+    /// timing info read), and it is resolved and drawn at a few times up to 30 seconds. Each begin and end value of its animation
+    /// elements is also read on its own. Only the load may throw, with an <see cref="EgamiException"/>; the timeline never throws
+    /// and never runs past its work budget.
+    /// </summary>
+    public static void Timeline(byte[] data)
+    {
+        SvgLoadOptions options = new() { Fonts = s_fonts.Value, Context = s_context };
+        SvgDocument document;
+        try
+        {
+            document = SvgDocument.Load(new MemoryStream(data), options);
+        }
+        catch (EgamiException)
+        {
+            return;
+        }
+
+        SvgAnimationInfo info = document.Animation;
+        if (info.Duration is TimeSpan d && d < TimeSpan.Zero)
+        {
+            throw new InvalidOperationException($"A negative duration: {d}.");
+        }
+
+        if (info.LoopPeriod is TimeSpan p && (p <= TimeSpan.Zero || p > TimeSpan.FromSeconds(10)))
+        {
+            throw new InvalidOperationException($"A loop period out of range: {p}.");
+        }
+
+        float scale = Math.Min(1, 64 / Math.Max(1, Math.Max(document.Size.X, document.Size.Y)));
+        foreach (double seconds in (double[])[0, 0.25, 1, 2.5, 30])
+        {
+            _ = document.RenderTreeAt(TimeSpan.FromSeconds(seconds));
+            if (float.IsFinite(scale) && scale > 0)
+            {
+                using Raster<Rgba8> raster = document.Rasterize<Rgba8>(new SvgRenderOptions { Context = s_context, Scale = scale, Time = TimeSpan.FromSeconds(seconds) });
+            }
+        }
+    }
 }

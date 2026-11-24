@@ -24,7 +24,7 @@ internal sealed partial class SvgResolver
             return null;
         }
 
-        string? href = element.Attributes["href"] ?? element.Attributes.Get("href", SvgNamespaces.XLink);
+        string? href = Href(element);
         if (string.IsNullOrWhiteSpace(href))
         {
             return null;

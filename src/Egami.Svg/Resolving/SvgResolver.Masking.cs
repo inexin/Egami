@@ -45,7 +45,7 @@ internal sealed partial class SvgResolver
         {
             (SvgStyle clipStyle, CssComputedStyle clipCss) = OriginalStyle(clipPath);
             Matrix3x2 transform = ElementTransform(clipPath, clipStyle, bounds, context.Lengths);
-            if (clipPath.Attributes["clipPathUnits"] == "objectBoundingBox")
+            if (Attr(clipPath, "clipPathUnits") == "objectBoundingBox")
             {
                 if (bounds.Width <= 0 || bounds.Height <= 0)
                 {
@@ -145,7 +145,7 @@ internal sealed partial class SvgResolver
     private SvgMask? MaskOf(SvgElement mask, SvgElement user, RectF bounds, in SvgContext context, out bool cyclic)
     {
         cyclic = false;
-        bool boundingBox = mask.Attributes["maskUnits"] is not "userSpaceOnUse";
+        bool boundingBox = Attr(mask, "maskUnits") is not "userSpaceOnUse";
         if (boundingBox && (bounds.Width <= 0 || bounds.Height <= 0))
         {
             return null;
@@ -154,7 +154,7 @@ internal sealed partial class SvgResolver
         SvgLengthContext lengths = context.Lengths;
         float Region(string name, string fallback, SvgAxis axis)
         {
-            if (!(mask.Attributes[name] is string text && SvgLength.TryParse(text, out SvgLength l)))
+            if (!(Attr(mask, name) is string text && SvgLength.TryParse(text, out SvgLength l)))
             {
                 _ = SvgLength.TryParse(fallback, out l);
             }
@@ -190,7 +190,7 @@ internal sealed partial class SvgResolver
         {
             (SvgStyle style, CssComputedStyle css) = OriginalStyle(mask);
             Matrix3x2 content = Matrix3x2.Identity;
-            if (mask.Attributes["maskContentUnits"] == "objectBoundingBox")
+            if (Attr(mask, "maskContentUnits") == "objectBoundingBox")
             {
                 if (bounds.Width <= 0 || bounds.Height <= 0)
                 {

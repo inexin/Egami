@@ -198,7 +198,7 @@ internal sealed partial class SvgResolver
                     continue;
                 }
 
-                if (child.Attributes["result"] is string result && result.Length > 0)
+                if (Attr(child, "result") is string result && result.Length > 0)
                 {
                     results[result] = primitives.Count;
                 }
@@ -215,11 +215,11 @@ internal sealed partial class SvgResolver
     }
 
     /// <summary>A primitive's subregion: its x, y, width and height, each defaulting to the filter region's (resvg's rule).</summary>
-    private static RectF? Subregion(SvgElement fe, bool primitiveBox, RectF region, RectF box, SvgLengthContext lengths)
+    private RectF? Subregion(SvgElement fe, bool primitiveBox, RectF region, RectF box, SvgLengthContext lengths)
     {
         float? Read(string name, SvgAxis axis)
         {
-            if (fe.Attributes[name] is not string text || !SvgLength.TryParse(text, out SvgLength l))
+            if (Attr(fe, name) is not string text || !SvgLength.TryParse(text, out SvgLength l))
             {
                 return null;
             }
@@ -250,9 +250,9 @@ internal sealed partial class SvgResolver
     }
 
     /// <summary>A primitive's input: in or in2 naming SourceGraphic, SourceAlpha or an earlier result; unknown names fall back to the previous result.</summary>
-    private static SvgFilterInput Input(SvgElement fe, string attribute, List<SvgPrimitive> primitives, Dictionary<string, int> results)
+    private SvgFilterInput Input(SvgElement fe, string attribute, List<SvgPrimitive> primitives, Dictionary<string, int> results)
     {
-        string? text = fe.Attributes[attribute]?.Trim();
+        string? text = Attr(fe, attribute)?.Trim();
         switch (text)
         {
             case null:
@@ -282,10 +282,10 @@ internal sealed partial class SvgResolver
     {
         SvgFilterInput In() => Input(fe, "in", primitives, results);
         SvgFilterInput In2() => Input(fe, "in2", primitives, results);
-        float Number(string name, float fallback) => fe.Attributes[name] is string t && SvgNumbers.TryParse(t, out double v) ? (float)v : fallback;
+        float Number(string name, float fallback) => Attr(fe, name) is string t && SvgNumbers.TryParse(t, out double v) ? (float)v : fallback;
         List<double>? List(string name)
         {
-            if (fe.Attributes[name] is not string text)
+            if (Attr(fe, name) is not string text)
             {
                 return null;
             }
@@ -327,13 +327,13 @@ internal sealed partial class SvgResolver
             case "feBlend":
                 {
                     // feBlend takes Compositing 1's keywords only: plus-lighter is not one, so it falls back to normal, as resvg reads it.
-                    string mode = fe.Attributes["mode"]?.Trim() ?? "normal";
+                    string mode = Attr(fe, "mode")?.Trim() ?? "normal";
                     return new SvgBlend(region, linear, In(), In2(), mode != "plus-lighter" && SvgStyleParsing.TryBlendMode(mode, out BlendMode m) ? m : BlendMode.SourceOver);
                 }
 
             case "feComposite":
                 {
-                    SvgCompositeOperator op = fe.Attributes["operator"]?.Trim() switch
+                    SvgCompositeOperator op = Attr(fe, "operator")?.Trim() switch
                     {
                         "in" => SvgCompositeOperator.In,
                         "out" => SvgCompositeOperator.Out,
@@ -347,7 +347,7 @@ internal sealed partial class SvgResolver
                 }
 
             case "feColorMatrix":
-                return new SvgColorMatrix(region, linear, In(), ColorMatrixValues(fe.Attributes["type"]?.Trim(), List("values")));
+                return new SvgColorMatrix(region, linear, In(), ColorMatrixValues(Attr(fe, "type")?.Trim(), List("values")));
             case "feComponentTransfer":
                 {
                     SvgTransferFunction r = SvgTransferFunction.Identity, g = r, b = r, a = r;
@@ -370,7 +370,7 @@ internal sealed partial class SvgResolver
                 return (SvgPrimitive?)Convolve(fe, region, linear, In(), List) ?? Dummy(region, linear);
             case "feMorphology":
                 {
-                    bool dilate = fe.Attributes["operator"]?.Trim() == "dilate";
+                    bool dilate = Attr(fe, "operator")?.Trim() == "dilate";
                     float rx = 1, ry = 1;
                     if (List("radius") is List<double> radius)
                     {
@@ -429,7 +429,7 @@ internal sealed partial class SvgResolver
                     };
 
                     return new SvgDisplacement(
-                        region, linear, In(), In2(), Number("scale", 0) * ((scale.X + scale.Y) / 2), Channel(fe.Attributes["xChannelSelector"]), Channel(fe.Attributes["yChannelSelector"]));
+                        region, linear, In(), In2(), Number("scale", 0) * ((scale.X + scale.Y) / 2), Channel(Attr(fe, "xChannelSelector")), Channel(Attr(fe, "yChannelSelector")));
                 }
 
             case "feTurbulence":
@@ -446,8 +446,8 @@ internal sealed partial class SvgResolver
 
                     int octaves = (int)MathF.Round(Math.Max(0, Number("numOctaves", 1)));
                     return new SvgTurbulence(
-                        region, linear, fx, fy, octaves, (int)MathF.Truncate(Number("seed", 0)), fe.Attributes["stitchTiles"]?.Trim() == "stitch",
-                        fe.Attributes["type"]?.Trim() == "fractalNoise");
+                        region, linear, fx, fy, octaves, (int)MathF.Truncate(Number("seed", 0)), Attr(fe, "stitchTiles")?.Trim() == "stitch",
+                        Attr(fe, "type")?.Trim() == "fractalNoise");
                 }
 
             case "feTile":
@@ -465,10 +465,10 @@ internal sealed partial class SvgResolver
     private static RgbaF32 Color(CssColor color, float opacity) => new(color.R, color.G, color.B, color.A * opacity);
 
     /// <summary>stdDeviation: one or two non-negative numbers (otherwise the default), times the primitive units' scale.</summary>
-    private static (float X, float Y) StdDeviation(SvgElement fe, Vector2 scale, float fallback)
+    private (float X, float Y) StdDeviation(SvgElement fe, Vector2 scale, float fallback)
     {
         float x = fallback, y = fallback;
-        if (fe.Attributes["stdDeviation"] is string text)
+        if (Attr(fe, "stdDeviation") is string text)
         {
             List<double> values = [];
             if (SvgNumbers.TryParseList(text, values) && values.Count is 1 or 2)
@@ -529,17 +529,17 @@ internal sealed partial class SvgResolver
         ];
     }
 
-    private static SvgTransferFunction? Transfer(SvgElement func)
+    private SvgTransferFunction? Transfer(SvgElement func)
     {
-        string? type = func.Attributes["type"]?.Trim();
+        string? type = Attr(func, "type")?.Trim();
         if (type is not ("identity" or "table" or "discrete" or "linear" or "gamma"))
         {
             return null;
         }
 
-        float Number(string name, float fallback) => func.Attributes[name] is string t && SvgNumbers.TryParse(t, out double v) ? (float)v : fallback;
+        float Number(string name, float fallback) => Attr(func, name) is string t && SvgNumbers.TryParse(t, out double v) ? (float)v : fallback;
         List<double> table = [];
-        if (func.Attributes["tableValues"] is string text)
+        if (Attr(func, "tableValues") is string text)
         {
             _ = SvgNumbers.TryParseList(text, table);
         }
@@ -547,7 +547,7 @@ internal sealed partial class SvgResolver
         return new SvgTransferFunction(type, [.. table.Select(v => (float)v)], Number("slope", 1), Number("intercept", 0), Number("amplitude", 1), Number("exponent", 1), Number("offset", 0));
     }
 
-    private static SvgConvolve? Convolve(SvgElement fe, RectF region, bool linear, SvgFilterInput input, Func<string, List<double>?> list)
+    private SvgConvolve? Convolve(SvgElement fe, RectF region, bool linear, SvgFilterInput input, Func<string, List<double>?> list)
     {
         int orderX = 3, orderY = 3;
         if (list("order") is List<double> order && order.Count > 0)
@@ -566,7 +566,7 @@ internal sealed partial class SvgResolver
             sum = 1;
         }
 
-        float divisor = fe.Attributes["divisor"] is string d && SvgNumbers.TryParse(d, out double dv) ? (float)dv : sum;
+        float divisor = Attr(fe, "divisor") is string d && SvgNumbers.TryParse(d, out double dv) ? (float)dv : sum;
         if (divisor == 0)
         {
             return null;
@@ -574,7 +574,7 @@ internal sealed partial class SvgResolver
 
         int Target(string name, int size)
         {
-            float t = fe.Attributes[name] is string text && SvgNumbers.TryParse(text, out double v) ? (float)v : MathF.Floor(size / 2f);
+            float t = Attr(fe, name) is string text && SvgNumbers.TryParse(text, out double v) ? (float)v : MathF.Floor(size / 2f);
             return (int)t;
         }
 
@@ -584,16 +584,16 @@ internal sealed partial class SvgResolver
             return null;
         }
 
-        EdgeMode edge = fe.Attributes["edgeMode"]?.Trim() switch { "none" => EdgeMode.Transparent, "wrap" => EdgeMode.Wrap, _ => EdgeMode.Clamp };
-        float bias = fe.Attributes["bias"] is string bt && SvgNumbers.TryParse(bt, out double bv) ? (float)bv : 0;
-        return new SvgConvolve(region, linear, input, orderX, orderY, kernel, divisor, bias, targetX, targetY, edge, fe.Attributes["preserveAlpha"]?.Trim() == "true");
+        EdgeMode edge = Attr(fe, "edgeMode")?.Trim() switch { "none" => EdgeMode.Transparent, "wrap" => EdgeMode.Wrap, _ => EdgeMode.Clamp };
+        float bias = Attr(fe, "bias") is string bt && SvgNumbers.TryParse(bt, out double bv) ? (float)bv : 0;
+        return new SvgConvolve(region, linear, input, orderX, orderY, kernel, divisor, bias, targetX, targetY, edge, Attr(fe, "preserveAlpha")?.Trim() == "true");
     }
 
-    private static SvgLight? Light(SvgElement fe)
+    private SvgLight? Light(SvgElement fe)
     {
         foreach (SvgElement child in fe.Elements())
         {
-            float Number(string name, float fallback) => child.Attributes[name] is string t && SvgNumbers.TryParse(t, out double v) ? (float)v : fallback;
+            float Number(string name, float fallback) => Attr(child, name) is string t && SvgNumbers.TryParse(t, out double v) ? (float)v : fallback;
             switch (child.Name)
             {
                 case "feDistantLight":
@@ -603,7 +603,7 @@ internal sealed partial class SvgResolver
                 case "feSpotLight":
                     {
                         float exponent = Number("specularExponent", 1);
-                        float? cone = child.Attributes["limitingConeAngle"] is string c && SvgNumbers.TryParse(c, out double cv) ? (float)cv : null;
+                        float? cone = Attr(child, "limitingConeAngle") is string c && SvgNumbers.TryParse(c, out double cv) ? (float)cv : null;
                         return new SvgSpotLight(
                             new Vector3(Number("x", 0), Number("y", 0), Number("z", 0)),
                             new Vector3(Number("pointsAtX", 0), Number("pointsAtY", 0), Number("pointsAtZ", 0)),
@@ -619,7 +619,7 @@ internal sealed partial class SvgResolver
     /// <summary>feImage's content: a referenced element drawn as in place, or an image file fitted into the subregion.</summary>
     private SvgNode? FeImage(SvgElement fe, RectF region, SvgStyle style, in SvgContext context)
     {
-        string? href = fe.Attributes["href"] ?? fe.Attributes.Get("href", SvgNamespaces.XLink);
+        string? href = Href(fe);
         if (href is null)
         {
             return null;
@@ -663,7 +663,7 @@ internal sealed partial class SvgResolver
         image.Attributes.Set("y", region.Y);
         image.Attributes.Set("width", region.Width);
         image.Attributes.Set("height", region.Height);
-        if (fe.Attributes["preserveAspectRatio"] is string par)
+        if (Attr(fe, "preserveAspectRatio") is string par)
         {
             image.Attributes["preserveAspectRatio"] = par;
         }

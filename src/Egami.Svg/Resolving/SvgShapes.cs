@@ -51,7 +51,7 @@ internal static class SvgShapes
                     .ToPath();
             case "polyline":
             case "polygon":
-                return Poly(element, element.Name == "polygon", maxCommands, report);
+                return Poly(element, geometry, element.Name == "polygon", maxCommands, report);
             case "path":
                 return PathData(element, geometry, maxCommands, report);
             default:
@@ -116,9 +116,9 @@ internal static class SvgShapes
             .Close().ToPath();
     }
 
-    private static Path? Poly(SvgElement element, bool close, long maxCommands, SvgReport report)
+    private static Path? Poly(SvgElement element, SvgGeometry geometry, bool close, long maxCommands, SvgReport report)
     {
-        string? text = element.Attributes["points"];
+        string? text = geometry.Attribute(element, "points");
         if (text is null)
         {
             return null;
