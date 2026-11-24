@@ -89,7 +89,7 @@
 
 <p>Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float
 map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors, and reads JBIG2, raw CCITT fax data, JPEG
-2000, Windows animated cursors (ANI) and Photoshop's PSD and PSB, layers included. HEIC phone photos load and save through the
+2000, Windows animated cursors (ANI), Photoshop's PSD and PSB, layers included, and the previews of EPS files. HEIC phone photos load and save through the
 separate, opt-in Egami.Heic package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
 <a href="../guides/svg.html">Egami.Svg</a> and <a href="../guides/metafiles.html">Egami.Metafiles</a> packages, and PCX, SGI, Sun raster, XBM, XPM, WBMP
 Farbfeld, JPEG-LS, DDS and KTX textures, DPX and Cineon film frames, FITS, camera RAW (DNG and the camera makers' formats, with DNG written) and, as a preview, DICOM images and datasets through
@@ -177,6 +177,13 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 <td>Raw Group 3 and Group 4 data (T.4, T.6) with PDF's eight CCITTFaxDecode parameters, byte-aligned rows included</td>
 <td>No</td>
 <td><code>Gray8</code>, black 0 and white 255</td>
+<td>Egami</td>
+</tr>
+<tr>
+<td><a href="eps.html">EPS</a></td>
+<td>The preview an EPS file carries: a TIFF or Windows metafile preview behind the DOS binary header, or an EPSI bitmap; bounding box, creator, title, date, XMP and ICC. PostScript is not run</td>
+<td>No</td>
+<td>The preview's own: the TIFF's, <code>Rgba8</code> for a metafile, <code>Gray8</code> for EPSI</td>
 <td>Egami</td>
 </tr>
 <tr>

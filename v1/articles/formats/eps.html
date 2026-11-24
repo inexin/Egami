@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>EPS (previews) | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="EPS (previews) | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/formats/eps.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="eps-previews">EPS (previews)</h1>
+
+<p>Egami reads Encapsulated PostScript by the preview image the file carries. It never runs PostScript, so the image is the
+preview the writing program saved, not the drawing the PostScript makes; a <code>Eps.PreviewLoaded</code> warning says so on every load.
+<code>EpsFormat.Info</code> is registered in <code>EgamiContext.Default</code> and detected by the DOS binary header (bytes C5 D0 D3 C6) or a
+<code>%!PS</code> first line; plain PostScript is detected too, so it fails with a message saying PostScript is not run rather than as an
+unknown format. Egami does not write EPS.</p>
+<pre><code class="lang-csharp">// Load gives the preview the EPS file carries (here a TIFF); its PostScript is never run.
+using Raster preview = Raster.Load(&quot;logo.eps&quot;);
+EpsDetails details = (EpsDetails)preview.Metadata.FormatDetails!;
+Console.WriteLine($&quot;{details.Preview} preview, {preview.Width} × {preview.Height} pixels, box {details.BoundingBox?.Width} × {details.BoundingBox?.Height} pt&quot;);
+</code></pre>
+<p>Load takes the first of these the file has:</p>
+<table>
+<thead>
+<tr>
+<th>Preview</th>
+<th>Written by</th>
+<th>What Load returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TIFF, behind the binary header</td>
+<td>Illustrator, Photoshop, InDesign, CorelDRAW on Windows</td>
+<td>The TIFF, decoded by Egami's TIFF reader, in its own pixel type</td>
+</tr>
+<tr>
+<td>Windows metafile (WMF), behind the binary header</td>
+<td>CorelDRAW, FreeHand, older Windows programs</td>
+<td>The metafile drawn at the bounding box size at 96 DPI (or <code>MetafileDecodeOptions.Dpi</code>) by a format the context has registered for metafiles, such as <a href="../guides/metafiles.html">Egami.Metafiles</a>' <code>MetafileFormat.Info</code></td>
+</tr>
+<tr>
+<td>EPSI, a <code>%%BeginPreview</code> hex bitmap</td>
+<td>Unix tools, Inkscape</td>
+<td>The 1, 2, 4 or 8-bit gray bitmap as <code>Gray8</code>, 0 white and the largest value black as EPSF 3.0 says</td>
+</tr>
+<tr>
+<td>None, only PostScript</td>
+<td>TeX, plotting tools, old Mac files</td>
+<td><code>Raster.Probe</code> gives the bounding box size, one pixel a point; <code>Raster.Load</code> throws <code>UnsupportedFormatException</code></td>
+</tr>
+</tbody>
+</table>
+<p>Core Egami does not depend on Egami.Metafiles: without a metafile format in the context a metafile preview is skipped for the
+file's EPSI preview, with an <code>Eps.MetafileSkipped</code> warning, or Load fails with a message naming Egami.Metafiles.</p>
+<p>The metadata holds an <code>EpsDetails</code> (which preview was loaded, the bounding box in points as an <code>EpsBoundingBox</code>, preferring
+<code>%%HiResBoundingBox</code>, the creator, title and creation date), the same three comments as text entries, and Photoshop's XMP
+packet, ICC profile and IPTC when the file has them.</p>
+<h2 id="the-container">The container</h2>
+<p><code>EpsFile</code> gives the parts without decoding anything: the PostScript, the TIFF and metafile previews as bytes, which preview
+Load takes (<code>EpsPreviewKind</code>), the header comments, Photoshop's sections and what was damaged. A program that draws vectors can
+hand <code>WmfPreview</code> to Egami.Metafiles itself.</p>
+<pre><code class="lang-csharp">// EpsFile gives the parts: the PostScript, the TIFF or metafile preview, and the header comments.
+EpsFile eps = EpsFile.Load(File.ReadAllBytes(&quot;logo.eps&quot;));
+if (eps.Preview == EpsPreviewKind.Tiff)
+{
+    File.WriteAllBytes(&quot;logo-preview.tif&quot;, eps.TiffPreview.ToArray());
+}
+
+Console.WriteLine($&quot;{eps.Title} by {eps.Creator}: {eps.BoundingBox}, {eps.PostScript.Length} bytes of PostScript&quot;);
+</code></pre>
+<p>Damage never crashes the reader: sections the binary header puts past the end of the file are cut short or left out, a
+checksum that does not match is a warning, and a bounding box or preview header that cannot be read is left unset. A strict
+load (<code>RecoveryMode.Strict</code>) throws <code>CorruptDataException</code> instead.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/formats/eps.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

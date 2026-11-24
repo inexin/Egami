@@ -6581,6 +6581,90 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Eps.EpsBoundingBox.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Eps.EpsBoundingBox.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Eps.EpsBoundingBox",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Eps.EpsBoundingBox.yml\" sourcestartlinenumber=\"1\">An EPS bounding box in PostScript points (1/72 inch), lower-left and upper-right corners in PostScript's y-up space.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Eps.EpsDetails.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Eps.EpsDetails.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Eps.EpsDetails",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Eps.EpsDetails.yml\" sourcestartlinenumber=\"1\">Details only EPS has, kept in <xref href=\"Egami.Metadata.RasterMetadata.FormatDetails\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Eps.EpsFile.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Eps.EpsFile.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Eps.EpsFile",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Eps.EpsFile.yml\" sourcestartlinenumber=\"1\">The parts of an Encapsulated PostScript file, read without running the PostScript: the PostScript itself, the TIFF or Windows\nmetafile preview a DOS binary header points at, an EPSI bitmap preview, the DSC header comments and Photoshop's sections.\nWritten from Adobe's EPSF 3.0 specification (Technical Note 5002) and the Document Structuring Conventions 3.0.\n<xref href=\"Egami.Raster.Load(System.ReadOnlyMemory%7bSystem.Byte%7d%2cEgami.EgamiContext%2cEgami.Formats.ReaderOptions)\" data-throw-if-not-resolved=\"false\"></xref> reads the same parts to load the preview; load\nan <xref href=\"Egami.Formats.Eps.EpsFile\" data-throw-if-not-resolved=\"false\"></xref> to get at them yourself, such as to draw a metafile preview as vectors.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Eps.EpsFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Eps.EpsFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Eps.EpsFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Eps.EpsFormat.yml\" sourcestartlinenumber=\"1\">Encapsulated PostScript, registered in <xref href=\"Egami.EgamiContext.Default\" data-throw-if-not-resolved=\"false\"></xref> and read only. Egami never runs PostScript: Load\nreturns the preview image the file carries, in this order: a TIFF preview, a Windows metafile preview (drawn by a format the\ncontext has registered for metafiles, such as Egami.Metafiles' <code>MetafileFormat.Info</code>, at the bounding box size), or an\nEPSI bitmap. A file with only PostScript probes at its bounding box size and fails to load with an\n<xref href=\"Egami.UnsupportedFormatException\" data-throw-if-not-resolved=\"false\"></xref>. Detected by the DOS binary header or a <code>%!PS</code> first line; plain PostScript is\ndetected too, so it fails with that message rather than as an unknown format.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Eps.EpsPreviewKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Eps.EpsPreviewKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Eps.EpsPreviewKind",
+      "Summary": "<p sourcefile=\"api/Egami.Formats.Eps.EpsPreviewKind.yml\" sourcestartlinenumber=\"1\">Which of an EPS file's images Load returns.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Formats.Eps.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Formats.Eps.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Formats.Eps",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Formats.Exr.ExrChannel.yml",
       "output": {
         ".html": {
@@ -20636,6 +20720,16 @@
       "output": {
         ".html": {
           "relative_path": "articles/formats/dpx.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/formats/eps.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/formats/eps.html"
         }
       },
       "version": ""

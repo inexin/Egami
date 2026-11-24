@@ -485,6 +485,66 @@ each page, a <code>ConvertColorTo</code> load) is one activity. A transcode that
 <td>The format detected, and how</td>
 </tr>
 <tr>
+<td><code>Eps.BoundingBoxInvalid</code></td>
+<td>Warning</td>
+<td>An EPS file's <code>%%BoundingBox</code> is not four numbers enclosing an area, or says <code>(atend)</code> with none in the trailer; the file has no bounding box</td>
+</tr>
+<tr>
+<td><code>Eps.ChecksumMismatch</code></td>
+<td>Warning</td>
+<td>An EPS binary header's checksum does not match the header; its offsets were used anyway</td>
+</tr>
+<tr>
+<td><code>Eps.MetafileSkipped</code></td>
+<td>Warning</td>
+<td>An EPS file's metafile preview was not drawn because no format in the context reads metafiles; its EPSI preview was loaded instead</td>
+</tr>
+<tr>
+<td><code>Eps.NoPreview</code></td>
+<td>Debug</td>
+<td>An EPS or PostScript file has no preview Egami can show, and PostScript is not run; the load fails with UnsupportedFormatException</td>
+</tr>
+<tr>
+<td><code>Eps.NotPostScript</code></td>
+<td>Warning</td>
+<td>The PostScript section an EPS binary header points at does not start with <code>%!</code>; its comments were not read</td>
+</tr>
+<tr>
+<td><code>Eps.PreviewInvalid</code></td>
+<td>Warning</td>
+<td>An EPS file's <code>%%BeginPreview</code> comment does not give a size and a depth of 1, 2, 4 or 8 bits; the EPSI preview was left out</td>
+</tr>
+<tr>
+<td><code>Eps.PreviewLoaded</code></td>
+<td>Warning</td>
+<td>The image loaded is an EPS file's preview, not the drawing its PostScript makes, which Egami does not run</td>
+</tr>
+<tr>
+<td><code>Eps.PreviewTruncated</code></td>
+<td>Warning</td>
+<td>An EPSI preview has fewer hex digits than its size needs; the missing pixels are white</td>
+</tr>
+<tr>
+<td><code>Eps.ProfileDamaged</code></td>
+<td>Warning</td>
+<td>An EPS file's ICC profile section runs past the end of the file or the metadata limit, or its hex is broken; it was left out</td>
+</tr>
+<tr>
+<td><code>Eps.SectionPastEnd</code></td>
+<td>Warning</td>
+<td>An EPS binary header puts a section past the end of the file; it was cut to the file, or left out when it starts past the end</td>
+</tr>
+<tr>
+<td><code>Eps.SectionsOverlap</code></td>
+<td>Warning</td>
+<td>Two sections an EPS binary header points at overlap; each was read as the header gives it</td>
+</tr>
+<tr>
+<td><code>Eps.XmpDamaged</code></td>
+<td>Warning</td>
+<td>An EPS file's XMP packet has no end marker or is larger than the metadata limit; it was left out</td>
+</tr>
+<tr>
 <td><code>Exif.Damaged</code></td>
 <td>Warning</td>
 <td>The EXIF block would not parse in full; it is kept as bytes</td>
