@@ -233,6 +233,78 @@ public class CssAnimationTests
     }
 
     [Fact]
+    public void MatricesDecomposeAsCssTransformsSays()
+    {
+        // The skew interpolates on its own: identity to matrix(1, 0, 1, 1, 0, 0) is half the skew halfway.
+        Matrix3x2 half = SvgCssValues.InterpolateMatrix(Matrix3x2.Identity, new Matrix3x2(1, 0, 1, 1, 0, 0), 0.5);
+        Assert.Equal(1, half.M11, 5);
+        Assert.Equal(0, half.M12, 5);
+        Assert.Equal(0.5, half.M21, 5);
+        Assert.Equal(1, half.M22, 5);
+
+        // Both ends come back as they were, flipped and skewed ones too.
+        Matrix3x2[] ends =
+        [
+            new(2, 0.5f, 1, 3, 4, 5),
+            new(1, 0, 1, 1, 0, 0),
+            new(-1, 0, 0, 1, 7, -3),
+            new(0.5f, -2, 3, 0.25f, 0, 0),
+            new(0, 1, -1, 0, 0, 0),
+        ];
+        foreach (Matrix3x2 from in ends)
+        {
+            foreach (Matrix3x2 to in ends)
+            {
+                foreach ((Matrix3x2 expected, double p) in new[] { (from, 0.0), (to, 1.0) })
+                {
+                    Matrix3x2 m = SvgCssValues.InterpolateMatrix(from, to, p);
+                    Assert.Equal(expected.M11, m.M11, 4);
+                    Assert.Equal(expected.M12, m.M12, 4);
+                    Assert.Equal(expected.M21, m.M21, 4);
+                    Assert.Equal(expected.M22, m.M22, 4);
+                    Assert.Equal(expected.M31, m.M31, 4);
+                    Assert.Equal(expected.M32, m.M32, 4);
+                }
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("red", "lime", "rgb(255, 255, 0)")]
+    [InlineData("rgba(255, 0, 0, 0.6)", "rgba(0, 0, 255, 0.6)", "rgb(153, 0, 153)")]
+    [InlineData("rgba(255, 0, 0, 0.25)", "rgba(0, 0, 255, 0.25)", "rgba(128, 0, 128, 0.5)")]
+    public void AddedColorsKeepTheirChannels(string underlying, string value, string expected)
+    {
+        Assert.Equal(expected, SvgCssValues.Composite("fill", underlying, value, SvgCssComposite.Add, s_context));
+        Assert.Equal(expected, SvgCssValues.Composite("fill", underlying, value, SvgCssComposite.Accumulate, s_context));
+    }
+
+    [Fact]
+    public void AnAddedColorAnimationMixesWithTheFill()
+    {
+        SvgDocument document = Doc(
+            "@keyframes k { from, to { fill: lime } } #r { fill: red; animation: k 2s linear; animation-composition: add }",
+            "<rect id='r' width='10' height='10'/>");
+        Assert.Equal((1f, 1f, 0f, 1f), FillAt(document, 1));
+    }
+
+    [Fact]
+    public void RepeatedListsTooLongChangeHalfway()
+    {
+        // 46341 x 46343 (their least common multiple) passes int; the guard must still hold.
+        string a = string.Join(' ', Enumerable.Repeat("1", 46341));
+        string b = string.Join(' ', Enumerable.Repeat("3", 46343));
+        Assert.Equal(b, SvgCssValues.Interpolate("stroke-dasharray", a, b, 0.5, s_context));
+        Assert.Equal(a, SvgCssValues.Interpolate("stroke-dasharray", a, b, 0.25, s_context));
+
+        // Just past the limit and at it.
+        string c = string.Join(' ', Enumerable.Repeat("1", SvgCssValues.MaxRepeatedList + 1));
+        Assert.Equal(c, SvgCssValues.Interpolate("stroke-dasharray", "2", c, 0.75, s_context));
+        string d = string.Join(' ', Enumerable.Repeat("1", SvgCssValues.MaxRepeatedList));
+        Assert.Equal(string.Join(' ', Enumerable.Repeat("1.5", SvgCssValues.MaxRepeatedList)), SvgCssValues.Interpolate("stroke-dasharray", "2", d, 0.5, s_context));
+    }
+
+    [Fact]
     public void TransformCompositionAddsAndAccumulates()
     {
         Assert.Equal("translate(10px, 0px) rotate(45deg)", SvgCssValues.Composite("transform", "translate(10px, 0px)", "rotate(45deg)", SvgCssComposite.Add, s_context));

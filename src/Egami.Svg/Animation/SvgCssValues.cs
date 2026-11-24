@@ -136,14 +136,15 @@ internal static class SvgCssValues
             }
 
             // stroke-dasharray: both lists repeat to the least common multiple of their lengths (CSS Values 4 'repeatable list').
-            int lcm = x.Count / Gcd(x.Count, y.Count) * y.Count;
-            if (lcm > 1000)
+            // In long: two long lists can have a least common multiple past int.
+            long lcm = (long)x.Count / Gcd(x.Count, y.Count) * y.Count;
+            if (lcm > MaxRepeatedList)
             {
                 return null;
             }
 
-            x = Repeat(x, lcm);
-            y = Repeat(y, lcm);
+            x = Repeat(x, (int)lcm);
+            y = Repeat(y, (int)lcm);
         }
 
         StringBuilder builder = new();
@@ -159,6 +160,9 @@ internal static class SvgCssValues
 
         return builder.ToString();
     }
+
+    /// <summary>The longest list two repeatable lists of different lengths are repeated to before they interpolate; longer ones change halfway.</summary>
+    internal const int MaxRepeatedList = 1000;
 
     private static List<LengthPercentage> Repeat(List<LengthPercentage> list, int count) => [.. Enumerable.Range(0, count).Select(i => list[i % list.Count])];
 
@@ -338,7 +342,8 @@ internal static class SvgCssValues
             return "rgba(0, 0, 0, 0)";
         }
 
-        return new SvgColorValue(r / al, g / al, bl / al, alpha).ToText();
+        // Un-premultiply by the alpha the result has: an add can sum past 1, and the color then keeps its full channels.
+        return new SvgColorValue(Math.Clamp(r / alpha, 0, 1), Math.Clamp(g / alpha, 0, 1), Math.Clamp(bl / alpha, 0, 1), alpha).ToText();
     }
 
     private static bool TryColor(string text, in SvgCssValueContext context, out CssColor color)
@@ -621,15 +626,16 @@ internal static class SvgCssValues
         string.Create(CultureInfo.InvariantCulture, $"matrix({Format(m.M11)}, {Format(m.M12)}, {Format(m.M21)}, {Format(m.M22)}, {Format(m.M31)}, {Format(m.M32)})");
 
     /// <summary>
-    /// Interpolates two 2D matrices through their decomposition into translation, rotation, a unit shear and scale (CSS
-    /// Transforms 1, "Interpolation of 2D matrices"), turning the shorter way round.
+    /// Interpolates two 2D matrices (CSS Transforms 1, "Interpolation of 2D matrices"): each is decomposed into translation,
+    /// scale, rotation and skew, the parts interpolate (the rotation the shorter way round) and the result is recomposed.
     /// </summary>
     public static Matrix3x2 InterpolateMatrix(Matrix3x2 a, Matrix3x2 b, double p)
     {
         Decomposed x = Decompose(a);
         Decomposed y = Decompose(b);
 
-        // Both flipped on opposite axes: flip both axes of one instead and turn it half a circle, which is the same matrix.
+        // One flipped on the x axis and the other on the y axis: flip both axes of one instead and turn it half a circle,
+        // which is the same matrix.
         if ((x.ScaleX < 0 && y.ScaleY < 0) || (x.ScaleY < 0 && y.ScaleX < 0))
         {
             x = x with { ScaleX = -x.ScaleX, ScaleY = -x.ScaleY, Angle = x.Angle < 0 ? x.Angle + Math.PI : x.Angle - Math.PI };
@@ -649,51 +655,58 @@ internal static class SvgCssValues
         }
 
         double L(double u, double v) => u + ((v - u) * p);
-        Decomposed r = new(L(x.TranslateX, y.TranslateX), L(x.TranslateY, y.TranslateY), L(x.ScaleX, y.ScaleX), L(x.ScaleY, y.ScaleY), L(ax, ay), L(x.Shear, y.Shear), L(x.Rest, y.Rest));
+        Decomposed r = new(L(x.TranslateX, y.TranslateX), L(x.TranslateY, y.TranslateY), L(x.ScaleX, y.ScaleX), L(x.ScaleY, y.ScaleY), L(ax, ay), L(x.Skew, y.Skew));
         return Recompose(r);
     }
 
-    // A = R(angle) · [[1, shear], [0, rest]] · S(scale) in column form, plus the translation. The column of the unit shear
-    // matrix keeps what remains of the second axis after rotation and scale come out.
-    private readonly record struct Decomposed(double TranslateX, double TranslateY, double ScaleX, double ScaleY, double Angle, double Shear, double Rest);
+    // A 2D matrix as CSS Transforms 1 decomposes it: translation, scale, rotation angle (radians) and the skew factor.
+    private readonly record struct Decomposed(double TranslateX, double TranslateY, double ScaleX, double ScaleY, double Angle, double Skew);
 
+    // CSS Transforms 1, "Decomposing a 2D matrix", on the rows of the linear part (row 0 is where the x axis goes, row 1 the y
+    // axis): scale x is the length of row 0, which is then normalized; the skew is row 0 . row 1, taken out of row 1; scale y
+    // is the length of what is left, which is normalized and divides the skew; a negative determinant flips x; the angle is
+    // that of row 0.
     private static Decomposed Decompose(Matrix3x2 m)
     {
-        // Columns of the linear part: x' = a x + c y, y' = b x + d y.
-        double a = m.M11, b = m.M12, c = m.M21, d = m.M22;
-        double sx = Math.Sqrt((a * a) + (b * b));
-        double sy = Math.Sqrt((c * c) + (d * d));
-        if ((a * d) - (b * c) < 0)
+        double r0x = m.M11, r0y = m.M12, r1x = m.M21, r1y = m.M22;
+        double sx = Math.Sqrt((r0x * r0x) + (r0y * r0y));
+        if (sx != 0)
         {
-            if (a < d)
-            {
-                sx = -sx;
-            }
-            else
-            {
-                sy = -sy;
-            }
+            r0x /= sx;
+            r0y /= sx;
         }
 
-        double c0x = sx != 0 ? a / sx : 1, c0y = sx != 0 ? b / sx : 0;
-        double c1x = sy != 0 ? c / sy : 0, c1y = sy != 0 ? d / sy : 1;
-        double angle = Math.Atan2(c0y, c0x);
-        double cos = Math.Cos(angle), sin = Math.Sin(angle);
+        double skew = (r0x * r1x) + (r0y * r1y);
+        r1x -= skew * r0x;
+        r1y -= skew * r0y;
+        double sy = Math.Sqrt((r1x * r1x) + (r1y * r1y));
+        if (sy != 0)
+        {
+            r1x /= sy;
+            r1y /= sy;
+            skew /= sy;
+        }
 
-        // Rotate the second column back by the angle: what is left is the shear (along x) and the rest (along y).
-        double shear = (cos * c1x) + (sin * c1y);
-        double rest = (-sin * c1x) + (cos * c1y);
-        return new Decomposed(m.M31, m.M32, sx, sy, angle, shear, rest);
+        if ((r0x * r1y) - (r0y * r1x) < 0)
+        {
+            sx = -sx;
+            r0x = -r0x;
+            r0y = -r0y;
+            skew = -skew;
+        }
+
+        double angle = sx == 0 && sy == 0 ? 0 : Math.Atan2(r0y, r0x);
+        return new Decomposed(m.M31, m.M32, sx, sy, angle, skew);
     }
 
+    // CSS Transforms 1, "Recomposing to a 2D matrix": scale, then skew, then rotate, then translate. Row 0 is the rotated x axis
+    // times scale x; row 1 is the skew along it plus the rotated y axis, times scale y.
     private static Matrix3x2 Recompose(Decomposed d)
     {
         double cos = Math.Cos(d.Angle), sin = Math.Sin(d.Angle);
-
-        // Column 0: R · (1, 0) · sx; column 1: R · (shear, rest) · sy.
-        double a = cos * d.ScaleX, b = sin * d.ScaleX;
-        double c = ((cos * d.Shear) - (sin * d.Rest)) * d.ScaleY;
-        double dd = ((sin * d.Shear) + (cos * d.Rest)) * d.ScaleY;
+        double a = d.ScaleX * cos, b = d.ScaleX * sin;
+        double c = d.ScaleY * ((d.Skew * cos) - sin);
+        double dd = d.ScaleY * ((d.Skew * sin) + cos);
         return new Matrix3x2((float)a, (float)b, (float)c, (float)dd, (float)d.TranslateX, (float)d.TranslateY);
     }
 
