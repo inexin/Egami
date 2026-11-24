@@ -56,7 +56,7 @@ public sealed class EncoderTests
     [InlineData(3, 4, 2)]
     [InlineData(2, 4, 2)]
     [InlineData(7, 4, 1)]
-    [InlineData(3, 1, 1)]
+    [InlineData(3, 1, 2)]
     [InlineData(3, 6, 2)]
     public void BPicturesDecodeToTheReconstruction(int bFrames, int effort, int reorder)
     {

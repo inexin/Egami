@@ -101,11 +101,11 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
         }
 
         // B-frames as the H.264 encoder plans them (HEVC encoder Build Plan, PR C): three from effort 1, in a pyramid whose
-        // middle one is a reference from effort 3. The decoded picture buffer holds the P pictures' references, the P picture
+        // middle one is a reference. The decoded picture buffer holds the P pictures' references, the P picture
         // after a run, the pyramid's middle B picture and the picture being decoded; fewer references where the level's buffer
         // is smaller.
         int bFrames = options.LatencyMode != LatencyMode.Quality ? 0 : hevc.BFrames ?? (effort >= 1 ? 3 : 0);
-        bool pyramid = bFrames is 2 or 3 && effort >= 3;
+        bool pyramid = bFrames is 2 or 3;
         int dpb = HevcLevels.MaxDpbSize(HevcLevels.Of(_level), options.Width, options.Height);
         int references = HevcInterProfile.For(effort).References;
         int Buffer(int refs, bool middle) => refs + (bFrames > 0 ? 1 : 0) + (middle ? 1 : 0) + 1;

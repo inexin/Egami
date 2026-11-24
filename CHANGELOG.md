@@ -88,9 +88,9 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
   length-prefixed with the parameter sets in the track's hvcC record (an hvc1 sample entry in MP4 and MOV); the VUI carries
   the colour, range and frame rate.
 - **Pictures.** IDR keyframes; P pictures from up to four earlier pictures by effort, with quarter-sample motion search, merge
-  and skip, AMVP and temporal vector prediction, 2Nx2N and (at effort 2 and from 5) Nx2N/2NxN partitions, inter
+  and skip, AMVP and temporal vector prediction, 2Nx2N and (from effort 5) Nx2N/2NxN partitions, inter
   transform trees and intra coding units where the residual calls for them; B pictures, three between P pictures by default
-  (`HevcEncoderOptions.BFrames`, 0 to 16, in `LatencyMode.Quality`), from effort 3 in a pyramid, with bi-prediction and joint
+  (`HevcEncoderOptions.BFrames`, 0 to 16, in `LatencyMode.Quality`), in a pyramid, with bi-prediction and joint
   refinement. The frame analysis plans B pictures and their quantizers as the H.264 encoder does.
 - **Rate control and perceptual tools** as the H.264 encoder's: constant quality, quantizer, one- and two-pass bitrate and
   constant bitrate with the buffer model; adaptive quantization through cu_qp_delta, leaving flat areas (letterbox bars, blank
@@ -100,10 +100,12 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
   unchanged) runs as a wavefront too: the same bytes on any number of threads.
 - **Conformance.** Egami's decoder, FFmpeg and the HM reference decoder decode every test stream to the encoder's own
   reconstruction, bit for bit (tools/video/check-hevc-encoder.py).
-- **Compression and speed** (tools/video/time-hevc-encoder.py, four Xiph clips at 720p against x265 3.6): at effort 4, 2.1 %
-  fewer bits than x265 --preset medium for the same PSNR-Y (2.9 % for the same SSIM), 8.4 % fewer at effort 5, and 12.2 % fewer
-  than Egami's H.264 encoder at effort 4; 1.5 times x265 medium's one-thread CPU cycles a frame at quality 50 and 1.8 times at
-  34. The search prices trial codings from static rate tables and codes only the kept one with RDOQ, and runs AVX2/SSE2/
+- **Compression and speed** (tools/video/time-hevc-encoder.py, four Xiph clips at 720p against x265 3.6): at effort 4, 2.3 %
+  fewer bits than x265 --preset medium for the same PSNR-Y (3.1 % for the same SSIM), 13.1 % fewer at effort 5 and 16 % at 9,
+  and about 12 % fewer than Egami's H.264 encoder at effort 4; 1.5 times x265 medium's one-thread CPU cycles a frame at quality
+  50 and 1.8 times at 34. The efforts form a ladder each step of which needs fewer bits than the one below: effort 0 to 4 keep
+  early skip, which from effort 5 is off (a skipped coding unit is still split), and the intra search of video differs from
+  HEIC's where that paid (HEIC's output is unchanged). The search prices trial codings from static rate tables and codes only the kept one with RDOQ, and runs AVX2/SSE2/
   Vector128 SAD, SATD, interpolation and quantization kernels; the shared forward transform gained 4x4 and even/odd-split
   16x16/32x32 kernels, which make HEIC encoding a few percent faster with byte-identical output.
 - Allocation budget tests guard the encoder's steady state, and the `hevcenc` fuzz target in tests/Egami.Video.Fuzz drives its

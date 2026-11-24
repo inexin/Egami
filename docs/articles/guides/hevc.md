@@ -72,7 +72,7 @@ Keyframes are IDR pictures, every 10 seconds unless `KeyframeInterval` is set, a
 off. P pictures predict from up to three earlier pictures at effort 4 (one at 0 and 1, two at 2 and 3, four from 6), with
 motion search to a quarter sample, merge and skip modes, and intra blocks where they pay. B pictures predict from both sides
 and take fewer bits; they need `LatencyMode.Quality` (the default), because they are coded out of order and packets carry
-decode timestamps. From effort 3 a run of two or three B pictures is a pyramid whose middle picture the others predict from.
+decode timestamps. A run of two or three B pictures is a pyramid whose middle picture the others predict from.
 `LatencyMode.Realtime` turns B pictures and the lookahead off, so each packet comes out as soon as its frame goes in.
 
 Rate control works as for the H.264 encoder: constant quality (the default), a fixed `Quantizer`, an average `Bitrate` (one
@@ -90,54 +90,57 @@ Egami's decoder, FFmpeg's and the reference decoder HM to the encoder's own reco
 ### Compression and speed
 
 The encoder is measured against x265 3.6's medium preset on four Xiph test clips (crowd_run, ducks_take_off, park_joy and
-old_town_cross at 720p, 50 frames a second, 60 frames), both tuned for PSNR. At effort 4 it needs 2.1 % fewer bits than x265
-medium for the same PSNR on average (from 7.0 % fewer on old_town_cross to 1.1 % more on park_joy), and with adaptive
-quantization on, as both encoders default to, 2.9 % fewer for the same SSIM. At effort 5 it needs 8.4 % fewer for the same
-PSNR. Against Egami's own H.264 encoder at effort 4 it saves 12.2 % of the bits on average (x265 medium saves 10.3 % on the
-same clips). It is slower: on one thread, with x265 at the CRF that gives the same PSNR-Y and no adaptive quantization,
-effort 4 takes 1.5 times x265 medium's CPU cycles a frame at quality 50 (1.2 to 2.3 by clip) and 1.8 times at quality 34
-(1.6 to 2.4), and 2.5 and 2.8 times its instructions. Cycles vary by up to a third between runs on a busy machine.
+old_town_cross at 720p, 50 frames a second, 60 frames), both tuned for PSNR. At effort 4 it needs 2.3 % fewer bits than x265
+medium for the same PSNR on average (from 8.0 % fewer on old_town_cross to 1.2 % more on park_joy), and with adaptive
+quantization on, as both encoders default to, 3.1 % fewer for the same SSIM. At effort 5 it needs 13.1 % fewer for the same
+PSNR. Against Egami's own H.264 encoder at effort 4 it saves about 12 % of the bits on average (x265 medium saves 10.3 % on
+the same clips). It is slower: on one thread, with x265 at the CRF that gives the same PSNR-Y and no adaptive quantization,
+effort 4 took 1.5 times x265 medium's CPU cycles a frame at quality 50 (1.2 to 2.3 by clip) and 1.8 times at quality 34
+(1.6 to 2.4), and 2.5 and 2.8 times its instructions, before a tuning of the efforts that added about 2 % to effort 4's
+instructions. Cycles vary by up to a third between runs on a busy machine.
 
 #### Speed by effort
 
 Effort trades time for size. BD-rate is against x265 medium on the same four clips over four qualities and 60 frames, on
-PSNR-Y (adaptive quantization off) and on SSIM-Y (on): the mean of the clips and, for PSNR, the worst clip. Effort 4's speed is
-above; the other efforts' times are not yet measured on a quiet machine, so only their rough order is given.
+PSNR-Y (adaptive quantization off) and on SSIM-Y (on): the mean of the clips and, for PSNR, the worst clip. Work is the encoder's
+instructions a frame at one thread against effort 4's (quality 50, the first 10 frames of the four clips); effort 4's time
+against x265 is above.
 
-| Effort | BD-rate PSNR (mean) | PSNR (worst clip) | BD-rate SSIM (mean) | Time |
-|---:|---:|---:|---:|---|
-| 0 | +108.9 % | +188.7 % | +81.1 % | under x265 medium's |
-| 1 | +24.7 % | +36.0 % | +15.4 % | under x265 medium's |
-| 2 | +8.5 % | +16.3 % | +6.8 % | about effort 4's |
-| 3 | −3.6 % | +0.5 % | −4.9 % | about effort 4's |
-| 4 (default) | −2.1 % | +1.1 % | −2.9 % | 1.5 to 1.8 × x265 medium |
-| 5 | −8.4 % | −4.5 % | −12.5 % | about 3 × effort 4 |
-| 6 | −8.5 % | −4.4 % | −11.3 % | about 4 × effort 4 |
-| 7 | −8.6 % | −4.3 % | −11.2 % | about 4 × effort 4 |
-| 8 | −11.0 % | −7.2 % | −13.3 % | about 8 × effort 4 |
-| 9 | −16.1 % | −8.8 % | −19.2 % | about 12 × effort 4 |
-| 10 | −16.1 % | −8.7 % | −19.2 % | about 20 × effort 4 |
+| Effort | BD-rate PSNR (mean) | PSNR (worst clip) | BD-rate SSIM (mean) | Work |
+|---:|---:|---:|---:|---:|
+| 0 | +108.9 % | +188.7 % | +81.1 % | 0.52 × |
+| 1 | +9.0 % | +17.3 % | +4.7 % | 0.64 × |
+| 2 | +3.6 % | +9.3 % | +1.4 % | 0.74 × |
+| 3 | −1.1 % | +1.9 % | −2.1 % | 0.86 × |
+| 4 (default) | −2.3 % | +1.2 % | −3.1 % | 1 |
+| 5 | −13.1 % | −5.6 % | −17.4 % | 2.9 × |
+| 6 | −13.7 % | −5.8 % | −16.7 % | 3.7 × |
+| 7 | −14.4 % | −5.9 % | −18.0 % | 5.0 × |
+| 8 | −15.3 % | −8.7 % | −18.0 % | 8.3 × |
+| 9 | −16.0 % | −8.8 % | −19.1 % | 10.2 × |
+| 10 | −16.1 % | −8.7 % | −19.2 % | 11.5 × or more |
 
-The ladder is not yet in order everywhere: effort 3 currently needs fewer bits than effort 4 for about the same time, efforts
-6 and 7 save no more than 5, and effort 10 no more than 9. A tuning round will even it out; until then effort 3 or 5 suits
-smaller files, and 9 the smallest.
+Efforts 9 and 10 were measured with the intra search of one effort lower (8 and 9), which they now search harder; their
+BD-rates and effort 10's work are from those runs.
 
 What each effort adds:
 
 - **0**: 16x16 and 32x32 coding units, one reference, two merge candidates, no B pictures, motion to half samples only and no SAO.
-- **1**: B pictures (three between P pictures), quarter-sample motion, 8x8 intra units and SAO.
-- **2**: two references, inter coding units from 8x8 to 64x64, Nx2N and 2NxN partitions, RDOQ, and a CTB's units split at
-  least as deep as the co-located ones in the references (to effort 5).
-- **3**: B pyramids, three merge candidates, inter transform tree splits, and the intra search's NxN units; no Nx2N and 2NxN.
-- **4** (default): three references, a wider search range, and in the intra search a transform tree search with coarser
-  rough mode steps and no most probable mode candidates.
-- **5**: Nx2N and 2NxN again, two references for B pictures, four merge candidates, transform trees two levels deep,
-  square sub-sample search, RDOQ on every trial, and the block tree.
+- **1**: B pictures (three between P pictures, in a pyramid), quarter-sample motion, two references, three merge candidates,
+  inter coding units from 16x16 to 64x64, a CTB's units split at least as deep as the co-located ones in the references (to
+  effort 5), and the intra search's 8x8 and NxN units with RDOQ and transform skip.
+- **2**: inter transform tree splits.
+- **3**: 8x8 inter coding units.
+- **4** (default): three references, a wider search range, the second candidate coded when it is within 1.25 times the
+  best, and in the intra search the most probable mode candidates and 64x64 units only without the adaptive quantizer.
+- **5**: Nx2N and 2NxN partitions, two references for B pictures, four merge candidates, transform trees two levels deep,
+  square sub-sample search, RDOQ on every trial, the block tree, and no early skip: a skipped coding unit is still split.
 - **6**: four references, five merge candidates, and every split tried.
-- **7**: the second candidate coded when it is within 1.5 times the best.
-- **8**: intra searched in full in P and B pictures, transform trees three levels deep, and halves searched from every start.
-- **9**: no early skip and a wider search range.
-- **10**: the widest search range and every intra mode.
+- **7**: transform trees three levels deep, halves searched from every start, and the second candidate coded within 2 times
+  the best.
+- **8**: intra searched in full in P and B pictures (with effort 6's transform trees and second candidates).
+- **9**: effort 7's transform trees, halves and second candidates with the full intra search.
+- **10**: a wider search range and the second candidate coded within 4 times the best.
 
 tools/video/time-hevc-encoder.py and check-hevc-encoder.py in the repository repeat these measurements, and egami-compare's
 video/native/hevc-encode-gate.py runs them as release gates.

@@ -177,7 +177,7 @@ internal sealed class HevcFrameCoder : IFrameCoder
     {
         HevcEncodedPicture coded = HevcEncoder.Encode(Picture(qp, _profile.IpLambdaScale), _planes, _strides,
             new HevcSliceInfo { NalType = HevcNal.IdrNLp },
-            CancellationToken.None);
+            CancellationToken.None, profile: _profile.KeyProfile);
         coded.Reconstruction.ColMotion = new HevcColMotion(coded.Reconstruction);
         return coded;
     }
