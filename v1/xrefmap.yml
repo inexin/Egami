@@ -29938,6 +29938,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.ParagraphStyle.OptimalLines
   nameWithType: ParagraphStyle.OptimalLines
+- uid: Egami.Fonts.Layout.ParagraphStyle.SpaceShrink
+  name: SpaceShrink
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_SpaceShrink
+  commentId: P:Egami.Fonts.Layout.ParagraphStyle.SpaceShrink
+  fullName: Egami.Fonts.Layout.ParagraphStyle.SpaceShrink
+  nameWithType: ParagraphStyle.SpaceShrink
+- uid: Egami.Fonts.Layout.ParagraphStyle.SpaceShrink*
+  name: SpaceShrink
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_SpaceShrink_
+  commentId: Overload:Egami.Fonts.Layout.ParagraphStyle.SpaceShrink
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.ParagraphStyle.SpaceShrink
+  nameWithType: ParagraphStyle.SpaceShrink
 - uid: Egami.Fonts.Layout.ParagraphStyle.Strut
   name: Strut
   href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Strut

@@ -451,12 +451,14 @@ its own line, as greedy filling does.</p>
 
   <h3 id="Egami_Fonts_Layout_OptimalLineOptions_ShrinkSpaces" data-uid="Egami.Fonts.Layout.OptimalLineOptions.ShrinkSpaces">
   ShrinkSpaces
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/OptimalLineOptions.cs/#L99"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/OptimalLineOptions.cs/#L101"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether word spaces in justified text may shrink, by up to a third of a space, to fit more on a line, as in
-TeX; false by default, as Word and browsers only stretch them. A last line (before a mandatory break or the paragraph's
-end) shrinks only when <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_AlignLast">AlignLast</a> justifies it.</p>
+TeX; false by default, as browsers only stretch them. A last line (before a mandatory break or the paragraph's end)
+shrinks only when <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_AlignLast">AlignLast</a> justifies it. When <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_SpaceShrink">SpaceShrink</a> is
+more than 0, it sets the limit instead, whether this is set or not: word spaces other than no-break spaces shrink by up
+to that share, and on the last line of a justified paragraph too.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
