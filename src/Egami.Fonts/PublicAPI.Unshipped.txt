@@ -31,3 +31,7 @@ static Egami.Fonts.WebFontOptions.operator !=(Egami.Fonts.WebFontOptions? left, 
 static Egami.Fonts.WebFontOptions.operator ==(Egami.Fonts.WebFontOptions? left, Egami.Fonts.WebFontOptions? right) -> bool
 Egami.Fonts.Layout.ParagraphStyle.SpaceShrink.get -> float
 Egami.Fonts.Layout.ParagraphStyle.SpaceShrink.init -> void
+Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks.get -> bool
+Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks.init -> void
+Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces.get -> bool
+Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces.init -> void

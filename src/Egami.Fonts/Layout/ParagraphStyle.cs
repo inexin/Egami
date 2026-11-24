@@ -32,10 +32,12 @@ public sealed record class ParagraphStyle
     /// <summary>Gets how lines align in the layout width.</summary>
     public TextAlign Align { get; init; }
 
-    /// <summary>Gets how the last line, and lines before a hard break, align.</summary>
+    /// <summary>Gets how the last line, and lines before a hard break, align (see <see cref="JustifyLineBreaks"/> for the
+    /// lines before a hard break of a justified paragraph).</summary>
     public TextAlignLast AlignLast { get; init; }
 
-    /// <summary>Gets how justified lines stretch.</summary>
+    /// <summary>Gets how justified lines stretch. On a line with tabs, only the opportunities after its last tab stretch (or
+    /// shrink), so text after each tab stays on its tab stop.</summary>
     public TextJustify Justify { get; init; }
 
     /// <summary>Gets how far <see cref="TextJustify.Kashida"/> lengthens words before word spaces take the rest.</summary>
@@ -49,7 +51,8 @@ public sealed record class ParagraphStyle
     /// is kept whole by shrinking before automatic hyphenation is tried. Such lines are drawn with their word spaces shrunk
     /// evenly; glyphs and letter spacing keep their widths. It applies to lines <see cref="Align"/> or <see cref="AlignLast"/>
     /// justifies and, in a justified paragraph, also to the last line and lines before a hard break, which shrink to fit but
-    /// never stretch. <see cref="LineFill.Optimal"/> uses it as its shrink limit (see
+    /// never stretch (unless <see cref="JustifyLineBreaks"/> justifies the latter). Only word spaces after a line's last tab
+    /// shrink. <see cref="LineFill.Optimal"/> uses it as its shrink limit (see
     /// <see cref="OptimalLineOptions.ShrinkSpaces"/>). Nothing shrinks when <see cref="Justify"/> is
     /// <see cref="TextJustify.None"/>.
     /// </summary>
@@ -62,6 +65,32 @@ public sealed record class ParagraphStyle
         get => _spaceShrink;
         init => _spaceShrink = value is >= 0 and <= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "From 0 to 1.");
     }
+
+    /// <summary>
+    /// Gets whether, in a justified paragraph, a line that ends in a hard break other than U+2029 PARAGRAPH SEPARATOR (LF, CR,
+    /// CRLF, VT, FF, NEL or U+2028) is justified like a wrapped line, as Word justifies the line before a manual line break
+    /// (Shift+Enter) unless a document sets <c>doNotExpandShiftReturn</c>. Off by default, as CSS lays such lines out like the
+    /// last line. When on, and <see cref="Align"/> justifies and <see cref="Justify"/> is not <see cref="TextJustify.None"/>,
+    /// such lines stretch to the width (or, with <see cref="SpaceShrink"/>, shrink and stretch as any justified line), and
+    /// <see cref="LineFill.Optimal"/> weighs their stretch as it weighs other lines'; a line without justification
+    /// opportunities stays at the start, and <see cref="TextLine.HardBreak"/> is still true. The paragraph's last line, and lines
+    /// before U+2029, keep <see cref="AlignLast"/>; a hard break at the very end of the text adds no empty line, so the line
+    /// before it is the last line.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="justify-line-breaks"/>
+    /// </example>
+    public bool JustifyLineBreaks { get; init; }
+
+    /// <summary>
+    /// Gets whether the no-break space U+00A0 stretches on justified lines, as CSS makes it a word separator: true, the default.
+    /// False keeps it at its width, as Word does, so text joined by it stays as set; it then takes no stretch on any justified
+    /// line and counts for none in <see cref="LineFill.Optimal"/>. <see cref="SpaceShrink"/> never shrinks it either way.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="justify-line-breaks"/>
+    /// </example>
+    public bool StretchNoBreakSpaces { get; init; } = true;
 
     /// <summary>Gets where lines may break.</summary>
     public LineBreakOptions LineBreaking { get; init; }

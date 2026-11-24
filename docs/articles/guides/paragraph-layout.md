@@ -244,6 +244,18 @@ and letter spacing keep their widths, and a kashida line that shrinks gets no ta
 break shrink when they must but never stretch. It is 0 by default, so lines only stretch, as in browsers.
 `LineFill.Optimal` takes it as its shrink limit in place of `OptimalLineOptions.ShrinkSpaces`' third.
 
+`ParagraphStyle.JustifyLineBreaks` justifies the lines before a hard break too, as Word justifies the line before a manual
+line break (Shift+Enter): in a justified paragraph, a line that ends in LF, CR, CRLF, VT, FF, NEL or U+2028 stretches to the
+width like a wrapped line (and with `SpaceShrink` shrinks and stretches like one), and `LineFill.Optimal` weighs its stretch
+rather than letting it be as loose as it likes. A line without justification opportunities, such as one word, stays at the
+start. The paragraph's last line and a line before U+2029 PARAGRAPH SEPARATOR keep `AlignLast`, so a caller picks per break
+which lines stretch; a break at the very end of the text adds no empty line, so the line before it is the last line.
+`TextLine.HardBreak` is still true for such lines.
+
+On a line with tabs, only the justification opportunities after its last tab stretch or shrink, so text after each tab stays
+on its tab stop, as in Word. No-break spaces (U+00A0) stretch, as CSS makes them word separators;
+`ParagraphStyle.StretchNoBreakSpaces = false` keeps them at their width, as Word does.
+
 `TextJustify` says where justified lines stretch: `InterWord` at word separators, `InterCharacter` between any two grapheme
 clusters except inside cursive scripts such as Arabic, and `Auto` (the default) at word separators and around Chinese,
 Japanese and Korean characters, as browsers justify. `None` leaves justified lines at the start.
@@ -370,6 +382,13 @@ needs them.
 
 With `SpaceShrink`, a line that would overflow by a little shrinks its word spaces and keeps the next word, so justified text
 takes fewer lines and its spaces vary less between loose and tight lines.
+
+### Justified lines before a line break, as in Word
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#justify-line-breaks)]
+
+The line before `\n` stretches to the width like a wrapped line; the paragraph's last line stays at the start, and the
+no-break space keeps "10 kg" at its natural width.
 
 ### A chat bubble with an emoji
 

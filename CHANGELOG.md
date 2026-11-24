@@ -172,6 +172,15 @@ WOFF and WOFF2 writing (roadmap 2.7.7) and Word-style justified lines. Additive 
   lines and lines before a hard break shrink when they must but never stretch; kashida lines that shrink get no tatweels.
   `LineFill.Optimal` uses it as its shrink limit in place of `OptimalLineOptions.ShrinkSpaces`' third. At 0 every layout is
   the same as in 1.5.0.
+- `ParagraphStyle.JustifyLineBreaks` (false by default) justifies the lines of a justified paragraph that end in a hard break
+  other than U+2029 (LF, CR, CRLF, VT, FF, NEL, U+2028) like wrapped lines, as Word justifies the line before Shift+Enter: they
+  stretch to the width, shrink and stretch with `SpaceShrink`, and `LineFill.Optimal` weighs their stretch instead of scoring
+  them 0. The paragraph's last line and lines before U+2029 keep `AlignLast`; `TextLine.HardBreak` stays true.
+- `ParagraphStyle.StretchNoBreakSpaces` (true by default, as CSS) set to false keeps U+00A0 at its width on justified lines,
+  as Word does.
+- Fixed: on a justified line with tabs, stretched or shrunk word spaces before a tab moved the text after it off its tab stop.
+  Only the justification opportunities after a line's last tab now stretch or shrink, as Word spreads such lines; lines
+  without tabs are unchanged.
 
 - `WebFontWriter.Write` writes a `Typeface`, a `FontSubset` or sfnt or collection bytes as WOFF2 (the default) or WOFF 1.0
   (`WebFontOptions.Format`), to a byte array or a stream. Every table is kept. WOFF2 stores glyf and loca in the transformed
