@@ -169,6 +169,21 @@ public class EpsPhotoshopTests
     }
 
     [Fact]
+    public void TheStartLineInsideBeginBinaryIsFound()
+    {
+        // As Photoshop 3 writes CMYK: %ImageData after the setup, a padding channel, a row of each plane in turn, in hex, and
+        // the start line and data wrapped in %%BeginBinary.
+        byte[] cmyk = Samples(3 * 2 * 4, 21);
+        byte[] stored = [.. Enumerable.Range(0, 2).SelectMany(y => Enumerable.Range(0, 5).SelectMany(c => Enumerable.Range(0, 3).Select(x => c < 4 ? cmyk[(((y * 3) + x) * 4) + c] : (byte)0)))];
+        byte[] hex = Hex(stored);
+        string head = Header + "%%BeginProlog\n%%EndProlog\n%%BeginSetup\n%%EndSetup\n%ImageData: 3 2 8 4 1 3 2 \"beginimage\"\n/beginimage { } def\n"
+            + $"%%BeginBinary: {hex.Length + 11}\nbeginimage\n";
+        byte[] eps = [.. Encoding.ASCII.GetBytes(head), .. hex, .. "%%EndBinary\n%%EOF\n"u8];
+        using Raster<Cmyk8> raster = Raster.Load<Cmyk8>(eps);
+        Assert.Equal(cmyk, Enumerable.Range(0, 2).SelectMany(y => raster.Row(y).ToArray().SelectMany(p => new[] { p.C, p.M, p.Y, p.K })));
+    }
+
+    [Fact]
     public void TheProfileAndResourcesComeAfterTheImageDataComment()
     {
         byte[] profile = Samples(16, 77);

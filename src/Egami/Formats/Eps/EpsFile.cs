@@ -333,8 +333,10 @@ public sealed class EpsFile
                     PhotoshopResources = resources;
                 }
             }
-            else if (line.StartsWith("%%BeginBinary:"u8) || line.StartsWith("%%BeginData:"u8))
+            else if ((line.StartsWith("%%BeginBinary:"u8) || line.StartsWith("%%BeginData:"u8)) && (imageKeyword is null || Photoshop!.DataStart >= 0))
             {
+                // Photoshop wraps its start line and image in %%BeginBinary, so while the start line is still to come the
+                // section is read line by line.
                 next = SkipBinary(ps, line, next);
             }
 
