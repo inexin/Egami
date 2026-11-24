@@ -35,7 +35,9 @@ and whether the data is binary, hex or JPEG. Egami reads gray, bitmap, RGB and C
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Eps.cs#eps-photoshop)]
 
-Lab images are left to the file's preview, with an `Eps.ImageDataSkipped` warning. Data that cannot be decoded falls back to
+An EPS file placed inside another (between `%%BeginDocument` and `%%EndDocument`, as Illustrator embeds a placed Photoshop
+file) belongs to the drawing: its image and comments are passed over, not loaded as the outer file's. Lab images are left to
+the file's preview, with an `Eps.ImageDataSkipped` warning. Data that cannot be decoded falls back to
 the preview too, with `Eps.ImageDataDamaged`; data cut short gives 0 for the missing samples, with `Eps.ImageDataTruncated`.
 
 ## Metafile previews
