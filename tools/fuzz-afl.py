@@ -74,7 +74,7 @@ cp -r /src/src /build/
 cp -r /src/tests/Egami.Fuzz /build/tests/
 mkdir -p /build/tests/fonts/derived && cp /src/tests/fonts/derived/NotoSansCJK-layout-subset.otf /build/tests/fonts/derived/
 cp /src/Directory.Build.props /src/Directory.Packages.props /src/global.json /build/
-mkdir -p /build/docs && cp -r /src/docs/schemas /build/docs/
+mkdir -p /build/docs && cp -r /src/docs/schemas /src/docs/agents /build/docs/
 cp /src/.editorconfig /build/ 2>/dev/null || true
 find /build -type d \\( -name bin -o -name obj \\) -prune -exec rm -rf {{}} +
 dotnet publish /build/tests/Egami.Fuzz -c Release -o /out -p:TreatWarningsAsErrors=false > /tmp/publish.log

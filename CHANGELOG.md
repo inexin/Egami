@@ -86,6 +86,9 @@ SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation
   - Animation elements under a failing `systemLanguage`, `requiredExtensions` or `requiredFeatures`, or in a `switch`
     branch that is not chosen, have no effect.
   - An additive sum of path data whose commands differ leaves the value below it.
+- Fixed: a rect, circle, ellipse, line, polyline or polygon whose coordinates are too large for a float (such as
+  `height="1e48"`) threw an `ArgumentException` while loading; it is now not drawn, with `Svg.BadAttribute` for rects and
+  polygons. Found by the svg-timeline fuzz target.
 
 Command line:
 
