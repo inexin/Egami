@@ -23,8 +23,8 @@ public sealed partial class SvgDocument
     /// else up to and including the end of the last animation, else <see cref="SvgAnimationOptions.MaxLength"/>. Each frame's
     /// <see cref="Metadata.FrameMetadata.Delay"/> is how long it lasts; frames equal to the one before are merged into it
     /// unless <see cref="SvgAnimationOptions.MergeDuplicates"/> is off. The raster loops forever
-    /// (<see cref="Metadata.RasterMetadata.LoopCount"/> 0) when the document has a <see cref="SvgAnimationInfo.LoopPeriod"/>,
-    /// else it plays once. A document without animations gives one frame. Frames are drawn on as many threads as the context
+    /// (<see cref="Metadata.RasterMetadata.LoopCount"/> 0) when the document has a <see cref="SvgAnimationInfo.LoopPeriod"/>
+    /// that was not cut at the maximum length, else it plays once. A document without animations gives one frame. Frames are drawn on as many threads as the context
     /// allows.
     /// </summary>
     /// <typeparam name="TPixel">The pixel type of the raster.</typeparam>

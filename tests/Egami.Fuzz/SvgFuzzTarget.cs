@@ -70,9 +70,9 @@ internal static class SvgFuzzTarget
 
     /// <summary>
     /// The svg-timeline target (SVG animation stage A): the input is loaded as an SVG document; its SMIL timeline is built (the
-    /// timing info read), and it is resolved and drawn at a few times up to 30 seconds. Each begin and end value of its animation
-    /// elements is also read on its own. Only the load may throw, with an <see cref="EgamiException"/>; the timeline never throws
-    /// and never runs past its work budget.
+    /// timing info read), and it is resolved and drawn at a few times up to 30 seconds, drawn as frames, and frozen at one
+    /// moment. Each begin and end value of its animation elements is also read on its own. Only the load may throw, with an
+    /// <see cref="EgamiException"/>; the timeline never throws and never runs past its work budget.
     /// </summary>
     public static void Timeline(byte[] data)
     {
@@ -107,5 +107,24 @@ internal static class SvgFuzzTarget
                 using Raster<Rgba8> raster = document.Rasterize<Rgba8>(new SvgRenderOptions { Context = s_context, Scale = scale, Time = TimeSpan.FromSeconds(seconds) });
             }
         }
+
+        // Stage D: the animation as frames (a few, small), and one moment frozen into a static document and written out.
+        if (float.IsFinite(scale) && scale > 0)
+        {
+            using Raster<Rgba8> frames = document.RasterizeAnimation<Rgba8>(new SvgAnimationOptions
+            {
+                FrameRate = 4,
+                MaxLength = TimeSpan.FromSeconds(2),
+                Render = new SvgRenderOptions { Context = s_context, Scale = scale },
+            });
+            if (frames.Frames.Count > 9)
+            {
+                throw new InvalidOperationException($"{frames.Frames.Count} frames for at most 2 s at 4 a second.");
+            }
+        }
+
+        SvgDocument frozen = document.Freeze(TimeSpan.FromSeconds(1));
+        _ = frozen.RenderTree;
+        frozen.Save(Stream.Null);
     }
 }

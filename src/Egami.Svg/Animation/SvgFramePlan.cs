@@ -15,6 +15,7 @@ internal readonly record struct SvgFramePlan(TimeSpan Start, long LengthTicks, l
         string? warning = null;
         long length;
         bool endInclusive = false;
+        bool loops = info.LoopPeriod is not null;
         if (options.Length is TimeSpan given)
         {
             length = given.Ticks;
@@ -27,6 +28,13 @@ internal readonly record struct SvgFramePlan(TimeSpan Start, long LengthTicks, l
         else if (info.LoopPeriod is TimeSpan period)
         {
             length = period.Ticks;
+            if (length > options.MaxLength.Ticks)
+            {
+                // Part of a loop does not loop.
+                warning = string.Create(CultureInfo.InvariantCulture, $"The animation loops every {period.TotalSeconds:0.###} s; frames are drawn for the first {options.MaxLength.TotalSeconds:0.###} s (SvgAnimationOptions.MaxLength).");
+                length = options.MaxLength.Ticks;
+                loops = false;
+            }
         }
         else if (info.Duration is TimeSpan end)
         {
@@ -49,7 +57,7 @@ internal readonly record struct SvgFramePlan(TimeSpan Start, long LengthTicks, l
         // In double first: a long length at a high rate must not wrap round in long.
         double frames = length / (double)TimeSpan.TicksPerSecond * rate;
         double count = endInclusive ? Math.Floor(frames + 1e-6) + 1 : Math.Max(1, Math.Ceiling(frames - 1e-6));
-        return new SvgFramePlan(options.Start, length, (long)Math.Min(count, long.MaxValue / 2), rate, info.LoopPeriod is not null, warning);
+        return new SvgFramePlan(options.Start, length, (long)Math.Min(count, long.MaxValue / 2), rate, loops, warning);
     }
 
     /// <summary>The offset of frame <paramref name="index"/> from the start, in ticks.</summary>

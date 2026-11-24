@@ -110,6 +110,18 @@ public class AnimationFramesTests
     }
 
     [Fact]
+    public void ALoopLongerThanTheMaximumIsCutAndPlaysOnce()
+    {
+        List<EgamiDiagnostic> seen = [];
+        SvgDocument document = SvgDocument.Parse(Loop, new SvgLoadOptions { Context = EgamiContext.Default with { Diagnostics = seen.Add } });
+        using Raster<Rgba8> raster = document.RasterizeAnimation<Rgba8>(new SvgAnimationOptions { FrameRate = 4, MaxLength = TimeSpan.FromSeconds(1.5) });
+        Assert.Equal(2, raster.Frames.Count);
+        Assert.Equal(TimeSpan.FromSeconds(0.5), raster.Frames[1].Metadata.Delay);
+        Assert.Equal(1, raster.Metadata.LoopCount);
+        Assert.Contains(seen, d => d.Id == "Svg.AnimationLength");
+    }
+
+    [Fact]
     public void AGivenLengthAndStartAreKept()
     {
         SvgDocument document = SvgDocument.Parse(Loop);

@@ -50,8 +50,8 @@ public sealed record class SvgAnimationOptions
 
     /// <summary>
     /// Gets the longest the document may make the frames go on when <see cref="Length"/> is not set: an animation that runs
-    /// forever without a common loop period, or ends later, is cut there and the context's diagnostics get an
-    /// <c>Svg.AnimationLength</c> warning. 10 seconds by default.
+    /// forever without a common loop period, ends later or loops more slowly, is cut there (and then plays once) and the
+    /// context's diagnostics get an <c>Svg.AnimationLength</c> warning. 10 seconds by default.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is not positive.</exception>
     public TimeSpan MaxLength
