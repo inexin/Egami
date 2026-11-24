@@ -19,6 +19,9 @@ internal sealed class SvgMotionFunction
     private const int MaxTimedSegments = 256;
 
     private readonly PathMeasure _measure;
+
+    /// <summary>Gets the path's first point, where a path of no length holds the element.</summary>
+    private Vector2 Origin { get; init; }
     private readonly double[] _contourStarts;
     private readonly double[] _vertices;
     private readonly double[]? _keyTimes;
@@ -143,9 +146,10 @@ internal sealed class SvgMotionFunction
             _ => SvgCalcMode.Paced,
         };
 
-        // keyPoints place the target at fractions of the path's length at the keyTimes; paced timing ignores both.
+        // keyPoints place the target at fractions of the path's length at the keyTimes; paced timing ignores the keyTimes and
+        // paces the keyPoints by their distances (wpt's animateMotion-keyPoints tests).
         double[]? keyPoints = null;
-        if (mode != SvgCalcMode.Paced && attributes["keyPoints"] is string keyPointsText)
+        if (attributes["keyPoints"] is string keyPointsText)
         {
             keyPoints = SvgAnimationFunction.ReadNumbers(keyPointsText, ';');
             if (keyPoints is null || keyPoints.Any(k => k is < 0 or > 1 || double.IsNaN(k)))
@@ -166,6 +170,18 @@ internal sealed class SvgMotionFunction
                 report.Warn("Svg.BadAnimation", $"The {e.Name}'s keyTimes \"{Resolving.SvgGeometry.Clip(keyTimesText)}\" do not fit its motion; it has no effect.", e);
                 return null;
             }
+        }
+        else if (keyPoints is not null && mode == SvgCalcMode.Paced)
+        {
+            double[] along = new double[keyPoints.Length];
+            for (int i = 1; i < keyPoints.Length; i++)
+            {
+                along[i] = along[i - 1] + Math.Abs(keyPoints[i] - keyPoints[i - 1]);
+            }
+
+            double length = along[^1];
+            keyTimes = keyPoints.Length == 1 ? null : [.. along.Select((d, i) => length > 0 ? d / length : (double)i / (along.Length - 1))];
+            mode = SvgCalcMode.Linear;
         }
         else if (keyPoints is not null)
         {
@@ -210,6 +226,7 @@ internal sealed class SvgMotionFunction
             Accumulates = !isTo && attributes["accumulate"]?.Trim() == "sum",
             Angle = angle,
             Reverse = reverse,
+            Origin = path.Points.Length > 0 ? path.Points[0] : Vector2.Zero,
         };
     }
 
@@ -300,7 +317,8 @@ internal sealed class SvgMotionFunction
         IReadOnlyList<ContourMeasure> contours = _measure.Contours;
         if (contours.Count == 0)
         {
-            return (Vector2.Zero, Vector2.UnitX);
+            // A path of no length (from and to the same point) holds the element at that point, unturned.
+            return (Origin, Vector2.UnitX);
         }
 
         int i = 0;
@@ -310,7 +328,10 @@ internal sealed class SvgMotionFunction
         }
 
         float local = (float)(distance - _contourStarts[i]);
-        return (contours[i].GetPosition(local), contours[i].GetTangent(local));
+
+        // At a corner the direction is the segment that ends there, as browsers turn: read it a hair before the vertex.
+        float before = local > 0 ? Math.Max(0, local - Math.Max(1e-4f, local * 1e-6f)) : 0;
+        return (contours[i].GetPosition(local), contours[i].GetTangent(before));
     }
 
     /// <summary>The path an mpath child names, as path data; null when there is none.</summary>

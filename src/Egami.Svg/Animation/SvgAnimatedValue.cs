@@ -303,7 +303,10 @@ internal sealed class SvgPathValue(SvgPathValue.Segment[] segments) : SvgAnimate
 
     public Segment[] Segments { get; } = segments;
 
-    /// <summary>Reads path data strictly: implicit repeats become explicit commands (after a moveto, linetos).</summary>
+    /// <summary>
+    /// Reads path data strictly: implicit repeats become explicit commands (after a moveto, linetos). Empty data is an empty
+    /// path, which combines only with another empty one.
+    /// </summary>
     public static SvgPathValue? TryParse(string text)
     {
         List<Segment> segments = [];
@@ -365,7 +368,7 @@ internal sealed class SvgPathValue(SvgPathValue.Segment[] segments) : SvgAnimate
             SvgNumbers.SkipSeparator(s, ref i);
         }
 
-        return segments.Count == 0 ? null : new SvgPathValue([.. segments]);
+        return new SvgPathValue([.. segments]);
     }
 
     public override SvgAnimatedValue? Interpolate(SvgAnimatedValue to, double p) =>

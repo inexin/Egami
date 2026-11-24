@@ -92,9 +92,10 @@ internal sealed class SvgAnimationFrame
     /// priority order, the one that began first at the bottom (document order breaks ties); each sees the result below it, or
     /// the base value <paramref name="baseValue"/> gives, as its underlying value. Elements are done ancestors first, and the
     /// frame is passed to <paramref name="baseValue"/> as it fills, so a property's base value can inherit an ancestor's
-    /// animated value. Discards that have begun remove their targets, and the animations inside them, from then on.
+    /// animated value. Discards that have begun remove their targets, and the animations inside them, from then on. An
+    /// animation element <paramref name="applies"/> turns down (conditional processing) has no effect.
     /// </summary>
-    public static SvgAnimationFrame Compute(SvgTimeline timeline, double time, Func<SvgAnimationFrame, SvgElement, string, string?> baseValue)
+    public static SvgAnimationFrame Compute(SvgTimeline timeline, double time, Func<SvgAnimationFrame, SvgElement, string, string?> baseValue, Func<SvgElement, bool>? applies = null)
     {
         SvgAnimationFrame frame = new() { Time = time, CssAnimations = timeline.CssAnimations.Count > 0 };
         foreach (SvgAnimation a in timeline.Animations)
@@ -109,7 +110,7 @@ internal sealed class SvgAnimationFrame
         Dictionary<SvgElement, List<Layer>> motions = new(IdentityComparer.Instance);
         foreach (SvgAnimation a in timeline.Animations)
         {
-            if ((a.Function is null && a.Motion is null) || frame.IsDiscarded(a.Element) || !TryState(a, time, out Layer layer))
+            if ((a.Function is null && a.Motion is null) || frame.IsDiscarded(a.Element) || (applies is not null && !applies(a.Element)) || !TryState(a, time, out Layer layer))
             {
                 continue;
             }
@@ -149,12 +150,19 @@ internal sealed class SvgAnimationFrame
         foreach (SvgElement element in sandwiches.Keys.OrderBy(Depth))
         {
             Dictionary<string, string> values = new(StringComparer.Ordinal);
-            foreach ((string name, List<Layer> layers) in sandwiches[element])
+            Dictionary<string, List<Layer>> byName = sandwiches[element];
+
+            // color first: currentColor in another color's values is the element's color at this moment.
+            IEnumerable<KeyValuePair<string, List<Layer>>> ordered = byName.ContainsKey("color") && byName.Count > 1
+                ? byName.OrderBy(n => n.Key == "color" ? 0 : 1)
+                : byName;
+            foreach ((string name, List<Layer> layers) in ordered)
             {
                 layers.Sort(Priority);
                 string? value = null;
                 bool haveBase = false;
                 string? baseText = null;
+                string? currentColor = null;
                 foreach (Layer layer in layers)
                 {
                     SvgAnimationFunction f = layer.Animation.Function!;
@@ -170,7 +178,13 @@ internal sealed class SvgAnimationFrame
                         underlying = baseText;
                     }
 
-                    value = f.Evaluate(layer.Progress, layer.Iteration, underlying);
+                    if (currentColor is null && name != "color" && f.Kind == SvgValueKind.Color &&
+                        (f.UsesCurrentColor || SvgAnimationFunction.IsCurrentColor(underlying)))
+                    {
+                        currentColor = values.TryGetValue("color", out string? animated) ? animated : baseValue(frame, element, "color");
+                    }
+
+                    value = f.Evaluate(layer.Progress, layer.Iteration, underlying, currentColor);
                 }
 
                 if (value is not null)
