@@ -504,12 +504,19 @@ public sealed class CssCascade
 /// </example>
 public sealed class CssCascadedStyle
 {
-    private readonly Dictionary<string, Slots> _properties = new(StringComparer.Ordinal);
-    private Dictionary<string, CssDeclaration>? _animation;
+    // An animated style's map is an AnimatedProperties, which carries the animation values, so styles that never animate pay
+    // for no field.
+    private readonly Dictionary<string, Slots> _properties;
 
     /// <summary>Creates an empty cascaded style (no declarations apply).</summary>
     public CssCascadedStyle()
     {
+        _properties = new(StringComparer.Ordinal);
+    }
+
+    private CssCascadedStyle(AnimatedProperties properties)
+    {
+        _properties = properties;
     }
 
     /// <summary>Gets the number of properties with a winning declaration.</summary>
@@ -552,25 +559,15 @@ public sealed class CssCascadedStyle
     public CssCascadedStyle WithAnimationValues(IEnumerable<CssDeclaration> declarations)
     {
         ArgumentNullException.ThrowIfNull(declarations);
-        CssCascadedStyle style = new();
-        foreach ((string name, Slots slots) in _properties)
-        {
-            style._properties[name] = slots;
-        }
-
-        if (_animation is not null)
-        {
-            style._animation = new Dictionary<string, CssDeclaration>(_animation, StringComparer.Ordinal);
-        }
-
+        AnimatedProperties properties = new(_properties, (_properties as AnimatedProperties)?.Animation);
         foreach (CssDeclaration declaration in declarations)
         {
             ArgumentNullException.ThrowIfNull(declaration, nameof(declarations));
-            (style._animation ??= new(StringComparer.Ordinal))[declaration.Name] = declaration;
-            style._properties.TryAdd(declaration.Name, default);
+            properties.Animation[declaration.Name] = declaration;
+            properties.TryAdd(declaration.Name, default);
         }
 
-        return style;
+        return new CssCascadedStyle(properties);
     }
 
     /// <summary>Gets the value text of a property's winning declaration, or <see langword="null"/>.</summary>
@@ -596,7 +593,7 @@ public sealed class CssCascadedStyle
     {
         int best = slots.Best(limit);
         bool important = best >= 0 && slots.Get(best).Key.Important;
-        if (!important && limit > (int)CssOrigin.Animation && _animation is not null && _animation.TryGetValue(name, out CssDeclaration? animated))
+        if (!important && limit > (int)CssOrigin.Animation && _properties is AnimatedProperties { Animation: var values } && values.TryGetValue(name, out CssDeclaration? animated))
         {
             origin = CssOrigin.Animation;
             return animated;
@@ -645,8 +642,20 @@ public sealed class CssCascadedStyle
 
     internal readonly record struct Entry(CssDeclaration? Declaration, Key Key);
 
+    // The property map of a style with animation values, which it keeps by property name.
+    private sealed class AnimatedProperties : Dictionary<string, Slots>
+    {
+        public AnimatedProperties(Dictionary<string, Slots> properties, Dictionary<string, CssDeclaration>? animation)
+            : base(properties, StringComparer.Ordinal)
+        {
+            Animation = animation is null ? new(StringComparer.Ordinal) : new(animation, StringComparer.Ordinal);
+        }
+
+        public Dictionary<string, CssDeclaration> Animation { get; }
+    }
+
     // The best declaration of each origin: UserAgent, User, Author. The animation origin's values live apart, in
-    // _animation, as most styles never animate.
+    // AnimatedProperties, as most styles never animate.
     private struct Slots
     {
         private Entry _userAgent;
