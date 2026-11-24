@@ -97,6 +97,9 @@ internal sealed class SvgStyler
         return style;
     }
 
+    /// <summary>Drops an element's cached cascade, so it is cascaded again (after an animation frame changes its values).</summary>
+    public void Forget(SvgElement element) => _cascaded.Remove(element);
+
     /// <summary>The element's computed CSS style where its parent's is <paramref name="parent"/>.</summary>
     public CssComputedStyle Computed(SvgElement element, CssComputedStyle? parent) => _cascade.Compute(Cascaded(element), parent);
 

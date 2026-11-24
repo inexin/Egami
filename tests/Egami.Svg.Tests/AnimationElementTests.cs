@@ -1,6 +1,7 @@
 using System.Numerics;
 
 using Egami.Drawing;
+using Egami.Pixels;
 using Egami.Svg.Animation;
 using Egami.Svg.Reading;
 
@@ -301,5 +302,26 @@ public class AnimationElementTests
         using Raster<Egami.Pixels.Rgba8> raster = document.Rasterize<Egami.Pixels.Rgba8>(new SvgRenderOptions { Time = TimeSpan.FromSeconds(1) });
         Assert.Equal(255, raster.GetPixel(35, 5).A);
         Assert.Equal(0, raster.GetPixel(15, 5).A);
+    }
+
+    [Fact]
+    public void AToAnimationInheritsAnAncestorsOwnToAnimation()
+    {
+        // At 1 s the group is half way from red to blue, (128, 0, 128); the rect goes from that half way to green (0, 128, 0).
+        SvgDocument document = Doc("<g fill='#ff0000'><animate attributeName='fill' to='#0000ff' dur='2s'/><rect id='r' width='10' height='10'><animate attributeName='fill' to='#008000' dur='2s'/></rect></g>");
+        RgbaF32 fill = ((SolidPaint)Shape(document, 1).Fill!).Color;
+        Assert.Equal(64 / 255f, fill.R, 3);
+        Assert.Equal(64 / 255f, fill.G, 3);
+        Assert.Equal(64 / 255f, fill.B, 3);
+    }
+
+    [Fact]
+    public void AToAnimationSeesAnAncestorsAnimatedClass()
+    {
+        // The group's own to animation reads its base first; its class turns "on" at the same moment, so the rect inherits green.
+        SvgDocument document = Doc("<style>.on { fill: #00ff00 }</style><g fill='#ff0000'><set attributeName='class' to='on'/><animate attributeName='stroke' to='#000000' dur='2s'/><rect id='r' width='10' height='10'><animate attributeName='fill' to='#000000' dur='2s'/></rect></g>");
+        RgbaF32 fill = ((SolidPaint)Shape(document, 1).Fill!).Color;
+        Assert.Equal(0f, fill.R, 3);
+        Assert.Equal(128 / 255f, fill.G, 3);
     }
 }

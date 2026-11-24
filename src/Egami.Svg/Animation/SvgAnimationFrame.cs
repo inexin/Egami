@@ -15,6 +15,7 @@ internal sealed class SvgAnimationFrame
     private readonly Dictionary<SvgElement, Matrix3x2> _motion = new(IdentityComparer.Instance);
     private readonly HashSet<SvgElement> _discarded = new(IdentityComparer.Instance);
     private Dictionary<SvgElement, SvgFrameElement>? _cssElements;
+    private readonly List<SvgElement> _stored = [];
 
     private SvgAnimationFrame()
     {
@@ -38,6 +39,9 @@ internal sealed class SvgAnimationFrame
 
     /// <summary>Gets an element's animated attributes, or null when it has none.</summary>
     public IReadOnlyDictionary<string, string>? For(SvgElement element) => _values.GetValueOrDefault(element);
+
+    /// <summary>Gets the elements whose animated values are stored so far, in the order they were stored.</summary>
+    public IReadOnlyList<SvgElement> Stored => _stored;
 
     /// <summary>Gets a value indicating whether an animation sets some element's class, so selectors must match at this moment.</summary>
     public bool AnimatesClass { get; private set; }
@@ -172,6 +176,7 @@ internal sealed class SvgAnimationFrame
             if (values.Count > 0)
             {
                 frame._values[element] = values;
+                frame._stored.Add(element);
                 frame.AnimatesClass |= values.ContainsKey("class");
             }
         }

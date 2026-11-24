@@ -14,6 +14,7 @@ internal sealed class SvgBaseValues(SvgDocument document)
 {
     private readonly Dictionary<SvgElement, CssComputedStyle> _computed = new(IdentityComparer.Instance);
     private SvgStyler? _styler;
+    private int _seen;
 
     /// <summary>The base value of an attribute or property, or null when it has none.</summary>
     public string? Get(SvgAnimationFrame frame, SvgElement element, string name)
@@ -30,6 +31,7 @@ internal sealed class SvgBaseValues(SvgDocument document)
 
     private CssComputedStyle Computed(SvgAnimationFrame frame, SvgElement element)
     {
+        Forget(frame);
         if (_computed.TryGetValue(element, out CssComputedStyle? style))
         {
             return style;
@@ -51,5 +53,41 @@ internal sealed class SvgBaseValues(SvgDocument document)
         }
 
         return _computed[element];
+    }
+
+    /// <summary>
+    /// Drops the styles cached before the frame stored an element's animated values: that element's and any cached below it,
+    /// which inherited its static values (or matched selectors against its static class).
+    /// </summary>
+    private void Forget(SvgAnimationFrame frame)
+    {
+        IReadOnlyList<SvgElement> stored = frame.Stored;
+        for (; _seen < stored.Count; _seen++)
+        {
+            SvgElement changed = stored[_seen];
+            if (_computed.Count == 0)
+            {
+                continue;
+            }
+
+            List<SvgElement> stale = [];
+            foreach (SvgElement cached in _computed.Keys)
+            {
+                for (SvgElement? e = cached; e is not null; e = e.Parent)
+                {
+                    if (ReferenceEquals(e, changed))
+                    {
+                        stale.Add(cached);
+                        break;
+                    }
+                }
+            }
+
+            foreach (SvgElement e in stale)
+            {
+                _computed.Remove(e);
+                _styler?.Forget(e);
+            }
+        }
     }
 }
