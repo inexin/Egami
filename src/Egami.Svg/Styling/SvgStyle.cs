@@ -63,12 +63,9 @@ internal sealed class SvgStyle
     public IReadOnlyList<CssComponentValue>? Transform;
     public IReadOnlyList<CssComponentValue>? TransformOrigin;
     public string TransformBox = "view-box";
-    public IReadOnlyList<CssComponentValue>? Translate;
-    public IReadOnlyList<CssComponentValue>? Rotate;
-    public IReadOnlyList<CssComponentValue>? Scale;
-    public string? OffsetPath;
-    public IReadOnlyList<CssComponentValue>? OffsetDistance;
-    public IReadOnlyList<CssComponentValue>? OffsetRotate;
+
+    /// <summary>The individual transform and motion path properties; null when none is set, as on most elements.</summary>
+    public SvgMotionStyle? Motion;
 
     /// <summary>The computed CSS style this was made from, for text properties read later.</summary>
     public CssComputedStyle? Css;
@@ -343,24 +340,25 @@ internal sealed class SvgStyle
 
         if (r.Own("translate") is { } translate && !SvgStyleValues.IsKeyword(translate, "none"))
         {
-            s.Translate = translate;
+            (s.Motion ??= new()).Translate = translate;
         }
 
         if (r.Own("rotate") is { } rotate && !SvgStyleValues.IsKeyword(rotate, "none"))
         {
-            s.Rotate = rotate;
+            (s.Motion ??= new()).Rotate = rotate;
         }
 
         if (r.Own("scale") is { } scale && !SvgStyleValues.IsKeyword(scale, "none"))
         {
-            s.Scale = scale;
+            (s.Motion ??= new()).Scale = scale;
         }
 
         if (r.Own("offset-path") is { } offsetPath && SvgAnimationProperties.TryPathFunction(offsetPath, out string pathData))
         {
-            s.OffsetPath = pathData;
-            s.OffsetDistance = r.Own("offset-distance");
-            s.OffsetRotate = r.Own("offset-rotate");
+            SvgMotionStyle motion = s.Motion ??= new();
+            motion.OffsetPath = pathData;
+            motion.OffsetDistance = r.Own("offset-distance");
+            motion.OffsetRotate = r.Own("offset-rotate");
         }
 
         return s;
@@ -451,4 +449,15 @@ internal sealed class SvgStyle
             }
         }
     }
+}
+
+/// <summary>The individual transform properties (CSS Transforms 2) and the motion path's offset (Motion Path 1) of an element.</summary>
+internal sealed class SvgMotionStyle
+{
+    public IReadOnlyList<CssComponentValue>? Translate;
+    public IReadOnlyList<CssComponentValue>? Rotate;
+    public IReadOnlyList<CssComponentValue>? Scale;
+    public string? OffsetPath;
+    public IReadOnlyList<CssComponentValue>? OffsetDistance;
+    public IReadOnlyList<CssComponentValue>? OffsetRotate;
 }

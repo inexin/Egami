@@ -27,7 +27,7 @@ internal sealed class SvgStyler
     private readonly Dictionary<(string Name, string Value), CssDeclaration> _hints = [];
     private readonly Dictionary<string, IReadOnlyList<CssDeclaration>> _inline = new(StringComparer.Ordinal);
     private readonly SvgAnimationFrame? _frame;
-    private readonly Dictionary<string, CssKeyframesRule> _keyframes = new(StringComparer.Ordinal);
+    private Dictionary<string, CssKeyframesRule>? _keyframes;
     private readonly SvgCssAnimator? _animator;
     private Dictionary<SvgElement, Dictionary<string, string>>? _animated;
 
@@ -68,14 +68,16 @@ internal sealed class SvgStyler
         }
 
         _cascade = new CssCascade(sheets, new CssCascadeOptions { Media = media, Registry = s_registry });
-        if (cssAnimations && frame is not null && _keyframes.Count > 0)
+        if (cssAnimations && frame is not null && _keyframes is not null)
         {
             _animator = new SvgCssAnimator(_cascade, _keyframes, frame.Time, media.Width, media.Height);
         }
     }
 
     /// <summary>Gets the @keyframes rules of the document's style sheets by name: the last of each name, those in matching @media rules too.</summary>
-    public IReadOnlyDictionary<string, CssKeyframesRule> Keyframes => _keyframes;
+    public IReadOnlyDictionary<string, CssKeyframesRule> Keyframes => _keyframes ?? s_noKeyframes;
+
+    private static readonly Dictionary<string, CssKeyframesRule> s_noKeyframes = [];
 
     /// <summary>Gets a value indicating whether CSS animations are run.</summary>
     public bool Animates => _animator is not null;
@@ -87,7 +89,7 @@ internal sealed class SvgStyler
             switch (rule)
             {
                 case CssKeyframesRule keyframes:
-                    _keyframes[keyframes.Name] = keyframes;
+                    (_keyframes ??= new(StringComparer.Ordinal))[keyframes.Name] = keyframes;
                     break;
                 case CssMediaRule m when m.Media.Matches(media):
                     CollectKeyframes(m.Rules, media);

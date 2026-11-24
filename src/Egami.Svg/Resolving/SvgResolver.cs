@@ -709,9 +709,9 @@ internal sealed partial class SvgResolver
 
         // CSS Transforms 2: translate, rotate, scale and the motion path's offset come before transform, in that order from
         // the outside in, all about the transform origin.
-        if (style.Translate is not null || style.Rotate is not null || style.Scale is not null || style.OffsetPath is not null)
+        if (style.Motion is SvgMotionStyle motionStyle)
         {
-            Matrix3x2 individual = SvgCssTransforms.Individual(style, box, o);
+            Matrix3x2 individual = SvgCssTransforms.Individual(motionStyle, box, o);
             transform *= individual;
         }
 

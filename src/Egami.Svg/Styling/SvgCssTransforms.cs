@@ -84,7 +84,7 @@ internal static class SvgCssTransforms
     /// in translate are of the reference box; the offset moves the transform origin, the anchor, to the point offset-distance
     /// along offset-path (in the parent's user space) and turns it as offset-rotate says.
     /// </summary>
-    public static Matrix3x2 Individual(SvgStyle style, RectF box, Vector2 origin)
+    public static Matrix3x2 Individual(SvgMotionStyle style, RectF box, Vector2 origin)
     {
         Matrix3x2 m = Matrix3x2.Identity;
         if (style.OffsetPath is string data && Offset(data, style.OffsetDistance, style.OffsetRotate, origin) is Matrix3x2 offset)
