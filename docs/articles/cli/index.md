@@ -166,7 +166,7 @@ against [the published schema](https://raw.githubusercontent.com/inexin/Egami/ma
 ```
 
 ```sh
-egami run in.jpg resize 1200x + sharpen 0.6 --save-workflow web.json --dry-run   # write the file from a command line
+egami run in.jpg resize 1200x + sharpen 0.6 -o web/{name}.webp --save-workflow web.json --dry-run   # write the file from a command line
 egami run "photos/*.jpg" --workflow web.json -o web/{name}.webp
 ```
 
