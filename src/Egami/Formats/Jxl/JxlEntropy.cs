@@ -43,10 +43,16 @@ internal sealed class JxlEntropyDecoder
     private uint _copyPos;
     private uint _numDecoded;
 
+    // Every cluster's ANS table one after another (all have 2^_logAlphabet entries), and each cluster's split, so a symbol
+    // takes no histogram object or configuration record to read.
+    private readonly ulong[]? _ansTables;
+    private readonly uint[] _splits;
+    private readonly int _logAlphabet;
+
     private uint _state;
     private bool _initial = true;
 
-    private JxlEntropyDecoder(byte[] clusters, JxlUintConfig[] configs, JxlAnsHistogram[]? ans, JxlPrefixHistogram[]? prefix, bool lz77, uint minSymbol, uint minLength, JxlUintConfig lengthConfig)
+    private JxlEntropyDecoder(byte[] clusters, JxlUintConfig[] configs, JxlAnsHistogram[]? ans, JxlPrefixHistogram[]? prefix, bool lz77, uint minSymbol, uint minLength, JxlUintConfig lengthConfig, int logAlphabet, ulong[]? ansTables, uint[] splits)
     {
         _clusters = clusters;
         _configs = configs;
@@ -56,10 +62,13 @@ internal sealed class JxlEntropyDecoder
         _minSymbol = minSymbol;
         _minLength = minLength;
         _lengthConfig = lengthConfig;
+        _logAlphabet = logAlphabet;
+        _ansTables = ansTables;
+        _splits = splits;
     }
 
     /// <summary>Gets a decoder with the same distributions and a fresh state, for another stream.</summary>
-    internal JxlEntropyDecoder Clone() => new(_clusters, _configs, _ans, _prefix, _lz77, _minSymbol, _minLength, _lengthConfig);
+    internal JxlEntropyDecoder Clone() => new(_clusters, _configs, _ans, _prefix, _lz77, _minSymbol, _minLength, _lengthConfig, _logAlphabet, _ansTables, _splits);
 
     /// <summary>Gets the cluster of each context.</summary>
     internal ReadOnlySpan<byte> Clusters => _clusters;
@@ -124,16 +133,29 @@ internal sealed class JxlEntropyDecoder
                 prefix[i] = JxlPrefixHistogram.Read(r, sizes[i]);
             }
 
-            return new JxlEntropyDecoder(clusters, configs, null, prefix, lz77, minSymbol, minLength, lengthConfig);
+            return new JxlEntropyDecoder(clusters, configs, null, prefix, lz77, minSymbol, minLength, lengthConfig, logAlphabet, null, Splits(configs));
         }
 
         JxlAnsHistogram[] ans = new JxlAnsHistogram[count];
+        ulong[] tables = new ulong[count << logAlphabet];
         for (int i = 0; i < count; i++)
         {
             ans[i] = JxlAnsHistogram.Read(r, logAlphabet);
+            ans[i].Table.CopyTo(tables.AsSpan(i << logAlphabet));
         }
 
-        return new JxlEntropyDecoder(clusters, configs, ans, null, lz77, minSymbol, minLength, lengthConfig);
+        return new JxlEntropyDecoder(clusters, configs, ans, null, lz77, minSymbol, minLength, lengthConfig, logAlphabet, tables, Splits(configs));
+    }
+
+    private static uint[] Splits(JxlUintConfig[] configs)
+    {
+        uint[] splits = new uint[configs.Length];
+        for (int i = 0; i < configs.Length; i++)
+        {
+            splits[i] = configs[i].Split;
+        }
+
+        return splits;
     }
 
     /// <summary>Reads the initial ANS state; call before the first symbol of a stream.</summary>
@@ -253,7 +275,40 @@ internal sealed class JxlEntropyDecoder
 
     /// <summary>Decodes one integer of an ANS stream without LZ77 that <see cref="Begin"/> started.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal uint ReadAnsUint(JxlBitReader r, int cluster) => ReadUint(r, _configs[cluster], _ans![cluster].ReadSymbol(r, ref _state));
+    internal uint ReadAnsUint(JxlBitReader r, int cluster)
+    {
+        // The symbol (JxlAnsHistogram.ReadSymbol on this cluster's slice of the tables), then the integer.
+        uint state = _state;
+        int logBucket = 12 - _logAlphabet;
+        uint index = state & 0xFFF;
+        uint i = index >> logBucket;
+        uint pos = index & ((1u << logBucket) - 1);
+        ulong entry = _ansTables![(cluster << _logAlphabet) + (int)i];
+        uint symbol;
+        uint offset;
+        uint frequency;
+        if (pos >= ((uint)entry & 0x1FFF))
+        {
+            symbol = (uint)(entry >> 13) & 0xFF;
+            offset = ((uint)(entry >> 21) & 0xFFFF) + pos;
+            frequency = (uint)(entry >> 50) & 0x1FFF;
+        }
+        else
+        {
+            symbol = i;
+            offset = pos;
+            frequency = (uint)(entry >> 37) & 0x1FFF;
+        }
+
+        uint next = ((state >> 12) * frequency) + offset;
+        if (next < 1 << 16)
+        {
+            next = (next << 16) | r.ReadBits(16);
+        }
+
+        _state = next;
+        return symbol < _splits[cluster] ? symbol : ReadLargeUint(r, _configs[cluster], symbol);
+    }
 
     /// <summary>Decodes one integer of a prefix-coded stream without LZ77.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -489,6 +544,9 @@ internal sealed class JxlAnsHistogram
         _logBucket = logBucket;
         SingleSymbol = single;
     }
+
+    /// <summary>Gets the alias table: one entry per bucket, 2^logAlphabet of them.</summary>
+    internal ReadOnlySpan<ulong> Table => _table;
 
     internal int SingleSymbol { get; }
 
