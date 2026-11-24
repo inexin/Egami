@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 using Egami.Colors;
 using Egami.Metadata;
@@ -248,7 +249,7 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
     /// Wraps the codestream in the container (ISO/IEC 18181-2) with jbrd, Exif and xml boxes, or returns it bare when there are
     /// none. Exif and XMP go in brob boxes, Brotli compressed, as cjxl writes them.
     /// </summary>
-    internal static void WriteFile(Stream output, byte[] codestream, byte[]? exif, byte[]? xmp, byte[]? jbrd = null, byte[]? gainMap = null)
+    internal static void WriteFile(Stream output, byte[] codestream, byte[]? exif, byte[]? xmp, byte[]? jbrd = null, byte[]? gainMap = null, byte[]? packedMetadata = null)
     {
         if (exif is null && xmp is null && jbrd is null && gainMap is null)
         {
@@ -268,6 +269,28 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
             Box(output, "jhgm", gainMap);
         }
 
+        if (packedMetadata is not null)
+        {
+            output.Write(packedMetadata);
+        }
+        else
+        {
+            WriteMetadata(output, exif, xmp);
+        }
+
+        Box(output, "jxlc", codestream);
+    }
+
+    /// <summary>Gets the Exif and xml boxes <see cref="WriteFile"/> writes, so their Brotli compression can run beside the encode.</summary>
+    internal static byte[] PackMetadata(byte[]? exif, byte[]? xmp)
+    {
+        using MemoryStream boxes = new();
+        WriteMetadata(boxes, exif, xmp);
+        return boxes.ToArray();
+    }
+
+    private static void WriteMetadata(Stream output, byte[]? exif, byte[]? xmp)
+    {
         if (exif is not null)
         {
             // The box starts with the offset of the TIFF header within it: none here.
@@ -278,8 +301,6 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
         {
             MetadataBox(output, "xml ", xmp);
         }
-
-        Box(output, "jxlc", codestream);
     }
 
     /// <summary>
@@ -398,14 +419,15 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
         }
 
         /// <summary>
-        /// Writes a large 8-bit image's rows in bands of 64 on all threads, as many bands at a time as threads, with a step after
-        /// each such run; other images row by row.
+        /// Writes a large 8-bit image's rows in bands of 64, on all threads as many bands at a time as threads, with a step after
+        /// each such run (one band a step on one thread); other images row by row. The bands also touch the planes' memory first,
+        /// as <see cref="Planes"/> leaves it uninitialized.
         /// </summary>
         public override IEnumerable<int> WriteWhole(Raster<TPixel> raster)
         {
             ArgumentNullException.ThrowIfNull(raster);
             int threads = start.Context.MaxParallelism;
-            if (_black is not null || _planes.Kind != PixelChannelType.Unorm8 || threads <= 1 || _rows != 0 || (long)start.Width * start.Height < 1 << 18)
+            if (_black is not null || _planes.Kind != PixelChannelType.Unorm8 || _rows != 0 || (long)start.Width * start.Height < 1 << 18)
             {
                 foreach (int y in base.WriteWhole(raster))
                 {
@@ -417,10 +439,19 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
 
             ParallelOptions parallel = new() { MaxDegreeOfParallelism = threads };
             int height = start.Height;
-            for (int y0 = 0; y0 < height; y0 += BandRows * threads)
+            int step = BandRows * Math.Max(1, threads);
+            for (int y0 = 0; y0 < height; y0 += step)
             {
-                int y1 = Math.Min(height, y0 + (BandRows * threads));
-                Parallel.For(0, (y1 - y0 + BandRows - 1) / BandRows, parallel, b => WriteBand(raster, y0 + (b * BandRows), Math.Min(y1, y0 + ((b + 1) * BandRows))));
+                int y1 = Math.Min(height, y0 + step);
+                if (threads <= 1)
+                {
+                    WriteBand(raster, y0, y1);
+                }
+                else
+                {
+                    Parallel.For(0, (y1 - y0 + BandRows - 1) / BandRows, parallel, b => WriteBand(raster, y0 + (b * BandRows), Math.Min(y1, y0 + ((b + 1) * BandRows))));
+                }
+
                 _rows = y1;
                 SaveReporter.Current?.Rows(y1, height);
                 yield return y1 - 1;
@@ -438,6 +469,16 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
                 for (int y = y0; y < y1; y++)
                 {
                     _planes.Add8(MemoryMarshal.Cast<TPixel, Rgba8>(raster.Row(y)), y);
+                }
+
+                return;
+            }
+
+            if (typeof(TPixel) == typeof(Rgb8))
+            {
+                for (int y = y0; y < y1; y++)
+                {
+                    _planes.AddRgb8(MemoryMarshal.AsBytes(raster.Row(y)), y);
                 }
 
                 return;
@@ -470,11 +511,14 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
             {
                 input = input with { HasBlack = true, Black = _black, BlackBitDepth = input.BitDepth };
             }
-            byte[] codestream = JxlLosslessEncoder.Encode(input);
             byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
             byte[]? xmp = strip || metadata.Xmp.IsEmpty ? null : metadata.Xmp.ToArray();
+
+            // The metadata's Brotli compression (milliseconds for a large XMP packet) runs beside the encode when there are threads.
+            Task<byte[]>? packing = (exif is not null || xmp is not null) && start.Context.MaxParallelism > 1 ? Task.Run(() => PackMetadata(exif, xmp)) : null;
+            byte[] codestream = JxlLosslessEncoder.Encode(input);
             byte[]? gainMap = strip || metadata.GainMap is null ? null : GainMapBundle(metadata.GainMap, options.Effort, start.Context.MaxParallelism);
-            WriteFile(output, codestream, exif, xmp, gainMap: gainMap);
+            WriteFile(output, codestream, exif, xmp, gainMap: gainMap, packedMetadata: packing?.GetAwaiter().GetResult());
         }
 
         /// <summary>Gets the stored value of an ink: its absence, at 8 or 16 bits.</summary>
@@ -762,8 +806,10 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
             _width = width;
             _height = height;
             bool gray = layout.ChannelOrder is PixelChannelOrder.Gray or PixelChannelOrder.GrayAlpha;
-            _color = [.. Enumerable.Range(0, gray ? 1 : 3).Select(_ => new int[width * height])];
-            _alpha = layout.Alpha != AlphaKind.None ? new int[width * height] : null;
+            // Uninitialized: every row writes all its samples, and the encode refuses to start before every row came. Zeroing
+            // a large image's planes on one thread took as long as filling them on all.
+            _color = [.. Enumerable.Range(0, gray ? 1 : 3).Select(_ => GC.AllocateUninitializedArray<int>(width * height))];
+            _alpha = layout.Alpha != AlphaKind.None ? GC.AllocateUninitializedArray<int>(width * height) : null;
             _premultiplied = layout.Alpha == AlphaKind.Premultiplied;
             Kind = layout.ChannelType switch
             {
@@ -812,6 +858,54 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
             }
 
             Add(MemoryMarshal.AsBytes(row), y, x);
+        }
+
+        /// <summary>Splits a row of <see cref="Rgb8"/> pixels (three bytes each) into the three color planes.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        internal void AddRgb8(ReadOnlySpan<byte> row, int y)
+        {
+            int at = y * _width;
+            int x = 0;
+            if (Vector128.IsHardwareAccelerated)
+            {
+                // Four pixels a step, from 16 bytes read at the first one: each channel's byte moved to the low byte of a lane
+                // (indices past 15 give zero), which is then the lane's integer.
+                Vector128<byte> r = Vector128.Create((byte)0, 255, 255, 255, 3, 255, 255, 255, 6, 255, 255, 255, 9, 255, 255, 255);
+                Vector128<byte> g = Vector128.Create((byte)1, 255, 255, 255, 4, 255, 255, 255, 7, 255, 255, 255, 10, 255, 255, 255);
+                Vector128<byte> b = Vector128.Create((byte)2, 255, 255, 255, 5, 255, 255, 255, 8, 255, 255, 255, 11, 255, 255, 255);
+                Span<int> c0 = _color[0].AsSpan(at, _width);
+                Span<int> c1 = _color[1].AsSpan(at, _width);
+                Span<int> c2 = _color[2].AsSpan(at, _width);
+                if (Avx2.IsSupported)
+                {
+                    // Eight pixels a step: the same shuffle in each 128-bit half, the high half read 12 bytes (four pixels) on.
+                    Vector256<byte> r2 = Vector256.Create(r, r);
+                    Vector256<byte> g2 = Vector256.Create(g, g);
+                    Vector256<byte> b2 = Vector256.Create(b, b);
+                    for (; (3 * x) + 28 <= row.Length && x + 8 <= _width; x += 8)
+                    {
+                        Vector256<byte> v = Vector256.Create(Vector128.Create(row.Slice(3 * x, 16)), Vector128.Create(row.Slice((3 * x) + 12, 16)));
+                        Avx2.Shuffle(v, r2).AsInt32().CopyTo(c0[x..]);
+                        Avx2.Shuffle(v, g2).AsInt32().CopyTo(c1[x..]);
+                        Avx2.Shuffle(v, b2).AsInt32().CopyTo(c2[x..]);
+                    }
+                }
+
+                for (; (3 * x) + 16 <= row.Length && x + 4 <= _width; x += 4)
+                {
+                    Vector128<byte> v = Vector128.Create(row.Slice(3 * x, 16));
+                    Vector128.Shuffle(v, r).AsInt32().CopyTo(c0[x..]);
+                    Vector128.Shuffle(v, g).AsInt32().CopyTo(c1[x..]);
+                    Vector128.Shuffle(v, b).AsInt32().CopyTo(c2[x..]);
+                }
+            }
+
+            for (; x < _width; x++)
+            {
+                _color[0][at + x] = row[3 * x];
+                _color[1][at + x] = row[(3 * x) + 1];
+                _color[2][at + x] = row[(3 * x) + 2];
+            }
         }
 
         internal void Add16(ReadOnlySpan<Rgba16> row, int y) => Add(MemoryMarshal.Cast<Rgba16, ushort>(row), y, 0);
