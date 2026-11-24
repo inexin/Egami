@@ -126,7 +126,8 @@ take the render tree then with `SvgDocument.RenderTreeAt`. Without a time it dra
 had begun. `SvgDocument.Animation`, an `SvgAnimationInfo`, says whether the document animates, when its last animation ends
 and, when every animation repeats forever, the period after which the whole picture loops, so you know which frames to draw.
 Animations that wait for a click, a key or a wall-clock time never begin, as in a browser nobody touches. `animate` and `set`
-are drawn so far; the other three are timed but do not yet change the picture.
+change attributes and properties, `animateTransform` transforms, `animateMotion` moves an element along a path after its own
+transform, and `discard` removes an element for good once it begins.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#animation)]
 

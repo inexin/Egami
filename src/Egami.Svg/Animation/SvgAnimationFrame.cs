@@ -1,3 +1,5 @@
+using System.Numerics;
+
 using Egami.Svg.Reading;
 
 namespace Egami.Svg.Animation;
@@ -10,13 +12,17 @@ namespace Egami.Svg.Animation;
 internal sealed class SvgAnimationFrame
 {
     private readonly Dictionary<SvgElement, Dictionary<string, string>> _values = new(IdentityComparer.Instance);
+    private readonly Dictionary<SvgElement, Matrix3x2> _motion = new(IdentityComparer.Instance);
+    private readonly HashSet<SvgElement> _discarded = new(IdentityComparer.Instance);
+    private Dictionary<SvgElement, SvgFrameElement>? _cssElements;
+    private readonly List<SvgElement> _stored = [];
 
     private SvgAnimationFrame()
     {
     }
 
-    /// <summary>Gets a value indicating whether nothing is animated at this moment.</summary>
-    public bool IsEmpty => _values.Count == 0;
+    /// <summary>Gets a value indicating whether nothing is animated or discarded at this moment.</summary>
+    public bool IsEmpty => _values.Count == 0 && _motion.Count == 0 && _discarded.Count == 0;
 
     /// <summary>Gets the animated value of an attribute, if it has one at this moment.</summary>
     public bool TryGet(SvgElement element, string name, out string? value)
@@ -34,18 +40,87 @@ internal sealed class SvgAnimationFrame
     /// <summary>Gets an element's animated attributes, or null when it has none.</summary>
     public IReadOnlyDictionary<string, string>? For(SvgElement element) => _values.GetValueOrDefault(element);
 
+    /// <summary>Gets the elements whose animated values are stored so far, in the order they were stored.</summary>
+    public IReadOnlyList<SvgElement> Stored => _stored;
+
+    /// <summary>Gets a value indicating whether an animation sets some element's class, so selectors must match at this moment.</summary>
+    public bool AnimatesClass { get; private set; }
+
+    /// <summary>The element as selectors see it in this frame, with animated classes; one per element.</summary>
+    public SvgFrameElement CssElement(SvgElement element)
+    {
+        _cssElements ??= new Dictionary<SvgElement, SvgFrameElement>(IdentityComparer.Instance);
+        if (!_cssElements.TryGetValue(element, out SvgFrameElement? css))
+        {
+            css = new SvgFrameElement(element, this);
+            _cssElements[element] = css;
+        }
+
+        return css;
+    }
+
+    /// <summary>Gets the supplemental transform animateMotion puts on an element, applied after its own transform.</summary>
+    public bool TryGetMotion(SvgElement element, out Matrix3x2 motion) => _motion.TryGetValue(element, out motion);
+
+    /// <summary>Gets a value indicating whether a discard has removed the element, or one of its ancestors, by this moment.</summary>
+    public bool IsDiscarded(SvgElement element)
+    {
+        if (_discarded.Count == 0)
+        {
+            return false;
+        }
+
+        for (SvgElement? e = element; e is not null; e = e.Parent)
+        {
+            if (_discarded.Contains(e))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>
     /// Computes the values at <paramref name="time"/> seconds. Each attribute's active and frozen animations are applied in
     /// priority order, the one that began first at the bottom (document order breaks ties); each sees the result below it, or
-    /// the base value <paramref name="baseValue"/> gives, as its underlying value.
+    /// the base value <paramref name="baseValue"/> gives, as its underlying value. Elements are done ancestors first, and the
+    /// frame is passed to <paramref name="baseValue"/> as it fills, so a property's base value can inherit an ancestor's
+    /// animated value. Discards that have begun remove their targets, and the animations inside them, from then on.
     /// </summary>
-    public static SvgAnimationFrame Compute(SvgTimeline timeline, double time, Func<SvgElement, string, string?> baseValue)
+    public static SvgAnimationFrame Compute(SvgTimeline timeline, double time, Func<SvgAnimationFrame, SvgElement, string, string?> baseValue)
     {
         SvgAnimationFrame frame = new();
-        Dictionary<SvgElement, Dictionary<string, List<Layer>>> sandwiches = new(IdentityComparer.Instance);
         foreach (SvgAnimation a in timeline.Animations)
         {
-            if (a.Function is null || a.AttributeName is null || !TryState(a, time, out Layer layer))
+            if (a.Kind == SvgAnimationKind.Discard && a.Intervals.Count > 0 && a.Intervals[0].Begin <= time)
+            {
+                frame._discarded.Add(a.Target);
+            }
+        }
+
+        Dictionary<SvgElement, Dictionary<string, List<Layer>>> sandwiches = new(IdentityComparer.Instance);
+        Dictionary<SvgElement, List<Layer>> motions = new(IdentityComparer.Instance);
+        foreach (SvgAnimation a in timeline.Animations)
+        {
+            if ((a.Function is null && a.Motion is null) || frame.IsDiscarded(a.Element) || !TryState(a, time, out Layer layer))
+            {
+                continue;
+            }
+
+            if (a.Motion is not null)
+            {
+                if (!motions.TryGetValue(a.Target, out List<Layer>? moving))
+                {
+                    moving = [];
+                    motions[a.Target] = moving;
+                }
+
+                moving.Add(layer);
+                continue;
+            }
+
+            if (a.AttributeName is null)
             {
                 continue;
             }
@@ -65,12 +140,12 @@ internal sealed class SvgAnimationFrame
             layers.Add(layer);
         }
 
-        foreach ((SvgElement element, Dictionary<string, List<Layer>> byName) in sandwiches)
+        foreach (SvgElement element in sandwiches.Keys.OrderBy(Depth))
         {
             Dictionary<string, string> values = new(StringComparer.Ordinal);
-            foreach ((string name, List<Layer> layers) in byName)
+            foreach ((string name, List<Layer> layers) in sandwiches[element])
             {
-                layers.Sort(static (x, y) => x.Begin != y.Begin ? x.Begin.CompareTo(y.Begin) : x.Animation.Order.CompareTo(y.Animation.Order));
+                layers.Sort(Priority);
                 string? value = null;
                 bool haveBase = false;
                 string? baseText = null;
@@ -82,7 +157,7 @@ internal sealed class SvgAnimationFrame
                     {
                         if (!haveBase)
                         {
-                            baseText = baseValue(element, name);
+                            baseText = baseValue(frame, element, name);
                             haveBase = true;
                         }
 
@@ -98,10 +173,44 @@ internal sealed class SvgAnimationFrame
                 }
             }
 
-            frame._values[element] = values;
+            if (values.Count > 0)
+            {
+                frame._values[element] = values;
+                frame._stored.Add(element);
+                frame.AnimatesClass |= values.ContainsKey("class");
+            }
+        }
+
+        foreach ((SvgElement element, List<Layer> layers) in motions)
+        {
+            // Motions stack like transforms: an additive one is applied before (inside) the motion below it, a replacing one
+            // stands alone.
+            layers.Sort(Priority);
+            Matrix3x2 motion = Matrix3x2.Identity;
+            foreach (Layer layer in layers)
+            {
+                SvgMotionFunction m = layer.Animation.Motion!;
+                Matrix3x2 here = m.Evaluate(layer.Progress, layer.Iteration);
+                motion = m.Additive ? here * motion : here;
+            }
+
+            frame._motion[element] = motion;
         }
 
         return frame;
+    }
+
+    private static int Priority(Layer x, Layer y) => x.Begin != y.Begin ? x.Begin.CompareTo(y.Begin) : x.Animation.Order.CompareTo(y.Animation.Order);
+
+    private static int Depth(SvgElement element)
+    {
+        int depth = 0;
+        for (SvgElement? e = element.Parent; e is not null; e = e.Parent)
+        {
+            depth++;
+        }
+
+        return depth;
     }
 
     /// <summary>

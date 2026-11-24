@@ -51,7 +51,7 @@ internal sealed partial class SvgResolver
         while (chain.Count < SvgLimits.MaxReferenceDepth)
         {
             string? href = Href(current);
-            SvgElement? next = href is not null && SvgStyleValues.LocalId(href) is string id ? _document.FindById(id) : null;
+            SvgElement? next = href is not null && SvgStyleValues.LocalId(href) is string id ? FindById(id) : null;
             if (next is null || chain.Contains(next) || !next.IsSvgOrBare(_document))
             {
                 break;

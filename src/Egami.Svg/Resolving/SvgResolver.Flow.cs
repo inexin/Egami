@@ -367,7 +367,7 @@ internal sealed partial class SvgResolver
     /// <summary>A shape element's outline in the text's coordinates, its own transform applied.</summary>
     private Path? ShapeGeometry(string url, in SvgContext context)
     {
-        if (SvgStyleValues.LocalId(url) is not string id || _document.FindById(id) is not SvgElement target || !target.IsSvgOrBare(_document))
+        if (SvgStyleValues.LocalId(url) is not string id || FindById(id) is not SvgElement target || !target.IsSvgOrBare(_document))
         {
             return null;
         }

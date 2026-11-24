@@ -201,6 +201,11 @@ internal sealed partial class SvgResolver
             return null;
         }
 
+        if (_frame?.IsDiscarded(element) == true)
+        {
+            return null;
+        }
+
         if (!Conditions(element))
         {
             return null;
@@ -439,6 +444,16 @@ internal sealed partial class SvgResolver
         return Viewport(symbol, symbol, style, context with { Style = style, Css = css }, width, height, isSymbol: true);
     }
 
+    /// <summary>
+    /// The element with an id, as references find it: null when there is none, or when a discard has removed it (or an ancestor)
+    /// by the frame's time, as it has then left the document.
+    /// </summary>
+    private SvgElement? FindById(string id)
+    {
+        SvgElement? element = _document.FindById(id);
+        return element is not null && _frame?.IsDiscarded(element) == true ? null : element;
+    }
+
     /// <summary>The element a reference attribute (href) names, reported when missing.</summary>
     private SvgElement? Reference(SvgElement element, string what)
     {
@@ -449,7 +464,7 @@ internal sealed partial class SvgResolver
         }
 
         string? id = SvgStyleValues.LocalId(href);
-        SvgElement? target = id is null ? null : _document.FindById(id);
+        SvgElement? target = id is null ? null : FindById(id);
         if (target is null)
         {
             _report.Warn("Svg.BadReference", $"The {what}'s href \"{SvgGeometry.Clip(href)}\" names no element in this document; it draws nothing.", element);
@@ -532,7 +547,7 @@ internal sealed partial class SvgResolver
                 }
 
                 string? href = Href(inner);
-                if (href is null || SvgStyleValues.LocalId(href) is not string id || _document.FindById(id) is not SvgElement next)
+                if (href is null || SvgStyleValues.LocalId(href) is not string id || FindById(id) is not SvgElement next)
                 {
                     continue;
                 }
@@ -687,6 +702,12 @@ internal sealed partial class SvgResolver
         if (!transform.IsIdentity && style.TransformOrigin is IReadOnlyList<CssComponentValue> origin && SvgCssTransforms.TryOrigin(origin, box, out Vector2 o) && o != Vector2.Zero)
         {
             transform = Matrix3x2.CreateTranslation(-o) * transform * Matrix3x2.CreateTranslation(o);
+        }
+
+        // animateMotion's supplemental transform comes after the element's own, in its parent's user space.
+        if (_frame is not null && _frame.TryGetMotion(element, out Matrix3x2 motion))
+        {
+            transform *= motion;
         }
 
         return transform;

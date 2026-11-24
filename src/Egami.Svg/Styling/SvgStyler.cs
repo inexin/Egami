@@ -88,12 +88,17 @@ internal sealed class SvgStyler
     {
         if (!_cascaded.TryGetValue(element, out CssCascadedStyle? style))
         {
-            style = _cascade.Cascade(element, Hints(element), Inline(element));
+            // When an animation sets a class, selectors match the classes of this moment.
+            ICssElement matched = _frame?.AnimatesClass == true ? _frame.CssElement(element) : element;
+            style = _cascade.Cascade(matched, Hints(element), Inline(element));
             _cascaded[element] = style;
         }
 
         return style;
     }
+
+    /// <summary>Drops an element's cached cascade, so it is cascaded again (after an animation frame changes its values).</summary>
+    public void Forget(SvgElement element) => _cascaded.Remove(element);
 
     /// <summary>The element's computed CSS style where its parent's is <paramref name="parent"/>.</summary>
     public CssComputedStyle Computed(SvgElement element, CssComputedStyle? parent) => _cascade.Compute(Cascaded(element), parent);

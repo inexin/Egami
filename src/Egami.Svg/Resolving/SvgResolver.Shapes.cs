@@ -157,7 +157,7 @@ internal sealed partial class SvgResolver
                 return WithOpacity(context.ContextPaint?.Stroke, opacity);
         }
 
-        SvgElement? server = SvgStyleValues.LocalId(spec.Url!) is string id ? _document.FindById(id) : null;
+        SvgElement? server = SvgStyleValues.LocalId(spec.Url!) is string id ? FindById(id) : null;
         Paint? paint = null;
         PaintResult result = server is null ? PaintResult.Missing : PaintServer(server, bounds, context, out paint);
         switch (result)

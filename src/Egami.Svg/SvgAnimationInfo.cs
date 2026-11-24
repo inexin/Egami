@@ -78,7 +78,7 @@ public sealed class SvgAnimationInfo
                 continue;
             }
 
-            if (!runsForever || a.Function?.Accumulates == true)
+            if (!runsForever || a.Function?.Accumulates == true || a.Motion?.Accumulates == true)
             {
                 periodic = false;
                 continue;

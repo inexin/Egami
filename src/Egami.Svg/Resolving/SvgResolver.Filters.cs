@@ -43,7 +43,7 @@ internal sealed partial class SvgResolver
 
             if (CssUrl.TryParse(item, out CssUrl url))
             {
-                SvgElement? target = SvgStyleValues.LocalId(url.Url) is string id ? _document.FindById(id) : null;
+                SvgElement? target = SvgStyleValues.LocalId(url.Url) is string id ? FindById(id) : null;
                 if (target is not null && _active.Contains(target))
                 {
                     // A filter met again inside its own feImage: the element there draws unfiltered, as resvg draws it.
@@ -627,7 +627,7 @@ internal sealed partial class SvgResolver
 
         if (!href.TrimStart().StartsWith("data:", StringComparison.OrdinalIgnoreCase) && SvgStyleValues.LocalId(href) is string id && href.TrimStart().StartsWith('#'))
         {
-            SvgElement? target = _document.FindById(id);
+            SvgElement? target = FindById(id);
             if (target is not null && _filtering.Contains(target))
             {
                 _filterNamesItsUser = true;

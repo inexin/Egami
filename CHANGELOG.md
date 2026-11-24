@@ -5,7 +5,7 @@ changes that break code come only in a new major version.
 
 ## Egami.Svg 1.6.0 (unreleased)
 
-SVG animation, stage A (roadmap 2.10.1): SMIL timing and values, drawn at a chosen time.
+SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation element, drawn at a chosen time.
 
 - `SvgRenderOptions.Time` draws a document as it looks at that moment of its SMIL animations, in `Rasterize`, `Draw` and
   `Draw` by id; `SvgDocument.RenderTreeAt(TimeSpan)` gives the render tree then. With no time set the output is the static
@@ -19,8 +19,19 @@ SVG animation, stage A (roadmap 2.10.1): SMIL timing and values, drawn at a chos
 - `animate` and `set` change numbers, lengths, lists, colors, paints, path data (morphing when the commands match), keywords
   and references, with `calcMode` (discrete, linear, paced, spline), `keyTimes`, `keySplines`, from, to, by and values,
   `additive` and `accumulate`, in the SMIL sandwich. Animated presentation attributes still lose to CSS rules. Animations in
-  error are skipped with `Svg.BadAnimation`. `animateTransform`, `animateMotion` and `discard` are read for timing but not yet
-  drawn (stage B).
+  error are skipped with `Svg.BadAnimation`. A to animation of a property starts from its computed value, which inherits what
+  an ancestor is animated to.
+- `animateTransform` animates `transform`, `gradientTransform` and `patternTransform` with translate, scale, rotate (with a
+  center), skewX and skewY: replacing the transform list, or appended to it with `additive="sum"`; by and to animations, and
+  paced timing by each type's distance.
+- `animateMotion` moves its target along a path from an `mpath`, the `path` attribute, or values, from, to and by as coordinate
+  pairs: paced by default, or linear, discrete and spline through the path's vertices or `keyPoints`; `rotate` as an angle,
+  `auto` or `auto-reverse`; additive and accumulating. The motion comes after the element's own transform, as SVG says.
+- `discard` removes its target, and the animations inside it, from its begin time on; a `use` or `url(#…)` reference to a
+  discarded element (gradient, pattern, clip path, mask, marker, filter) then acts as a missing one.
+- `set` and `animate` can change `class`: style sheet selectors match the classes of that moment, so rules on the element and
+  its descendants follow. The `style` attribute cannot be animated, as SVG 2 says; such an animation is reported with
+  `Svg.BadAnimation` and has no effect.
 - A new fuzz target, `svg-timeline`, builds timelines and draws frames from mutated animated documents.
 
 ## Egami.Video.Hardware 0.1.0-preview.1 (unreleased)

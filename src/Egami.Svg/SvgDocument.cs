@@ -199,9 +199,9 @@ public sealed class SvgDocument
     }
 
     /// <summary>
-    /// Gets the render tree at a moment of the document's SMIL animations: the animate and set elements' values at
-    /// <paramref name="time"/> replace the attribute values they animate, as a browser shows the document that long after it
-    /// loaded with nobody touching it. The element tree is not edited. A document without animations gives
+    /// Gets the render tree at a moment of the document's SMIL animations: the values animate, set and animateTransform give at
+    /// <paramref name="time"/> replace the attribute values they animate, animateMotion moves its targets and discard removes
+    /// them, as a browser shows the document that long after it loaded with nobody touching it. The element tree is not edited. A document without animations gives
     /// <see cref="RenderTree"/>. Like it, the tree is immutable and safe to read from many threads.
     /// </summary>
     /// <param name="time">The time since the document began; not negative.</param>

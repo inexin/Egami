@@ -15,7 +15,7 @@ internal sealed partial class SvgResolver
     /// </summary>
     private SvgClip? ClipPath(SvgElement element, string url, RectF bounds, in SvgContext context, ref bool hidden)
     {
-        SvgElement? target = SvgStyleValues.LocalId(url) is string id ? _document.FindById(id) : null;
+        SvgElement? target = SvgStyleValues.LocalId(url) is string id ? FindById(id) : null;
         if (target is null || target.Name != "clipPath" || !target.IsSvgOrBare(_document))
         {
             _report.Warn("Svg.BadReference", $"The clip-path \"url({SvgGeometry.Clip(url)})\" names no clipPath; it is ignored.", element);
@@ -126,7 +126,7 @@ internal sealed partial class SvgResolver
     /// </summary>
     private SvgMask? Mask(SvgElement element, string url, RectF bounds, in SvgContext context, ref bool hidden)
     {
-        SvgElement? target = SvgStyleValues.LocalId(url) is string id ? _document.FindById(id) : null;
+        SvgElement? target = SvgStyleValues.LocalId(url) is string id ? FindById(id) : null;
         if (target is null || target.Name != "mask" || !target.IsSvgOrBare(_document))
         {
             _report.Warn("Svg.BadReference", $"The mask \"url({SvgGeometry.Clip(url)})\" names no mask; it is ignored.", element);
