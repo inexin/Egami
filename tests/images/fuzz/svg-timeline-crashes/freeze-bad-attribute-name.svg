@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50"><path d="M5 5 L4545 45 Z" fill="#26a"><animate attributeName="[" values="M5 5 L45 5 L45 45 Z;M5 45 l40 -40 L5 5 z;M5 5 Z1 Z" dur="3s" fill="freeze" aive="summ" repeatCount="2.5"/></path><polygon points="0,0 10,0 5,8"><animate attributeName="points" to="0,10 10,10 5,2" dur="1s" minrt=""/></polygon></svg>

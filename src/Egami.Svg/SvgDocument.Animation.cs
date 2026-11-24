@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Xml;
 
 using Egami.Pixels;
 using Egami.Svg.Animation;
@@ -135,7 +136,11 @@ public sealed partial class SvgDocument
             {
                 foreach ((string name, string value) in frame.For(element)!)
                 {
-                    target.Attributes[name] = value;
+                    // An attributeName no XML attribute can have (a typo such as "fi~l", another prefix) animates nothing.
+                    if (IsAttributeName(name))
+                    {
+                        target.Attributes[name] = value;
+                    }
                 }
             }
         }
@@ -214,6 +219,24 @@ public sealed partial class SvgDocument
     }
 
     // Adds declarations at the end of an element's style attribute, where they win over the same properties before them.
+    private static bool IsAttributeName(string name)
+    {
+        if (name.Length == 0 || !XmlConvert.IsStartNCNameChar(name[0]))
+        {
+            return false;
+        }
+
+        foreach (char c in name.AsSpan(1))
+        {
+            if (!XmlConvert.IsNCNameChar(c))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private static void AppendStyle(SvgElement element, string declarations)
     {
         if (declarations.Length == 0)

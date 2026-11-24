@@ -122,6 +122,18 @@ public class AnimationFramesTests
     }
 
     [Fact]
+    public void FreezeSkipsAnAttributeNameNoXmlAttributeCanHave()
+    {
+        SvgDocument document = SvgDocument.Parse("<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect width='10' height='10'><set attributeName='fi~l' to='red'/><set attributeName='x:y' to='1'/><set attributeName='fill' to='blue'/></rect></svg>");
+        SvgDocument frozen = document.Freeze(TimeSpan.FromSeconds(1));
+        using MemoryStream saved = new();
+        frozen.Save(saved);
+        string text = System.Text.Encoding.UTF8.GetString(saved.ToArray());
+        Assert.Contains("fill=\"blue\"", text);
+        Assert.DoesNotContain("red", text);
+    }
+
+    [Fact]
     public void AGivenLengthAndStartAreKept()
     {
         SvgDocument document = SvgDocument.Parse(Loop);
