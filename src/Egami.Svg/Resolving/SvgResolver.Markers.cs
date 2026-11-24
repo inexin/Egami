@@ -36,7 +36,7 @@ internal sealed partial class SvgResolver
             return;
         }
 
-        SvgElement? marker = SvgStyleValues.LocalId(url) is string id ? _document.FindById(id) : null;
+        SvgElement? marker = SvgStyleValues.LocalId(url) is string id ? FindById(id) : null;
         if (marker is null || marker.Name != "marker" || !marker.IsSvgOrBare(_document))
         {
             _report.Warn("Svg.BadReference", $"The marker \"url({SvgGeometry.Clip(url)})\" names no marker; it is not drawn.", element);

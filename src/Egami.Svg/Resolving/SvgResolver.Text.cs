@@ -742,7 +742,7 @@ internal sealed partial class SvgResolver
         else
         {
             string? href = Href(textPath);
-            if (href is not null && SvgStyleValues.LocalId(href) is string id && _document.FindById(id) is SvgElement target && target.IsSvgOrBare(_document))
+            if (href is not null && SvgStyleValues.LocalId(href) is string id && FindById(id) is SvgElement target && target.IsSvgOrBare(_document))
             {
                 (SvgStyle targetStyle, _) = OriginalStyle(target);
                 _geometryStyle = (target, targetStyle.Css);

@@ -226,4 +226,80 @@ public class AnimationElementTests
         Near(new Vector2(5, 0), Paths(document.RenderTree).Single(p => p.Id == "r").Transform);
         Assert.True(document.Animation.HasAnimations);
     }
+
+    private static bool Same(Raster<Egami.Pixels.Rgba8> a, Raster<Egami.Pixels.Rgba8> b)
+    {
+        if (a.Width != b.Width || a.Height != b.Height)
+        {
+            return false;
+        }
+
+        for (int y = 0; y < a.Height; y++)
+        {
+            for (int x = 0; x < a.Width; x++)
+            {
+                if (a.GetPixel(x, y) != b.GetPixel(x, y))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    [Theory]
+    [InlineData("<linearGradient id='x'><stop offset='0' stop-color='red'/><stop offset='1' stop-color='blue'/>{0}</linearGradient>", "<rect width='40' height='40' fill='url(#x) #00ff00'/>")]
+    [InlineData("<pattern id='x' width='10' height='10' patternUnits='userSpaceOnUse'><rect width='5' height='5' fill='red'/>{0}</pattern>", "<rect width='40' height='40' fill='url(#x)'/>")]
+    [InlineData("<clipPath id='x'><circle cx='20' cy='20' r='10'/>{0}</clipPath>", "<rect width='40' height='40' fill='blue' clip-path='url(#x)'/>")]
+    [InlineData("<mask id='x'><rect width='20' height='20' fill='white'/>{0}</mask>", "<rect width='40' height='40' fill='blue' mask='url(#x)'/>")]
+    [InlineData("<marker id='x' markerWidth='8' markerHeight='8'><rect width='8' height='8' fill='red'/>{0}</marker>", "<path d='M5 5 L30 30' stroke='blue' marker-end='url(#x)'/>")]
+    [InlineData("<filter id='x'><feFlood flood-color='red'/>{0}</filter>", "<rect width='40' height='40' fill='blue' filter='url(#x)'/>")]
+    public void ADiscardedPaintServerOrEffectIsAMissingReference(string definition, string user)
+    {
+        SvgDocument document = Doc($"<defs>{string.Format(System.Globalization.CultureInfo.InvariantCulture, definition, "<discard begin='1s'/>")}</defs>{user}");
+        SvgDocument before = Doc($"<defs>{string.Format(System.Globalization.CultureInfo.InvariantCulture, definition, "")}</defs>{user}");
+        SvgDocument missing = Doc(user);
+        using Raster<Egami.Pixels.Rgba8> early = document.Rasterize<Egami.Pixels.Rgba8>(new SvgRenderOptions { Time = TimeSpan.FromSeconds(0.5) });
+        using Raster<Egami.Pixels.Rgba8> late = document.Rasterize<Egami.Pixels.Rgba8>(new SvgRenderOptions { Time = TimeSpan.FromSeconds(2) });
+        using Raster<Egami.Pixels.Rgba8> whole = before.Rasterize<Egami.Pixels.Rgba8>();
+        using Raster<Egami.Pixels.Rgba8> none = missing.Rasterize<Egami.Pixels.Rgba8>();
+        Assert.True(Same(early, whole));
+        Assert.True(Same(late, none));
+        Assert.False(Same(whole, none));
+    }
+
+    [Fact]
+    public void AnAnimatedClassRematchesSelectors()
+    {
+        SvgDocument own = Doc("<style>.on { fill: #00ff00 }</style><rect id='r' width='10' height='10' fill='red'><set attributeName='class' to='on' begin='1s'/></rect>");
+        Assert.Equal(1f, ((SolidPaint)Shape(own, 0.5).Fill!).Color.R, 3);
+        Assert.Equal(1f, ((SolidPaint)Shape(own, 2).Fill!).Color.G, 3);
+        Assert.Equal(["on"], Shape(own, 2).Classes);
+
+        // A descendant selector re-matches the subtree under the element whose class changes.
+        SvgDocument ancestor = Doc("<style>.on rect { fill: #00ff00 }</style><g><animate attributeName='class' values='off;on' dur='2s'/><rect id='r' width='10' height='10' fill='red'/></g>");
+        Assert.Equal(1f, ((SolidPaint)Shape(ancestor, 0.5).Fill!).Color.R, 3);
+        Assert.Equal(1f, ((SolidPaint)Shape(ancestor, 1.5).Fill!).Color.G, 3);
+    }
+
+    [Fact]
+    public void TheStyleAttributeIsNotAnimatable()
+    {
+        SvgDocument document = Doc("<rect id='r' width='10' height='10' fill='red'><set attributeName='style' to='fill: #00ff00'/></rect>");
+        SvgReport report = new(strict: false);
+        SvgTimeline timeline = SvgTimeline.Build(document, report);
+        Assert.Null(timeline.Animations[0].Function);
+        Assert.Contains(report.Warnings, w => w.Id == "Svg.BadAnimation" && w.Message.Contains("style attribute", StringComparison.Ordinal));
+        Assert.Equal(1f, ((SolidPaint)Shape(document, 1).Fill!).Color.R, 3);
+    }
+
+    [Fact]
+    public void MotionMovesANestedSvg()
+    {
+        SvgDocument document = Doc("<svg x='10' width='50' height='50'><rect width='10' height='10' fill='#000'/><animateMotion path='M0 0 L40 0' dur='2s'/></svg>");
+        using Raster<Egami.Pixels.Rgba8> raster = document.Rasterize<Egami.Pixels.Rgba8>(new SvgRenderOptions { Time = TimeSpan.FromSeconds(1) });
+        Assert.Equal(255, raster.GetPixel(35, 5).A);
+        Assert.Equal(0, raster.GetPixel(15, 5).A);
+    }
 }

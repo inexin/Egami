@@ -444,6 +444,16 @@ internal sealed partial class SvgResolver
         return Viewport(symbol, symbol, style, context with { Style = style, Css = css }, width, height, isSymbol: true);
     }
 
+    /// <summary>
+    /// The element with an id, as references find it: null when there is none, or when a discard has removed it (or an ancestor)
+    /// by the frame's time, as it has then left the document.
+    /// </summary>
+    private SvgElement? FindById(string id)
+    {
+        SvgElement? element = _document.FindById(id);
+        return element is not null && _frame?.IsDiscarded(element) == true ? null : element;
+    }
+
     /// <summary>The element a reference attribute (href) names, reported when missing.</summary>
     private SvgElement? Reference(SvgElement element, string what)
     {
@@ -454,13 +464,7 @@ internal sealed partial class SvgResolver
         }
 
         string? id = SvgStyleValues.LocalId(href);
-        SvgElement? target = id is null ? null : _document.FindById(id);
-        if (target is not null && _frame?.IsDiscarded(target) == true)
-        {
-            // A discarded element has left the document.
-            return null;
-        }
-
+        SvgElement? target = id is null ? null : FindById(id);
         if (target is null)
         {
             _report.Warn("Svg.BadReference", $"The {what}'s href \"{SvgGeometry.Clip(href)}\" names no element in this document; it draws nothing.", element);
@@ -543,7 +547,7 @@ internal sealed partial class SvgResolver
                 }
 
                 string? href = Href(inner);
-                if (href is null || SvgStyleValues.LocalId(href) is not string id || _document.FindById(id) is not SvgElement next)
+                if (href is null || SvgStyleValues.LocalId(href) is not string id || FindById(id) is not SvgElement next)
                 {
                     continue;
                 }

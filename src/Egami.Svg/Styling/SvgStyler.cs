@@ -88,7 +88,9 @@ internal sealed class SvgStyler
     {
         if (!_cascaded.TryGetValue(element, out CssCascadedStyle? style))
         {
-            style = _cascade.Cascade(element, Hints(element), Inline(element));
+            // When an animation sets a class, selectors match the classes of this moment.
+            ICssElement matched = _frame?.AnimatesClass == true ? _frame.CssElement(element) : element;
+            style = _cascade.Cascade(matched, Hints(element), Inline(element));
             _cascaded[element] = style;
         }
 

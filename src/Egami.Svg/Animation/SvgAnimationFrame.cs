@@ -14,6 +14,7 @@ internal sealed class SvgAnimationFrame
     private readonly Dictionary<SvgElement, Dictionary<string, string>> _values = new(IdentityComparer.Instance);
     private readonly Dictionary<SvgElement, Matrix3x2> _motion = new(IdentityComparer.Instance);
     private readonly HashSet<SvgElement> _discarded = new(IdentityComparer.Instance);
+    private Dictionary<SvgElement, SvgFrameElement>? _cssElements;
 
     private SvgAnimationFrame()
     {
@@ -37,6 +38,22 @@ internal sealed class SvgAnimationFrame
 
     /// <summary>Gets an element's animated attributes, or null when it has none.</summary>
     public IReadOnlyDictionary<string, string>? For(SvgElement element) => _values.GetValueOrDefault(element);
+
+    /// <summary>Gets a value indicating whether an animation sets some element's class, so selectors must match at this moment.</summary>
+    public bool AnimatesClass { get; private set; }
+
+    /// <summary>The element as selectors see it in this frame, with animated classes; one per element.</summary>
+    public SvgFrameElement CssElement(SvgElement element)
+    {
+        _cssElements ??= new Dictionary<SvgElement, SvgFrameElement>(IdentityComparer.Instance);
+        if (!_cssElements.TryGetValue(element, out SvgFrameElement? css))
+        {
+            css = new SvgFrameElement(element, this);
+            _cssElements[element] = css;
+        }
+
+        return css;
+    }
 
     /// <summary>Gets the supplemental transform animateMotion puts on an element, applied after its own transform.</summary>
     public bool TryGetMotion(SvgElement element, out Matrix3x2 motion) => _motion.TryGetValue(element, out motion);
@@ -155,6 +172,7 @@ internal sealed class SvgAnimationFrame
             if (values.Count > 0)
             {
                 frame._values[element] = values;
+                frame.AnimatesClass |= values.ContainsKey("class");
             }
         }
 

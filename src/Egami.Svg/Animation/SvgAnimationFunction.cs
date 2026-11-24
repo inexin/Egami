@@ -63,7 +63,7 @@ internal sealed class SvgAnimationFunction
         {
             "fill" or "stroke" or "color" or "stop-color" or "flood-color" or "lighting-color" or "solid-color" => SvgValueKind.Color,
             "d" => SvgValueKind.Path,
-            "transform" or "gradientTransform" or "patternTransform" => SvgValueKind.Discrete,
+            "transform" or "gradientTransform" or "patternTransform" or "class" or "href" => SvgValueKind.Discrete,
             _ => SvgValueKind.Numeric,
         };
 

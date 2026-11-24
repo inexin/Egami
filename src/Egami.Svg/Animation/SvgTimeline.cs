@@ -56,7 +56,12 @@ internal sealed class SvgTimeline
 
             if (SvgAnimation.Read(element, kind, order++, document, report) is SvgAnimation animation)
             {
-                if (kind is SvgAnimationKind.Animate or SvgAnimationKind.Set or SvgAnimationKind.AnimateTransform)
+                if (animation.AttributeName == "style")
+                {
+                    // SVG 2: the style attribute is not animatable; its properties are, by their own names.
+                    report.Warn("Svg.BadAnimation", $"The {element.Name} animates the style attribute, which cannot be animated; animate the properties by name instead. It has no effect.", element);
+                }
+                else if (kind is SvgAnimationKind.Animate or SvgAnimationKind.Set or SvgAnimationKind.AnimateTransform)
                 {
                     animation.Function = SvgAnimationFunction.Create(animation, report);
                 }

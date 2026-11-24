@@ -27,8 +27,11 @@ SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation
 - `animateMotion` moves its target along a path from an `mpath`, the `path` attribute, or values, from, to and by as coordinate
   pairs: paced by default, or linear, discrete and spline through the path's vertices or `keyPoints`; `rotate` as an angle,
   `auto` or `auto-reverse`; additive and accumulating. The motion comes after the element's own transform, as SVG says.
-- `discard` removes its target, and the animations inside it, from its begin time on; a `use` of a discarded element draws
-  nothing.
+- `discard` removes its target, and the animations inside it, from its begin time on; a `use` or `url(#…)` reference to a
+  discarded element (gradient, pattern, clip path, mask, marker, filter) then acts as a missing one.
+- `set` and `animate` can change `class`: style sheet selectors match the classes of that moment, so rules on the element and
+  its descendants follow. The `style` attribute cannot be animated, as SVG 2 says; such an animation is reported with
+  `Svg.BadAnimation` and has no effect.
 - A new fuzz target, `svg-timeline`, builds timelines and draws frames from mutated animated documents.
 
 ## Egami.Video.Hardware 0.1.0-preview.1 (unreleased)
