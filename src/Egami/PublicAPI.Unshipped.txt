@@ -1,1 +1,57 @@
 #nullable enable
+Egami.Formats.Eps.EpsBoundingBox
+Egami.Formats.Eps.EpsBoundingBox.Bottom.get -> double
+Egami.Formats.Eps.EpsBoundingBox.Bottom.init -> void
+Egami.Formats.Eps.EpsBoundingBox.Deconstruct(out double Left, out double Bottom, out double Right, out double Top) -> void
+Egami.Formats.Eps.EpsBoundingBox.EpsBoundingBox() -> void
+Egami.Formats.Eps.EpsBoundingBox.EpsBoundingBox(double Left, double Bottom, double Right, double Top) -> void
+Egami.Formats.Eps.EpsBoundingBox.Equals(Egami.Formats.Eps.EpsBoundingBox other) -> bool
+Egami.Formats.Eps.EpsBoundingBox.Height.get -> double
+Egami.Formats.Eps.EpsBoundingBox.Left.get -> double
+Egami.Formats.Eps.EpsBoundingBox.Left.init -> void
+Egami.Formats.Eps.EpsBoundingBox.Right.get -> double
+Egami.Formats.Eps.EpsBoundingBox.Right.init -> void
+Egami.Formats.Eps.EpsBoundingBox.Top.get -> double
+Egami.Formats.Eps.EpsBoundingBox.Top.init -> void
+Egami.Formats.Eps.EpsBoundingBox.Width.get -> double
+Egami.Formats.Eps.EpsDetails
+Egami.Formats.Eps.EpsDetails.BoundingBox.get -> Egami.Formats.Eps.EpsBoundingBox?
+Egami.Formats.Eps.EpsDetails.BoundingBox.set -> void
+Egami.Formats.Eps.EpsDetails.CreationDate.get -> string?
+Egami.Formats.Eps.EpsDetails.CreationDate.set -> void
+Egami.Formats.Eps.EpsDetails.Creator.get -> string?
+Egami.Formats.Eps.EpsDetails.Creator.set -> void
+Egami.Formats.Eps.EpsDetails.EpsDetails() -> void
+Egami.Formats.Eps.EpsDetails.Preview.get -> Egami.Formats.Eps.EpsPreviewKind
+Egami.Formats.Eps.EpsDetails.Preview.set -> void
+Egami.Formats.Eps.EpsDetails.Title.get -> string?
+Egami.Formats.Eps.EpsDetails.Title.set -> void
+Egami.Formats.Eps.EpsFile
+Egami.Formats.Eps.EpsFile.BoundingBox.get -> Egami.Formats.Eps.EpsBoundingBox?
+Egami.Formats.Eps.EpsFile.CreationDate.get -> string?
+Egami.Formats.Eps.EpsFile.Creator.get -> string?
+Egami.Formats.Eps.EpsFile.IccProfile.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Eps.EpsFile.IsEncapsulated.get -> bool
+Egami.Formats.Eps.EpsFile.PhotoshopResources.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Eps.EpsFile.PostScript.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Eps.EpsFile.Preview.get -> Egami.Formats.Eps.EpsPreviewKind
+Egami.Formats.Eps.EpsFile.TiffPreview.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Eps.EpsFile.Title.get -> string?
+Egami.Formats.Eps.EpsFile.Warnings.get -> System.Collections.Generic.IReadOnlyList<Egami.EgamiDiagnostic>!
+Egami.Formats.Eps.EpsFile.WmfPreview.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Eps.EpsFile.Xmp.get -> System.ReadOnlyMemory<byte>
+Egami.Formats.Eps.EpsFormat
+Egami.Formats.Eps.EpsPreviewKind
+Egami.Formats.Eps.EpsPreviewKind.Epsi = 3 -> Egami.Formats.Eps.EpsPreviewKind
+Egami.Formats.Eps.EpsPreviewKind.None = 0 -> Egami.Formats.Eps.EpsPreviewKind
+Egami.Formats.Eps.EpsPreviewKind.Tiff = 1 -> Egami.Formats.Eps.EpsPreviewKind
+Egami.Formats.Eps.EpsPreviewKind.Wmf = 2 -> Egami.Formats.Eps.EpsPreviewKind
+override Egami.Formats.Eps.EpsBoundingBox.GetHashCode() -> int
+override Egami.Formats.Eps.EpsDetails.Copy() -> Egami.Metadata.FormatDetails!
+static Egami.Formats.Eps.EpsBoundingBox.operator !=(Egami.Formats.Eps.EpsBoundingBox left, Egami.Formats.Eps.EpsBoundingBox right) -> bool
+static Egami.Formats.Eps.EpsBoundingBox.operator ==(Egami.Formats.Eps.EpsBoundingBox left, Egami.Formats.Eps.EpsBoundingBox right) -> bool
+static Egami.Formats.Eps.EpsFile.Load(System.IO.Stream! stream, Egami.SafetyLimits? limits = null) -> Egami.Formats.Eps.EpsFile!
+static Egami.Formats.Eps.EpsFile.Load(System.ReadOnlyMemory<byte> data, Egami.SafetyLimits? limits = null) -> Egami.Formats.Eps.EpsFile!
+static Egami.Formats.Eps.EpsFormat.Info.get -> Egami.Formats.FormatInfo!
+~override Egami.Formats.Eps.EpsBoundingBox.Equals(object obj) -> bool
+~override Egami.Formats.Eps.EpsBoundingBox.ToString() -> string

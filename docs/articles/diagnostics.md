@@ -145,6 +145,18 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Decode.FramesSelected` | Info | `ReaderOptions.Frames` chose some frames; how many were read |
 | `Decode.ScaleChosen` | Info | For `ReaderOptions.MinimumSize`, the 1/N scale the reader decodes at and the box factor after it |
 | `Detect.Format` | Info | The format detected, and how |
+| `Eps.BoundingBoxInvalid` | Warning | An EPS file's `%%BoundingBox` is not four numbers enclosing an area, or says `(atend)` with none in the trailer; the file has no bounding box |
+| `Eps.ChecksumMismatch` | Warning | An EPS binary header's checksum does not match the header; its offsets were used anyway |
+| `Eps.MetafileSkipped` | Warning | An EPS file's metafile preview was not drawn because no format in the context reads metafiles; its EPSI preview was loaded instead |
+| `Eps.NoPreview` | Debug | An EPS or PostScript file has no preview Egami can show, and PostScript is not run; the load fails with UnsupportedFormatException |
+| `Eps.NotPostScript` | Warning | The PostScript section an EPS binary header points at does not start with `%!`; its comments were not read |
+| `Eps.PreviewInvalid` | Warning | An EPS file's `%%BeginPreview` comment does not give a size and a depth of 1, 2, 4 or 8 bits; the EPSI preview was left out |
+| `Eps.PreviewLoaded` | Warning | The image loaded is an EPS file's preview, not the drawing its PostScript makes, which Egami does not run |
+| `Eps.PreviewTruncated` | Warning | An EPSI preview has fewer hex digits than its size needs; the missing pixels are white |
+| `Eps.ProfileDamaged` | Warning | An EPS file's ICC profile section runs past the end of the file or the metadata limit, or its hex is broken; it was left out |
+| `Eps.SectionPastEnd` | Warning | An EPS binary header puts a section past the end of the file; it was cut to the file, or left out when it starts past the end |
+| `Eps.SectionsOverlap` | Warning | Two sections an EPS binary header points at overlap; each was read as the header gives it |
+| `Eps.XmpDamaged` | Warning | An EPS file's XMP packet has no end marker or is larger than the metadata limit; it was left out |
 | `Exif.Damaged` | Warning | The EXIF block would not parse in full; it is kept as bytes |
 | `Exr.BlocksDamaged` | Warning | Blocks of an OpenEXR part cannot be read or decompressed; their pixels are zero |
 | `Exr.ChunkTableRebuilt` | Warning | An OpenEXR part's chunk offset table is incomplete or damaged; it was rebuilt by walking the chunks |

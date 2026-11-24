@@ -3,6 +3,21 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
+## Egami 1.6.0 (unreleased)
+
+EPS previews (roadmap 2.3.14, stage A).
+
+- EPS is a built-in format (`EpsFormat.Info`, registered in `EgamiContext.Default`, read only): `Raster.Load` returns the
+  preview the file carries, never running its PostScript: the TIFF preview behind the DOS binary header, its Windows metafile
+  preview drawn at the bounding box size by a metafile format the context has registered (Egami.Metafiles'
+  `MetafileFormat.Info`; core Egami does not depend on it), or the EPSI bitmap as `Gray8`. A file with only PostScript probes
+  at its bounding box size and fails to load with `UnsupportedFormatException`; plain PostScript is detected so it fails the
+  same way rather than as an unknown format.
+- `EpsFile` gives an EPS file's parts: the PostScript, the TIFF and metafile previews, the bounding box (`%%HiResBoundingBox`
+  first, `(atend)` read from the trailer), creator, title and creation date, Photoshop's ICC profile, XMP packet and image
+  resources, and warnings for damage. `EpsDetails` carries the same comments in a loaded raster's metadata.
+- New diagnostics: `Eps.PreviewLoaded` on every load, and `Eps.*` warnings for damaged headers, sections and previews.
+
 ## Egami.Svg and Egami.Css 1.6.0 (unreleased)
 
 SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation element, drawn at a chosen time.

@@ -44,6 +44,8 @@
       href: formats/dicom.md
     - name: DPX and Cineon
       href: formats/dpx.md
+    - name: EPS (previews)
+      href: formats/eps.md
     - name: Extended formats
       href: formats/extended.md
     - name: Farbfeld
