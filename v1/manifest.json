@@ -1395,6 +1395,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Css.CssEasingFunction.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Css.CssEasingFunction.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Css.CssEasingFunction",
+      "Summary": "<p sourcefile=\"api/Egami.Css.CssEasingFunction.yml\" sourcestartlinenumber=\"1\">An easing function (CSS Easing 2): <code>linear</code>, <code>linear()</code> with stops, <code>ease</code>, <code>ease-in</code>,\n<code>ease-out</code>, <code>ease-in-out</code>, <code>cubic-bezier()</code>, <code>step-start</code>, <code>step-end</code> or <code>steps()</code>. It maps\nan input progress to an output progress.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Css.CssFont.yml",
       "output": {
         ".html": {
@@ -1532,6 +1546,34 @@
       "IsMRef": true,
       "Title": "Egami.Css.CssImportRule",
       "Summary": "<p sourcefile=\"api/Egami.Css.CssImportRule.yml\" sourcestartlinenumber=\"1\">An <code><xref href=\"import\" data-throw-if-not-resolved=\"False\" data-raw-source=\"@import\" sourcefile=\"api/Egami.Css.CssImportRule.yml\" sourcestartlinenumber=\"1\"></xref></code> rule. Egami.Css does not fetch it: the consumer may load the sheet and pass it to the cascade.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Css.CssKeyframe.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Css.CssKeyframe.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Css.CssKeyframe",
+      "Summary": "<p sourcefile=\"api/Egami.Css.CssKeyframe.yml\" sourcestartlinenumber=\"1\">One keyframe of an <code><xref href=\"keyframes\" data-throw-if-not-resolved=\"False\" data-raw-source=\"@keyframes\" sourcefile=\"api/Egami.Css.CssKeyframe.yml\" sourcestartlinenumber=\"1\"></xref></code> rule: its offsets and declarations, such as <code>from, 50% { opacity: 0 }</code>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Css.CssKeyframesRule.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Css.CssKeyframesRule.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Css.CssKeyframesRule",
+      "Summary": "<p sourcefile=\"api/Egami.Css.CssKeyframesRule.yml\" sourcestartlinenumber=\"1\">An <code><xref href=\"keyframes\" data-throw-if-not-resolved=\"False\" data-raw-source=\"@keyframes\" sourcefile=\"api/Egami.Css.CssKeyframesRule.yml\" sourcestartlinenumber=\"1\"></xref></code> rule (CSS Animations 1): a named list of keyframes an <code>animation-name</code> refers to. The\n<code>-webkit-keyframes</code> spelling parses to the same rule.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -13263,7 +13305,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Svg.SvgAnimationInfo",
-      "Summary": "<p sourcefile=\"api/Egami.Svg.SvgAnimationInfo.yml\" sourcestartlinenumber=\"1\">What a document's SMIL animations do over time, as <xref href=\"Egami.Svg.SvgDocument.Animation\" data-throw-if-not-resolved=\"false\"></xref> finds them: whether it animates, how\nlong it plays and whether it loops. Animations that wait for a click, a key or a wall-clock time never begin, as in a browser\nnobody touches.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Svg.SvgAnimationInfo.yml\" sourcestartlinenumber=\"1\">What a document's SMIL and CSS animations do over time, as <xref href=\"Egami.Svg.SvgDocument.Animation\" data-throw-if-not-resolved=\"false\"></xref> finds them: whether it\nanimates, how long it plays and whether it loops. Animations that wait for a click, a key or a wall-clock time never begin, as in a browser\nnobody touches.</p>\n"
     },
     {
       "type": "ManagedReference",

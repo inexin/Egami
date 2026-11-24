@@ -192,6 +192,9 @@ foreach (CssRule rule in sheet.Rules)
         case CssLayerRule layer:
             Console.WriteLine($"@layer {string.Join(", ", layer.Names)}");
             break;
+        case CssKeyframesRule keyframes:
+            Console.WriteLine($"@keyframes {keyframes.Name}: {keyframes.Keyframes.Count} keyframes");
+            break;
         case CssUnknownAtRule other:
             Console.WriteLine($"@{other.Name} (kept, not interpreted)");
             break;

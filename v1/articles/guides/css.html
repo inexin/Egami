@@ -138,6 +138,9 @@ foreach (CssRule rule in sheet.Rules)
         case CssLayerRule layer:
             Console.WriteLine($&quot;@layer {string.Join(&quot;, &quot;, layer.Names)}&quot;);
             break;
+        case CssKeyframesRule keyframes:
+            Console.WriteLine($&quot;@keyframes {keyframes.Name}: {keyframes.Keyframes.Count} keyframes&quot;);
+            break;
         case CssUnknownAtRule other:
             Console.WriteLine($&quot;@{other.Name} (kept, not interpreted)&quot;);
             break;
@@ -157,7 +160,8 @@ Console.WriteLine($&quot;{dropped.Line}:{dropped.Column} {dropped.Message}&quot;
 <li><code>CssNamespaceRule</code>: a prefix for selectors; the sheet collects them in <code>CssStyleSheet.Namespaces</code>.</li>
 <li><code>CssLayerRule</code>: cascade layers are not implemented, so the rules inside a layer block count as ordinary rules.</li>
 <li><code>CssPageRule</code>: page selectors, the page context's declarations and its <code>CssPageMarginRule</code>s (see <a href="#pages">Pages</a>).</li>
-<li><code>CssUnknownAtRule</code>: anything else, such as <code>@keyframes</code> or <code>@counter-style</code>, kept as component values.</li>
+<li><code>CssKeyframesRule</code>: an <code>@keyframes</code> (or <code>@-webkit-keyframes</code>) rule's name and its <code>CssKeyframe</code>s (see <a href="#animations">Animations</a>).</li>
+<li><code>CssUnknownAtRule</code>: anything else, such as <code>@counter-style</code> or <code>@property</code>, kept as component values.</li>
 </ul>
 <h2 id="declarations">Declarations</h2>
 <p>A <code>CssDeclaration</code> is a property name, its value and the <code>!important</code> flag. <code>CssDeclaration.ParseList</code> reads a <code>style</code>
@@ -480,12 +484,52 @@ CssFontFace face = ((CssFontFaceRule)sheet.Rules[0]).FontFace;
 CssFontSource source = face.Sources[1];                  // inter.woff2, format woff2, tech variations
 CssRange weights = face.Weight!.Value;                   // 100 to 900
 CssUnicodeRange latin = face.UnicodeRanges[0];           // U+0-FF
+</code></pre><h2 id="animations">Animations</h2>
+<p><code>@keyframes</code> parses into a <code>CssKeyframesRule</code>: its name and its <code>CssKeyframe</code>s, each with the offsets its selector names
+(<code>from</code> is 0, <code>to</code> is 1, <code>50%</code> is 0.5) and its declarations. Declarations marked <code>!important</code> are dropped, as CSS Animations 1
+says. Egami.Css does not run animations: a consumer such as Egami.Svg reads <code>animation-*</code> from the computed style, computes the
+values at a moment and adds them with <code>CssCascadedStyle.WithAnimationValues</code>. They go in the <code>CssOrigin.Animation</code> origin, above
+every normal declaration and below every important one.</p>
+<pre><code class="lang-csharp">// @keyframes parses into its keyframes: offsets from 0 to 1 and their declarations (!important ones are dropped).
+CssStyleSheet sheet = CssStyleSheet.Parse(&quot;&quot;&quot;
+    @keyframes pulse {
+      from, 50% { opacity: 1; animation-timing-function: ease-in }
+      75% { opacity: 0.2 !important; fill: gold }
+      to { opacity: 0 }
+    }
+    &quot;&quot;&quot;);
+var pulse = (CssKeyframesRule)sheet.Rules[0];
+foreach (CssKeyframe keyframe in pulse.Keyframes)
+{
+    Console.WriteLine($&quot;{string.Join(&quot;, &quot;, keyframe.Offsets)}: {string.Join(&quot;; &quot;, keyframe.Declarations)}&quot;);
+}
+
+// A consumer that runs the animation puts the values it computes in the animation origin: above every normal
+// declaration, below every important one.
+CssCascadedStyle animated = new CssCascadedStyle().WithAnimationValues([CssDeclaration.Create(&quot;opacity&quot;, &quot;0.6&quot;)]);
+</code></pre>
+<p><code>CssEasingFunction</code> reads the easing functions of CSS Easing 2: <code>linear</code>, <code>linear()</code> with stops, <code>ease</code>, <code>ease-in</code>, <code>ease-out</code>,
+<code>ease-in-out</code>, <code>cubic-bezier()</code>, <code>step-start</code>, <code>step-end</code> and <code>steps()</code> with every jump position. <code>Evaluate</code> maps an input
+progress to an output progress, extrapolating outside 0 to 1; its before flag makes a step land on its lower side.</p>
+<pre><code class="lang-csharp">// Easing functions map an animation's progress: keywords, cubic-bezier(), steps() and linear() with stops.
+CssEasingFunction easeIn = CssEasingFunction.Parse(&quot;ease-in&quot;);
+double eased = easeIn.Evaluate(0.5);                              // 0.315...
+
+CssEasingFunction steps = CssEasingFunction.Parse(&quot;steps(4, jump-end)&quot;);
+double stepped = steps.Evaluate(0.6);                             // 0.5
+
+bool parsed = CssEasingFunction.TryParse(&quot;linear(0, 0.9 50%, 1)&quot;, out CssEasingFunction? custom);
+double bent = custom!.Evaluate(0.25);                             // 0.45
+
+// In an animation's before phase, a step lands on its lower side.
+double before = CssEasingFunction.Parse(&quot;step-start&quot;).Evaluate(0, beforeFlag: true); // 0
 </code></pre><h2 id="not-supported">Not supported</h2>
 <ul>
 <li>CSS Nesting: rules nested in a style rule are dropped and reported.</li>
 <li>Cascade layers: layer blocks count as ordinary rules.</li>
-<li><code>@import</code> is not fetched, and animations and transitions are not part of the cascade.</li>
-<li><code>@property</code>, <code>@container</code>, <code>@scope</code>, <code>@keyframes</code>, <code>@counter-style</code> and similar rules are kept as unknown at-rules.</li>
+<li><code>@import</code> is not fetched. Egami.Css parses <code>@keyframes</code> and easing functions but does not run animations or transitions:
+the consumer computes animated values and adds them with <code>CssCascadedStyle.WithAnimationValues</code>.</li>
+<li><code>@property</code>, <code>@container</code>, <code>@scope</code>, <code>@counter-style</code> and similar rules are kept as unknown at-rules.</li>
 <li>Logical properties such as <code>margin-inline-start</code> and <code>inset</code>, and positioning (<code>position</code>, <code>top</code>, <code>z-index</code>), are not in the
 default registry: they cascade as unregistered properties, without a shorthand or a link to the physical sides.</li>
 <li>Page selectors take <code>:first</code>, <code>:left</code>, <code>:right</code> and <code>:blank</code>, not <code>:nth()</code> or page groups.</li>

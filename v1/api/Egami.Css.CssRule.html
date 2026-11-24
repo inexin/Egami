@@ -122,6 +122,7 @@ Class CssRule  <a class="header-action link-secondary" title="View source" href=
     <dd>
       <div><a class="xref" href="Egami.Css.CssFontFaceRule.html">CssFontFaceRule</a></div>
       <div><a class="xref" href="Egami.Css.CssImportRule.html">CssImportRule</a></div>
+      <div><a class="xref" href="Egami.Css.CssKeyframesRule.html">CssKeyframesRule</a></div>
       <div><a class="xref" href="Egami.Css.CssLayerRule.html">CssLayerRule</a></div>
       <div><a class="xref" href="Egami.Css.CssMediaRule.html">CssMediaRule</a></div>
       <div><a class="xref" href="Egami.Css.CssNamespaceRule.html">CssNamespaceRule</a></div>
@@ -201,6 +202,9 @@ foreach (CssRule rule in sheet.Rules)
             break;
         case CssLayerRule layer:
             Console.WriteLine($"@layer {string.Join(", ", layer.Names)}");
+            break;
+        case CssKeyframesRule keyframes:
+            Console.WriteLine($"@keyframes {keyframes.Name}: {keyframes.Keyframes.Count} keyframes");
             break;
         case CssUnknownAtRule other:
             Console.WriteLine($"@{other.Name} (kept, not interpreted)");

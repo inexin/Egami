@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Css_CssCascade" data-uid="Egami.Css.CssCascade" class="text-break">
-Class CssCascade  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L56"><i class="bi bi-code-slash"></i></a>
+Class CssCascade  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L62"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -200,7 +200,7 @@ several threads at once.</p>
 
   <h3 id="Egami_Css_CssCascade__ctor_System_Collections_Generic_IEnumerable_System_ValueTuple_Egami_Css_CssStyleSheet_Egami_Css_CssOrigin___Egami_Css_CssCascadeOptions_" data-uid="Egami.Css.CssCascade.#ctor(System.Collections.Generic.IEnumerable{System.ValueTuple{Egami.Css.CssStyleSheet,Egami.Css.CssOrigin}},Egami.Css.CssCascadeOptions)">
   CssCascade(IEnumerable&lt;(CssStyleSheet Sheet, CssOrigin Origin)&gt;, CssCascadeOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L81"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Builds a cascade from style sheets in order of appearance.</p>
@@ -266,6 +266,12 @@ if (style.TryGetValue("opacity", out IReadOnlyList&lt;CssComponentValue&gt;? opa
 
 
 
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>A sheet has the <a class="xref" href="Egami.Css.CssOrigin.html#Egami_Css_CssOrigin_Animation">Animation</a> origin.</p>
+</dd>
+  </dl>
 
 
 
@@ -277,7 +283,7 @@ if (style.TryGetValue("opacity", out IReadOnlyList&lt;CssComponentValue&gt;? opa
 
   <h3 id="Egami_Css_CssCascade_Registry" data-uid="Egami.Css.CssCascade.Registry">
   Registry
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L99"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the property registry the cascade expands shorthands and computes values with.</p>
@@ -313,7 +319,7 @@ if (style.TryGetValue("opacity", out IReadOnlyList&lt;CssComponentValue&gt;? opa
 
   <h3 id="Egami_Css_CssCascade_Cascade_Egami_Css_ICssElement_System_Collections_Generic_IReadOnlyList_Egami_Css_CssDeclaration__System_Collections_Generic_IReadOnlyList_Egami_Css_CssDeclaration__System_String_" data-uid="Egami.Css.CssCascade.Cascade(Egami.Css.ICssElement,System.Collections.Generic.IReadOnlyList{Egami.Css.CssDeclaration},System.Collections.Generic.IReadOnlyList{Egami.Css.CssDeclaration},System.String)">
   Cascade(ICssElement, IReadOnlyList&lt;CssDeclaration&gt;?, IReadOnlyList&lt;CssDeclaration&gt;?, string?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L297"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L309"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Cascades the declarations that apply to an element (or one of its pseudo-elements).</p>
@@ -362,7 +368,7 @@ author origin, specificity zero, before every author style sheet rule.</p>
 
   <h3 id="Egami_Css_CssCascade_CascadePage_Egami_Css_CssPage_" data-uid="Egami.Css.CssCascade.CascadePage(Egami.Css.CssPage)">
   CascadePage(CssPage)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L439"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L451"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Cascades the <code>@page</code> rules for one page (CSS Paged Media 3 section 4): every rule whose selectors match the page
@@ -433,7 +439,7 @@ bool landscape = turned.Orientation == CssPageOrientation.Landscape;  // true: 2
 
   <h3 id="Egami_Css_CssCascade_Compute_Egami_Css_CssCascadedStyle_Egami_Css_CssComputedStyle_" data-uid="Egami.Css.CssCascade.Compute(Egami.Css.CssCascadedStyle,Egami.Css.CssComputedStyle)">
   Compute(CssCascadedStyle, CssComputedStyle?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L427"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L439"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Computes an element's style from its cascaded style and its parent's computed style.</p>
@@ -475,7 +481,7 @@ bool landscape = turned.Orientation == CssPageOrientation.Landscape;  // true: 2
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L56" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssCascade.cs/#L62" class="edit-link">Edit this page</a>
         </div>
 
 

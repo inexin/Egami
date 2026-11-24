@@ -263,7 +263,8 @@ static void Walk(SvgNode node, int depth)
 
 Walk(document.RenderTree, 0);
 </code></pre><h2 id="animation">Animation</h2>
-<p>SVG files can animate themselves with SMIL elements: <code>animate</code>, <code>set</code>, <code>animateTransform</code>, <code>animateMotion</code> and <code>discard</code>.
+<p>SVG files can animate themselves with SMIL elements: <code>animate</code>, <code>set</code>, <code>animateTransform</code>, <code>animateMotion</code> and <code>discard</code>,
+and with CSS animations.
 Egami.Svg draws the document as it looks at any moment: set <code>SvgRenderOptions.Time</code> when you call <code>Rasterize</code> or <code>Draw</code>, or
 take the render tree then with <code>SvgDocument.RenderTreeAt</code>. Without a time it draws the static document, as if no animation
 had begun. <code>SvgDocument.Animation</code>, an <code>SvgAnimationInfo</code>, says whether the document animates, when its last animation ends
@@ -278,6 +279,32 @@ Console.WriteLine($&quot;Animated: {info.HasAnimations}, loop: {info.LoopPeriod}
 // The document half a second in: the circle has moved, the element tree has not changed.
 using Raster&lt;Rgba8&gt; frame = document.Rasterize&lt;Rgba8&gt;(new SvgRenderOptions { Time = TimeSpan.FromSeconds(0.5) });
 SvgGroup tree = document.RenderTreeAt(TimeSpan.FromSeconds(0.5));
+</code></pre>
+<p>CSS animations run too: an <code>@keyframes</code> rule and the <code>animation</code> properties (or the <code>animation</code> shorthand) on an element, with
+CSS Easing's timing functions, delays, iteration counts, directions, fill modes, <code>animation-play-state</code> and
+<code>animation-composition</code>. Each starts when the document loads. Keyframe values are computed in the element's context, so
+<code>inherit</code>, <code>var()</code> and <code>currentcolor</code> work, and a keyframe that leaves out a property takes the value below. Numbers, lengths,
+colors (in premultiplied sRGB), transform lists, <code>translate</code>, <code>rotate</code>, <code>scale</code>, <code>d: path()</code> with the same commands,
+<code>offset-path</code> and <code>offset-distance</code> interpolate; other values, custom properties among them, change halfway. Animated values
+win over every normal rule and lose to <code>!important</code> ones; where SMIL animates the same property, SMIL sets the value below
+and the CSS animation wins. Geometry properties such as <code>r</code> and <code>d</code> follow CSS animations; a static style sheet still does
+not set them. A percentage and a length in other units interpolate as <code>calc()</code> mixes them, such as <code>calc(25% + 10px)</code>, and
+the percentage resolves where the value is used: against the viewport, the reference box, the path length or the font
+size. Lengths in SVG's CSS properties take such a <code>calc()</code> of percentages and absolute lengths in static style sheets too.
+Transform lists that need matrices and hold percentages still change halfway.</p>
+<pre><code class="lang-csharp">// CSS animations run as SMIL ones do: from when the document loads, drawn at the time you ask for.
+SvgDocument document = SvgDocument.Parse(&quot;&quot;&quot;
+    &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;100&quot; height=&quot;100&quot;&gt;
+      &lt;style&gt;
+        @keyframes spin { to { rotate: 360deg } }
+        @keyframes pulse { 50% { fill: orange; scale: 1.2 } }
+        .spinner { transform-origin: 50px 50px; animation: spin 2s linear infinite, pulse 1s ease-in-out infinite }
+      &lt;/style&gt;
+      &lt;rect class=&quot;spinner&quot; x=&quot;30&quot; y=&quot;30&quot; width=&quot;40&quot; height=&quot;40&quot; fill=&quot;teal&quot;/&gt;
+    &lt;/svg&gt;
+    &quot;&quot;&quot;);
+SvgAnimationInfo info = document.Animation;                      // loops every 2 s
+using Raster&lt;Rgba8&gt; frame = document.Rasterize&lt;Rgba8&gt;(new SvgRenderOptions { Time = TimeSpan.FromSeconds(0.25) });
 </code></pre><h2 id="untrusted-files">Untrusted files</h2>
 <p>An SVG file is untrusted input. A load honors the context's <code>SafetyLimits</code>: the file, after gzip, is bounded by
 <code>MaxTotalBytes</code> (a gzip bomb stops there), entity expansion by <code>MaxMetadataBytes</code> (so a billion-laughs DTD stops), the number

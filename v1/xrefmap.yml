@@ -8127,6 +8127,22 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssCascadedStyle.TryGetDeclaration
   nameWithType: CssCascadedStyle.TryGetDeclaration
+- uid: Egami.Css.CssCascadedStyle.WithAnimationValues(System.Collections.Generic.IEnumerable{Egami.Css.CssDeclaration})
+  name: WithAnimationValues(IEnumerable<CssDeclaration>)
+  href: api/Egami.Css.CssCascadedStyle.html#Egami_Css_CssCascadedStyle_WithAnimationValues_System_Collections_Generic_IEnumerable_Egami_Css_CssDeclaration__
+  commentId: M:Egami.Css.CssCascadedStyle.WithAnimationValues(System.Collections.Generic.IEnumerable{Egami.Css.CssDeclaration})
+  name.vb: WithAnimationValues(IEnumerable(Of CssDeclaration))
+  fullName: Egami.Css.CssCascadedStyle.WithAnimationValues(System.Collections.Generic.IEnumerable<Egami.Css.CssDeclaration>)
+  fullName.vb: Egami.Css.CssCascadedStyle.WithAnimationValues(System.Collections.Generic.IEnumerable(Of Egami.Css.CssDeclaration))
+  nameWithType: CssCascadedStyle.WithAnimationValues(IEnumerable<CssDeclaration>)
+  nameWithType.vb: CssCascadedStyle.WithAnimationValues(IEnumerable(Of CssDeclaration))
+- uid: Egami.Css.CssCascadedStyle.WithAnimationValues*
+  name: WithAnimationValues
+  href: api/Egami.Css.CssCascadedStyle.html#Egami_Css_CssCascadedStyle_WithAnimationValues_
+  commentId: Overload:Egami.Css.CssCascadedStyle.WithAnimationValues
+  isSpec: "True"
+  fullName: Egami.Css.CssCascadedStyle.WithAnimationValues
+  nameWithType: CssCascadedStyle.WithAnimationValues
 - uid: Egami.Css.CssColor
   name: CssColor
   href: api/Egami.Css.CssColor.html
@@ -8739,6 +8755,121 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssDeclaration.ValueText
   nameWithType: CssDeclaration.ValueText
+- uid: Egami.Css.CssEasingFunction
+  name: CssEasingFunction
+  href: api/Egami.Css.CssEasingFunction.html
+  commentId: T:Egami.Css.CssEasingFunction
+  fullName: Egami.Css.CssEasingFunction
+  nameWithType: CssEasingFunction
+- uid: Egami.Css.CssEasingFunction.Ease
+  name: Ease
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_Ease
+  commentId: P:Egami.Css.CssEasingFunction.Ease
+  fullName: Egami.Css.CssEasingFunction.Ease
+  nameWithType: CssEasingFunction.Ease
+- uid: Egami.Css.CssEasingFunction.Ease*
+  name: Ease
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_Ease_
+  commentId: Overload:Egami.Css.CssEasingFunction.Ease
+  isSpec: "True"
+  fullName: Egami.Css.CssEasingFunction.Ease
+  nameWithType: CssEasingFunction.Ease
+- uid: Egami.Css.CssEasingFunction.Evaluate(System.Double,System.Boolean)
+  name: Evaluate(double, bool)
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_Evaluate_System_Double_System_Boolean_
+  commentId: M:Egami.Css.CssEasingFunction.Evaluate(System.Double,System.Boolean)
+  name.vb: Evaluate(Double, Boolean)
+  fullName: Egami.Css.CssEasingFunction.Evaluate(double, bool)
+  fullName.vb: Egami.Css.CssEasingFunction.Evaluate(Double, Boolean)
+  nameWithType: CssEasingFunction.Evaluate(double, bool)
+  nameWithType.vb: CssEasingFunction.Evaluate(Double, Boolean)
+- uid: Egami.Css.CssEasingFunction.Evaluate*
+  name: Evaluate
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_Evaluate_
+  commentId: Overload:Egami.Css.CssEasingFunction.Evaluate
+  isSpec: "True"
+  fullName: Egami.Css.CssEasingFunction.Evaluate
+  nameWithType: CssEasingFunction.Evaluate
+- uid: Egami.Css.CssEasingFunction.IsLinear
+  name: IsLinear
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_IsLinear
+  commentId: P:Egami.Css.CssEasingFunction.IsLinear
+  fullName: Egami.Css.CssEasingFunction.IsLinear
+  nameWithType: CssEasingFunction.IsLinear
+- uid: Egami.Css.CssEasingFunction.IsLinear*
+  name: IsLinear
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_IsLinear_
+  commentId: Overload:Egami.Css.CssEasingFunction.IsLinear
+  isSpec: "True"
+  fullName: Egami.Css.CssEasingFunction.IsLinear
+  nameWithType: CssEasingFunction.IsLinear
+- uid: Egami.Css.CssEasingFunction.Linear
+  name: Linear
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_Linear
+  commentId: P:Egami.Css.CssEasingFunction.Linear
+  fullName: Egami.Css.CssEasingFunction.Linear
+  nameWithType: CssEasingFunction.Linear
+- uid: Egami.Css.CssEasingFunction.Linear*
+  name: Linear
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_Linear_
+  commentId: Overload:Egami.Css.CssEasingFunction.Linear
+  isSpec: "True"
+  fullName: Egami.Css.CssEasingFunction.Linear
+  nameWithType: CssEasingFunction.Linear
+- uid: Egami.Css.CssEasingFunction.Parse(System.String)
+  name: Parse(string)
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_Parse_System_String_
+  commentId: M:Egami.Css.CssEasingFunction.Parse(System.String)
+  name.vb: Parse(String)
+  fullName: Egami.Css.CssEasingFunction.Parse(string)
+  fullName.vb: Egami.Css.CssEasingFunction.Parse(String)
+  nameWithType: CssEasingFunction.Parse(string)
+  nameWithType.vb: CssEasingFunction.Parse(String)
+- uid: Egami.Css.CssEasingFunction.Parse*
+  name: Parse
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_Parse_
+  commentId: Overload:Egami.Css.CssEasingFunction.Parse
+  isSpec: "True"
+  fullName: Egami.Css.CssEasingFunction.Parse
+  nameWithType: CssEasingFunction.Parse
+- uid: Egami.Css.CssEasingFunction.ToString
+  name: ToString()
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_ToString
+  commentId: M:Egami.Css.CssEasingFunction.ToString
+  fullName: Egami.Css.CssEasingFunction.ToString()
+  nameWithType: CssEasingFunction.ToString()
+- uid: Egami.Css.CssEasingFunction.ToString*
+  name: ToString
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_ToString_
+  commentId: Overload:Egami.Css.CssEasingFunction.ToString
+  isSpec: "True"
+  fullName: Egami.Css.CssEasingFunction.ToString
+  nameWithType: CssEasingFunction.ToString
+- uid: Egami.Css.CssEasingFunction.TryParse(System.Collections.Generic.IReadOnlyList{Egami.Css.CssComponentValue},Egami.Css.CssEasingFunction@)
+  name: TryParse(IReadOnlyList<CssComponentValue>, out CssEasingFunction?)
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_TryParse_System_Collections_Generic_IReadOnlyList_Egami_Css_CssComponentValue__Egami_Css_CssEasingFunction__
+  commentId: M:Egami.Css.CssEasingFunction.TryParse(System.Collections.Generic.IReadOnlyList{Egami.Css.CssComponentValue},Egami.Css.CssEasingFunction@)
+  name.vb: TryParse(IReadOnlyList(Of CssComponentValue), CssEasingFunction)
+  fullName: Egami.Css.CssEasingFunction.TryParse(System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue>, out Egami.Css.CssEasingFunction?)
+  fullName.vb: Egami.Css.CssEasingFunction.TryParse(System.Collections.Generic.IReadOnlyList(Of Egami.Css.CssComponentValue), Egami.Css.CssEasingFunction)
+  nameWithType: CssEasingFunction.TryParse(IReadOnlyList<CssComponentValue>, out CssEasingFunction?)
+  nameWithType.vb: CssEasingFunction.TryParse(IReadOnlyList(Of CssComponentValue), CssEasingFunction)
+- uid: Egami.Css.CssEasingFunction.TryParse(System.String,Egami.Css.CssEasingFunction@)
+  name: TryParse(string, out CssEasingFunction?)
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_TryParse_System_String_Egami_Css_CssEasingFunction__
+  commentId: M:Egami.Css.CssEasingFunction.TryParse(System.String,Egami.Css.CssEasingFunction@)
+  name.vb: TryParse(String, CssEasingFunction)
+  fullName: Egami.Css.CssEasingFunction.TryParse(string, out Egami.Css.CssEasingFunction?)
+  fullName.vb: Egami.Css.CssEasingFunction.TryParse(String, Egami.Css.CssEasingFunction)
+  nameWithType: CssEasingFunction.TryParse(string, out CssEasingFunction?)
+  nameWithType.vb: CssEasingFunction.TryParse(String, CssEasingFunction)
+- uid: Egami.Css.CssEasingFunction.TryParse*
+  name: TryParse
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_TryParse_
+  commentId: Overload:Egami.Css.CssEasingFunction.TryParse
+  isSpec: "True"
+  fullName: Egami.Css.CssEasingFunction.TryParse
+  nameWithType: CssEasingFunction.TryParse
 - uid: Egami.Css.CssFont
   name: CssFont
   href: api/Egami.Css.CssFont.html
@@ -9626,6 +9757,96 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssImportRule.Url
   nameWithType: CssImportRule.Url
+- uid: Egami.Css.CssKeyframe
+  name: CssKeyframe
+  href: api/Egami.Css.CssKeyframe.html
+  commentId: T:Egami.Css.CssKeyframe
+  fullName: Egami.Css.CssKeyframe
+  nameWithType: CssKeyframe
+- uid: Egami.Css.CssKeyframe.Column
+  name: Column
+  href: api/Egami.Css.CssKeyframe.html#Egami_Css_CssKeyframe_Column
+  commentId: P:Egami.Css.CssKeyframe.Column
+  fullName: Egami.Css.CssKeyframe.Column
+  nameWithType: CssKeyframe.Column
+- uid: Egami.Css.CssKeyframe.Column*
+  name: Column
+  href: api/Egami.Css.CssKeyframe.html#Egami_Css_CssKeyframe_Column_
+  commentId: Overload:Egami.Css.CssKeyframe.Column
+  isSpec: "True"
+  fullName: Egami.Css.CssKeyframe.Column
+  nameWithType: CssKeyframe.Column
+- uid: Egami.Css.CssKeyframe.Declarations
+  name: Declarations
+  href: api/Egami.Css.CssKeyframe.html#Egami_Css_CssKeyframe_Declarations
+  commentId: P:Egami.Css.CssKeyframe.Declarations
+  fullName: Egami.Css.CssKeyframe.Declarations
+  nameWithType: CssKeyframe.Declarations
+- uid: Egami.Css.CssKeyframe.Declarations*
+  name: Declarations
+  href: api/Egami.Css.CssKeyframe.html#Egami_Css_CssKeyframe_Declarations_
+  commentId: Overload:Egami.Css.CssKeyframe.Declarations
+  isSpec: "True"
+  fullName: Egami.Css.CssKeyframe.Declarations
+  nameWithType: CssKeyframe.Declarations
+- uid: Egami.Css.CssKeyframe.Line
+  name: Line
+  href: api/Egami.Css.CssKeyframe.html#Egami_Css_CssKeyframe_Line
+  commentId: P:Egami.Css.CssKeyframe.Line
+  fullName: Egami.Css.CssKeyframe.Line
+  nameWithType: CssKeyframe.Line
+- uid: Egami.Css.CssKeyframe.Line*
+  name: Line
+  href: api/Egami.Css.CssKeyframe.html#Egami_Css_CssKeyframe_Line_
+  commentId: Overload:Egami.Css.CssKeyframe.Line
+  isSpec: "True"
+  fullName: Egami.Css.CssKeyframe.Line
+  nameWithType: CssKeyframe.Line
+- uid: Egami.Css.CssKeyframe.Offsets
+  name: Offsets
+  href: api/Egami.Css.CssKeyframe.html#Egami_Css_CssKeyframe_Offsets
+  commentId: P:Egami.Css.CssKeyframe.Offsets
+  fullName: Egami.Css.CssKeyframe.Offsets
+  nameWithType: CssKeyframe.Offsets
+- uid: Egami.Css.CssKeyframe.Offsets*
+  name: Offsets
+  href: api/Egami.Css.CssKeyframe.html#Egami_Css_CssKeyframe_Offsets_
+  commentId: Overload:Egami.Css.CssKeyframe.Offsets
+  isSpec: "True"
+  fullName: Egami.Css.CssKeyframe.Offsets
+  nameWithType: CssKeyframe.Offsets
+- uid: Egami.Css.CssKeyframesRule
+  name: CssKeyframesRule
+  href: api/Egami.Css.CssKeyframesRule.html
+  commentId: T:Egami.Css.CssKeyframesRule
+  fullName: Egami.Css.CssKeyframesRule
+  nameWithType: CssKeyframesRule
+- uid: Egami.Css.CssKeyframesRule.Keyframes
+  name: Keyframes
+  href: api/Egami.Css.CssKeyframesRule.html#Egami_Css_CssKeyframesRule_Keyframes
+  commentId: P:Egami.Css.CssKeyframesRule.Keyframes
+  fullName: Egami.Css.CssKeyframesRule.Keyframes
+  nameWithType: CssKeyframesRule.Keyframes
+- uid: Egami.Css.CssKeyframesRule.Keyframes*
+  name: Keyframes
+  href: api/Egami.Css.CssKeyframesRule.html#Egami_Css_CssKeyframesRule_Keyframes_
+  commentId: Overload:Egami.Css.CssKeyframesRule.Keyframes
+  isSpec: "True"
+  fullName: Egami.Css.CssKeyframesRule.Keyframes
+  nameWithType: CssKeyframesRule.Keyframes
+- uid: Egami.Css.CssKeyframesRule.Name
+  name: Name
+  href: api/Egami.Css.CssKeyframesRule.html#Egami_Css_CssKeyframesRule_Name
+  commentId: P:Egami.Css.CssKeyframesRule.Name
+  fullName: Egami.Css.CssKeyframesRule.Name
+  nameWithType: CssKeyframesRule.Name
+- uid: Egami.Css.CssKeyframesRule.Name*
+  name: Name
+  href: api/Egami.Css.CssKeyframesRule.html#Egami_Css_CssKeyframesRule_Name_
+  commentId: Overload:Egami.Css.CssKeyframesRule.Name
+  isSpec: "True"
+  fullName: Egami.Css.CssKeyframesRule.Name
+  nameWithType: CssKeyframesRule.Name
 - uid: Egami.Css.CssLayerRule
   name: CssLayerRule
   href: api/Egami.Css.CssLayerRule.html
@@ -10363,6 +10584,12 @@ references:
   commentId: T:Egami.Css.CssOrigin
   fullName: Egami.Css.CssOrigin
   nameWithType: CssOrigin
+- uid: Egami.Css.CssOrigin.Animation
+  name: Animation
+  href: api/Egami.Css.CssOrigin.html#Egami_Css_CssOrigin_Animation
+  commentId: F:Egami.Css.CssOrigin.Animation
+  fullName: Egami.Css.CssOrigin.Animation
+  nameWithType: CssOrigin.Animation
 - uid: Egami.Css.CssOrigin.Author
   name: Author
   href: api/Egami.Css.CssOrigin.html#Egami_Css_CssOrigin_Author

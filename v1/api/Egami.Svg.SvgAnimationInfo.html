@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class SvgAnimationInfo | Egami ">
       
-      <meta name="description" content="What a document&#39;s SMIL animations do over time, as  finds them: whether it animates, how long it plays and whether it loops. Animations that wait for a click, a key or a wall-clock time never begin, as in a browser nobody touches.">
+      <meta name="description" content="What a document&#39;s SMIL and CSS animations do over time, as  finds them: whether it animates, how long it plays and whether it loops. Animations that wait for a click, a key or a wall-clock time never begin, as in a browser nobody touches.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -97,8 +97,8 @@ Class SvgAnimationInfo  <a class="header-action link-secondary" title="View sour
   <dl><dt>Assembly</dt><dd>Egami.Svg.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>What a document's SMIL animations do over time, as <a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Animation">Animation</a> finds them: whether it animates, how
-long it plays and whether it loops. Animations that wait for a click, a key or a wall-clock time never begin, as in a browser
+  <div class="markdown summary"><p>What a document's SMIL and CSS animations do over time, as <a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Animation">Animation</a> finds them: whether it
+animates, how long it plays and whether it loops. Animations that wait for a click, a key or a wall-clock time never begin, as in a browser
 nobody touches.</p>
 </div>
   <div class="markdown conceptual"></div>
@@ -165,7 +165,7 @@ SvgGroup tree = document.RenderTreeAt(TimeSpan.FromSeconds(0.5));</code></pre>
 
   <h3 id="Egami_Svg_SvgAnimationInfo_Duration" data-uid="Egami.Svg.SvgAnimationInfo.Duration">
   Duration
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgAnimationInfo.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgAnimationInfo.cs/#L33"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets when the last animation ends, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when one runs forever (or the document has none); zero when
@@ -198,10 +198,11 @@ no animation ever begins.</p>
 
   <h3 id="Egami_Svg_SvgAnimationInfo_HasAnimations" data-uid="Egami.Svg.SvgAnimationInfo.HasAnimations">
   HasAnimations
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgAnimationInfo.cs/#L24"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgAnimationInfo.cs/#L27"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets a value indicating whether the document has animation elements (animate, set, animateTransform, animateMotion, discard) with a target.</p>
+  <div class="markdown level1 summary"><p>Gets a value indicating whether the document has animation elements (animate, set, animateTransform, animateMotion,
+discard) with a target, or elements whose style names an @keyframes rule in animation-name.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -230,7 +231,7 @@ no animation ever begins.</p>
 
   <h3 id="Egami_Svg_SvgAnimationInfo_HasEventTriggers" data-uid="Egami.Svg.SvgAnimationInfo.HasEventTriggers">
   HasEventTriggers
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgAnimationInfo.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgAnimationInfo.cs/#L43"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets a value indicating whether some animation waits for a user event, an access key or a wall-clock time to begin, and so never plays.</p>
@@ -262,7 +263,7 @@ no animation ever begins.</p>
 
   <h3 id="Egami_Svg_SvgAnimationInfo_LoopPeriod" data-uid="Egami.Svg.SvgAnimationInfo.LoopPeriod">
   LoopPeriod
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgAnimationInfo.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgAnimationInfo.cs/#L40"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the period after which the whole document repeats, when every animation repeats forever: the least common multiple
