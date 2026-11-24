@@ -71,6 +71,7 @@ internal sealed class JxlModularEncoder
 
     // What opens the LF global section before the LF dequantization: a frame's patch dictionary.
     private JxlBitWriter? _lfGlobalStart;
+    private bool _inPlace;
 
     private JxlModularEncoder(int effort, int width, int height, int groupShift, int streams, bool color, int parallelism)
     {
@@ -93,9 +94,10 @@ internal sealed class JxlModularEncoder
     /// <summary>
     /// Encodes a frame's channels (one or three color channels, then the extra channels, all <paramref name="width"/> by
     /// <paramref name="height"/> integers of <paramref name="bitDepth"/> bits) and gives its sections in TOC order; a Modular XYB
-    /// frame names its LF dequantization multipliers (times 128) in <paramref name="lfDequant"/>.
+    /// frame names its LF dequantization multipliers (times 128) in <paramref name="lfDequant"/>. With
+    /// <paramref name="inPlace"/>, the frame's color transform may overwrite the channels' samples.
     /// </summary>
-    internal static List<byte[]> Encode(List<JxlChannel> channels, int colorChannels, int bitDepth, int effort, int width, int height, int groupShift, int parallelism, float[]? lfDequant = null, JxlBitWriter? lfGlobalStart = null)
+    internal static List<byte[]> Encode(List<JxlChannel> channels, int colorChannels, int bitDepth, int effort, int width, int height, int groupShift, int parallelism, float[]? lfDequant = null, JxlBitWriter? lfGlobalStart = null, bool inPlace = false)
     {
         int groupDim = 128 << groupShift;
         int groups = Ceil(width, groupDim) * Ceil(height, groupDim);
@@ -105,6 +107,7 @@ internal sealed class JxlModularEncoder
         JxlModularEncoder e = new(effort, width, height, groupShift, streams, colorChannels == 3, parallelism);
         e._lfDequant = lfDequant;
         e._lfGlobalStart = lfGlobalStart;
+        e._inPlace = inPlace;
         return e.Run(channels, bitDepth);
     }
 
@@ -605,7 +608,7 @@ internal sealed class JxlModularEncoder
 
         if (_effort <= 4 && _color && gi.Channels.Count - gi.Meta >= 3 && maxBitDepth + 1 < 32)
         {
-            ForwardRct(gi, gi.Meta, 6, _parallel);
+            ForwardRct(gi, gi.Meta, 6, _parallel, _inPlace);
         }
 
         for (int i = 0; i < _streams.Length; i++)
@@ -651,32 +654,37 @@ internal sealed class JxlModularEncoder
         bool usesWp = property.Any(p => p == 15) || property.Select((p, i) => p < 0 && predictor[i] == 6).Any(b => b);
 
         List<(int Stream, int Channel)> units = Units();
-        List<JxlToken>[] parts = new List<JxlToken>[units.Count];
-        Parallel.For(0, units.Count, _parallel, u =>
-        {
-            (int st, int ch) = units[u];
-            WpRows? rows = TakeWpRows(st, ch);
-            parts[u] = Tokenize(_streams[st].Channels[ch], ch, st, property, value, left, right, predictor, context, usesWp, wpParams: _streams[st].Wp, wpRows: rows);
-            ReturnWpRows(rows);
-        });
-        _wpRows = null;
-        JxlStageTimes.Lap(JxlStage.Tokens);
 
-        // Each stream's list is made at its final size, as one copy of its channels' tokens.
+        // Each stream's list is made at its final size, its channels' tokens (one a sample, in unit order) coded straight into it.
         int[] counts = new int[_streams.Length];
-        for (int u = 0; u < units.Count; u++)
-        {
-            counts[units[u].Stream] += parts[u].Count;
-        }
-
-        List<List<JxlToken>> tokens = [.. counts.Select(n => new List<JxlToken>(n))];
+        int[] offsets = new int[units.Count];
         int[] widths = new int[_streams.Length];
         for (int u = 0; u < units.Count; u++)
         {
             (int st, int ch) = units[u];
-            tokens[st].AddRange(parts[u]);
-            widths[st] = Math.Max(widths[st], _streams[st].Channels[ch].Width);
+            JxlChannel channel = _streams[st].Channels[ch];
+            offsets[u] = counts[st];
+            counts[st] += channel.Width * channel.Height;
+            widths[st] = Math.Max(widths[st], channel.Width);
         }
+
+        List<List<JxlToken>> tokens = [.. counts.Select(n =>
+        {
+            List<JxlToken> list = new(n);
+            CollectionsMarshal.SetCount(list, n);
+            return list;
+        })];
+        Parallel.For(0, units.Count, _parallel, u =>
+        {
+            (int st, int ch) = units[u];
+            JxlChannel channel = _streams[st].Channels[ch];
+            WpRows? rows = TakeWpRows(st, ch);
+            Span<JxlToken> output = CollectionsMarshal.AsSpan(tokens[st]).Slice(offsets[u], channel.Width * channel.Height);
+            Tokenize(output, channel, ch, st, property, value, left, right, predictor, context, usesWp, null, _streams[st].Wp, rows);
+            ReturnWpRows(rows);
+        });
+        _wpRows = null;
+        JxlStageTimes.Lap(JxlStage.Tokens);
 
         JxlHistogramParams p = JxlHistogramParams.ForModular(_effort) with { Parallel = _parallel };
 
@@ -1139,7 +1147,7 @@ internal sealed class JxlModularEncoder
 
     private static JxlChannel Wrap(JxlChannel shape, int[] data) => new(shape.Width, shape.Height, shape.HShift, shape.VShift, data);
 
-    private static void ForwardRct(JxlEncodeImage gi, int begin, int type, ParallelOptions? parallel = null)
+    private static void ForwardRct(JxlEncodeImage gi, int begin, int type, ParallelOptions? parallel = null, bool inPlace = false)
     {
         JxlChannel[] input = [gi.Channels[begin], gi.Channels[begin + 1], gi.Channels[begin + 2]];
         if (!input[0].SameShape(input[1]) || !input[0].SameShape(input[2]))
@@ -1147,11 +1155,11 @@ internal sealed class JxlModularEncoder
             return;
         }
 
-        (int[] a, int[] b, int[] c) = ApplyRct(input, type, parallel);
+        (int[]? a, int[]? b, int[]? c) = ApplyRct(input, type, false, parallel, inPlace);
         JxlChannel shape = input[0];
-        gi.Channels[begin] = new JxlChannel(shape.Width, shape.Height, shape.HShift, shape.VShift, a);
-        gi.Channels[begin + 1] = new JxlChannel(shape.Width, shape.Height, shape.HShift, shape.VShift, b);
-        gi.Channels[begin + 2] = new JxlChannel(shape.Width, shape.Height, shape.HShift, shape.VShift, c);
+        gi.Channels[begin] = new JxlChannel(shape.Width, shape.Height, shape.HShift, shape.VShift, a!);
+        gi.Channels[begin + 1] = new JxlChannel(shape.Width, shape.Height, shape.HShift, shape.VShift, b!);
+        gi.Channels[begin + 2] = new JxlChannel(shape.Width, shape.Height, shape.HShift, shape.VShift, c!);
         gi.Transforms.Add(new JxlRct(begin, type));
     }
 
@@ -1169,7 +1177,7 @@ internal sealed class JxlModularEncoder
     /// The forward RCT; with <paramref name="changedOnly"/>, an output that is only its input moved comes back
     /// <see langword="null"/>, and the others in pooled arrays (possibly longer than the channel) the caller returns.
     /// </summary>
-    private static (int[]? A, int[]? B, int[]? C) ApplyRct(JxlChannel[] input, int type, bool changedOnly, ParallelOptions? parallel = null)
+    private static (int[]? A, int[]? B, int[]? C) ApplyRct(JxlChannel[] input, int type, bool changedOnly, ParallelOptions? parallel = null, bool inPlace = false)
     {
         int transform = type % 7;
         (int i0, int i1, int i2) = RctInputs(type);
@@ -1204,10 +1212,11 @@ internal sealed class JxlModularEncoder
             return (null, s1, s2);
         }
 
-        // Every sample is written below (YCoCg changes all three channels, which then come from the pool too).
-        int[] o0 = changedOnly ? ArrayPool<int>.Shared.Rent(n) : GC.AllocateUninitializedArray<int>(n);
-        int[] o1 = changedOnly ? ArrayPool<int>.Shared.Rent(n) : GC.AllocateUninitializedArray<int>(n);
-        int[] o2 = changedOnly ? ArrayPool<int>.Shared.Rent(n) : GC.AllocateUninitializedArray<int>(n);
+        // Every sample is written below (YCoCg changes all three channels, which then come from the pool too). In place, each
+        // sample's three inputs are read before its outputs are written, so the inputs' arrays take the outputs.
+        int[] o0 = inPlace ? p0 : changedOnly ? ArrayPool<int>.Shared.Rent(n) : GC.AllocateUninitializedArray<int>(n);
+        int[] o1 = inPlace ? p1 : changedOnly ? ArrayPool<int>.Shared.Rent(n) : GC.AllocateUninitializedArray<int>(n);
+        int[] o2 = inPlace ? p2 : changedOnly ? ArrayPool<int>.Shared.Rent(n) : GC.AllocateUninitializedArray<int>(n);
         int blocks = Blocks(n, parallel);
         if (blocks > 1)
         {

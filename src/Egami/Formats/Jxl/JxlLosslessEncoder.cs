@@ -52,6 +52,12 @@ internal sealed record JxlEncodeInput
 
     /// <summary>Gets how many threads the encoder may use.</summary>
     internal int Parallelism { get; init; } = Environment.ProcessorCount;
+
+    /// <summary>
+    /// Gets whether the encoder may transform the color, alpha and black planes in place: the caller has no use for them after
+    /// (else the encoder works on copies).
+    /// </summary>
+    internal bool OwnsPlanes { get; init; }
 }
 
 /// <summary>
@@ -104,9 +110,9 @@ internal static class JxlLosslessEncoder
             effort = 2;
         }
         int groupShift = fast ? 1 : JxlModularEncoder.GroupShift(input.Width, input.Height);
-        // The fast path only reads the planes; the Modular encoder transforms copies of them.
+        // The fast path only reads the planes; the Modular encoder transforms them, or copies of them when the caller keeps them.
         int[][] planes = [.. input.Color, .. input.Alpha is null ? [] : new[] { input.Alpha }, .. input.Black is null ? [] : new[] { input.Black }];
-        List<JxlChannel> channels = fast ? [] : [.. planes.Select(p => new JxlChannel(input.Width, input.Height, 0, 0, Copy(p, input.Parallelism)))];
+        List<JxlChannel> channels = fast ? [] : [.. planes.Select(p => new JxlChannel(input.Width, input.Height, 0, 0, input.OwnsPlanes ? p : Copy(p, input.Parallelism)))];
         if (!fast)
         {
             foreach (JxlExtraPlane extra in input.Extras)
@@ -129,7 +135,7 @@ internal static class JxlLosslessEncoder
 
         List<byte[]> sections = fast
             ? JxlFastLossless.Encode(planes, input.Width, input.Height, bits, input.Parallelism)
-            : JxlModularEncoder.Encode(channels, input.Color.Count, input.BitDepth.BitsPerSample, effort, input.Width, input.Height, groupShift, input.Parallelism, lfGlobalStart: patches?.Dictionary);
+            : JxlModularEncoder.Encode(channels, input.Color.Count, input.BitDepth.BitsPerSample, effort, input.Width, input.Height, groupShift, input.Parallelism, lfGlobalStart: patches?.Dictionary, inPlace: true);
         JxlStageTimes.Lap(fast ? JxlStage.FastLossless : JxlStage.Write);
 
         if (patches is (byte[] reference, _))
