@@ -624,12 +624,14 @@ internal sealed class JxlWeightedPredictor
     }
 
     /// <summary>
-    /// Decodes a whole channel (from the predictor's start) whose leaves all use this predictor and are picked by its largest
-    /// error (property 15) through <paramref name="lookup"/>: <see cref="Predict"/> and <see cref="Record"/> for every sample,
-    /// with the state in locals.
+    /// Decodes a whole channel (from the predictor's start) whose subtree uses this predictor: <see cref="Predict"/> and
+    /// <see cref="Record"/> for every sample with the state in locals, the leaf from <paramref name="picker"/> and the
+    /// prediction from <typeparamref name="TPredictor"/>.
     /// </summary>
-    internal void DecodeByMaxError<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf[] leaves, int[] lookup, int min, int max, ref int data, int width, int height)
+    internal void Decode<TResiduals, TPicker, TPredictor>(JxlBitReader r, TResiduals residuals, TPicker picker, JxlLeaf[] leaves, ref int data, int width, int height)
         where TResiduals : struct, IJxlUintReader
+        where TPicker : struct, IJxlLeafPicker
+        where TPredictor : struct, IJxlPredictor
     {
         long p1 = _p1, p2 = _p2, p3a = _p3a, p3b = _p3b, p3c = _p3c, p3d = _p3d, p3e = _p3e;
         uint wt0 = _w0, wt1 = _w1, wt2 = _w2, wt3 = _w3;
@@ -668,9 +670,10 @@ internal sealed class JxlWeightedPredictor
                 (sne0, sne1, sne2, sne3) = (Unsafe.Add(ref errors, 6), Unsafe.Add(ref errors, 7), Unsafe.Add(ref errors, 8), Unsafe.Add(ref errors, 9));
             }
 
+            int prevGrad = 0;
             for (int x = 0; x < width; x++)
             {
-                JxlModularDecoder.Neighbours(ref data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out _, out _);
+                JxlModularDecoder.Neighbours(ref data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
 
                 // Predict.
                 long n3 = (long)n << 3;
@@ -701,9 +704,11 @@ internal sealed class JxlWeightedPredictor
                 int maxError = (int)LargestError(errW, errN, errNw, errNe);
 
                 // The leaf, the residual and the sample.
-                JxlLeaf leaf = leaves[lookup[Math.Min(Math.Max(maxError, min), max) - min]];
+                int grad = unchecked(w + n - nw);
+                JxlLeaf leaf = leaves[picker.Pick(x, y, w, n, nw, ne, nn, ww, prevGrad, grad, maxError)];
+                prevGrad = grad;
                 int residual = unchecked((JxlHeaders.UnpackSigned(residuals.Read(r, leaf.Cluster)) * leaf.Multiplier) + leaf.Offset);
-                int sample = unchecked((int)((prediction + 3) >> 3) + residual);
+                int sample = unchecked((int)default(TPredictor).Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, prediction) + residual);
                 Unsafe.Add(ref data, row + x) = sample;
 
                 // Record.

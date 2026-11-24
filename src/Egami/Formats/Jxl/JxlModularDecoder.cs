@@ -121,36 +121,78 @@ internal static class JxlModularDecoder
     private static void Decode<TResiduals>(JxlBitReader r, TResiduals residuals, JxlTree tree, JxlChannelPlan plan, int root, JxlWpParams wp, JxlChannel c, List<JxlChannel> previous, int channel, int stream)
         where TResiduals : struct, IJxlUintReader
     {
+        if (plan.UsesWp)
+        {
+            // The weighted predictor runs for every sample, so its state stays in locals of one loop per subtree shape.
+            DecodeWeighted(r, residuals, tree, plan, root, new JxlWeightedPredictor(c.Width, wp), c, previous, channel, stream);
+            return;
+        }
+
         switch (plan.Kind)
         {
             case JxlChannelPlanKind.Single when plan.Leaf.Predictor == 5:
                 DecodeGradient(r, residuals, plan.Leaf, c);
                 break;
             case JxlChannelPlanKind.Single:
-                DecodeSingle(r, residuals, plan.Leaf, plan.UsesWp ? new JxlWeightedPredictor(c.Width, wp) : null, c);
+                DecodeSingle(r, residuals, plan.Leaf, c);
+                break;
+            case JxlChannelPlanKind.Lookup when plan.Predictor == 5:
+                DecodeLookup<TResiduals, JxlGradientPredictor>(r, residuals, tree.Leaves, plan, c, channel, stream);
                 break;
             case JxlChannelPlanKind.Lookup:
-                JxlWeightedPredictor? weighted = plan.UsesWp ? new JxlWeightedPredictor(c.Width, wp) : null;
-                switch (plan.Predictor)
+                DecodeLookup<TResiduals, JxlAnyPredictor>(r, residuals, tree.Leaves, plan, c, channel, stream);
+                break;
+            default:
+                DecodeWalk(r, residuals, tree, plan, c, previous, channel, stream);
+                break;
+        }
+    }
+
+    /// <summary>Decodes a channel whose subtree uses the weighted predictor, through its fused loop.</summary>
+    private static void DecodeWeighted<TResiduals>(JxlBitReader r, TResiduals residuals, JxlTree tree, JxlChannelPlan plan, int root, JxlWeightedPredictor weighted, JxlChannel c, List<JxlChannel> previous, int channel, int stream)
+        where TResiduals : struct, IJxlUintReader
+    {
+        JxlLeaf[] leaves = tree.Leaves;
+        ref int data = ref Samples(c);
+        int width = c.Width;
+        int height = c.Height;
+        switch (plan.Kind)
+        {
+            case JxlChannelPlanKind.Single:
+                // Only a weighted-predictor leaf makes a single leaf use the predictor.
+                weighted.Decode<TResiduals, JxlSinglePicker, JxlWpPredictor>(r, residuals, new JxlSinglePicker(root), leaves, ref data, width, height);
+                break;
+            case JxlChannelPlanKind.Lookup when plan.Property == 15:
+                // The leaf picked by the predictor's own largest error, the usual LF coefficient tree.
+                JxlMaxErrorPicker byError = new(plan.Lookup!, plan.Min, plan.Max);
+                if (plan.Predictor == 6)
                 {
-                    case 5:
-                        DecodeLookup<TResiduals, GradientPredictor>(r, residuals, tree.Leaves, plan, weighted, c, channel, stream);
-                        break;
-                    case 6 when plan.Property == 15:
-                        // The weighted predictor with its leaf picked by its own largest error, the usual LF coefficient tree.
-                        weighted!.DecodeByMaxError(r, residuals, tree.Leaves, plan.Lookup!, plan.Min, plan.Max, ref Samples(c), c.Width, c.Height);
-                        break;
-                    case 6:
-                        DecodeLookup<TResiduals, WeightedPredictor>(r, residuals, tree.Leaves, plan, weighted, c, channel, stream);
-                        break;
-                    default:
-                        DecodeLookup<TResiduals, AnyPredictor>(r, residuals, tree.Leaves, plan, weighted, c, channel, stream);
-                        break;
+                    weighted.Decode<TResiduals, JxlMaxErrorPicker, JxlWpPredictor>(r, residuals, byError, leaves, ref data, width, height);
+                }
+                else
+                {
+                    weighted.Decode<TResiduals, JxlMaxErrorPicker, JxlAnyPredictor>(r, residuals, byError, leaves, ref data, width, height);
                 }
 
                 break;
+            case JxlChannelPlanKind.Lookup:
+                weighted.Decode<TResiduals, JxlLookupPicker, JxlAnyPredictor>(r, residuals, new JxlLookupPicker(plan.Lookup!, plan.Property, plan.Min, plan.Max, channel, stream), leaves, ref data, width, height);
+                break;
             default:
-                DecodeWalk(r, residuals, tree, plan, plan.UsesWp ? new JxlWeightedPredictor(c.Width, wp) : null, c, previous, channel, stream);
+                JxlWalkPicker walk = new(plan.Flat!, tree.MaxProperty, plan.UsesPrevious ? previous : null, channel, stream);
+                switch (plan.Predictor)
+                {
+                    case 5:
+                        weighted.Decode<TResiduals, JxlWalkPicker, JxlGradientPredictor>(r, residuals, walk, leaves, ref data, width, height);
+                        break;
+                    case 6:
+                        weighted.Decode<TResiduals, JxlWalkPicker, JxlWpPredictor>(r, residuals, walk, leaves, ref data, width, height);
+                        break;
+                    default:
+                        weighted.Decode<TResiduals, JxlWalkPicker, JxlAnyPredictor>(r, residuals, walk, leaves, ref data, width, height);
+                        break;
+                }
+
                 break;
         }
     }
@@ -185,8 +227,8 @@ internal static class JxlModularDecoder
         }
     }
 
-    /// <summary>Decodes a channel with one leaf and any predictor.</summary>
-    private static void DecodeSingle<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf leaf, JxlWeightedPredictor? weighted, JxlChannel c)
+    /// <summary>Decodes a channel with one leaf and any predictor but the weighted one.</summary>
+    private static void DecodeSingle<TResiduals>(JxlBitReader r, TResiduals residuals, JxlLeaf leaf, JxlChannel c)
         where TResiduals : struct, IJxlUintReader
     {
         int width = c.Width;
@@ -198,19 +240,16 @@ internal static class JxlModularDecoder
             for (int x = 0; x < width; x++)
             {
                 Neighbours(ref data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
-                long wpPrediction = weighted?.Predict(n, nw, ne, w, nn) ?? 0;
-                long prediction = Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
-                int sample = unchecked((int)prediction + Residual(r, residuals, leaf));
-                Unsafe.Add(ref data, row + x) = sample;
-                weighted?.Record(sample);
+                long prediction = Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, 0);
+                Unsafe.Add(ref data, row + x) = unchecked((int)prediction + Residual(r, residuals, leaf));
             }
         }
     }
 
-    /// <summary>Decodes a channel whose subtree tests one property, its leaf found in a table.</summary>
-    private static void DecodeLookup<TResiduals, TPredictor>(JxlBitReader r, TResiduals residuals, JxlLeaf[] leaves, JxlChannelPlan plan, JxlWeightedPredictor? weighted, JxlChannel c, int channel, int stream)
+    /// <summary>Decodes a channel whose subtree tests one property (not the weighted predictor's), its leaf found in a table.</summary>
+    private static void DecodeLookup<TResiduals, TPredictor>(JxlBitReader r, TResiduals residuals, JxlLeaf[] leaves, JxlChannelPlan plan, JxlChannel c, int channel, int stream)
         where TResiduals : struct, IJxlUintReader
-        where TPredictor : struct, IPredictor
+        where TPredictor : struct, IJxlPredictor
     {
         int width = c.Width;
         int height = c.Height;
@@ -226,21 +265,21 @@ internal static class JxlModularDecoder
             for (int x = 0; x < width; x++)
             {
                 Neighbours(ref data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
-                long wpPrediction = weighted?.Predict(n, nw, ne, w, nn) ?? 0;
                 int grad = unchecked(w + n - nw);
-                int v = Property(property, channel, stream, x, y, w, n, nw, ne, nn, ww, prevGrad, grad, weighted);
+                int v = Property(property, channel, stream, x, y, w, n, nw, ne, nn, ww, prevGrad, grad, 0);
                 JxlLeaf leaf = leaves[lookup[Math.Min(Math.Max(v, min), max) - min]];
                 prevGrad = grad;
-                long prediction = default(TPredictor).Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
-                int sample = unchecked((int)prediction + Residual(r, residuals, leaf));
-                Unsafe.Add(ref data, row + x) = sample;
-                weighted?.Record(sample);
+                long prediction = default(TPredictor).Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, 0);
+                Unsafe.Add(ref data, row + x) = unchecked((int)prediction + Residual(r, residuals, leaf));
             }
         }
     }
 
-    /// <summary>Decodes a channel by walking its flattened subtree for every sample, with every property worked out first.</summary>
-    private static void DecodeWalk<TResiduals>(JxlBitReader r, TResiduals residuals, JxlTree tree, JxlChannelPlan plan, JxlWeightedPredictor? weighted, JxlChannel c, List<JxlChannel> previous, int channel, int stream)
+    /// <summary>
+    /// Decodes a channel by walking its flattened subtree for every sample, with every property worked out first; the subtree
+    /// does not use the weighted predictor, so property 15 is 0.
+    /// </summary>
+    private static void DecodeWalk<TResiduals>(JxlBitReader r, TResiduals residuals, JxlTree tree, JxlChannelPlan plan, JxlChannel c, List<JxlChannel> previous, int channel, int stream)
         where TResiduals : struct, IJxlUintReader
     {
         int width = c.Width;
@@ -264,7 +303,6 @@ internal static class JxlModularDecoder
             for (int x = 0; x < width; x++)
             {
                 Neighbours(ref data, row, width, x, y, out int w, out int n, out int nw, out int ne, out int nn, out int ww, out int nee);
-                long wpPrediction = weighted?.Predict(n, nw, ne, w, nn) ?? 0;
                 int grad = unchecked(w + n - nw);
                 props[3] = x;
                 props[4] = (int)(uint)Math.Abs((long)n);
@@ -278,7 +316,6 @@ internal static class JxlModularDecoder
                 props[12] = unchecked(n - ne);
                 props[13] = unchecked(n - nn);
                 props[14] = unchecked(w - ww);
-                props[15] = weighted?.MaxError ?? 0;
                 if (usesPrevious)
                 {
                     for (int k = 0; k < previous.Count; k++)
@@ -304,17 +341,15 @@ internal static class JxlModularDecoder
 
                 prevGrad = grad;
                 JxlLeaf leaf = leaves[at];
-                long prediction = Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
-                int sample = unchecked((int)prediction + Residual(r, residuals, leaf));
-                Unsafe.Add(ref data, row + x) = sample;
-                weighted?.Record(sample);
+                long prediction = Predict(leaf.Predictor, w, n, nw, ne, nn, ww, nee, 0);
+                Unsafe.Add(ref data, row + x) = unchecked((int)prediction + Residual(r, residuals, leaf));
             }
         }
     }
 
     /// <summary>Gets predictor 5: W + N - NW clamped between W and N.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static long Gradient(int w, int n, int nw) => Math.Min(Math.Max((long)n + w - nw, Math.Min(w, n)), Math.Max(w, n));
+    internal static long Gradient(int w, int n, int nw) => Math.Min(Math.Max((long)n + w - nw, Math.Min(w, n)), Math.Max(w, n));
 
     /// <summary>Gets a reference to a channel's first sample, after checking it holds width × height samples.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -350,7 +385,7 @@ internal static class JxlModularDecoder
 
     /// <summary>Gets property <paramref name="p"/>, below 16, of the current sample (H.4.1).</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int Property(int p, int channel, int stream, int x, int y, int w, int n, int nw, int ne, int nn, int ww, int prevGrad, int grad, JxlWeightedPredictor? weighted)
+    internal static int Property(int p, int channel, int stream, int x, int y, int w, int n, int nw, int ne, int nn, int ww, int prevGrad, int grad, int maxError)
     {
         return p switch
         {
@@ -369,7 +404,7 @@ internal static class JxlModularDecoder
             12 => unchecked(n - ne),
             13 => unchecked(n - nn),
             14 => unchecked(w - ww),
-            _ => weighted?.MaxError ?? 0,
+            _ => maxError,
         };
     }
 
@@ -382,7 +417,7 @@ internal static class JxlModularDecoder
     }
 
     /// <summary>The four properties a previous channel gives: |c|, c, |c - g| and c - g, with g its clamped gradient.</summary>
-    private static void PreviousProperties(JxlChannel p, int x, int y, Span<int> output)
+    internal static void PreviousProperties(JxlChannel p, int x, int y, Span<int> output)
     {
         int width = p.Width;
         int[] d = p.Data;
@@ -413,27 +448,127 @@ internal static class JxlModularDecoder
         output[2] = (int)(uint)Math.Abs((long)c - g);
         output[3] = unchecked(c - g);
     }
+}
 
-    private interface IPredictor
+/// <summary>A sample predictor (H.5) fixed at compile time, so hot loops need no switch when every leaf uses one.</summary>
+internal interface IJxlPredictor
+{
+    long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction);
+}
+
+/// <summary>Any predictor, chosen per leaf.</summary>
+internal readonly struct JxlAnyPredictor : IJxlPredictor
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction) => JxlModularDecoder.Predict(predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
+}
+
+/// <summary>Predictor 5, the clamped gradient, for subtrees whose leaves all use it.</summary>
+internal readonly struct JxlGradientPredictor : IJxlPredictor
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction) => JxlModularDecoder.Gradient(w, n, nw);
+}
+
+/// <summary>Predictor 6, the weighted predictor, for subtrees whose leaves all use it.</summary>
+internal readonly struct JxlWpPredictor : IJxlPredictor
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction) => (wpPrediction + 3) >> 3;
+}
+
+/// <summary>Picks a sample's leaf from its neighbours and properties, fixed at compile time for each subtree shape.</summary>
+internal interface IJxlLeafPicker
+{
+    int Pick(int x, int y, int w, int n, int nw, int ne, int nn, int ww, int prevGrad, int grad, int maxError);
+}
+
+/// <summary>A subtree that is one leaf.</summary>
+internal readonly struct JxlSinglePicker(int leaf) : IJxlLeafPicker
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int Pick(int x, int y, int w, int n, int nw, int ne, int nn, int ww, int prevGrad, int grad, int maxError) => leaf;
+}
+
+/// <summary>A subtree that tests only the weighted predictor's largest error (property 15), through a table.</summary>
+internal readonly struct JxlMaxErrorPicker(int[] lookup, int min, int max) : IJxlLeafPicker
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int Pick(int x, int y, int w, int n, int nw, int ne, int nn, int ww, int prevGrad, int grad, int maxError) => lookup[Math.Min(Math.Max(maxError, min), max) - min];
+}
+
+/// <summary>A subtree that tests one property below 16, through a table.</summary>
+internal readonly struct JxlLookupPicker(int[] lookup, int property, int min, int max, int channel, int stream) : IJxlLeafPicker
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int Pick(int x, int y, int w, int n, int nw, int ne, int nn, int ww, int prevGrad, int grad, int maxError)
     {
-        long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction);
+        int v = JxlModularDecoder.Property(property, channel, stream, x, y, w, n, nw, ne, nn, ww, prevGrad, grad, maxError);
+        return lookup[Math.Min(Math.Max(v, min), max) - min];
+    }
+}
+
+/// <summary>Any other subtree, walked two levels a step over every property of the sample.</summary>
+internal readonly struct JxlWalkPicker : IJxlLeafPicker
+{
+    private readonly JxlFlatNode[] _flat;
+    private readonly int[] _props;
+    private readonly List<JxlChannel>? _previous;
+
+    /// <summary>Walks <paramref name="flat"/>; <paramref name="previous"/> is null when the subtree tests no previous channel.</summary>
+    internal JxlWalkPicker(JxlFlatNode[] flat, int maxProperty, List<JxlChannel>? previous, int channel, int stream)
+    {
+        // Every property the tree tests has a slot; those of channels this stream does not have stay 0.
+        int maxPrevious = maxProperty >= 16 ? ((maxProperty - 16) / 4) + 1 : 0;
+        _flat = flat;
+        _props = new int[16 + (4 * maxPrevious)];
+        _props[0] = channel;
+        _props[1] = stream;
+        _previous = previous;
     }
 
-    /// <summary>Any predictor, chosen per leaf.</summary>
-    private readonly struct AnyPredictor : IPredictor
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int Pick(int x, int y, int w, int n, int nw, int ne, int nn, int ww, int prevGrad, int grad, int maxError)
     {
-        public long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction) => JxlModularDecoder.Predict(predictor, w, n, nw, ne, nn, ww, nee, wpPrediction);
-    }
+        int[] props = _props;
+        ref int p = ref MemoryMarshal.GetArrayDataReference(props);
+        Unsafe.Add(ref p, 2) = y;
+        Unsafe.Add(ref p, 3) = x;
+        Unsafe.Add(ref p, 4) = (int)(uint)Math.Abs((long)n);
+        Unsafe.Add(ref p, 5) = (int)(uint)Math.Abs((long)w);
+        Unsafe.Add(ref p, 6) = n;
+        Unsafe.Add(ref p, 7) = w;
+        Unsafe.Add(ref p, 8) = unchecked(w - prevGrad);
+        Unsafe.Add(ref p, 9) = grad;
+        Unsafe.Add(ref p, 10) = unchecked(w - nw);
+        Unsafe.Add(ref p, 11) = unchecked(nw - n);
+        Unsafe.Add(ref p, 12) = unchecked(n - ne);
+        Unsafe.Add(ref p, 13) = unchecked(n - nn);
+        Unsafe.Add(ref p, 14) = unchecked(w - ww);
+        Unsafe.Add(ref p, 15) = maxError;
+        if (_previous is { } previous)
+        {
+            for (int k = 0; k < previous.Count; k++)
+            {
+                JxlModularDecoder.PreviousProperties(previous[k], x, y, props.AsSpan(16 + (4 * k), 4));
+            }
+        }
 
-    /// <summary>Predictor 5, the clamped gradient, for subtrees whose leaves all use it.</summary>
-    private readonly struct GradientPredictor : IPredictor
-    {
-        public long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction) => Gradient(w, n, nw);
-    }
+        // The flattened subtree's properties are all below the table's length (the tree's largest property sizes it), and its
+        // children and leaves are indices Flatten made.
+        ref JxlFlatNode flat = ref MemoryMarshal.GetArrayDataReference(_flat);
+        int at = 0;
+        while (true)
+        {
+            ref JxlFlatNode f = ref Unsafe.Add(ref flat, at);
+            if (f.Leaf >= 0)
+            {
+                return f.Leaf;
+            }
 
-    /// <summary>Predictor 6, the weighted predictor, for subtrees whose leaves all use it.</summary>
-    private readonly struct WeightedPredictor : IPredictor
-    {
-        public long Predict(int predictor, int w, int n, int nw, int ne, int nn, int ww, int nee, long wpPrediction) => (wpPrediction + 3) >> 3;
+            int inLeft = Unsafe.Add(ref p, f.LeftProperty) > f.LeftValue ? 0 : 1;
+            int inRight = Unsafe.Add(ref p, f.RightProperty) > f.RightValue ? 2 : 3;
+            at = f.Child + (Unsafe.Add(ref p, f.Property) > f.Value ? inLeft : inRight);
+        }
     }
 }
