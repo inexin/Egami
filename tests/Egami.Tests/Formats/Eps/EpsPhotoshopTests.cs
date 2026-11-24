@@ -184,6 +184,20 @@ public class EpsPhotoshopTests
     }
 
     [Fact]
+    public void APlacedPhotoshopFileIsNotTheImage()
+    {
+        // An Illustrator drawing with a Photoshop EPS placed in it: the placed file's image is part of the drawing, not the
+        // drawing, so the outer file has no image of its own.
+        byte[] placed = Build("4 3 8 1 0 4 1", Samples(12, 0));
+        byte[] eps = [.. "%!PS-Adobe-3.0 EPSF-3.0\n%%Creator: Adobe Illustrator\n%%BoundingBox: 0 0 50 40\n%%EndComments\n%%BeginDocument: photo.eps\n"u8,
+            .. placed, .. "%%EndDocument\nshowpage\n%%EOF\n"u8];
+        EpsFile file = EpsFile.Load(eps);
+        Assert.Equal(EpsPreviewKind.None, file.Preview);
+        Assert.Equal(50, file.BoundingBox?.Width);
+        Assert.Equal("Adobe Illustrator", file.Creator);
+    }
+
+    [Fact]
     public void TheProfileAndResourcesComeAfterTheImageDataComment()
     {
         byte[] profile = Samples(16, 77);

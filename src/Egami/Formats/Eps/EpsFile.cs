@@ -261,11 +261,37 @@ public sealed class EpsFile
         int position = NextLine(ps, end);
         bool inHeader = true;
         byte[]? imageKeyword = null;
+        int embedded = 0;
         while (position < ps.Length)
         {
             end = LineEnd(ps, position);
             ReadOnlySpan<byte> line = ps[position..end];
             int next = NextLine(ps, end);
+            if (line.StartsWith("%%BeginDocument"u8))
+            {
+                // A placed EPS file (Illustrator embeds Photoshop's this way): its comments, previews and image belong to it,
+                // not to this file, so they are passed over up to its %%EndDocument.
+                embedded++;
+                inHeader = false;
+                position = next;
+                continue;
+            }
+
+            if (embedded > 0)
+            {
+                if (line.StartsWith("%%EndDocument"u8))
+                {
+                    embedded--;
+                }
+                else if (line.StartsWith("%%BeginBinary:"u8) || line.StartsWith("%%BeginData:"u8))
+                {
+                    next = SkipBinary(ps, line, next);
+                }
+
+                position = next;
+                continue;
+            }
+
             if (imageKeyword is not null && Photoshop!.DataStart < 0 && line.TrimEnd(" \t"u8).SequenceEqual(imageKeyword))
             {
                 // Photoshop's image data follows this line; it is binary or long hex, so the comments end here.
