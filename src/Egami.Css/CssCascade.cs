@@ -637,15 +637,16 @@ public sealed class CssCascadedStyle
 
     internal readonly record struct Entry(CssDeclaration? Declaration, Key Key);
 
-    // The best declaration of each origin: UserAgent, User, Author, Animation.
+    // The best declaration of each origin: UserAgent, User, Author, Animation. Animation values are never important and the
+    // later wins, so that origin keeps no key: one reference, not a whole entry, as most styles never animate.
     private struct Slots
     {
         private Entry _userAgent;
         private Entry _user;
         private Entry _author;
-        private Entry _animation;
+        private CssDeclaration? _animation;
 
-        public readonly Entry Get(int origin) => origin switch { 0 => _userAgent, 1 => _user, 2 => _author, _ => _animation };
+        public readonly Entry Get(int origin) => origin switch { 0 => _userAgent, 1 => _user, 2 => _author, _ => new Entry(_animation, default) };
 
         public void Set(int origin, Entry entry)
         {
@@ -661,7 +662,7 @@ public sealed class CssCascadedStyle
                     _author = entry;
                     break;
                 default:
-                    _animation = entry;
+                    _animation = entry.Declaration;
                     break;
             }
         }
