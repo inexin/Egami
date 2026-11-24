@@ -82,12 +82,13 @@ internal static class SvgCssTransforms
     /// The individual transform properties and the motion path's offset (CSS Transforms 2, Motion Path 1) as one matrix to put
     /// before the transform property's: translate, then rotate, then scale, then the offset, from the outside in. Percentages
     /// in translate are of the reference box; the offset moves the transform origin, the anchor, to the point offset-distance
-    /// along offset-path (in the parent's user space) and turns it as offset-rotate says.
+    /// along offset-path (in the parent's user space) and turns it as offset-rotate says. Lengths in em and viewport units
+    /// resolve against <paramref name="lengths"/>: the element's font size and the viewport.
     /// </summary>
-    public static Matrix3x2 Individual(SvgRareStyle style, RectF box, Vector2 origin)
+    public static Matrix3x2 Individual(SvgRareStyle style, RectF box, Vector2 origin, in SvgLengthContext lengths)
     {
         Matrix3x2 m = Matrix3x2.Identity;
-        if (style.OffsetPath is string data && Offset(data, style.OffsetDistance, style.OffsetRotate, origin) is Matrix3x2 offset)
+        if (style.OffsetPath is string data && Offset(data, style.OffsetDistance, style.OffsetRotate, origin, lengths) is Matrix3x2 offset)
         {
             m = offset;
         }
@@ -104,18 +105,18 @@ internal static class SvgCssTransforms
 
         if (style.Translate is { } translate && SvgAnimationProperties.TryTranslate(translate, out SvgLength x, out SvgLength y))
         {
-            m *= Matrix3x2.CreateTranslation(Pixels(x, box.Width), Pixels(y, box.Height));
+            m *= Matrix3x2.CreateTranslation(Pixels(x, box.Width, lengths), Pixels(y, box.Height, lengths));
         }
 
         return m;
     }
 
     // A translate length: a percentage (with any length mixed in) is of the reference box's side.
-    private static float Pixels(SvgLength length, float reference) =>
-        length.IsPercent ? length.Of(reference) : length.ToPixels(SvgLengthContext.Default, SvgAxis.Other);
+    private static float Pixels(SvgLength length, float reference, in SvgLengthContext lengths) =>
+        length.IsPercent ? length.Of(reference) : length.ToPixels(lengths, SvgAxis.Other);
 
     // The offset transform: rotate about the anchor, then move the anchor onto the path (within the transform-origin frame).
-    private static Matrix3x2? Offset(string data, IReadOnlyList<CssComponentValue>? distanceValue, IReadOnlyList<CssComponentValue>? rotateValue, Vector2 anchor)
+    private static Matrix3x2? Offset(string data, IReadOnlyList<CssComponentValue>? distanceValue, IReadOnlyList<CssComponentValue>? rotateValue, Vector2 anchor, in SvgLengthContext lengths)
     {
         if (!Path.TryParseSvg(data, out Path? path) || path is null)
         {
@@ -132,7 +133,7 @@ internal static class SvgCssTransforms
         float distance = 0;
         if (distanceValue is not null && SvgStyleValues.TryLength(distanceValue, out SvgLength d))
         {
-            distance = d.IsPercent ? d.Of(total) : d.ToPixels(SvgLengthContext.Default, SvgAxis.Other);
+            distance = d.IsPercent ? d.Of(total) : d.ToPixels(lengths, SvgAxis.Other);
         }
 
         // A closed path wraps the distance round; an open one clamps it to its ends.

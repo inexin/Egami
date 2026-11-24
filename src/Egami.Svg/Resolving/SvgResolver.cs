@@ -712,7 +712,8 @@ internal sealed partial class SvgResolver
         // the outside in, all about the transform origin.
         if (style.Rare is { HasMotion: true } motionStyle)
         {
-            Matrix3x2 individual = SvgCssTransforms.Individual(motionStyle, box, o);
+            // Lengths in em and viewport units resolve against the element's font size and the viewport it is drawn in.
+            Matrix3x2 individual = SvgCssTransforms.Individual(motionStyle, box, o, lengths with { FontSize = style.FontSize });
             transform *= individual;
         }
 

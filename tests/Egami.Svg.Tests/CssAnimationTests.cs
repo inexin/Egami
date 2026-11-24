@@ -360,6 +360,21 @@ public class CssAnimationTests
         Assert.Equal(10, m.M32, 3);
     }
 
+    [Theory]
+    [InlineData("#r { font-size: 10px; translate: 2em 0 }", 20)]
+    [InlineData("#r { translate: 10vw 0 }", 20)]
+    [InlineData("#r { transform-box: fill-box; translate: 50% 0 }", 5)]
+    [InlineData("#r { transform-box: view-box; translate: 50% 0 }", 100)]
+    [InlineData("#r { font-size: 10px; offset-path: path('M0 0 H150'); offset-distance: 2em }", 20)]
+    [InlineData("#r { offset-path: path('M0 0 H150'); offset-distance: 10vw }", 20)]
+    [InlineData("#r { offset-path: path('M0 0 H150'); offset-distance: 50% }", 75)]
+    public void TranslateAndOffsetLengthsResolveInTheirContext(string css, float expected)
+    {
+        // A 200 by 100 viewport: 10vw is 20 and 50% of the view box is 100; the rect is 10 wide.
+        SvgDocument document = SvgDocument.Parse($"<svg {Ns} width='200' height='100'><style>{css}</style><rect id='r' width='10' height='10'/></svg>");
+        Assert.Equal(expected, Shape(document, 0).Transform.M31, 3);
+    }
+
     [Fact]
     public void OffsetPathMovesAlongThePath()
     {
