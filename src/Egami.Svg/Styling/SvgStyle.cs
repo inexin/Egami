@@ -54,18 +54,26 @@ internal sealed class SvgStyle
     public IReadOnlyList<CssComponentValue>? Filter;
     public BlendMode BlendMode = BlendMode.SourceOver;
     public bool Isolate;
-    public CssColor StopColor = new(0, 0, 0);
-    public float StopOpacity = 1;
-    public CssColor FloodColor = new(0, 0, 0);
-    public float FloodOpacity = 1;
-    public CssColor LightingColor = new(1, 1, 1);
     public bool NonScalingStroke;
     public IReadOnlyList<CssComponentValue>? Transform;
     public IReadOnlyList<CssComponentValue>? TransformOrigin;
     public string TransformBox = "view-box";
 
-    /// <summary>The individual transform and motion path properties; null when none is set, as on most elements.</summary>
-    public SvgMotionStyle? Motion;
+    /// <summary>
+    /// The properties few elements set (stop, flood and lighting colors, the individual transforms and the motion path);
+    /// null when all have their initial values, as on most elements.
+    /// </summary>
+    public SvgRareStyle? Rare;
+
+    public CssColor StopColor => (Rare ?? SvgRareStyle.Initial).StopColor;
+
+    public float StopOpacity => (Rare ?? SvgRareStyle.Initial).StopOpacity;
+
+    public CssColor FloodColor => (Rare ?? SvgRareStyle.Initial).FloodColor;
+
+    public float FloodOpacity => (Rare ?? SvgRareStyle.Initial).FloodOpacity;
+
+    public CssColor LightingColor => (Rare ?? SvgRareStyle.Initial).LightingColor;
 
     /// <summary>The computed CSS style this was made from, for text properties read later.</summary>
     public CssComputedStyle? Css;
@@ -153,8 +161,10 @@ internal sealed class SvgStyle
         r.Opacity("fill-opacity", ref s.FillOpacity);
         r.Opacity("stroke-opacity", ref s.StrokeOpacity);
         r.Opacity("opacity", ref s.Opacity);
-        r.Opacity("stop-opacity", ref s.StopOpacity);
-        r.Opacity("flood-opacity", ref s.FloodOpacity);
+        // The rare properties are read into a copy of the initial ones, kept only when one is set (most elements set none).
+        SvgRareStyle.Values rare = SvgRareStyle.Initial.Data;
+        r.Opacity("stop-opacity", ref rare.StopOpacity);
+        r.Opacity("flood-opacity", ref rare.FloodOpacity);
         r.Rule("fill-rule", ref s.FillRule);
         r.Rule("clip-rule", ref s.ClipRule);
 
@@ -314,9 +324,9 @@ internal sealed class SvgStyle
             s.Isolate = isolation == "isolate";
         }
 
-        r.Color("stop-color", ref s.StopColor, s.Color);
-        r.Color("flood-color", ref s.FloodColor, s.Color);
-        r.Color("lighting-color", ref s.LightingColor, s.Color);
+        r.Color("stop-color", ref rare.StopColor, s.Color);
+        r.Color("flood-color", ref rare.FloodColor, s.Color);
+        r.Color("lighting-color", ref rare.LightingColor, s.Color);
 
         if (r.Keyword("vector-effect") is string effect)
         {
@@ -340,25 +350,29 @@ internal sealed class SvgStyle
 
         if (r.Own("translate") is { } translate && !SvgStyleValues.IsKeyword(translate, "none"))
         {
-            (s.Motion ??= new()).Translate = translate;
+            rare.Translate = translate;
         }
 
         if (r.Own("rotate") is { } rotate && !SvgStyleValues.IsKeyword(rotate, "none"))
         {
-            (s.Motion ??= new()).Rotate = rotate;
+            rare.Rotate = rotate;
         }
 
         if (r.Own("scale") is { } scale && !SvgStyleValues.IsKeyword(scale, "none"))
         {
-            (s.Motion ??= new()).Scale = scale;
+            rare.Scale = scale;
         }
 
         if (r.Own("offset-path") is { } offsetPath && SvgAnimationProperties.TryPathFunction(offsetPath, out string pathData))
         {
-            SvgMotionStyle motion = s.Motion ??= new();
-            motion.OffsetPath = pathData;
-            motion.OffsetDistance = r.Own("offset-distance");
-            motion.OffsetRotate = r.Own("offset-rotate");
+            rare.OffsetPath = pathData;
+            rare.OffsetDistance = r.Own("offset-distance");
+            rare.OffsetRotate = r.Own("offset-rotate");
+        }
+
+        if (!rare.IsInitial)
+        {
+            s.Rare = new SvgRareStyle(rare);
         }
 
         return s;
@@ -451,13 +465,75 @@ internal sealed class SvgStyle
     }
 }
 
-/// <summary>The individual transform properties (CSS Transforms 2) and the motion path's offset (Motion Path 1) of an element.</summary>
-internal sealed class SvgMotionStyle
+/// <summary>
+/// The properties of an element few elements set, kept apart so the others' styles stay small: the stop, flood and lighting
+/// colors and opacities, the individual transform properties (CSS Transforms 2) and the motion path's offset (Motion Path 1).
+/// None is inherited.
+/// </summary>
+internal sealed class SvgRareStyle
 {
-    public IReadOnlyList<CssComponentValue>? Translate;
-    public IReadOnlyList<CssComponentValue>? Rotate;
-    public IReadOnlyList<CssComponentValue>? Scale;
-    public string? OffsetPath;
-    public IReadOnlyList<CssComponentValue>? OffsetDistance;
-    public IReadOnlyList<CssComponentValue>? OffsetRotate;
+    public static SvgRareStyle Initial { get; } = new(Values.InitialValues);
+
+    public readonly Values Data;
+
+    public SvgRareStyle(in Values values)
+    {
+        Data = values;
+    }
+
+    public CssColor StopColor => Data.StopColor;
+
+    public float StopOpacity => Data.StopOpacity;
+
+    public CssColor FloodColor => Data.FloodColor;
+
+    public float FloodOpacity => Data.FloodOpacity;
+
+    public CssColor LightingColor => Data.LightingColor;
+
+    public IReadOnlyList<CssComponentValue>? Translate => Data.Translate;
+
+    public IReadOnlyList<CssComponentValue>? Rotate => Data.Rotate;
+
+    public IReadOnlyList<CssComponentValue>? Scale => Data.Scale;
+
+    public string? OffsetPath => Data.OffsetPath;
+
+    public IReadOnlyList<CssComponentValue>? OffsetDistance => Data.OffsetDistance;
+
+    public IReadOnlyList<CssComponentValue>? OffsetRotate => Data.OffsetRotate;
+
+    public bool HasMotion => Data.HasMotion;
+
+    /// <summary>The values, as a struct to read into without allocating.</summary>
+    public struct Values
+    {
+        public CssColor StopColor;
+        public float StopOpacity;
+        public CssColor FloodColor;
+        public float FloodOpacity;
+        public CssColor LightingColor;
+        public IReadOnlyList<CssComponentValue>? Translate;
+        public IReadOnlyList<CssComponentValue>? Rotate;
+        public IReadOnlyList<CssComponentValue>? Scale;
+        public string? OffsetPath;
+        public IReadOnlyList<CssComponentValue>? OffsetDistance;
+        public IReadOnlyList<CssComponentValue>? OffsetRotate;
+
+        public static Values InitialValues => new()
+        {
+            StopColor = new(0, 0, 0),
+            StopOpacity = 1,
+            FloodColor = new(0, 0, 0),
+            FloodOpacity = 1,
+            LightingColor = new(1, 1, 1),
+        };
+
+        /// <summary>Gets a value indicating whether translate, rotate, scale or offset-path is set.</summary>
+        public readonly bool HasMotion => Translate is not null || Rotate is not null || Scale is not null || OffsetPath is not null;
+
+        /// <summary>Gets a value indicating whether every property has its initial value.</summary>
+        public readonly bool IsInitial => !HasMotion && StopColor.Equals(new CssColor(0, 0, 0)) && StopOpacity == 1 && FloodColor.Equals(new CssColor(0, 0, 0))
+            && FloodOpacity == 1 && LightingColor.Equals(new CssColor(1, 1, 1));
+    }
 }
