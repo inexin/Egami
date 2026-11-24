@@ -107,6 +107,68 @@ leaving no partial file.</li>
 <li>A call may ask for a picture of the first file it wrote (<code>preview</code>): an image, or a video's first frame, fit to 1024 pixels.</li>
 <li><code>--max-inputs</code> (1000 by default) bounds the files one call takes; <code>--limit</code> sets the safety limits for decoded frames.</li>
 </ul>
+<h2 id="prompts-and-resources">Prompts and resources</h2>
+<p>egami-video serves these documents as MCP resources:</p>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>egami-video://schema/info</code></td>
+<td>The JSON schema of what <code>info</code> returns</td>
+</tr>
+<tr>
+<td><code>egami-video://schema/metadata</code></td>
+<td>The JSON schema of what <code>metadata</code> writes and <code>--load</code> reads</td>
+</tr>
+<tr>
+<td><code>egami-video://formats</code></td>
+<td>The containers and codecs, as <code>egami-video formats --json</code> prints them</td>
+</tr>
+<tr>
+<td><code>egami-video://guide</code></td>
+<td>The <a href="https://inexin.github.io/Egami/v1/agents/Egami.Video.Cli.md">guide for coding agents</a></td>
+</tr>
+</tbody>
+</table>
+<p>and offers common jobs as MCP prompts, each one message that names the tools to call:</p>
+<table>
+<thead>
+<tr>
+<th>Prompt</th>
+<th>Arguments</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make_clip</code></td>
+<td><code>file</code>, <code>start</code>, <code>end</code></td>
+<td>A clip cut out with <code>trim</code>, without encoding</td>
+</tr>
+<tr>
+<td><code>make_gif</code></td>
+<td><code>file</code>, <code>start</code>, <code>length</code></td>
+<td>An animated GIF of a stretch of the video, with <code>animate</code></td>
+</tr>
+<tr>
+<td><code>web_video</code></td>
+<td><code>file</code></td>
+<td>An MP4 browsers play: H.264, HEVC and AV1 copied with <code>remux</code>, anything else encoded to AV1</td>
+</tr>
+<tr>
+<td><code>extract_audio</code></td>
+<td><code>file</code>, <code>format</code></td>
+<td>The sound as an audio file: copied with <code>extract</code> where it fits, else decoded with <code>audio</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>length</code> and <code>format</code> may be left out. egami-video does not encode H.264 or HEVC, so <code>web_video</code> writes AV1 where it has to
+encode.</p>
 
 </article>
 

@@ -113,6 +113,69 @@ files written), <code>output</code> (the command's JSON, for commands with <code
 A usage mistake, a failed file or a safety limit marks the call as failed, so the assistant sees it and can try again;
 <code>compare</code> finding a difference is a result, not a failure.</li>
 </ul>
+<h2 id="prompts-and-resources">Prompts and resources</h2>
+<p>Besides its tools, egami serves a few documents as MCP resources, which an assistant can read before it calls a tool:</p>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>egami://schema/workflow</code></td>
+<td>The JSON schema of a workflow object, as <code>run</code> takes it</td>
+</tr>
+<tr>
+<td><code>egami://formats</code></td>
+<td>Every format, as <code>egami formats --json</code> prints it</td>
+</tr>
+<tr>
+<td><code>egami://guide</code></td>
+<td>The <a href="https://inexin.github.io/Egami/v1/agents/Egami.Cli.md">guide for coding agents</a>: commands, workflow files, exit codes, common mistakes</td>
+</tr>
+</tbody>
+</table>
+<p>and offers common jobs as MCP prompts, which assistants show as commands (in Claude Code, <code>/mcp__egami__thumbnails</code>). Each
+returns one message that names the tools to call and keeps to the folder rules below:</p>
+<table>
+<thead>
+<tr>
+<th>Prompt</th>
+<th>Arguments</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>thumbnails</code></td>
+<td><code>folder</code>, <code>size</code></td>
+<td>A thumbnail of every image in the folder, in a <code>thumbs</code> folder beside them</td>
+</tr>
+<tr>
+<td><code>convert_folder</code></td>
+<td><code>folder</code>, <code>format</code></td>
+<td>Every image converted, in a new folder named after the format</td>
+</tr>
+<tr>
+<td><code>web_images</code></td>
+<td><code>folder</code>, <code>max_width</code></td>
+<td>Images shrunk to a width and written as WebP (or AVIF) for a web page</td>
+</tr>
+<tr>
+<td><code>strip_metadata</code></td>
+<td><code>folder</code></td>
+<td>Location and camera data removed, in a <code>clean</code> folder</td>
+</tr>
+<tr>
+<td><code>make_workflow</code></td>
+<td><code>goal</code>, <code>inputs</code></td>
+<td>A workflow written for the goal from the schema, checked with a dry run, then run</td>
+</tr>
+</tbody>
+</table>
+<p><code>size</code>, <code>max_width</code> and <code>inputs</code> may be left out.</p>
 <h2 id="the-folders-egami-may-use">The folders egami may use</h2>
 <p>A tool reads and writes only inside the folders egami may use, and refuses any other path, including one reached through a
 symbolic link or <code>..</code>:</p>

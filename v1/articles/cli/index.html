@@ -262,7 +262,7 @@ against <a href="https://raw.githubusercontent.com/inexin/Egami/main/docs/schema
   ]
 }
 </code></pre>
-<pre><code class="lang-sh">egami run in.jpg resize 1200x + sharpen 0.6 --save-workflow web.json --dry-run   # write the file from a command line
+<pre><code class="lang-sh">egami run in.jpg resize 1200x + sharpen 0.6 -o web/{name}.webp --save-workflow web.json --dry-run   # write the file from a command line
 egami run &quot;photos/*.jpg&quot; --workflow web.json -o web/{name}.webp
 </code></pre>
 <p>A <code>save</code> in a workflow may give a <code>path</code>; one without writes to <code>-o</code>. Branching and conditions stay out: a script is the right

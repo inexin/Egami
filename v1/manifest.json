@@ -23,6 +23,16 @@
     },
     {
       "type": "Resource",
+      "source_relative_path": "agents/Egami.Cli.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Cli.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
       "source_relative_path": "agents/Egami.Css.md",
       "output": {
         "resource": {
@@ -107,6 +117,16 @@
       "output": {
         "resource": {
           "relative_path": "agents/Egami.SystemDrawing.md"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "agents/Egami.Video.Cli.md",
+      "output": {
+        "resource": {
+          "relative_path": "agents/Egami.Video.Cli.md"
         }
       },
       "version": ""
@@ -20451,11 +20471,11 @@
       "type": "Toc",
       "source_relative_path": "api/toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "api/toc.json"
-        },
         ".html": {
           "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
         }
       },
       "version": ""
@@ -21494,11 +21514,11 @@
       "type": "Toc",
       "source_relative_path": "articles/toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "articles/toc.json"
-        },
         ".html": {
           "relative_path": "articles/toc.html"
+        },
+        ".json": {
+          "relative_path": "articles/toc.json"
         }
       },
       "version": ""
@@ -21587,11 +21607,11 @@
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
-        ".json": {
-          "relative_path": "toc.json"
-        },
         ".html": {
           "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
         }
       },
       "version": ""
