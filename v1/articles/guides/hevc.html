@@ -173,7 +173,7 @@ entry (the one Apple players need) and Matroska as its codec private data.</li>
 off. P pictures predict from up to three earlier pictures at effort 4 (one at 0 and 1, two at 2 and 3, four from 6), with
 motion search to a quarter sample, merge and skip modes, and intra blocks where they pay. B pictures predict from both sides
 and take fewer bits; they need <code>LatencyMode.Quality</code> (the default), because they are coded out of order and packets carry
-decode timestamps. From effort 3 a run of two or three B pictures is a pyramid whose middle picture the others predict from.
+decode timestamps. A run of two or three B pictures is a pyramid whose middle picture the others predict from.
 <code>LatencyMode.Realtime</code> turns B pictures and the lookahead off, so each packet comes out as soon as its frame goes in.</p>
 <p>Rate control works as for the H.264 encoder: constant quality (the default), a fixed <code>Quantizer</code>, an average <code>Bitrate</code> (one
 pass, or two with <code>FirstPassStats</code>) and <code>RateControlMode.ConstantBitrate</code> with a buffer model, whose bitrate and buffer the
@@ -198,17 +198,19 @@ using (VideoWriter writer = VideoWriter.Create(&quot;duck.mp4&quot;, options))
 VideoWriterOptions main10 = options with { Hevc = new HevcEncoderOptions { Profile = HevcProfile.Main10, Level = 41, AdaptiveQuantization = false } };
 </code></pre><h3 id="compression-and-speed">Compression and speed</h3>
 <p>The encoder is measured against x265 3.6's medium preset on four Xiph test clips (crowd_run, ducks_take_off, park_joy and
-old_town_cross at 720p, 50 frames a second, 60 frames), both tuned for PSNR. At effort 4 it needs 2.1 % fewer bits than x265
-medium for the same PSNR on average (from 7.0 % fewer on old_town_cross to 1.1 % more on park_joy), and with adaptive
-quantization on, as both encoders default to, 2.9 % fewer for the same SSIM. At effort 5 it needs 8.4 % fewer for the same
-PSNR. Against Egami's own H.264 encoder at effort 4 it saves 12.2 % of the bits on average (x265 medium saves 10.3 % on the
-same clips). It is slower: on one thread, with x265 at the CRF that gives the same PSNR-Y and no adaptive quantization,
-effort 4 takes 1.5 times x265 medium's CPU cycles a frame at quality 50 (1.2 to 2.3 by clip) and 1.8 times at quality 34
-(1.6 to 2.4), and 2.5 and 2.8 times its instructions. Cycles vary by up to a third between runs on a busy machine.</p>
+old_town_cross at 720p, 50 frames a second, 60 frames), both tuned for PSNR. At effort 4 it needs 2.3 % fewer bits than x265
+medium for the same PSNR on average (from 8.0 % fewer on old_town_cross to 1.2 % more on park_joy), and with adaptive
+quantization on, as both encoders default to, 3.1 % fewer for the same SSIM. At effort 5 it needs 13.1 % fewer for the same
+PSNR. Against Egami's own H.264 encoder at effort 4 it saves about 12 % of the bits on average (x265 medium saves 10.3 % on
+the same clips). It is slower: on one thread, with x265 at the CRF that gives the same PSNR-Y and no adaptive quantization,
+effort 4 took 1.5 times x265 medium's CPU cycles a frame at quality 50 (1.2 to 2.3 by clip) and 1.8 times at quality 34
+(1.6 to 2.4), and 2.5 and 2.8 times its instructions, before a tuning of the efforts that added about 2 % to effort 4's
+instructions. Cycles vary by up to a third between runs on a busy machine.</p>
 <h4 id="speed-by-effort">Speed by effort</h4>
 <p>Effort trades time for size. BD-rate is against x265 medium on the same four clips over four qualities and 60 frames, on
-PSNR-Y (adaptive quantization off) and on SSIM-Y (on): the mean of the clips and, for PSNR, the worst clip. Effort 4's speed is
-above; the other efforts' times are not yet measured on a quiet machine, so only their rough order is given.</p>
+PSNR-Y (adaptive quantization off) and on SSIM-Y (on): the mean of the clips and, for PSNR, the worst clip. Work is the encoder's
+instructions a frame at one thread against effort 4's (quality 50, the first 10 frames of the four clips); effort 4's time
+against x265 is above.</p>
 <table>
 <thead>
 <tr>
@@ -216,7 +218,7 @@ above; the other efforts' times are not yet measured on a quiet machine, so only
 <th style="text-align: right;">BD-rate PSNR (mean)</th>
 <th style="text-align: right;">PSNR (worst clip)</th>
 <th style="text-align: right;">BD-rate SSIM (mean)</th>
-<th>Time</th>
+<th style="text-align: right;">Work</th>
 </tr>
 </thead>
 <tbody>
@@ -225,99 +227,100 @@ above; the other efforts' times are not yet measured on a quiet machine, so only
 <td style="text-align: right;">+108.9 %</td>
 <td style="text-align: right;">+188.7 %</td>
 <td style="text-align: right;">+81.1 %</td>
-<td>under x265 medium's</td>
+<td style="text-align: right;">0.52 ×</td>
 </tr>
 <tr>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">+24.7 %</td>
-<td style="text-align: right;">+36.0 %</td>
-<td style="text-align: right;">+15.4 %</td>
-<td>under x265 medium's</td>
+<td style="text-align: right;">+9.0 %</td>
+<td style="text-align: right;">+17.3 %</td>
+<td style="text-align: right;">+4.7 %</td>
+<td style="text-align: right;">0.64 ×</td>
 </tr>
 <tr>
 <td style="text-align: right;">2</td>
-<td style="text-align: right;">+8.5 %</td>
-<td style="text-align: right;">+16.3 %</td>
-<td style="text-align: right;">+6.8 %</td>
-<td>about effort 4's</td>
+<td style="text-align: right;">+3.6 %</td>
+<td style="text-align: right;">+9.3 %</td>
+<td style="text-align: right;">+1.4 %</td>
+<td style="text-align: right;">0.74 ×</td>
 </tr>
 <tr>
 <td style="text-align: right;">3</td>
-<td style="text-align: right;">−3.6 %</td>
-<td style="text-align: right;">+0.5 %</td>
-<td style="text-align: right;">−4.9 %</td>
-<td>about effort 4's</td>
+<td style="text-align: right;">−1.1 %</td>
+<td style="text-align: right;">+1.9 %</td>
+<td style="text-align: right;">−2.1 %</td>
+<td style="text-align: right;">0.86 ×</td>
 </tr>
 <tr>
 <td style="text-align: right;">4 (default)</td>
-<td style="text-align: right;">−2.1 %</td>
-<td style="text-align: right;">+1.1 %</td>
-<td style="text-align: right;">−2.9 %</td>
-<td>1.5 to 1.8 × x265 medium</td>
+<td style="text-align: right;">−2.3 %</td>
+<td style="text-align: right;">+1.2 %</td>
+<td style="text-align: right;">−3.1 %</td>
+<td style="text-align: right;">1</td>
 </tr>
 <tr>
 <td style="text-align: right;">5</td>
-<td style="text-align: right;">−8.4 %</td>
-<td style="text-align: right;">−4.5 %</td>
-<td style="text-align: right;">−12.5 %</td>
-<td>about 3 × effort 4</td>
+<td style="text-align: right;">−13.1 %</td>
+<td style="text-align: right;">−5.6 %</td>
+<td style="text-align: right;">−17.4 %</td>
+<td style="text-align: right;">2.9 ×</td>
 </tr>
 <tr>
 <td style="text-align: right;">6</td>
-<td style="text-align: right;">−8.5 %</td>
-<td style="text-align: right;">−4.4 %</td>
-<td style="text-align: right;">−11.3 %</td>
-<td>about 4 × effort 4</td>
+<td style="text-align: right;">−13.7 %</td>
+<td style="text-align: right;">−5.8 %</td>
+<td style="text-align: right;">−16.7 %</td>
+<td style="text-align: right;">3.7 ×</td>
 </tr>
 <tr>
 <td style="text-align: right;">7</td>
-<td style="text-align: right;">−8.6 %</td>
-<td style="text-align: right;">−4.3 %</td>
-<td style="text-align: right;">−11.2 %</td>
-<td>about 4 × effort 4</td>
+<td style="text-align: right;">−14.4 %</td>
+<td style="text-align: right;">−5.9 %</td>
+<td style="text-align: right;">−18.0 %</td>
+<td style="text-align: right;">5.0 ×</td>
 </tr>
 <tr>
 <td style="text-align: right;">8</td>
-<td style="text-align: right;">−11.0 %</td>
-<td style="text-align: right;">−7.2 %</td>
-<td style="text-align: right;">−13.3 %</td>
-<td>about 8 × effort 4</td>
+<td style="text-align: right;">−15.3 %</td>
+<td style="text-align: right;">−8.7 %</td>
+<td style="text-align: right;">−18.0 %</td>
+<td style="text-align: right;">8.3 ×</td>
 </tr>
 <tr>
 <td style="text-align: right;">9</td>
-<td style="text-align: right;">−16.1 %</td>
+<td style="text-align: right;">−16.0 %</td>
 <td style="text-align: right;">−8.8 %</td>
-<td style="text-align: right;">−19.2 %</td>
-<td>about 12 × effort 4</td>
+<td style="text-align: right;">−19.1 %</td>
+<td style="text-align: right;">10.2 ×</td>
 </tr>
 <tr>
 <td style="text-align: right;">10</td>
 <td style="text-align: right;">−16.1 %</td>
 <td style="text-align: right;">−8.7 %</td>
 <td style="text-align: right;">−19.2 %</td>
-<td>about 20 × effort 4</td>
+<td style="text-align: right;">11.5 × or more</td>
 </tr>
 </tbody>
 </table>
-<p>The ladder is not yet in order everywhere: effort 3 currently needs fewer bits than effort 4 for about the same time, efforts
-6 and 7 save no more than 5, and effort 10 no more than 9. A tuning round will even it out; until then effort 3 or 5 suits
-smaller files, and 9 the smallest.</p>
+<p>Efforts 9 and 10 were measured with the intra search of one effort lower (8 and 9), which they now search harder; their
+BD-rates and effort 10's work are from those runs.</p>
 <p>What each effort adds:</p>
 <ul>
 <li><strong>0</strong>: 16x16 and 32x32 coding units, one reference, two merge candidates, no B pictures, motion to half samples only and no SAO.</li>
-<li><strong>1</strong>: B pictures (three between P pictures), quarter-sample motion, 8x8 intra units and SAO.</li>
-<li><strong>2</strong>: two references, inter coding units from 8x8 to 64x64, Nx2N and 2NxN partitions, RDOQ, and a CTB's units split at
-least as deep as the co-located ones in the references (to effort 5).</li>
-<li><strong>3</strong>: B pyramids, three merge candidates, inter transform tree splits, and the intra search's NxN units; no Nx2N and 2NxN.</li>
-<li><strong>4</strong> (default): three references, a wider search range, and in the intra search a transform tree search with coarser
-rough mode steps and no most probable mode candidates.</li>
-<li><strong>5</strong>: Nx2N and 2NxN again, two references for B pictures, four merge candidates, transform trees two levels deep,
-square sub-sample search, RDOQ on every trial, and the block tree.</li>
+<li><strong>1</strong>: B pictures (three between P pictures, in a pyramid), quarter-sample motion, two references, three merge candidates,
+inter coding units from 16x16 to 64x64, a CTB's units split at least as deep as the co-located ones in the references (to
+effort 5), and the intra search's 8x8 and NxN units with RDOQ and transform skip.</li>
+<li><strong>2</strong>: inter transform tree splits.</li>
+<li><strong>3</strong>: 8x8 inter coding units.</li>
+<li><strong>4</strong> (default): three references, a wider search range, the second candidate coded when it is within 1.25 times the
+best, and in the intra search the most probable mode candidates and 64x64 units only without the adaptive quantizer.</li>
+<li><strong>5</strong>: Nx2N and 2NxN partitions, two references for B pictures, four merge candidates, transform trees two levels deep,
+square sub-sample search, RDOQ on every trial, the block tree, and no early skip: a skipped coding unit is still split.</li>
 <li><strong>6</strong>: four references, five merge candidates, and every split tried.</li>
-<li><strong>7</strong>: the second candidate coded when it is within 1.5 times the best.</li>
-<li><strong>8</strong>: intra searched in full in P and B pictures, transform trees three levels deep, and halves searched from every start.</li>
-<li><strong>9</strong>: no early skip and a wider search range.</li>
-<li><strong>10</strong>: the widest search range and every intra mode.</li>
+<li><strong>7</strong>: transform trees three levels deep, halves searched from every start, and the second candidate coded within 2 times
+the best.</li>
+<li><strong>8</strong>: intra searched in full in P and B pictures (with effort 6's transform trees and second candidates).</li>
+<li><strong>9</strong>: effort 7's transform trees, halves and second candidates with the full intra search.</li>
+<li><strong>10</strong>: a wider search range and the second candidate coded within 4 times the best.</li>
 </ul>
 <p>tools/video/time-hevc-encoder.py and check-hevc-encoder.py in the repository repeat these measurements, and egami-compare's
 video/native/hevc-encode-gate.py runs them as release gates.</p>
