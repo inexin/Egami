@@ -15,6 +15,16 @@ internal sealed class JxlChannel
         Data = new int[(long)width * height];
     }
 
+    /// <summary>Makes a channel that holds <paramref name="data"/> (no samples of its own allocated first).</summary>
+    internal JxlChannel(int width, int height, int hshift, int vshift, int[] data)
+    {
+        Width = width;
+        Height = height;
+        HShift = hshift;
+        VShift = vshift;
+        Data = data;
+    }
+
     internal int Width { get; }
 
     internal int Height { get; }

@@ -412,7 +412,7 @@ internal sealed partial class JxlVarDctEncoder
                 JxlEncodeImage whole = new(16);
                 for (int i = 0; i < _extraCount; i++)
                 {
-                    whole.Channels.Add(new JxlChannel(frame.Width, frame.Height, 0, 0) { Data = [] });
+                    whole.Channels.Add(new JxlChannel(frame.Width, frame.Height, 0, 0, []));
                 }
 
                 JxlModularEncoder.WriteStream(global, whole, frame.ModularCode, []);

@@ -106,14 +106,14 @@ internal static class JxlLosslessEncoder
         int groupShift = fast ? 1 : JxlModularEncoder.GroupShift(input.Width, input.Height);
         // The fast path only reads the planes; the Modular encoder transforms copies of them.
         int[][] planes = [.. input.Color, .. input.Alpha is null ? [] : new[] { input.Alpha }, .. input.Black is null ? [] : new[] { input.Black }];
-        List<JxlChannel> channels = fast ? [] : [.. planes.Select(p => new JxlChannel(input.Width, input.Height, 0, 0) { Data = (int[])p.Clone() })];
+        List<JxlChannel> channels = fast ? [] : [.. planes.Select(p => new JxlChannel(input.Width, input.Height, 0, 0, Copy(p, input.Parallelism)))];
         if (!fast)
         {
             foreach (JxlExtraPlane extra in input.Extras)
             {
                 // A subsampled channel is coded at its own size, shifted as the decoder places it.
                 int shift = extra.Info.DimShift;
-                channels.Add(new JxlChannel(extra.Width, extra.Height, shift, shift) { Data = (int[])extra.Samples.Clone() });
+                channels.Add(new JxlChannel(extra.Width, extra.Height, shift, shift, (int[])extra.Samples.Clone()));
             }
         }
 
@@ -159,6 +159,27 @@ internal static class JxlLosslessEncoder
 
         JxlStageTimes.Lap(JxlStage.Write);
         return file;
+    }
+
+    /// <summary>Copies a plane, a large one in bands on all threads (each band's pages first touched by the thread that fills them).</summary>
+    private static int[] Copy(int[] plane, int parallelism)
+    {
+        const int Band = 1 << 16;
+        int[] copy = GC.AllocateUninitializedArray<int>(plane.Length);
+        int bands = (plane.Length + Band - 1) / Band;
+        if (parallelism <= 1 || bands <= 1)
+        {
+            plane.AsSpan().CopyTo(copy);
+            return copy;
+        }
+
+        Parallel.For(0, bands, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, b =>
+        {
+            int start = b * Band;
+            int length = Math.Min(Band, plane.Length - start);
+            plane.AsSpan(start, length).CopyTo(copy.AsSpan(start, length));
+        });
+        return copy;
     }
 
     internal static void WriteImageHeader(JxlBitWriter w, JxlEncodeInput input)

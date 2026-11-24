@@ -85,7 +85,7 @@ internal static class JxlLosslessPatches
     private static byte[] ReferenceFrame(int[][] samples, int rw, int rh, int bits, int effort, JxlEncodeInput input, int[] extraShifts)
     {
         int groupShift = JxlModularEncoder.GroupShift(rw, rh);
-        List<JxlChannel> channels = [.. samples.Select(s => new JxlChannel(rw, rh, 0, 0) { Data = s })];
+        List<JxlChannel> channels = [.. samples.Select(s => new JxlChannel(rw, rh, 0, 0, s))];
 
         // The extra channels are in every frame: zero here, as libjxl's placeholders, subsampled as the image header says.
         foreach (int s in extraShifts)
