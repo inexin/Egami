@@ -1,5 +1,6 @@
 using System.IO.Pipes;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 using Egami.Cli.Host;
 using Egami.Cli.Mcp;
@@ -442,6 +443,67 @@ public sealed class McpTests : IAsyncDisposable
         Assert.False(policy.Allows(_tool.Folder + "-sibling"));
         Assert.False(policy.Allows(Path.GetDirectoryName(_tool.Folder)!));
         Assert.Throws<UsageException>(() => policy.Check(Path.GetTempPath()));
+    }
+
+    [Fact]
+    public async Task ServesItsResources()
+    {
+        McpClient client = await Connect();
+        Assert.NotNull(client.ServerCapabilities.Resources);
+        IList<McpClientResource> resources = await client.ListResourcesAsync(cancellationToken: Token);
+        Assert.Equal(["egami://schema/workflow", "egami://formats", "egami://guide"], resources.Select(r => r.Uri));
+        Dictionary<string, string> texts = [];
+        foreach (McpClientResource resource in resources)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(resource.ProtocolResource.Description));
+            ReadResourceResult read = await client.ReadResourceAsync(resource.Uri, cancellationToken: Token);
+            TextResourceContents contents = Assert.IsType<TextResourceContents>(Assert.Single(read.Contents));
+            Assert.Equal(resource.Uri, contents.Uri);
+            Assert.Equal(resource.MimeType, contents.MimeType);
+            texts[resource.Uri] = contents.Text;
+        }
+
+        // The schema and the guide byte for byte as the repository holds them, and the formats as the command line prints them.
+        string repository = Path.Combine(Path.GetDirectoryName(Tool.Images)!, "..");
+        Assert.Equal(File.ReadAllBytes(Path.Combine(repository, "docs", "schemas", "egami-workflow-1.json")), System.Text.Encoding.UTF8.GetBytes(texts["egami://schema/workflow"]));
+        Assert.Equal(File.ReadAllBytes(Path.Combine(repository, "docs", "agents", "Egami.Cli.md")), System.Text.Encoding.UTF8.GetBytes(texts["egami://guide"]));
+        Assert.Equal(_tool.Run("formats", "--json").Text, texts["egami://formats"]);
+        await Assert.ThrowsAnyAsync<McpException>(async () => await client.ReadResourceAsync("egami://nothing", cancellationToken: Token));
+    }
+
+    [Fact]
+    public async Task PromptsNameOnlyItsTools()
+    {
+        McpClient client = await Connect();
+        Assert.NotNull(client.ServerCapabilities.Prompts);
+        HashSet<string> tools = [.. (await client.ListToolsAsync(cancellationToken: Token)).Select(t => t.Name)];
+        IList<McpClientPrompt> prompts = await client.ListPromptsAsync(cancellationToken: Token);
+        Assert.Equal(["thumbnails", "convert_folder", "web_images", "strip_metadata", "make_workflow"], prompts.Select(p => p.Name));
+        foreach (McpClientPrompt prompt in prompts)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(prompt.Description));
+            IList<PromptArgument> arguments = prompt.ProtocolPrompt.Arguments ?? [];
+            Assert.Contains(arguments, a => a.Required == true);
+            Dictionary<string, object?> values = arguments.Where(a => a.Required == true).ToDictionary(a => a.Name, a => (object?)$"some {a.Name}");
+            GetPromptResult result = await client.GetPromptAsync(prompt.Name, values, cancellationToken: Token);
+            PromptMessage message = Assert.Single(result.Messages);
+            Assert.Equal(Role.User, message.Role);
+            string text = Assert.IsType<TextContentBlock>(message.Content).Text;
+            foreach (string value in values.Values.Cast<string>())
+            {
+                Assert.Contains(value, text, StringComparison.Ordinal);
+            }
+
+            string named = Regex.Match(text, "Tools to call: ([a-z_, ]+)\\.").Groups[1].Value;
+            Assert.NotEmpty(named);
+            foreach (string tool in named.Split(", "))
+            {
+                Assert.Contains(tool, tools);
+            }
+
+            // A required argument left out is a mistake the client hears about.
+            await Assert.ThrowsAnyAsync<McpException>(async () => await client.GetPromptAsync(prompt.Name, new Dictionary<string, object?>(), cancellationToken: Token));
+        }
     }
 
     private static string[] Files(params string[] names) => names;

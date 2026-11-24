@@ -161,6 +161,16 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
 - Egami.Video.Hevc: 9-bit and 11-bit streams decode to 10-bit and 12-bit frames, with the samples shifted up one bit;
   they threw `ArgumentOutOfRangeException` (found by fuzzing). `HevcStreamDecoder.TryReceiveFrame` takes such rasters.
 
+## Egami.Video.Cli 1.4.0 (unreleased)
+
+- `egami-video mcp` serves four resources: `egami-video://schema/info` and `egami-video://schema/metadata` (the JSON schemas of
+  `info` and `metadata`), `egami-video://formats` (what `egami-video formats --json` prints) and `egami-video://guide` (the
+  agent guide). It offers four prompts, each one message naming the tools to call: `make_clip`, `make_gif`, `web_video` and
+  `extract_audio`. `web_video` copies H.264 and HEVC into MP4 and encodes anything else to AV1, as egami-video encodes
+  neither H.264 nor HEVC.
+- The package carries `AGENTS.md`, a guide for coding agents that call egami-video from scripts or through `egami-video mcp`.
+  Its command lines run with the tests.
+
 ## Egami.Fonts 1.6.0 (unreleased)
 
 WOFF and WOFF2 writing (roadmap 2.7.7) and Word-style justified lines. Additive to 1.5.0.
@@ -188,6 +198,17 @@ WOFF and WOFF2 writing (roadmap 2.7.7) and Word-style justified lines. Additive 
   fontTools' at zlib level 9, on the test fonts.
 - A glyf table the writer cannot read is stored untransformed with the new `Font.TransformSkipped` warning. A bare CFF font
   throws `ArgumentException`. Input and output are bounded by the context's `SafetyLimits.MaxTotalBytes`.
+
+## Egami.Cli 1.6.0 (unreleased)
+
+MCP prompts and resources, and a guide for coding agents. Additive to 1.5.0.
+
+- `egami mcp` serves three resources: `egami://schema/workflow` (the workflow schema, byte for byte), `egami://formats` (what
+  `egami formats --json` prints) and `egami://guide` (the agent guide). It offers five prompts, each one message naming the
+  tools to call: `thumbnails`, `convert_folder`, `web_images`, `strip_metadata` and `make_workflow`. Both are static: no
+  subscriptions or list-changed notices.
+- The package carries `AGENTS.md`, a guide for coding agents that call egami from scripts or through `egami mcp`: commands,
+  workflow files, exit codes and common mistakes. Its command lines run with the tests.
 
 ## Egami train 1.5.0 (2026-11-23)
 

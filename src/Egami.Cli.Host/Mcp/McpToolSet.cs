@@ -75,6 +75,12 @@ internal sealed class McpToolSet
     /// <summary>Gets the picture of a written file that a call may ask for, or <see langword="null"/> when there is none.</summary>
     public Func<string, ImageContentBlock>? Preview { get; init; }
 
+    /// <summary>Gets the documents the server serves as resources; none by default, and then it offers no resources.</summary>
+    public IReadOnlyList<McpResourceEntry> Resources { get; init; } = [];
+
+    /// <summary>Gets the tasks the server offers as prompts; none by default, and then it offers no prompts.</summary>
+    public IReadOnlyList<McpPromptEntry> Prompts { get; init; } = [];
+
     /// <summary>Gets what the preview argument says, when there is a preview.</summary>
     public string PreviewDescription { get; init; } = "Also return the first file written as a picture, fit to 1024 pixels.";
 

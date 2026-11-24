@@ -50,11 +50,20 @@ internal sealed class McpServerHost : IDisposable
         {
             ServerInfo = new Implementation { Name = set.Name, Title = set.Title, Version = McpToolSet.Version, WebsiteUrl = set.WebsiteUrl },
             ServerInstructions = set.Instructions,
-            Capabilities = new ServerCapabilities { Tools = new ToolsCapability() },
+            Capabilities = new ServerCapabilities
+            {
+                Tools = new ToolsCapability(),
+                Resources = set.Resources.Count > 0 ? new ResourcesCapability() : null,
+                Prompts = set.Prompts.Count > 0 ? new PromptsCapability() : null,
+            },
             Handlers = new McpServerHandlers
             {
                 ListToolsHandler = (_, _) => ValueTask.FromResult(new ListToolsResult { Tools = [.. _catalog.Tools.Select(_catalog.Describe)] }),
                 CallToolHandler = CallAsync,
+                ListResourcesHandler = set.Resources.Count > 0 ? (_, _) => ValueTask.FromResult(McpContentServer.ListResources(set)) : null,
+                ReadResourceHandler = set.Resources.Count > 0 ? (context, _) => ValueTask.FromResult(McpContentServer.ReadResource(set, context.Params)) : null,
+                ListPromptsHandler = set.Prompts.Count > 0 ? (_, _) => ValueTask.FromResult(McpContentServer.ListPrompts(set)) : null,
+                GetPromptHandler = set.Prompts.Count > 0 ? (context, _) => ValueTask.FromResult(McpContentServer.GetPrompt(set, context.Params)) : null,
 #pragma warning disable MCP9005 // Roots: see PolicyAsync.
                 NotificationHandlers =
                 [

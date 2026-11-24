@@ -4,8 +4,8 @@ using System.Text.RegularExpressions;
 namespace Egami.Video.Cli.Tests;
 
 /// <summary>
-/// Every egami-video command line in the guide (docs/articles/video-cli) runs and succeeds, in the order the pages show them,
-/// on corpus clips named as the guide names them (Build Plan task 20).
+/// Every egami-video command line in the guide (docs/articles/video-cli) and the agent guide (docs/agents) runs and succeeds,
+/// in the order the pages show them, on corpus clips named as the guide names them (Build Plan task 20).
 /// </summary>
 public sealed partial class GuideTests
 {
@@ -15,6 +15,7 @@ public sealed partial class GuideTests
     [Theory]
     [InlineData("index.md")]
     [InlineData("ffmpeg.md")]
+    [InlineData("../../agents/Egami.Video.Cli.md")]
     public void EveryCommandLineRuns(string page)
     {
         using Tool tool = new();
