@@ -52,6 +52,9 @@ internal sealed class HevcFrameCoder : IFrameCoder
     private int _idrIndex;
     private int _nextId;
 
+    /// <summary>Gets the token that stops a picture at its next CTB row.</summary>
+    public CancellationToken Cancellation { get; init; }
+
     /// <summary>Makes a coder for a stream's settings (the QP is set per picture).</summary>
     /// <param name="settings">The stream's size, bit depth, colour, timing, level and coding tools.</param>
     /// <param name="annexB">Whether access units are Annex B byte streams rather than length-prefixed.</param>
@@ -177,7 +180,7 @@ internal sealed class HevcFrameCoder : IFrameCoder
     {
         HevcEncodedPicture coded = HevcEncoder.Encode(Picture(qp, _profile.IpLambdaScale), _planes, _strides,
             new HevcSliceInfo { NalType = HevcNal.IdrNLp },
-            CancellationToken.None, profile: _profile.KeyProfile);
+            Cancellation, profile: _profile.KeyProfile);
         coded.Reconstruction.ColMotion = new HevcColMotion(coded.Reconstruction);
         return coded;
     }
@@ -269,7 +272,7 @@ internal sealed class HevcFrameCoder : IFrameCoder
         };
         HevcSliceRefs refs = new([.. list0.Select(r => r.Picture)], [.. list1.Select(r => r.Picture)], new bool[list0.Length], new bool[list1.Length], poc);
         HevcEncoderSettings settings = Picture(qp, b ? 1 : _profile.IpLambdaScale);
-        HevcEncodedPicture coded = HevcEncoder.Encode(settings, _planes, _strides, info, CancellationToken.None, (picture, slice) =>
+        HevcEncodedPicture coded = HevcEncoder.Encode(settings, _planes, _strides, info, Cancellation, (picture, slice) =>
         {
             Array.Fill(picture.CtbRefs, refs);
             HevcInterContext context = new(refs, list0, list1, _profile, picture.CtbRefs.Length)

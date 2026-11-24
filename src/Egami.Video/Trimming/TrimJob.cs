@@ -779,6 +779,7 @@ internal sealed class TrimJob : IDisposable
             SceneCutKeyframes = !head,
             Vp8 = new Vp8EncoderOptions { AlternateReference = false, MinQuantizer = 0, Alpha = _main.HasAlpha },
             Vp9 = new Vp9EncoderOptions { Alpha = _main.HasAlpha },
+            CancellationToken = _token,
         };
         return codec switch
         {

@@ -1455,6 +1455,13 @@ internal sealed class MatroskaDemuxer : IDemuxer
                             _ => null,
                         };
                     }
+                    else if (_codecId is CodecIds.Avc or CodecIds.Hevc)
+                    {
+                        // An H.264 or HEVC track's CodecPrivate is its avcC or hvcC record, which states the depth and subsampling.
+                        (int recordDepth, ChromaFormat? recordChroma) = Codecs.DecoderConfigRecords.Read(_codecId, _codecPrivate);
+                        bitDepth = bitDepth == 0 ? recordDepth : bitDepth;
+                        chromaFormat ??= recordChroma;
+                    }
                     else if (_codecId == CodecIds.Ffv1 && Codecs.Ffv1Codec.Layout(_codecPrivate) is { } ffv1)
                     {
                         // A version 3 FFV1 track's configuration record gives its depth and subsampling.

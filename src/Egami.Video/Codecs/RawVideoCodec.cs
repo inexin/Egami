@@ -136,6 +136,7 @@ public sealed class RawVideoCodec : VideoCodec
         public void Send(VideoFrame frame)
         {
             ArgumentNullException.ThrowIfNull(frame);
+            options.CancellationToken.ThrowIfCancellationRequested();
             if (frame.Width != options.Width || frame.Height != options.Height)
             {
                 throw new ArgumentException($"The frame is {frame.Width}x{frame.Height}; the encoder makes {options.Width}x{options.Height}.", nameof(frame));

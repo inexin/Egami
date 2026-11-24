@@ -124,6 +124,7 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
         _references = references;
         _settings = new CoreSettings
         {
+            Cancellation = options.CancellationToken,
             Width = options.Width,
             Height = options.Height,
             FrameRate = options.FrameRate,
@@ -256,7 +257,10 @@ internal sealed class HevcVideoEncoder : IVideoEncoder
                 LevelIdc = HevcLevels.Of(_level).Idc,
                 Timing = Timing(_options.FrameRate),
             };
-            _coder = new HevcFrameCoder(settings, _hevc.AnnexB, _bFrames, _pyramid, _references, frame.Hdr);
+            _coder = new HevcFrameCoder(settings, _hevc.AnnexB, _bFrames, _pyramid, _references, frame.Hdr)
+            {
+                Cancellation = _options.CancellationToken,
+            };
             Track = MakeTrack(profile, color, frame.Hdr, _coder);
             _pictures = new EncoderPictures(_options.Width, _options.Height, EncoderPictures.Vp8Color, _context.Egami)
             {

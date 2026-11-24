@@ -239,6 +239,11 @@ public sealed class VideoEdit
             writer = writer with { AudioCodec = null };
         }
 
+        // The render's token also stops the encoder within a frame, together with any token the writer's options carry.
+        using CancellationTokenSource? linked = cancellationToken.CanBeCanceled && writer.CancellationToken.CanBeCanceled
+            ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, writer.CancellationToken)
+            : null;
+        writer = writer with { CancellationToken = linked?.Token ?? (cancellationToken.CanBeCanceled ? cancellationToken : writer.CancellationToken) };
         using VideoWriter output = path is not null ? VideoWriter.Create(path, writer, context) : VideoWriter.Create(stream!, format!, writer, context);
         using EditRenderer renderer = new(plan, audio, context) { Smart = options.SmartRender };
         renderer.Run(output, progress, cancellationToken);

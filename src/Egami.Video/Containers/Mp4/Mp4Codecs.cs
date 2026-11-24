@@ -5,6 +5,7 @@ using Egami.Formats.Iso;
 using Egami.Metadata;
 using Egami.Pixels;
 using Egami.Video.Audio.Codecs.Alac;
+using Egami.Video.Codecs;
 
 namespace Egami.Video.Containers.Mp4;
 
@@ -107,10 +108,12 @@ internal static class Mp4Codecs
                 case "avcC" when type is "avc1" or "avc3":
                     codecId = CodecIds.Avc;
                     codecPrivate = content.ToArray();
+                    (bitDepth, chroma) = DecoderConfigRecords.Read(codecId, c);
                     break;
                 case "hvcC" when type is "hvc1" or "hev1":
                     codecId = CodecIds.Hevc;
                     codecPrivate = content.ToArray();
+                    (bitDepth, chroma) = DecoderConfigRecords.Read(codecId, c);
                     break;
                 case "esds" when type == "mp4v":
                     (int objectType, ReadOnlyMemory<byte> specific) = ReadEsds(c);

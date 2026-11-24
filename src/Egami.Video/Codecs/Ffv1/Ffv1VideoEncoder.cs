@@ -70,6 +70,7 @@ internal sealed class Ffv1VideoEncoder : IVideoEncoder
         ArgumentNullException.ThrowIfNull(frame);
         ArgumentNullException.ThrowIfNull(options);
         ObjectDisposedException.ThrowIf(_disposed, this);
+        _options.CancellationToken.ThrowIfCancellationRequested();
         if (frame.Width != _options.Width || frame.Height != _options.Height)
         {
             throw new ArgumentException($"The frame is {frame.Width}x{frame.Height}; the encoder makes {_options.Width}x{_options.Height}.", nameof(frame));

@@ -138,6 +138,7 @@ internal sealed class H264VideoEncoder : IVideoEncoder
         };
         _settings = new CoreSettings
         {
+            Cancellation = options.CancellationToken,
             Width = options.Width,
             Height = options.Height,
             FrameRate = options.FrameRate,
@@ -275,7 +276,7 @@ internal sealed class H264VideoEncoder : IVideoEncoder
         {
             ColorCodePoints color = ColorOf(frame);
             H264StreamConfig config = _config with { Color = color };
-            _coder = new H264FrameCoder(config, _options.Effort ?? DefaultEffort, _h264, frame.Hdr);
+            _coder = new H264FrameCoder(config, _options.Effort ?? DefaultEffort, _h264, frame.Hdr, _options.CancellationToken);
             Track = MakeTrack(config, frame.Hdr);
             _pictures = new EncoderPictures(_options.Width, _options.Height, EncoderPictures.Vp8Color, _context.Egami);
             _core = new EncoderCore(_settings, _coder, _pictures, alpha: false);
@@ -384,12 +385,14 @@ internal sealed class H264FrameCoder : IFrameCoder
     private readonly byte[] _sps;
     private readonly byte[] _pps;
     private readonly byte[]? _sei;
+    private readonly CancellationToken _cancellation;
     private int _frameNum;
     private int _idrPicId = -1;
     private int _idrIndex;
 
-    public H264FrameCoder(H264StreamConfig config, int effort, H264EncoderOptions options, HdrMetadata? hdr)
+    public H264FrameCoder(H264StreamConfig config, int effort, H264EncoderOptions options, HdrMetadata? hdr, CancellationToken cancellation = default)
     {
+        _cancellation = cancellation;
         _config = config;
         _effort = effort;
         _annexB = options.AnnexB;
@@ -407,6 +410,7 @@ internal sealed class H264FrameCoder : IFrameCoder
         AdaptiveQuantization = _options.AdaptiveQuantization,
         MinQp = _options.MinQuantizer,
         MaxQp = _options.MaxQuantizer,
+        Cancellation = _cancellation,
     };
 
     /// <summary>Gets the reconstruction of the last frame coded, for tests.</summary>

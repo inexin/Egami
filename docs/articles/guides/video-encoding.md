@@ -147,3 +147,15 @@ The output depends only on the frames and the options, never on the number of th
 hashes. `EgamiContext.MaxParallelism` on the `MediaContext` sets how many threads the encoder uses. VP9's tile columns depend
 on the frame width and `Vp9EncoderOptions.TileColumns`, never on the threads; AV1's are one per 4096 samples of width, so
 frames up to 4K are one tile, and its threads help little within a frame.
+
+## Stopping an encode
+
+`VideoWriterOptions.CancellationToken` (or `VideoEncoderOptions.CancellationToken` for an encoder of your own) stops an encode
+that takes too long. Once the token is cancelled, `WriteFrame` and `Finish` (`Send` and `Flush`) throw
+`OperationCanceledException`. The H.264 and HEVC encoders stop within a row of blocks of the frame they are coding, so even a
+`Finish` at effort 10 that still holds a lookahead of frames returns at once; VP8, VP9 and AV1 stop before the next frame they
+code, and Motion JPEG, FFV1 and raw video before the next frame you send. The file is left unfinished, and the writer or
+encoder cannot go on: dispose it. `VideoEdit` and smart trims pass their own token to the encoder, so they stop the same way.
+Hardware encoders (Egami.Video.Hardware) do not check the token.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/VideoEncode.cs#video-encode-cancel)]

@@ -204,4 +204,13 @@ public sealed record VideoEncoderOptions
     /// Motion JPEG). Frames given as planes keep their own.
     /// </summary>
     public ChromaFormat? ChromaFormat { get; init; }
+
+    /// <summary>
+    /// Gets the token that stops the encoder, or <see cref="CancellationToken.None"/> (the default) for none. Once it is
+    /// cancelled, <see cref="IVideoEncoder.Send(VideoFrame)"/> and <see cref="IVideoEncoder.Flush"/> throw
+    /// <see cref="OperationCanceledException"/>: the H.264 and HEVC encoders within a row of blocks of the frame they are coding,
+    /// VP8, VP9 and AV1 before the next frame they code, and the others before the next frame sent. A cancelled encoder
+    /// cannot go on; dispose it. Hardware encoders do not check it.
+    /// </summary>
+    public CancellationToken CancellationToken { get; init; }
 }
