@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">
+  <style>
+    @keyframes a { 0%, 20% { opacity: 0.2; animation-timing-function: steps(3, jump-both) } 60% { fill: rgba(0, 0, 255, 0.5); transform: rotate(30deg) scale(2) } to { transform: translate(10px, 5%) skewX(10deg); d: path("M0 0 L20 20") } }
+    @keyframes b { from { translate: 0 0; offset-distance: 0% } to { translate: 2em 1in; rotate: 45deg; scale: 1.5; offset-distance: 100%; --v: x } }
+    .p { offset-path: path("M5 5 H50 V50 Z"); animation: b 0.7s cubic-bezier(0.5, -1, 0.5, 2) -0.2s infinite alternate both, a 1s linear(0, 0.8 30%, 1) 3 reverse; animation-composition: add, accumulate }
+    path { animation: a 2s ease-out infinite }
+  </style>
+  <rect class="p" width="10" height="10" fill="red" transform="translate(4 4)"><set attributeName="fill" to="green" begin="0.5s"/></rect>
+  <path d="M0 0 L10 10" stroke="black"/>
+  <circle class="p" r="5" style="animation-play-state: paused"/>
+</svg>

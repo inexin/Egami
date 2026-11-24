@@ -26,7 +26,8 @@ Every rule is a `CssRule`:
 - `CssNamespaceRule`: a prefix for selectors; the sheet collects them in `CssStyleSheet.Namespaces`.
 - `CssLayerRule`: cascade layers are not implemented, so the rules inside a layer block count as ordinary rules.
 - `CssPageRule`: page selectors, the page context's declarations and its `CssPageMarginRule`s (see [Pages](#pages)).
-- `CssUnknownAtRule`: anything else, such as `@keyframes` or `@counter-style`, kept as component values.
+- `CssKeyframesRule`: an `@keyframes` (or `@-webkit-keyframes`) rule's name and its `CssKeyframe`s (see [Animations](#animations)).
+- `CssUnknownAtRule`: anything else, such as `@counter-style` or `@property`, kept as component values.
 
 ## Declarations
 
@@ -156,12 +157,29 @@ resolves `bolder` and `lighter` against the parent's weight, as its `CssFontWeig
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Css.cs#fonts)]
 
+## Animations
+
+`@keyframes` parses into a `CssKeyframesRule`: its name and its `CssKeyframe`s, each with the offsets its selector names
+(`from` is 0, `to` is 1, `50%` is 0.5) and its declarations. Declarations marked `!important` are dropped, as CSS Animations 1
+says. Egami.Css does not run animations: a consumer such as Egami.Svg reads `animation-*` from the computed style, computes the
+values at a moment and adds them with `CssCascadedStyle.WithAnimationValues`. They go in the `CssOrigin.Animation` origin, above
+every normal declaration and below every important one.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Css.cs#keyframes)]
+
+`CssEasingFunction` reads the easing functions of CSS Easing 2: `linear`, `linear()` with stops, `ease`, `ease-in`, `ease-out`,
+`ease-in-out`, `cubic-bezier()`, `step-start`, `step-end` and `steps()` with every jump position. `Evaluate` maps an input
+progress to an output progress, extrapolating outside 0 to 1; its before flag makes a step land on its lower side.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Css.cs#easing)]
+
 ## Not supported
 
 - CSS Nesting: rules nested in a style rule are dropped and reported.
 - Cascade layers: layer blocks count as ordinary rules.
-- `@import` is not fetched, and animations and transitions are not part of the cascade.
-- `@property`, `@container`, `@scope`, `@keyframes`, `@counter-style` and similar rules are kept as unknown at-rules.
+- `@import` is not fetched. Egami.Css parses `@keyframes` and easing functions but does not run animations or transitions:
+  the consumer computes animated values and adds them with `CssCascadedStyle.WithAnimationValues`.
+- `@property`, `@container`, `@scope`, `@counter-style` and similar rules are kept as unknown at-rules.
 - Logical properties such as `margin-inline-start` and `inset`, and positioning (`position`, `top`, `z-index`), are not in the
   default registry: they cascade as unregistered properties, without a shorthand or a link to the physical sides.
 - Page selectors take `:first`, `:left`, `:right` and `:blank`, not `:nth()` or page groups.

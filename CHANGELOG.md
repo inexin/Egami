@@ -3,7 +3,7 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Egami.Svg 1.6.0 (unreleased)
+## Egami.Svg and Egami.Css 1.6.0 (unreleased)
 
 SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation element, drawn at a chosen time.
 
@@ -33,6 +33,28 @@ SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation
   its descendants follow. The `style` attribute cannot be animated, as SVG 2 says; such an animation is reported with
   `Svg.BadAnimation` and has no effect.
 - A new fuzz target, `svg-timeline`, builds timelines and draws frames from mutated animated documents.
+- CSS animations: `@keyframes` with the `animation-*` properties and the `animation` shorthand run at `SvgRenderOptions.Time`,
+  each from when the document loads, with Web Animations timing (delay, iteration count, direction, fill mode, play state),
+  per-keyframe easing and `animation-composition` (replace, add, accumulate). Keyframe values are computed in the element's
+  context; missing `from` and `to` keyframes take the value below. Numbers, lengths, colors (premultiplied sRGB), transform
+  lists (function by function, else matrix decomposition), `translate`, `rotate`, `scale`, `d: path()`, `offset-path`,
+  `offset-distance` and `offset-rotate` interpolate; a percentage and a length in another unit interpolate as `calc()`
+  mixes them, resolved where the value is used. Other values, custom properties included, change halfway. Animated
+  values sit above normal rules and below `!important` ones, and over SMIL's values. `SvgAnimationInfo` counts them.
+- The `translate`, `rotate` and `scale` properties and `offset-path: path()` with `offset-distance` and `offset-rotate` now
+  move elements, static ones too (CSS Transforms 2, Motion Path 1).
+- Lengths in SVG's CSS properties (`stroke-width`, `x`, `r`, `font-size`...) take a `calc()` of percentages and absolute
+  lengths, in static style sheets too.
+
+Egami.Css:
+
+- `@keyframes` and `@-webkit-keyframes` now parse into a `CssKeyframesRule` (its `Name` and `CssKeyframe`s, each with its
+  `Offsets` and `Declarations`, `!important` ones dropped) instead of a `CssUnknownAtRule`. Code that looked for keyframes
+  among the unknown at-rules must look for the new type.
+- `CssEasingFunction` parses and evaluates CSS Easing 2's easing functions: `linear`, `linear()` with stops, the `ease`
+  keywords, `cubic-bezier()`, `step-start`, `step-end` and `steps()` with every jump position, with the before flag.
+- `CssOrigin.Animation` and `CssCascadedStyle.WithAnimationValues` put animated values in the cascade, above every normal
+  declaration and below every important one. A style sheet given the animation origin is refused.
 
 ## Egami.Video.Hardware 0.1.0-preview.1 (unreleased)
 

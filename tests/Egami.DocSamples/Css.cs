@@ -51,6 +51,9 @@ public class Css
                 case CssLayerRule layer:
                     Console.WriteLine($"@layer {string.Join(", ", layer.Names)}");
                     break;
+                case CssKeyframesRule keyframes:
+                    Console.WriteLine($"@keyframes {keyframes.Name}: {keyframes.Keyframes.Count} keyframes");
+                    break;
                 case CssUnknownAtRule other:
                     Console.WriteLine($"@{other.Name} (kept, not interpreted)");
                     break;
@@ -63,6 +66,7 @@ public class Css
         #endregion
 
         Assert.Equal(8, sheet.Rules.Count);
+        Assert.IsType<CssKeyframesRule>(sheet.Rules[7]);
         Assert.Contains(errors, e => e.Message.Contains("p:unknown", StringComparison.Ordinal));
     }
 
@@ -345,6 +349,60 @@ public class Css
         Assert.Equal(10, matrix.M31, 1e-4f);
         Assert.Equal(3, css.Functions.Count);
         Assert.Equal(new CssLength(100, CssUnit.Percent), origin.Y);
+    }
+
+    [Fact]
+    public void Keyframes()
+    {
+        #region keyframes
+        // @keyframes parses into its keyframes: offsets from 0 to 1 and their declarations (!important ones are dropped).
+        CssStyleSheet sheet = CssStyleSheet.Parse("""
+            @keyframes pulse {
+              from, 50% { opacity: 1; animation-timing-function: ease-in }
+              75% { opacity: 0.2 !important; fill: gold }
+              to { opacity: 0 }
+            }
+            """);
+        var pulse = (CssKeyframesRule)sheet.Rules[0];
+        foreach (CssKeyframe keyframe in pulse.Keyframes)
+        {
+            Console.WriteLine($"{string.Join(", ", keyframe.Offsets)}: {string.Join("; ", keyframe.Declarations)}");
+        }
+
+        // A consumer that runs the animation puts the values it computes in the animation origin: above every normal
+        // declaration, below every important one.
+        CssCascadedStyle animated = new CssCascadedStyle().WithAnimationValues([CssDeclaration.Create("opacity", "0.6")]);
+        #endregion
+
+        Assert.Equal("pulse", pulse.Name);
+        Assert.Equal([0.0, 0.5], pulse.Keyframes[0].Offsets);
+        Assert.Equal("fill", Assert.Single(pulse.Keyframes[1].Declarations).Name);
+        Assert.Equal("0.6", animated.GetValueText("opacity"));
+    }
+
+    [Fact]
+    public void Easing()
+    {
+        #region easing
+        // Easing functions map an animation's progress: keywords, cubic-bezier(), steps() and linear() with stops.
+        CssEasingFunction easeIn = CssEasingFunction.Parse("ease-in");
+        double eased = easeIn.Evaluate(0.5);                              // 0.315...
+
+        CssEasingFunction steps = CssEasingFunction.Parse("steps(4, jump-end)");
+        double stepped = steps.Evaluate(0.6);                             // 0.5
+
+        bool parsed = CssEasingFunction.TryParse("linear(0, 0.9 50%, 1)", out CssEasingFunction? custom);
+        double bent = custom!.Evaluate(0.25);                             // 0.45
+
+        // In an animation's before phase, a step lands on its lower side.
+        double before = CssEasingFunction.Parse("step-start").Evaluate(0, beforeFlag: true); // 0
+        #endregion
+
+        Assert.Equal(0.3153568, eased, 1e-6);
+        Assert.Equal(0.5, stepped);
+        Assert.True(parsed);
+        Assert.Equal(0.45, bent, 1e-9);
+        Assert.Equal(0, before);
     }
 
     [Fact]

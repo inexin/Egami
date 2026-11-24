@@ -120,7 +120,8 @@ default case.
 
 ## Animation
 
-SVG files can animate themselves with SMIL elements: `animate`, `set`, `animateTransform`, `animateMotion` and `discard`.
+SVG files can animate themselves with SMIL elements: `animate`, `set`, `animateTransform`, `animateMotion` and `discard`,
+and with CSS animations.
 Egami.Svg draws the document as it looks at any moment: set `SvgRenderOptions.Time` when you call `Rasterize` or `Draw`, or
 take the render tree then with `SvgDocument.RenderTreeAt`. Without a time it draws the static document, as if no animation
 had begun. `SvgDocument.Animation`, an `SvgAnimationInfo`, says whether the document animates, when its last animation ends
@@ -130,6 +131,21 @@ change attributes and properties, `animateTransform` transforms, `animateMotion`
 transform, and `discard` removes an element for good once it begins.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#animation)]
+
+CSS animations run too: an `@keyframes` rule and the `animation` properties (or the `animation` shorthand) on an element, with
+CSS Easing's timing functions, delays, iteration counts, directions, fill modes, `animation-play-state` and
+`animation-composition`. Each starts when the document loads. Keyframe values are computed in the element's context, so
+`inherit`, `var()` and `currentcolor` work, and a keyframe that leaves out a property takes the value below. Numbers, lengths,
+colors (in premultiplied sRGB), transform lists, `translate`, `rotate`, `scale`, `d: path()` with the same commands,
+`offset-path` and `offset-distance` interpolate; other values, custom properties among them, change halfway. Animated values
+win over every normal rule and lose to `!important` ones; where SMIL animates the same property, SMIL sets the value below
+and the CSS animation wins. Geometry properties such as `r` and `d` follow CSS animations; a static style sheet still does
+not set them. A percentage and a length in other units interpolate as `calc()` mixes them, such as `calc(25% + 10px)`, and
+the percentage resolves where the value is used: against the viewport, the reference box, the path length or the font
+size. Lengths in SVG's CSS properties take such a `calc()` of percentages and absolute lengths in static style sheets too.
+Transform lists that need matrices and hold percentages still change halfway.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#css-animation)]
 
 ## Untrusted files
 

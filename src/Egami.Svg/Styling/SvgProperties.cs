@@ -153,7 +153,7 @@ internal static class SvgProperties
         "inline-size", "shape-inside", "shape-subtract", "shape-padding", "shape-margin", "text-orientation",
     };
 
-    /// <summary>Builds the registry: CSS's defaults plus every SVG property, and SVG's <c>marker</c> shorthand.</summary>
+    /// <summary>Builds the registry: CSS's defaults plus every SVG property, the animation and motion properties, and SVG's <c>marker</c> shorthand.</summary>
     public static CssPropertyRegistry CreateRegistry()
     {
         CssPropertyRegistry registry = CssPropertyRegistry.CreateDefault();
@@ -162,6 +162,7 @@ internal static class SvgProperties
             registry.Register(new CssPropertyDefinition(name, inherited, initial) { Validate = validate });
         }
 
+        SvgAnimationProperties.Register(registry);
         registry.RegisterShorthand(new CssShorthandDefinition("marker", ["marker-start", "marker-mid", "marker-end"], value =>
             Reference(value) ? [new CssDeclaration("marker-start", value), new CssDeclaration("marker-mid", value), new CssDeclaration("marker-end", value)] : null));
         return registry;

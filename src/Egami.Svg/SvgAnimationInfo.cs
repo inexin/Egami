@@ -3,8 +3,8 @@ using Egami.Svg.Animation;
 namespace Egami.Svg;
 
 /// <summary>
-/// What a document's SMIL animations do over time, as <see cref="SvgDocument.Animation"/> finds them: whether it animates, how
-/// long it plays and whether it loops. Animations that wait for a click, a key or a wall-clock time never begin, as in a browser
+/// What a document's SMIL and CSS animations do over time, as <see cref="SvgDocument.Animation"/> finds them: whether it
+/// animates, how long it plays and whether it loops. Animations that wait for a click, a key or a wall-clock time never begin, as in a browser
 /// nobody touches.
 /// </summary>
 /// <example>
@@ -20,7 +20,10 @@ public sealed class SvgAnimationInfo
         HasEventTriggers = hasEventTriggers;
     }
 
-    /// <summary>Gets a value indicating whether the document has animation elements (animate, set, animateTransform, animateMotion, discard) with a target.</summary>
+    /// <summary>
+    /// Gets a value indicating whether the document has animation elements (animate, set, animateTransform, animateMotion,
+    /// discard) with a target, or elements whose style names an @keyframes rule in animation-name.
+    /// </summary>
     public bool HasAnimations { get; }
 
     /// <summary>
@@ -42,11 +45,14 @@ public sealed class SvgAnimationInfo
     /// <summary>The longest loop period reported, in milliseconds.</summary>
     internal const long MaxLoopMilliseconds = 10_000;
 
+    /// <summary>The latest end, in seconds, a CSS animation is given as a duration; past it (about 31 years) it counts as never ending.</summary>
+    internal const double MaxEndSeconds = 1e9;
+
     /// <summary>Reads the duration and loop period off a timeline.</summary>
     internal static SvgAnimationInfo From(SvgTimeline timeline)
     {
         List<SvgAnimation> animations = timeline.Animations;
-        if (animations.Count == 0)
+        if (animations.Count == 0 && timeline.CssAnimations.Count == 0)
         {
             return new SvgAnimationInfo(false, null, null, false);
         }
@@ -103,6 +109,44 @@ public sealed class SvgAnimationInfo
                 {
                     periodic = false;
                 }
+            }
+        }
+
+        // CSS animations: one that repeats forever loops every duration (two for alternate directions); a paused one never moves.
+        foreach ((_, SvgCssAnimation css) in timeline.CssAnimations)
+        {
+            if (css.Paused || css.Duration == 0)
+            {
+                continue;
+            }
+
+            if (double.IsPositiveInfinity(css.Iterations))
+            {
+                forever = true;
+                latestBegin = Math.Max(latestBegin, css.Delay);
+                // In double first: a huge duration must not wrap round in long.
+                double periodMs = Math.Round(css.Duration * (css.Direction is SvgCssDirection.Alternate or SvgCssDirection.AlternateReverse ? 2 : 1) * 1000);
+                if (!(periodMs > 0 && periodMs <= MaxLoopMilliseconds))
+                {
+                    periodic = false;
+                    continue;
+                }
+
+                long ms = (long)periodMs;
+
+                lcm = lcm == 0 ? ms : Lcm(lcm, ms);
+                periodic &= lcm <= MaxLoopMilliseconds;
+            }
+            else if (double.IsFinite(css.End) && css.End <= MaxEndSeconds)
+            {
+                last = Math.Max(last, css.End);
+                periodic = false;
+            }
+            else
+            {
+                // An end too far off to be a TimeSpan (animation: a 1e12s, or 1e300 iterations) counts as never ending.
+                forever = true;
+                periodic = false;
             }
         }
 

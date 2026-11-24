@@ -27,8 +27,15 @@ internal sealed class SvgStyler
     private readonly Dictionary<(string Name, string Value), CssDeclaration> _hints = [];
     private readonly Dictionary<string, IReadOnlyList<CssDeclaration>> _inline = new(StringComparer.Ordinal);
     private readonly SvgAnimationFrame? _frame;
+    private Dictionary<string, CssKeyframesRule>? _keyframes;
+    private readonly SvgCssAnimator? _animator;
+    private Dictionary<SvgElement, Dictionary<string, string>>? _animated;
 
-    public SvgStyler(SvgDocument document, SvgReport report, CssMediaContext media, SvgAnimationFrame? frame = null)
+    /// <summary>
+    /// Builds the cascade of a document. With a frame, SMIL's values at that moment take part; when <paramref name="cssAnimations"/>
+    /// is set too, so do the document's CSS animations at the frame's time.
+    /// </summary>
+    public SvgStyler(SvgDocument document, SvgReport report, CssMediaContext media, SvgAnimationFrame? frame = null, bool cssAnimations = false)
     {
         _report = report;
         _frame = frame;
@@ -57,10 +64,46 @@ internal sealed class SvgStyler
             });
             sheets.Add((sheet, CssOrigin.Author));
             CollectFontFaces(sheet.Rules, media, element);
+            CollectKeyframes(sheet.Rules, media);
         }
 
         _cascade = new CssCascade(sheets, new CssCascadeOptions { Media = media, Registry = s_registry });
+        if (cssAnimations && frame is not null && _keyframes is not null)
+        {
+            _animator = new SvgCssAnimator(_cascade, _keyframes, frame.Time, media.Width, media.Height);
+        }
     }
+
+    /// <summary>Gets the @keyframes rules of the document's style sheets by name: the last of each name, those in matching @media rules too.</summary>
+    public IReadOnlyDictionary<string, CssKeyframesRule> Keyframes => _keyframes ?? s_noKeyframes;
+
+    private static readonly Dictionary<string, CssKeyframesRule> s_noKeyframes = [];
+
+    /// <summary>Gets a value indicating whether CSS animations are run.</summary>
+    public bool Animates => _animator is not null;
+
+    private void CollectKeyframes(IReadOnlyList<CssRule> rules, CssMediaContext media)
+    {
+        foreach (CssRule rule in rules)
+        {
+            switch (rule)
+            {
+                case CssKeyframesRule keyframes:
+                    (_keyframes ??= new(StringComparer.Ordinal))[keyframes.Name] = keyframes;
+                    break;
+                case CssMediaRule m when m.Media.Matches(media):
+                    CollectKeyframes(m.Rules, media);
+                    break;
+                case CssLayerRule { Rules: { } layerRules }:
+                    CollectKeyframes(layerRules, media);
+                    break;
+            }
+        }
+    }
+
+    /// <summary>The value a CSS animation gives a property of an element at this moment, or null when none does.</summary>
+    public string? AnimatedValue(SvgElement element, string name) =>
+        _animated is not null && _animated.TryGetValue(element, out Dictionary<string, string>? values) && values.TryGetValue(name, out string? value) ? value : null;
 
     /// <summary>Gets the @font-face rules of the document's style sheets (those inside matching @media rules too), with their style element.</summary>
     public List<(CssFontFaceRule Rule, SvgElement Element)> FontFaces { get; } = [];
@@ -100,8 +143,57 @@ internal sealed class SvgStyler
     /// <summary>Drops an element's cached cascade, so it is cascaded again (after an animation frame changes its values).</summary>
     public void Forget(SvgElement element) => _cascaded.Remove(element);
 
-    /// <summary>The element's computed CSS style where its parent's is <paramref name="parent"/>.</summary>
-    public CssComputedStyle Computed(SvgElement element, CssComputedStyle? parent) => _cascade.Compute(Cascaded(element), parent);
+    /// <summary>The element's computed CSS style where its parent's is <paramref name="parent"/>, with its CSS animations when they run.</summary>
+    public CssComputedStyle Computed(SvgElement element, CssComputedStyle? parent)
+    {
+        CssCascadedStyle cascaded = Cascaded(element);
+        CssComputedStyle computed = _cascade.Compute(cascaded, parent);
+        return _animator is null ? computed : Animated(_animator, element, cascaded, computed, parent);
+    }
+
+    // The computed style with the element's running CSS animations applied. Kept out of Computed so its closure is only
+    // allocated where animations run.
+    private CssComputedStyle Animated(SvgCssAnimator animator, SvgElement element, CssCascadedStyle cascaded, CssComputedStyle computed, CssComputedStyle? parent)
+    {
+        if (animator.Animate(cascaded, computed, parent, name => AttributeValue(element, name)) is not Dictionary<string, string> values)
+        {
+            return computed;
+        }
+
+        List<CssDeclaration> declarations = new(values.Count);
+        foreach ((string name, string value) in values)
+        {
+            declarations.Add(CssDeclaration.Create(name, value));
+        }
+
+        (_animated ??= new Dictionary<SvgElement, Dictionary<string, string>>(IdentityComparer.Instance))[element] = values;
+        return _cascade.Compute(cascaded.WithAnimationValues(declarations), parent);
+    }
+
+    // What an attribute (animated by SMIL at this moment) gives a property CSS does not set, as CSS text: the transform as a
+    // matrix, path data as path(), geometry as written, on the elements it belongs to.
+    private string? AttributeValue(SvgElement element, string name)
+    {
+        string? text = _frame is not null && _frame.TryGet(element, name, out string? animated) ? animated : element.Attributes[name];
+        if (text is null)
+        {
+            return null;
+        }
+
+        if (name == "transform")
+        {
+            return Values.SvgTransforms.TryParse(text, out System.Numerics.Matrix3x2 m) && !m.IsIdentity
+                ? string.Create(System.Globalization.CultureInfo.InvariantCulture, $"matrix({m.M11}, {m.M12}, {m.M21}, {m.M22}, {m.M31}, {m.M32})")
+                : null;
+        }
+
+        if (!SvgProperties.Geometry.TryGetValue(name, out string[]? elements) || !elements.Contains(element.Name))
+        {
+            return null;
+        }
+
+        return name == "d" ? "path(\"" + text.Replace("\"", "", StringComparison.Ordinal) + "\")" : text;
+    }
 
     private List<CssDeclaration>? Hints(SvgElement element)
     {

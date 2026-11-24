@@ -46,7 +46,7 @@ internal static class SvgStyleParsing
 
         size = length.Unit switch
         {
-            SvgUnit.Percent => parent * length.Value / 100,
+            SvgUnit.Percent => length.Of(parent),
             SvgUnit.Em => parent * length.Value,
             SvgUnit.Ex or SvgUnit.Ch => parent * length.Value / 2,
             _ => length.ToPixels(new SvgLengthContext(dpi, parent, root, 100, 100, 100, 100), SvgAxis.Other),

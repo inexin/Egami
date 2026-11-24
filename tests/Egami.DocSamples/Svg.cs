@@ -423,4 +423,27 @@ public class Svg
         Assert.Equal(100, frame.Width);
         Assert.NotSame(document.RenderTree, tree);
     }
+
+    [Fact]
+    public void DrawACssAnimationAtATime()
+    {
+        #region css-animation
+        // CSS animations run as SMIL ones do: from when the document loads, drawn at the time you ask for.
+        SvgDocument document = SvgDocument.Parse("""
+            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+              <style>
+                @keyframes spin { to { rotate: 360deg } }
+                @keyframes pulse { 50% { fill: orange; scale: 1.2 } }
+                .spinner { transform-origin: 50px 50px; animation: spin 2s linear infinite, pulse 1s ease-in-out infinite }
+              </style>
+              <rect class="spinner" x="30" y="30" width="40" height="40" fill="teal"/>
+            </svg>
+            """);
+        SvgAnimationInfo info = document.Animation;                      // loops every 2 s
+        using Raster<Rgba8> frame = document.Rasterize<Rgba8>(new SvgRenderOptions { Time = TimeSpan.FromSeconds(0.25) });
+        #endregion
+        Assert.True(info.HasAnimations);
+        Assert.Equal(TimeSpan.FromSeconds(2), info.LoopPeriod);
+        Assert.Equal(100, frame.Width);
+    }
 }

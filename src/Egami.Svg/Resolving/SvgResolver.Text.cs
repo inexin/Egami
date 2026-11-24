@@ -672,7 +672,7 @@ internal sealed partial class SvgResolver
 
             if (SvgStyleValues.TryLength(values, out SvgLength l))
             {
-                float v = l.IsPercent ? s.Style.FontSize * l.Value / 100 : l.ToPixels(context.Lengths with { FontSize = s.Style.FontSize }, SvgAxis.Other);
+                float v = l.IsPercent ? l.Of(s.Style.FontSize) : l.ToPixels(context.Lengths with { FontSize = s.Style.FontSize }, SvgAxis.Other);
                 shifts.Add((SvgBaselineShiftKind.Length, v));
             }
         }

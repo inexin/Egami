@@ -1,3 +1,5 @@
+using Egami.Css;
+
 namespace Egami.Svg.Values;
 
 /// <summary>The unit of an <see cref="SvgLength"/>.</summary>
@@ -42,8 +44,12 @@ internal readonly record struct SvgLengthContext(float Dpi, float FontSize, floa
     public static SvgLengthContext Default { get; } = new(96, 16, 16, 100, 100, 100, 100);
 }
 
-/// <summary>An SVG length: a number and a unit, resolved to user units (pixels) against a <see cref="SvgLengthContext"/>.</summary>
-internal readonly record struct SvgLength(float Value, SvgUnit Unit)
+/// <summary>
+/// An SVG length: a number and a unit, resolved to user units (pixels) against a <see cref="SvgLengthContext"/>. A percentage
+/// may carry an <paramref name="Offset"/> in pixels, the length part of a mixed value such as <c>calc(50% + 10px)</c> (CSS
+/// Values 4), added once the percentage is resolved.
+/// </summary>
+internal readonly record struct SvgLength(float Value, SvgUnit Unit, float Offset = 0)
 {
     public static SvgLength Zero { get; } = new(0, SvgUnit.None);
 
@@ -97,6 +103,59 @@ internal readonly record struct SvgLength(float Value, SvgUnit Unit)
         return true;
     }
 
+    /// <summary>
+    /// A calc() value as a length: a percentage and a length in absolute units, as calc() mixing them gives; false when it
+    /// holds relative units (em, vw...) or is a plain number.
+    /// </summary>
+    public static bool TryFromCalc(CssCalc calc, out SvgLength length)
+    {
+        length = default;
+        if (calc.IsNumber)
+        {
+            return false;
+        }
+
+        bool relative = false;
+        double Evaluate(double percent) => calc.Resolve(unit =>
+        {
+            double? factor = unit switch
+            {
+                CssUnit.Px => 1,
+                CssUnit.In => 96,
+                CssUnit.Cm => 96 / 2.54,
+                CssUnit.Mm => 96 / 25.4,
+                CssUnit.Q => 96 / 101.6,
+                CssUnit.Pt => 96.0 / 72,
+                CssUnit.Pc => 16,
+                CssUnit.Percent => percent,
+                _ => null,
+            };
+            relative |= factor is null;
+            return factor ?? 0;
+        });
+
+        double pixels = Evaluate(0);
+        double percentage = Evaluate(1) - pixels;
+        if (relative || !double.IsFinite(pixels) || !double.IsFinite(percentage))
+        {
+            return false;
+        }
+
+        length = !calc.HasPercentage ? new SvgLength((float)pixels, SvgUnit.Px) : new SvgLength((float)percentage, SvgUnit.Percent, (float)pixels);
+        return true;
+    }
+
+    /// <summary>Reads a whole CSS value as a length: what <see cref="TryParse"/> reads, or a calc() of a percentage and absolute lengths.</summary>
+    public static bool TryParseCss(string text, out SvgLength length)
+    {
+        if (TryParse(text, out length))
+        {
+            return true;
+        }
+
+        return text.Contains('(') && CssCalc.TryParse(text, out CssCalc? calc) && TryFromCalc(calc, out length);
+    }
+
     /// <summary>Reads a list of lengths separated by whitespace or commas (x, y, dx and dy lists, stroke-dasharray).</summary>
     public static bool TryParseList(ReadOnlySpan<char> text, List<SvgLength> values)
     {
@@ -120,12 +179,12 @@ internal readonly record struct SvgLength(float Value, SvgUnit Unit)
     public float ToPixels(in SvgLengthContext context, SvgAxis axis) => Unit switch
     {
         SvgUnit.None or SvgUnit.Px => Value,
-        SvgUnit.Percent => Value / 100f * axis switch
+        SvgUnit.Percent => Of(axis switch
         {
             SvgAxis.X => context.ViewportWidth,
             SvgAxis.Y => context.ViewportHeight,
             _ => MathF.Sqrt(((context.ViewportWidth * context.ViewportWidth) + (context.ViewportHeight * context.ViewportHeight)) / 2),
-        },
+        }),
         SvgUnit.Em => Value * context.FontSize,
         SvgUnit.Ex or SvgUnit.Ch => Value * context.FontSize / 2,
         SvgUnit.Rem => Value * context.RootFontSize,
@@ -143,7 +202,10 @@ internal readonly record struct SvgLength(float Value, SvgUnit Unit)
     };
 
     /// <summary>Resolves a length in objectBoundingBox units: a number or percentage is a fraction of the box's side.</summary>
-    public float ToFraction() => Unit == SvgUnit.Percent ? Value / 100 : Value;
+    public float ToFraction() => Unit == SvgUnit.Percent ? (Value / 100) + Offset : Value;
+
+    /// <summary>A percentage (with its offset) resolved against a reference length; the value itself for other units.</summary>
+    public float Of(float reference) => Unit == SvgUnit.Percent ? (Value / 100 * reference) + Offset : Value;
 
     private static bool TryUnit(ReadOnlySpan<char> unit, out SvgUnit result)
     {

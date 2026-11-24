@@ -21,8 +21,14 @@ internal sealed class SvgAnimationFrame
     {
     }
 
-    /// <summary>Gets a value indicating whether nothing is animated or discarded at this moment.</summary>
-    public bool IsEmpty => _values.Count == 0 && _motion.Count == 0 && _discarded.Count == 0;
+    /// <summary>Gets a value indicating whether nothing is animated or discarded at this moment, and no CSS animation may run.</summary>
+    public bool IsEmpty => _values.Count == 0 && _motion.Count == 0 && _discarded.Count == 0 && !CssAnimations;
+
+    /// <summary>Gets the moment, in seconds since the document loaded.</summary>
+    public double Time { get; private init; }
+
+    /// <summary>Gets a value indicating whether the document has CSS animations, which the styler runs at <see cref="Time"/>.</summary>
+    public bool CssAnimations { get; private init; }
 
     /// <summary>Gets the animated value of an attribute, if it has one at this moment.</summary>
     public bool TryGet(SvgElement element, string name, out string? value)
@@ -90,7 +96,7 @@ internal sealed class SvgAnimationFrame
     /// </summary>
     public static SvgAnimationFrame Compute(SvgTimeline timeline, double time, Func<SvgAnimationFrame, SvgElement, string, string?> baseValue)
     {
-        SvgAnimationFrame frame = new();
+        SvgAnimationFrame frame = new() { Time = time, CssAnimations = timeline.CssAnimations.Count > 0 };
         foreach (SvgAnimation a in timeline.Animations)
         {
             if (a.Kind == SvgAnimationKind.Discard && a.Intervals.Count > 0 && a.Intervals[0].Begin <= time)
