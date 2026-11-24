@@ -944,9 +944,9 @@ using Raster&lt;Rgba8&gt; onWhite = document.Rasterize&lt;Rgba8&gt;(new SvgRende
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Svg/SvgDocument.cs/#L213"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the render tree at a moment of the document's SMIL animations: the animate and set elements' values at
-<code class="paramref">time</code> replace the attribute values they animate, as a browser shows the document that long after it
-loaded with nobody touching it. The element tree is not edited. A document without animations gives
+  <div class="markdown level1 summary"><p>Gets the render tree at a moment of the document's SMIL animations: the values animate, set and animateTransform give at
+<code class="paramref">time</code> replace the attribute values they animate, animateMotion moves its targets and discard removes
+them, as a browser shows the document that long after it loaded with nobody touching it. The element tree is not edited. A document without animations gives
 <a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_RenderTree">RenderTree</a>. Like it, the tree is immutable and safe to read from many threads.</p>
 </div>
   <div class="markdown level1 conceptual"></div>

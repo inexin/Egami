@@ -269,7 +269,8 @@ take the render tree then with <code>SvgDocument.RenderTreeAt</code>. Without a 
 had begun. <code>SvgDocument.Animation</code>, an <code>SvgAnimationInfo</code>, says whether the document animates, when its last animation ends
 and, when every animation repeats forever, the period after which the whole picture loops, so you know which frames to draw.
 Animations that wait for a click, a key or a wall-clock time never begin, as in a browser nobody touches. <code>animate</code> and <code>set</code>
-are drawn so far; the other three are timed but do not yet change the picture.</p>
+change attributes and properties, <code>animateTransform</code> transforms, <code>animateMotion</code> moves an element along a path after its own
+transform, and <code>discard</code> removes an element for good once it begins.</p>
 <pre><code class="lang-csharp">// What the SMIL animations do: here a 2 s loop that never ends.
 SvgAnimationInfo info = document.Animation;
 Console.WriteLine($&quot;Animated: {info.HasAnimations}, loop: {info.LoopPeriod}, ends: {info.Duration?.ToString() ?? &quot;never&quot;}&quot;);
