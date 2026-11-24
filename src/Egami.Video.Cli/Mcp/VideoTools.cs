@@ -44,8 +44,78 @@ internal static class VideoTools
             Checks = new HashSet<string>(StringComparer.Ordinal) { "compare", "verify" },
             Preview = Preview,
             PreviewDescription = "Also return the first file written as a picture (a video's first frame), fit to 1024 pixels.",
+            Resources = Resources(),
+            Prompts = Prompts(),
         };
     }
+
+    /// <summary>The documents egami-video mcp serves: the schemas of its JSON, the formats and the agent guide.</summary>
+    private static McpResourceEntry[] Resources()
+    {
+        System.Reflection.Assembly assembly = typeof(VideoTools).Assembly;
+        return
+        [
+            new("egami-video://schema/info", "info-schema", "egami-video info schema", "The JSON schema of what the info tool returns.", "application/schema+json", McpResourceEntry.Embedded(assembly, "egami-video-info-1.json")),
+            new("egami-video://schema/metadata", "metadata-schema", "egami-video metadata schema", "The JSON schema of what the metadata tool writes and its load option reads: tags, chapters, track names and languages.", "application/schema+json", McpResourceEntry.Embedded(assembly, "egami-video-metadata-1.json")),
+            new("egami-video://formats", "formats", "Containers and codecs", "The containers and codecs egami-video reads and writes, as egami-video formats --json prints them.", "application/json", McpResourceEntry.Output((args, console, folder, environment, setup) => VideoCli.Run(args, console, folder, environment, setup), "formats", "--json")),
+            new("egami-video://guide", "guide", "egami-video guide for agents", "How to call egami-video from scripts and through this server: commands, times and tracks, exit codes and common mistakes.", "text/markdown", McpResourceEntry.Embedded(assembly, "egami-video-guide.md")),
+        ];
+    }
+
+    /// <summary>The tasks egami-video mcp offers as prompts.</summary>
+    private static McpPromptEntry[] Prompts()
+    {
+        McpPromptArgument file = new("file", "The video file.");
+        return
+        [
+            new(
+                "make_clip",
+                "Cut a clip",
+                "Cut a clip out of a video without encoding it again.",
+                [file, new("start", "Where the clip starts: seconds, [HH:]MM:SS[.mmm] or #frame."), new("end", "Where the clip ends, written as start is.")],
+                ["info", "trim"],
+                a => $"Cut the part of {a["file"]} from {a["start"]} to {a["end"]} into a clip of its own. "
+                    + "Call info on the file to check the times fall inside it; then call trim with inputs "
+                    + $"[\"{a["file"]}\"], from \"{a["start"]}\", to \"{a["end"]}\" and output \"{{dir}}/{{name}}-clip.{{ext}}\". "
+                    + "That copies packets, so the clip starts at the keyframe at or before the start; if the user needs the exact frame, "
+                    + "call it again with smart true (VP8, VP9 and AV1) or reencode true."),
+            new(
+                "make_gif",
+                "Make a GIF",
+                "Make an animated GIF from a stretch of a video.",
+                [file, new("start", "Where the GIF starts: seconds, [HH:]MM:SS[.mmm] or #frame."), new("length", "How long the GIF lasts, in seconds; 3 by default.", Required: false)],
+                ["info", "animate"],
+                a => $"Make an animated GIF from {a["file"]}, starting at {a["start"]} and lasting {Or(a, "length", "3")} seconds. "
+                    + "Call info on the file for its length and size; then call animate with inputs "
+                    + $"[\"{a["file"]}\"], from \"{a["start"]}\", to the time {Or(a, "length", "3")} seconds after it, rate 10, size \"480x\" "
+                    + "and output \"{dir}/{name}.gif\". A long or large GIF gets big: offer a .webp output for a smaller file."),
+            new(
+                "web_video",
+                "Video for the web",
+                "Make an MP4 a browser plays from a video file.",
+                [file],
+                ["info", "remux", "encode", "audio"],
+                a => $"Make an MP4 that browsers play from {a["file"]}. Call info on the file first. "
+                    + "If its video is H.264, HEVC or AV1 (egami-video copies H.264 and HEVC but does not encode them), "
+                    + $"call remux with inputs [\"{a["file"]}\"] and output \"{{dir}}/{{name}}-web.mp4\", which copies the packets. "
+                    + $"Otherwise call encode with inputs [\"{a["file"]}\"], codec \"av1\", audio \"{a["file"]}\" and output \"{{dir}}/{{name}}-web.mp4\". "
+                    + "If the audio is not AAC or Opus, then call audio on that MP4 with codec \"aac\", which encodes the sound again and copies the video. "
+                    + "Call info on the result to confirm its codecs."),
+            new(
+                "extract_audio",
+                "Extract the audio",
+                "Write a video's sound to an audio file.",
+                [file, new("format", "The audio file to write, by extension: wav, flac, opus, m4a, aac, aiff or caf; flac by default.", Required: false)],
+                ["info", "extract", "audio"],
+                a => $"Write the sound of {a["file"]} to a {Or(a, "format", "flac")} file. Call info on the file to see its audio tracks and codec. "
+                    + $"If the codec already suits .{Or(a, "format", "flac")}, call extract with inputs [\"{a["file"]}\"], track \"a\" and output "
+                    + $"\"{{dir}}/{{name}}.{Or(a, "format", "flac")}\", which copies it without decoding; otherwise call audio with inputs [\"{a["file"]}\"], "
+                    + $"no_video true and output \"{{dir}}/{{name}}.{Or(a, "format", "flac")}\"."),
+        ];
+    }
+
+    private static string Or(IReadOnlyDictionary<string, string> arguments, string name, string fallback)
+        => arguments.TryGetValue(name, out string? value) && !string.IsNullOrWhiteSpace(value) ? value : fallback;
 
     /// <summary>The first file written as a PNG fit to 1024 pixels: the image itself, or a media file's first video frame.</summary>
     private static ImageContentBlock Preview(string path)

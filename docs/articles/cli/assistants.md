@@ -31,6 +31,29 @@ file per processor and keeps going past a file that fails, reporting each one.
   A usage mistake, a failed file or a safety limit marks the call as failed, so the assistant sees it and can try again;
   `compare` finding a difference is a result, not a failure.
 
+## Prompts and resources
+
+Besides its tools, egami serves a few documents as MCP resources, which an assistant can read before it calls a tool:
+
+| Resource | Holds |
+| --- | --- |
+| `egami://schema/workflow` | The JSON schema of a workflow object, as `run` takes it |
+| `egami://formats` | Every format, as `egami formats --json` prints it |
+| `egami://guide` | The [guide for coding agents](https://inexin.github.io/Egami/v1/agents/Egami.Cli.md): commands, workflow files, exit codes, common mistakes |
+
+and offers common jobs as MCP prompts, which assistants show as commands (in Claude Code, `/mcp__egami__thumbnails`). Each
+returns one message that names the tools to call and keeps to the folder rules below:
+
+| Prompt | Arguments | Does |
+| --- | --- | --- |
+| `thumbnails` | `folder`, `size` | A thumbnail of every image in the folder, in a `thumbs` folder beside them |
+| `convert_folder` | `folder`, `format` | Every image converted, in a new folder named after the format |
+| `web_images` | `folder`, `max_width` | Images shrunk to a width and written as WebP (or AVIF) for a web page |
+| `strip_metadata` | `folder` | Location and camera data removed, in a `clean` folder |
+| `make_workflow` | `goal`, `inputs` | A workflow written for the goal from the schema, checked with a dry run, then run |
+
+`size`, `max_width` and `inputs` may be left out.
+
 ## The folders egami may use
 
 A tool reads and writes only inside the folders egami may use, and refuses any other path, including one reached through a

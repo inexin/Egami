@@ -1,0 +1,95 @@
+# Egami.Video.Cli: guide for coding agents
+
+Egami.Video.Cli is the `egami-video` command: it inspects, remuxes, cuts, joins and converts video and audio files from a shell,
+a script or an AI assistant, with Egami.Video, a fully managed .NET library. It also exports frames, makes thumbnails, contact
+sheets and animations, edits clips and checks files. It installs as a .NET tool (`dotnet tool install --global
+Egami.Video.Cli`). `egami-video ffmpeg` and `egami-video ffprobe` take a subset of ffmpeg's and ffprobe's command lines.
+
+## Commands
+
+- `info`: container, duration, tracks, codecs, tags and chapters. `--json` (or `--format json`) for scripts.
+- Copy packets, never decode, so any codec works (H.264, HEVC and AAC included): `remux`, `trim`, `concat`, `segment`,
+  `timestamps`, `extract`, `embed`, `metadata`.
+- Decode, so the codec must be one Egami.Video decodes (Motion JPEG, VP8, VP9, AV1, FFV1, uncompressed; PCM, FLAC, Opus,
+  Vorbis, MP3, AC-3, AAC LC): `frames`, `thumbnail`, `scenes`, `analyze`, `sheet`, `animate`, `waveform`, `spectrum`, `hash`,
+  `compare`, `audio`, and the editing commands `join`, `fade`, `overlay`, `pip`, `stack`, `speed`, `reverse`, `loop`, `freeze`,
+  `slideshow`, `stabilize`, `edit`.
+- Write video: `encode` (images, an image sequence, an animated SVG or a video) and `run` (egami's steps on every frame) write
+  Motion JPEG, VP8, VP9, AV1, FFV1 or uncompressed video. There is no H.264 or HEVC encoder: those are copied, never written.
+- `subs convert|shift|sync|extract|embed`: SRT, WebVTT and ASS files and subtitle tracks.
+- `formats` lists the containers and codecs; `hwprobe` the GPU video engines; `verify` checks FFV1 files.
+- `mcp` serves the commands to an AI assistant (see below).
+
+## Calling egami-video from a script
+
+- Inputs are files, globs (quote them; egami-video expands them the same way in every shell) or folders with `--recursive`.
+- `-o` is a file, a folder or a template with `{name}`, `{ext}`, `{dir}`, `{index}` and `{format}`; the extension picks the
+  container, and `-f` names it when the extension does not say.
+- Outputs never replace inputs unless `--in-place` is given. A cancelled job leaves no partial file.
+- Times are seconds (`90.5`, `500ms`, `2m`), `[HH:]MM:SS[.mmm]` or a frame number (`#250`, counted from 0).
+- Tracks (`-t`): `v`, `a`, `s`, `d`, with `:index` or `:language` (`a:1`, `s:eng`), or a track number as `info` shows it.
+- `--progress -` writes progress for a script to read: ffmpeg's `key=value` blocks, or JSON lines with `--progress-format json`.
+
+Exit codes: 0 everything worked; 1 a file failed, or `compare` or `verify` found a difference; 2 the command line is wrong; 3
+an input exceeded a safety limit (`--limit`, `EGAMI_LIMITS`).
+
+## Samples
+
+Inspect, remux and cut without decoding:
+
+```sh
+egami-video info in.mkv --json
+egami-video remux in.avi -o out.mkv
+egami-video trim in.webm --from 0.5 --to 1.5 -o cut.webm
+egami-video trim in.webm --from 0.5 --duration 1 --smart -o exact.webm
+egami-video remux in.mp4 --fragment -o fragmented.mp4
+```
+
+Pictures from a clip:
+
+```sh
+egami-video thumbnail in.webm --size 320x -o thumb.jpg
+egami-video frames in.mkv --count 4 -o shots/{frame:000}.jpg
+egami-video animate in.webm --from 0.5 --to 1.5 --rate 10 --size 120x -o clip.gif
+egami-video sheet in.mkv --grid 3x2 --timestamps -o sheet.png
+```
+
+Sound, encoding and steps on every frame:
+
+```sh
+egami-video audio in.mkv -o sound.flac
+egami-video extract in.webm --track a -o sound.ogg
+egami-video encode in.webm --codec av1 -o small.mp4
+egami-video run in.avi resize 80x + sharpen 0.5 -o small.mkv
+```
+
+## The MCP server
+
+`egami-video mcp` serves every command (but `ffmpeg` and `ffprobe`) as a tool to an AI assistant over the Model Context
+Protocol, on standard input and output. Tools are the command names in snake case (`subs_convert`), their arguments the
+options in snake case (`no_audio`). Calls use only the folders the assistant opened and those given with `--allow`; `-` is
+refused. Long jobs send progress notifications and stop when the call is cancelled. Every result is an object with
+`exitCode`, `written`, `output` and `messages`; tools that write take `preview` for a picture of the first file written.
+
+Resources: `egami-video://schema/info` and `egami-video://schema/metadata` (the JSON schemas of `info` and `metadata`),
+`egami-video://formats` (what `egami-video formats --json` prints) and `egami-video://guide` (this guide). Prompts:
+`make_clip`, `make_gif`, `web_video` and `extract_audio`; each returns one message naming the tools to call.
+
+## Common mistakes
+
+- Expecting `trim` to cut on the exact frame: it starts at the keyframe at or before `--from`. Add `--smart` (VP8, VP9, AV1)
+  or `--reencode`.
+- Asking `encode` or `run` for H.264 or HEVC: they write Motion JPEG, VP8, VP9, AV1, FFV1 or uncompressed video. `remux` copies
+  an H.264 or HEVC track into another container.
+- Running a decoding command on H.264 or HEVC: the CLI decodes the royalty-free codecs only; the copying commands work on any.
+- Reading frame numbers as 1-based: `#0` is the first frame.
+- Treating exit code 1 from `compare` or `verify` as an error: it reports a finding.
+- Parsing the text of `info`: use `--json`, which follows the published schema `docs/schemas/egami-video-info-1.json`.
+
+## More
+
+- The egami-video command: https://inexin.github.io/Egami/v1/articles/video-cli/index.html
+- Commands: https://inexin.github.io/Egami/v1/articles/video-cli/commands.html
+- ffmpeg and ffprobe mode: https://inexin.github.io/Egami/v1/articles/video-cli/ffmpeg.html
+- egami-video for AI assistants: https://inexin.github.io/Egami/v1/articles/video-cli/assistants.html
+- Every page in one list: https://inexin.github.io/Egami/v1/llms.txt

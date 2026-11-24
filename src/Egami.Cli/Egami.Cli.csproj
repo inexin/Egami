@@ -62,6 +62,8 @@
   <!-- egami mcp's run tool takes a workflow object with the published schema (MCP design Q2). -->
   <ItemGroup>
     <EmbeddedResource Include="..\..\docs\schemas\egami-workflow-1.json" LogicalName="egami-workflow-1.json" />
+    <!-- egami mcp's resource egami://guide: the agent guide, as docs/agents/Egami.Cli.md holds it. -->
+    <EmbeddedResource Include="..\..\docs\agents\Egami.Cli.md" LogicalName="egami-guide.md" />
     <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/" />
   </ItemGroup>
 

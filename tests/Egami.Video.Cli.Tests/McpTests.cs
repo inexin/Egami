@@ -1,5 +1,6 @@
 using System.IO.Pipes;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 using Egami.Video.Cli.Mcp;
 
@@ -152,6 +153,68 @@ public sealed class McpTests : IAsyncDisposable
         CallToolResult result = await client.CallToolAsync("info", new Dictionary<string, object?> { ["inputs"] = StandardInput }, cancellationToken: Token);
         Assert.True(result.IsError);
         Assert.Contains("Standard input and output carry the protocol", Text(result), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ServesItsResources()
+    {
+        McpClient client = await Connect();
+        Assert.NotNull(client.ServerCapabilities.Resources);
+        IList<McpClientResource> resources = await client.ListResourcesAsync(cancellationToken: Token);
+        Assert.Equal(["egami-video://schema/info", "egami-video://schema/metadata", "egami-video://formats", "egami-video://guide"], resources.Select(r => r.Uri));
+        Dictionary<string, string> texts = [];
+        foreach (McpClientResource resource in resources)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(resource.ProtocolResource.Description));
+            ReadResourceResult read = await client.ReadResourceAsync(resource.Uri, cancellationToken: Token);
+            TextResourceContents contents = Assert.IsType<TextResourceContents>(Assert.Single(read.Contents));
+            Assert.Equal(resource.Uri, contents.Uri);
+            Assert.Equal(resource.MimeType, contents.MimeType);
+            texts[resource.Uri] = contents.Text;
+        }
+
+        // The schema and the guide byte for byte as the repository holds them, and the formats as the command line prints them.
+        string repository = Path.Combine(Path.GetDirectoryName(Tool.Images)!, "..");
+        Assert.Equal(File.ReadAllBytes(Path.Combine(repository, "docs", "schemas", "egami-video-info-1.json")), System.Text.Encoding.UTF8.GetBytes(texts["egami-video://schema/info"]));
+        Assert.Equal(File.ReadAllBytes(Path.Combine(repository, "docs", "schemas", "egami-video-metadata-1.json")), System.Text.Encoding.UTF8.GetBytes(texts["egami-video://schema/metadata"]));
+        Assert.Equal(File.ReadAllBytes(Path.Combine(repository, "docs", "agents", "Egami.Video.Cli.md")), System.Text.Encoding.UTF8.GetBytes(texts["egami-video://guide"]));
+        Assert.Equal(_tool.Run("formats", "--json").Text, texts["egami-video://formats"]);
+        await Assert.ThrowsAnyAsync<McpException>(async () => await client.ReadResourceAsync("egami-video://nothing", cancellationToken: Token));
+    }
+
+    [Fact]
+    public async Task PromptsNameOnlyItsTools()
+    {
+        McpClient client = await Connect();
+        Assert.NotNull(client.ServerCapabilities.Prompts);
+        HashSet<string> tools = [.. (await client.ListToolsAsync(cancellationToken: Token)).Select(t => t.Name)];
+        IList<McpClientPrompt> prompts = await client.ListPromptsAsync(cancellationToken: Token);
+        Assert.Equal(["make_clip", "make_gif", "web_video", "extract_audio"], prompts.Select(p => p.Name));
+        foreach (McpClientPrompt prompt in prompts)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(prompt.Description));
+            IList<PromptArgument> arguments = prompt.ProtocolPrompt.Arguments ?? [];
+            Assert.Contains(arguments, a => a.Required == true);
+            Dictionary<string, object?> values = arguments.Where(a => a.Required == true).ToDictionary(a => a.Name, a => (object?)$"some {a.Name}");
+            GetPromptResult result = await client.GetPromptAsync(prompt.Name, values, cancellationToken: Token);
+            PromptMessage message = Assert.Single(result.Messages);
+            Assert.Equal(Role.User, message.Role);
+            string text = Assert.IsType<TextContentBlock>(message.Content).Text;
+            foreach (string value in values.Values.Cast<string>())
+            {
+                Assert.Contains(value, text, StringComparison.Ordinal);
+            }
+
+            string named = Regex.Match(text, "Tools to call: ([a-z_, ]+)\\.").Groups[1].Value;
+            Assert.NotEmpty(named);
+            foreach (string tool in named.Split(", "))
+            {
+                Assert.Contains(tool, tools);
+            }
+
+            // A required argument left out is a mistake the client hears about.
+            await Assert.ThrowsAnyAsync<McpException>(async () => await client.GetPromptAsync(prompt.Name, new Dictionary<string, object?>(), cancellationToken: Token));
+        }
     }
 
     private static string Text(CallToolResult result) => string.Concat(result.Content.OfType<TextContentBlock>().Select(t => t.Text));

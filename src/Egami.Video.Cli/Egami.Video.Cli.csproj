@@ -54,6 +54,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="..\..\docs\schemas\egami-workflow-1.json" LogicalName="egami-workflow-1.json" />
+    <!-- egami-video mcp's resources: the schemas of its JSON and the agent guide. -->
+    <EmbeddedResource Include="..\..\docs\schemas\egami-video-info-1.json" LogicalName="egami-video-info-1.json" />
+    <EmbeddedResource Include="..\..\docs\schemas\egami-video-metadata-1.json" LogicalName="egami-video-metadata-1.json" />
+    <EmbeddedResource Include="..\..\docs\agents\Egami.Video.Cli.md" LogicalName="egami-video-guide.md" />
     <None Include=".mcp\server.json" Pack="true" PackagePath="/.mcp/" />
   </ItemGroup>
 
