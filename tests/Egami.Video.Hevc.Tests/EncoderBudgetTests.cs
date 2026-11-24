@@ -8,12 +8,12 @@ namespace Egami.Video.Hevc.Tests;
 /// </summary>
 public sealed class EncoderBudgetTests
 {
-    // At 320x192 a frame takes about 2.8 MB at effort 1 and 5.2 MB at effort 4 (7.5 MB on four threads, each with its own
-    // search state) besides its packet: the frame's source and picture, and the coding and transform tree nodes of the units
-    // tried. Reference planes are reused once a reference leaves the buffer.
+    // At 320x192 a frame takes about 3.5 MB at effort 1 (which tries more units since the effort tuning) and 5.2 MB at effort
+    // 4 (7.5 MB on four threads, each with its own search state) besides its packet: the frame's source and picture, and the
+    // coding and transform tree nodes of the units tried. Reference planes are reused once a reference leaves the buffer.
     [Theory]
     [Trait("Category", "Allocation")]
-    [InlineData(1, 1, 3_400_000)]
+    [InlineData(1, 1, 4_200_000)]
     [InlineData(4, 1, 6_200_000)]
     [InlineData(4, 4, 9_000_000)]
     public void SteadyStateEncodingStaysWithinItsBudget(int effort, int threads, long budget)
