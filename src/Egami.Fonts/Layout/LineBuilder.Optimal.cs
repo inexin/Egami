@@ -455,9 +455,19 @@ internal sealed partial class LineBuilder
         double spaces = stretch is null ? 0 : stretch[end] - stretch[start];
         if (natural > width + Epsilon)
         {
-            // The last line before a mandatory break or the paragraph's end shrinks only when AlignLast justifies it.
-            bool shrinks = justified && options.ShrinkSpaces && (!candidate.Forced || Alignment(true) == TextAlignLast.Justify);
-            double shrink = shrinks ? spaces * (2.0 / 3) : 0;
+            // ParagraphStyle.SpaceShrink sets the limit when it is on. Otherwise the last line before a mandatory break or the
+            // paragraph's end shrinks only when AlignLast justifies it.
+            double shrink;
+            if (_paragraph.Style.SpaceShrink > 0)
+            {
+                shrink = CanShrink(candidate.Forced) ? _paragraph.Style.SpaceShrink * ShrinkableSpaces(start, end).Width : 0;
+            }
+            else
+            {
+                bool shrinks = justified && options.ShrinkSpaces && (!candidate.Forced || Alignment(true) == TextAlignLast.Justify);
+                shrink = shrinks ? spaces * (2.0 / 3) : 0;
+            }
+
             return shrink > 0 ? (width - natural) / shrink : double.NegativeInfinity;
         }
 
@@ -472,10 +482,18 @@ internal sealed partial class LineBuilder
         return room > 0 ? Math.Max(0, width - natural) / room : double.PositiveInfinity;
     }
 
-    /// <summary>How much <paramref name="draft"/>'s word spaces may shrink when <see cref="Finish"/> justifies it: a third of
-    /// each with <see cref="OptimalLineOptions.ShrinkSpaces"/> on a justified line, else nothing.</summary>
+    /// <summary>How much <paramref name="draft"/>'s word spaces may shrink when <see cref="Finish"/> justifies it: the share
+    /// <see cref="ParagraphStyle.SpaceShrink"/> sets, or a third of each with <see cref="OptimalLineOptions.ShrinkSpaces"/> on a
+    /// justified line, else nothing.</summary>
     internal float Shrinkable(LineDraft draft)
     {
+        if (_paragraph.Style.SpaceShrink > 0)
+        {
+            return CanShrink(draft.HardBreak || draft.End >= _text.Length)
+                ? _paragraph.Style.SpaceShrink * ShrinkableSpaces(draft.Start, draft.ContentEnd).Width
+                : 0;
+        }
+
         bool justified = _paragraph.Style.Align == TextAlign.Justify && _paragraph.Style.Justify != TextJustify.None;
         if (!justified || _paragraph.Style.OptimalLines is not { ShrinkSpaces: true }
             || Alignment(draft.HardBreak || draft.End >= _text.Length) != TextAlignLast.Justify)

@@ -16,6 +16,7 @@ public sealed record class ParagraphStyle
     private readonly float _tabSize = 8;
     private readonly int? _maxLines;
     private readonly float? _maxHeight;
+    private readonly float _spaceShrink;
 
     /// <summary>Gets the default paragraph style.</summary>
     public static ParagraphStyle Default { get; } = new();
@@ -39,6 +40,28 @@ public sealed record class ParagraphStyle
 
     /// <summary>Gets how far <see cref="TextJustify.Kashida"/> lengthens words before word spaces take the rest.</summary>
     public KashidaLevel Kashida { get; init; } = KashidaLevel.Medium;
+
+    /// <summary>
+    /// Gets how far word spaces on justified lines may shrink to fit more on a line, as a share of their width: from 0 (the
+    /// default, never) to 1. A line that overflows the width still fits when its word spaces (U+0020 and the other word
+    /// separators, but not the no-break space U+00A0) need to shrink by no more than this share in all, and each by no more
+    /// than half of what it would stretch had the line ended at the break before, as Word fills justified lines; the next word
+    /// is kept whole by shrinking before automatic hyphenation is tried. Such lines are drawn with their word spaces shrunk
+    /// evenly; glyphs and letter spacing keep their widths. It applies to lines <see cref="Align"/> or <see cref="AlignLast"/>
+    /// justifies and, in a justified paragraph, also to the last line and lines before a hard break, which shrink to fit but
+    /// never stretch. <see cref="LineFill.Optimal"/> uses it as its shrink limit (see
+    /// <see cref="OptimalLineOptions.ShrinkSpaces"/>). Nothing shrinks when <see cref="Justify"/> is
+    /// <see cref="TextJustify.None"/>.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is less than 0, more than 1 or not a number.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="space-shrink"/>
+    /// </example>
+    public float SpaceShrink
+    {
+        get => _spaceShrink;
+        init => _spaceShrink = value is >= 0 and <= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "From 0 to 1.");
+    }
 
     /// <summary>Gets where lines may break.</summary>
     public LineBreakOptions LineBreaking { get; init; }
