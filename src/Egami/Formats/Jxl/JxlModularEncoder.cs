@@ -744,6 +744,7 @@ internal sealed class JxlModularEncoder
         }
 
         sections.Add([]);
+        JxlStageTimes.Lap(JxlStage.LocalSerial);
 
         byte[][] groupSections = new byte[_groups][];
         Parallel.For(0, _groups, _parallel, g =>
@@ -754,6 +755,7 @@ internal sealed class JxlModularEncoder
         });
         sections.AddRange(groupSections);
         _wpRows = null;
+        JxlStageTimes.Lap(JxlStage.LocalGroups);
         return sections;
     }
 
@@ -766,6 +768,8 @@ internal sealed class JxlModularEncoder
             return;
         }
 
+        JxlStageClock clock = default;
+        JxlStageTimes.Begin(ref clock);
         int prefix = image.CodedPrefix(_groupDim);
         long pixels = 0;
         int width = 0;
@@ -776,6 +780,7 @@ internal sealed class JxlModularEncoder
         }
 
         List<JxlTreeNode> tree = _effort == 2 ? FixedTree(9, 5, Math.Max(1, pixels), image.BitDepth) : LearnTree([stream], sequential: true);
+        JxlStageTimes.Split(ref clock, JxlStage.Tree);
         List<List<JxlToken>> treeTokens = [[]];
         (int[] property, int[] value, int[] left, int[] right, int[] predictor, int[] context) = TokenizeTree(tree, treeTokens[0]);
         bool usesWp = property.Any(q => q == 15) || property.Select((q, i) => q < 0 && predictor[i] == 6).Any(b => b);
@@ -788,13 +793,16 @@ internal sealed class JxlModularEncoder
             }
         }
 
+        JxlStageTimes.Split(ref clock, JxlStage.Tokens);
         WriteStreamHeader(w, image, useGlobalTree: false);
         JxlEntropyCode treeCode = JxlEntropyCode.Write(w, p, 6, treeTokens);
         treeCode.WriteTokens(w, treeTokens[0]);
         // LZ77 may replace the stream's tokens: what goes out is what the code was built for.
         List<List<JxlToken>> streams = [tokens];
         JxlEntropyCode code = JxlEntropyCode.Write(w, p with { ImageWidths = [width] }, context.Max() + 1, streams);
+        JxlStageTimes.Split(ref clock, JxlStage.Histograms);
         code.WriteTokens(w, streams[0]);
+        JxlStageTimes.Split(ref clock, JxlStage.Write);
     }
 
     /// <summary>Writes a stream: its header (global tree, default WP parameters, transforms) and tokens, or nothing when it has no channels.</summary>

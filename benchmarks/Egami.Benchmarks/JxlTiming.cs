@@ -148,8 +148,10 @@ internal static class JxlTiming
     /// <summary>
     /// Prints the managed bytes one run allocates (on every thread) and, in a build with the stage timers, the milliseconds each
     /// stage takes (wall-clock, so on more than one thread a stage's parallel loops count as the time they take on all of them),
-    /// the fastest of five runs stage by stage. An encode's own draft decodes (the EPF and quantization searches)
-    /// land in the decode stages, which an encode prints together as drafts.
+    /// the fastest of five runs stage by stage (EGAMI_JXL_STAGE_RUNS=N for another number), with the managed bytes each stage
+    /// allocates. An encode's own draft decodes (the EPF and quantization searches) land in the decode stages, which an encode
+    /// prints together as drafts. Work split inside parallel loops (JxlStageTimes.Split) follows as thread time: summed over the
+    /// threads, so on one thread it divides its wall-clock stage, and on more it shows where the threads' time goes.
     /// </summary>
     private static void PrintStages(Action action)
     {
@@ -159,40 +161,61 @@ internal static class JxlTiming
         long allocated = GC.GetTotalAllocatedBytes(precise: true) - before;
         Console.WriteLine(string.Create(CultureInfo.InvariantCulture, $"  allocated {allocated / 1048576.0:F2} MiB a run"));
 #if JXL_STAGE_TIMERS
-        double[] best = new double[(int)JxlStage.Count];
+        int runs = int.TryParse(Environment.GetEnvironmentVariable("EGAMI_JXL_STAGE_RUNS"), CultureInfo.InvariantCulture, out int n) && n > 0 ? n : 5;
+        int count = (int)JxlStage.Count;
+        double[] best = new double[count], bestThread = new double[count];
+        long[] bytes = new long[count], threadBytes = new long[count];
         Array.Fill(best, double.MaxValue);
-        for (int run = 0; run < 5; run++)
+        Array.Fill(bestThread, double.MaxValue);
+        for (int run = 0; run < runs; run++)
         {
             JxlStageTimes.Start();
             action();
             JxlStageTimes.Lap(JxlStage.Pixels);
-            for (int s = 0; s < best.Length; s++)
+            for (int s = 0; s < count; s++)
             {
                 best[s] = Math.Min(best[s], JxlStageTimes.Ticks[s] * 1000.0 / Stopwatch.Frequency);
+                bestThread[s] = Math.Min(bestThread[s], JxlStageTimes.ThreadTicks[s] * 1000.0 / Stopwatch.Frequency);
+                bytes[s] = JxlStageTimes.Bytes[s];
+                threadBytes[s] = JxlStageTimes.ThreadBytes[s];
             }
         }
 
         bool encode = best[(int)JxlStage.Input] > 0;
         double drafts = 0;
-        for (int s = 0; s < best.Length; s++)
+        long draftBytes = 0;
+        for (int s = 0; s < count; s++)
         {
             JxlStage stage = (JxlStage)s;
             if (encode && stage <= JxlStage.Pixels)
             {
                 // The draft decodes, and the time after an encode's last lap.
                 drafts += best[s];
+                draftBytes += bytes[s];
                 continue;
             }
 
             if (best[s] > 0.005)
             {
-                Console.WriteLine(string.Create(CultureInfo.InvariantCulture, $"  {stage,-15} {best[s],9:F2} ms"));
+                Console.WriteLine(string.Create(CultureInfo.InvariantCulture, $"  {stage,-15} {best[s],9:F2} ms {bytes[s] / 1048576.0,9:F2} MiB"));
             }
         }
 
         if (encode)
         {
-            Console.WriteLine(string.Create(CultureInfo.InvariantCulture, $"  {"Drafts",-15} {drafts,9:F2} ms"));
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture, $"  {"Drafts",-15} {drafts,9:F2} ms {draftBytes / 1048576.0,9:F2} MiB"));
+        }
+
+        if (bestThread.Any(t => t > 0.005))
+        {
+            Console.WriteLine("  thread time, summed over the threads:");
+            for (int s = 0; s < count; s++)
+            {
+                if (bestThread[s] > 0.005)
+                {
+                    Console.WriteLine(string.Create(CultureInfo.InvariantCulture, $"    {(JxlStage)s,-13} {bestThread[s],9:F2} ms {threadBytes[s] / 1048576.0,9:F2} MiB"));
+                }
+            }
         }
 #else
         Console.WriteLine("  Built without -p:JxlStageTimers=true: no stages.");
