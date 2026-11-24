@@ -56,9 +56,13 @@ internal sealed class SvgTimeline
 
             if (SvgAnimation.Read(element, kind, order++, document, report) is SvgAnimation animation)
             {
-                if (kind is SvgAnimationKind.Animate or SvgAnimationKind.Set)
+                if (kind is SvgAnimationKind.Animate or SvgAnimationKind.Set or SvgAnimationKind.AnimateTransform)
                 {
                     animation.Function = SvgAnimationFunction.Create(animation, report);
+                }
+                else if (kind == SvgAnimationKind.AnimateMotion)
+                {
+                    animation.Motion = SvgMotionFunction.Create(animation, document, report);
                 }
 
                 animations.Add(animation);

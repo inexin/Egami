@@ -545,6 +545,28 @@ internal sealed class SvgTransformValue(string type, double[] parameters) : SvgA
         return p is null ? null : new SvgTransformValue(type, p);
     }
 
+    /// <summary>
+    /// The transform a to animation starts from: the underlying transform list when it is one transform of the same type, else
+    /// the identity of the type (scale 1, no move, no turn about the to value's center, no skew).
+    /// </summary>
+    public static SvgTransformValue From(string? underlying, SvgTransformValue to)
+    {
+        string text = underlying?.Trim() ?? "";
+        int open = text.IndexOf('(', StringComparison.Ordinal);
+        if (open > 0 && text.EndsWith(')') && text.IndexOf(')', StringComparison.Ordinal) == text.Length - 1 &&
+            text[..open].Trim() == to.Type && TryParse(to.Type, text[(open + 1)..^1]) is SvgTransformValue same)
+        {
+            return same;
+        }
+
+        return to.Type switch
+        {
+            "scale" => new SvgTransformValue("scale", [1, 1]),
+            "rotate" => new SvgTransformValue("rotate", [0, to.Parameters[1], to.Parameters[2]]),
+            _ => (SvgTransformValue)to.Zero(),
+        };
+    }
+
     public override SvgAnimatedValue? Interpolate(SvgAnimatedValue to, double p) =>
         to is SvgTransformValue t && t.Type == Type ? new SvgTransformValue(Type, [.. Parameters.Select((v, i) => v + ((t.Parameters[i] - v) * p))]) : null;
 

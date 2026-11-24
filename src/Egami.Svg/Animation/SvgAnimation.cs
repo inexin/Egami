@@ -28,7 +28,8 @@ internal readonly record struct SvgInterval(double Begin, double End, double Pla
 
 /// <summary>
 /// A SMIL animation element as the timeline sees it: its target, its timing attributes read once, the intervals the timeline
-/// gives it and, for animate and set, the function that gives its value at a simple time.
+/// gives it and, for animate, set and animateTransform, the function that gives its value at a simple time (for animateMotion,
+/// its motion).
 /// </summary>
 internal sealed class SvgAnimation
 {
@@ -84,6 +85,9 @@ internal sealed class SvgAnimation
 
     /// <summary>Gets the value function of an animate or set, or <see langword="null"/> when it has none (or is in error).</summary>
     public SvgAnimationFunction? Function { get; internal set; }
+
+    /// <summary>Gets the motion of an animateMotion, or <see langword="null"/> when it is something else (or in error).</summary>
+    public SvgMotionFunction? Motion { get; internal set; }
 
     /// <summary>Gets or sets a value indicating whether the timeline's horizon (or interval limit) cut off further intervals.</summary>
     public bool ReachesHorizon { get; set; }
@@ -171,7 +175,7 @@ internal sealed class SvgAnimation
 
         if (Kind == SvgAnimationKind.Discard)
         {
-            // discard has only begin: it removes its target at that time (stage B draws that).
+            // discard has only begin: it removes its target at that time.
             return;
         }
 

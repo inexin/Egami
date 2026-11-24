@@ -201,6 +201,11 @@ internal sealed partial class SvgResolver
             return null;
         }
 
+        if (_frame?.IsDiscarded(element) == true)
+        {
+            return null;
+        }
+
         if (!Conditions(element))
         {
             return null;
@@ -450,6 +455,12 @@ internal sealed partial class SvgResolver
 
         string? id = SvgStyleValues.LocalId(href);
         SvgElement? target = id is null ? null : _document.FindById(id);
+        if (target is not null && _frame?.IsDiscarded(target) == true)
+        {
+            // A discarded element has left the document.
+            return null;
+        }
+
         if (target is null)
         {
             _report.Warn("Svg.BadReference", $"The {what}'s href \"{SvgGeometry.Clip(href)}\" names no element in this document; it draws nothing.", element);
@@ -687,6 +698,12 @@ internal sealed partial class SvgResolver
         if (!transform.IsIdentity && style.TransformOrigin is IReadOnlyList<CssComponentValue> origin && SvgCssTransforms.TryOrigin(origin, box, out Vector2 o) && o != Vector2.Zero)
         {
             transform = Matrix3x2.CreateTranslation(-o) * transform * Matrix3x2.CreateTranslation(o);
+        }
+
+        // animateMotion's supplemental transform comes after the element's own, in its parent's user space.
+        if (_frame is not null && _frame.TryGetMotion(element, out Matrix3x2 motion))
+        {
+            transform *= motion;
         }
 
         return transform;

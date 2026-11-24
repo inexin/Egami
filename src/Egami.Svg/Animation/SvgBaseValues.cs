@@ -5,9 +5,10 @@ using Egami.Svg.Styling;
 namespace Egami.Svg.Animation;
 
 /// <summary>
-/// The base values animations build on, before any animation: a property's computed value from the static cascade (so a to
-/// animation starts where the document shows it), any other attribute's value as written. The cascade is run only when an
-/// additive or to animation asks for a property, and only along the ancestors of the elements asked about.
+/// The base values animations build on: a property's computed value from the cascade (so a to animation starts where the
+/// document shows it), with the animated values of the frame being computed, so an element inherits what its ancestors are
+/// animated to; any other attribute's value as written. The cascade is run only when an additive or to animation asks for a
+/// property, and only along the ancestors of the elements asked about. One instance serves one frame.
 /// </summary>
 internal sealed class SvgBaseValues(SvgDocument document)
 {
@@ -15,11 +16,11 @@ internal sealed class SvgBaseValues(SvgDocument document)
     private SvgStyler? _styler;
 
     /// <summary>The base value of an attribute or property, or null when it has none.</summary>
-    public string? Get(SvgElement element, string name)
+    public string? Get(SvgAnimationFrame frame, SvgElement element, string name)
     {
         if (SvgProperties.Presentation.Contains(name))
         {
-            return Computed(element).GetValueText(name);
+            return Computed(frame, element).GetValueText(name);
         }
 
         return name == "href"
@@ -27,7 +28,7 @@ internal sealed class SvgBaseValues(SvgDocument document)
             : element.Attributes[name];
     }
 
-    private CssComputedStyle Computed(SvgElement element)
+    private CssComputedStyle Computed(SvgAnimationFrame frame, SvgElement element)
     {
         if (_computed.TryGetValue(element, out CssComputedStyle? style))
         {
@@ -41,7 +42,7 @@ internal sealed class SvgBaseValues(SvgDocument document)
             chain.Add(e);
         }
 
-        _styler ??= new SvgStyler(document, new SvgReport(strict: false), new CssMediaContext { Width = document.Size.X, Height = document.Size.Y });
+        _styler ??= new SvgStyler(document, new SvgReport(strict: false), new CssMediaContext { Width = document.Size.X, Height = document.Size.Y }, frame);
         for (int i = chain.Count - 1; i >= 0; i--)
         {
             SvgElement e = chain[i];

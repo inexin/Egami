@@ -262,15 +262,19 @@ internal sealed class SvgAnimationFunction
             value = value.Add(_values[^1], iteration) ?? value;
         }
 
-        if (Additive && underlying is not null && SvgAnimatedValue.Parse(Kind, underlying, _transformType) is SvgAnimatedValue below)
+        if (Additive && underlying is not null)
         {
             if (Kind == SvgValueKind.Transform)
             {
-                // Adding transforms appends this one to the list below it.
-                return underlying.Trim() + " " + value.ToText();
+                // Adding transforms appends this one to the transform list below it.
+                string below = underlying.Trim();
+                return below.Length == 0 || below == "none" ? value.ToText() : below + " " + value.ToText();
             }
 
-            value = below.Add(value) ?? value;
+            if (SvgAnimatedValue.Parse(Kind, underlying, _transformType) is SvgAnimatedValue belowValue)
+            {
+                value = belowValue.Add(value) ?? value;
+            }
         }
 
         return value.ToText();
@@ -280,6 +284,14 @@ internal sealed class SvgAnimationFunction
     private string EvaluateTo(double p, string? underlying)
     {
         string to = _texts[0];
+        if (Kind == SvgValueKind.Transform && SvgTransformValue.TryParse(_transformType!, to) is SvgTransformValue toTransform)
+        {
+            // animateTransform: from the underlying transform when it is one of this type, else from the type's identity.
+            return Mode == SvgCalcMode.Discrete
+                ? (Index(p, 2) == 0 ? underlying ?? SvgTransformValue.From(null, toTransform).ToText() : toTransform.ToText())
+                : SvgTransformValue.From(underlying, toTransform).Interpolate(toTransform, p)!.ToText();
+        }
+
         if (underlying is not null && Mode != SvgCalcMode.Discrete && SvgAnimatedValue.Parse(Kind, underlying, _transformType) is SvgAnimatedValue from &&
             SvgAnimatedValue.Parse(Kind, to, _transformType) is SvgAnimatedValue target && from.Interpolate(target, 0) is not null)
         {
@@ -404,7 +416,7 @@ internal sealed class SvgAnimationFunction
         return Curve(y1, y2, t);
     }
 
-    private static double[]? ReadNumbers(string text, char separator)
+    internal static double[]? ReadNumbers(string text, char separator)
     {
         List<string> parts = [.. text.Split(separator).Select(p => p.Trim())];
         if (parts.Count > 1 && parts[^1].Length == 0)
@@ -424,7 +436,7 @@ internal sealed class SvgAnimationFunction
         return numbers;
     }
 
-    private static double[][]? ReadSplines(string text)
+    internal static double[][]? ReadSplines(string text)
     {
         List<string> parts = [.. text.Split(';').Select(p => p.Trim())];
         if (parts.Count > 1 && parts[^1].Length == 0)
