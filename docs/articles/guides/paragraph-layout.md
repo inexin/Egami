@@ -191,8 +191,8 @@ one more still, and so does a tight line next to a loose one. With `Hyphens.Auto
 are candidates, and `MaxConsecutiveLines` still holds; `Zone` is for greedy filling only.
 
 `OptimalLineOptions` sets the penalties and tolerances (TeX's line penalty 10 and hyphen penalty 50 by default) and
-`ShrinkSpaces`, which lets justified spaces shrink to two thirds, as TeX does; Word and browsers only stretch them, so it is
-off by default. If no set of breaks keeps every line within the tolerance (badness 200, then 2000), the last pass takes any
+`ShrinkSpaces`, which lets justified spaces shrink to two thirds, as TeX does; browsers only stretch them, so it is off by
+default, and `ParagraphStyle.SpaceShrink`, when set, takes its place as the limit. If no set of breaks keeps every line within the tolerance (badness 200, then 2000), the last pass takes any
 line that is not overfull, and a word too wide for any line gets a line of its own, as with greedy filling. Mandatory breaks
 split the paragraph into parts broken on their own. Where a pass settles for breaks that cost more than greedy filling's (whose
 lines may pass the tolerance), the greedy breaks are taken, so optimal filling never costs more. Planning a paragraph costs a
@@ -234,6 +234,15 @@ glyph positions equal its within 0.01 once its 1/64 layout unit is allowed for.
 `TextAlign` places each line: `Start` and `End` follow the paragraph's direction, `Left`, `Right` and `Center` do not, and
 `Justify` stretches lines to the full width. The last line, and lines before a hard break, use `TextAlignLast`, whose `Auto`
 is the start for justified paragraphs. Trailing spaces hang past the line's end and never count for alignment.
+
+`ParagraphStyle.SpaceShrink` lets justified lines shrink as well, the way Word fills them: a line that overflows by a little
+still takes the next word when its word spaces need to shrink by no more than that share of their width in all (0.25 is a
+quarter), and each by no more than half of what it would stretch had the line ended a word earlier, so a short word is not
+squeezed in at any cost. Filling tries to keep the next word whole by shrinking before it tries automatic hyphens, and a
+hyphenated piece may fit by shrinking too. The shrink is spread evenly over the word spaces; no-break spaces (U+00A0), glyphs
+and letter spacing keep their widths, and a kashida line that shrinks gets no tatweels. The last line and lines before a hard
+break shrink when they must but never stretch. It is 0 by default, so lines only stretch, as in browsers.
+`LineFill.Optimal` takes it as its shrink limit in place of `OptimalLineOptions.ShrinkSpaces`' third.
 
 `TextJustify` says where justified lines stretch: `InterWord` at word separators, `InterCharacter` between any two grapheme
 clusters except inside cursive scripts such as Arabic, and `Auto` (the default) at word separators and around Chinese,
@@ -354,6 +363,13 @@ caption from climbing up the photo.
 
 Balanced filling evens out line lengths, so justified lines stretch less; soft hyphens break long words only where a line
 needs them.
+
+### Justified lines filled as Word fills them
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#space-shrink)]
+
+With `SpaceShrink`, a line that would overflow by a little shrinks its word spaces and keeps the next word, so justified text
+takes fewer lines and its spaces vary less between loose and tight lines.
 
 ### A chat bubble with an emoji
 

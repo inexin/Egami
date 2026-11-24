@@ -29,3 +29,5 @@ override Egami.Fonts.WebFontOptions.GetHashCode() -> int
 override Egami.Fonts.WebFontOptions.ToString() -> string!
 static Egami.Fonts.WebFontOptions.operator !=(Egami.Fonts.WebFontOptions? left, Egami.Fonts.WebFontOptions? right) -> bool
 static Egami.Fonts.WebFontOptions.operator ==(Egami.Fonts.WebFontOptions? left, Egami.Fonts.WebFontOptions? right) -> bool
+Egami.Fonts.Layout.ParagraphStyle.SpaceShrink.get -> float
+Egami.Fonts.Layout.ParagraphStyle.SpaceShrink.init -> void

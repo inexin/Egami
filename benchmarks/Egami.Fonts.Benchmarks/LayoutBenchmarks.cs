@@ -4,14 +4,16 @@ using Egami.Fonts.Layout;
 
 namespace Egami.Fonts.Benchmarks;
 
-/// <summary>Justified paragraph layout: Latin and Arabic at word spaces, and Arabic with kashida (2.8.3); and Latin laid out
-/// plain and with every fourth word in another color, which cuts lines into a run per color.</summary>
+/// <summary>Justified paragraph layout: Latin and Arabic at word spaces, Latin whose spaces may also shrink by a quarter
+/// (ParagraphStyle.SpaceShrink), and Arabic with kashida (2.8.3); and Latin laid out plain and with every fourth word in
+/// another color, which cuts lines into a run per color.</summary>
 [MemoryDiagnoser]
 public class LayoutBenchmarks
 {
     private const float Width = 300;
 
     private Paragraph _latin = null!;
+    private Paragraph _shrink = null!;
     private Paragraph _arabic = null!;
     private Paragraph _kashida = null!;
     private Paragraph _plain = null!;
@@ -24,6 +26,7 @@ public class LayoutBenchmarks
         string latin = string.Join(' ', File.ReadAllLines(Path.Combine(root, "tests", "reference", "shaping", "texts", "english.txt")).Skip(3).Take(4));
         string arabic = string.Join(' ', File.ReadAllLines(Path.Combine(root, "tests", "reference", "shaping", "texts", "arabic.txt")).Skip(3).Take(4));
         _latin = Paragraph.Create(latin, Justified(Path.Combine(root, "tests", "fonts", "NotoSans-Regular.ttf"), TextJustify.InterWord));
+        _shrink = Paragraph.Create(latin, Justified(Path.Combine(root, "tests", "fonts", "NotoSans-Regular.ttf"), TextJustify.InterWord) with { SpaceShrink = 0.25f });
         string noto = Path.Combine(root, "tests", "fonts", "shaping", "NotoSansArabic-Regular.ttf");
         _arabic = Paragraph.Create(arabic, Justified(noto, TextJustify.InterWord));
         _kashida = Paragraph.Create(arabic, Justified(noto, TextJustify.Kashida));
@@ -34,6 +37,9 @@ public class LayoutBenchmarks
 
     [Benchmark]
     public int JustifyLatinAtSpaces() => _latin.Layout(Width).Lines.Count;
+
+    [Benchmark]
+    public int JustifyLatinShrinkingSpaces() => _shrink.Layout(Width).Lines.Count;
 
     [Benchmark]
     public int JustifyArabicAtSpaces() => _arabic.Layout(Width).Lines.Count;

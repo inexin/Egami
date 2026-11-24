@@ -94,8 +94,10 @@ public sealed record class OptimalLineOptions
     }
 
     /// <summary>Gets whether word spaces in justified text may shrink, by up to a third of a space, to fit more on a line, as in
-    /// TeX; false by default, as Word and browsers only stretch them. A last line (before a mandatory break or the paragraph's
-    /// end) shrinks only when <see cref="ParagraphStyle.AlignLast"/> justifies it.</summary>
+    /// TeX; false by default, as browsers only stretch them. A last line (before a mandatory break or the paragraph's end)
+    /// shrinks only when <see cref="ParagraphStyle.AlignLast"/> justifies it. When <see cref="ParagraphStyle.SpaceShrink"/> is
+    /// more than 0, it sets the limit instead, whether this is set or not: word spaces other than no-break spaces shrink by up
+    /// to that share, and on the last line of a justified paragraph too.</summary>
     public bool ShrinkSpaces { get; init; }
 
     private static int InRange(int value) =>

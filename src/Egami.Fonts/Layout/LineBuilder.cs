@@ -198,6 +198,11 @@ internal sealed partial class LineBuilder
         _paragraph = paragraph;
         _text = paragraph.Text;
         _m = paragraph.Measures;
+        if (paragraph.Style.SpaceShrink > 0)
+        {
+            // The sums of shrinkable spaces ride on the lazy state, so paragraphs without shrinking keep it as small as before.
+            _lazy = new ShrinkState();
+        }
     }
 
     /// <summary>Decides the line starting at <paramref name="start"/> for a width, greedily.</summary>
@@ -207,14 +212,21 @@ internal sealed partial class LineBuilder
         int k = FirstBreakAfter(start);
         int chosen = -1;
         int over = -1;
+        bool shrinks = _paragraph.Style.SpaceShrink > 0 && float.IsFinite(width);
+        float previousWidth = 0;
         for (int i = k; i < breaks.Length; i++)
         {
             LineBreak b = breaks[i];
             float w = LineWidth(start, b);
             if (w > width + Epsilon)
             {
-                over = i;
-                break;
+                // ParagraphStyle.SpaceShrink: the line may still fit with its word spaces shrunk.
+                if (!shrinks || !CanShrink(b.IsMandatory)
+                    || !FitsShrunk(start, ContentEnd(start, b.Index), w, width, i > k ? ContentEnd(start, breaks[i - 1].Index) : -1, previousWidth))
+                {
+                    over = i;
+                    break;
+                }
             }
 
             chosen = i;
@@ -222,6 +234,8 @@ internal sealed partial class LineBuilder
             {
                 break;
             }
+
+            previousWidth = w;
         }
 
         // Automatic hyphenation: only the piece that crosses the line's end is looked up, as browsers do.
@@ -236,7 +250,7 @@ internal sealed partial class LineBuilder
 
             if (over >= 0 && (auto.MaxConsecutiveLines == 0 || hyphenatedBefore < auto.MaxConsecutiveLines)
                 && (chosen < 0 || width - LineWidth(start, breaks[chosen]) > auto.Zone)
-                && Hyphenate(start, chosen >= 0 ? breaks[chosen].Index : start, breaks[over].Index, width, auto) is int point)
+                && Hyphenate(start, chosen >= 0 ? breaks[chosen].Index : start, breaks[over].Index, width, auto, shrinks && CanShrink(false), chosen >= 0 ? ContentEnd(start, breaks[chosen].Index) : -1, previousWidth) is int point)
             {
                 return Hyphenated(start, point, true, hyphenatedBefore, auto, automatic: true);
             }
@@ -264,7 +278,8 @@ internal sealed partial class LineBuilder
                 int g = TextSegmenter.NextGraphemeBoundary(_text, start);
                 while (g < first.Index)
                 {
-                    if (Measure(start, g) > width + Epsilon)
+                    float w = Measure(start, g);
+                    if (w > width + Epsilon && (!shrinks || !CanShrink(false) || !FitsShrunk(start, g, w, width, -1, 0)))
                     {
                         break;
                     }
@@ -308,9 +323,12 @@ internal sealed partial class LineBuilder
 
     /// <summary>
     /// The furthest automatic hyphenation point in <c>[segmentStart, segmentEnd)</c> (the piece crossing the line's end) at which
-    /// the line from <paramref name="start"/>, with its hyphen, fits, or null.
+    /// the line from <paramref name="start"/>, with its hyphen, fits, or null. With <paramref name="shrink"/>, a line fits too
+    /// when its word spaces may shrink to fit (<see cref="FitsShrunk"/>), the opportunity before each point being the point
+    /// before it or, for the first, the break that ends the line without the piece (<paramref name="previousEnd"/>, -1 for
+    /// none, where the line is <paramref name="previousWidth"/> wide).
     /// </summary>
-    private int? Hyphenate(int start, int segmentStart, int segmentEnd, float width, HyphenationOptions auto)
+    private int? Hyphenate(int start, int segmentStart, int segmentEnd, float width, HyphenationOptions auto, bool shrink, int previousEnd, float previousWidth)
     {
         // One list per builder: greedy filling looks up a piece for nearly every line.
         List<int> points = Breaks.Points ??= [];
@@ -324,14 +342,100 @@ internal sealed partial class LineBuilder
                 break;
             }
 
-            if (Measure(start, point) + HyphenWidth(point) <= width + Epsilon)
+            float w = Measure(start, point) + HyphenWidth(point);
+            if (w <= width + Epsilon)
             {
                 return point;
+            }
+
+            if (shrink)
+            {
+                int before = p > 0 && points[p - 1] > start ? points[p - 1] : previousEnd;
+                float beforeWidth = p > 0 && points[p - 1] > start ? Measure(start, before) + HyphenWidth(before) : previousWidth;
+                if (FitsShrunk(start, point, w, width, before, beforeWidth))
+                {
+                    return point;
+                }
             }
         }
 
         return null;
     }
+
+    /// <summary>
+    /// Whether the line from <paramref name="start"/> with its content ending at <paramref name="contentEnd"/>, <paramref name="w"/>
+    /// wide and over <paramref name="width"/>, fits with its word spaces shrunk (<see cref="ParagraphStyle.SpaceShrink"/>): the
+    /// overflow is at most that share of the spaces' widths, and the shrink of each space at most half the stretch each would
+    /// take on the line ending at the opportunity before (content ending at <paramref name="previousEnd"/>, the line
+    /// <paramref name="previousWidth"/> wide; -1 when there is none on the line). Between hyphenation points of one word, that
+    /// lets the line shrink by a third of the piece the later point adds.
+    /// </summary>
+    private bool FitsShrunk(int start, int contentEnd, float w, float width, int previousEnd, float previousWidth)
+    {
+        float over = w - width;
+        (float spaces, int n) = ShrinkableSpaces(start, contentEnd);
+        if (n == 0 || over > (_paragraph.Style.SpaceShrink * spaces) + Epsilon)
+        {
+            return false;
+        }
+
+        if (previousEnd < 0)
+        {
+            return true;
+        }
+
+        // Shrink per space over/n against half the stretch per space at the opportunity before, (width - previousWidth)/n'/2.
+        int before = ShrinkableSpaces(start, previousEnd).Count;
+        float added = w - previousWidth;
+        return over <= (added * n / ((2f * before) + n)) + Epsilon;
+    }
+
+    /// <summary>Whether a line may shrink its word spaces (<see cref="ParagraphStyle.SpaceShrink"/>): one that
+    /// <see cref="ParagraphStyle.Align"/> or <see cref="ParagraphStyle.AlignLast"/> justifies, or the
+    /// <paramref name="last"/> line (or one before a hard break) of a justified paragraph.</summary>
+    private bool CanShrink(bool last)
+    {
+        ParagraphStyle style = _paragraph.Style;
+        return style.SpaceShrink > 0 && style.Justify != TextJustify.None
+            && (style.Align == TextAlign.Justify || (last && style.AlignLast == TextAlignLast.Justify));
+    }
+
+    /// <summary>The summed width and count of the shrinkable word spaces (<see cref="IsShrinkableSpace"/>) of the line content
+    /// <c>[start, contentEnd)</c>, its last character left out as justification leaves it out.</summary>
+    private (float Width, int Count) ShrinkableSpaces(int start, int contentEnd)
+    {
+        int end = contentEnd - 1;
+        if (end > start && char.IsLowSurrogate(_text[end]) && char.IsHighSurrogate(_text[end - 1]))
+        {
+            end--;
+        }
+
+        if (end <= start)
+        {
+            return (0, 0);
+        }
+
+        ShrinkState state = (ShrinkState)_lazy!;
+        if (state.Widths is null)
+        {
+            float[] widths = new float[_text.Length + 1];
+            int[] counts = new int[_text.Length + 1];
+            for (int i = 0; i < _text.Length; i++)
+            {
+                char c = _text[i];
+                bool space = c == ' ' || (c > 0xFF && !char.IsLowSurrogate(c) && IsShrinkableSpace(TextSegmenter.CodePointAt(_text, i, out _)));
+                widths[i + 1] = widths[i] + (space ? _m.Advance[i] + _m.Spacing[i] : 0);
+                counts[i + 1] = counts[i] + (space ? 1 : 0);
+            }
+
+            (state.Widths, state.Counts) = (widths, counts);
+        }
+
+        return (state.Widths[end] - state.Widths[start], state.Counts![end] - state.Counts[start]);
+    }
+
+    /// <summary>The word separators that shrink: all but the no-break space.</summary>
+    private static bool IsShrinkableSpace(int cp) => cp != 0xA0 && AdvanceTable.IsWordSeparator(cp);
 
     /// <summary>
     /// Adds the automatic hyphenation points of the piece <c>[segmentStart, segmentEnd)</c> between two break opportunities to
@@ -490,7 +594,7 @@ internal sealed partial class LineBuilder
 
     /// <summary>What kashida justification and automatic hyphenation keep, made only when a paragraph uses them, so the
     /// builder of a plain paragraph stays small.</summary>
-    private sealed class LazyState
+    private class LazyState
     {
         /// <summary>Each font's tatweel glyph and advance, or null when it has none.</summary>
         public Dictionary<Font, (ushort Glyph, float Advance)?>? Tatweels;
@@ -507,6 +611,16 @@ internal sealed partial class LineBuilder
         /// <summary>What hyphenation points and <see cref="LineFill.Optimal"/> keep, in an object of its own so the lazy state
         /// of a paragraph that uses only kashidas stays as small as before.</summary>
         public BreakState? Breaks;
+    }
+
+    /// <summary>The lazy state of a paragraph whose word spaces may shrink (<see cref="ParagraphStyle.SpaceShrink"/>).</summary>
+    private sealed class ShrinkState : LazyState
+    {
+        /// <summary>The running sum of the widths of shrinkable word spaces, made the first time it is needed.</summary>
+        public float[]? Widths;
+
+        /// <summary>The running count of shrinkable word spaces.</summary>
+        public int[]? Counts;
     }
 
     /// <summary>The state of hyphenation points inside clusters and of optimal filling.</summary>
@@ -1508,16 +1622,21 @@ internal sealed partial class LineBuilder
         float boxWidth = float.IsFinite(width) ? width : draft.ContentWidth;
 
         // Alignment: the last line and lines before a hard break use AlignLast; justified lines stretch from the start edge.
-        TextAlignLast alignment = Alignment(draft.HardBreak || draft.End >= _text.Length);
+        bool last = draft.HardBreak || draft.End >= _text.Length;
+        TextAlignLast alignment = Alignment(last);
         Dictionary<(DraftRun, int), float>? expansion = null;
         Dictionary<DraftRun, List<Tatweels>>? tatweels = null;
         float contentWidth = draft.ContentWidth;
         float free = boxWidth - draft.ContentWidth;
-        // Optimal filling may have chosen a justified line whose spaces shrink (OptimalLineOptions.ShrinkSpaces).
-        bool shrink = free < -Epsilon && _paragraph.Style.LineFill == LineFill.Optimal && _paragraph.Style.OptimalLines is { ShrinkSpaces: true };
-        if (alignment == TextAlignLast.Justify && (free > 0 || shrink) && float.IsFinite(width))
+        // Optimal filling may have chosen a justified line whose spaces shrink (OptimalLineOptions.ShrinkSpaces); with
+        // ParagraphStyle.SpaceShrink, any filling may have, up to its limit, and a last line shrinks too but never stretches.
+        bool spaceShrink = _paragraph.Style.SpaceShrink > 0;
+        bool shrink = free < -Epsilon && float.IsFinite(width) && (spaceShrink
+            ? CanShrink(last) && -free <= (_paragraph.Style.SpaceShrink * ShrinkableSpaces(draft.Start, draft.ContentEnd).Width) + Epsilon
+            : _paragraph.Style.LineFill == LineFill.Optimal && _paragraph.Style.OptimalLines is { ShrinkSpaces: true } && alignment == TextAlignLast.Justify);
+        if (((alignment == TextAlignLast.Justify && free > 0) || shrink) && float.IsFinite(width))
         {
-            expansion = Justify(draft, free, out tatweels);
+            expansion = Justify(draft, free, out tatweels, shrinkOnly: shrink && spaceShrink);
             if (expansion is not null)
             {
                 contentWidth = boxWidth;
@@ -1799,8 +1918,10 @@ internal sealed partial class LineBuilder
     /// (<see cref="TextJustify.InterCharacter"/>), or, for <see cref="TextJustify.Auto"/>, after word separators and on both sides
     /// of Chinese, Japanese and Korean characters, as browsers justify; never after the content's last cluster. With
     /// <see cref="TextJustify.Kashida"/>, <paramref name="tatweels"/> first takes what whole tatweels can (see <see cref="Kashida"/>).
+    /// A line too wide shrinks its word separators only, with <paramref name="shrinkOnly"/> those
+    /// <see cref="ParagraphStyle.SpaceShrink"/> shrinks (no-break spaces keep their width).
     /// </summary>
-    private Dictionary<(DraftRun, int), float>? Justify(LineDraft draft, float free, out Dictionary<DraftRun, List<Tatweels>>? tatweels)
+    private Dictionary<(DraftRun, int), float>? Justify(LineDraft draft, float free, out Dictionary<DraftRun, List<Tatweels>>? tatweels, bool shrinkOnly = false)
     {
         tatweels = null;
         TextJustify mode = _paragraph.Style.Justify;
@@ -1852,7 +1973,7 @@ internal sealed partial class LineBuilder
         {
             int cp = TextSegmenter.CodePointAt(_text, clusters[i].Cluster, out _);
             int next = TextSegmenter.CodePointAt(_text, clusters[i + 1].Cluster, out _);
-            bool separator = AdvanceTable.IsWordSeparator(cp);
+            bool separator = shrinkOnly ? IsShrinkableSpace(cp) : AdvanceTable.IsWordSeparator(cp);
             bool opportunity = mode switch
             {
                 TextJustify.InterWord or TextJustify.Kashida => separator,

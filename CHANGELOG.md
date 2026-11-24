@@ -121,7 +121,15 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
 
 ## Egami.Fonts 1.6.0 (unreleased)
 
-WOFF and WOFF2 writing (roadmap 2.7.7). Additive to 1.5.0.
+WOFF and WOFF2 writing (roadmap 2.7.7) and Word-style justified lines. Additive to 1.5.0.
+
+- `ParagraphStyle.SpaceShrink` (0 to 1, 0 by default) lets justified lines fit the next word by shrinking their word spaces,
+  as Word fills justified paragraphs: by at most that share of the spaces in all, and each space by at most half of what it
+  would stretch had the line ended at the break before. The whole word is kept by shrinking before automatic hyphenation is
+  tried, and a hyphenated piece may fit by shrinking too. No-break spaces, glyphs and letter spacing keep their widths; last
+  lines and lines before a hard break shrink when they must but never stretch; kashida lines that shrink get no tatweels.
+  `LineFill.Optimal` uses it as its shrink limit in place of `OptimalLineOptions.ShrinkSpaces`' third. At 0 every layout is
+  the same as in 1.5.0.
 
 - `WebFontWriter.Write` writes a `Typeface`, a `FontSubset` or sfnt or collection bytes as WOFF2 (the default) or WOFF 1.0
   (`WebFontOptions.Format`), to a byte array or a stream. Every table is kept. WOFF2 stores glyf and loca in the transformed

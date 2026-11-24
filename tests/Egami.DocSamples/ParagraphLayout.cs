@@ -294,6 +294,29 @@ public class ParagraphLayout
     }
 
     [Fact]
+    public void WordLikeJustifiedLines()
+    {
+        FontFamily family = Noto();
+        string text = "In olden times when wishing still helped one, there lived a king whose daughters were all beautiful, "
+            + "but the youngest was so beautiful that the sun itself, which has seen so much, was astonished whenever it shone "
+            + "in her face.";
+        #region space-shrink
+        // Justified lines filled as Word fills them: a line takes the next word when its spaces can shrink by up to a quarter.
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [family], Size = 16 },
+            Align = TextAlign.Justify,
+            SpaceShrink = 0.25f,
+        };
+        TextLayout layout = Paragraph.Create(text, style).Layout(200);
+        #endregion
+
+        TextLayout stretched = Paragraph.Create(text, style with { SpaceShrink = 0 }).Layout(200);
+        Assert.True(layout.Lines.Count <= stretched.Lines.Count);
+        Assert.All(layout.Lines, l => Assert.True(l.Width <= 200.001f));
+    }
+
+    [Fact]
     public void KashidaJustifiedArabic()
     {
         FontCollection fonts = new();
