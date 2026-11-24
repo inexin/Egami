@@ -14,7 +14,7 @@ internal static class Woff2Decoder
     private const int HeaderSize = 48;
 
     // The 63 known tags, by the index the low six bits of a directory entry's flags give.
-    private static readonly string[] s_knownTags =
+    internal static readonly string[] KnownTags =
     [
         "cmap", "head", "hhea", "hmtx", "maxp", "name", "OS/2", "post", "cvt ", "fpgm", "glyf", "loca", "prep", "CFF ", "VORG", "EBDT",
         "EBLC", "gasp", "hdmx", "kern", "LTSH", "PCLT", "VDMX", "vhea", "vmtx", "BASE", "GDEF", "GPOS", "GSUB", "EBSC", "JSTF", "MATH",
@@ -54,7 +54,7 @@ internal static class Woff2Decoder
             int at = r.Position;
             int flags = r.ReadByte();
             int known = flags & 0x3F;
-            FontTag tag = known == 63 ? r.ReadTag() : new FontTag(s_knownTags[known]);
+            FontTag tag = known == 63 ? r.ReadTag() : new FontTag(KnownTags[known]);
             int version = flags >> 6;
             uint origLength = ReadBase128(ref r);
             bool isGlyfOrLoca = tag == Tags.Glyf || tag == Tags.Loca;
@@ -222,7 +222,7 @@ internal static class Woff2Decoder
             {
                 int flags = r.ReadByte();
                 int known = flags & 0x3F;
-                FontTag tag = known == 63 ? r.ReadTag() : new FontTag(s_knownTags[known]);
+                FontTag tag = known == 63 ? r.ReadTag() : new FontTag(KnownTags[known]);
                 int version = flags >> 6;
                 ReadBase128(ref r);
                 bool isGlyfOrLoca = tag == Tags.Glyf || tag == Tags.Loca;

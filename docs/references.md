@@ -40,6 +40,8 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [ag-psd](https://github.com/Agamnentzar/ag-psd) | TypeScript | MIT | PSD layer records, masks and additional layer information as Photoshop writes them | 2.3.10 |
 | [libebur128](https://github.com/jiixyj/libebur128) | C | MIT | EBU R 128 loudness: K-weighting at any rate, gating, loudness range | Video V1.4 |
 | [skrifa](https://github.com/googlefonts/fontations/tree/main/skrifa) (Google fontations) | Rust | MIT or Apache 2.0 | A complete TrueType interpreter with ClearType compatibility and an autohinter; read under MIT (2.7.5 Q2, Lars 2026-10-28). A close translation gets a THIRD-PARTY-NOTICES entry | 2.7.5 |
+| [woff2](https://github.com/google/woff2) | C++ | MIT | The WOFF2 encoder: glyf, loca and hmtx transforms, collection directories; its `woff2_compress` and `woff2_decompress` are the WOFF2 gate oracles | 2.7.7 |
+| [fontTools](https://github.com/fonttools/fonttools) | Python | MIT | WOFF and WOFF2 reading and writing; its WOFF at zlib level 9 is the WOFF gate oracle | 2.7.7 |
 | [DirectXTex](https://github.com/microsoft/DirectXTex) | C++ | MIT | Every DXGI format, the legacy DDS header mappings and BC1 to BC7 codecs; its `texconv` is the DDS gate oracle | DDS |
 | [bcdec](https://github.com/iOrange/bcdec) | C | MIT or Unlicense | Compact BC1 to BC7 block decoders | DDS |
 | [bc7enc_rdo](https://github.com/richgel999/bc7enc_rdo) | C++ | MIT or public domain | Fast BC1 to BC7 encoders and their mode searches | DDS |

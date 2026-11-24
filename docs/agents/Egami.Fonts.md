@@ -34,6 +34,8 @@ and no `Configuration`.
 - `Paragraph.Create(text, ParagraphStyle)` and `paragraph.Layout(width)`: wrapped lines; `canvas.DrawText(text, rect, style)` and
   `canvas.DrawTextLayout` draw them.
 - `TextShaper.Shape(text, font, ShapingOptions)`: shaped runs with bidi and fallback, for your own layout.
+- `FontSubsetter.Subset(face, glyphs, SubsetOptions)`: a font with only some glyphs; `WebFontWriter.Write(face or subset)`
+  writes WOFF2 (or WOFF with `WebFontOptions.Format`).
 - Egami.Fonts.Substitutes: bundled metric-compatible stand-ins for Arial, Times New Roman, Courier New, Calibri and Cambria.
 
 ## Samples
@@ -159,6 +161,17 @@ foreach (ShapedRun run in shaped.Lines[0].Runs)
     GlyphRun glyphs = run.ToGlyphRun(new System.Numerics.Vector2(x, 0), shaped.Text); // what a canvas draws
     x += run.Advance;
 }
+```
+
+A web font with only the characters a page uses:
+
+```csharp
+// A web font with only the characters a page uses, shaped as the full face shapes them: subset with the layout closure,
+// then write WOFF2. The subset keeps the glyph ids, so the layout tables need no rewriting.
+string page = "Egami: managed imaging for .NET";
+ushort[] glyphs = [.. page.EnumerateRunes().Select(r => face.GetGlyph(r.Value)).Distinct()];
+FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+byte[] woff2 = WebFontWriter.Write(subset);
 ```
 
 ## Common mistakes

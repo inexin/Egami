@@ -1,1 +1,31 @@
 #nullable enable
+Egami.Fonts.WebFontFormat
+Egami.Fonts.WebFontFormat.Woff = 0 -> Egami.Fonts.WebFontFormat
+Egami.Fonts.WebFontFormat.Woff2 = 1 -> Egami.Fonts.WebFontFormat
+Egami.Fonts.WebFontOptions
+Egami.Fonts.WebFontOptions.Context.get -> Egami.EgamiContext?
+Egami.Fonts.WebFontOptions.Context.init -> void
+Egami.Fonts.WebFontOptions.Format.get -> Egami.Fonts.WebFontFormat
+Egami.Fonts.WebFontOptions.Format.init -> void
+Egami.Fonts.WebFontOptions.Metadata.get -> string?
+Egami.Fonts.WebFontOptions.Metadata.init -> void
+Egami.Fonts.WebFontOptions.PrivateData.get -> System.ReadOnlyMemory<byte>?
+Egami.Fonts.WebFontOptions.PrivateData.init -> void
+Egami.Fonts.WebFontOptions.TransformGlyf.get -> bool
+Egami.Fonts.WebFontOptions.TransformGlyf.init -> void
+Egami.Fonts.WebFontOptions.TransformHmtx.get -> bool
+Egami.Fonts.WebFontOptions.TransformHmtx.init -> void
+Egami.Fonts.WebFontOptions.WebFontOptions() -> void
+Egami.Fonts.WebFontWriter
+static Egami.Fonts.WebFontOptions.Default.get -> Egami.Fonts.WebFontOptions!
+static Egami.Fonts.WebFontWriter.Write(Egami.Fonts.FontSubset! subset, Egami.Fonts.WebFontOptions? options = null) -> byte[]!
+static Egami.Fonts.WebFontWriter.Write(Egami.Fonts.Typeface! face, Egami.Fonts.WebFontOptions? options = null) -> byte[]!
+static Egami.Fonts.WebFontWriter.Write(Egami.Fonts.Typeface! face, System.IO.Stream! stream, Egami.Fonts.WebFontOptions? options = null) -> void
+static Egami.Fonts.WebFontWriter.Write(System.ReadOnlyMemory<byte> data, Egami.Fonts.WebFontOptions? options = null) -> byte[]!
+Egami.Fonts.WebFontOptions.<Clone>$() -> Egami.Fonts.WebFontOptions!
+Egami.Fonts.WebFontOptions.Equals(Egami.Fonts.WebFontOptions? other) -> bool
+override Egami.Fonts.WebFontOptions.Equals(object? obj) -> bool
+override Egami.Fonts.WebFontOptions.GetHashCode() -> int
+override Egami.Fonts.WebFontOptions.ToString() -> string!
+static Egami.Fonts.WebFontOptions.operator !=(Egami.Fonts.WebFontOptions? left, Egami.Fonts.WebFontOptions? right) -> bool
+static Egami.Fonts.WebFontOptions.operator ==(Egami.Fonts.WebFontOptions? left, Egami.Fonts.WebFontOptions? right) -> bool

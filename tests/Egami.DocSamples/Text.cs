@@ -450,6 +450,56 @@ public class Text
     }
 
     [Fact]
+    public void WebFont()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+        string folder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "egami-docs-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(folder);
+        try
+        {
+            #region webfont
+            // WOFF2 for the web: every table kept, glyf, loca and hmtx transformed, one Brotli stream; a third of the TTF's size.
+            File.WriteAllBytes(System.IO.Path.Combine(folder, "NotoSans-Regular.woff2"), WebFontWriter.Write(face));
+
+            // WOFF 1.0 for old browsers, with a metadata block naming the font's license.
+            byte[] woff = WebFontWriter.Write(face, new WebFontOptions
+            {
+                Format = WebFontFormat.Woff,
+                Metadata = """<?xml version="1.0" encoding="UTF-8"?><metadata version="1.0"><license url="https://openfontlicense.org"/></metadata>""",
+            });
+            File.WriteAllBytes(System.IO.Path.Combine(folder, "NotoSans-Regular.woff"), woff);
+            #endregion
+
+            Typeface back = Typeface.FromFile(System.IO.Path.Combine(folder, "NotoSans-Regular.woff2"));
+            Assert.Equal(FontFileKind.Woff2, back.Container);
+            Assert.Contains("openfontlicense", Typeface.FromMemory(woff).GetWoffMetadata(), StringComparison.Ordinal);
+        }
+        finally
+        {
+            Directory.Delete(folder, true);
+        }
+    }
+
+    [Fact]
+    public void SubsetThenWoff2()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+
+        #region webfont-subset
+        // A web font with only the characters a page uses, shaped as the full face shapes them: subset with the layout closure,
+        // then write WOFF2. The subset keeps the glyph ids, so the layout tables need no rewriting.
+        string page = "Egami: managed imaging for .NET";
+        ushort[] glyphs = [.. page.EnumerateRunes().Select(r => face.GetGlyph(r.Value)).Distinct()];
+        FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+        byte[] woff2 = WebFontWriter.Write(subset);
+        #endregion
+
+        Assert.True(woff2.Length < 40_000, $"{woff2.Length} bytes");
+        Typeface back = Typeface.FromMemory(woff2);
+        Assert.Equal(new Font(face, 12).Shape(page).Glyphs.ToArray(), new Font(back, 12).Shape(page).Glyphs.ToArray());
+    }
+
+    [Fact]
     public void BareCff()
     {
         Typeface otf = Typeface.FromMemory(FontSubsetter.Subset(Typeface.FromFile(FontFile), [36]).Data);

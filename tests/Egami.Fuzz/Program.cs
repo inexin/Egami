@@ -203,6 +203,7 @@ static Action<Stream> Target(string name) => name switch
     "fontdata" => FontData,
     "subset" => SubsetFont,
     "woff2" => LoadFont,
+    "webfont-write" => WriteWebFont,
     "gvar" => LoadVariable,
     "cff2" => LoadVariable,
     "colr" => LoadColor,
@@ -2598,6 +2599,58 @@ static void SubsetFont(Stream stream)
         if (readA && (!readB || !a.SameAs(b)))
         {
             throw new InvalidOperationException($"Glyph {old} changed in the subset.");
+        }
+    }
+}
+
+// WOFF and WOFF2 writing (Phase 2.7.7): what `font` or `woff2` loads is written as WOFF2 (or WOFF, by the last byte), with the
+// transforms the last byte picks, and loaded again; the writer may throw only EgamiException or ArgumentException, and every
+// glyph of the first face that read before must read the same, with the same advance.
+static void WriteWebFont(Stream stream)
+{
+    byte[] data = ReadAll(stream);
+    int hash = data.Length > 0 ? data[^1] : 0;
+    var options = new Egami.Fonts.WebFontOptions
+    {
+        Format = (hash & 1) != 0 ? Egami.Fonts.WebFontFormat.Woff : Egami.Fonts.WebFontFormat.Woff2,
+        TransformGlyf = (hash & 2) == 0,
+        TransformHmtx = (hash & 4) == 0,
+        Context = Context(),
+    };
+    byte[] web;
+    try
+    {
+        web = Egami.Fonts.WebFontWriter.Write(data, options);
+    }
+    catch (Exception e) when (e is EgamiException or ArgumentException)
+    {
+        return;
+    }
+
+    Egami.Fonts.Typeface face, again;
+    try
+    {
+        face = Egami.Fonts.Typeface.FromMemory(data, 0, new Egami.Fonts.FontLoadOptions { Context = Context() });
+    }
+    catch (EgamiException)
+    {
+        return;
+    }
+
+    again = Egami.Fonts.Typeface.FromMemory(web, 0, new Egami.Fonts.FontLoadOptions { Context = Context() });
+    for (int g = 0; g < Math.Min(face.GlyphCount, 60); g++)
+    {
+        var a = new RecordingSink();
+        var b = new RecordingSink();
+        bool readA = face.GetGlyphOutline((ushort)g, a), readB = again.GetGlyphOutline((ushort)g, b);
+        if (readA && (!readB || !a.SameAs(b)))
+        {
+            throw new InvalidOperationException($"Glyph {g} changed in the web font.");
+        }
+
+        if (face.GetAdvance((ushort)g) != again.GetAdvance((ushort)g))
+        {
+            throw new InvalidOperationException($"Glyph {g}'s advance changed in the web font.");
         }
     }
 }

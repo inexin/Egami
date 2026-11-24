@@ -30,6 +30,7 @@ Targets:
 | `fontdata` | What `font` or `cff` loads has every glyph name, CID, cmap subtable and CFF encoding read (Phase 2.7.3); each name and CID must find a glyph no later than its own, and each listed mapping must look up the same glyph | `tests/images/fuzz/fontdata-seeds/*` |
 | `subset` | What `font` or `cff` loads is subsetted (numbering, cmap and prefix picked by the last byte), re-loaded, and every kept glyph's outline must be unchanged | `tests/images/fuzz/font-seeds/*` |
 | `woff2` | WOFF and WOFF2 files (the glyf, loca and hmtx transforms, Brotli and zlib streams): read as `font` does | `tests/images/fuzz/woff2-seeds/*` |
+| `webfont-write` | What `font` or `woff2` loads is written as WOFF2 or WOFF (format and transforms picked by the last byte) and loaded again: the writer throws only `EgamiException` or `ArgumentException`, and every glyph that read must keep its outline and advance | `tests/images/fuzz/woff2-seeds/*` and the small `font-seeds` (noto, kern, cjk) |
 | `gvar` | Variable TrueType fonts: every face at its default, its first named instances and three positions the bytes pick, read as `font` does there (gvar, avar 1 and 2, HVAR, MVAR, GDEF deltas) | `tests/images/fuzz/gvar-seeds/*` |
 | `cff2` | Variable CFF2 fonts, as `gvar` (blend and vsindex in the charstrings) | `tests/images/fuzz/cff2-seeds/*` |
 | `colr` | Color fonts: palettes, every glyph's COLR, sbix, CBDT and SVG data read, and the first color glyphs drawn upright and turned, at two positions | `tests/images/fuzz/colr-seeds/*` |
