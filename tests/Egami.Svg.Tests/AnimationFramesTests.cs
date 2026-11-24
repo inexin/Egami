@@ -221,6 +221,42 @@ public class AnimationFramesTests
     }
 
     [Fact]
+    public void LoadingAtATimeDrawsThatMoment()
+    {
+        byte[] data = Encoding.UTF8.GetBytes(Loop);
+        SvgDocument document = SvgDocument.Parse(Loop);
+        using Raster<Rgba8> loaded = Raster.Load<Rgba8>(data, s_format, new SvgDecodeOptions { Time = TimeSpan.FromSeconds(1.2) });
+        using Raster<Rgba8> drawn = document.Rasterize<Rgba8>(new SvgRenderOptions { Time = TimeSpan.FromSeconds(1.2) });
+        Assert.True(Same(drawn, loaded));
+
+        // With a rate too, the frames start there.
+        using Raster<Rgba8> frames = Raster.Load<Rgba8>(data, s_format, new SvgDecodeOptions { AnimationFrameRate = 10, Time = TimeSpan.FromSeconds(1.2) });
+        using Raster<Rgba8> first = FrameOf(frames, 0);
+        Assert.True(Same(drawn, first));
+        Assert.Equal(TimeSpan.FromSeconds(0.8), frames.Frames[0].Metadata.Delay);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new SvgDecodeOptions { Time = TimeSpan.FromSeconds(-1) });
+    }
+
+    [Fact]
+    public void LoadingPicksTheFramesAsked()
+    {
+        byte[] data = Encoding.UTF8.GetBytes(Once);
+        SvgDocument document = SvgDocument.Parse(Once);
+        using Raster<Rgba8> all = document.RasterizeAnimation<Rgba8>(new SvgAnimationOptions { FrameRate = 4 });
+        foreach ((Range range, int first, int count) in new[] { (..1, 0, 1), (1..3, 1, 2), (^2.., 3, 2), (7.., 4, 1) })
+        {
+            using Raster<Rgba8> picked = Raster.Load<Rgba8>(data, s_format, new SvgDecodeOptions { AnimationFrameRate = 4, Frames = range });
+            Assert.Equal(count, picked.Frames.Count);
+            for (int i = 0; i < count; i++)
+            {
+                using Raster<Rgba8> expected = FrameOf(all, first + i);
+                using Raster<Rgba8> actual = FrameOf(picked, i);
+                Assert.True(Same(expected, actual), $"{range} frame {i}");
+            }
+        }
+    }
+
+    [Fact]
     public void LoadingAnEndlessAnimationWarnsInTheMetadata()
     {
         using Raster<Rgba8> raster = Raster.Load<Rgba8>(Encoding.UTF8.GetBytes(Endless), s_format, new SvgDecodeOptions { AnimationFrameRate = 1 });

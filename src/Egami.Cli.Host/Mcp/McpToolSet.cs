@@ -48,6 +48,12 @@ internal sealed class McpToolSet
     /// </summary>
     public IReadOnlySet<string> Excluded { get; init; } = DefaultExcluded;
 
+    /// <summary>
+    /// Gets the options of the root command, shared by every command, that every tool taking files takes too, such as how an
+    /// input is read; none by default.
+    /// </summary>
+    public IReadOnlySet<string> Shared { get; init; } = new HashSet<string>(StringComparer.Ordinal);
+
     /// <summary>Gets the commands that are not tools, such as the server itself.</summary>
     public IReadOnlySet<string> NotTools { get; init; } = new HashSet<string>(StringComparer.Ordinal) { "mcp" };
 

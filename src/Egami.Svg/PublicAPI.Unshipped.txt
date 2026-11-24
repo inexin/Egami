@@ -51,3 +51,5 @@ static Egami.Svg.SvgFrame<TPixel>.operator !=(Egami.Svg.SvgFrame<TPixel> left, E
 static Egami.Svg.SvgFrame<TPixel>.operator ==(Egami.Svg.SvgFrame<TPixel> left, Egami.Svg.SvgFrame<TPixel> right) -> bool
 ~override Egami.Svg.SvgFrame<TPixel>.Equals(object obj) -> bool
 ~override Egami.Svg.SvgFrame<TPixel>.ToString() -> string
+Egami.Svg.SvgDecodeOptions.Time.get -> System.TimeSpan?
+Egami.Svg.SvgDecodeOptions.Time.init -> void

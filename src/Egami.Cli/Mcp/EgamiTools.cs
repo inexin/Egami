@@ -50,6 +50,9 @@ internal static class EgamiTools
             // Arguments a command can't run without, though its tree calls them optional (tool review R3).
             Needed = new HashSet<(string, string)> { ("rotate", "angle"), ("flip", "direction"), ("text", "text"), ("overlay", "image") },
             Checks = new HashSet<string>(StringComparer.Ordinal) { "compare" },
+
+            // How an animated SVG input is read: every tool reads inputs the same way.
+            Shared = new HashSet<string>(StringComparer.Ordinal) { "--animate", "--at" },
             Workflow = new McpWorkflow(
                 "Image files, globs (*, ?, **) or folders with recursive.",
                 "The steps, as a workflow object: { \"egami\": 1, \"steps\": [ { \"op\": \"resize\", \"size\": \"1200x\" }, { \"op\": \"save\", \"path\": \"out/{name}.webp\", \"quality\": 82 } ] }. list_steps lists the steps and their options.",

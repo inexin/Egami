@@ -78,10 +78,16 @@ public sealed partial class SvgDocument
         options ??= SvgAnimationOptions.Default;
         SvgRenderOptions render = options.Render ?? SvgRenderOptions.Default;
         EgamiContext context = render.Context ?? Options.EffectiveContext;
-        SvgFramePlan plan = Plan(options, context);
+        return RenderPlanned<TPixel>(Plan(options, context), render, context, options.MergeDuplicates);
+    }
+
+    /// <summary>Streams planned frames, after checking the size, the frame count and the frames held at once.</summary>
+    internal IEnumerable<SvgFrame<TPixel>> RenderPlanned<TPixel>(SvgFramePlan plan, SvgRenderOptions render, EgamiContext context, bool merge)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
         (int w, int h) = RasterSize(render, context.Limits);
         CheckFrames<TPixel>(plan.Count, Math.Min(plan.Count, Threads(plan.Count, context) + 1), w, h, context.Limits);
-        return Frames<TPixel>(plan, w, h, context, render, options.MergeDuplicates);
+        return Frames<TPixel>(plan, w, h, context, render, merge);
     }
 
     /// <summary>

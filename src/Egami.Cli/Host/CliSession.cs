@@ -37,8 +37,23 @@ internal sealed class CliSession : CliHostSession
     /// <summary>Gets or sets how camera RAW inputs are developed (the <c>--raw-*</c> options), or <see langword="null"/> for the defaults.</summary>
     public Formats.Extended.Raw.RawReaderOptions? Raw { get; set; }
 
-    /// <summary>Gets the reader options of an input: <paramref name="read"/> with the <c>--raw-*</c> options.</summary>
-    public ReaderOptions? Reading(ReaderOptions? read) => RawOptions.Merge(Raw, read);
+    /// <summary>Gets or sets how SVG inputs are drawn (<c>--animate</c> and <c>--at</c>), or <see langword="null"/> for one static frame.</summary>
+    public SvgDecodeOptions? Svg { get; set; }
+
+    /// <summary>
+    /// Gets the reader options of an input: <paramref name="read"/> with the <c>--raw-*</c> options, or with <c>--animate</c>
+    /// and <c>--at</c>. One read takes one kind; given both, an input named .svg or .svgz takes the SVG ones.
+    /// </summary>
+    public ReaderOptions? Reading(ReaderOptions? read, string? path = null)
+    {
+        if (Svg is null)
+        {
+            return RawOptions.Merge(Raw, read);
+        }
+
+        bool svg = Raw is null || (path is not null && (path.EndsWith(".svg", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".svgz", StringComparison.OrdinalIgnoreCase)));
+        return svg ? SvgOptions.Merge(Svg, read) : RawOptions.Merge(Raw, read);
+    }
 
     /// <summary>Gets the formats the tool reads and writes.</summary>
     public IReadOnlyList<FormatInfo> Formats => Context.Formats;

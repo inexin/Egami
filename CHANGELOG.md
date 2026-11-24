@@ -45,6 +45,26 @@ SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation
   move elements, static ones too (CSS Transforms 2, Motion Path 1).
 - Lengths in SVG's CSS properties (`stroke-width`, `x`, `r`, `font-size`...) take a `calc()` of percentages and absolute
   lengths, in static style sheets too.
+- `SvgDocument.RasterizeAnimation` draws the animations into one animated raster for GIF, APNG, WebP or AVIF, and
+  `RenderFrames` hands the same frames over one at a time (`SvgFrame<TPixel>`: raster, time, duration), for a video
+  encoder. `SvgAnimationOptions` sets the frame rate (30), start, length and maximum length (10 s): by default one loop
+  period, else up to and including the end of the last animation, else the maximum with an `Svg.AnimationLength` warning.
+  Still frames merge unless `MergeDuplicates` is off; frames draw on several threads; `MaxFrames` and `MaxTotalBytes` are
+  checked before drawing. The raster loops forever when the document loops.
+- `SvgDecodeOptions.AnimationFrameRate` makes `Raster.Load` give an animated SVG's frames, as `RasterizeAnimation` draws
+  them; `SvgDecodeOptions.Time` draws one moment (or starts the frames there). Without them a load is the static document,
+  as before.
+- `SvgDocument.Freeze(TimeSpan)` returns a static copy of one moment: animated values written into attributes and `style`,
+  motion into the transform, discarded elements and the animations themselves taken out.
+- Fixed: `translate()` in the CSS `transform` property now resolves `em`, `rem` and viewport units against the element's font
+  size and viewport, as the `translate` property does; they were taken at 16 px and a 100 px viewport.
+
+Command line:
+
+- `egami`: every command takes `--animate [fps]`, which loads an animated SVG input with all its frames (30 a second by
+  default), and `--at <time>`, which draws it at one moment. `egami mcp`'s tools take both as `animate` and `at`.
+- `egami-video encode` takes an animated SVG and draws it frame by frame at `--rate`, for `--duration` or the length the
+  document gives, at the size `--size` fits.
 
 Egami.Css:
 

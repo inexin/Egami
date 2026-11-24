@@ -36,4 +36,19 @@ public sealed record SvgDecodeOptions : ReaderOptions
         get;
         init => field = value is null || (value > 0 && value <= 1000) ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The frame rate must be more than 0 and at most 1000.");
     }
+
+    /// <summary>
+    /// Gets the moment of an animated SVG to draw, as <see cref="SvgRenderOptions.Time"/> does, or <see langword="null"/> (the
+    /// default) for the static document. With <see cref="AnimationFrameRate"/> it is the moment the first frame shows, as
+    /// <see cref="SvgAnimationOptions.Start"/>.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The value is negative.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="load-animation"/>
+    /// </example>
+    public TimeSpan? Time
+    {
+        get;
+        init => field = value is null || value.Value >= TimeSpan.Zero ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "The time must not be negative.");
+    }
 }

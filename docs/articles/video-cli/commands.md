@@ -521,7 +521,7 @@ Usage:
   egami-video encode <inputs>... [options]
 
 Arguments:
-  <inputs>  Images in order (files, or globs sorted by name), an image sequence such as shots/{frame:0000}.png or shots/%04d.png, a video such as a Y4M file, or - for Y4M or Matroska on standard input.
+  <inputs>  Images in order (files, or globs sorted by name), an image sequence such as shots/{frame:0000}.png or shots/%04d.png, an animated SVG, a video such as a Y4M file, or - for Y4M or Matroska on standard input.
 
 Options:
   -o, --output <path>                   The clip to write, or - for standard output (with --format).
@@ -533,6 +533,7 @@ Options:
   -b, --bitrate <bits/s>                VP8, VP9 and AV1: aim at this average bitrate instead of a quality, such as 2000k or 1.5M.
   --size <WxH>                          Fit every frame into this size, keeping its shape, with black around it; images take the first image's size by default.
   --chroma <420|422|444>                Chroma subsampling for frames made from images: 420 (the default), 422 or 444.
+  -t, --duration <time>                 For an SVG input: how long to draw its animation, in seconds or [HH:]MM:SS[.mmm]; by default one loop, or up to the end of its last animation, at most 10 seconds.
   --audio <file>                        Add the first audio track of this file, copied without decoding (or filtered and encoded again with the audio filter options), up to the end of the video.
   --fragment <length>                   Write fragmented MP4, for streaming and browsers' Media Source Extensions: fragments start at the first video keyframe after this long (2s without a value), or at every one with --fragment=keyframe. Give a length as --fragment=4s.
   --gain <dB>                           Change the level by this many decibels, such as -3 or 6.

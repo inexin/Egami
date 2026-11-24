@@ -505,8 +505,12 @@ public class Svg
             // With a frame rate, Raster.Load gives every frame, for the animation tools (Retime, ChangeSpeed, DrawAnimation).
             EgamiContext context = EgamiContext.Default.WithFormat(SvgFormat.Info);
             using Raster<Rgba8> animation = Raster.Load<Rgba8>(path, context, new SvgDecodeOptions { AnimationFrameRate = 10 });
+
+            // Or one moment of it, half a second in.
+            using Raster<Rgba8> moment = Raster.Load<Rgba8>(path, context, new SvgDecodeOptions { Time = TimeSpan.FromSeconds(0.5) });
             #endregion
             Assert.Equal(20, animation.Frames.Count);
+            Assert.Single(moment.Frames);
         }
         finally
         {
