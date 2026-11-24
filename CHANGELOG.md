@@ -33,6 +33,15 @@ SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation
   its descendants follow. The `style` attribute cannot be animated, as SVG 2 says; such an animation is reported with
   `Svg.BadAnimation` and has no effect.
 - A new fuzz target, `svg-timeline`, builds timelines and draws frames from mutated animated documents.
+- CSS animations: `@keyframes` with the `animation-*` properties and the `animation` shorthand run at `SvgRenderOptions.Time`,
+  each from when the document loads, with Web Animations timing (delay, iteration count, direction, fill mode, play state),
+  per-keyframe easing and `animation-composition` (replace, add, accumulate). Keyframe values are computed in the element's
+  context; missing `from` and `to` keyframes take the value below. Numbers, lengths, colors (premultiplied sRGB), transform
+  lists (function by function, else matrix decomposition), `translate`, `rotate`, `scale`, `d: path()`, `offset-path`,
+  `offset-distance` and `offset-rotate` interpolate; other values, custom properties included, change halfway. Animated
+  values sit above normal rules and below `!important` ones, and over SMIL's values. `SvgAnimationInfo` counts them.
+- The `translate`, `rotate` and `scale` properties and `offset-path: path()` with `offset-distance` and `offset-rotate` now
+  move elements, static ones too (CSS Transforms 2, Motion Path 1).
 
 Egami.Css:
 

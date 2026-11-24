@@ -505,7 +505,7 @@ public sealed class SvgDocument
             timeline = Timeline(seconds);
         }
 
-        if (timeline.Animations.Count == 0)
+        if (timeline.Animations.Count == 0 && timeline.CssAnimations.Count == 0)
         {
             return null;
         }

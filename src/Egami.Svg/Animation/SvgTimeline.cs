@@ -36,6 +36,9 @@ internal sealed class SvgTimeline
     /// <summary>Gets the animation elements with a target, in document order.</summary>
     public List<SvgAnimation> Animations { get; }
 
+    /// <summary>Gets the document's CSS animations, with the elements they animate, as the static style sets them.</summary>
+    public List<(SvgElement Element, SvgCssAnimation Animation)> CssAnimations { get; private init; } = [];
+
     /// <summary>Gets the time in seconds up to which intervals are computed; intervals that begin later are left out.</summary>
     public double Horizon { get; }
 
@@ -74,9 +77,56 @@ internal sealed class SvgTimeline
             }
         }
 
-        SvgTimeline timeline = new(animations, horizon ?? DefaultHorizon(animations));
+        SvgTimeline timeline = new(animations, horizon ?? DefaultHorizon(animations)) { CssAnimations = ScanCss(document) };
         timeline.Resolve(report);
         return timeline;
+    }
+
+    /// <summary>
+    /// The CSS animations of a document: for each element, those its static computed style names (CSS Animations 1). Each
+    /// starts when the document loads. Only documents with an @keyframes rule are cascaded for this.
+    /// </summary>
+    private static List<(SvgElement Element, SvgCssAnimation Animation)> ScanCss(SvgDocument document)
+    {
+        List<(SvgElement, SvgCssAnimation)> found = [];
+        bool any = false;
+        foreach (SvgElement element in document.Root.Descendants().Prepend(document.Root))
+        {
+            if (element.Name == "style" && element.Text.Contains("keyframes", StringComparison.OrdinalIgnoreCase))
+            {
+                any = true;
+                break;
+            }
+        }
+
+        if (!any)
+        {
+            return found;
+        }
+
+        Styling.SvgStyler styler = new(document, new SvgReport(strict: false), new Css.CssMediaContext { Width = document.Size.X, Height = document.Size.Y });
+        if (styler.Keyframes.Count == 0)
+        {
+            return found;
+        }
+
+        // Ancestors first, so each element inherits its parent's computed style.
+        Dictionary<SvgElement, Css.CssComputedStyle> computed = new(IdentityComparer.Instance);
+        foreach (SvgElement element in document.Root.Descendants().Prepend(document.Root))
+        {
+            Css.CssComputedStyle? parent = element.Parent is SvgElement p && computed.TryGetValue(p, out Css.CssComputedStyle? ps) ? ps : null;
+            Css.CssComputedStyle style = styler.Computed(element, parent);
+            computed[element] = style;
+            if (SvgCssAnimation.Read(style, styler.Keyframes) is List<SvgCssAnimation> list)
+            {
+                foreach (SvgCssAnimation animation in list)
+                {
+                    found.Add((element, animation));
+                }
+            }
+        }
+
+        return found;
     }
 
     /// <summary>A horizon past every finite time the timing values add up to, between 20 and 600 seconds.</summary>

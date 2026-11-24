@@ -3,8 +3,8 @@ using Egami.Svg.Animation;
 namespace Egami.Svg;
 
 /// <summary>
-/// What a document's SMIL animations do over time, as <see cref="SvgDocument.Animation"/> finds them: whether it animates, how
-/// long it plays and whether it loops. Animations that wait for a click, a key or a wall-clock time never begin, as in a browser
+/// What a document's SMIL and CSS animations do over time, as <see cref="SvgDocument.Animation"/> finds them: whether it
+/// animates, how long it plays and whether it loops. Animations that wait for a click, a key or a wall-clock time never begin, as in a browser
 /// nobody touches.
 /// </summary>
 /// <example>
@@ -20,7 +20,10 @@ public sealed class SvgAnimationInfo
         HasEventTriggers = hasEventTriggers;
     }
 
-    /// <summary>Gets a value indicating whether the document has animation elements (animate, set, animateTransform, animateMotion, discard) with a target.</summary>
+    /// <summary>
+    /// Gets a value indicating whether the document has animation elements (animate, set, animateTransform, animateMotion,
+    /// discard) with a target, or elements whose style names an @keyframes rule in animation-name.
+    /// </summary>
     public bool HasAnimations { get; }
 
     /// <summary>
@@ -46,7 +49,7 @@ public sealed class SvgAnimationInfo
     internal static SvgAnimationInfo From(SvgTimeline timeline)
     {
         List<SvgAnimation> animations = timeline.Animations;
-        if (animations.Count == 0)
+        if (animations.Count == 0 && timeline.CssAnimations.Count == 0)
         {
             return new SvgAnimationInfo(false, null, null, false);
         }
@@ -103,6 +106,35 @@ public sealed class SvgAnimationInfo
                 {
                     periodic = false;
                 }
+            }
+        }
+
+        // CSS animations: one that repeats forever loops every duration (two for alternate directions); a paused one never moves.
+        foreach ((_, SvgCssAnimation css) in timeline.CssAnimations)
+        {
+            if (css.Paused || css.Duration == 0)
+            {
+                continue;
+            }
+
+            if (double.IsPositiveInfinity(css.Iterations))
+            {
+                forever = true;
+                latestBegin = Math.Max(latestBegin, css.Delay);
+                long ms = (long)Math.Round(css.Duration * (css.Direction is SvgCssDirection.Alternate or SvgCssDirection.AlternateReverse ? 2 : 1) * 1000);
+                if (ms <= 0)
+                {
+                    periodic = false;
+                    continue;
+                }
+
+                lcm = lcm == 0 ? ms : Lcm(lcm, ms);
+                periodic &= lcm <= MaxLoopMilliseconds;
+            }
+            else
+            {
+                last = Math.Max(last, css.End);
+                periodic = false;
             }
         }
 

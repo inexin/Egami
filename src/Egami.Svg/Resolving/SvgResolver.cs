@@ -86,8 +86,13 @@ internal sealed partial class SvgResolver
         _limits = new SvgLimits(_options.EffectiveContext.Limits);
         _languages = languages ?? ["en"];
         Vector2 size = document.Size;
-        _styler = new SvgStyler(document, report, new CssMediaContext { Width = size.X, Height = size.Y }, frame);
+        _styler = new SvgStyler(document, report, new CssMediaContext { Width = size.X, Height = size.Y }, frame, cssAnimations: frame?.CssAnimations == true);
         _geometry = new SvgGeometry(report) { Frame = frame };
+        if (_styler.Animates)
+        {
+            // Geometry properties CSS animations set (x, r, d...) win over the attributes; the static cascade's are not read.
+            _geometry.StyleValue = _styler.AnimatedValue;
+        }
         _frame = frame;
     }
 
@@ -699,7 +704,18 @@ internal sealed partial class SvgResolver
             }
         }
 
-        if (!transform.IsIdentity && style.TransformOrigin is IReadOnlyList<CssComponentValue> origin && SvgCssTransforms.TryOrigin(origin, box, out Vector2 o) && o != Vector2.Zero)
+        Vector2 o = Vector2.Zero;
+        bool hasOrigin = style.TransformOrigin is IReadOnlyList<CssComponentValue> origin && SvgCssTransforms.TryOrigin(origin, box, out o);
+
+        // CSS Transforms 2: translate, rotate, scale and the motion path's offset come before transform, in that order from
+        // the outside in, all about the transform origin.
+        if (style.Translate is not null || style.Rotate is not null || style.Scale is not null || style.OffsetPath is not null)
+        {
+            Matrix3x2 individual = SvgCssTransforms.Individual(style, box, o);
+            transform *= individual;
+        }
+
+        if (!transform.IsIdentity && hasOrigin && o != Vector2.Zero)
         {
             transform = Matrix3x2.CreateTranslation(-o) * transform * Matrix3x2.CreateTranslation(o);
         }

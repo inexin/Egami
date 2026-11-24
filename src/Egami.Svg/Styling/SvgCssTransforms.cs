@@ -78,6 +78,95 @@ internal static class SvgCssTransforms
         return true;
     }
 
+    /// <summary>
+    /// The individual transform properties and the motion path's offset (CSS Transforms 2, Motion Path 1) as one matrix to put
+    /// before the transform property's: translate, then rotate, then scale, then the offset, from the outside in. Percentages
+    /// in translate are of the reference box; the offset moves the transform origin, the anchor, to the point offset-distance
+    /// along offset-path (in the parent's user space) and turns it as offset-rotate says.
+    /// </summary>
+    public static Matrix3x2 Individual(SvgStyle style, RectF box, Vector2 origin)
+    {
+        Matrix3x2 m = Matrix3x2.Identity;
+        if (style.OffsetPath is string data && Offset(data, style.OffsetDistance, style.OffsetRotate, origin) is Matrix3x2 offset)
+        {
+            m = offset;
+        }
+
+        if (style.Scale is { } scale && SvgAnimationProperties.TryScale(scale, out double sx, out double sy))
+        {
+            m *= Matrix3x2.CreateScale((float)sx, (float)sy);
+        }
+
+        if (style.Rotate is { } rotate && SvgAnimationProperties.TryRotate(rotate, out double degrees))
+        {
+            m *= SvgTransforms.Rotate((float)degrees);
+        }
+
+        if (style.Translate is { } translate && SvgAnimationProperties.TryTranslate(translate, out CssLength x, out CssLength y))
+        {
+            m *= Matrix3x2.CreateTranslation(Pixels(x, box.Width), Pixels(y, box.Height));
+        }
+
+        return m;
+    }
+
+    private static float Pixels(CssLength length, float reference) =>
+        length.Unit == CssUnit.Percent
+            ? (float)length.Value / 100 * reference
+            : SvgStyleValues.TryLength(CssComponentValue.ParseList(length.ToString()), out SvgLength l) ? l.ToPixels(SvgLengthContext.Default, SvgAxis.Other) : 0;
+
+    // The offset transform: rotate about the anchor, then move the anchor onto the path (within the transform-origin frame).
+    private static Matrix3x2? Offset(string data, IReadOnlyList<CssComponentValue>? distanceValue, IReadOnlyList<CssComponentValue>? rotateValue, Vector2 anchor)
+    {
+        if (!Path.TryParseSvg(data, out Path? path) || path is null)
+        {
+            return null;
+        }
+
+        PathMeasure measure = new(path);
+        float total = measure.TotalLength;
+        if (!(total > 0) || !float.IsFinite(total))
+        {
+            return null;
+        }
+
+        float distance = 0;
+        if (distanceValue is not null && SvgStyleValues.TryLength(distanceValue, out SvgLength d))
+        {
+            distance = d.IsPercent ? d.Value / 100 * total : d.ToPixels(SvgLengthContext.Default, SvgAxis.Other);
+        }
+
+        // A closed path wraps the distance round; an open one clamps it to its ends.
+        bool closed = measure.Contours.Count > 0 && measure.Contours.All(c => c.IsClosed);
+        distance = closed ? ((distance % total) + total) % total : Math.Clamp(distance, 0, total);
+
+        // The contour the distance falls on.
+        int index = 0;
+        float local = distance;
+        while (index < measure.Contours.Count - 1 && local > measure.Contours[index].Length)
+        {
+            local -= measure.Contours[index].Length;
+            index++;
+        }
+
+        ContourMeasure contour = measure.Contours[index];
+        Vector2 point = contour.GetPosition(local);
+        bool auto = true;
+        double degrees = 0;
+        if (rotateValue is not null && !SvgAnimationProperties.TryOffsetRotate(rotateValue, out auto, out degrees))
+        {
+            (auto, degrees) = (true, 0);
+        }
+
+        if (auto)
+        {
+            Vector2 tangent = contour.GetTangent(local);
+            degrees += Math.Atan2(tangent.Y, tangent.X) * 180 / Math.PI;
+        }
+
+        return SvgTransforms.Rotate((float)degrees) * Matrix3x2.CreateTranslation(point - anchor);
+    }
+
     /// <summary>transform-origin: one or two keywords, lengths or percentages of the reference box (a third, z, is ignored).</summary>
     public static bool TryOrigin(IReadOnlyList<CssComponentValue> value, RectF box, out Vector2 origin)
     {
