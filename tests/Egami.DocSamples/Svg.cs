@@ -446,4 +446,89 @@ public class Svg
         Assert.Equal(TimeSpan.FromSeconds(2), info.LoopPeriod);
         Assert.Equal(100, frame.Width);
     }
+
+    private const string Bouncing = """
+        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="20">
+          <circle cx="10" cy="10" r="8" fill="#2a6">
+            <animate attributeName="cx" values="10;90;10" dur="2s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+        """;
+
+    [Fact]
+    public void SaveAnAnimationAsAGif()
+    {
+        SvgDocument document = SvgDocument.Parse(Bouncing);
+        string path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"egami-doc-{Guid.NewGuid():N}.gif");
+        try
+        {
+            #region rasterize-animation
+            // One loop (2 s) at 25 frames a second; frames that look the same merge into one longer frame.
+            using Raster<Rgba8> animation = document.RasterizeAnimation<Rgba8>(new SvgAnimationOptions { FrameRate = 25 });
+            animation.Save(path);   // loops forever, as the SVG does
+            #endregion
+            Assert.Equal(50, animation.Frames.Count);
+            Assert.Equal(0, animation.Metadata.LoopCount);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public void StreamAnAnimationFrameByFrame()
+    {
+        SvgDocument document = SvgDocument.Parse(Bouncing);
+        int count = 0;
+        #region render-frames
+        // One frame at a time, for a video encoder: a constant 30 frames a second for 4 seconds.
+        SvgAnimationOptions options = new() { FrameRate = 30, Length = TimeSpan.FromSeconds(4), MergeDuplicates = false };
+        foreach (SvgFrame<Rgba8> frame in document.RenderFrames<Rgba8>(options))
+        {
+            using Raster<Rgba8> picture = frame.Raster;   // yours to dispose
+            Console.WriteLine($"{frame.Time} for {frame.Duration}");
+            count++;
+        }
+        #endregion
+        Assert.Equal(120, count);
+    }
+
+    [Fact]
+    public void LoadAnAnimatedSvg()
+    {
+        string path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"egami-doc-{Guid.NewGuid():N}.svg");
+        File.WriteAllText(path, Bouncing);
+        try
+        {
+            #region load-animation
+            // With a frame rate, Raster.Load gives every frame, for the animation tools (Retime, ChangeSpeed, DrawAnimation).
+            EgamiContext context = EgamiContext.Default.WithFormat(SvgFormat.Info);
+            using Raster<Rgba8> animation = Raster.Load<Rgba8>(path, context, new SvgDecodeOptions { AnimationFrameRate = 10 });
+
+            // Or one moment of it, half a second in.
+            using Raster<Rgba8> moment = Raster.Load<Rgba8>(path, context, new SvgDecodeOptions { Time = TimeSpan.FromSeconds(0.5) });
+            #endregion
+            Assert.Equal(20, animation.Frames.Count);
+            Assert.Single(moment.Frames);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public void FreezeAMoment()
+    {
+        SvgDocument document = SvgDocument.Parse(Bouncing);
+        using MemoryStream stream = new();
+        #region freeze
+        // A static SVG of the moment half a second in: the circle where it is then, no animation left.
+        SvgDocument still = document.Freeze(TimeSpan.FromSeconds(0.5));
+        still.Save(stream);
+        #endregion
+        Assert.False(still.Animation.HasAnimations);
+        Assert.Equal("50", still.Root.Descendants().First(e => e.Name == "circle").Attributes["cx"]);
+    }
 }

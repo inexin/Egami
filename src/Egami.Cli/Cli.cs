@@ -46,7 +46,7 @@ internal static class Cli
                 return RunCommand.Execute(session, args[1..]);
             }
 
-            ParseResult result = root.Parse(args, new ParserConfiguration { EnablePosixBundling = false });
+            ParseResult result = root.Parse(SvgOptions.Normalize(args), new ParserConfiguration { EnablePosixBundling = false });
             if (result.Errors.Count > 0 && result.Action is not System.CommandLine.Help.HelpAction)
             {
                 bool atRoot = result.CommandResult.Command == root;

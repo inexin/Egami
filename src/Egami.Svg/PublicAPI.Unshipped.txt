@@ -8,3 +8,48 @@ Egami.Svg.SvgDocument.Animation.get -> Egami.Svg.SvgAnimationInfo!
 Egami.Svg.SvgDocument.RenderTreeAt(System.TimeSpan time) -> Egami.Svg.SvgGroup!
 Egami.Svg.SvgRenderOptions.Time.get -> System.TimeSpan?
 Egami.Svg.SvgRenderOptions.Time.init -> void
+Egami.Svg.SvgAnimationOptions
+Egami.Svg.SvgAnimationOptions.<Clone>$() -> Egami.Svg.SvgAnimationOptions!
+Egami.Svg.SvgAnimationOptions.Equals(Egami.Svg.SvgAnimationOptions? other) -> bool
+Egami.Svg.SvgAnimationOptions.FrameRate.get -> double
+Egami.Svg.SvgAnimationOptions.FrameRate.init -> void
+Egami.Svg.SvgAnimationOptions.Length.get -> System.TimeSpan?
+Egami.Svg.SvgAnimationOptions.Length.init -> void
+Egami.Svg.SvgAnimationOptions.MaxLength.get -> System.TimeSpan
+Egami.Svg.SvgAnimationOptions.MaxLength.init -> void
+Egami.Svg.SvgAnimationOptions.MergeDuplicates.get -> bool
+Egami.Svg.SvgAnimationOptions.MergeDuplicates.init -> void
+Egami.Svg.SvgAnimationOptions.Render.get -> Egami.Svg.SvgRenderOptions?
+Egami.Svg.SvgAnimationOptions.Render.init -> void
+Egami.Svg.SvgAnimationOptions.Start.get -> System.TimeSpan
+Egami.Svg.SvgAnimationOptions.Start.init -> void
+Egami.Svg.SvgAnimationOptions.SvgAnimationOptions() -> void
+Egami.Svg.SvgDecodeOptions.AnimationFrameRate.get -> double?
+Egami.Svg.SvgDecodeOptions.AnimationFrameRate.init -> void
+Egami.Svg.SvgDocument.Freeze(System.TimeSpan time) -> Egami.Svg.SvgDocument!
+Egami.Svg.SvgDocument.RasterizeAnimation<TPixel>(Egami.Svg.SvgAnimationOptions? options = null) -> Egami.Raster<TPixel>!
+Egami.Svg.SvgDocument.RenderFrames<TPixel>(Egami.Svg.SvgAnimationOptions? options = null) -> System.Collections.Generic.IEnumerable<Egami.Svg.SvgFrame<TPixel>>!
+Egami.Svg.SvgFrame<TPixel>
+Egami.Svg.SvgFrame<TPixel>.Deconstruct(out Egami.Raster<TPixel>! Raster, out System.TimeSpan Time, out System.TimeSpan Duration) -> void
+Egami.Svg.SvgFrame<TPixel>.Duration.get -> System.TimeSpan
+Egami.Svg.SvgFrame<TPixel>.Duration.init -> void
+Egami.Svg.SvgFrame<TPixel>.Equals(Egami.Svg.SvgFrame<TPixel> other) -> bool
+Egami.Svg.SvgFrame<TPixel>.Raster.get -> Egami.Raster<TPixel>!
+Egami.Svg.SvgFrame<TPixel>.Raster.init -> void
+Egami.Svg.SvgFrame<TPixel>.SvgFrame() -> void
+Egami.Svg.SvgFrame<TPixel>.SvgFrame(Egami.Raster<TPixel>! Raster, System.TimeSpan Time, System.TimeSpan Duration) -> void
+Egami.Svg.SvgFrame<TPixel>.Time.get -> System.TimeSpan
+Egami.Svg.SvgFrame<TPixel>.Time.init -> void
+override Egami.Svg.SvgAnimationOptions.Equals(object? obj) -> bool
+override Egami.Svg.SvgAnimationOptions.GetHashCode() -> int
+override Egami.Svg.SvgAnimationOptions.ToString() -> string!
+override Egami.Svg.SvgFrame<TPixel>.GetHashCode() -> int
+static Egami.Svg.SvgAnimationOptions.Default.get -> Egami.Svg.SvgAnimationOptions!
+static Egami.Svg.SvgAnimationOptions.operator !=(Egami.Svg.SvgAnimationOptions? left, Egami.Svg.SvgAnimationOptions? right) -> bool
+static Egami.Svg.SvgAnimationOptions.operator ==(Egami.Svg.SvgAnimationOptions? left, Egami.Svg.SvgAnimationOptions? right) -> bool
+static Egami.Svg.SvgFrame<TPixel>.operator !=(Egami.Svg.SvgFrame<TPixel> left, Egami.Svg.SvgFrame<TPixel> right) -> bool
+static Egami.Svg.SvgFrame<TPixel>.operator ==(Egami.Svg.SvgFrame<TPixel> left, Egami.Svg.SvgFrame<TPixel> right) -> bool
+~override Egami.Svg.SvgFrame<TPixel>.Equals(object obj) -> bool
+~override Egami.Svg.SvgFrame<TPixel>.ToString() -> string
+Egami.Svg.SvgDecodeOptions.Time.get -> System.TimeSpan?
+Egami.Svg.SvgDecodeOptions.Time.init -> void

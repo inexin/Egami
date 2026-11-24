@@ -84,7 +84,7 @@ internal sealed class McpCatalog
                 }
                 else
                 {
-                    tools.Add(child.Name == "run" && set.Workflow is { } workflow ? Run(set, workflow, child) : FromCommand(set, child, path));
+                    tools.Add(child.Name == "run" && set.Workflow is { } workflow ? Run(set, workflow, child, root) : FromCommand(set, child, path, root));
                 }
             }
         }
@@ -121,7 +121,11 @@ internal sealed class McpCatalog
     /// <summary><c>frames-split</c> or <c>--bit-depth</c> in snake case.</summary>
     internal static string Snake(string name) => name.TrimStart('-').Replace('-', '_');
 
-    private static ToolInfo FromCommand(McpToolSet set, Command command, string[] words)
+    /// <summary>The root's options every tool that takes files takes too (<see cref="McpToolSet.Shared"/>), as parameters.</summary>
+    private static IEnumerable<ToolParameter> Shared(McpToolSet set, Command root) =>
+        root.Options.Where(o => o.Recursive && set.Shared.Contains(o.Name)).Select(Parameter);
+
+    private static ToolInfo FromCommand(McpToolSet set, Command command, string[] words, Command root)
     {
         string name = string.Join('_', words.Select(Snake));
         List<ToolParameter> parameters = [];
@@ -141,6 +145,12 @@ internal sealed class McpCatalog
             }
         }
 
+        if (command.Arguments.Count > 0)
+        {
+            // Only commands that take files read inputs.
+            parameters.AddRange(Shared(set, root));
+        }
+
         for (int i = 0; i < parameters.Count; i++)
         {
             if (set.Needed.Contains((name, parameters[i].Name)))
@@ -154,7 +164,7 @@ internal sealed class McpCatalog
     }
 
     /// <summary><c>run</c>: inputs as a list and the steps as a workflow object, plus run's own options.</summary>
-    private static ToolInfo Run(McpToolSet set, McpWorkflow workflow, Command command)
+    private static ToolInfo Run(McpToolSet set, McpWorkflow workflow, Command command, Command root)
     {
         List<ToolParameter> parameters =
         [
@@ -170,6 +180,7 @@ internal sealed class McpCatalog
             }
         }
 
+        parameters.AddRange(Shared(set, root));
         return new ToolInfo("run", ["run"], command.Description ?? string.Empty, Unique("run", parameters), false, true);
     }
 

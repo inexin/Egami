@@ -92,6 +92,7 @@ internal static class RunCommand
         Verbosity verbosity = parsed.Flags.Contains("-q") ? Verbosity.Quiet : parsed.Flags.Contains("-vv") ? Verbosity.Debug : parsed.Flags.Contains("-v") ? Verbosity.Verbose : Verbosity.Normal;
         session.Configure(verbosity, parsed.Value("--limit"), 0, parsed.Flags.Contains("--preview-formats"));
         session.Raw = RawOptions.Build(parsed.Value, parsed.Flags.Contains);
+        session.Svg = SvgOptions.Build(parsed.Flags.Contains("--animate"), parsed.Value("--animate"), parsed.Value("--at"));
         session.InPlace = parsed.Flags.Contains("--in-place");
 
         List<PipelineItem> items;
@@ -175,6 +176,7 @@ internal static class RunCommand
         List<InputFile> inputs = Globber.Expand(session, parsed.Inputs, parsed.Flags.Contains("-r"));
         session.Configure(verbosity, parsed.Value("--limit"), inputs.Count > 1 && jobs != 1 ? 1 : 0, parsed.Flags.Contains("--preview-formats"));
         session.Raw = RawOptions.Build(parsed.Value, parsed.Flags.Contains);
+        session.Svg = SvgOptions.Build(parsed.Flags.Contains("--animate"), parsed.Value("--animate"), parsed.Value("--at"));
         OutputTemplate? output = parsed.Value("-o") is { } outputText ? OutputTemplate.Parse(outputText) : null;
         if (output is { IsStdout: true } && inputs.Count > 1)
         {
@@ -273,7 +275,23 @@ internal static class RunCommand
                 }
 
                 string canonical = Canonical(name);
-                if (RunOptions.TryGetValue(name, out bool runTakesValue) || RawOptions.Names.TryGetValue(name, out runTakesValue))
+                if (name == "--animate")
+                {
+                    // An optional frame rate: --animate=24, or --animate 24 when a number follows.
+                    parsed.Flags.Add(name);
+                    if (inline is not null)
+                    {
+                        parsed.Values[name] = inline;
+                    }
+                    else if (i + 1 < args.Length && double.TryParse(args[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out _))
+                    {
+                        parsed.Values[name] = args[++i];
+                    }
+
+                    continue;
+                }
+
+                if (RunOptions.TryGetValue(name, out bool runTakesValue) || RawOptions.Names.TryGetValue(name, out runTakesValue) || SvgOptions.Names.TryGetValue(name, out runTakesValue))
                 {
                     if (runTakesValue)
                     {

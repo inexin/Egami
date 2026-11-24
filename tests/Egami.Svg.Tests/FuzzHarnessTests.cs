@@ -101,6 +101,17 @@ public sealed class FuzzHarnessTests
     }
 
     [Fact]
+    public void TimelineCrashesFoundByAflStayFixed()
+    {
+        // Each file made the timeline harness throw once: Freeze wrote an attributeName that is no XML name, which Save refused.
+        string folder = Path.Combine(TestSvg.Root, "tests", "images", "fuzz", "svg-timeline-crashes");
+        foreach (string file in Directory.GetFiles(folder).Order(StringComparer.Ordinal))
+        {
+            SvgFuzzTarget.Timeline(File.ReadAllBytes(file));
+        }
+    }
+
+    [Fact]
     public void TimelineSeedsRunAndMutationsNeverCrash()
     {
         string folder = Path.Combine(TestSvg.Root, "tests", "images", "fuzz", "svg-timeline-seeds");

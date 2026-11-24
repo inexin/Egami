@@ -319,6 +319,7 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Streaming.Replayed` | Debug | A transcode of a stream that cannot seek kept the bytes it read to plan, and read them again |
 | `Svg.AnimationCycle` | Warning | The begin values of SMIL animations depend on each other in a loop that never moves time forward; those dependencies are ignored, as SMIL breaks cyclic dependencies (Egami.Svg) |
 | `Svg.AnimationLimit` | Warning | The SMIL animations' timing needs more interval steps than the timeline allows before the time asked for; later intervals are missing (Egami.Svg) |
+| `Svg.AnimationLength` | Warning | An animation drawn as frames (`RasterizeAnimation`, `RenderFrames`, or `Raster.Load` with `SvgDecodeOptions.AnimationFrameRate`) runs forever without a common loop period, or ends after `SvgAnimationOptions.MaxLength`; frames are drawn for that long (Egami.Svg) |
 | `Svg.Approximated` | Warning | A blend mode or call SVG cannot express was written as the nearest SVG can draw, or left out (Egami.Svg's SvgCanvas) |
 | `Svg.BadAnimation` | Warning | An animation element's attribute cannot be read (begin, end, dur, repeatCount, keyTimes, keySplines, values) or names no target; the value is ignored, or the animation has no effect (Egami.Svg) |
 | `Svg.BadAttribute` | Warning | An attribute's value cannot be read (a length, number, list, viewBox or keyword); it is ignored, as browsers ignore it (Egami.Svg) |

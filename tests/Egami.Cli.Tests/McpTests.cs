@@ -131,6 +131,30 @@ public sealed class McpTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task AnimatedSvgInputsTakeAnimateAndAt()
+    {
+        File.WriteAllText(_tool.PathOf("loop.svg"), "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='20'><rect width='10' height='10'><animate attributeName='x' values='0;50' dur='2s' repeatCount='indefinite' calcMode='discrete'/></rect></svg>");
+        McpClient client = await Connect();
+        CallToolResult frames = await client.CallToolAsync(
+            "convert",
+            new Dictionary<string, object?> { ["inputs"] = new[] { _tool.PathOf("loop.svg") }, ["output"] = "mcp/loop.gif", ["animate"] = 10 },
+            cancellationToken: Token);
+        Assert.False(frames.IsError, Text(frames));
+        using (Raster gif = Raster.Load(Assert.Single(Written(frames))))
+        {
+            Assert.Equal(2, gif.FrameCount);
+        }
+
+        CallToolResult moment = await client.CallToolAsync(
+            "run",
+            new Dictionary<string, object?> { ["inputs"] = new[] { _tool.PathOf("loop.svg") }, ["at"] = "1.5s", ["workflow"] = new Dictionary<string, object?> { ["egami"] = 1, ["steps"] = new[] { new Dictionary<string, object?> { ["op"] = "save", ["path"] = "mcp/moment.png" } } } },
+            cancellationToken: Token);
+        Assert.False(moment.IsError, Text(moment));
+        using Raster<Pixels.Rgba8> png = Raster.Load<Pixels.Rgba8>(Assert.Single(Written(moment)));
+        Assert.Equal(255, png.Row(5)[55].A);
+    }
+
+    [Fact]
     public async Task NegativeValuesAndOddNamesAreValuesNotOptions()
     {
         _tool.Copy(Png, "-odd.png");

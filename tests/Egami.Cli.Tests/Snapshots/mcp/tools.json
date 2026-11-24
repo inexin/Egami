@@ -21,6 +21,14 @@
           "all": {
             "type": "boolean",
             "description": "Also read the metadata: color profile, EXIF, XMP, IPTC, text, resolution."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           }
         },
         "required": [
@@ -118,6 +126,14 @@
           "in_place": {
             "type": "boolean",
             "description": "Allow outputs to replace their inputs."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           },
           "preview": {
             "type": "boolean",
@@ -244,6 +260,14 @@
           "background": {
             "type": "string",
             "description": "The color --fit pad fills with (transparent by default)."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           },
           "preview": {
             "type": "boolean",
@@ -376,6 +400,14 @@
             "type": "boolean",
             "description": "Keep EXIF, XMP, IPTC and text, which thumbnails leave out by default."
           },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
+          },
           "preview": {
             "type": "boolean",
             "description": "Also return the first file written as a picture, fit to 1024 pixels."
@@ -481,6 +513,14 @@
           "rect": {
             "type": "string",
             "description": "The area to keep: x,y,width,height in pixels."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           },
           "preview": {
             "type": "boolean",
@@ -601,6 +641,14 @@
             "type": "boolean",
             "description": "Decode and encode a JPEG even when a lossless rotation is possible."
           },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
+          },
           "preview": {
             "type": "boolean",
             "description": "Also return the first file written as a picture, fit to 1024 pixels."
@@ -712,6 +760,14 @@
             "type": "boolean",
             "description": "Decode and encode a JPEG even when a lossless flip is possible."
           },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
+          },
           "preview": {
             "type": "boolean",
             "description": "Also return the first file written as a picture, fit to 1024 pixels."
@@ -815,6 +871,14 @@
             "type": "boolean",
             "description": "Decode and encode a JPEG even when a lossless turn is possible."
           },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
+          },
           "preview": {
             "type": "boolean",
             "description": "Also return the first file written as a picture, fit to 1024 pixels."
@@ -901,6 +965,14 @@
           "in_place": {
             "type": "boolean",
             "description": "Allow outputs to replace their inputs."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           },
           "preview": {
             "type": "boolean",
@@ -1038,6 +1110,14 @@
             "type": "string",
             "description": "highlight (differing pixels in red, as ImageMagick's compare) or absolute (|a - b|)."
           },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
+          },
           "preview": {
             "type": "boolean",
             "description": "Also return the first file written as a picture, fit to 1024 pixels."
@@ -1081,6 +1161,14 @@
           "all": {
             "type": "boolean",
             "description": "Also count the colors and give perceptual hashes and the pixel signature."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           }
         },
         "required": [
@@ -1123,6 +1211,14 @@
           "delays": {
             "type": "string",
             "description": "Also write each frame's delay in milliseconds, one per line, to this file, so 'frames join --delays' can restore the timing."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           },
           "preview": {
             "type": "boolean",
@@ -1195,6 +1291,14 @@
             "type": "boolean",
             "description": "Lossless WebP."
           },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
+          },
           "preview": {
             "type": "boolean",
             "description": "Also return the first file written as a picture, fit to 1024 pixels."
@@ -1227,6 +1331,14 @@
           "folder": {
             "type": "string",
             "description": "The folder to write the layers and layers.json into; made when missing."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           },
           "preview": {
             "type": "boolean",
@@ -1263,6 +1375,14 @@
           "recursive": {
             "type": "boolean",
             "description": "Take every image in folders given as inputs, at any depth."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           }
         },
         "required": [
@@ -1360,6 +1480,14 @@
           "reencode": {
             "type": "boolean",
             "description": "Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           },
           "preview": {
             "type": "boolean",
@@ -1466,6 +1594,14 @@
           "reencode": {
             "type": "boolean",
             "description": "Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           },
           "preview": {
             "type": "boolean",
@@ -1589,6 +1725,14 @@
           "reference_white": {
             "type": "number",
             "description": "The brightness of SDR white in nits (203 by default)."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           },
           "preview": {
             "type": "boolean",
@@ -1737,6 +1881,14 @@
             "type": "string",
             "description": "A drop shadow in this color, offset by a tenth of the size."
           },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
+          },
           "preview": {
             "type": "boolean",
             "description": "Also return the first file written as a picture, fit to 1024 pixels."
@@ -1868,6 +2020,14 @@
             "type": "string",
             "description": "Resize the overlay first, in the size syntax (W, xH, WxH, P%)."
           },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
+          },
           "preview": {
             "type": "boolean",
             "description": "Also return the first file written as a picture, fit to 1024 pixels."
@@ -1946,6 +2106,14 @@
           "quality": {
             "type": "integer",
             "description": "Lossy quality from 0 to 100."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           },
           "preview": {
             "type": "boolean",
@@ -2059,6 +2227,14 @@
             "type": "boolean",
             "description": "Allow outputs to replace their inputs."
           },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
+          },
           "preview": {
             "type": "boolean",
             "description": "Also return the first file written as a picture, fit to 1024 pixels."
@@ -2086,6 +2262,14 @@
           "format": {
             "type": "string",
             "description": "A format name or extension, to list its writer settings."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
           }
         },
         "additionalProperties": false

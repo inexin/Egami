@@ -13,7 +13,11 @@ namespace Egami.Svg.Styling;
 /// </summary>
 internal static class SvgCssTransforms
 {
-    public static bool TryResolve(IReadOnlyList<CssComponentValue> value, RectF box, out Matrix3x2 matrix)
+    /// <summary>
+    /// Reads a transform list into a matrix. Lengths in em, rem and viewport units resolve against <paramref name="lengths"/>
+    /// (the element's font size and the viewport it is drawn in); percentages in translate against <paramref name="box"/>.
+    /// </summary>
+    public static bool TryResolve(IReadOnlyList<CssComponentValue> value, RectF box, in SvgLengthContext lengths, out Matrix3x2 matrix)
     {
         matrix = Matrix3x2.Identity;
         List<float> args = [];
@@ -40,7 +44,7 @@ internal static class SvgCssTransforms
                     continue;
                 }
 
-                if (!TryArgument(arg, name, index, angles, box, out float number))
+                if (!TryArgument(arg, name, index, angles, box, lengths, out float number))
                 {
                     return false;
                 }
@@ -224,7 +228,7 @@ internal static class SvgCssTransforms
         return true;
     }
 
-    private static bool TryArgument(CssComponentValue arg, string function, int index, bool angles, RectF box, out float number)
+    private static bool TryArgument(CssComponentValue arg, string function, int index, bool angles, RectF box, in SvgLengthContext lengths, out float number)
     {
         number = 0;
         if (arg is not CssTokenValue { Token: var token })
@@ -256,7 +260,7 @@ internal static class SvgCssTransforms
                 number = (float)token.Number / 100 * (vertical ? box.Height : box.Width);
                 return true;
             case CssTokenKind.Dimension when SvgStyleValues.TryLength(arg, out SvgLength length):
-                number = length.ToPixels(SvgLengthContext.Default, SvgAxis.Other);
+                number = length.ToPixels(lengths, SvgAxis.Other);
                 return true;
             default:
                 return false;

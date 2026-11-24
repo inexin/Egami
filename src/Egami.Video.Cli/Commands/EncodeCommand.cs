@@ -6,6 +6,7 @@ using Egami.Cli.Pipeline;
 using Egami.Colors;
 using Egami.Formats;
 using Egami.Pixels;
+using Egami.Svg;
 using Egami.Video.Cli.Host;
 using Egami.Video.Codecs;
 
@@ -13,8 +14,9 @@ namespace Egami.Video.Cli.Commands;
 
 /// <summary>
 /// <c>egami-video encode</c> (Build Plan tasks 10 and 11): makes a clip from images (a list, globs or an image sequence such
-/// as <c>shots/{frame:0000}.png</c>) or from a video such as a Y4M stream on standard input, with the encoders Egami.Video
-/// has (Motion JPEG, VP8 and uncompressed video), and an audio track copied from another file. Like
+/// as <c>shots/{frame:0000}.png</c>), from an animated SVG drawn frame by frame, or from a video such as a Y4M stream on
+/// standard input, with the encoders Egami.Video has (Motion JPEG, VP8 and uncompressed video), and an audio track copied
+/// from another file. Like
 /// <c>ffmpeg -framerate 25 -i shots/%04d.png -c:v mjpeg clip.mkv</c>.
 /// </summary>
 internal static class EncodeCommand
@@ -23,7 +25,7 @@ internal static class EncodeCommand
     {
         Argument<string[]> inputs = new("inputs")
         {
-            Description = "Images in order (files, or globs sorted by name), an image sequence such as shots/{frame:0000}.png or shots/%04d.png, a video such as a Y4M file, or - for Y4M or Matroska on standard input.",
+            Description = "Images in order (files, or globs sorted by name), an image sequence such as shots/{frame:0000}.png or shots/%04d.png, an animated SVG, a video such as a Y4M file, or - for Y4M or Matroska on standard input.",
             Arity = ArgumentArity.OneOrMore,
         };
         Option<string?> output = new("--output", "-o") { Description = "The clip to write, or - for standard output (with --format).", HelpName = "path" };
@@ -35,6 +37,7 @@ internal static class EncodeCommand
         Option<string?> bitrate = new("--bitrate", "-b") { Description = "VP8, VP9 and AV1: aim at this average bitrate instead of a quality, such as 2000k or 1.5M.", HelpName = "bits/s" };
         Option<string?> size = new("--size") { Description = "Fit every frame into this size, keeping its shape, with black around it; images take the first image's size by default.", HelpName = "WxH" };
         Option<string?> chroma = new("--chroma") { Description = "Chroma subsampling for frames made from images: 420 (the default), 422 or 444.", HelpName = "420|422|444" };
+        Option<string?> duration = new("--duration", "-t") { Description = "For an SVG input: how long to draw its animation, in seconds or [HH:]MM:SS[.mmm]; by default one loop, or up to the end of its last animation, at most 10 seconds.", HelpName = "time" };
         Option<string?> audio = new("--audio") { Description = "Add the first audio track of this file, copied without decoding (or filtered and encoded again with the audio filter options), up to the end of the video.", HelpName = "file" };
         AudioCommand.FilterOptions filters = new();
         Command command = new("encode", "Make a clip from images, an image sequence or a Y4M stream, with Motion JPEG, VP8 or uncompressed video, and audio from another file.");
@@ -48,6 +51,7 @@ internal static class EncodeCommand
         command.Options.Add(bitrate);
         command.Options.Add(size);
         command.Options.Add(chroma);
+        command.Options.Add(duration);
         command.Options.Add(audio);
         Option<string?> fragment = Fragments.CreateOption();
         command.Options.Add(fragment);
@@ -66,6 +70,7 @@ internal static class EncodeCommand
                 Bitrate = result.GetValue(bitrate) is { } b ? ParseBitrate(b) : null,
                 Size = result.GetValue(size) is { } s ? ParseSize(s) : null,
                 Chroma = result.GetValue(chroma) is { } c ? ParseChroma(c) : null,
+                Duration = result.GetValue(duration) is { } d ? ParseLength(d) : null,
                 Audio = result.GetValue(audio),
                 AudioFilters = filters.Plan(result) is { IsEmpty: false } plan ? plan : null,
                 Extras = EncoderExtras.Parse(result),
@@ -81,6 +86,11 @@ internal static class EncodeCommand
                 throw new UsageException("--trim-silence would put the sound out of step with the video; use egami-video audio on the sound alone.");
             }
             Source source = Source.Find(session, result.GetValue(inputs) ?? []);
+            if (settings.Duration is not null && !source.IsSvg)
+            {
+                throw new UsageException("--duration is for an SVG input; images last a frame each and a video its own length.");
+            }
+
             if (settings.Deinterlace is not null && !source.KeepsTimes)
             {
                 throw new UsageException("--deinterlace is for a video input, not images.");
@@ -299,6 +309,13 @@ internal static class EncodeCommand
     }
 
     /// <summary>Parses a frame rate: 25, 29.97 (read as 30000/1001), or 30000/1001.</summary>
+    /// <summary>Parses a positive length: seconds or [HH:]MM:SS[.mmm].</summary>
+    private static TimeSpan ParseLength(string text)
+    {
+        double seconds = TimeValue.ParseDuration(text, "--duration", allowFrames: false).Seconds;
+        return seconds > 0 && seconds <= 86_400 ? TimeSpan.FromSeconds(seconds) : throw new UsageException($"--duration takes a length of more than 0 and at most a day, not '{text}'.");
+    }
+
     internal static Rational ParseRate(string text, string option = "--rate")
     {
         Rational rate;
@@ -363,6 +380,9 @@ internal static class EncodeCommand
 
         public ChromaFormat? Chroma { get; init; }
 
+        /// <summary>Gets how long an SVG input's animation is drawn, or <see langword="null"/> for the length it gives.</summary>
+        public TimeSpan? Duration { get; init; }
+
         public string? Audio { get; init; }
 
         /// <summary>Gets the filters the audio runs through, or <see langword="null"/> to copy it.</summary>
@@ -381,16 +401,20 @@ internal static class EncodeCommand
     {
         private readonly List<InputFile> _images = [];
         private InputFile? _video;
+        private InputFile? _svg;
         private FrameSource? _opened;
 
         /// <summary>Gets the input that names the job in messages and progress.</summary>
         public InputFile Display { get; private set; } = null!;
 
         /// <summary>Gets the paths of the input files, so the output never replaces one.</summary>
-        public IEnumerable<string> Paths => _images.Select(i => i.Path!).Concat(_video?.Path is { } path ? [path] : []);
+        public IEnumerable<string> Paths => _images.Select(i => i.Path!).Concat(_video?.Path is { } path ? [path] : []).Concat(_svg?.Path is { } svg ? [svg] : []);
 
         /// <summary>Gets the number of frames when known before reading (images).</summary>
-        public long? Count => _video is null ? _images.Count : null;
+        public long? Count => _video is null && _svg is null ? _images.Count : null;
+
+        /// <summary>Gets a value indicating whether the frames are an SVG's animation.</summary>
+        public bool IsSvg => _svg is not null;
 
         /// <summary>Gets the video's frame rate, or <see langword="null"/> for images.</summary>
         public Rational? Rate { get; private set; }
@@ -419,6 +443,15 @@ internal static class EncodeCommand
                 }
 
                 source.Display = source._images[0];
+                return source;
+            }
+
+            // One SVG file: its animation, drawn at the clip's frame rate.
+            if (patterns is [{ } single] && !Globber.HasWildcard(single)
+                && (single.EndsWith(".svg", StringComparison.OrdinalIgnoreCase) || single.EndsWith(".svgz", StringComparison.OrdinalIgnoreCase)))
+            {
+                source._svg = Globber.Expand(session.Images, patterns, recursive: false)[0];
+                source.Display = source._svg;
                 return source;
             }
 
@@ -451,7 +484,7 @@ internal static class EncodeCommand
                 return Video(session, _opened, settings);
             }
 
-            return Images(session, settings);
+            return _svg is { } svg ? Svg(session, svg, settings) : Images(session, settings);
         }
 
         public void Dispose() => _opened?.Dispose();
@@ -489,6 +522,48 @@ internal static class EncodeCommand
                 }
 
                 yield return new VideoFrame<Rgba8>(Fit(image, settings.Size ?? new Size(image.Width, image.Height)), time) { FieldOrder = fields };
+            }
+        }
+
+        /// <summary>
+        /// An SVG's animation at the clip's rate (25 by default), a frame for every step without merging still ones, for the
+        /// length --duration gives or the document's own; drawn at the size that fits --size, so it is not scaled afterwards.
+        /// </summary>
+        private static IEnumerable<VideoFrame> Svg(VideoSession session, InputFile input, Settings settings)
+        {
+            SvgDocument document;
+            try
+            {
+                document = SvgDocument.Load(input.Path!, new SvgLoadOptions { Context = session.Images.Context });
+            }
+            catch (SvgException error)
+            {
+                throw new CorruptDataException("SVG", 0, error.Message, error);
+            }
+
+            Rational rate = settings.Rate ?? new Rational(25, 1);
+            double fps = rate.Numerator / (double)rate.Denominator;
+            if (!(fps > 0 && fps <= 1000))
+            {
+                throw new UsageException("An SVG is drawn at up to 1000 frames a second; give a lower --rate.");
+            }
+
+            float scale = settings.Size is { } fit && document.Size.X > 0 && document.Size.Y > 0
+                ? (float)Math.Min(fit.Width / (double)document.Size.X, fit.Height / (double)document.Size.Y)
+                : 1;
+            SvgAnimationOptions options = new()
+            {
+                FrameRate = fps,
+                Length = settings.Duration,
+                MergeDuplicates = false,
+                Render = new SvgRenderOptions { Scale = scale, Context = session.Images.Context },
+            };
+            Size? target = settings.Size;
+            foreach (SvgFrame<Rgba8> frame in document.RenderFrames<Rgba8>(options))
+            {
+                session.Cancellation.ThrowIfCancellationRequested();
+                target ??= new Size(frame.Raster.Width, frame.Raster.Height);
+                yield return new VideoFrame<Rgba8>(Fit(frame.Raster, target.Value), MediaTime.Zero);
             }
         }
 

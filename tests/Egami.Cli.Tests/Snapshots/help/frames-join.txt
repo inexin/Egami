@@ -38,4 +38,6 @@ Options:
   --raw-auto-ca                        Measure and correct lateral chromatic aberration when no lens profile covers the file.
   --raw-tone-curve                     Give a develop without a profile tone curve the default contrast curve.
   --raw-no-profile                     Leave out the camera profile's look (HueSatMap, LookTable and tone curve).
+  --animate <fps>                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at <time>                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 

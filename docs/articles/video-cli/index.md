@@ -40,7 +40,7 @@ With the `egami` tool installed too, `egami video info clip.mkv` runs `egami-vid
 | `metadata` | Write tags and chapters as JSON, or change them | `-f ffmetadata`, `-metadata` |
 | `subs` | Convert, shift and sync SRT, WebVTT and ASS files; subtitle tracks to and from text files | `ffmpeg -i in.srt out.vtt`, `-itsoffset`, `-c:s mov_text` |
 | `frames` | Frames as images; Motion JPEG frames as JPEG without decoding | `ffmpeg -i in out-%04d.png` |
-| `encode` | Images, an image sequence or Y4M into a clip | `ffmpeg -framerate 30 -i %04d.png` |
+| `encode` | Images, an image sequence, an animated SVG or Y4M into a clip | `ffmpeg -framerate 30 -i %04d.png` |
 | `run` | egami's steps on every frame, then encode | `-vf scale,crop,pad,transpose` |
 | `thumbnail` | A representative frame | `-vf thumbnail` |
 | `scenes` | Where the scenes start, and a frame of each | `select='gt(scene,0.4)'` |
@@ -195,10 +195,13 @@ suppress` drops flashes instead of merging them, `--frame middle` or `last` pick
 `--series` writes every frame's score to a CSV file.
 
 `encode` goes the other way: images in name order, an image sequence (`shots/{frame:000}.jpg` reads frame 0, 1, 2 until one is
-missing), or a Y4M file or stream.
+missing), an animated SVG, or a Y4M file or stream. An SVG's SMIL and CSS animations are drawn frame by frame at `--rate` (25
+by default), for `--duration`, or else for one loop or up to the end of its last animation, at most 10 seconds
+([SVG](../guides/svg.md#frames-files-and-frozen-moments)); `--size` draws it at the size that fits, so it stays sharp.
 
 ```sh
 egami-video encode "shots/*.jpg" --rate 2 -o slideshow.mkv
+egami-video encode spinner.svg --rate 30 --duration 4 --size 640x360 -o spinner.webm --codec vp9
 ```
 
 ## Steps on every frame

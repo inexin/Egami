@@ -101,6 +101,9 @@ internal sealed class SvgStyler
         }
     }
 
+    /// <summary>Gets the values CSS animations gave each element styled so far, by property; null when none did.</summary>
+    public IReadOnlyDictionary<SvgElement, Dictionary<string, string>>? AnimatedValues => _animated;
+
     /// <summary>The value a CSS animation gives a property of an element at this moment, or null when none does.</summary>
     public string? AnimatedValue(SvgElement element, string name) =>
         _animated is not null && _animated.TryGetValue(element, out Dictionary<string, string>? values) && values.TryGetValue(name, out string? value) ? value : null;

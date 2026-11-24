@@ -147,6 +147,35 @@ Transform lists that need matrices and hold percentages still change halfway.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#css-animation)]
 
+### Frames, files and frozen moments
+
+`SvgDocument.RasterizeAnimation` draws the animations into one animated raster that saves as GIF, APNG, WebP or AVIF. It
+draws a frame every 1/`FrameRate` seconds (30 by default) of `SvgAnimationOptions`: one loop when every animation repeats
+forever with a common period, else up to and including the moment the last animation ends, at most `MaxLength` (10
+seconds; an `Svg.AnimationLength` warning says when that cut the animation short). Set `Start` and `Length` to pick the
+stretch yourself. Frames that look the same as the one before merge into it, so still stretches cost one frame; each
+frame's delay is how long it lasts. The raster loops forever when the document loops, and plays once otherwise. Frames
+are drawn on as many threads as the context allows, and `MaxFrames` and `MaxTotalBytes` are checked before anything is
+drawn.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#rasterize-animation)]
+
+`RenderFrames` hands the same frames over one at a time, each with the moment it shows and how long it lasts, holding only
+a frame per thread: the shape a video encoder wants. Turn `MergeDuplicates` off there for a constant frame rate.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#render-frames)]
+
+`Raster.Load` draws the static document unless `SvgDecodeOptions.AnimationFrameRate` is set; then an animated SVG loads
+with all its frames, as `RasterizeAnimation` draws them, ready for the animation tools.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#load-animation)]
+
+`SvgDocument.Freeze` bakes one moment into a static copy: the animated values are written into the attributes and
+`style`, `animateMotion` into the transform, discarded elements are left out, and the animation elements and CSS
+animations are taken away, so any viewer shows that moment.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#freeze)]
+
 ## Untrusted files
 
 An SVG file is untrusted input. A load honors the context's `SafetyLimits`: the file, after gzip, is bounded by

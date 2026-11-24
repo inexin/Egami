@@ -33,6 +33,9 @@ internal sealed class GlobalOptions
     /// <summary>Gets the <c>--raw-*</c> options of camera RAW inputs.</summary>
     public RawOptions Raw { get; } = new();
 
+    /// <summary>Gets <c>--animate</c> and <c>--at</c>, for SVG inputs.</summary>
+    public SvgOptions Svg { get; } = new();
+
     /// <summary>Adds the shared options to the root command and keeps them on the session.</summary>
     public static void AddTo(Command root, CliSession session)
     {
@@ -43,6 +46,7 @@ internal sealed class GlobalOptions
         root.Options.Add(options.Limit);
         root.Options.Add(options.PreviewFormats);
         options.Raw.AddTo(root);
+        options.Svg.AddTo(root);
         session.Globals = options;
     }
 
@@ -56,6 +60,7 @@ internal sealed class GlobalOptions
             : Verbosity.Normal;
         session.Configure(verbosity, result.GetValue(options.Limit), maxParallelism, result.GetValue(options.PreviewFormats));
         session.Raw = options.Raw.From(result);
+        session.Svg = options.Svg.From(result);
     }
 }
 
