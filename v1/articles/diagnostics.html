@@ -1355,6 +1355,11 @@ each page, a <code>ConvertColorTo</code> load) is one activity. A transcode that
 <td>The SMIL animations' timing needs more interval steps than the timeline allows before the time asked for; later intervals are missing (Egami.Svg)</td>
 </tr>
 <tr>
+<td><code>Svg.AnimationLength</code></td>
+<td>Warning</td>
+<td>An animation drawn as frames (<code>RasterizeAnimation</code>, <code>RenderFrames</code>, or <code>Raster.Load</code> with <code>SvgDecodeOptions.AnimationFrameRate</code>) runs forever without a common loop period, or ends after <code>SvgAnimationOptions.MaxLength</code>; frames are drawn for that long (Egami.Svg)</td>
+</tr>
+<tr>
 <td><code>Svg.Approximated</code></td>
 <td>Warning</td>
 <td>A blend mode or call SVG cannot express was written as the nearest SVG can draw, or left out (Egami.Svg's SvgCanvas)</td>

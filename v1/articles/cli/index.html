@@ -169,6 +169,15 @@ change nothing for other inputs.</p>
 <pre><code class="lang-text">egami convert IMG_0001.CR2 -o photo.jpg --raw-exposure +0.5 --raw-tone-curve
 egami convert IMG_0002.CR3 -o preview.jpg --raw-output preview
 </code></pre>
+<p>An SVG input loads as its static picture. With <code>--animate [fps]</code>, which every command takes, an animated SVG (SMIL or CSS
+animations) loads with all its frames instead, 30 a second unless you give a rate: one loop, or up to the end of its last
+animation, at most 10 seconds, with frames that look alike merged (<a href="../guides/svg.html#frames-files-and-frozen-moments">SVG</a>).
+The frames go through the same steps as a GIF's. <code>--at &lt;time&gt;</code> (<code>1.5s</code>, <code>1500ms</code> or <code>1.5</code>) draws the SVG as it looks that
+long after it loads; with <code>--animate</code> it is where the frames start. Neither changes other inputs.</p>
+<pre><code class="lang-text">egami convert spinner.svg -o spinner.gif --animate 25
+egami resize &quot;icons/*.svg&quot; --size 64x64 --animate -o &quot;anim/{name}.webp&quot;
+egami convert spinner.svg --at 0.5s -o still.png
+</code></pre>
 <h2 id="sizes">Sizes</h2>
 <p><code>resize</code>, <code>thumbnail</code> and the <code>resize</code> step take the size syntax, the common subset of ImageMagick's geometry:</p>
 <table>

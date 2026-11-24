@@ -85857,6 +85857,103 @@ references:
   isSpec: "True"
   fullName: Egami.Svg.SvgAnimationInfo.LoopPeriod
   nameWithType: SvgAnimationInfo.LoopPeriod
+- uid: Egami.Svg.SvgAnimationOptions
+  name: SvgAnimationOptions
+  href: api/Egami.Svg.SvgAnimationOptions.html
+  commentId: T:Egami.Svg.SvgAnimationOptions
+  fullName: Egami.Svg.SvgAnimationOptions
+  nameWithType: SvgAnimationOptions
+- uid: Egami.Svg.SvgAnimationOptions.Default
+  name: Default
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_Default
+  commentId: P:Egami.Svg.SvgAnimationOptions.Default
+  fullName: Egami.Svg.SvgAnimationOptions.Default
+  nameWithType: SvgAnimationOptions.Default
+- uid: Egami.Svg.SvgAnimationOptions.Default*
+  name: Default
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_Default_
+  commentId: Overload:Egami.Svg.SvgAnimationOptions.Default
+  isSpec: "True"
+  fullName: Egami.Svg.SvgAnimationOptions.Default
+  nameWithType: SvgAnimationOptions.Default
+- uid: Egami.Svg.SvgAnimationOptions.FrameRate
+  name: FrameRate
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_FrameRate
+  commentId: P:Egami.Svg.SvgAnimationOptions.FrameRate
+  fullName: Egami.Svg.SvgAnimationOptions.FrameRate
+  nameWithType: SvgAnimationOptions.FrameRate
+- uid: Egami.Svg.SvgAnimationOptions.FrameRate*
+  name: FrameRate
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_FrameRate_
+  commentId: Overload:Egami.Svg.SvgAnimationOptions.FrameRate
+  isSpec: "True"
+  fullName: Egami.Svg.SvgAnimationOptions.FrameRate
+  nameWithType: SvgAnimationOptions.FrameRate
+- uid: Egami.Svg.SvgAnimationOptions.Length
+  name: Length
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_Length
+  commentId: P:Egami.Svg.SvgAnimationOptions.Length
+  fullName: Egami.Svg.SvgAnimationOptions.Length
+  nameWithType: SvgAnimationOptions.Length
+- uid: Egami.Svg.SvgAnimationOptions.Length*
+  name: Length
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_Length_
+  commentId: Overload:Egami.Svg.SvgAnimationOptions.Length
+  isSpec: "True"
+  fullName: Egami.Svg.SvgAnimationOptions.Length
+  nameWithType: SvgAnimationOptions.Length
+- uid: Egami.Svg.SvgAnimationOptions.MaxLength
+  name: MaxLength
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_MaxLength
+  commentId: P:Egami.Svg.SvgAnimationOptions.MaxLength
+  fullName: Egami.Svg.SvgAnimationOptions.MaxLength
+  nameWithType: SvgAnimationOptions.MaxLength
+- uid: Egami.Svg.SvgAnimationOptions.MaxLength*
+  name: MaxLength
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_MaxLength_
+  commentId: Overload:Egami.Svg.SvgAnimationOptions.MaxLength
+  isSpec: "True"
+  fullName: Egami.Svg.SvgAnimationOptions.MaxLength
+  nameWithType: SvgAnimationOptions.MaxLength
+- uid: Egami.Svg.SvgAnimationOptions.MergeDuplicates
+  name: MergeDuplicates
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_MergeDuplicates
+  commentId: P:Egami.Svg.SvgAnimationOptions.MergeDuplicates
+  fullName: Egami.Svg.SvgAnimationOptions.MergeDuplicates
+  nameWithType: SvgAnimationOptions.MergeDuplicates
+- uid: Egami.Svg.SvgAnimationOptions.MergeDuplicates*
+  name: MergeDuplicates
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_MergeDuplicates_
+  commentId: Overload:Egami.Svg.SvgAnimationOptions.MergeDuplicates
+  isSpec: "True"
+  fullName: Egami.Svg.SvgAnimationOptions.MergeDuplicates
+  nameWithType: SvgAnimationOptions.MergeDuplicates
+- uid: Egami.Svg.SvgAnimationOptions.Render
+  name: Render
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_Render
+  commentId: P:Egami.Svg.SvgAnimationOptions.Render
+  fullName: Egami.Svg.SvgAnimationOptions.Render
+  nameWithType: SvgAnimationOptions.Render
+- uid: Egami.Svg.SvgAnimationOptions.Render*
+  name: Render
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_Render_
+  commentId: Overload:Egami.Svg.SvgAnimationOptions.Render
+  isSpec: "True"
+  fullName: Egami.Svg.SvgAnimationOptions.Render
+  nameWithType: SvgAnimationOptions.Render
+- uid: Egami.Svg.SvgAnimationOptions.Start
+  name: Start
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_Start
+  commentId: P:Egami.Svg.SvgAnimationOptions.Start
+  fullName: Egami.Svg.SvgAnimationOptions.Start
+  nameWithType: SvgAnimationOptions.Start
+- uid: Egami.Svg.SvgAnimationOptions.Start*
+  name: Start
+  href: api/Egami.Svg.SvgAnimationOptions.html#Egami_Svg_SvgAnimationOptions_Start_
+  commentId: Overload:Egami.Svg.SvgAnimationOptions.Start
+  isSpec: "True"
+  fullName: Egami.Svg.SvgAnimationOptions.Start
+  nameWithType: SvgAnimationOptions.Start
 - uid: Egami.Svg.SvgAttribute
   name: SvgAttribute
   href: api/Egami.Svg.SvgAttribute.html
@@ -86628,6 +86725,19 @@ references:
   commentId: T:Egami.Svg.SvgDecodeOptions
   fullName: Egami.Svg.SvgDecodeOptions
   nameWithType: SvgDecodeOptions
+- uid: Egami.Svg.SvgDecodeOptions.AnimationFrameRate
+  name: AnimationFrameRate
+  href: api/Egami.Svg.SvgDecodeOptions.html#Egami_Svg_SvgDecodeOptions_AnimationFrameRate
+  commentId: P:Egami.Svg.SvgDecodeOptions.AnimationFrameRate
+  fullName: Egami.Svg.SvgDecodeOptions.AnimationFrameRate
+  nameWithType: SvgDecodeOptions.AnimationFrameRate
+- uid: Egami.Svg.SvgDecodeOptions.AnimationFrameRate*
+  name: AnimationFrameRate
+  href: api/Egami.Svg.SvgDecodeOptions.html#Egami_Svg_SvgDecodeOptions_AnimationFrameRate_
+  commentId: Overload:Egami.Svg.SvgDecodeOptions.AnimationFrameRate
+  isSpec: "True"
+  fullName: Egami.Svg.SvgDecodeOptions.AnimationFrameRate
+  nameWithType: SvgDecodeOptions.AnimationFrameRate
 - uid: Egami.Svg.SvgDecodeOptions.Scale
   name: Scale
   href: api/Egami.Svg.SvgDecodeOptions.html#Egami_Svg_SvgDecodeOptions_Scale
@@ -86641,6 +86751,19 @@ references:
   isSpec: "True"
   fullName: Egami.Svg.SvgDecodeOptions.Scale
   nameWithType: SvgDecodeOptions.Scale
+- uid: Egami.Svg.SvgDecodeOptions.Time
+  name: Time
+  href: api/Egami.Svg.SvgDecodeOptions.html#Egami_Svg_SvgDecodeOptions_Time
+  commentId: P:Egami.Svg.SvgDecodeOptions.Time
+  fullName: Egami.Svg.SvgDecodeOptions.Time
+  nameWithType: SvgDecodeOptions.Time
+- uid: Egami.Svg.SvgDecodeOptions.Time*
+  name: Time
+  href: api/Egami.Svg.SvgDecodeOptions.html#Egami_Svg_SvgDecodeOptions_Time_
+  commentId: Overload:Egami.Svg.SvgDecodeOptions.Time
+  isSpec: "True"
+  fullName: Egami.Svg.SvgDecodeOptions.Time
+  nameWithType: SvgDecodeOptions.Time
 - uid: Egami.Svg.SvgDocument
   name: SvgDocument
   href: api/Egami.Svg.SvgDocument.html
@@ -86733,6 +86856,19 @@ references:
   isSpec: "True"
   fullName: Egami.Svg.SvgDocument.FindById
   nameWithType: SvgDocument.FindById
+- uid: Egami.Svg.SvgDocument.Freeze(System.TimeSpan)
+  name: Freeze(TimeSpan)
+  href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Freeze_System_TimeSpan_
+  commentId: M:Egami.Svg.SvgDocument.Freeze(System.TimeSpan)
+  fullName: Egami.Svg.SvgDocument.Freeze(System.TimeSpan)
+  nameWithType: SvgDocument.Freeze(TimeSpan)
+- uid: Egami.Svg.SvgDocument.Freeze*
+  name: Freeze
+  href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Freeze_
+  commentId: Overload:Egami.Svg.SvgDocument.Freeze
+  isSpec: "True"
+  fullName: Egami.Svg.SvgDocument.Freeze
+  nameWithType: SvgDocument.Freeze
 - uid: Egami.Svg.SvgDocument.Load(System.IO.Stream,Egami.Svg.SvgLoadOptions)
   name: Load(Stream, SvgLoadOptions?)
   href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Load_System_IO_Stream_Egami_Svg_SvgLoadOptions_
@@ -86794,6 +86930,22 @@ references:
   isSpec: "True"
   fullName: Egami.Svg.SvgDocument.Rasterize
   nameWithType: SvgDocument.Rasterize
+- uid: Egami.Svg.SvgDocument.RasterizeAnimation*
+  name: RasterizeAnimation
+  href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_RasterizeAnimation_
+  commentId: Overload:Egami.Svg.SvgDocument.RasterizeAnimation
+  isSpec: "True"
+  fullName: Egami.Svg.SvgDocument.RasterizeAnimation
+  nameWithType: SvgDocument.RasterizeAnimation
+- uid: Egami.Svg.SvgDocument.RasterizeAnimation``1(Egami.Svg.SvgAnimationOptions)
+  name: RasterizeAnimation<TPixel>(SvgAnimationOptions?)
+  href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_RasterizeAnimation__1_Egami_Svg_SvgAnimationOptions_
+  commentId: M:Egami.Svg.SvgDocument.RasterizeAnimation``1(Egami.Svg.SvgAnimationOptions)
+  name.vb: RasterizeAnimation(Of TPixel)(SvgAnimationOptions)
+  fullName: Egami.Svg.SvgDocument.RasterizeAnimation<TPixel>(Egami.Svg.SvgAnimationOptions?)
+  fullName.vb: Egami.Svg.SvgDocument.RasterizeAnimation(Of TPixel)(Egami.Svg.SvgAnimationOptions)
+  nameWithType: SvgDocument.RasterizeAnimation<TPixel>(SvgAnimationOptions?)
+  nameWithType.vb: SvgDocument.RasterizeAnimation(Of TPixel)(SvgAnimationOptions)
 - uid: Egami.Svg.SvgDocument.Rasterize``1(Egami.Svg.SvgRenderOptions)
   name: Rasterize<TPixel>(SvgRenderOptions?)
   href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_Rasterize__1_Egami_Svg_SvgRenderOptions_
@@ -86803,6 +86955,22 @@ references:
   fullName.vb: Egami.Svg.SvgDocument.Rasterize(Of TPixel)(Egami.Svg.SvgRenderOptions)
   nameWithType: SvgDocument.Rasterize<TPixel>(SvgRenderOptions?)
   nameWithType.vb: SvgDocument.Rasterize(Of TPixel)(SvgRenderOptions)
+- uid: Egami.Svg.SvgDocument.RenderFrames*
+  name: RenderFrames
+  href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_RenderFrames_
+  commentId: Overload:Egami.Svg.SvgDocument.RenderFrames
+  isSpec: "True"
+  fullName: Egami.Svg.SvgDocument.RenderFrames
+  nameWithType: SvgDocument.RenderFrames
+- uid: Egami.Svg.SvgDocument.RenderFrames``1(Egami.Svg.SvgAnimationOptions)
+  name: RenderFrames<TPixel>(SvgAnimationOptions?)
+  href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_RenderFrames__1_Egami_Svg_SvgAnimationOptions_
+  commentId: M:Egami.Svg.SvgDocument.RenderFrames``1(Egami.Svg.SvgAnimationOptions)
+  name.vb: RenderFrames(Of TPixel)(SvgAnimationOptions)
+  fullName: Egami.Svg.SvgDocument.RenderFrames<TPixel>(Egami.Svg.SvgAnimationOptions?)
+  fullName.vb: Egami.Svg.SvgDocument.RenderFrames(Of TPixel)(Egami.Svg.SvgAnimationOptions)
+  nameWithType: SvgDocument.RenderFrames<TPixel>(SvgAnimationOptions?)
+  nameWithType.vb: SvgDocument.RenderFrames(Of TPixel)(SvgAnimationOptions)
 - uid: Egami.Svg.SvgDocument.RenderTree
   name: RenderTree
   href: api/Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_RenderTree
@@ -87291,6 +87459,85 @@ references:
   isSpec: "True"
   fullName: Egami.Svg.SvgFormat.Info
   nameWithType: SvgFormat.Info
+- uid: Egami.Svg.SvgFrame`1
+  name: SvgFrame<TPixel>
+  href: api/Egami.Svg.SvgFrame-1.html
+  commentId: T:Egami.Svg.SvgFrame`1
+  name.vb: SvgFrame(Of TPixel)
+  fullName: Egami.Svg.SvgFrame<TPixel>
+  fullName.vb: Egami.Svg.SvgFrame(Of TPixel)
+  nameWithType: SvgFrame<TPixel>
+  nameWithType.vb: SvgFrame(Of TPixel)
+- uid: Egami.Svg.SvgFrame`1.#ctor(Egami.Raster{`0},System.TimeSpan,System.TimeSpan)
+  name: SvgFrame(Raster<TPixel>, TimeSpan, TimeSpan)
+  href: api/Egami.Svg.SvgFrame-1.html#Egami_Svg_SvgFrame_1__ctor_Egami_Raster__0__System_TimeSpan_System_TimeSpan_
+  commentId: M:Egami.Svg.SvgFrame`1.#ctor(Egami.Raster{`0},System.TimeSpan,System.TimeSpan)
+  name.vb: New(Raster(Of TPixel), TimeSpan, TimeSpan)
+  fullName: Egami.Svg.SvgFrame<TPixel>.SvgFrame(Egami.Raster<TPixel>, System.TimeSpan, System.TimeSpan)
+  fullName.vb: Egami.Svg.SvgFrame(Of TPixel).New(Egami.Raster(Of TPixel), System.TimeSpan, System.TimeSpan)
+  nameWithType: SvgFrame<TPixel>.SvgFrame(Raster<TPixel>, TimeSpan, TimeSpan)
+  nameWithType.vb: SvgFrame(Of TPixel).New(Raster(Of TPixel), TimeSpan, TimeSpan)
+- uid: Egami.Svg.SvgFrame`1.#ctor*
+  name: SvgFrame
+  href: api/Egami.Svg.SvgFrame-1.html#Egami_Svg_SvgFrame_1__ctor_
+  commentId: Overload:Egami.Svg.SvgFrame`1.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Svg.SvgFrame<TPixel>.SvgFrame
+  fullName.vb: Egami.Svg.SvgFrame(Of TPixel).New
+  nameWithType: SvgFrame<TPixel>.SvgFrame
+  nameWithType.vb: SvgFrame(Of TPixel).New
+- uid: Egami.Svg.SvgFrame`1.Duration
+  name: Duration
+  href: api/Egami.Svg.SvgFrame-1.html#Egami_Svg_SvgFrame_1_Duration
+  commentId: P:Egami.Svg.SvgFrame`1.Duration
+  fullName: Egami.Svg.SvgFrame<TPixel>.Duration
+  fullName.vb: Egami.Svg.SvgFrame(Of TPixel).Duration
+  nameWithType: SvgFrame<TPixel>.Duration
+  nameWithType.vb: SvgFrame(Of TPixel).Duration
+- uid: Egami.Svg.SvgFrame`1.Duration*
+  name: Duration
+  href: api/Egami.Svg.SvgFrame-1.html#Egami_Svg_SvgFrame_1_Duration_
+  commentId: Overload:Egami.Svg.SvgFrame`1.Duration
+  isSpec: "True"
+  fullName: Egami.Svg.SvgFrame<TPixel>.Duration
+  fullName.vb: Egami.Svg.SvgFrame(Of TPixel).Duration
+  nameWithType: SvgFrame<TPixel>.Duration
+  nameWithType.vb: SvgFrame(Of TPixel).Duration
+- uid: Egami.Svg.SvgFrame`1.Raster
+  name: Raster
+  href: api/Egami.Svg.SvgFrame-1.html#Egami_Svg_SvgFrame_1_Raster
+  commentId: P:Egami.Svg.SvgFrame`1.Raster
+  fullName: Egami.Svg.SvgFrame<TPixel>.Raster
+  fullName.vb: Egami.Svg.SvgFrame(Of TPixel).Raster
+  nameWithType: SvgFrame<TPixel>.Raster
+  nameWithType.vb: SvgFrame(Of TPixel).Raster
+- uid: Egami.Svg.SvgFrame`1.Raster*
+  name: Raster
+  href: api/Egami.Svg.SvgFrame-1.html#Egami_Svg_SvgFrame_1_Raster_
+  commentId: Overload:Egami.Svg.SvgFrame`1.Raster
+  isSpec: "True"
+  fullName: Egami.Svg.SvgFrame<TPixel>.Raster
+  fullName.vb: Egami.Svg.SvgFrame(Of TPixel).Raster
+  nameWithType: SvgFrame<TPixel>.Raster
+  nameWithType.vb: SvgFrame(Of TPixel).Raster
+- uid: Egami.Svg.SvgFrame`1.Time
+  name: Time
+  href: api/Egami.Svg.SvgFrame-1.html#Egami_Svg_SvgFrame_1_Time
+  commentId: P:Egami.Svg.SvgFrame`1.Time
+  fullName: Egami.Svg.SvgFrame<TPixel>.Time
+  fullName.vb: Egami.Svg.SvgFrame(Of TPixel).Time
+  nameWithType: SvgFrame<TPixel>.Time
+  nameWithType.vb: SvgFrame(Of TPixel).Time
+- uid: Egami.Svg.SvgFrame`1.Time*
+  name: Time
+  href: api/Egami.Svg.SvgFrame-1.html#Egami_Svg_SvgFrame_1_Time_
+  commentId: Overload:Egami.Svg.SvgFrame`1.Time
+  isSpec: "True"
+  fullName: Egami.Svg.SvgFrame<TPixel>.Time
+  fullName.vb: Egami.Svg.SvgFrame(Of TPixel).Time
+  nameWithType: SvgFrame<TPixel>.Time
+  nameWithType.vb: SvgFrame(Of TPixel).Time
 - uid: Egami.Svg.SvgGlyphRenderer
   name: SvgGlyphRenderer
   href: api/Egami.Svg.SvgGlyphRenderer.html

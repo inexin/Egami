@@ -102,6 +102,13 @@ nobody touches.</p>
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgAnimationOptions.html">SvgAnimationOptions</a></dt>
+      <dd><p>How <a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_RasterizeAnimation__1_Egami_Svg_SvgAnimationOptions_">RasterizeAnimation&lt;TPixel&gt;(SvgAnimationOptions?)</a> and
+<a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_RenderFrames__1_Egami_Svg_SvgAnimationOptions_">RenderFrames&lt;TPixel&gt;(SvgAnimationOptions?)</a> turn a document's animations into frames: the frame
+rate, where to start, how long to go on and how each frame is drawn.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Svg.SvgAttribute.html">SvgAttribute</a></dt>
       <dd><p>An attribute of an <a class="xref" href="Egami.Svg.SvgElement.html">SvgElement</a>: its name, namespace, the prefix it was written with, and its value.</p>
 </dd>
@@ -275,6 +282,15 @@ PDF or SVG canvas keeps real text. A text element becomes a group of these and o
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Svg.SvgWriteOptions.html">SvgWriteOptions</a></dt>
       <dd><p>How <a class="xref" href="Egami.Svg.SvgCanvas.html">SvgCanvas</a> writes SVG: text, number precision, layout, image format and fallback resolution.</p>
+</dd>
+    </dl>
+    <h3 id="structs">
+Structs
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Svg.SvgFrame-1.html">SvgFrame&lt;TPixel&gt;</a></dt>
+      <dd><p>One frame of <a class="xref" href="Egami.Svg.SvgDocument.html#Egami_Svg_SvgDocument_RenderFrames__1_Egami_Svg_SvgAnimationOptions_">RenderFrames&lt;TPixel&gt;(SvgAnimationOptions?)</a>: the picture, the moment it shows and
+how long it lasts. The raster belongs to the caller, who disposes it.</p>
 </dd>
     </dl>
     <h3 id="enums">

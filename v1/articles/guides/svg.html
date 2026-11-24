@@ -305,6 +305,45 @@ SvgDocument document = SvgDocument.Parse(&quot;&quot;&quot;
     &quot;&quot;&quot;);
 SvgAnimationInfo info = document.Animation;                      // loops every 2 s
 using Raster&lt;Rgba8&gt; frame = document.Rasterize&lt;Rgba8&gt;(new SvgRenderOptions { Time = TimeSpan.FromSeconds(0.25) });
+</code></pre><h3 id="frames-files-and-frozen-moments">Frames, files and frozen moments</h3>
+<p><code>SvgDocument.RasterizeAnimation</code> draws the animations into one animated raster that saves as GIF, APNG, WebP or AVIF. It
+draws a frame every 1/<code>FrameRate</code> seconds (30 by default) of <code>SvgAnimationOptions</code>: one loop when every animation repeats
+forever with a common period, else up to and including the moment the last animation ends, at most <code>MaxLength</code> (10
+seconds; an <code>Svg.AnimationLength</code> warning says when that cut the animation short). Set <code>Start</code> and <code>Length</code> to pick the
+stretch yourself. Frames that look the same as the one before merge into it, so still stretches cost one frame; each
+frame's delay is how long it lasts. The raster loops forever when the document loops, and plays once otherwise. Frames
+are drawn on as many threads as the context allows, and <code>MaxFrames</code> and <code>MaxTotalBytes</code> are checked before anything is
+drawn.</p>
+<pre><code class="lang-csharp">// One loop (2 s) at 25 frames a second; frames that look the same merge into one longer frame.
+using Raster&lt;Rgba8&gt; animation = document.RasterizeAnimation&lt;Rgba8&gt;(new SvgAnimationOptions { FrameRate = 25 });
+animation.Save(path);   // loops forever, as the SVG does
+</code></pre>
+<p><code>RenderFrames</code> hands the same frames over one at a time, each with the moment it shows and how long it lasts, holding only
+a frame per thread: the shape a video encoder wants. Turn <code>MergeDuplicates</code> off there for a constant frame rate.</p>
+<pre><code class="lang-csharp">// One frame at a time, for a video encoder: a constant 30 frames a second for 4 seconds.
+SvgAnimationOptions options = new() { FrameRate = 30, Length = TimeSpan.FromSeconds(4), MergeDuplicates = false };
+foreach (SvgFrame&lt;Rgba8&gt; frame in document.RenderFrames&lt;Rgba8&gt;(options))
+{
+    using Raster&lt;Rgba8&gt; picture = frame.Raster;   // yours to dispose
+    Console.WriteLine($&quot;{frame.Time} for {frame.Duration}&quot;);
+    count++;
+}
+</code></pre>
+<p><code>Raster.Load</code> draws the static document unless <code>SvgDecodeOptions.AnimationFrameRate</code> is set; then an animated SVG loads
+with all its frames, as <code>RasterizeAnimation</code> draws them, ready for the animation tools.</p>
+<pre><code class="lang-csharp">// With a frame rate, Raster.Load gives every frame, for the animation tools (Retime, ChangeSpeed, DrawAnimation).
+EgamiContext context = EgamiContext.Default.WithFormat(SvgFormat.Info);
+using Raster&lt;Rgba8&gt; animation = Raster.Load&lt;Rgba8&gt;(path, context, new SvgDecodeOptions { AnimationFrameRate = 10 });
+
+// Or one moment of it, half a second in.
+using Raster&lt;Rgba8&gt; moment = Raster.Load&lt;Rgba8&gt;(path, context, new SvgDecodeOptions { Time = TimeSpan.FromSeconds(0.5) });
+</code></pre>
+<p><code>SvgDocument.Freeze</code> bakes one moment into a static copy: the animated values are written into the attributes and
+<code>style</code>, <code>animateMotion</code> into the transform, discarded elements are left out, and the animation elements and CSS
+animations are taken away, so any viewer shows that moment.</p>
+<pre><code class="lang-csharp">// A static SVG of the moment half a second in: the circle where it is then, no animation left.
+SvgDocument still = document.Freeze(TimeSpan.FromSeconds(0.5));
+still.Save(stream);
 </code></pre><h2 id="untrusted-files">Untrusted files</h2>
 <p>An SVG file is untrusted input. A load honors the context's <code>SafetyLimits</code>: the file, after gzip, is bounded by
 <code>MaxTotalBytes</code> (a gzip bomb stops there), entity expansion by <code>MaxMetadataBytes</code> (so a billion-laughs DTD stops), the number

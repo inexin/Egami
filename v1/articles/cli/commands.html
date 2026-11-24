@@ -116,6 +116,8 @@ Options:
   --raw-auto-ca                        Measure and correct lateral chromatic aberration when no lens profile covers the file.
   --raw-tone-curve                     Give a develop without a profile tone curve the default contrast curve.
   --raw-no-profile                     Leave out the camera profile's look (HueSatMap, LookTable and tone curve).
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
   -?, -h, --help                       Show help and usage information
   --version                            Show version information
 
@@ -159,6 +161,8 @@ Options:
   --fail-fast                          Stop at the first file that fails.
   -a, --all                            Also read the metadata: color profile, EXIF, XMP, IPTC, text, resolution.
   --json                               Write JSON (schema 1, see the command reference) instead of text.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="convert">convert</h2>
 <pre><code class="lang-text">Description:
@@ -190,6 +194,8 @@ Options:
   -j, --jobs &lt;count&gt;                   How many files to work on at once; 0 (the default) for one per processor.
   --in-place                           Allow outputs to replace their inputs.
   --fail-fast                          Stop at the first file that fails.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="resize">resize</h2>
 <pre><code class="lang-text">Description:
@@ -227,6 +233,8 @@ Options:
   --filter &lt;filter&gt;                    The resampling kernel: bicubic (Catmull-Rom, the default), lanczos3, mitchell, bilinear, nearest, ...
   --linear                             Blend in linear light rather than in the encoded values.
   --background &lt;color&gt;                 The color --fit pad fills with (transparent by default).
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="thumbnail">thumbnail</h2>
 <pre><code class="lang-text">Description:
@@ -265,6 +273,8 @@ Options:
   --linear                             Blend in linear light rather than in the encoded values.
   --background &lt;color&gt;                 The color --fit pad fills with (transparent by default).
   --keep-metadata                      Keep EXIF, XMP, IPTC and text, which thumbnails leave out by default.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="crop">crop</h2>
 <pre><code class="lang-text">Description:
@@ -297,6 +307,8 @@ Options:
   --in-place                           Allow outputs to replace their inputs.
   --fail-fast                          Stop at the first file that fails.
   --rect &lt;x,y,w,h&gt; (REQUIRED)          The area to keep: x,y,width,height in pixels.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="rotate">rotate</h2>
 <pre><code class="lang-text">Description:
@@ -332,6 +344,8 @@ Options:
   --filter &lt;filter&gt;                    The resampling kernel for angles that are not a multiple of 90.
   --background &lt;color&gt;                 The color of the corners an angle uncovers (transparent by default).
   --reencode                           Decode and encode a JPEG even when a lossless rotation is possible.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="flip">flip</h2>
 <pre><code class="lang-text">Description:
@@ -365,6 +379,8 @@ Options:
   --fail-fast                          Stop at the first file that fails.
   -d, --direction &lt;direction&gt;          horizontal (mirror left to right), vertical (top to bottom) or both; the last input may give it instead.
   --reencode                           Decode and encode a JPEG even when a lossless flip is possible.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="auto-orient">auto-orient</h2>
 <pre><code class="lang-text">Description:
@@ -396,6 +412,8 @@ Options:
   --fail-fast                          Stop at the first file that fails.
   --to &lt;profile&gt;                       Convert colors to this profile while reading: srgb, display-p3, adobe-rgb, rec2020, ... or an ICC file.
   --reencode                           Decode and encode a JPEG even when a lossless turn is possible.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="run">run</h2>
 <pre><code class="lang-text">Description:
@@ -418,6 +436,8 @@ Options:
   -j, --jobs &lt;count&gt;                   How many files to work on at once; 0 for one per processor.
   --in-place                           Allow outputs to replace their inputs.
   --fail-fast                          Stop at the first file that fails.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 
 Additional Arguments:
   Arguments passed to the application that is being run.
@@ -440,6 +460,8 @@ Options:
   -d, --diff &lt;path&gt;                    Write a picture of the differences.
   --diff-style &lt;style&gt;                 highlight (differing pixels in red, as ImageMagick's compare) or absolute (|a - b|). [default: highlight]
   --json                               Write every metric per channel as JSON.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="stats">stats</h2>
 <pre><code class="lang-text">Description:
@@ -458,6 +480,8 @@ Options:
   --json                               Write JSON instead of text.
   --frame &lt;index&gt;                      The frame to measure, from 0.
   -a, --all                            Also count the colors and give perceptual hashes and the pixel signature.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="ocr">ocr</h2>
 <pre><code class="lang-text">Description:
@@ -479,6 +503,8 @@ Options:
   -r, --recursive                        Take every image in folders given as inputs, at any depth.
   -j, --jobs &lt;count&gt;                     How many files to work on at once; 0 (the default) for one per processor.
   --fail-fast                            Stop at the first file that fails.
+  --animate &lt;fps&gt;                        Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                            Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="frames">frames</h2>
 <pre><code class="lang-text">Description:
@@ -488,6 +514,8 @@ Usage:
   egami frames [command] [options]
 
 Options:
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 
 Commands:
   split &lt;input&gt;  Write every frame of an animation as its own image, each a full picture as the animation shows it.
@@ -508,6 +536,8 @@ Options:
   -f, --format &lt;format&gt;                The output format, when the template's extension does not say.
   --set &lt;fmt.key=value&gt;                Writer settings as fmt.key=value.
   --delays &lt;path&gt;                      Also write each frame's delay in milliseconds, one per line, to this file, so 'frames join --delays' can restore the timing.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h3 id="frames-join">frames join</h3>
 <pre><code class="lang-text">Description:
@@ -529,6 +559,8 @@ Options:
   --set &lt;fmt.key=value&gt;                Writer settings as fmt.key=value.
   --quality &lt;0-100&gt;                    Lossy quality for WebP.
   --lossless                           Lossless WebP.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="layers">layers</h2>
 <pre><code class="lang-text">Description:
@@ -542,6 +574,8 @@ Arguments:
   &lt;folder&gt;  The folder to write the layers and layers.json into; made when missing.
 
 Options:
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="metadata">metadata</h2>
 <pre><code class="lang-text">Description:
@@ -551,6 +585,8 @@ Usage:
   egami metadata [command] [options]
 
 Options:
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 
 Commands:
   show &lt;inputs&gt;   Show every piece of metadata an image holds.
@@ -572,6 +608,8 @@ Options:
   -j, --jobs &lt;count&gt;                   How many files to work on at once; 0 (the default) for one per processor.
   --fail-fast                          Stop at the first file that fails.
   --json                               Write JSON, with every EXIF entry, IPTC dataset, text entry and the XMP packet.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h3 id="metadata-strip">metadata strip</h3>
 <pre><code class="lang-text">Description:
@@ -603,6 +641,8 @@ Options:
   --fail-fast                          Stop at the first file that fails.
   --keep &lt;blocks&gt;                      Blocks to keep, comma-separated: icc, exif, xmp, iptc, text, resolution.
   --reencode                           Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h3 id="metadata-copy">metadata copy</h3>
 <pre><code class="lang-text">Description:
@@ -635,6 +675,8 @@ Options:
   --from &lt;image&gt; (REQUIRED)            The image to copy metadata from.
   --only &lt;blocks&gt;                      Blocks to copy, comma-separated: icc, exif, xmp, iptc, text, resolution; all by default.
   --reencode                           Allow writing a lossy format (JPEG, lossy WebP, AVIF, JPEG XL) again, which costs a generation.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="color">color</h2>
 <pre><code class="lang-text">Description:
@@ -671,6 +713,8 @@ Options:
   --tone-map &lt;method&gt;                  How HDR is brought into a standard range: bt2390 (the default), reinhard or clip.
   --peak &lt;nits&gt;                        The HDR source's peak brightness in nits, when the file does not say.
   --reference-white &lt;nits&gt;             The brightness of SDR white in nits (203 by default).
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="text">text</h2>
 <pre><code class="lang-text">Description:
@@ -713,6 +757,8 @@ Options:
   --opacity &lt;0-1&gt;                      From 0 (invisible) to 1 (the default). [default: 1]
   --width &lt;pixels&gt;                     The width to wrap lines at, in pixels; the image's width less the margins by default.
   --shadow &lt;color&gt;                     A drop shadow in this color, offset by a tenth of the size.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="overlay">overlay</h2>
 <pre><code class="lang-text">Description:
@@ -751,6 +797,8 @@ Options:
   --opacity &lt;0-1&gt;                      From 0 (invisible) to 1 (the default). [default: 1]
   --blend &lt;mode&gt;                       The blend mode: normal (the default), multiply, screen, overlay, darken, lighten, ...
   -s, --size &lt;size&gt;                    Resize the overlay first, in the size syntax (W, xH, WxH, P%).
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="montage">montage</h2>
 <pre><code class="lang-text">Description:
@@ -774,6 +822,8 @@ Options:
   --label-size &lt;pixels&gt;                The label size in pixels. [default: 13]
   --set &lt;fmt.key=value&gt;                Writer settings as fmt.key=value.
   --quality &lt;0-100&gt;                    Lossy quality from 0 to 100.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="trace">trace</h2>
 <pre><code class="lang-text">Description:
@@ -808,6 +858,8 @@ Options:
   -j, --jobs &lt;count&gt;                   How many files to work on at once; 0 (the default) for one per processor.
   --in-place                           Allow outputs to replace their inputs.
   --fail-fast                          Stop at the first file that fails.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="formats">formats</h2>
 <pre><code class="lang-text">Description:
@@ -821,6 +873,8 @@ Arguments:
 
 Options:
   --json                               Write JSON instead of text.
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 <h2 id="mcp">mcp</h2>
 <pre><code class="lang-text">Description:
@@ -832,6 +886,8 @@ Usage:
 Options:
   --allow &lt;folder&gt;                     A folder the tools may read and write, besides the folders the assistant opened; give it once per folder. With neither, the working folder.
   --max-inputs &lt;count&gt;                 The most files one tool call may take; 1000 by default. [default: 1000]
+  --animate &lt;fps&gt;                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at &lt;time&gt;                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
 </code></pre>
 
 </article>

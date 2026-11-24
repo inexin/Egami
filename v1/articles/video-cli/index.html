@@ -171,7 +171,7 @@ egami-video audio in.mkv -o sound.flac
 </tr>
 <tr>
 <td><code>encode</code></td>
-<td>Images, an image sequence or Y4M into a clip</td>
+<td>Images, an image sequence, an animated SVG or Y4M into a clip</td>
 <td><code>ffmpeg -framerate 30 -i %04d.png</code></td>
 </tr>
 <tr>
@@ -423,8 +423,11 @@ egami-video animate in.webm --rate 10 --size 120x -o clip.gif
 (once <code>--min-gap</code>) sets the shortest scene, <code>--fades</code> names scenes that start inside a fade and lists the fades, <code>--flash suppress</code> drops flashes instead of merging them, <code>--frame middle</code> or <code>last</code> picks the frame written for each scene, and
 <code>--series</code> writes every frame's score to a CSV file.</p>
 <p><code>encode</code> goes the other way: images in name order, an image sequence (<code>shots/{frame:000}.jpg</code> reads frame 0, 1, 2 until one is
-missing), or a Y4M file or stream.</p>
+missing), an animated SVG, or a Y4M file or stream. An SVG's SMIL and CSS animations are drawn frame by frame at <code>--rate</code> (25
+by default), for <code>--duration</code>, or else for one loop or up to the end of its last animation, at most 10 seconds
+(<a href="../guides/svg.html#frames-files-and-frozen-moments">SVG</a>); <code>--size</code> draws it at the size that fits, so it stays sharp.</p>
 <pre><code class="lang-sh">egami-video encode &quot;shots/*.jpg&quot; --rate 2 -o slideshow.mkv
+egami-video encode spinner.svg --rate 30 --duration 4 --size 640x360 -o spinner.webm --codec vp9
 </code></pre>
 <h2 id="steps-on-every-frame">Steps on every frame</h2>
 <p><code>run</code> takes the steps and <code>+</code> syntax of <code>egami run</code> (<a href="../cli/steps.html">steps for run</a>) and applies them to every frame. The

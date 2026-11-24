@@ -13309,6 +13309,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Svg.SvgAnimationOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Svg.SvgAnimationOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Svg.SvgAnimationOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Svg.SvgAnimationOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Svg.SvgDocument.RasterizeAnimation%60%601(Egami.Svg.SvgAnimationOptions)\" data-throw-if-not-resolved=\"false\"></xref> and\n<xref href=\"Egami.Svg.SvgDocument.RenderFrames%60%601(Egami.Svg.SvgAnimationOptions)\" data-throw-if-not-resolved=\"false\"></xref> turn a document's animations into frames: the frame\nrate, where to start, how long to go on and how each frame is drawn.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Svg.SvgAttribute.yml",
       "output": {
         ".html": {
@@ -13502,6 +13516,20 @@
       "IsMRef": true,
       "Title": "Egami.Svg.SvgFormat",
       "Summary": "<p sourcefile=\"api/Egami.Svg.SvgFormat.yml\" sourcestartlinenumber=\"1\">SVG and SVGZ as an Egami format: registered with <xref href=\"Egami.EgamiContext.WithFormat(Egami.Formats.FormatInfo)\" data-throw-if-not-resolved=\"false\"></xref>, <code>Raster.Load</code> draws an SVG file\nat its own size (times <xref href=\"Egami.Svg.SvgDecodeOptions.Scale\" data-throw-if-not-resolved=\"false\"></xref>) and <code>Raster.Probe</code> gives that size without drawing. The\nformat only reads; nothing outside the file is opened, so images it links are not drawn, and text uses the machine's fonts.\nFor a resolver, your own fonts, a target size or a background, load an <xref href=\"Egami.Svg.SvgDocument\" data-throw-if-not-resolved=\"false\"></xref> and call\n<xref href=\"Egami.Svg.SvgDocument.Rasterize%60%601(Egami.Svg.SvgRenderOptions)\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Svg.SvgFrame-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Svg.SvgFrame-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Svg.SvgFrame<TPixel>",
+      "Summary": "<p sourcefile=\"api/Egami.Svg.SvgFrame-1.yml\" sourcestartlinenumber=\"1\">One frame of <xref href=\"Egami.Svg.SvgDocument.RenderFrames%60%601(Egami.Svg.SvgAnimationOptions)\" data-throw-if-not-resolved=\"false\"></xref>: the picture, the moment it shows and\nhow long it lasts. The raster belongs to the caller, who disposes it.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -20423,11 +20451,11 @@
       "type": "Toc",
       "source_relative_path": "api/toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "api/toc.html"
-        },
         ".json": {
           "relative_path": "api/toc.json"
+        },
+        ".html": {
+          "relative_path": "api/toc.html"
         }
       },
       "version": ""
@@ -21466,11 +21494,11 @@
       "type": "Toc",
       "source_relative_path": "articles/toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "articles/toc.html"
-        },
         ".json": {
           "relative_path": "articles/toc.json"
+        },
+        ".html": {
+          "relative_path": "articles/toc.html"
         }
       },
       "version": ""
@@ -21559,11 +21587,11 @@
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
-        ".html": {
-          "relative_path": "toc.html"
-        },
         ".json": {
           "relative_path": "toc.json"
+        },
+        ".html": {
+          "relative_path": "toc.html"
         }
       },
       "version": ""
