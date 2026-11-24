@@ -469,6 +469,20 @@ public class CssAnimationTests
         Assert.False(unused.Animation.HasAnimations);
     }
 
+    [Theory]
+    [InlineData("#r { animation: fade 1e12s linear }", 0.5)]
+    [InlineData("#r { animation: fade 1s linear 1e300 }", 0.5)]
+    [InlineData("#r { animation: fade 1e300s linear infinite alternate }", 0.5)]
+    public void HugeTimesCountAsForever(string rule, double seconds)
+    {
+        // Ends past what a TimeSpan holds must not throw: the document is reported as running forever, and renders at a time.
+        SvgDocument document = Doc(Fade + rule, "<rect id='r' width='10' height='10'/>");
+        Assert.True(document.Animation.HasAnimations);
+        Assert.Null(document.Animation.Duration);
+        Assert.Null(document.Animation.LoopPeriod);
+        Assert.InRange(Shape(document, seconds).Opacity, 0f, 1f);
+    }
+
     [Fact]
     public void TimingFollowsWebAnimations()
     {

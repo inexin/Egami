@@ -159,6 +159,16 @@ public sealed class AnimationTests
     }
 
     [Fact]
+    public void TheMostStepsDoNotOverflow()
+    {
+        // jump-both has one jump more than the step count, which is past int for int.MaxValue steps.
+        CssEasingFunction steps = CssEasingFunction.Parse("steps(2147483647, jump-both)");
+        Assert.Equal(1.0 / 2147483648, steps.Evaluate(0), 1e-18);
+        Assert.Equal(1, steps.Evaluate(1), 1e-12);
+        Assert.InRange(steps.Evaluate(0.5), 0.4999, 0.5001);
+    }
+
+    [Fact]
     public void TheBeforeFlagTakesTheLowerSideOfAStep()
     {
         CssEasingFunction easing = CssEasingFunction.Parse("steps(1, jump-start)");

@@ -542,10 +542,11 @@ public sealed class CssEasingFunction
             currentStep = 0;
         }
 
-        int jumps = _position switch
+        // In long: steps(2147483647, jump-both) has one more jump than int holds.
+        long jumps = _position switch
         {
-            StepPosition.JumpNone => _steps - 1,
-            StepPosition.JumpBoth => _steps + 1,
+            StepPosition.JumpNone => _steps - 1L,
+            StepPosition.JumpBoth => _steps + 1L,
             _ => _steps,
         };
         if (input <= 1 && currentStep > jumps)

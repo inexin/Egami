@@ -45,6 +45,9 @@ public sealed class SvgAnimationInfo
     /// <summary>The longest loop period reported, in milliseconds.</summary>
     internal const long MaxLoopMilliseconds = 10_000;
 
+    /// <summary>The latest end, in seconds, a CSS animation is given as a duration; past it (about 31 years) it counts as never ending.</summary>
+    internal const double MaxEndSeconds = 1e9;
+
     /// <summary>Reads the duration and loop period off a timeline.</summary>
     internal static SvgAnimationInfo From(SvgTimeline timeline)
     {
@@ -121,19 +124,28 @@ public sealed class SvgAnimationInfo
             {
                 forever = true;
                 latestBegin = Math.Max(latestBegin, css.Delay);
-                long ms = (long)Math.Round(css.Duration * (css.Direction is SvgCssDirection.Alternate or SvgCssDirection.AlternateReverse ? 2 : 1) * 1000);
-                if (ms <= 0)
+                // In double first: a huge duration must not wrap round in long.
+                double periodMs = Math.Round(css.Duration * (css.Direction is SvgCssDirection.Alternate or SvgCssDirection.AlternateReverse ? 2 : 1) * 1000);
+                if (!(periodMs > 0 && periodMs <= MaxLoopMilliseconds))
                 {
                     periodic = false;
                     continue;
                 }
 
+                long ms = (long)periodMs;
+
                 lcm = lcm == 0 ? ms : Lcm(lcm, ms);
                 periodic &= lcm <= MaxLoopMilliseconds;
             }
-            else
+            else if (double.IsFinite(css.End) && css.End <= MaxEndSeconds)
             {
                 last = Math.Max(last, css.End);
+                periodic = false;
+            }
+            else
+            {
+                // An end too far off to be a TimeSpan (animation: a 1e12s, or 1e300 iterations) counts as never ending.
+                forever = true;
                 periodic = false;
             }
         }
