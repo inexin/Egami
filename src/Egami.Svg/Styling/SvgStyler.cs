@@ -148,7 +148,14 @@ internal sealed class SvgStyler
     {
         CssCascadedStyle cascaded = Cascaded(element);
         CssComputedStyle computed = _cascade.Compute(cascaded, parent);
-        if (_animator is null || _animator.Animate(cascaded, computed, parent, name => AttributeValue(element, name)) is not Dictionary<string, string> values)
+        return _animator is null ? computed : Animated(_animator, element, cascaded, computed, parent);
+    }
+
+    // The computed style with the element's running CSS animations applied. Kept out of Computed so its closure is only
+    // allocated where animations run.
+    private CssComputedStyle Animated(SvgCssAnimator animator, SvgElement element, CssCascadedStyle cascaded, CssComputedStyle computed, CssComputedStyle? parent)
+    {
+        if (animator.Animate(cascaded, computed, parent, name => AttributeValue(element, name)) is not Dictionary<string, string> values)
         {
             return computed;
         }

@@ -705,7 +705,8 @@ internal sealed partial class SvgResolver
         }
 
         Vector2 o = Vector2.Zero;
-        bool hasOrigin = style.TransformOrigin is IReadOnlyList<CssComponentValue> origin && SvgCssTransforms.TryOrigin(origin, box, out o);
+        bool hasOrigin = (style.Motion is not null || !transform.IsIdentity)
+            && style.TransformOrigin is IReadOnlyList<CssComponentValue> origin && SvgCssTransforms.TryOrigin(origin, box, out o);
 
         // CSS Transforms 2: translate, rotate, scale and the motion path's offset come before transform, in that order from
         // the outside in, all about the transform origin.
