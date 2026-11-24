@@ -177,7 +177,8 @@ internal sealed record class SvgCssAnimation(
         {
             SvgCssDirection.Normal => true,
             SvgCssDirection.Reverse => false,
-            _ => (double.IsInfinity(current) || current % 2 == 0) == (Direction == SvgCssDirection.Alternate),
+            // Web Animations 1, "Calculating the directed progress": an infinite current iteration is forwards for both alternates.
+            _ => double.IsInfinity(current) || ((current % 2 == 0) == (Direction == SvgCssDirection.Alternate)),
         };
         progress = forwards ? simple : 1 - simple;
         return true;

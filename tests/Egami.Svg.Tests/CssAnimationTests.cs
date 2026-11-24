@@ -51,6 +51,8 @@ public class CssAnimationTests
     [InlineData("#r { animation: fade 1s linear 2 alternate-reverse forwards }", 5, 1)]
     [InlineData("#r { animation: fade 1s linear 3 alternate-reverse forwards }", 5, 0)]
     [InlineData("#r { animation: fade 1s linear reverse }", 0.25, 0.75)]
+    [InlineData("#r { animation: fade 0s linear infinite alternate-reverse forwards }", 1, 1)]
+    [InlineData("#r { animation: fade 0s linear infinite alternate forwards }", 1, 1)]
     [InlineData("#r { animation: fade 2s steps(4) }", 1.2, 0.5)]
     [InlineData("#r { animation: fade 2s linear -1s }", 0.5, 0.75)]
     [InlineData("#r { animation: fade 2s linear paused }", 1, 0)]
