@@ -13,7 +13,7 @@ namespace Egami.Formats.Eps;
 /// reader, its metafile preview through whatever format the context has registered for metafiles, or the EPSI hex bitmap, decoded
 /// here. PostScript is never run.
 /// </summary>
-internal sealed class EpsReader : IFormatReader
+internal sealed partial class EpsReader : IFormatReader
 {
     internal static readonly EpsReader Instance = new();
 
@@ -31,8 +31,22 @@ internal sealed class EpsReader : IFormatReader
     {
         return Run(input, options, file =>
         {
-            switch (Choose(input, file, out FormatInfo? metafile))
+            switch (Choose(input, file, photoshop: true, out FormatInfo? metafile))
             {
+                case EpsPreviewKind.PhotoshopImage:
+                    PhotoshopImageSection image = file.Photoshop!;
+                    PixelLayoutInfo layout = image.Mode switch { 3 => Rgb8.Layout, 4 => Cmyk8.Layout, _ => Gray8.Layout };
+                    return new RasterInfo
+                    {
+                        Format = EpsFormat.Info,
+                        Width = image.Width,
+                        Height = image.Height,
+                        Layout = layout,
+                        FrameCount = 1,
+                        ImageCount = 1,
+                        HasMetadata = true,
+                        EstimatedBytes = (long)image.Width * image.Height * layout.BytesPerPixel,
+                    };
                 case EpsPreviewKind.Tiff:
                     return Named(IcoReader.WithInput(input, file.TiffPreview, sub => TiffReader.Instance.ReadInfo(sub, Inner(options))));
                 case EpsPreviewKind.Wmf:
@@ -70,12 +84,12 @@ internal sealed class EpsReader : IFormatReader
     public Raster<TPixel> Read<TPixel>(EgamiInput input, ReaderOptions options)
         where TPixel : unmanaged, IPixelType<TPixel>
     {
-        return Run(input, options, file => Decode(input, file, options, inner => inner.Read<TPixel>, Epsi<TPixel>));
+        return Run(input, options, file => Decode(input, file, options, inner => inner.Read<TPixel>, Epsi<TPixel>, Photoshop<TPixel>));
     }
 
     public Raster Read(EgamiInput input, ReaderOptions options)
     {
-        return Run(input, options, file => Decode<Raster>(input, file, options, inner => inner.Read, (i, f, o) => Epsi<Gray8>(i, f, o)));
+        return Run(input, options, file => Decode<Raster>(input, file, options, inner => inner.Read, (i, f, o) => Epsi<Gray8>(i, f, o), PhotoshopNatural));
     }
 
     /// <summary>Reads the whole file, which the preview's offsets need, parses it and runs <paramref name="action"/>.</summary>
@@ -102,10 +116,15 @@ internal sealed class EpsReader : IFormatReader
     }
 
     /// <summary>Picks the preview Load uses, and the context's format for a metafile preview.</summary>
-    private static EpsPreviewKind Choose(EgamiInput input, EpsFile file, out FormatInfo? metafile)
+    private static EpsPreviewKind Choose(EgamiInput input, EpsFile file, bool photoshop, out FormatInfo? metafile)
     {
         metafile = null;
         EpsPreviewKind kind = file.Preview;
+        if (kind == EpsPreviewKind.PhotoshopImage && !photoshop)
+        {
+            kind = !file.TiffPreview.IsEmpty ? EpsPreviewKind.Tiff : !file.WmfPreview.IsEmpty ? EpsPreviewKind.Wmf : file.Epsi is not null ? EpsPreviewKind.Epsi : EpsPreviewKind.None;
+        }
+
         if (kind == EpsPreviewKind.Wmf)
         {
             metafile = MetafileFormat(input.Context, file.WmfPreview.Span);
@@ -139,17 +158,35 @@ internal sealed class EpsReader : IFormatReader
     }
 
     /// <summary>Decodes the preview <see cref="Choose"/> picks and describes it as EPS.</summary>
-    private static TRaster Decode<TRaster>(EgamiInput input, EpsFile file, ReaderOptions options, Func<IFormatReader, Func<EgamiInput, ReaderOptions, TRaster>> read, Func<EgamiInput, EpsFile, ReaderOptions, TRaster> epsi)
+    private static TRaster Decode<TRaster>(EgamiInput input, EpsFile file, ReaderOptions options, Func<IFormatReader, Func<EgamiInput, ReaderOptions, TRaster>> read, Func<EgamiInput, EpsFile, ReaderOptions, TRaster> epsi, Func<EgamiInput, EpsFile, ReaderOptions, TRaster> photoshop)
         where TRaster : Raster
     {
-        EpsPreviewKind kind = Choose(input, file, out FormatInfo? metafile);
         WarningList notes = new();
-        if (kind == EpsPreviewKind.Epsi && file.Preview == EpsPreviewKind.Wmf)
+        EpsPreviewKind kind = Choose(input, file, photoshop: true, out FormatInfo? metafile);
+        TRaster? raster = null;
+        if (kind == EpsPreviewKind.PhotoshopImage)
+        {
+            try
+            {
+                raster = photoshop(input, file, options);
+            }
+            catch (CorruptDataException e) when (options.Recovery != RecoveryMode.Strict && Choose(input, file, photoshop: false, out _) != EpsPreviewKind.None)
+            {
+                kind = Choose(input, file, photoshop: false, out metafile);
+                notes.Add("Eps.ImageDataDamaged", $"Photoshop's image could not be decoded ({e.Message}); the file's preview was loaded instead.", e);
+            }
+        }
+        else if (file.Photoshop is { Mode: 2, DataStart: >= 0 })
+        {
+            notes.Add("Eps.ImageDataSkipped", "Photoshop's image is in Lab, which Egami does not read from EPS; the file's preview was loaded instead.");
+        }
+
+        if (kind == EpsPreviewKind.Epsi && !file.WmfPreview.IsEmpty)
         {
             notes.Add("Eps.MetafileSkipped", "The file's metafile preview was not drawn because no format in the context reads metafiles (register Egami.Metafiles' MetafileFormat.Info); its EPSI preview was loaded instead.");
         }
 
-        TRaster raster = kind switch
+        raster ??= kind switch
         {
             EpsPreviewKind.Tiff => IcoReader.WithInput(input, file.TiffPreview, sub => read(TiffReader.Instance)(sub, Inner(options))),
             EpsPreviewKind.Wmf => IcoReader.WithInput(input, Placeable(file), sub => read(metafile!.Reader!)(sub, options)),
@@ -162,8 +199,11 @@ internal sealed class EpsReader : IFormatReader
             Describe(raster.Metadata, file, kind, options, input.Limits.MaxMetadataBytes);
             raster.Metadata.WarningList.Prepend(file.WarningList);
             raster.Metadata.WarningList.AddRange(notes);
-            string what = kind switch { EpsPreviewKind.Tiff => "TIFF", EpsPreviewKind.Wmf => "metafile", _ => "EPSI" };
-            raster.Metadata.WarningList.Add("Eps.PreviewLoaded", $"The image is the file's {what} preview, not the drawing its PostScript makes, which Egami does not run.");
+            if (kind != EpsPreviewKind.PhotoshopImage)
+            {
+                string what = kind switch { EpsPreviewKind.Tiff => "TIFF", EpsPreviewKind.Wmf => "metafile", _ => "EPSI" };
+                raster.Metadata.WarningList.Add("Eps.PreviewLoaded", $"The image is the file's {what} preview, not the drawing its PostScript makes, which Egami does not run.");
+            }
             return raster;
         }
         catch

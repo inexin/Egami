@@ -45,6 +45,12 @@ public enum EpsPreviewKind
 
     /// <summary>The EPSI bitmap between <c>%%BeginPreview</c> and <c>%%EndPreview</c>, 1 to 8-bit gray.</summary>
     Epsi,
+
+    /// <summary>
+    /// The image Photoshop saved with the file, which its <c>%ImageData</c> comment describes: the picture itself at full size, not a
+    /// preview, in gray, RGB, CMYK or bitmap.
+    /// </summary>
+    PhotoshopImage,
 }
 
 /// <summary>An EPS bounding box in PostScript points (1/72 inch), lower-left and upper-right corners in PostScript's y-up space.</summary>

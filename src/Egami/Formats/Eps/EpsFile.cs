@@ -50,7 +50,7 @@ public sealed class EpsFile
     /// <see cref="EpsPreviewKind.None"/>. A metafile preview needs a format that reads it registered in the context, such as
     /// Egami.Metafiles' <c>MetafileFormat.Info</c>; without one Load falls back to the EPSI bitmap when the file has one.
     /// </summary>
-    public EpsPreviewKind Preview => !TiffPreview.IsEmpty ? EpsPreviewKind.Tiff : !WmfPreview.IsEmpty ? EpsPreviewKind.Wmf : Epsi is not null ? EpsPreviewKind.Epsi : EpsPreviewKind.None;
+    public EpsPreviewKind Preview => Photoshop is { DataStart: >= 0, Mode: not 2 } ? EpsPreviewKind.PhotoshopImage : !TiffPreview.IsEmpty ? EpsPreviewKind.Tiff : !WmfPreview.IsEmpty ? EpsPreviewKind.Wmf : Epsi is not null ? EpsPreviewKind.Epsi : EpsPreviewKind.None;
 
     /// <summary>Gets whether the version comment names EPSF (<c>%!PS-Adobe-3.0 EPSF-3.0</c>); plain PostScript does not.</summary>
     public bool IsEncapsulated { get; private set; }
@@ -88,8 +88,8 @@ public sealed class EpsFile
     /// <summary>Gets the EPSI bitmap's size, depth and hex data, or <see langword="null"/>.</summary>
     internal EpsiSection? Epsi { get; private set; }
 
-    /// <summary>Gets the offset of Photoshop's <c>%ImageData</c> line in <see cref="PostScript"/>, or -1.</summary>
-    internal int ImageDataLine { get; private set; } = -1;
+    /// <summary>Gets what Photoshop's <c>%ImageData</c> comment says, and where its data starts, or <see langword="null"/>.</summary>
+    internal PhotoshopImageSection? Photoshop { get; private set; }
 
     internal WarningList WarningList => _warnings;
 
@@ -260,12 +260,27 @@ public sealed class EpsFile
         string? box = null, hiRes = null;
         int position = NextLine(ps, end);
         bool inHeader = true;
+        byte[]? imageKeyword = null;
         while (position < ps.Length)
         {
             end = LineEnd(ps, position);
             ReadOnlySpan<byte> line = ps[position..end];
             int next = NextLine(ps, end);
-            if (inHeader)
+            if (imageKeyword is not null && Photoshop!.DataStart < 0 && line.TrimEnd(" \t"u8).SequenceEqual(imageKeyword))
+            {
+                // Photoshop's image data follows this line; it is binary or long hex, so the comments end here.
+                Photoshop = Photoshop with { DataStart = next };
+                break;
+            }
+
+            if (line.StartsWith("%ImageData:"u8))
+            {
+                if (Photoshop is null)
+                {
+                    imageKeyword = ReadImageData(line);
+                }
+            }
+            else if (inHeader)
             {
                 if (line.StartsWith("%%EndComments"u8) || line.IsEmpty || line[0] != (byte)'%' || line.StartsWith("%%Begin"u8))
                 {
@@ -299,7 +314,10 @@ public sealed class EpsFile
                 }
             }
 
-            if (line.StartsWith("%%BeginPreview:"u8))
+            if (inHeader || line.StartsWith("%ImageData:"u8))
+            {
+            }
+            else if (line.StartsWith("%%BeginPreview:"u8))
             {
                 next = ReadEpsi(ps, line, next);
             }
@@ -314,11 +332,6 @@ public sealed class EpsFile
                 {
                     PhotoshopResources = resources;
                 }
-            }
-            else if (line.StartsWith("%ImageData:"u8))
-            {
-                ImageDataLine = position;
-                break;
             }
             else if (line.StartsWith("%%BeginBinary:"u8) || line.StartsWith("%%BeginData:"u8))
             {
@@ -374,6 +387,33 @@ public sealed class EpsFile
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Reads Photoshop's <c>%ImageData: columns rows depth mode padChannels blockSize encoding "start line"</c>, as Adobe's
+    /// Photoshop file format specification gives it, and returns the start line, after which the image data follows.
+    /// </summary>
+    private byte[]? ReadImageData(ReadOnlySpan<byte> line)
+    {
+        string text = Latin1(line["%ImageData:"u8.Length..]);
+        int quote = text.IndexOf('"');
+        int close = quote < 0 ? -1 : text.LastIndexOf('"');
+        string[] parts = (quote < 0 ? text : text[..quote]).Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries);
+        int[] values = new int[7];
+        bool valid = close > quote && parts.Length >= 7;
+        for (int i = 0; valid && i < 7; i++)
+        {
+            valid = int.TryParse(parts[i], NumberStyles.Integer, CultureInfo.InvariantCulture, out values[i]);
+        }
+
+        if (!valid || values[0] < 1 || values[1] < 1 || values[2] is not (1 or 8) || values[3] is < 1 or > 4 || values[4] is < 0 or > 32 || values[5] < 1)
+        {
+            _warnings.Add("Eps.ImageDataInvalid", $"The %ImageData comment '{Truncate(Latin1(line))}' cannot be read; Photoshop's image was left out.");
+            return null;
+        }
+
+        Photoshop = new PhotoshopImageSection(values[0], values[1], values[2], values[3], values[4], values[5], values[6], -1);
+        return Encoding.Latin1.GetBytes(text[(quote + 1)..close]);
     }
 
     /// <summary>Reads <c>%%BeginPreview: width height depth lines</c> and finds its hex lines, up to <c>%%EndPreview</c>.</summary>
@@ -649,3 +689,9 @@ public sealed class EpsFile
 
 /// <summary>An EPSI preview: its size and depth from <c>%%BeginPreview</c>, and where its hex lines are in the PostScript.</summary>
 internal sealed record EpsiSection(int Width, int Height, int Depth, int Start, int Length, bool Unterminated);
+
+/// <summary>
+/// Photoshop's image: the <c>%ImageData</c> values (size, bits a channel, mode 1 gray or bitmap, 2 Lab, 3 RGB, 4 CMYK, padding
+/// channels, bytes a block, encoding 1 binary or 2 hex) and where its data starts in the PostScript, -1 when its start line is missing.
+/// </summary>
+internal sealed record PhotoshopImageSection(int Width, int Height, int Depth, int Mode, int PadChannels, int BlockSize, int Encoding, int DataStart);
