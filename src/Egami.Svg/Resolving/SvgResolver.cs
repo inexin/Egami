@@ -96,6 +96,15 @@ internal sealed partial class SvgResolver
         _frame = frame;
     }
 
+    /// <summary>Gets the styler, whose CSS animation values Freeze reads after a resolve.</summary>
+    public SvgStyler Styler => _styler;
+
+    /// <summary>
+    /// Gets or sets where the transforms of elements animateMotion moves are kept as they resolve (the whole transform in the
+    /// parent's user space, motion included), for Freeze; null (the default) keeps none.
+    /// </summary>
+    public Dictionary<SvgElement, Matrix3x2>? MotionTransforms { get; set; }
+
     /// <summary>An attribute in no namespace as the render tree is built from it: animated at the frame's time, else as written.</summary>
     private string? Attr(SvgElement element, string name) => _geometry.Attribute(element, name);
 
@@ -691,7 +700,7 @@ internal sealed partial class SvgResolver
         RectF box = style.TransformBox is "fill-box" or "content-box" or "stroke-box" or "border-box" ? bounds : new RectF(0, 0, lengths.ViewportWidth, lengths.ViewportHeight);
         Matrix3x2 transform = Matrix3x2.Identity;
         string attribute = element.Name is "linearGradient" or "radialGradient" ? "gradientTransform" : element.Name == "pattern" ? "patternTransform" : "transform";
-        if (style.Transform is IReadOnlyList<CssComponentValue> css && style.Css?.IsSetOnElement("transform") == true && SvgCssTransforms.TryResolve(css, box, out Matrix3x2 m))
+        if (style.Transform is IReadOnlyList<CssComponentValue> css && style.Css?.IsSetOnElement("transform") == true && SvgCssTransforms.TryResolve(css, box, lengths with { FontSize = style.FontSize }, out Matrix3x2 m))
         {
             transform = m;
         }
@@ -726,6 +735,10 @@ internal sealed partial class SvgResolver
         if (_frame is not null && _frame.TryGetMotion(element, out Matrix3x2 motion))
         {
             transform *= motion;
+            if (MotionTransforms is not null)
+            {
+                MotionTransforms[element] = transform;
+            }
         }
 
         return transform;

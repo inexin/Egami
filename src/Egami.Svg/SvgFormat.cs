@@ -3,6 +3,7 @@ using System.Text;
 
 using Egami.Formats;
 using Egami.Pixels;
+using Egami.Svg.Animation;
 
 namespace Egami.Svg;
 
@@ -150,15 +151,16 @@ public static class SvgFormat
         {
             SvgDocument document = Load(input, options);
             (double width, double height) = Size(document, options);
+            long frames = Animation(document, options) is SvgFramePlan plan ? plan.Count : 1;
             return new RasterInfo
             {
                 Format = Info,
                 Width = (int)Math.Min(width, int.MaxValue),
                 Height = (int)Math.Min(height, int.MaxValue),
                 Layout = Rgba8.Layout,
-                FrameCount = 1,
+                FrameCount = (int)Math.Min(frames, int.MaxValue),
                 ImageCount = 1,
-                EstimatedBytes = (long)Math.Min(4 * width * height, long.MaxValue),
+                EstimatedBytes = (long)Math.Min(4 * width * height * frames, long.MaxValue),
             };
         }
 
@@ -183,8 +185,24 @@ public static class SvgFormat
                 throw new LimitExceededException(nameof(SafetyLimits.MaxPixels), limits.MaxPixels, (long)Math.Min(w * h, long.MaxValue));
             }
 
-            input.CheckMemory((long)(System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>() * w * h));
-            Raster<TPixel> raster = document.Rasterize<TPixel>(new SvgRenderOptions { Width = (int)w, Height = (int)h, Context = input.Context });
+            SvgRenderOptions render = new() { Width = (int)w, Height = (int)h, Context = input.Context };
+            Raster<TPixel> raster;
+            if (Animation(document, options) is SvgFramePlan plan)
+            {
+                input.CheckFrameCount(plan.Count);
+                input.CheckMemory((long)Math.Min(System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>() * w * h * plan.Count, long.MaxValue));
+                raster = document.RasterizePlanned<TPixel>(plan, render, input.Context, merge: true);
+                if (plan.Warning is string warning)
+                {
+                    input.Warn(raster, "Svg.AnimationLength", warning);
+                }
+            }
+            else
+            {
+                input.CheckMemory((long)(System.Runtime.CompilerServices.Unsafe.SizeOf<TPixel>() * w * h));
+                raster = document.Rasterize<TPixel>(render);
+            }
+
             foreach (EgamiDiagnostic warning in document.Warnings)
             {
                 input.Warn(raster, warning.Id, warning.Message, warning.Offset);
@@ -214,6 +232,12 @@ public static class SvgFormat
                 throw new CorruptDataException(Info.Name, input.Position, e.Message, e);
             }
         }
+
+        /// <summary>The frames to load: planned at the options' frame rate when they ask for animation and the document animates; else null.</summary>
+        private static SvgFramePlan? Animation(SvgDocument document, ReaderOptions options) =>
+            options is SvgDecodeOptions { AnimationFrameRate: double rate } && document.Animation.HasAnimations
+                ? SvgFramePlan.Of(document.Animation, new SvgAnimationOptions { FrameRate = rate })
+                : null;
 
         /// <summary>The raster size: the document's size times the scale, rounded up, at least one pixel.</summary>
         private static (double Width, double Height) Size(SvgDocument document, ReaderOptions options)

@@ -22,7 +22,7 @@ namespace Egami.Svg;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Svg.cs" region="load"/>
 /// </example>
-public sealed class SvgDocument
+public sealed partial class SvgDocument
 {
     /// <summary>
     /// The canvas options Rasterize uses by default: the canvas's own, curves flattened to 0.1 pixel (0.02 measured no closer to
@@ -324,6 +324,14 @@ public sealed class SvgDocument
         where TPixel : unmanaged, IPixelType<TPixel>
     {
         options ??= SvgRenderOptions.Default;
+        EgamiContext context = options.Context ?? Options.EffectiveContext;
+        (int w, int h) = RasterSize(options, context.Limits);
+        return RasterizeAt<TPixel>(w, h, context, options, options.Time);
+    }
+
+    /// <summary>The size of the raster Rasterize draws, checked against the size limits.</summary>
+    private (int Width, int Height) RasterSize(SvgRenderOptions options, SafetyLimits limits)
+    {
         Vector2 size = Size;
         double w, h;
         if (options.Width is int width && options.Height is int height)
@@ -345,8 +353,6 @@ public sealed class SvgDocument
 
         w = Math.Max(1, w);
         h = Math.Max(1, h);
-        EgamiContext context = options.Context ?? Options.EffectiveContext;
-        SafetyLimits limits = context.Limits;
         if (w > limits.MaxWidth)
         {
             throw new LimitExceededException(nameof(SafetyLimits.MaxWidth), limits.MaxWidth, (long)w);
@@ -362,18 +368,26 @@ public sealed class SvgDocument
             throw new LimitExceededException(nameof(SafetyLimits.MaxPixels), limits.MaxPixels, (long)(w * h));
         }
 
-        Raster<TPixel> raster = Raster.Create<TPixel>((int)w, (int)h, context);
+        return ((int)w, (int)h);
+    }
+
+    /// <summary>Draws the document at a moment (or the static document) into a new raster of a checked size.</summary>
+    private Raster<TPixel> RasterizeAt<TPixel>(int w, int h, EgamiContext context, SvgRenderOptions options, TimeSpan? time)
+        where TPixel : unmanaged, IPixelType<TPixel>
+    {
+        Vector2 size = Size;
+        Raster<TPixel> raster = Raster.Create<TPixel>(w, h, context);
         using RasterCanvas<TPixel> canvas = raster.CreateCanvas(options.CanvasOptions ?? s_canvasOptions);
         if (options.Background.A > 0)
         {
             canvas.Clear(options.Background);
         }
 
-        Matrix3x2 scale = Matrix3x2.CreateScale((float)(w / size.X), (float)(h / size.Y));
+        Matrix3x2 scale = Matrix3x2.CreateScale((float)((double)w / size.X), (float)((double)h / size.Y));
         if (size.X > 0 && size.Y > 0 && SvgRenderer.IsFinite(scale))
         {
             canvas.Concat(scale);
-            SvgRenderer.Draw(canvas, options.Time is TimeSpan time ? TreeAt(time, options.Languages) : Tree(options.Languages), options);
+            SvgRenderer.Draw(canvas, time is TimeSpan at ? TreeAt(at, options.Languages) : Tree(options.Languages), options);
         }
 
         return raster;
