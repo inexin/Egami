@@ -14,6 +14,12 @@ public enum CssOrigin
 
     /// <summary>The document's style sheets, presentation hints and style attributes.</summary>
     Author,
+
+    /// <summary>
+    /// The values running CSS animations give (CSS Cascade 4, "Cascade Origins"): above every normal declaration, below every
+    /// important one. Style sheets never have this origin; <see cref="CssCascadedStyle.WithAnimationValues"/> adds its declarations.
+    /// </summary>
+    Animation,
 }
 
 /// <summary>Options for building a <see cref="CssCascade"/>.</summary>
@@ -68,6 +74,7 @@ public sealed class CssCascade
     /// <summary>Builds a cascade from style sheets in order of appearance.</summary>
     /// <param name="sheets">The style sheets and their origins, in document order.</param>
     /// <param name="options">The media context, the <c>@supports</c> callback and the property registry.</param>
+    /// <exception cref="ArgumentException">A sheet has the <see cref="CssOrigin.Animation"/> origin.</exception>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="cascade"/>
     /// </example>
@@ -79,6 +86,11 @@ public sealed class CssCascade
         foreach ((CssStyleSheet sheet, CssOrigin origin) in sheets)
         {
             ArgumentNullException.ThrowIfNull(sheet);
+            if (origin == CssOrigin.Animation)
+            {
+                throw new ArgumentException("A style sheet cannot have the animation origin; use CssCascadedStyle.WithAnimationValues.", nameof(sheets));
+            }
+
             AddRules(sheet.Rules, origin, 0);
         }
     }
@@ -537,6 +549,31 @@ public sealed class CssCascadedStyle
         return true;
     }
 
+    /// <summary>
+    /// Returns a copy of this style with the values of running animations added in the <see cref="CssOrigin.Animation"/>
+    /// origin, so each wins over every normal declaration of its property and loses to every important one (CSS Cascade 4).
+    /// </summary>
+    /// <param name="declarations">The animated values, one longhand or custom property each; a later one for the same property wins.</param>
+    /// <returns>The new cascaded style; this one is unchanged.</returns>
+    public CssCascadedStyle WithAnimationValues(IEnumerable<CssDeclaration> declarations)
+    {
+        ArgumentNullException.ThrowIfNull(declarations);
+        CssCascadedStyle style = new();
+        foreach ((string name, Slots slots) in _properties)
+        {
+            style._properties[name] = slots;
+        }
+
+        int index = 0;
+        foreach (CssDeclaration declaration in declarations)
+        {
+            ArgumentNullException.ThrowIfNull(declaration, nameof(declarations));
+            style.Offer(declaration, CssOrigin.Animation, important: false, styleAttribute: false, default, 0, index++);
+        }
+
+        return style;
+    }
+
     /// <summary>Gets the value text of a property's winning declaration, or <see langword="null"/>.</summary>
     /// <param name="name">The property name.</param>
     /// <returns>The value text.</returns>
@@ -600,14 +637,15 @@ public sealed class CssCascadedStyle
 
     internal readonly record struct Entry(CssDeclaration? Declaration, Key Key);
 
-    // The best declaration of each origin: UserAgent, User, Author.
+    // The best declaration of each origin: UserAgent, User, Author, Animation.
     private struct Slots
     {
         private Entry _userAgent;
         private Entry _user;
         private Entry _author;
+        private Entry _animation;
 
-        public readonly Entry Get(int origin) => origin switch { 0 => _userAgent, 1 => _user, _ => _author };
+        public readonly Entry Get(int origin) => origin switch { 0 => _userAgent, 1 => _user, 2 => _author, _ => _animation };
 
         public void Set(int origin, Entry entry)
         {
@@ -619,19 +657,22 @@ public sealed class CssCascadedStyle
                 case 1:
                     _user = entry;
                     break;
-                default:
+                case 2:
                     _author = entry;
+                    break;
+                default:
+                    _animation = entry;
                     break;
             }
         }
 
-        // The origin whose declaration wins among the origins below 'limit': normal declarations rank UA < user < author,
-        // important ones author < user < UA, above every normal one.
+        // The origin whose declaration wins among the origins below 'limit': normal declarations rank UA < user < author <
+        // animation, important ones author < user < UA, above every normal one.
         public readonly int Best(int limit)
         {
             int best = -1;
             int bestRank = -1;
-            for (int origin = 0; origin < 3 && origin < limit; origin++)
+            for (int origin = 0; origin < 4 && origin < limit; origin++)
             {
                 Entry entry = Get(origin);
                 if (entry.Declaration is null)
@@ -639,7 +680,7 @@ public sealed class CssCascadedStyle
                     continue;
                 }
 
-                int rank = entry.Key.Important ? 5 - origin : origin;
+                int rank = entry.Key.Important ? 7 - origin : origin;
                 if (rank > bestRank)
                 {
                     bestRank = rank;

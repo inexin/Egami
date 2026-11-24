@@ -131,7 +131,7 @@ public sealed class SyntaxTests
             r => Assert.Equal("Foo", Assert.IsType<CssFontFaceRule>(r).FontFace.Family),
             r => Assert.Equal(["base", "theme"], Assert.IsType<CssLayerRule>(r).Names),
             r => Assert.Single(Assert.IsType<CssLayerRule>(r).Rules!),
-            r => Assert.Equal("keyframes", Assert.IsType<CssUnknownAtRule>(r).Name));
+            r => Assert.Equal("spin", Assert.IsType<CssKeyframesRule>(r).Name));
         CssImportRule import = (CssImportRule)sheet.Rules[0];
         Assert.Equal("reset", import.Layer);
         Assert.Equal("display: grid", import.SupportsText);

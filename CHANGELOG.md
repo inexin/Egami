@@ -3,7 +3,7 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Egami.Svg 1.6.0 (unreleased)
+## Egami.Svg and Egami.Css 1.6.0 (unreleased)
 
 SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation element, drawn at a chosen time.
 
@@ -33,6 +33,16 @@ SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation
   its descendants follow. The `style` attribute cannot be animated, as SVG 2 says; such an animation is reported with
   `Svg.BadAnimation` and has no effect.
 - A new fuzz target, `svg-timeline`, builds timelines and draws frames from mutated animated documents.
+
+Egami.Css:
+
+- `@keyframes` and `@-webkit-keyframes` now parse into a `CssKeyframesRule` (its `Name` and `CssKeyframe`s, each with its
+  `Offsets` and `Declarations`, `!important` ones dropped) instead of a `CssUnknownAtRule`. Code that looked for keyframes
+  among the unknown at-rules must look for the new type.
+- `CssEasingFunction` parses and evaluates CSS Easing 2's easing functions: `linear`, `linear()` with stops, the `ease`
+  keywords, `cubic-bezier()`, `step-start`, `step-end` and `steps()` with every jump position, with the before flag.
+- `CssOrigin.Animation` and `CssCascadedStyle.WithAnimationValues` put animated values in the cascade, above every normal
+  declaration and below every important one. A style sheet given the animation origin is refused.
 
 ## Egami.Video.Hardware 0.1.0-preview.1 (unreleased)
 

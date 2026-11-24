@@ -195,10 +195,59 @@ public sealed class CssStyleSheet
                 case "page":
                     CloseWindows(topLevel);
                     return BuildPage(raw, prelude);
+                case "keyframes":
+                case "-webkit-keyframes":
+                    CloseWindows(topLevel);
+                    return BuildKeyframes(raw, prelude);
                 default:
                     CloseWindows(topLevel);
                     return new CssUnknownAtRule(name, raw.Prelude, raw.Block) { Line = raw.Line, Column = raw.Column };
             }
+        }
+
+        private CssKeyframesRule? BuildKeyframes(RawAtRule raw, List<CssComponentValue> prelude)
+        {
+            if (raw.Block is null)
+            {
+                Drop(raw, "has no block");
+                return null;
+            }
+
+            string? name = CssKeyframesRule.ParseName(prelude);
+            if (name is null)
+            {
+                options.Report(raw.Line, raw.Column, $"The @keyframes name '{CssComponentValue.Serialize(prelude)}' is invalid; the rule was dropped.");
+                return null;
+            }
+
+            List<CssKeyframe> keyframes = [];
+            CssSyntax.Parser parser = new(raw.Block.Content, options);
+            foreach (object item in parser.ConsumeRuleList(topLevel: false))
+            {
+                if (item is RawAtRule nested)
+                {
+                    options.Report(nested.Line, nested.Column, $"The @{nested.Name} rule is not allowed in @keyframes; it was dropped.");
+                    continue;
+                }
+
+                if (item is not RawQualifiedRule keyframe)
+                {
+                    continue;
+                }
+
+                List<double>? offsets = CssKeyframe.ParseSelectors(keyframe.Prelude);
+                if (offsets is null)
+                {
+                    options.Report(keyframe.Line, keyframe.Column, $"The keyframe selector '{CssComponentValue.Serialize(CssSyntax.Trim(keyframe.Prelude))}' is invalid; the keyframe was dropped.");
+                    continue;
+                }
+
+                List<CssDeclaration> declarations = CssDeclaration.ParseList(keyframe.Block.Content, options, "a keyframe");
+                declarations.RemoveAll(d => d.Important);
+                keyframes.Add(new CssKeyframe(offsets, declarations) { Line = keyframe.Line, Column = keyframe.Column });
+            }
+
+            return new CssKeyframesRule(name, keyframes) { Line = raw.Line, Column = raw.Column };
         }
 
         private CssPageRule? BuildPage(RawAtRule raw, List<CssComponentValue> prelude)
