@@ -505,6 +505,7 @@ public sealed class CssCascade
 public sealed class CssCascadedStyle
 {
     private readonly Dictionary<string, Slots> _properties = new(StringComparer.Ordinal);
+    private Dictionary<string, CssDeclaration>? _animation;
 
     /// <summary>Creates an empty cascaded style (no declarations apply).</summary>
     public CssCascadedStyle()
@@ -538,15 +539,8 @@ public sealed class CssCascadedStyle
             return false;
         }
 
-        int best = slots.Best(int.MaxValue);
-        if (best < 0)
-        {
-            return false;
-        }
-
-        declaration = slots.Get(best).Declaration!;
-        origin = (CssOrigin)best;
-        return true;
+        declaration = Winner(name, slots, int.MaxValue, out origin);
+        return declaration is not null;
     }
 
     /// <summary>
@@ -564,11 +558,16 @@ public sealed class CssCascadedStyle
             style._properties[name] = slots;
         }
 
-        int index = 0;
+        if (_animation is not null)
+        {
+            style._animation = new Dictionary<string, CssDeclaration>(_animation, StringComparer.Ordinal);
+        }
+
         foreach (CssDeclaration declaration in declarations)
         {
             ArgumentNullException.ThrowIfNull(declaration, nameof(declarations));
-            style.Offer(declaration, CssOrigin.Animation, important: false, styleAttribute: false, default, 0, index++);
+            (style._animation ??= new(StringComparer.Ordinal))[declaration.Name] = declaration;
+            style._properties.TryAdd(declaration.Name, default);
         }
 
         return style;
@@ -588,14 +587,23 @@ public sealed class CssCascadedStyle
             return null;
         }
 
-        int best = slots.Best((int)below);
-        if (best < 0)
+        return Winner(name, slots, (int)below, out origin);
+    }
+
+    // The winning declaration among the origins below 'limit': an animation value beats every normal declaration and loses
+    // to every important one.
+    private CssDeclaration? Winner(string name, in Slots slots, int limit, out CssOrigin origin)
+    {
+        int best = slots.Best(limit);
+        bool important = best >= 0 && slots.Get(best).Key.Important;
+        if (!important && limit > (int)CssOrigin.Animation && _animation is not null && _animation.TryGetValue(name, out CssDeclaration? animated))
         {
-            return null;
+            origin = CssOrigin.Animation;
+            return animated;
         }
 
-        origin = (CssOrigin)best;
-        return slots.Get(best).Declaration;
+        origin = best < 0 ? default : (CssOrigin)best;
+        return best < 0 ? null : slots.Get(best).Declaration;
     }
 
     internal void Offer(CssDeclaration declaration, CssOrigin origin, bool important, bool styleAttribute, CssSpecificity specificity, int order, int index)
@@ -637,16 +645,15 @@ public sealed class CssCascadedStyle
 
     internal readonly record struct Entry(CssDeclaration? Declaration, Key Key);
 
-    // The best declaration of each origin: UserAgent, User, Author, Animation. Animation values are never important and the
-    // later wins, so that origin keeps no key: one reference, not a whole entry, as most styles never animate.
+    // The best declaration of each origin: UserAgent, User, Author. The animation origin's values live apart, in
+    // _animation, as most styles never animate.
     private struct Slots
     {
         private Entry _userAgent;
         private Entry _user;
         private Entry _author;
-        private CssDeclaration? _animation;
 
-        public readonly Entry Get(int origin) => origin switch { 0 => _userAgent, 1 => _user, 2 => _author, _ => new Entry(_animation, default) };
+        public readonly Entry Get(int origin) => origin switch { 0 => _userAgent, 1 => _user, _ => _author };
 
         public void Set(int origin, Entry entry)
         {
@@ -658,22 +665,19 @@ public sealed class CssCascadedStyle
                 case 1:
                     _user = entry;
                     break;
-                case 2:
-                    _author = entry;
-                    break;
                 default:
-                    _animation = entry.Declaration;
+                    _author = entry;
                     break;
             }
         }
 
-        // The origin whose declaration wins among the origins below 'limit': normal declarations rank UA < user < author <
-        // animation, important ones author < user < UA, above every normal one.
+        // The origin whose declaration wins among the origins below 'limit': normal declarations rank UA < user < author,
+        // important ones author < user < UA, above every normal one. Animation values are ranked apart, in Winner.
         public readonly int Best(int limit)
         {
             int best = -1;
             int bestRank = -1;
-            for (int origin = 0; origin < 4 && origin < limit; origin++)
+            for (int origin = 0; origin < 3 && origin < limit; origin++)
             {
                 Entry entry = Get(origin);
                 if (entry.Declaration is null)
@@ -681,7 +685,7 @@ public sealed class CssCascadedStyle
                     continue;
                 }
 
-                int rank = entry.Key.Important ? 7 - origin : origin;
+                int rank = entry.Key.Important ? 5 - origin : origin;
                 if (rank > bestRank)
                 {
                     bestRank = rank;
