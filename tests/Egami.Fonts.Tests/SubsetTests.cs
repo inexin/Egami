@@ -177,4 +177,22 @@ public class SubsetTests
         string name = Path.GetFileNameWithoutExtension(file) + "-" + subset.Format + (retain ? "-retain" : string.Empty) + ext;
         File.WriteAllBytes(Path.Combine(dir, name), subset.Data.ToArray());
     }
+
+    [Fact]
+    public void NameKeyedCffKeepsOnlyTheStringsItUses()
+    {
+        Typeface face = TestFonts.Load("SourceSans3-Regular.otf");
+        ushort[] glyphs = [.. "Hamburgefonstiv".Select(c => face.GetGlyph(c))];
+        FontSubset subset = FontSubsetter.Subset(face, glyphs);
+        Typeface back = subset.ToTypeface();
+
+        Assert.True(back.TryGetTable(new FontTag("CFF "), out ReadOnlyMemory<byte> cff));
+        Assert.True(cff.Length < 8_000, $"CFF {cff.Length} bytes: the String INDEX still holds every glyph's name.");
+        foreach ((ushort old, ushort now) in subset.GlyphMap)
+        {
+            Assert.Equal(face.GetGlyphName(old), back.GetGlyphName(now));
+        }
+
+        Assert.Equal(face.PostScriptName, back.PostScriptName);
+    }
 }

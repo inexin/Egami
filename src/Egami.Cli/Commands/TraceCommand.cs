@@ -232,7 +232,7 @@ internal static class TraceCommand
         return colors.Count > 0 ? colors : throw new UsageException("--palette needs at least one color.");
     }
 
-    private static void CheckMany(CliSession session, OutputTemplate template, int count, string option, string example)
+    internal static void CheckMany(CliSession session, OutputTemplate template, int count, string option, string example)
     {
         if (count <= 1)
         {
@@ -250,14 +250,14 @@ internal static class TraceCommand
         }
     }
 
-    private static bool Folder(CliSession session, OutputTemplate template)
+    internal static bool Folder(CliSession session, OutputTemplate template)
     {
         string text = template.Text;
         return text.EndsWith('/') || text.EndsWith('\\') || (!template.HasPlaceholders && Directory.Exists(session.ResolvePath(text)));
     }
 
     /// <summary>The path for one input: <c>-</c>, a file in a folder named after the input, or the template filled in.</summary>
-    private static string Target(CliSession session, OutputTemplate template, InputSource input, string extension)
+    internal static string Target(CliSession session, OutputTemplate template, InputSource input, string extension)
     {
         if (template.IsStdout)
         {

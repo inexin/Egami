@@ -500,6 +500,53 @@ public class Text
     }
 
     [Fact]
+    public void WebFontToSfnt()
+    {
+        byte[] woff2File = WebFontWriter.Write(Typeface.FromFile(FontFile));
+
+        #region webfont-unwrap
+        // Back from WOFF2 to a TrueType font a desktop app installs: glyf, loca and hmtx rebuilt, every other table as it was.
+        byte[] ttf = WebFontReader.ToSfnt(woff2File);
+        Typeface installed = Typeface.FromMemory(ttf);
+        #endregion
+
+        Assert.Equal(FontFileKind.Sfnt, installed.Container);
+        Assert.Equal(Typeface.FromFile(FontFile).GlyphCount, installed.GlyphCount);
+    }
+
+    [Fact]
+    public void SubsetUnhinted()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+
+        #region subset-unhinted
+        // For screens that ignore TrueType hints anyway, leave them out: fpgm, prep, cvt and every glyph's instructions.
+        ushort[] glyphs = [.. "Hello".Select(c => face.GetGlyph(c))];
+        FontSubset hinted = FontSubsetter.Subset(face, glyphs);
+        FontSubset unhinted = FontSubsetter.Subset(face, glyphs, new SubsetOptions { DropHinting = true });
+        #endregion
+
+        Assert.True(unhinted.Data.Length < hinted.Data.Length);
+    }
+
+    [Fact]
+    public void SubsetText()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+
+        #region subset-text
+        // The glyphs a text needs as the shaper draws it: "e" with a combining acute also keeps the precomposed "é" the shaper
+        // composes them to, and a character the face lacks keeps the glyphs of its decomposition.
+        string text = "résumé";
+        IReadOnlyList<ushort> glyphs = FontSubsetter.GlyphsFor(face, text.EnumerateRunes().Select(r => r.Value));
+        FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+        #endregion
+
+        Assert.Contains(face.GetGlyph('é'), glyphs);
+        Assert.True(subset.GlyphMap.ContainsKey(face.GetGlyph('é')));
+    }
+
+    [Fact]
     public void BareCff()
     {
         Typeface otf = Typeface.FromMemory(FontSubsetter.Subset(Typeface.FromFile(FontFile), [36]).Data);

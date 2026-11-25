@@ -284,11 +284,31 @@ WOFF and WOFF2 writing (roadmap 2.7.7) and Word-style justified lines. Additive 
   fontTools' at zlib level 9, on the test fonts.
 - A glyf table the writer cannot read is stored untransformed with the new `Font.TransformSkipped` warning. A bare CFF font
   throws `ArgumentException`. Input and output are bounded by the context's `SafetyLimits.MaxTotalBytes`.
+- `WebFontReader.ToSfnt` (2.7.8) turns a WOFF or WOFF2 file back into the TrueType or OpenType font it holds, rebuilding
+  WOFF2's transformed glyf, loca and hmtx; a WOFF2 collection becomes a TTC. Bounded by `SafetyLimits.MaxTotalBytes`.
+- `SubsetOptions.DropHinting` (false by default) leaves TrueType hinting out of a subset: fpgm, prep, cvt and every glyph's
+  instructions, with maxp's hinting limits set to none; gasp stays. CFF hints are kept.
+- `SubsetOptions.LayoutClosure` also keeps the dotted circle (U+25CC) the shaper puts before a mark that starts a run, and
+  copies MATH with the larger variants and assembly parts it gives the kept glyphs, so such text draws as with the full face.
+- `FontSubsetter.GlyphsFor` gives the glyphs that draw characters as the shaper does: each one the face maps, the
+  decomposition of one it lacks when it draws every part (a missing "ὶ" draws as iota and a combining grave) and the
+  precomposed characters it maps whose decomposition the text holds (an "e" and a combining acute compose to "é").
+- A name-keyed CFF subset keeps only the strings its dicts and glyph names use: the String INDEX held every glyph's name, most
+  of a small subset's CFF (a 66-character SourceSans3 subset drops from 28 KB to 6 KB).
 
 ## Egami.Cli 1.6.0 (unreleased)
 
-MCP prompts and resources, a guide for coding agents, and animated SVG input. Additive to 1.5.0.
+MCP prompts and resources, a guide for coding agents, animated SVG input and font commands. Additive to 1.5.0.
 
+- `egami font convert` (2.7.8) writes fonts losslessly as WOFF2 (the default) or WOFF, or WOFF and WOFF2 back to TTF, OTF or
+  TTC, by `-o`'s extension or `--format`; collections convert to WOFF2 or TTC only. `--no-transform` and `--metadata`.
+- `egami font subset` keeps the characters of `--text`, `--text-file` and `--unicodes` (CSS unicode-range syntax). By default
+  it keeps the layout tables and the glyphs they reach, with the glyph ids, so the subset shapes as the full font; `--no-layout`
+  gives the smallest file. Variable fonts become static, at `--variation` or the default position. `--no-hinting`,
+  `--retain-gids`, `--name-prefix`, `--face`. It prints the glyphs kept, the missing characters and the sizes, and warns about
+  tables it leaves out.
+- `egami font info` describes fonts: names, container, outlines, glyphs, units per em, axes, embedding rights, tables and Unicode
+  blocks covered; `--json` adds the coverage as a CSS unicode-range. The three are MCP tools (`font_info` read-only).
 - Every command takes `--animate [fps]`, which loads an animated SVG input with all its frames (30 a second by default), and
   `--at <time>`, which draws it at one moment (or, with `--animate`, starts the frames there). `egami mcp`'s tools that take
   files take both as `animate` and `at`.

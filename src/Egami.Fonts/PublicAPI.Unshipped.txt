@@ -35,6 +35,11 @@ Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks.get -> bool
 Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks.init -> void
 Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces.get -> bool
 Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces.init -> void
+Egami.Fonts.SubsetOptions.DropHinting.get -> bool
+Egami.Fonts.SubsetOptions.DropHinting.init -> void
+Egami.Fonts.WebFontReader
+static Egami.Fonts.WebFontReader.ToSfnt(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null) -> byte[]!
+static Egami.Fonts.FontSubsetter.GlyphsFor(Egami.Fonts.Typeface! face, System.Collections.Generic.IEnumerable<int>! codePoints) -> System.Collections.Generic.IReadOnlyList<ushort>!
 Egami.Fonts.Layout.WordDictionaries
 Egami.Fonts.Layout.WordDictionaries.Add(Egami.Fonts.Unicode.Script script, Egami.Fonts.Layout.WordDictionary! dictionary) -> void
 Egami.Fonts.Layout.WordDictionaries.IsReadOnly.get -> bool

@@ -300,10 +300,23 @@ the glyph map.
 
 A PDF needs only the glyphs it draws. A subset that is to be shaped again, such as a web font for a known set of pages, sets
 `SubsetOptions.LayoutClosure`: the kept glyphs gain every glyph GSUB can substitute for them (`OpenTypeLayout.GetClosure` with the
-default features), and GSUB, GPOS and GDEF are copied unchanged. The copied tables use the old glyph ids, so it needs
+default features), the dotted circle the shaper puts before a mark that starts a run, and the larger variants and assembly parts
+MATH gives them, and GSUB, GPOS, GDEF and MATH are copied unchanged. The copied tables use the old glyph ids, so it needs
 `RetainGlyphIds`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-layout)]
+
+The shaper draws a character the face lacks from its canonical decomposition, and composes a base and a mark to the precomposed
+character when the face has it, so the glyphs of a text are more than those its characters map to. `FontSubsetter.GlyphsFor`
+gives them all.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-text)]
+
+`SubsetOptions.DropHinting` leaves TrueType hinting out: the fpgm, prep and cvt programs and every glyph's instructions, which
+on a hinted font are a good share of each glyph. Renderers draw such a subset unhinted, as most screens draw web fonts anyway.
+CFF hints are kept.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-unhinted)]
 
 ## Web fonts
 
@@ -319,6 +332,12 @@ at level 9 or 8, whichever is smaller, giving files within about 0.5 % of Google
 The metadata and private data blocks of a WOFF or WOFF2 source are kept unless `Metadata` or `PrivateData` replace them; an empty
 value writes none. A glyf table the writer cannot read is stored untransformed, with a `Font.TransformSkipped` warning. A bare CFF
 font has no sfnt tables and throws `ArgumentException`; subset it to OpenType CFF first.
+
+`WebFontReader.ToSfnt` goes the other way: a WOFF or WOFF2 file becomes the TrueType or OpenType font it holds, with WOFF2's glyf,
+loca and hmtx rebuilt, and a WOFF2 collection a TTC. The `egami font` commands of [the egami command](../cli/index.md#fonts) do
+all of this from a shell.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#webfont-unwrap)]
 
 ## Font data for PDF
 

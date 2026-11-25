@@ -81,7 +81,7 @@ internal sealed class ByteWriter
 /// <summary>Writes an sfnt from tables: a sorted directory, 4-byte aligned tables, checksums and head's checksum adjustment.</summary>
 internal static class SfntWriter
 {
-    private static readonly FontTag[] LayoutTables = [Tags.Gsub, Tags.Gpos, Tags.Gdef];
+    private static readonly FontTag[] LayoutTables = [Tags.Gsub, Tags.Gpos, Tags.Gdef, Tags.Math];
 
     public static byte[] Write(uint version, SortedDictionary<uint, byte[]> tables)
     {
@@ -444,8 +444,11 @@ internal static class SfntWriter
         return head;
     }
 
-    /// <summary>maxp with the new glyph count: version 1.0 fields kept for TrueType, version 0.5 for CFF.</summary>
-    public static byte[] Maxp(Typeface face, int glyphCount, bool trueType)
+    /// <summary>
+    /// maxp with the new glyph count: version 1.0 fields kept for TrueType, version 0.5 for CFF; without hinting, the zones,
+    /// twilight points, storage, definitions, stack and instruction size say none.
+    /// </summary>
+    public static byte[] Maxp(Typeface face, int glyphCount, bool trueType, bool noHinting = false)
     {
         var w = new ByteWriter(32);
         byte[] fields = face.Maxp?.TrueTypeFields ?? [];
@@ -453,7 +456,19 @@ internal static class SfntWriter
         {
             w.U32(0x00010000);
             w.U16(glyphCount);
-            if (fields.Length == 26)
+            if (fields.Length == 26 && noHinting)
+            {
+                // maxPoints to maxCompositeContours stay; maxZones 1; maxTwilightPoints to maxSizeOfInstructions 0; the component fields stay.
+                w.Bytes(fields.AsSpan(0, 8));
+                w.U16(1);
+                for (int i = 0; i < 6; i++)
+                {
+                    w.U16(0);
+                }
+
+                w.Bytes(fields.AsSpan(22, 4));
+            }
+            else if (fields.Length == 26)
             {
                 w.Bytes(fields);
             }
