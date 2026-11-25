@@ -124,8 +124,9 @@ break in Chinese and Japanese. <code>Strict</code> is UAX #14's own rules, which
 breaks between any two grapheme clusters.</li>
 <li><code>OverflowWrap</code> says whether a piece too wide for its line may break between grapheme clusters; line filling uses it.</li>
 </ul>
-<p>Thai, Lao, Khmer and Myanmar text breaks only at spaces and zero width spaces: line breaking uses no dictionaries yet. An
-object replacement character (U+FFFC, as placeholders use) breaks before and after.</p>
+<p>Thai, Lao, Khmer and Myanmar leave no spaces between words, so inside a run of their letters a line also breaks where a word
+dictionary finds a word end, as browsers break them (see Word dictionaries below). An object replacement character (U+FFFC,
+as placeholders use) breaks before and after.</p>
 <h3 id="word-dictionaries">Word dictionaries</h3>
 <p>Egami.Fonts ships ICU's word lists for Thai, Lao, Khmer and Myanmar, the ones browsers break these scripts with, as
 <code>WordDictionaries.BuiltIn</code>: a <code>WordDictionary</code> per <code>Script</code>, each loaded the first time a lookup asks for it. A dictionary
@@ -133,6 +134,13 @@ answers <code>Contains</code> for a word, spelled exactly; <code>WordDictionary.
 names and terms to a copy, and <code>Load</code> reads a UTF-8 list with one word per line (lines starting with <code>#</code> are comments) or the
 compiled <code>.edict</code> form <code>Save</code> writes. <code>new WordDictionaries(WordDictionaries.BuiltIn)</code> copies the set to add a script Egami
 ships no list for, such as Tai Tham, or to replace one; <code>WordDictionaries.None</code> is the empty set.</p>
+<p>Line breaking uses the built-in set unless <code>LineBreakOptions.Dictionaries</code> names another, and <code>WordDictionaries.None</code> turns
+dictionary breaks off. Inside each run of one script's complex-context (line breaking class SA) letters the segmenter matches
+words as ICU's dictionary break engines do: it prefers the word that two more words follow, lets letters no word fits run on
+to where the next word can begin, keeps combining marks and the repetition and abbreviation marks (ๆ, ฯ, ໆ, ຯ) with the word
+before them, and never breaks inside a grapheme cluster. UAX #14 still decides at the run's edges, and <code>WordBreak.BreakAll</code>
+breaks between any two letters without a dictionary. Chromium breaks Lao and Khmer with older, smaller lists than ICU's
+current ones, so it splits some compounds Egami keeps whole.</p>
 <pre><code class="lang-csharp">// The built-in lists load on first use; copy the set to add your own words or a script Egami ships no list for.
 WordDictionaries.BuiltIn.TryGet(Script.Thai, out WordDictionary? thai);
 bool known = thai!.Contains(&quot;ภาษา&quot;);                            // true: &quot;language&quot; is in ICU's Thai list
@@ -145,6 +153,14 @@ using MemoryStream compiled = new();
 withNames.Save(compiled);                                       // the compiled .edict form, far faster to load than a list
 compiled.Position = 0;
 WordDictionary back = WordDictionary.Load(compiled);
+
+// Line breaking uses the built-in set unless the options name another; WordDictionaries.None breaks only at spaces.
+LineBreakOptions options = new() { Dictionaries = dictionaries };   // or ParagraphStyle.LineBreaking
+List&lt;int&gt; breaks = [];
+foreach (LineBreak b in LineBreaks.Enumerate(&quot;ภาษาไทยง่าย&quot;, options))
+{
+    breaks.Add(b.Index);                                        // 4, 7 and 11: ภาษา|ไทย|ง่าย
+}
 </code></pre><h3 id="hyphenation-points">Hyphenation points</h3>
 <p>A <code>Hyphenator</code> finds where a word may break with a hyphen, by Liang's pattern algorithm as TeX, LibreOffice and browsers use
 it. <code>Hyphenator.Load</code> (with a <code>HyphenationFormat</code>, or <code>Auto</code> to tell it from the data) reads hyph-utf8's <code>hyph-xx.tex</code> files

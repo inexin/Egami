@@ -29843,6 +29843,19 @@ references:
   fullName.vb: Egami.Fonts.Layout.LineBreakOptions.New
   nameWithType: LineBreakOptions.LineBreakOptions
   nameWithType.vb: LineBreakOptions.New
+- uid: Egami.Fonts.Layout.LineBreakOptions.Dictionaries
+  name: Dictionaries
+  href: api/Egami.Fonts.Layout.LineBreakOptions.html#Egami_Fonts_Layout_LineBreakOptions_Dictionaries
+  commentId: P:Egami.Fonts.Layout.LineBreakOptions.Dictionaries
+  fullName: Egami.Fonts.Layout.LineBreakOptions.Dictionaries
+  nameWithType: LineBreakOptions.Dictionaries
+- uid: Egami.Fonts.Layout.LineBreakOptions.Dictionaries*
+  name: Dictionaries
+  href: api/Egami.Fonts.Layout.LineBreakOptions.html#Egami_Fonts_Layout_LineBreakOptions_Dictionaries_
+  commentId: Overload:Egami.Fonts.Layout.LineBreakOptions.Dictionaries
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.LineBreakOptions.Dictionaries
+  nameWithType: LineBreakOptions.Dictionaries
 - uid: Egami.Fonts.Layout.LineBreakOptions.Language
   name: Language
   href: api/Egami.Fonts.Layout.LineBreakOptions.html#Egami_Fonts_Layout_LineBreakOptions_Language

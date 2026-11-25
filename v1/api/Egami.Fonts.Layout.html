@@ -128,8 +128,9 @@ hyphenation.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Fonts.Layout.LineBreaks.html">LineBreaks</a></dt>
       <dd><p>Finds where lines may break: Unicode's line breaking algorithm (UAX #14, Unicode 17.0) from Egami's own tables, with CSS
-Text 3's <code>word-break</code> and <code>line-break</code> switches. No shaping is involved, and there are no dictionaries: Thai, Lao,
-Khmer and Myanmar break only at spaces and zero width spaces.</p>
+Text 3's <code>word-break</code> and <code>line-break</code> switches. No shaping is involved. Thai, Lao, Khmer and Myanmar, which
+leave no spaces between words, also break between the words a dictionary finds (<a class="xref" href="Egami.Fonts.Layout.LineBreakOptions.html#Egami_Fonts_Layout_LineBreakOptions_Dictionaries">Dictionaries</a>),
+as browsers break them.</p>
 </dd>
     </dl>
     <dl class="jumplist">

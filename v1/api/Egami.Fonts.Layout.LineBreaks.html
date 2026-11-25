@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class LineBreaks | Egami ">
       
-      <meta name="description" content="Finds where lines may break: Unicode&#39;s line breaking algorithm (UAX #14, Unicode 17.0) from Egami&#39;s own tables, with CSS Text 3&#39;s word-break and line-break switches. No shaping is involved, and there are no dictionaries: Thai, Lao, Khmer and Myanmar break only at spaces and zero width spaces.">
+      <meta name="description" content="Finds where lines may break: Unicode&#39;s line breaking algorithm (UAX #14, Unicode 17.0) from Egami&#39;s own tables, with CSS Text 3&#39;s word-break and line-break switches. No shaping is involved. Thai, Lao, Khmer and Myanmar, which leave no spaces between words, also break between the words a dictionary finds (), as browsers break them.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Fonts_Layout_LineBreaks" data-uid="Egami.Fonts.Layout.LineBreaks" class="text-break">
-Class LineBreaks  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/LineBreaks.cs/#L21"><i class="bi bi-code-slash"></i></a>
+Class LineBreaks  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/LineBreaks.cs/#L26"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -98,8 +98,9 @@ Class LineBreaks  <a class="header-action link-secondary" title="View source" hr
   </div>
 
   <div class="markdown summary"><p>Finds where lines may break: Unicode's line breaking algorithm (UAX #14, Unicode 17.0) from Egami's own tables, with CSS
-Text 3's <code>word-break</code> and <code>line-break</code> switches. No shaping is involved, and there are no dictionaries: Thai, Lao,
-Khmer and Myanmar break only at spaces and zero width spaces.</p>
+Text 3's <code>word-break</code> and <code>line-break</code> switches. No shaping is involved. Thai, Lao, Khmer and Myanmar, which
+leave no spaces between words, also break between the words a dictionary finds (<a class="xref" href="Egami.Fonts.Layout.LineBreakOptions.html#Egami_Fonts_Layout_LineBreakOptions_Dictionaries">Dictionaries</a>),
+as browsers break them.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -168,7 +169,10 @@ foreach (LineBreak b in LineBreaks.Enumerate("word", breakAll))
   <h2 id="Egami_Fonts_Layout_LineBreaks_remarks">Remarks</h2>
   <div class="markdown level0 remarks"><p>With <a class="xref" href="Egami.Fonts.Layout.LineBreakStrictness.html#Egami_Fonts_Layout_LineBreakStrictness_Strict">Strict</a>, which is UAX #14's own rules, every break Unicode's LineBreakTest.txt lists
 is found; the default (CSS's <code>auto</code>) also breaks before small kana. An object replacement character (U+FFFC, as
-placeholders use) breaks before and after. The enumerator walks the text once and allocates nothing.</p>
+placeholders use) breaks before and after. Inside a run of complex-context (SA) letters of one script, a word end the
+dictionary segmenter finds is a break; UAX #14 still decides at the run's edges. The segmenter follows ICU's dictionary
+break engines and never splits a grapheme cluster. The enumerator walks the text once and allocates nothing; a script's
+built-in dictionary loads the first time its text is broken.</p>
 </div>
 
 
@@ -180,7 +184,7 @@ placeholders use) breaks before and after. The enumerator walks the text once an
 
   <h3 id="Egami_Fonts_Layout_LineBreaks_Enumerate_System_ReadOnlySpan_System_Char__Egami_Fonts_Layout_LineBreakOptions_" data-uid="Egami.Fonts.Layout.LineBreaks.Enumerate(System.ReadOnlySpan{System.Char},Egami.Fonts.Layout.LineBreakOptions)">
   Enumerate(ReadOnlySpan&lt;char&gt;, LineBreakOptions)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/LineBreaks.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/LineBreaks.cs/#L35"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Enumerates the break opportunities of a text, in order; the last is always at the end of the text.</p>
@@ -238,7 +242,7 @@ foreach (LineBreak b in LineBreaks.Enumerate("word", breakAll))
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/LineBreaks.cs/#L21" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/LineBreaks.cs/#L26" class="edit-link">Edit this page</a>
         </div>
 
 

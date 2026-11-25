@@ -4785,7 +4785,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Fonts.Layout.LineBreaks",
-      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.LineBreaks.yml\" sourcestartlinenumber=\"1\">Finds where lines may break: Unicode's line breaking algorithm (UAX #14, Unicode 17.0) from Egami's own tables, with CSS\nText 3's <code>word-break</code> and <code>line-break</code> switches. No shaping is involved, and there are no dictionaries: Thai, Lao,\nKhmer and Myanmar break only at spaces and zero width spaces.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.LineBreaks.yml\" sourcestartlinenumber=\"1\">Finds where lines may break: Unicode's line breaking algorithm (UAX #14, Unicode 17.0) from Egami's own tables, with CSS\nText 3's <code>word-break</code> and <code>line-break</code> switches. No shaping is involved. Thai, Lao, Khmer and Myanmar, which\nleave no spaces between words, also break between the words a dictionary finds (<xref href=\"Egami.Fonts.Layout.LineBreakOptions.Dictionaries\" data-throw-if-not-resolved=\"false\"></xref>),\nas browsers break them.</p>\n"
     },
     {
       "type": "ManagedReference",

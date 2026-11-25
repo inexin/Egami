@@ -156,7 +156,15 @@ dictionaries.Add(Script.Thai, withNames);
 using MemoryStream compiled = new();
 withNames.Save(compiled);                                       // the compiled .edict form, far faster to load than a list
 compiled.Position = 0;
-WordDictionary back = WordDictionary.Load(compiled);</code></pre>
+WordDictionary back = WordDictionary.Load(compiled);
+
+// Line breaking uses the built-in set unless the options name another; WordDictionaries.None breaks only at spaces.
+LineBreakOptions options = new() { Dictionaries = dictionaries };   // or ParagraphStyle.LineBreaking
+List&lt;int&gt; breaks = [];
+foreach (LineBreak b in LineBreaks.Enumerate("ภาษาไทยง่าย", options))
+{
+    breaks.Add(b.Index);                                        // 4, 7 and 11: ภาษา|ไทย|ง่าย
+}</code></pre>
 
 
   <h2 id="Egami_Fonts_Layout_WordDictionaries_remarks">Remarks</h2>
@@ -380,7 +388,7 @@ shared.</p>
 
   <h3 id="Egami_Fonts_Layout_WordDictionaries_Add_Egami_Fonts_Unicode_Script_Egami_Fonts_Layout_WordDictionary_" data-uid="Egami.Fonts.Layout.WordDictionaries.Add(Egami.Fonts.Unicode.Script,Egami.Fonts.Layout.WordDictionary)">
   Add(Script, WordDictionary)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/WordDictionaries.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/WordDictionaries.cs/#L77"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Adds or replaces the dictionary for a script.</p>
@@ -425,7 +433,7 @@ shared.</p>
 
   <h3 id="Egami_Fonts_Layout_WordDictionaries_TryGet_Egami_Fonts_Unicode_Script_Egami_Fonts_Layout_WordDictionary__" data-uid="Egami.Fonts.Layout.WordDictionaries.TryGet(Egami.Fonts.Unicode.Script,Egami.Fonts.Layout.WordDictionary@)">
   TryGet(Script, out WordDictionary?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/WordDictionaries.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/WordDictionaries.cs/#L93"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Finds the dictionary for a script, loading a built-in one on first use.</p>

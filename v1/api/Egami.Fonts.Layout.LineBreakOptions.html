@@ -235,6 +235,44 @@ foreach (LineBreak b in LineBreaks.Enumerate("word", breakAll))
 </h2>
 
 
+  <a id="Egami_Fonts_Layout_LineBreakOptions_Dictionaries_" data-uid="Egami.Fonts.Layout.LineBreakOptions.Dictionaries*"></a>
+
+  <h3 id="Egami_Fonts_Layout_LineBreakOptions_Dictionaries" data-uid="Egami.Fonts.Layout.LineBreakOptions.Dictionaries">
+  Dictionaries
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/LineBreakOptions.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the word dictionaries that break Thai, Lao, Khmer, Myanmar and other text written without spaces between words:
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, the default, for <a class="xref" href="Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_BuiltIn">BuiltIn</a>, or <a class="xref" href="Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_None">None</a>
+to break such text only at spaces and zero width spaces.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public WordDictionaries? Dictionaries { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.WordDictionaries.html">WordDictionaries</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_LineBreakOptions_Dictionaries_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>A dictionary applies to runs of its script's complex-context (line breaking class SA) letters.
+<a class="xref" href="Egami.Fonts.Layout.WordBreak.html#Egami_Fonts_Layout_WordBreak_BreakAll">BreakAll</a> breaks between any two letters, so it needs none.</p>
+</div>
+
+
+
+
   <a id="Egami_Fonts_Layout_LineBreakOptions_Language_" data-uid="Egami.Fonts.Layout.LineBreakOptions.Language*"></a>
 
   <h3 id="Egami_Fonts_Layout_LineBreakOptions_Language" data-uid="Egami.Fonts.Layout.LineBreakOptions.Language">
