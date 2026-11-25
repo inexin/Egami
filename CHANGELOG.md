@@ -90,6 +90,28 @@ EMF writing, stage C: images, text and pictures.
 - A picture paint's tile is drawn at the resolution, as Egami draws picture paints on a raster, not at `FallbackScale`.
 - `Metafile.Load(...).Draw(emfCanvas)` writes every WMF, EMF and EMF+ file in the test corpus again with the same playback.
 
+## Egami.SystemDrawing 1.0.0-preview.4 (unreleased)
+
+EMF writing, stage D (roadmap 2.3.7.1): metafiles are recorded.
+
+- The `Metafile` constructors that take a reference device context no longer throw. They record into memory, a file or a
+  stream, for a 96 DPI screen whatever handle is given (`IntPtr.Zero` too). `EmfType` chooses EMF+ dual, EMF+ only or GDI
+  only, and the description goes into the header. The EGSD0004 warning is gone. The handle constructors and
+  `GetHenhmetafile` still throw.
+- `Graphics.FromImage` on a recording metafile returns a Graphics that writes every call through Egami.Metafiles'
+  `EmfCanvas`: shapes, pens, brushes, images (as image records of the pixels at that moment), clips, transforms, containers
+  and compositing, with GDI+'s settings in effect, and text as glyph records. Measuring works as on a bitmap.
+- Disposing that Graphics writes the file (a file is created empty by the constructor, as GDI+ does; a stream is written
+  from its position and left open). The metafile is then the recorded file: `Size`, `GetMetafileHeader`, `DrawImage`,
+  `EnumerateMetafile`, `Clone` and `Save` (PNG) work as for a loaded one.
+- Frames are written as GDI+ writes them, measured with System.Drawing: in 0.01 mm, inclusive of the last device pixel in
+  the pixel, point, inch, document and millimeter units, as given in `GdiCompatible`. Empty frames in other units and
+  negative frames throw `ExternalException`; without a frame, the frame is the bounds of what was drawn.
+- As GDI+: a second `FromImage`, or one on a loaded or recorded metafile, throws `ExternalException` (0x8000FFFF); the size
+  of a metafile being recorded throws `ArgumentException`; drawing a metafile onto its own recording draws nothing.
+- Tests play GDI+'s recordings of nine scenes (tests/images/metafiles/recorded, written by egami-compare) next to Egami's:
+  EMF+ means 0.005 to 5.2.
+
 ## Egami.Svg and Egami.Css 1.6.0 (unreleased)
 
 SVG animation (roadmap 2.10.1): SMIL and CSS animations drawn at any moment, as frames, animated rasters, frozen static copies

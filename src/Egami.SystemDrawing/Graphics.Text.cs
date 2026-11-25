@@ -91,7 +91,8 @@ public sealed partial class Graphics
     /// <summary>Whether text draws as ClearType: the hint asks for it, the brush is opaque and solid, the text horizontal and unrotated.</summary>
     private bool ClearTypes(Brush brush, StringFormat format)
     {
-        return State.TextHint is TextRenderingHint.ClearTypeGridFit or TextRenderingHint.SystemDefault && brush is SolidBrush { Color.A: 255 }
+        // A metafile records glyphs, not ClearType's pixels.
+        return _recording is null && State.TextHint is TextRenderingHint.ClearTypeGridFit or TextRenderingHint.SystemDefault && brush is SolidBrush { Color.A: 255 }
             && (format.FormatFlags & StringFormatFlags.DirectionVertical) == 0 && Unskewed && State.Compositing == Drawing2D.CompositingMode.SourceOver;
     }
 
@@ -187,7 +188,7 @@ public sealed partial class Graphics
         // Graphics places its device coordinates itself, so the preset's PixelOffset.None would move the clips a second time.
         CanvasOptions options = CanvasOptions.GdiPlus with { TextGamma = 1 + (State.TextContrast / 10f), PixelOffset = PixelOffset.Half };
         SolidPaint paint = new(new Pixels.Rgba8(c.R, c.G, c.B, 255));
-        return Surface.DrawOpaque(_image.Current, bounds, options, canvas =>
+        return Surface.DrawOpaque(_image!.Current, bounds, options, canvas =>
         {
             if (outer is not null)
             {
