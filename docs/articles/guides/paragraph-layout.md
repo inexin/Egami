@@ -27,8 +27,19 @@ The rules are Unicode's line breaking algorithm (UAX #14) from Egami's own Unico
   breaks between any two grapheme clusters.
 - `OverflowWrap` says whether a piece too wide for its line may break between grapheme clusters; line filling uses it.
 
-Thai, Lao, Khmer and Myanmar text breaks only at spaces and zero width spaces: Egami has no dictionaries. An object
-replacement character (U+FFFC, as placeholders use) breaks before and after.
+Thai, Lao, Khmer and Myanmar text breaks only at spaces and zero width spaces: line breaking uses no dictionaries yet. An
+object replacement character (U+FFFC, as placeholders use) breaks before and after.
+
+### Word dictionaries
+
+Egami.Fonts ships ICU's word lists for Thai, Lao, Khmer and Myanmar, the ones browsers break these scripts with, as
+`WordDictionaries.BuiltIn`: a `WordDictionary` per `Script`, each loaded the first time a lookup asks for it. A dictionary
+answers `Contains` for a word, spelled exactly; `WordDictionary.FromWords` makes one from your own words, `WithWords` adds
+names and terms to a copy, and `Load` reads a UTF-8 list with one word per line (lines starting with `#` are comments) or the
+compiled `.edict` form `Save` writes. `new WordDictionaries(WordDictionaries.BuiltIn)` copies the set to add a script Egami
+ships no list for, such as Tai Tham, or to replace one; `WordDictionaries.None` is the empty set.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#word-dictionaries)]
 
 ### Hyphenation points
 
