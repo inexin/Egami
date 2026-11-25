@@ -24,7 +24,7 @@ public class EmfImageTextTests(ITestOutputHelper output)
     private static readonly byte[] PhotoJpeg = Encode(Photo, png: false);
 
     private static readonly string FontsRoot = System.IO.Path.Combine(TestFiles.Root, "tests", "fonts");
-    private static readonly Typeface Noto = Typeface.FromFile(System.IO.Path.Combine(FontsRoot, "NotoSans-Regular.ttf"));
+    internal static readonly Typeface Noto = Typeface.FromFile(System.IO.Path.Combine(FontsRoot, "NotoSans-Regular.ttf"));
     private static readonly Typeface NotoBold = Typeface.FromFile(System.IO.Path.Combine(FontsRoot, "NotoSans-Bold.ttf"));
 
     /// <summary>Image scenes, each drawn directly and through an EMF file.</summary>

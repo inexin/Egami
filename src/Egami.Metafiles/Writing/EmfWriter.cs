@@ -26,15 +26,17 @@ internal sealed class EmfWriter
     /// <summary>How many EMF+ bytes a comment gathers before it is written.</summary>
     private const int CommentFlush = 0x8000;
 
-    private readonly RecordBuffer _body = new(4096);
+    private readonly ChunkBuffer _body = new();
     private readonly RecordBuffer _plus = new(1024);
     private readonly RecordBuffer _scratch = new(256);
     private readonly Dictionary<byte[], int> _plusObjects = new(ByteComparer.Instance);
     private readonly byte[]?[] _plusSlots = new byte[PlusSlots][];
     private readonly long[] _plusUsed = new long[PlusSlots];
     private readonly Dictionary<byte[], uint> _gdiObjects = new(ByteComparer.Instance);
-    private readonly Dictionary<uint, (byte[] Key, long Used)> _gdiHandles = [];
+    private readonly Dictionary<uint, LinkedListNode<(uint Handle, byte[] Key)>> _gdiHandles = [];
+    private readonly LinkedList<(uint Handle, byte[] Key)> _gdiByUse = new(); // least recently used first
     private readonly Stack<uint> _freeHandles = new();
+    private byte[] _key = new byte[256]; // an object's lookup key, built here so a hit allocates nothing
     private long _clock;
     private int _records;
     private uint _nextHandle = 1;
@@ -53,7 +55,8 @@ internal sealed class EmfWriter
             FlushPlus();
         }
 
-        _plus.U16(type).U16(flags).U32((uint)(12 + padded)).U32((uint)data.Length).Bytes(data).Align();
+        // The data size counts the padding too, as GDI+ writes it: GDI+ skips a record whose data size is not its size less 12.
+        _plus.U16(type).U16(flags).U32((uint)(12 + padded)).U32((uint)padded).Bytes(data).Align();
     }
 
     /// <summary>Starts a scratch buffer for a record's data; valid until the next call that takes one.</summary>
@@ -71,14 +74,16 @@ internal sealed class EmfWriter
     /// <param name="data">The serialized object.</param>
     public int PlusObject(int type, byte[] data)
     {
-        byte[] key = new byte[data.Length + 1];
-        key[0] = (byte)type;
-        data.CopyTo(key, 1);
-        if (_plusObjects.TryGetValue(key, out int slot))
+        Span<byte> lookup = Key(data.Length + 1);
+        lookup[0] = (byte)type;
+        data.CopyTo(lookup[1..]);
+        if (_plusObjects.GetAlternateLookup<ReadOnlySpan<byte>>().TryGetValue(lookup, out int slot))
         {
             _plusUsed[slot] = ++_clock;
             return slot;
         }
+
+        byte[] key = lookup.ToArray();
 
         slot = 0;
         for (int i = 0; i < PlusSlots; i++)
@@ -130,7 +135,9 @@ internal sealed class EmfWriter
             return;
         }
 
-        _body.U32(MetafileReader.EmrComment).U32((uint)(16 + _plus.Length)).U32((uint)(4 + _plus.Length)).U32(MetafileReader.EmfPlusIdentifier).Bytes(_plus.Span);
+        _body.Pair(MetafileReader.EmrComment, (uint)(16 + _plus.Length));
+        _body.Pair((uint)(4 + _plus.Length), MetafileReader.EmfPlusIdentifier); // the comment's data size, then the EMF+ identifier
+        _body.Write(_plus.Span);
         _records++;
         _plus.Clear();
     }
@@ -142,7 +149,9 @@ internal sealed class EmfWriter
     {
         FlushPlus();
         int padded = (data.Length + 3) & ~3;
-        _body.U32((uint)type).U32((uint)(8 + padded)).Bytes(data).Align();
+        _body.Pair((uint)type, (uint)(8 + padded));
+        _body.Write(data);
+        _body.Align();
         _records++;
     }
 
@@ -153,39 +162,40 @@ internal sealed class EmfWriter
     /// </summary>
     public uint GdiObject(int type, ReadOnlySpan<byte> afterHandle, Func<uint, bool> inUse)
     {
-        byte[] key = new byte[afterHandle.Length + 4];
-        BitConverter.TryWriteBytes(key, type);
-        afterHandle.CopyTo(key.AsSpan(4));
-        if (_gdiObjects.TryGetValue(key, out uint handle))
+        Span<byte> lookup = Key(afterHandle.Length + 4);
+        BitConverter.TryWriteBytes(lookup, type);
+        afterHandle.CopyTo(lookup[4..]);
+        if (_gdiObjects.GetAlternateLookup<ReadOnlySpan<byte>>().TryGetValue(lookup, out uint handle))
         {
-            _gdiHandles[handle] = (key, ++_clock);
+            LinkedListNode<(uint, byte[])> used = _gdiHandles[handle];
+            _gdiByUse.Remove(used);
+            _gdiByUse.AddLast(used);
             return handle;
         }
 
         if (_gdiHandles.Count >= MaxHandles)
         {
-            uint oldest = 0;
-            long when = long.MaxValue;
-            foreach ((uint h, (byte[] _, long used)) in _gdiHandles)
+            LinkedListNode<(uint Handle, byte[] Key)>? oldest = _gdiByUse.First;
+            while (oldest is not null && inUse(oldest.Value.Handle))
             {
-                if (used < when && !inUse(h))
-                {
-                    (oldest, when) = (h, used);
-                }
+                oldest = oldest.Next;
             }
 
-            if (oldest != 0)
+            if (oldest is not null)
             {
-                _gdiObjects.Remove(_gdiHandles[oldest].Key);
-                _gdiHandles.Remove(oldest);
-                Gdi(40, Data().U32(oldest).Span); // EMR_DELETEOBJECT
-                _freeHandles.Push(oldest);
+                uint h = oldest.Value.Handle;
+                _gdiObjects.Remove(oldest.Value.Key);
+                _gdiHandles.Remove(h);
+                _gdiByUse.Remove(oldest);
+                Gdi(40, Data().U32(h).Span); // EMR_DELETEOBJECT
+                _freeHandles.Push(h);
             }
         }
 
+        byte[] key = lookup.ToArray(); // kept by the tables; the lookup buffer is reused
         handle = _freeHandles.Count > 0 ? _freeHandles.Pop() : _nextHandle++;
         _gdiObjects[key] = handle;
-        _gdiHandles[handle] = (key, ++_clock);
+        _gdiHandles[handle] = _gdiByUse.AddLast((handle, key));
         RecordBuffer record = new(afterHandle.Length + 4);
         record.U32(handle).Bytes(key.AsSpan(4)); // afterHandle may be the scratch buffer the deletion above reused
         Gdi(type, record.Span);
@@ -228,29 +238,45 @@ internal sealed class EmfWriter
         {
             using GZipStream gzip = new(stream, CompressionLevel.Optimal, leaveOpen: true);
             gzip.Write(head.Span);
-            gzip.Write(_body.Span);
+            _body.CopyTo(gzip);
         }
         else
         {
             stream.Write(head.Span);
-            stream.Write(_body.Span);
+            _body.CopyTo(stream);
         }
 
         stream.Flush();
     }
 
     /// <summary>Compares byte arrays by content.</summary>
-    private sealed class ByteComparer : IEqualityComparer<byte[]>
+    private Span<byte> Key(int length)
+    {
+        if (_key.Length < length)
+        {
+            _key = new byte[Math.Max(length, _key.Length * 2)];
+        }
+
+        return _key.AsSpan(0, length);
+    }
+
+    private sealed class ByteComparer : IEqualityComparer<byte[]>, IAlternateEqualityComparer<ReadOnlySpan<byte>, byte[]>
     {
         public static readonly ByteComparer Instance = new();
 
         public bool Equals(byte[]? x, byte[]? y) => x.AsSpan().SequenceEqual(y);
 
-        public int GetHashCode(byte[] obj)
+        public int GetHashCode(byte[] obj) => GetHashCode((ReadOnlySpan<byte>)obj);
+
+        public bool Equals(ReadOnlySpan<byte> alternate, byte[] other) => alternate.SequenceEqual(other);
+
+        public int GetHashCode(ReadOnlySpan<byte> alternate)
         {
             HashCode hash = default;
-            hash.AddBytes(obj);
+            hash.AddBytes(alternate);
             return hash.ToHashCode();
         }
+
+        public byte[] Create(ReadOnlySpan<byte> alternate) => alternate.ToArray();
     }
 }

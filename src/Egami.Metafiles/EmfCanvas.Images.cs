@@ -45,6 +45,25 @@ public sealed partial class EmfCanvas
         }
     }
 
+    /// <summary>
+    /// Draws an image whose EMF+ part takes another image and source rectangle than its GDI part, for Egami.SystemDrawing's
+    /// recordings: GDI+ samples an image half a pixel apart from Egami and fades its edges, which a moved source on a bordered copy
+    /// gives GDI+, while GDI's AlphaBlend takes whole pixels and needs the image as it is. Drawn on another canvas (a fallback, a
+    /// layer), it is the plain image. Egami.SystemDrawing calls it, so it keeps this signature.
+    /// </summary>
+    internal void DrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint, Raster plusImage, RectF plusSource)
+    {
+        if (Recording())
+        {
+            _recorder!.DrawImage(image, source, destination, sampling, paint);
+            _foldable = false;
+        }
+        else if (_quiet == 0)
+        {
+            DrawBitmap(image, null, source, destination, sampling, paint, (plusImage, plusSource));
+        }
+    }
+
     /// <inheritdoc/>
     protected override void OnDrawPicture(Picture picture, Matrix3x2 matrix, Paint? paint, bool cacheAsImage)
         => base.OnDrawPicture(picture, matrix, paint, cacheAsImage: false); // played inline, so it stays vectors at any scale
@@ -55,7 +74,7 @@ public sealed partial class EmfCanvas
     /// the GDI part, an AlphaBlend of a premultiplied 32-bit DIB of the source's pixels. A paint's opacity is baked into the
     /// pixels; other blend modes and blurs fall back to an image of the call, and so does the GDI part of a turned or mirrored one.
     /// </summary>
-    private void DrawBitmap(Raster? raster, EncodedImage? encoded, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
+    private void DrawBitmap(Raster? raster, EncodedImage? encoded, RectF source, RectF destination, SamplingOptions sampling, Paint? paint, (Raster Image, RectF Source)? plus = null)
     {
         if (paint?.BlendMode == BlendMode.Destination)
         {
@@ -91,7 +110,8 @@ public sealed partial class EmfCanvas
         Touch(destination, 1);
         if (_plus)
         {
-            byte[] image = (opacity >= 1 && encoded is not null ? Passthrough(encoded) : null) ?? BitmapObject(raster ?? encoded!.Decode(), opacity);
+            byte[] image = plus is ({ } plusImage, _) ? BitmapObject(plusImage, opacity) : (opacity >= 1 && encoded is not null ? Passthrough(encoded) : null) ?? BitmapObject(raster ?? encoded!.Decode(), opacity);
+            RectF plusSource = plus?.Source ?? source;
             int id = _w.PlusObject(5, image);
 
             // Image attributes that mirror at the image's edges, so GDI+ does not fade them toward transparent black.
@@ -100,7 +120,7 @@ public sealed partial class EmfCanvas
             SetSmooth(paint?.Antialias ?? true);
             SetInterpolation(Interpolation(sampling.Filter));
             RecordBuffer b = _w.Data().U32((uint)attributes).I32(2); // UnitPixel
-            b.F32(source.X).F32(source.Y).F32(source.Width).F32(source.Height).I32(3);
+            b.F32(plusSource.X).F32(plusSource.Y).F32(plusSource.Width).F32(plusSource.Height).I32(3);
             b.F32(destination.Left).F32(destination.Top).F32(destination.Right).F32(destination.Top).F32(destination.Left).F32(destination.Bottom);
             _w.Plus(0x401B, (ushort)id, b.Span); // DrawImagePoints: the source's top-left, top-right and bottom-left corners
         }

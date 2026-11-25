@@ -242,6 +242,59 @@ public class EmfWriterTests
         Assert.Empty(m.Warnings);
     }
 
+    [Fact]
+    public void RecordsMatchWhatGdiAndGdiPlusRead()
+    {
+        // Text whose glyph count is odd gives a DrawDriverString record whose data is not a multiple of four bytes long.
+        Path star = EmfCanvasTests.Star(new Vector2(80, 60), 40, FillRule.NonZero);
+        byte[] file = EmfCanvasTests.Write(
+            c =>
+            {
+                c.StrokePath(star, new Stroke(6) { MiterLimit = 4.5f }, Teal);
+                c.FillPath(star, Teal);
+                c.DrawText("EMF", new Vector2(10, 100), new Egami.Fonts.Font(EmfImageTextTests.Noto, 20), Teal);
+            },
+            new EmfWriteOptions { Text = EmfText.Glyphs });
+        MetafileContent content = Metafile.Load(file).Content;
+        ReadOnlySpan<byte> d = file;
+
+        // EMR_SETMITERLIMIT holds a whole number, as GDI's SetMiterLimit writes it: GDI does not stroke with float bits there.
+        MetaRecord miter = content.Records.Single(x => x.Type == 58);
+        Assert.Equal(4u, U32(d, miter.Offset + 8));
+
+        // Every EMF+ record's data size is its size less 12, padding included, as GDI+ writes it: GDI+ skips any other record.
+        int records = 0;
+        foreach (MetaRecord comment in content.Records.Where(x => x.Type == EmrComment && U32(file, x.Offset + 12) == EmfPlusIdentifier))
+        {
+            for (int at = comment.Offset + 16, end = comment.Offset + comment.Size; at < end; at += I32(d, at + 4), records++)
+            {
+                Assert.Equal(I32(d, at + 4) - 12, I32(d, at + 8));
+                Assert.Equal(0, I32(d, at + 4) % 4);
+            }
+        }
+
+        Assert.Contains(content.PlusRecords, r => r.Type == 0x4036); // DrawDriverString
+        Assert.Equal(content.PlusRecords.Count, records);
+
+        // The nonzero star's EMF+ path carries GDI+'s winding flag, 0x2000, and has no overlap, so readers that fill every EMF+
+        // path even-odd fill it alike.
+        PlusRecord path = content.PlusRecords.Last(r => r.Type == 0x4008 && ((r.Flags >> 8) & 0x7F) == 3);
+        Assert.Equal(Egami.GdiPlus.GdiPlusData.Winding, I32(path.Data.Span, 8));
+        int at2 = 0;
+        Path written = Egami.GdiPlus.GdiPlusData.PathData(path.Data.Span, ref at2);
+        Assert.Equal(FillRule.NonZero, written.FillRule);
+        using Raster<Rgba8> nonzero = Fill(written), evenOdd = Fill(written.WithFillRule(FillRule.EvenOdd));
+        Assert.True(EmfCanvasTests.Difference(nonzero, evenOdd).Mean < 0.01);
+    }
+
+    private static Raster<Rgba8> Fill(Path path)
+    {
+        Raster<Rgba8> r = Raster.Create<Rgba8>(160, 120);
+        using RasterCanvas<Rgba8> c = r.CreateCanvas();
+        c.FillPath(path, Rgba8.Black);
+        return r;
+    }
+
     [Theory]
     [InlineData(MetafileKind.EmfPlusDual)]
     [InlineData(MetafileKind.EmfPlusOnly)]

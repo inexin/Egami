@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Numerics;
 
 using Egami.Drawing;
@@ -351,10 +352,13 @@ public sealed partial class EmfCanvas
         }
 
         SelectPen(GdiPen(stroke, color, scale));
-        if (stroke.Join == LineJoin.Miter && _file.Miter != stroke.MiterLimit)
+        // EMR_SETMITERLIMIT holds a whole number, as GDI writes it (SetMiterLimit drops the fraction); GDI does not stroke with a
+        // miter limit it reads as a float's bits.
+        float miter = MathF.Floor(Math.Clamp(stroke.MiterLimit, 1, 1e6f));
+        if (stroke.Join == LineJoin.Miter && _file.Miter != miter)
         {
-            _w.Gdi(58, _w.Data().F32(stroke.MiterLimit).Span); // EMR_SETMITERLIMIT, a float as GDI writes it
-            _file.Miter = stroke.MiterLimit;
+            _w.Gdi(58, _w.Data().U32((uint)miter).Span);
+            _file.Miter = miter;
         }
 
         float outset = MathF.Max(stroke.Width * scale, 1) * MathF.Max(stroke.MiterLimit, 1) / 2;
@@ -489,7 +493,13 @@ public sealed partial class EmfCanvas
     }
 
     /// <summary>A solid brush of an opaque color (EMR_CREATEBRUSHINDIRECT: BS_SOLID, COLORREF, no hatch).</summary>
-    private uint SolidBrush(Rgba8 color) => _w.GdiObject(39, new RecordBuffer(12).U32(0).U32(ColorRef(color)).U32(0).Span, Selected);
+    private uint SolidBrush(Rgba8 color)
+    {
+        Span<byte> brush = stackalloc byte[12];
+        brush.Clear();
+        BinaryPrimitives.WriteUInt32LittleEndian(brush[4..], ColorRef(color));
+        return _w.GdiObject(39, brush, SelectedCheck);
+    }
 
     /// <summary>
     /// A pen (EMR_EXTCREATEPEN): geometric, in sixteenths of a local unit, with end caps, join and a PS_USERSTYLE pattern for
@@ -503,7 +513,7 @@ public sealed partial class EmfCanvas
         if (stroke.IsHairline)
         {
             b.U32(0).U32(1).U32(0).U32(ColorRef(color)).U32(0).U32(0); // PS_COSMETIC | PS_SOLID, width 1, BS_SOLID
-            return _w.GdiObject(95, b.Span, Selected);
+            return _w.GdiObject(95, b.Span, SelectedCheck);
         }
 
         uint style = 0x00010000; // PS_GEOMETRIC
@@ -522,7 +532,7 @@ public sealed partial class EmfCanvas
             b.U32(e);
         }
 
-        return _w.GdiObject(95, b.Span, Selected);
+        return _w.GdiObject(95, b.Span, SelectedCheck);
     }
 
     /// <summary>

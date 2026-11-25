@@ -35,6 +35,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Egami.Metafiles.Tests" />
     <InternalsVisibleTo Include="Egami.Fuzz" />
+    <!-- EmfCanvas.DrawImage with an EMF+ image of its own, for recorded images. -->
+    <InternalsVisibleTo Include="Egami.SystemDrawing" />
   </ItemGroup>
 
 </Project>

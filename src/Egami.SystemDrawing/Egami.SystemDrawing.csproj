@@ -19,6 +19,9 @@
       OutOfMemoryException GDI+ throws.
     -->
     <NoWarn>$(NoWarn);CA1069;CA1707;CA1711;CA1716;CA1720;CA1725;CA1822;CA2201</NoWarn>
+    <!-- Egami.Metafiles shows this package its internals (EmfCanvas.DrawImage with an EMF+ image of its own), and both compile
+         src/Shared/GdiPlus: the same types come from both, and this package's own copies are the ones it uses. -->
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <!-- Build-time analyzer only; ships nothing. -->

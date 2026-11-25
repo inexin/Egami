@@ -110,16 +110,27 @@ internal sealed partial class EmfPlusPlayer
 
             _canvas.Concat(full);
             SolidPaint paint = new(new Rgba8(0, 0, 0, 255)) { Antialias = Smooth, BlendMode = Blend };
+
+            // Without PixelOffsetModeHalf GDI+ puts an image's pixel centers, like device ones, on whole coordinates (measured on
+            // System.Drawing's recordings): the image is drawn half a pixel back, inside its own rectangle, the same on every
+            // canvas, so a PNG or JPEG can still pass through.
+            bool half = _state.PixelOffset is 2 or 4;
+            Matrix3x2 centers = half ? Matrix3x2.Identity : Matrix3x2.CreateTranslation(-0.5f, -0.5f);
+
             // Only bytes that decoded go through, so a damaged picture is skipped here as on a raster canvas.
-            // A source rectangle beyond the image tiles it by the attributes' wrap mode, so it is drawn from the bitmap.
-            bool tiled = image.Bitmap is Raster<Rgba8> b && attributes is not null && attributes.WrapMode != 4 && !new RectF(0, 0, b.Width, b.Height).Contains(src);
-            if (effect is null && !tiled && image.Bitmap is not null && image.Encoded is byte[] encoded && IsJpegOrPng(encoded))
+            if (effect is null && attributes is null && image.Bitmap is not null && image.Encoded is byte[] encoded && IsJpegOrPng(encoded))
             {
                 // JPEG and PNG pass through to a PDF canvas unchanged (question 12); a raster canvas decodes them.
                 try
                 {
                     EncodedImage passthrough = EncodedImage.Load(encoded, (_options.Context ?? _metafile.Context) with { Diagnostics = null });
-                    _canvas.DrawImage(passthrough, src, src, Sampling, paint);
+                    if (!half)
+                    {
+                        // Moved half a pixel back instead, inside its own rectangle: the same picture, with the file kept.
+                        _canvas.ClipRect(src, ClipOp.Intersect, antialias: Smooth);
+                    }
+
+                    _canvas.DrawImage(passthrough, src, half ? src : src.Offset(new Vector2(-0.5f, -0.5f)), Sampling, paint);
                     return;
                 }
                 catch (EgamiException)
@@ -131,14 +142,20 @@ internal sealed partial class EmfPlusPlayer
             if (image.Bitmap is Raster<Rgba8> bitmap)
             {
                 Raster<Rgba8> drawn = effect is null ? bitmap : effect(bitmap);
-                if (tiled)
+                if (attributes is null)
                 {
-                    (TileMode tx, TileMode ty) = GdiPlusBrushes.Wrap(attributes!.WrapMode);
-                    _canvas.FillRect(src, new ImagePaint(drawn, tx, ty, Sampling) { Antialias = Smooth, BlendMode = Blend });
+                    if (!half)
+                    {
+                        _canvas.ClipRect(src, ClipOp.Intersect, antialias: Smooth);
+                    }
+
+                    _canvas.DrawImage(drawn, src, half ? src : src.Offset(new Vector2(-0.5f, -0.5f)), Sampling, paint);
                 }
                 else
                 {
-                    _canvas.DrawImage(drawn, src, src, Sampling, paint);
+                    // Beyond the image GDI+ samples by the attributes' wrap mode: tiles, or transparency for clamp.
+                    (TileMode tx, TileMode ty) = GdiPlusBrushes.Wrap(attributes.WrapMode);
+                    _canvas.FillRect(src, new ImagePaint(drawn, tx, ty, Sampling) { LocalMatrix = centers, Antialias = Smooth, BlendMode = Blend });
                 }
             }
         }
