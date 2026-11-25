@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 
 using Egami.Colors;
@@ -191,7 +192,19 @@ internal sealed class JxlLinearRows
 
         _cmyk = profile.Model == ColorModel.Cmyk;
         int count = width * height;
-        Image = new JxlLinearImage(width, height, [new float[count], new float[count], new float[count]], gray, _cmyk ? new float[count] : null);
+        // Every row is written before the image is used, so the planes need no clearing.
+        Image = new JxlLinearImage(width, height, [JxlBuffers<float>.Rent(count), JxlBuffers<float>.Rent(count), JxlBuffers<float>.Rent(count)], gray, _cmyk ? JxlBuffers<float>.Rent(count) : null);
+    }
+
+    /// <summary>Hands the planes back for a later encode; the image is not used after this.</summary>
+    internal void Release()
+    {
+        foreach (float[] plane in Image.Color)
+        {
+            JxlBuffers<float>.Return(plane);
+        }
+
+        JxlBuffers<float>.Return(Image.Black);
     }
 
     /// <summary>Gets whether the rows carry a black ink, which <see cref="Add"/> then wants as CMYK pixels.</summary>
@@ -238,16 +251,31 @@ internal sealed class JxlLinearRows
 
         if (_lut8 is not null)
         {
-            Rgb8[] rgb8 = ArrayPool<Rgb8>.Shared.Rent(_width);
-            PixelConvert.Convert(row, rgb8.AsSpan(0, _width));
-            float[] lut = _lut8;
-            for (int x = 0; x < _width; x++)
+            // Rgb8 rows are read as they are; other pixels are converted to Rgb8 first.
+            Rgb8[]? rgb8 = typeof(TPixel) == typeof(Rgb8) ? null : ArrayPool<Rgb8>.Shared.Rent(_width);
+            ReadOnlySpan<Rgb8> pixels = rgb8 is null ? MemoryMarshal.Cast<TPixel, Rgb8>(row)[.._width] : rgb8.AsSpan(0, _width);
+            if (rgb8 is not null)
             {
-                Rgb8 p = rgb8[x];
-                (color[0][at + x], color[1][at + x], color[2][at + x]) = (lut[p.R], lut[p.G], lut[p.B]);
+                PixelConvert.Convert(row, rgb8.AsSpan(0, _width));
             }
 
-            ArrayPool<Rgb8>.Shared.Return(rgb8);
+            ReadOnlySpan<float> lut = _lut8;
+            Span<float> r = color[0].AsSpan(at, _width);
+            Span<float> g = color[1].AsSpan(at, _width);
+            Span<float> b = color[2].AsSpan(at, _width);
+            for (int x = 0; x < pixels.Length; x++)
+            {
+                Rgb8 p = pixels[x];
+                r[x] = lut[p.R];
+                g[x] = lut[p.G];
+                b[x] = lut[p.B];
+            }
+
+            if (rgb8 is not null)
+            {
+                ArrayPool<Rgb8>.Shared.Return(rgb8);
+            }
+
             return;
         }
 

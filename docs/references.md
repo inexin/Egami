@@ -58,6 +58,7 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [CharLS](https://github.com/team-charls/charls) | C++ | BSD-3 | Run as a black box only: its public C API decodes and encodes for the JPEG-LS gates, and its output showed how HP's colour transforms (APP8 "mrfx") behave. The codec is written from ITU-T T.87 and the LOCO-I paper (Weinberger, Seroussi and Sapiro, IEEE Trans. Image Processing, 2000); its test images (the T.87 conformance set) are the test corpus | JPEG-LS |
 | [VectorCraft](https://github.com/storytold/vectorcraft) (`crates/trace`) | Rust | MIT or Apache 2.0 | A clean-room bitmap tracer: the pipeline's shape (quantise, merge small regions, crack-edge loops, fit curves) and its option set | 2.6.6 |
 | [VTracer](https://github.com/visioncortex/vtracer) | Rust | MIT | Colour tracing options and behaviour (speckle filter, corner threshold, presets); its CLI is a speed gate | 2.6.6 |
+| [Apache Batik](https://xmlgraphics.apache.org/batik/) | Java | Apache 2.0 | Read for behaviour only, never translated: how a complete SVG 1.1 implementation runs SMIL timing (interval lists, syncbase and repeat dependencies, `min` and `max`) and animation values. The only SVG renderer whose source may be read for SVG animation; browser engines (Blink, WebKit, Gecko) and librsvg are never read, and Chromium only runs as a black box for the animation gate | 2.10.1 |
 
 Specifications, textbooks and papers are always fine.
 

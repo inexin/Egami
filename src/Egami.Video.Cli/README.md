@@ -18,6 +18,7 @@ egami-video ffmpeg -i in.avi -c copy out.mkv
   analyze, waveform, spectrum, generate, sheet, animate, hash, compare, verify and audio; editing with join, fade, overlay
   (green screens with `--key auto`), pip, stack, speed, reverse, loop, freeze, slideshow, stabilize and edit; formats; and hwprobe, which lists the GPU video engines.
 - `--deinterlace` turns interlaced video progressive on encode, run, frames and the editing commands.
+- `encode` turns images, image sequences or an animated SVG into a clip.
 - Reads AVI, Matroska and WebM, MP4 and QuickTime, IVF, YUV4MPEG2, raw AV1, WAV, FLAC and Ogg; decodes Motion JPEG, VP8, VP9, FFV1,
   AV1, PCM, FLAC, Opus and Vorbis; copies any track as packets, H.264 and HEVC included.
 - `run` applies any of egami's image steps to every frame. `egami video ...` runs it from the `egami` tool.

@@ -1,1 +1,2 @@
 #nullable enable
+Egami.Drawing.Path.Warp(System.Func<System.Numerics.Vector2, System.Numerics.Vector2>! map, float tolerance = 0.05) -> Egami.Drawing.Path!

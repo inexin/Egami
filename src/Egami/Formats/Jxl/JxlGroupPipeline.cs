@@ -582,7 +582,7 @@ internal sealed class JxlGroupPipeline
         }
     }
 
-    /// <summary>Gaborish (J.2) on (x0, y0) to (x1, y1): <see cref="JxlFilters.Gaborish"/>'s arithmetic, the neighbours read from the buffer's border.</summary>
+    /// <summary>Gaborish (J.2) on (x0, y0) to (x1, y1): <see cref="JxlFilters.Gaborish"/>'s arithmetic with fused multiply-adds, the neighbours read from the buffer's border.</summary>
     private void Gaborish(float[][] input, float[][] output, Area area, int x0, int y0, int x1, int y1)
     {
         float[] weights = _frame.LoopFilter.GaborishWeights;
@@ -610,7 +610,7 @@ internal sealed class JxlGroupPipeline
                     {
                         Vector<float> side = Load(ref p, up + x) + Load(ref p, down + x) + Load(ref p, row + x - 1) + Load(ref p, row + x + 1);
                         Vector<float> diag = Load(ref p, up + x - 1) + Load(ref p, up + x + 1) + Load(ref p, down + x - 1) + Load(ref p, down + x + 1);
-                        Store(ref o, row + x, (Load(ref p, row + x) + (side * vw0) + (diag * vw1)) * vnorm);
+                        Store(ref o, row + x, MulAdd(diag, vw1, MulAdd(side, vw0, Load(ref p, row + x))) * vnorm);
                     }
                 }
 
@@ -618,15 +618,18 @@ internal sealed class JxlGroupPipeline
                 {
                     float side = Unsafe.Add(ref p, up + x) + Unsafe.Add(ref p, down + x) + Unsafe.Add(ref p, row + x - 1) + Unsafe.Add(ref p, row + x + 1);
                     float diag = Unsafe.Add(ref p, up + x - 1) + Unsafe.Add(ref p, up + x + 1) + Unsafe.Add(ref p, down + x - 1) + Unsafe.Add(ref p, down + x + 1);
-                    Unsafe.Add(ref o, row + x) = (Unsafe.Add(ref p, row + x) + (side * w0) + (diag * w1)) * norm;
+                    Unsafe.Add(ref o, row + x) = MulAdd(diag, w1, MulAdd(side, w0, Unsafe.Add(ref p, row + x))) * norm;
                 }
             }
         }
     }
 
     /// <summary>
-    /// One EPF step (J.3) on (x0, y0) to (x1, y1): <see cref="JxlFilters.Epf"/>'s arithmetic, eight rows at a time with each
-    /// tap's weighted patch difference worked out once for the rows' patches, the neighbours read from the buffer's border.
+    /// One EPF step (J.3) on (x0, y0) to (x1, y1): <see cref="JxlFilters.Epf"/>'s arithmetic, eight rows at a time, the
+    /// neighbours read from the buffer's border. Each tap's patch distance (its weighted differences summed over the patch) is
+    /// worked out once for the rows' pixels, and only for one tap of each opposite pair: the distance for −t at z is the one for
+    /// t at z − t, since the differences are absolute, so the other tap reads it shifted. The weights are applied with fused
+    /// multiply-adds and the sums divided by one reciprocal.
     /// </summary>
     private void Epf(int step, float[][] input, float[][] output, Area area, int x0, int y0, int x1, int y1, Worker worker)
     {
@@ -652,36 +655,97 @@ internal sealed class JxlGroupPipeline
         float[] p1 = input[1];
         float[] p2 = input[2];
 
-        // The differences cover the band's rows and columns and one more each way where the patches reach.
-        int dWidth = width + (2 * reach);
-        Span<int> around = stackalloc int[n * taps];
+        // Each tap's pair (the tap of the two with ty > 0, or ty = 0 and tx > 0, holds the distances) and where it reads them:
+        // at z for that tap, at z + t for its opposite.
+        Span<int> pairOf = stackalloc int[taps];
+        Span<int> pairTap = stackalloc int[taps];
+        int pairs = 0;
+        for (int k = 0; k < taps; k++)
+        {
+            int tx = kernel[2 * k];
+            int ty = kernel[(2 * k) + 1];
+            if (ty > 0 || (ty == 0 && tx > 0))
+            {
+                pairTap[pairs] = k;
+                pairOf[k] = pairs++;
+            }
+        }
+
+        for (int k = 0; k < taps; k++)
+        {
+            int tx = kernel[2 * k];
+            int ty = kernel[(2 * k) + 1];
+            if (!(ty > 0 || (ty == 0 && tx > 0)))
+            {
+                for (int j = 0; j < pairs; j++)
+                {
+                    if (kernel[2 * pairTap[j]] == -tx && kernel[(2 * pairTap[j]) + 1] == -ty)
+                    {
+                        pairOf[k] = j;
+                    }
+                }
+            }
+        }
+
+        // A pair's distances cover the band and, toward −t, |t| more, so its opposite can read them shifted.
+        Span<int> sx0 = stackalloc int[pairs];
+        Span<int> sy0 = stackalloc int[pairs];
+        Span<int> sWidth = stackalloc int[pairs];
+        Span<int> sStart = stackalloc int[pairs];
+        Span<int> sRows = stackalloc int[pairs];
+        Span<int> tapAt = stackalloc int[taps];
         Span<int> tapOffsets = stackalloc int[taps];
+        for (int k = 0; k < taps; k++)
+        {
+            tapOffsets[k] = (kernel[(2 * k) + 1] * area.Stride) + kernel[2 * k];
+        }
+
         for (int band = y0; band < y1; band += 8)
         {
             int bandEnd = Math.Min(y1, band + 8);
-            int dRows = bandEnd - band + (2 * reach);
-            int dPlane = dRows * dWidth;
-            float[] w = worker.Differences(dPlane * taps);
-            for (int k = 0; k < taps; k++)
+            int total = 0;
+            int scratch = 0;
+            for (int j = 0; j < pairs; j++)
             {
-                int tx = kernel[2 * k];
-                int ty = kernel[(2 * k) + 1];
-                int shift = (ty * area.Stride) + tx;
-                for (int r = 0; r < dRows; r++)
-                {
-                    int b = area.Index(x0 - reach, band - reach + r);
-                    Differences(p0, p1, p2, w.AsSpan((k * dPlane) + (r * dWidth), dWidth), b, b + shift, k0, k1, k2);
-                }
+                int tx = kernel[2 * pairTap[j]];
+                int ty = kernel[(2 * pairTap[j]) + 1];
+                sx0[j] = x0 + Math.Min(0, -tx);
+                sy0[j] = band + Math.Min(0, -ty);
+                sWidth[j] = width + Math.Abs(tx);
+                int rows = bandEnd - band + Math.Abs(ty);
+                sStart[j] = total;
+                sRows[j] = rows;
+                total += sWidth[j] * rows;
+                scratch = Math.Max(scratch, (sWidth[j] + (2 * reach)) * (rows + (2 * reach)));
             }
 
-            for (int k = 0; k < taps; k++)
+            float[] w = worker.Differences(total + (reach == 0 ? 0 : scratch));
+            for (int j = 0; j < pairs; j++)
             {
-                for (int i = 0; i < n; i++)
+                int shift = tapOffsets[pairTap[j]];
+                int rows = sRows[j];
+                if (reach == 0)
                 {
-                    around[(k * n) + i] = (k * dPlane) + ((reach + dist[(2 * i) + 1]) * dWidth) + reach + dist[2 * i];
+                    // A one-place patch: the distances are the differences.
+                    for (int r = 0; r < rows; r++)
+                    {
+                        int b = area.Index(sx0[j], sy0[j] + r);
+                        Differences(p0, p1, p2, w.AsSpan(sStart[j] + (r * sWidth[j]), sWidth[j]), b, b + shift, k0, k1, k2);
+                    }
+
+                    continue;
                 }
 
-                tapOffsets[k] = (kernel[(2 * k) + 1] * area.Stride) + kernel[2 * k];
+                // The differences one place further each way, then each place's sum over the patch in the patch's order.
+                int dWidth = sWidth[j] + (2 * reach);
+                int dRows = rows + (2 * reach);
+                for (int r = 0; r < dRows; r++)
+                {
+                    int b = area.Index(sx0[j] - reach, sy0[j] - reach + r);
+                    Differences(p0, p1, p2, w.AsSpan(total + (r * dWidth), dWidth), b, b + shift, k0, k1, k2);
+                }
+
+                PatchSums(w, total, dWidth, w.AsSpan(sStart[j], sWidth[j] * rows), sWidth[j], rows, dist, reach);
             }
 
             // The factors start at the block x0 is in (lead places before it) and run to the end of x1's block.
@@ -712,7 +776,16 @@ internal sealed class JxlGroupPipeline
                     }
                 }
 
-                int row = (y - band) * dWidth;
+                // Where each tap's distances for this row's first pixel are.
+                for (int k = 0; k < taps; k++)
+                {
+                    int j = pairOf[k];
+                    bool own = pairTap[j] == k;
+                    int ox = own ? 0 : kernel[2 * k];
+                    int oy = own ? 0 : kernel[(2 * k) + 1];
+                    tapAt[k] = sStart[j] + ((y + oy - sy0[j]) * sWidth[j]) + x0 + ox - sx0[j];
+                }
+
                 int at = area.Index(x0, y);
                 int px = 0;
                 if (Vector.IsHardwareAccelerated)
@@ -725,7 +798,7 @@ internal sealed class JxlGroupPipeline
                     ref float o1 = ref MemoryMarshal.GetArrayDataReference(output[1]);
                     ref float o2 = ref MemoryMarshal.GetArrayDataReference(output[2]);
                     ref float fr = ref MemoryMarshal.GetReference(factor);
-                    ref int ar = ref MemoryMarshal.GetReference(around);
+                    ref int dr = ref MemoryMarshal.GetReference(tapAt);
                     ref int tr = ref MemoryMarshal.GetReference(tapOffsets);
                     for (; px + lanes <= width; px += lanes)
                     {
@@ -738,29 +811,23 @@ internal sealed class JxlGroupPipeline
                         Vector<float> s1 = c1;
                         Vector<float> s2 = c2;
                         Vector<float> sumW = Vector<float>.One;
-                        int rp = row + px;
                         for (int k = 0; k < taps; k++)
                         {
-                            ref int o = ref Unsafe.Add(ref ar, k * n);
-                            Vector<float> d = Load(ref wr, o + rp);
-                            for (int i = 1; i < n; i++)
-                            {
-                                d += Load(ref wr, Unsafe.Add(ref o, i) + rp);
-                            }
-
-                            Vector<float> weight = Vector.Max(Vector<float>.Zero, Vector<float>.One + (d * f));
+                            Vector<float> d = Load(ref wr, Unsafe.Add(ref dr, k) + px);
+                            Vector<float> weight = MaxZero(MulAdd(d, f, Vector<float>.One));
                             int t = a + Unsafe.Add(ref tr, k);
                             sumW += weight;
-                            s0 += weight * Load(ref r0, t);
-                            s1 += weight * Load(ref r1, t);
-                            s2 += weight * Load(ref r2, t);
+                            s0 = MulAdd(weight, Load(ref r0, t), s0);
+                            s1 = MulAdd(weight, Load(ref r1, t), s1);
+                            s2 = MulAdd(weight, Load(ref r2, t), s2);
                         }
 
                         // Pixels the filter leaves as they are (a NaN factor) keep their input.
                         Vector<int> filtered = Vector.Equals(f, f);
-                        Store(ref o0, a, Vector.ConditionalSelect(filtered, s0 / sumW, c0));
-                        Store(ref o1, a, Vector.ConditionalSelect(filtered, s1 / sumW, c1));
-                        Store(ref o2, a, Vector.ConditionalSelect(filtered, s2 / sumW, c2));
+                        Vector<float> inverse = Vector<float>.One / sumW;
+                        Store(ref o0, a, Vector.ConditionalSelect(filtered, s0 * inverse, c0));
+                        Store(ref o1, a, Vector.ConditionalSelect(filtered, s1 * inverse, c1));
+                        Store(ref o2, a, Vector.ConditionalSelect(filtered, s2 * inverse, c2));
                     }
                 }
 
@@ -782,25 +849,68 @@ internal sealed class JxlGroupPipeline
                     float sumW = 1;
                     for (int k = 0; k < taps; k++)
                     {
-                        int o = k * n;
-                        float d = w[around[o] + row + px];
-                        for (int i = 1; i < n; i++)
-                        {
-                            d += w[around[o + i] + row + px];
-                        }
-
-                        float weight = MathF.Max(0, 1 + (d * f));
+                        float weight = MathF.Max(0, MulAdd(w[tapAt[k] + px], f, 1));
                         int t = a + tapOffsets[k];
                         sumW += weight;
-                        s0 += weight * p0[t];
-                        s1 += weight * p1[t];
-                        s2 += weight * p2[t];
+                        s0 = MulAdd(weight, p0[t], s0);
+                        s1 = MulAdd(weight, p1[t], s1);
+                        s2 = MulAdd(weight, p2[t], s2);
                     }
 
-                    output[0][a] = s0 / sumW;
-                    output[1][a] = s1 / sumW;
-                    output[2][a] = s2 / sumW;
+                    float inverse = 1 / sumW;
+                    output[0][a] = s0 * inverse;
+                    output[1][a] = s1 * inverse;
+                    output[2][a] = s2 * inverse;
                 }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Writes each place's patch distance: the sum of the differences (<paramref name="dWidth"/> a row from
+    /// <paramref name="dStart"/> in <paramref name="w"/>, <paramref name="reach"/> places more each way) over the patch offsets
+    /// <paramref name="dist"/>, added in their order.
+    /// </summary>
+    private static void PatchSums(float[] w, int dStart, int dWidth, Span<float> sums, int sWidth, int rows, int[] dist, int reach)
+    {
+        int n = dist.Length / 2;
+        Span<int> offsets = stackalloc int[n];
+        for (int i = 0; i < n; i++)
+        {
+            offsets[i] = dStart + ((reach + dist[(2 * i) + 1]) * dWidth) + reach + dist[2 * i];
+        }
+
+        ref float wr = ref MemoryMarshal.GetArrayDataReference(w);
+        ref float sr = ref MemoryMarshal.GetReference(sums);
+        int lanes = Vector<float>.Count;
+        for (int r = 0; r < rows; r++)
+        {
+            int from = r * dWidth;
+            int to = r * sWidth;
+            int x = 0;
+            if (Vector.IsHardwareAccelerated)
+            {
+                for (; x + lanes <= sWidth; x += lanes)
+                {
+                    Vector<float> d = Load(ref wr, offsets[0] + from + x);
+                    for (int i = 1; i < n; i++)
+                    {
+                        d += Load(ref wr, offsets[i] + from + x);
+                    }
+
+                    Store(ref sr, to + x, d);
+                }
+            }
+
+            for (; x < sWidth; x++)
+            {
+                float d = Unsafe.Add(ref wr, offsets[0] + from + x);
+                for (int i = 1; i < n; i++)
+                {
+                    d += Unsafe.Add(ref wr, offsets[i] + from + x);
+                }
+
+                Unsafe.Add(ref sr, to + x) = d;
             }
         }
     }
@@ -821,16 +931,25 @@ internal sealed class JxlGroupPipeline
             int lanes = Vector<float>.Count;
             for (; z + lanes <= w.Length; z += lanes)
             {
-                Vector<float> d = (v0 * Vector.Abs(Load(ref r0, a + z) - Load(ref r0, b + z))) + (v1 * Vector.Abs(Load(ref r1, a + z) - Load(ref r1, b + z))) + (v2 * Vector.Abs(Load(ref r2, a + z) - Load(ref r2, b + z)));
+                Vector<float> d = MulAdd(v2, Vector.Abs(Load(ref r2, a + z) - Load(ref r2, b + z)), MulAdd(v1, Vector.Abs(Load(ref r1, a + z) - Load(ref r1, b + z)), v0 * Vector.Abs(Load(ref r0, a + z) - Load(ref r0, b + z))));
                 Store(ref wr, z, d);
             }
         }
 
         for (; z < w.Length; z++)
         {
-            w[z] = (k0 * MathF.Abs(p0[a + z] - p0[b + z])) + (k1 * MathF.Abs(p1[a + z] - p1[b + z])) + (k2 * MathF.Abs(p2[a + z] - p2[b + z]));
+            w[z] = MulAdd(k2, MathF.Abs(p2[a + z] - p2[b + z]), MulAdd(k1, MathF.Abs(p1[a + z] - p1[b + z]), k0 * MathF.Abs(p0[a + z] - p0[b + z])));
         }
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector<float> MaxZero(Vector<float> v) => JxlFilters.MaxZero(v);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static float MulAdd(float a, float b, float c) => JxlFilters.MulAdd(a, b, c);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector<float> MulAdd(Vector<float> a, Vector<float> b, Vector<float> c) => JxlFilters.MulAdd(a, b, c);
 
     /// <summary>
     /// Writes a row of pixels from the color planes at <paramref name="at"/>: what <c>JxlImageDecoder.Plane</c> writes for float
@@ -988,9 +1107,9 @@ internal sealed class JxlGroupPipeline
             Vector128<byte> lowB = Vector128.Create((byte)0x80, 0x80, 0, 0x80, 0x80, 1, 0x80, 0x80, 2, 0x80, 0x80, 3, 0x80, 0x80, 4, 0x80);
             Vector128<byte> highR = Vector128.Create((byte)13, 0x80, 6, 14, 0x80, 7, 15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
             Vector128<byte> highB = Vector128.Create((byte)0x80, 5, 0x80, 0x80, 6, 0x80, 0x80, 7, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
-            Vector256<short> rg = Vector256.Narrow(r, g);
-            Vector256<short> bz = Vector256.Narrow(b, Vector256<int>.Zero);
-            Vector256<byte> all = Vector256.Narrow(rg.AsUInt16(), bz.AsUInt16());
+            Vector256<short> rg = Pack(r, g);
+            Vector256<short> bz = Pack(b, Vector256<int>.Zero);
+            Vector256<byte> all = Pack(rg, bz);
             Vector128<byte> first = all.GetLower();
             Vector128<byte> second = all.GetUpper();
             Vector128<byte> out0 = System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, lowR) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, lowB);
@@ -1005,9 +1124,9 @@ internal sealed class JxlGroupPipeline
             Vector128<byte> lowBa = Vector128.Create((byte)0x80, 0x80, 0, 8, 0x80, 0x80, 1, 9, 0x80, 0x80, 2, 10, 0x80, 0x80, 3, 11);
             Vector128<byte> highRg = Vector128.Create((byte)4, 12, 0x80, 0x80, 5, 13, 0x80, 0x80, 6, 14, 0x80, 0x80, 7, 15, 0x80, 0x80);
             Vector128<byte> highBa = Vector128.Create((byte)0x80, 0x80, 4, 12, 0x80, 0x80, 5, 13, 0x80, 0x80, 6, 14, 0x80, 0x80, 7, 15);
-            Vector256<short> rg = Vector256.Narrow(r, g);
-            Vector256<short> ba = Vector256.Narrow(b, Vector256.Create(255));
-            Vector256<byte> all = Vector256.Narrow(rg.AsUInt16(), ba.AsUInt16());
+            Vector256<short> rg = Pack(r, g);
+            Vector256<short> ba = Pack(b, Vector256.Create(255));
+            Vector256<byte> all = Pack(rg, ba);
             Vector128<byte> first = all.GetLower();
             Vector128<byte> second = all.GetUpper();
             (System.Runtime.Intrinsics.X86.Ssse3.Shuffle(first, lowRg) | System.Runtime.Intrinsics.X86.Ssse3.Shuffle(second, lowBa)).StoreUnsafe(ref to, (nuint)(x * 4));
@@ -1015,8 +1134,8 @@ internal sealed class JxlGroupPipeline
         }
         else
         {
-            Vector256<short> v = Vector256.Narrow(r, Vector256<int>.Zero);
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref to, x), Vector256.Narrow(v.AsUInt16(), Vector256<ushort>.Zero).GetLower().AsUInt64().ToScalar());
+            Vector256<short> v = Pack(r, Vector256<int>.Zero);
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref to, x), Pack(v, Vector256<short>.Zero).GetLower().AsUInt64().ToScalar());
         }
     }
 
@@ -1043,6 +1162,16 @@ internal sealed class JxlGroupPipeline
         }
     }
 
+    /// <summary>Narrows samples of 0 to 255 to shorts in order (a then b), as Vector256.Narrow would, with a saturating pack and no masking.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<short> Pack(Vector256<int> a, Vector256<int> b) =>
+        System.Runtime.Intrinsics.X86.Avx2.Permute4x64(System.Runtime.Intrinsics.X86.Avx2.PackSignedSaturate(a, b).AsInt64(), 0xD8).AsInt16();
+
+    /// <summary>Narrows samples of 0 to 255 to bytes in order (a then b).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector256<byte> Pack(Vector256<short> a, Vector256<short> b) =>
+        System.Runtime.Intrinsics.X86.Avx2.Permute4x64(System.Runtime.Intrinsics.X86.Avx2.PackUnsignedSaturate(a, b).AsInt64(), 0xD8).AsByte();
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector256<float> Load8(float[] plane, int at) => Vector256.LoadUnsafe(ref MemoryMarshal.GetArrayDataReference(plane), (nuint)at);
 
@@ -1050,7 +1179,8 @@ internal sealed class JxlGroupPipeline
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector256<int> Round8(Vector256<float> f)
     {
-        f = Vector256.Min(Vector256.Max(f, Vector256<float>.Zero), Vector256<float>.One) * Vector256.Create(255f);
+        // The processor's max and min (NaN gives 0), not Vector256's, which keep NaN at a cost of four more instructions each.
+        f = System.Runtime.Intrinsics.X86.Avx.Min(System.Runtime.Intrinsics.X86.Avx.Max(f, Vector256<float>.Zero), Vector256<float>.One) * Vector256.Create(255f);
         return System.Runtime.Intrinsics.X86.Avx.ConvertToVector256Int32(System.Runtime.Intrinsics.X86.Avx.RoundToNearestInteger(f));
     }
 

@@ -85,11 +85,19 @@ internal sealed class JxlTreeLearner
     /// Works out each property's split thresholds from the image (libjxl's PreQuantizeProperties): channel and stream by pixel
     /// counts, coordinates evenly, pixel values and differences by their sampled distribution, the WP error by a fixed list.
     /// </summary>
-    internal void Quantize(List<long> groupPixels, List<long> channelPixels, List<int> pixelSamples, List<int> diffSamples, int maxValues)
+    internal void Quantize(List<long> groupPixels, List<long> channelPixels, long[] pixelCounts, long[] diffCounts, int maxValues)
     {
         _compact = new int[_properties.Length][];
         _staticMapping = new ushort[_staticCount][];
         _mapping = new byte[_properties.Length - _staticCount][];
+        // The absolute pixel values follow from the pixel values' counts.
+        const int Range = SampleRange;
+        long[] absCounts = new long[(2 * Range) + 1];
+        for (int v = -Range; v <= Range; v++)
+        {
+            absCounts[Math.Abs(v) + Range] += pixelCounts[v + Range];
+        }
+
         int[]? pixel = null;
         int[]? absPixel = null;
         int[]? diff = null;
@@ -101,10 +109,10 @@ internal sealed class JxlTreeLearner
                 0 => QuantizeHistogram(channelPixels, maxValues),
                 1 => QuantizeHistogram(groupPixels, maxValues),
                 2 or 3 => [.. Enumerable.Range(0, maxValues - 1).Select(k => ((k + 1) * 256 / maxValues) - 1)],
-                6 or 7 or 8 => pixel ??= QuantizeSamples(pixelSamples, maxValues),
-                4 or 5 => absPixel ??= QuantizeSamples([.. pixelSamples.Select(Math.Abs)], maxValues),
+                6 or 7 or 8 => pixel ??= QuantizeSamples(pixelCounts, maxValues),
+                4 or 5 => absPixel ??= QuantizeSamples(absCounts, maxValues),
                 15 => WpThresholds(maxValues),
-                _ => diff ??= QuantizeSamples(diffSamples, maxValues),
+                _ => diff ??= QuantizeSamples(diffCounts, maxValues),
             };
 
             if (i < _staticCount)
@@ -186,24 +194,61 @@ internal sealed class JxlTreeLearner
 
         int threads = parallel.MaxDegreeOfParallelism > 0 ? parallel.MaxDegreeOfParallelism : Environment.ProcessorCount;
         int shards = Math.Clamp(count / MinShard, 1, threads);
-        Parallel.For(0, shards, parallel, shard =>
+
+        // Each shard's samples, in sample order, so a shard walks only its own: a count per block and shard, their running
+        // sums, then each block places its samples.
+        int[] members = shards == 1 ? [] : ArrayPool<int>.Shared.Rent(count);
+        int[] shardStart = new int[shards + 1];
+        if (shards > 1)
         {
-            int members = 0;
-            for (int i = 0; i < count; i++)
+            int blocks = (count + HashBlock - 1) / HashBlock;
+            int[] blockCounts = new int[blocks * shards];
+            Parallel.For(0, blocks, parallel, blk =>
             {
-                members += Shard(hashes[i], shards) == shard ? 1 : 0;
+                Span<int> mine = blockCounts.AsSpan(blk * shards, shards);
+                for (int i = blk * HashBlock; i < Math.Min(count, (blk + 1) * HashBlock); i++)
+                {
+                    mine[Shard(hashes[i], shards)]++;
+                }
+            });
+
+            int total = 0;
+            for (int shard = 0; shard < shards; shard++)
+            {
+                shardStart[shard] = total;
+                for (int blk = 0; blk < blocks; blk++)
+                {
+                    int c = blockCounts[(blk * shards) + shard];
+                    blockCounts[(blk * shards) + shard] = total;
+                    total += c;
+                }
             }
 
-            int[] table = new int[BitOperations.RoundUpToPowerOf2((uint)Math.Max(members, 1) * 2)];
+            shardStart[shards] = total;
+            Parallel.For(0, blocks, parallel, blk =>
+            {
+                Span<int> next = blockCounts.AsSpan(blk * shards, shards);
+                for (int i = blk * HashBlock; i < Math.Min(count, (blk + 1) * HashBlock); i++)
+                {
+                    members[next[Shard(hashes[i], shards)]++] = i;
+                }
+            });
+        }
+        else
+        {
+            shardStart[1] = count;
+        }
+
+        Parallel.For(0, shards, parallel, shard =>
+        {
+            int from = shardStart[shard];
+            int to = shardStart[shard + 1];
+            int[] table = new int[BitOperations.RoundUpToPowerOf2((uint)Math.Max(to - from, 1) * 2)];
             Array.Fill(table, -1);
             int mask = table.Length - 1;
-            for (int i = 0; i < count; i++)
+            for (int k = from; k < to; k++)
             {
-                if (Shard(hashes[i], shards) != shard)
-                {
-                    continue;
-                }
-
+                int i = shards == 1 ? k : members[k];
                 int slot = hashes[i] & mask;
                 bool duplicate = false;
                 while (true)
@@ -237,6 +282,11 @@ internal sealed class JxlTreeLearner
             }
         });
 
+        if (shards > 1)
+        {
+            ArrayPool<int>.Shared.Return(members);
+        }
+
         // The samples kept, moved together in order, each array on a thread of its own and the counts last: each place written
         // is at or before the one read, and duplicates have no count.
         List<Action> columns = [];
@@ -250,14 +300,15 @@ internal sealed class JxlTreeLearner
             columns.Add(() => Compact(column, _counts, count));
         }
 
-        if (_keys is not null)
-        {
-            columns.Add(() => Compact(_keys, _counts, count));
-        }
-
         Parallel.For(0, columns.Count, parallel, c => columns[c]());
         _n = Compact(_counts, _counts, count);
 
+        // The packed keys only find equal samples; with them gone, a later call compares the samples' own values.
+        if (_keys is not null)
+        {
+            ArrayPool<UInt128>.Shared.Return(_keys);
+            _keys = null;
+        }
     }
 
     // Samples hashed per task, and the fewest samples to a slice of the hash range.
@@ -274,12 +325,6 @@ internal sealed class JxlTreeLearner
     internal List<JxlTreeNode> Learn(float threshold, float fastDecodeMultiplier, int parallelism)
     {
         List<JxlTreeNode> tree = [JxlTreeNode.Leaf(_predictors[0])];
-        if (_keys is not null)
-        {
-            ArrayPool<UInt128>.Shared.Return(_keys);
-            _keys = null;
-        }
-
         if (_n == 0)
         {
             return tree;
@@ -344,25 +389,23 @@ internal sealed class JxlTreeLearner
         return [.. thresholds];
     }
 
-    private static int[] QuantizeSamples(List<int> samples, int chunks)
+    /// <summary>The range sampled pixel values and differences are counted in, ±512 (libjxl's PreQuantizeProperties).</summary>
+    internal const int SampleRange = 512;
+
+    /// <summary>Thresholds for sampled values from their counts by value in ±512, starting at the least value sampled.</summary>
+    private static int[] QuantizeSamples(long[] counts, int chunks)
     {
-        if (samples.Count == 0)
+        int range = counts.Length / 2;
+        int first = Array.FindIndex(counts, c => c != 0);
+        if (first < 0)
         {
             return [];
         }
 
-        const int Range = 512;
-        int min = Math.Clamp(samples.Min(), -Range, Range);
-        List<long> counts = [.. new long[(2 * Range) + 1]];
-        foreach (int s in samples)
-        {
-            counts[Math.Clamp(s, -Range, Range) - min]++;
-        }
-
-        int[] thresholds = QuantizeHistogram(counts, chunks);
+        int[] thresholds = QuantizeHistogram([.. counts.AsSpan(first)], chunks);
         for (int i = 0; i < thresholds.Length; i++)
         {
-            thresholds[i] += min;
+            thresholds[i] += first - range;
         }
 
         return thresholds;
@@ -681,38 +724,15 @@ internal sealed class JxlTreeLearner
                 predictor = tree[pos].Predictor;
             }
 
-            int maxSymbols = 0;
-            for (int pr = 0; pr < predictors; pr++)
+            int nodeTotal;
+            int maxSymbols;
+            if (parallelism > 1 && end - begin >= MinParallelNode)
             {
-                byte[] toks = _tokens[pr];
-                for (int i = begin; i < end; i++)
-                {
-                    maxSymbols = Math.Max(maxSymbols, toks[i] + 1);
-                }
+                (nodeTotal, maxSymbols) = CountNodeInParts(begin, end, counts, totalExtra, parallelism);
             }
-
-            maxSymbols = Padded(maxSymbols);
-            Array.Clear(counts, 0, maxSymbols * predictors);
-            int nodeTotal = 0;
-            for (int i = begin; i < end; i++)
+            else
             {
-                nodeTotal += _counts[i];
-            }
-
-            for (int pr = 0; pr < predictors; pr++)
-            {
-                byte[] toks = _tokens[pr];
-                byte[] nb = _nbits[pr];
-                long extra = 0;
-                int o = pr * maxSymbols;
-                for (int i = begin; i < end; i++)
-                {
-                    int c = _counts[i];
-                    counts[o + toks[i]] += c;
-                    extra += nb[i] * c;
-                }
-
-                totalExtra[pr] = extra;
+                (nodeTotal, maxSymbols) = CountNode(begin, end, counts, totalExtra);
             }
 
             int nodePredictor = Array.IndexOf(_predictors, predictor);
@@ -788,7 +808,14 @@ internal sealed class JxlTreeLearner
                 tree.Add(JxlTreeNode.Leaf(chosen.LeftPredictor));
             }
 
-            SplitSamples(begin, chosen.Pos, end, chosen.Prop, chosen.Value);
+            if (parallelism > 1 && end - begin >= MinParallelNode)
+            {
+                SplitSamplesInParts(begin, chosen.Pos, end, chosen.Prop, chosen.Value, parallelism);
+            }
+            else
+            {
+                SplitSamples(begin, chosen.Pos, end, chosen.Prop, chosen.Value);
+            }
             int below = chosen.Pos;
             if (parallelism > 1 && below - begin >= MinParallelSubtree && end - below >= MinParallelSubtree && learning.TryStartSubtree())
             {
@@ -814,6 +841,245 @@ internal sealed class JxlTreeLearner
 
         learning.Scratch.Add(scratch);
     }
+
+    /// <summary>
+    /// Sums a node's sample counts and each predictor's token counts and extra bits into <paramref name="counts"/>, strided by
+    /// the node's padded symbol count, which it returns with the node's total.
+    /// </summary>
+    private (int Total, int Symbols) CountNode(int begin, int end, int[] counts, long[] totalExtra)
+    {
+        int maxSymbols = 0;
+        for (int pr = 0; pr < _tokens.Length; pr++)
+        {
+            byte[] toks = _tokens[pr];
+            for (int i = begin; i < end; i++)
+            {
+                maxSymbols = Math.Max(maxSymbols, toks[i] + 1);
+            }
+        }
+
+        maxSymbols = Padded(maxSymbols);
+        Array.Clear(counts, 0, maxSymbols * _tokens.Length);
+        int nodeTotal = 0;
+        for (int i = begin; i < end; i++)
+        {
+            nodeTotal += _counts[i];
+        }
+
+        for (int pr = 0; pr < _tokens.Length; pr++)
+        {
+            byte[] toks = _tokens[pr];
+            byte[] nb = _nbits[pr];
+            long extra = 0;
+            int o = pr * maxSymbols;
+            for (int i = begin; i < end; i++)
+            {
+                int c = _counts[i];
+                counts[o + toks[i]] += c;
+                extra += nb[i] * c;
+            }
+
+            totalExtra[pr] = extra;
+        }
+
+        return (nodeTotal, maxSymbols);
+    }
+
+    /// <summary>
+    /// <see cref="CountNode"/> for a large node: each part of its samples is counted on its own, and the parts' sums add up in
+    /// order, so the result is the same as counting them all at once.
+    /// </summary>
+    private (int Total, int Symbols) CountNodeInParts(int begin, int end, int[] counts, long[] totalExtra, int parallelism)
+    {
+        int predictors = _tokens.Length;
+        int parts = Math.Clamp((end - begin) / (MinParallelNode / 2), 1, parallelism);
+        ParallelOptions options = new() { MaxDegreeOfParallelism = parallelism };
+        int[] partSymbols = new int[parts];
+        int[] partTotals = new int[parts];
+        Parallel.For(0, parts, options, part =>
+        {
+            (int from, int to) = Part(begin, end, part, parts);
+            int symbols = 0;
+            for (int pr = 0; pr < predictors; pr++)
+            {
+                byte[] toks = _tokens[pr];
+                for (int i = from; i < to; i++)
+                {
+                    symbols = Math.Max(symbols, toks[i] + 1);
+                }
+            }
+
+            int total = 0;
+            for (int i = from; i < to; i++)
+            {
+                total += _counts[i];
+            }
+
+            partSymbols[part] = symbols;
+            partTotals[part] = total;
+        });
+
+        int maxSymbols = Padded(partSymbols.Max());
+        int nodeTotal = partTotals.Sum();
+        int stride = maxSymbols * predictors;
+        int[] partCounts = new int[parts * stride];
+        long[] partExtra = new long[parts * predictors];
+        Parallel.For(0, parts, options, part =>
+        {
+            (int from, int to) = Part(begin, end, part, parts);
+            Span<int> mine = partCounts.AsSpan(part * stride, stride);
+            for (int pr = 0; pr < predictors; pr++)
+            {
+                byte[] toks = _tokens[pr];
+                byte[] nb = _nbits[pr];
+                long extra = 0;
+                int o = pr * maxSymbols;
+                for (int i = from; i < to; i++)
+                {
+                    int c = _counts[i];
+                    mine[o + toks[i]] += c;
+                    extra += nb[i] * c;
+                }
+
+                partExtra[(part * predictors) + pr] = extra;
+            }
+        });
+
+        Array.Clear(counts, 0, stride);
+        Array.Clear(totalExtra);
+        for (int part = 0; part < parts; part++)
+        {
+            ReadOnlySpan<int> mine = partCounts.AsSpan(part * stride, stride);
+            for (int k = 0; k < stride; k++)
+            {
+                counts[k] += mine[k];
+            }
+
+            for (int pr = 0; pr < predictors; pr++)
+            {
+                totalExtra[pr] += partExtra[(part * predictors) + pr];
+            }
+        }
+
+        return (nodeTotal, maxSymbols);
+    }
+
+    /// <summary>The samples of one of <paramref name="parts"/> equal parts of [begin, end).</summary>
+    private static (int From, int To) Part(int begin, int end, int part, int parts)
+    {
+        long length = end - begin;
+        return (begin + (int)(length * part / parts), begin + (int)(length * (part + 1) / parts));
+    }
+
+    /// <summary>
+    /// <see cref="SplitSamples"/> for a large node, in parts: each part moves its own samples at most <paramref name="value"/>
+    /// to its front, and then the samples on the wrong side of <paramref name="pos"/> trade places in parallel. The learned tree
+    /// depends only on which samples each node holds, not their order, so this learns the same tree as splitting serially.
+    /// </summary>
+    private void SplitSamplesInParts(int begin, int pos, int end, int prop, int value, int parallelism)
+    {
+        int parts = Math.Clamp((end - begin) / (MinParallelNode / 2), 1, parallelism);
+        ParallelOptions options = new() { MaxDegreeOfParallelism = parallelism };
+        int[] lows = new int[parts];
+        Parallel.For(0, parts, options, part =>
+        {
+            (int from, int to) = Part(begin, end, part, parts);
+            int b = from;
+            int e = to - 1;
+            while (true)
+            {
+                while (b <= e && Property(prop, b) <= value)
+                {
+                    b++;
+                }
+
+                while (b <= e && Property(prop, e) > value)
+                {
+                    e--;
+                }
+
+                if (b >= e)
+                {
+                    break;
+                }
+
+                Swap(b, e);
+                b++;
+                e--;
+            }
+
+            lows[part] = b - from;
+        });
+
+        // Samples above the value that sit before pos, and samples at most the value that sit from pos on, as runs in order;
+        // there are as many of one as of the other, and the k-th of each trade places.
+        List<(int Start, int Length)> high = [];
+        List<(int Start, int Length)> low = [];
+        for (int part = 0; part < parts; part++)
+        {
+            (int from, int to) = Part(begin, end, part, parts);
+            int split = from + lows[part];
+            if (split < pos)
+            {
+                high.Add((split, Math.Min(to, pos) - split));
+            }
+
+            if (split > pos)
+            {
+                low.Add((Math.Max(from, pos), split - Math.Max(from, pos)));
+            }
+        }
+
+        int[] highAt = Starts(high);
+        int[] lowAt = Starts(low);
+        int moves = highAt[^1];
+        if (moves == 0)
+        {
+            return;
+        }
+
+        int chunks = Math.Clamp(moves / (MinParallelNode / 4), 1, parallelism);
+        Parallel.For(0, chunks, options, chunk =>
+        {
+            int first = (int)((long)moves * chunk / chunks);
+            int last = (int)((long)moves * (chunk + 1) / chunks);
+            int h = Array.FindLastIndex(highAt, at => at <= first);
+            int l = Array.FindLastIndex(lowAt, at => at <= first);
+            int hi = high[h].Start + first - highAt[h];
+            int li = low[l].Start + first - lowAt[l];
+            for (int k = first; k < last; k++)
+            {
+                while (hi == high[h].Start + high[h].Length)
+                {
+                    h++;
+                    hi = high[h].Start;
+                }
+
+                while (li == low[l].Start + low[l].Length)
+                {
+                    l++;
+                    li = low[l].Start;
+                }
+
+                Swap(hi++, li++);
+            }
+        });
+    }
+
+    /// <summary>Where each run starts in the runs' order, ending with their total length.</summary>
+    private static int[] Starts(List<(int Start, int Length)> runs)
+    {
+        int[] at = new int[runs.Count + 1];
+        for (int i = 0; i < runs.Count; i++)
+        {
+            at[i + 1] = at[i] + runs[i].Length;
+        }
+
+        return at;
+    }
+
+    /// <summary>The samples a node needs before it is counted and split in parts.</summary>
+    private const int MinParallelNode = 1 << 16;
 
     /// <summary>The samples both halves of a split need before they are learned at the same time.</summary>
     private const int MinParallelSubtree = 1 << 14;
