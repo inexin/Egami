@@ -42,6 +42,8 @@ public sealed partial class EmfCanvas
             return;
         }
 
+        Remember(c => c.Clear(color));
+
         Rgba8 c = Color8(color, 1);
         if (_plus)
         {
@@ -120,10 +122,11 @@ public sealed partial class EmfCanvas
             }
         }
 
+        Remember(Draw);
         RgbaF32? constant = Constant(paint);
         if (Unsupported(paint, constant) is string what)
         {
-            Fallback(local, outset, Draw, what);
+            Fallback(local, outset, Draw, what, backdrop: paint.BlendMode != BlendMode.SourceOver);
             return;
         }
 
