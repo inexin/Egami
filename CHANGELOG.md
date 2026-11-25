@@ -266,8 +266,16 @@ WOFF and WOFF2 writing (roadmap 2.7.7) and Word-style justified lines. Additive 
   spaces between words. `WordDictionaries.BuiltIn` holds ICU's word lists for Thai, Lao, Khmer and Myanmar (release 79.1;
   Unicode License v3, BSD-2 and BSD-3 notices in THIRD-PARTY-NOTICES.md), about 0.7 MB in all, each loaded on first use in
   about 2 ms or less. A `WordDictionary` comes from a word list (`FromWords`, or `Load` of a UTF-8 list with one word per line),
-  takes user words with `WithWords`, and saves to and loads from Egami's compiled form (`.edict`). Line breaking does not use
-  them yet.
+  takes user words with `WithWords`, and saves to and loads from Egami's compiled form (`.edict`).
+- Dictionary line breaking (roadmap 2.8.5, second part): `LineBreaks` and `Paragraph` break Thai, Lao, Khmer and Myanmar
+  between dictionary words, on by default. `LineBreakOptions.Dictionaries` picks the set (null for `WordDictionaries.BuiltIn`,
+  `WordDictionaries.None` to break only at spaces as before). The segmenter follows ICU's dictionary break engines and gives
+  ICU's word boundaries on the UDHR texts of all four scripts; it also never splits a grapheme cluster (ICU does, after a
+  Khmer coeng or Myanmar virama) and keeps ໆ and ຯ with the word before them. Thai and Myanmar line starts equal Chromium
+  129's; Chromium breaks Lao and Khmer with older, smaller lists, so it splits some compounds Egami keeps whole. Breaking
+  stays allocation-free, and the dictionaries load the first time text of their script is broken.
+- Fixed: a line ending inside a run whose shaping is unsafe to break measured a lone mark, such as a Myanmar asat, with a
+  dotted circle when the window shaped again began inside a glyph cluster.
 
 - `WebFontWriter.Write` writes a `Typeface`, a `FontSubset` or sfnt or collection bytes as WOFF2 (the default) or WOFF 1.0
   (`WebFontOptions.Format`), to a byte array or a stream. Every table is kept. WOFF2 stores glyf and loca in the transformed

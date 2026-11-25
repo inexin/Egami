@@ -280,6 +280,53 @@ internal sealed class WordGraph
         return found;
     }
 
+    /// <summary>
+    /// Walks the graph along <paramref name="text"/> as a dictionary segmenter does: writes the lengths of the words
+    /// <paramref name="text"/> starts with, shortest first, until <paramref name="lengths"/> is full, and stops at the first
+    /// code unit no word continues with, at a word nothing extends, or at the end of <paramref name="text"/>.
+    /// </summary>
+    /// <param name="text">The text from the position to look at, up to where the walk must stop.</param>
+    /// <param name="lengths">Receives the word lengths; words past its end are walked but not written.</param>
+    /// <param name="prefix">The number of code units walked, counting the one no word continues with.</param>
+    /// <returns>The number of lengths written.</returns>
+    public int Match(ReadOnlySpan<char> text, Span<int> lengths, out int prefix)
+    {
+        int found = 0;
+        int node = 0;
+        int i = 0;
+        if (_graph.Length == 0)
+        {
+            prefix = text.IsEmpty ? 0 : 1;
+            return 0;
+        }
+
+        while (i < text.Length)
+        {
+            bool step = Step(ref node, Symbol(text[i]), out bool final);
+            i++;
+            if (!step)
+            {
+                break;
+            }
+
+            if (final)
+            {
+                if (found < lengths.Length)
+                {
+                    lengths[found++] = i;
+                }
+
+                if (node < 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        prefix = i;
+        return found;
+    }
+
     /// <summary>Lists every word, in ordinal order.</summary>
     public IEnumerable<string> Words()
     {

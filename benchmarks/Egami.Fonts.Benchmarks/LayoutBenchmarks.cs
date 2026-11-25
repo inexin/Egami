@@ -5,8 +5,8 @@ using Egami.Fonts.Layout;
 namespace Egami.Fonts.Benchmarks;
 
 /// <summary>Justified paragraph layout: Latin and Arabic at word spaces, Latin whose spaces may also shrink by a quarter
-/// (ParagraphStyle.SpaceShrink), and Arabic with kashida (2.8.3); and Latin laid out plain and with every fourth word in
-/// another color, which cuts lines into a run per color.</summary>
+/// (ParagraphStyle.SpaceShrink), and Arabic with kashida (2.8.3); Latin laid out plain and with every fourth word in
+/// another color, which cuts lines into a run per color; and Thai and Khmer, which break between dictionary words (2.8.5).</summary>
 [MemoryDiagnoser]
 public class LayoutBenchmarks
 {
@@ -18,6 +18,8 @@ public class LayoutBenchmarks
     private Paragraph _kashida = null!;
     private Paragraph _plain = null!;
     private Paragraph _colored = null!;
+    private Paragraph _thai = null!;
+    private Paragraph _khmer = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -33,6 +35,8 @@ public class LayoutBenchmarks
         ParagraphStyle left = Justified(Path.Combine(root, "tests", "fonts", "NotoSans-Regular.ttf"), TextJustify.InterWord) with { Align = TextAlign.Start };
         _plain = Paragraph.Create(latin, left);
         _colored = Paragraph.Create(Colored(latin), left);
+        _thai = Plain(root, "thai", "NotoSansThai-Regular.ttf");
+        _khmer = Plain(root, "khmer", "NotoSansKhmer-Regular.ttf");
     }
 
     [Benchmark]
@@ -52,6 +56,32 @@ public class LayoutBenchmarks
 
     [Benchmark]
     public int LayoutLatinColored() => _colored.Layout(Width).Lines.Count;
+
+    [Benchmark]
+    public int LayoutThai() => _thai.Layout(Width).Lines.Count;
+
+    [Benchmark]
+    public int LayoutKhmer() => _khmer.Layout(Width).Lines.Count;
+
+    /// <summary>The repository root.</summary>
+    internal static string Root()
+    {
+        DirectoryInfo? dir = new(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "Egami.slnx")))
+        {
+            dir = dir.Parent;
+        }
+
+        return dir?.FullName ?? throw new InvalidOperationException("The repository root was not found.");
+    }
+
+    /// <summary>Four UDHR lines of a script, left aligned in its Noto font.</summary>
+    private static Paragraph Plain(string root, string text, string font)
+    {
+        string lines = string.Join(' ', File.ReadAllLines(Path.Combine(root, "tests", "reference", "shaping", "texts", text + ".txt")).Skip(3).Take(4));
+        ParagraphStyle style = Justified(Path.Combine(root, "tests", "fonts", "shaping", font), TextJustify.InterWord) with { Align = TextAlign.Start };
+        return Paragraph.Create(lines, style);
+    }
 
     /// <summary>The text with every fourth word in red, as syntax highlighting or a link colors words.</summary>
     private static RichText Colored(string text)
@@ -85,16 +115,5 @@ public class LayoutBenchmarks
             Align = TextAlign.Justify,
             Justify = justify,
         };
-    }
-
-    private static string Root()
-    {
-        DirectoryInfo? dir = new(AppContext.BaseDirectory);
-        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "Egami.slnx")))
-        {
-            dir = dir.Parent;
-        }
-
-        return dir?.FullName ?? throw new InvalidOperationException("The repository root was not found.");
     }
 }

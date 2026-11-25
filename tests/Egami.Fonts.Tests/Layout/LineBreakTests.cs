@@ -86,13 +86,27 @@ public sealed class LineBreakTests
             language);
     }
 
+    /// <summary>
+    /// Line starts where Chromium 129 breaks Lao and Khmer and Egami does not: Chromium's ICU keeps ICU 69's smaller Lao
+    /// dictionary and an abridged Khmer one with changed engine parameters (its README.chromium, khmer-dictbe.patch), so it
+    /// splits compounds the ICU release-79.1 lists Egami ships hold whole (2.8.5).
+    /// </summary>
+    internal static readonly Dictionary<string, int[]> KnownDictionaryDifferences = new()
+    {
+        // ສະຫະ|ປະຊາຊາດ, ໄດ້|ຮັບ (twice), ການ|ປະກາດ, ແຈກ|ຈ່າຍ, ການ|ເມືອງ.
+        ["lao"] = [16, 26, 96, 215, 260, 338],
+
+        // យល់|ឃើញ, ស្មើ|ភាព, ទាំង|អស់, សេរី|ភាព.
+        ["khmer"] = [6, 66, 127, 161],
+    };
+
     [Theory]
     [MemberData(nameof(ChromiumCases))]
     public void ChromiumLineStartsAreBreakOpportunities(string name)
     {
         // Every line Chromium starts must start at one of Egami's break opportunities, except where an overflowing piece breaks
-        // between grapheme clusters (overflow-wrap) or Chromium breaks Thai, Lao, Khmer or Myanmar with its dictionary. Where
-        // Chromium breaks among the opportunities is line filling's business (task 5).
+        // between grapheme clusters (overflow-wrap). Thai, Lao, Khmer and Myanmar break with the word dictionaries (2.8.5), as
+        // Chromium breaks them with ICU's. Where Chromium breaks among the opportunities is line filling's business (task 5).
         LayoutReferences.Case c = LayoutReferences.Find(name);
         LineBreakOptions options = Options(c);
         HashSet<int> opportunities = [.. Breaks(c.Text, options)];
@@ -108,8 +122,8 @@ public sealed class LineBreakTests
                 }
 
                 bool emergency = options.OverflowWrap != OverflowWrap.Normal && Egami.Fonts.Unicode.TextSegmenter.IsGraphemeBoundary(c.Text, i);
-                bool dictionary = Egami.Fonts.Unicode.UnicodeData.GetLineBreakClass(char.ConvertToUtf32(c.Text, i)) == Egami.Fonts.Unicode.LineBreakClass.ComplexContext;
-                if (!emergency && !dictionary)
+                bool known = KnownDictionaryDifferences.TryGetValue(name, out int[]? differences) && differences.Contains(i);
+                if (!emergency && !known)
                 {
                     misses.Add($"{layout.Width}: {i} ({c.Text.Substring(Math.Max(0, i - 8), Math.Min(16, c.Text.Length - Math.Max(0, i - 8)))})");
                 }
@@ -142,10 +156,11 @@ public sealed class LineBreakTests
     }
 
     [Fact]
-    public void ThaiBreaksOnlyAtSpacesAndZeroWidthSpaces()
+    public void ThaiBreaksOnlyAtSpacesAndZeroWidthSpacesWithoutDictionaries()
     {
-        Assert.Equal([9, 13], Breaks("\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35\u0E04\u0E23 \u0E42\u0E25\u0E01\u0E01"[..13]));
-        Assert.Equal([4, 6], Breaks("\u0E01\u0E02\u0E03\u200B\u0E04\u0E05"));
+        LineBreakOptions none = new() { Dictionaries = WordDictionaries.None };
+        Assert.Equal([9, 13], Breaks("\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35\u0E04\u0E23 \u0E42\u0E25\u0E01\u0E01"[..13], none));
+        Assert.Equal([4, 6], Breaks("\u0E01\u0E02\u0E03\u200B\u0E04\u0E05", none));
     }
 
     [Fact]

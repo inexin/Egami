@@ -1,19 +1,24 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
+using Egami.Fonts.Layout.WordBreaking;
 using Egami.Fonts.Unicode;
 
 namespace Egami.Fonts.Layout;
 
 /// <summary>
 /// Finds where lines may break: Unicode's line breaking algorithm (UAX #14, Unicode 17.0) from Egami's own tables, with CSS
-/// Text 3's <c>word-break</c> and <c>line-break</c> switches. No shaping is involved, and there are no dictionaries: Thai, Lao,
-/// Khmer and Myanmar break only at spaces and zero width spaces.
+/// Text 3's <c>word-break</c> and <c>line-break</c> switches. No shaping is involved. Thai, Lao, Khmer and Myanmar, which
+/// leave no spaces between words, also break between the words a dictionary finds (<see cref="LineBreakOptions.Dictionaries"/>),
+/// as browsers break them.
 /// </summary>
 /// <remarks>
 /// With <see cref="LineBreakStrictness.Strict"/>, which is UAX #14's own rules, every break Unicode's LineBreakTest.txt lists
 /// is found; the default (CSS's <c>auto</c>) also breaks before small kana. An object replacement character (U+FFFC, as
-/// placeholders use) breaks before and after. The enumerator walks the text once and allocates nothing.
+/// placeholders use) breaks before and after. Inside a run of complex-context (SA) letters of one script, a word end the
+/// dictionary segmenter finds is a break; UAX #14 still decides at the run's edges. The segmenter follows ICU's dictionary
+/// break engines and never splits a grapheme cluster. The enumerator walks the text once and allocates nothing; a script's
+/// built-in dictionary loads the first time its text is broken.
 /// </remarks>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="line-breaks"/>
@@ -51,6 +56,7 @@ public ref struct LineBreakEnumerator
 {
     private readonly ReadOnlySpan<char> _text;
     private readonly LineBreaker.Tailoring _tailoring;
+    private DictionarySegmenter _words;
     private LineBreaker.Item _a;
     private LineBreaker.State _state;
     private bool _started;
@@ -60,6 +66,8 @@ public ref struct LineBreakEnumerator
     {
         _text = text;
         _tailoring = new LineBreaker.Tailoring(options);
+        WordDictionaries? dictionaries = _tailoring.BreakAll ? null : options.Dictionaries ?? WordDictionaries.BuiltIn;
+        _words = new DictionarySegmenter(dictionaries is null || dictionaries.IsEmpty ? null : dictionaries);
         _a = default;
         _state = default;
         _started = false;
@@ -99,6 +107,13 @@ public ref struct LineBreakEnumerator
         {
             LineBreaker.Item b = LineBreaker.ReadItem(_text, _a.End, _tailoring);
             int decision = LineBreaker.Decide(_text, _a, b, _state, _tailoring);
+
+            // Between two complex-context letters, a word end the dictionary finds is a break.
+            if (decision == LineBreaker.NoBreak && _a.IsComplex && b.IsComplex && _words.IsOn && _words.IsWordEnd(_text, b.Start))
+            {
+                decision = LineBreaker.Allowed;
+            }
+
             LineBreaker.Item a = _a;
             _state = _state.Advance(_a, b);
             _a = b;
@@ -162,6 +177,7 @@ internal static class LineBreaker
     private const byte DottedCircleFlag = 16;
     private const byte EndsWithZwjFlag = 32;
     private const byte SoftHyphenFlag = 64;
+    private const byte ComplexFlag = 128;
 
     /// <summary>The tailorings the options ask for, resolved once.</summary>
     internal readonly struct Tailoring
@@ -203,6 +219,9 @@ internal static class LineBreaker
         public bool IsSoftHyphen => (Flags & SoftHyphenFlag) != 0;
 
         public bool EndsWithZwj => (Flags & EndsWithZwjFlag) != 0;
+
+        /// <summary>Whether the base is a complex-context (SA) character, which dictionaries break between.</summary>
+        public bool IsComplex => (Flags & ComplexFlag) != 0;
 
         /// <summary>AK, AS or the dotted circle, the bases of LB28a.</summary>
         public bool IsAksaraBase => Class is LineBreakClass.Aksara or LineBreakClass.AksaraStart || (Flags & DottedCircleFlag) != 0;
@@ -330,6 +349,11 @@ internal static class LineBreaker
         int end = start + size;
         byte flags = 0;
         bool zwj = c == LineBreakClass.ZWJ;
+        if (raw == LineBreakClass.ComplexContext)
+        {
+            flags |= ComplexFlag;
+        }
+
         if (c is LineBreakClass.CombiningMark or LineBreakClass.ZWJ)
         {
             // LB10: as U+0041, with none of the base's flags.
