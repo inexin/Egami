@@ -11,7 +11,7 @@ namespace Egami.Css;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="easing"/>
 /// </example>
-public sealed class CssEasingFunction
+public sealed class CssEasingFunction : IEquatable<CssEasingFunction>
 {
     private readonly Kind _kind;
     private readonly double _x1;
@@ -123,6 +123,73 @@ public sealed class CssEasingFunction
     /// <summary>Returns the function as CSS text.</summary>
     /// <returns>The text.</returns>
     public override string ToString() => _text;
+
+    /// <summary>
+    /// Compares two easing functions by their form and parameters, not their text: <c>ease</c> equals
+    /// <c>cubic-bezier(0.25, 0.1, 0.25, 1)</c> and <c>step-end</c> equals <c>steps(1)</c>, but <c>linear</c> does not equal
+    /// <c>cubic-bezier(0, 0, 1, 1)</c>.
+    /// </summary>
+    /// <param name="other">The other easing function.</param>
+    /// <returns><see langword="true"/> when both have the same form and parameters.</returns>
+    public bool Equals([NotNullWhen(true)] CssEasingFunction? other)
+    {
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        if (other is null || _kind != other._kind)
+        {
+            return false;
+        }
+
+        return _kind switch
+        {
+            Kind.Linear => true,
+            Kind.CubicBezier => _x1 == other._x1 && _y1 == other._y1 && _x2 == other._x2 && _y2 == other._y2,
+            Kind.Steps => _steps == other._steps && _position == other._position,
+            _ => _points.AsSpan().SequenceEqual(other._points),
+        };
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals([NotNullWhen(true)] object? obj) => Equals(obj as CssEasingFunction);
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        switch (_kind)
+        {
+            case Kind.CubicBezier:
+                return HashCode.Combine(_kind, _x1 + 0.0, _y1 + 0.0, _x2 + 0.0, _y2 + 0.0);
+            case Kind.Steps:
+                return HashCode.Combine(_kind, _steps, _position);
+            case Kind.LinearPoints:
+                HashCode hash = default;
+                hash.Add(_kind);
+                foreach ((double input, double output) in _points!)
+                {
+                    hash.Add(input + 0.0);
+                    hash.Add(output + 0.0);
+                }
+
+                return hash.ToHashCode();
+            default:
+                return _kind.GetHashCode();
+        }
+    }
+
+    /// <summary>Compares two easing functions by their form and parameters, not their text.</summary>
+    /// <param name="left">The first easing function.</param>
+    /// <param name="right">The second easing function.</param>
+    /// <returns><see langword="true"/> when they are equal.</returns>
+    public static bool operator ==(CssEasingFunction? left, CssEasingFunction? right) => left is null ? right is null : left.Equals(right);
+
+    /// <summary>Compares two easing functions by their form and parameters, not their text.</summary>
+    /// <param name="left">The first easing function.</param>
+    /// <param name="right">The second easing function.</param>
+    /// <returns><see langword="true"/> when they differ.</returns>
+    public static bool operator !=(CssEasingFunction? left, CssEasingFunction? right) => !(left == right);
 
     private static CssEasingFunction? TryParse(CssComponentValue value)
     {

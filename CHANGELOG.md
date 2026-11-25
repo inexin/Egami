@@ -113,8 +113,10 @@ Egami.Css:
   among the unknown at-rules must look for the new type.
 - `CssEasingFunction` parses and evaluates CSS Easing 2's easing functions: `linear`, `linear()` with stops, the `ease`
   keywords, `cubic-bezier()`, `step-start`, `step-end` and `steps()` with every jump position, with the before flag.
+  Two functions are equal when their form and parameters are, so `ease` equals `cubic-bezier(0.25, 0.1, 0.25, 1)`.
 - `CssOrigin.Animation` and `CssCascadedStyle.WithAnimationValues` put animated values in the cascade, above every normal
-  declaration and below every important one. A style sheet given the animation origin is refused.
+  declaration and below every important one. A style sheet given the animation origin is refused. Origins are not in
+  cascade order as numbers: an important declaration of any origin wins over the animation origin.
 
 ## Egami.Heic 1.6.0 (unreleased)
 
