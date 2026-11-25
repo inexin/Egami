@@ -1,6 +1,8 @@
 #nullable enable
+*REMOVED*Egami.Barcodes.BarcodeFormat.Linear = Egami.Barcodes.BarcodeFormat.Code128 | Egami.Barcodes.BarcodeFormat.Code39 | Egami.Barcodes.BarcodeFormat.Itf | Egami.Barcodes.BarcodeFormat.Ean13 | Egami.Barcodes.BarcodeFormat.Ean8 | Egami.Barcodes.BarcodeFormat.UpcA | Egami.Barcodes.BarcodeFormat.UpcE -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.BarcodeFormat.Codabar = 4096 -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.BarcodeFormat.Code93 = 2048 -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormat.Linear = Egami.Barcodes.BarcodeFormat.Code128 | Egami.Barcodes.BarcodeFormat.Code39 | Egami.Barcodes.BarcodeFormat.Itf | Egami.Barcodes.BarcodeFormat.Ean13 | Egami.Barcodes.BarcodeFormat.Ean8 | Egami.Barcodes.BarcodeFormat.UpcA | Egami.Barcodes.BarcodeFormat.UpcE | Egami.Barcodes.BarcodeFormat.Code93 | Egami.Barcodes.BarcodeFormat.Codabar -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.CodabarOptions
 Egami.Barcodes.CodabarOptions.<Clone>$() -> Egami.Barcodes.CodabarOptions!
 Egami.Barcodes.CodabarOptions.CheckDigit.get -> bool

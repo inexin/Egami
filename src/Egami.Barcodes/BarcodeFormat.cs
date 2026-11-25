@@ -53,7 +53,7 @@ public enum BarcodeFormat
     Codabar = 1 << 12,
 
     /// <summary>The linear symbologies.</summary>
-    Linear = Code128 | Code39 | Itf | Ean13 | Ean8 | UpcA | UpcE,
+    Linear = Code128 | Code39 | Code93 | Codabar | Itf | Ean13 | Ean8 | UpcA | UpcE,
 
     /// <summary>The 2D symbologies.</summary>
     Matrix = Qr | DataMatrix | Pdf417 | Aztec,
