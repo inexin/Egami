@@ -86,6 +86,20 @@ internal struct DictionarySegmenter
         return _next == index && MayBreakBefore(text, index);
     }
 
+    /// <summary>Gets whether <paramref name="index"/> falls between two complex-context letters of one script, inside a run
+    /// the segmenter splits.</summary>
+    public static bool IsInsideRun(ReadOnlySpan<char> text, int index)
+    {
+        if (index <= 0 || index >= text.Length)
+        {
+            return false;
+        }
+
+        char c = text[index];
+        return !char.IsSurrogate(c) && UnicodeData.LineBreakClassOf(c) == LineBreakClass.ComplexContext
+            && InRun(text[index - 1], UnicodeData.ScriptIndex(c));
+    }
+
     private static bool InRun(char c, int script) =>
         !char.IsSurrogate(c) && UnicodeData.LineBreakClassOf(c) == LineBreakClass.ComplexContext && UnicodeData.ScriptIndex(c) == script;
 

@@ -547,6 +547,10 @@ public class ParagraphLayout
     [Fact]
     public void BuiltInAndOwnWordLists()
     {
+        string folder = System.IO.Path.Combine(AppContext.BaseDirectory, "fonts");
+        FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(folder, "NotoSansThai-Regular.ttf"));
+        fonts.TryGetFamily("Noto Sans Thai", out FontFamily thaiFamily);
         #region word-dictionaries
         // The built-in lists load on first use; copy the set to add your own words or a script Egami ships no list for.
         WordDictionaries.BuiltIn.TryGet(Script.Thai, out WordDictionary? thai);
@@ -568,12 +572,23 @@ public class ParagraphLayout
         {
             breaks.Add(b.Index);                                        // 4, 7 and 11: ภาษา|ไทย|ง่าย
         }
+
+        // Double-click and Ctrl+arrow select and step by the same words, with the paragraph's dictionaries.
+        TextLayout layout = Paragraph.Create("ภาษาไทยง่าย", new ParagraphStyle
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [thaiFamily] },
+            LineBreaking = options,
+        }).Layout(400);
+        Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(5);                 // 4 and 3: ไทย
+        TextPosition next = layout.MoveCaret(new TextPosition(4), CaretMove.NextWord); // 7
         #endregion
 
         Assert.True(known);
         Assert.Equal(thai.Count + 1, back.Count);
         Assert.True(dictionaries.TryGet(Script.Thai, out WordDictionary? found) && found.Contains("อีกามิ"));
         Assert.Equal([4, 7, 11], breaks);
+        Assert.Equal(new Egami.Fonts.Unicode.TextSegment(4, 3), word);
+        Assert.Equal(7, next.Index);
     }
 
     [Fact]
