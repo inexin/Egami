@@ -117,6 +117,103 @@ public class BevelTests
         Assert.Equal(Gray, raster.GetPixel(140, 70));
     }
 
+    private static Raster<Rgba8> Fill(Paint paint, Bevel bevel, Action<RasterCanvas<Rgba8>>? setup = null)
+    {
+        Raster<Rgba8> raster = Raster.Create(140, 140, Rgba8.White);
+        using RasterCanvas<Rgba8> canvas = raster.CreateCanvas();
+        setup?.Invoke(canvas);
+        canvas.FillBevel(Path.Rect(new RectF(20, 20, 100, 100)), paint, bevel);
+        return raster;
+    }
+
+    [Fact]
+    public void LitFillKeepsThePaintsHueAndLeavesTheFaceAlone()
+    {
+        var red = new Rgba8(180, 40, 40, 255);
+        using Raster<Rgba8> lit = Fill(red, new Bevel { Width = 10, Height = 10, Material = BevelMaterial.Matte });
+        Rgba8 top = lit.GetPixel(70, 23), bottom = lit.GetPixel(70, 116);
+        Assert.True(top.R > red.R && top.R > top.G * 2, $"top rim {top}");
+        Assert.True(bottom.R < red.R && bottom.R > bottom.G * 2, $"bottom rim {bottom}");
+        Assert.Equal(red, lit.GetPixel(70, 70));
+        Assert.Equal(Rgba8.White, lit.GetPixel(10, 10));
+
+        // A matte black has nothing to reflect, so it stays black; the overlay would have greyed it.
+        using Raster<Rgba8> black = Fill(Rgba8.Black, new Bevel { Width = 10, Height = 10, Material = BevelMaterial.Matte });
+        Assert.Equal(Rgba8.Black, black.GetPixel(70, 23));
+    }
+
+    [Fact]
+    public void MetalShineTakesThePaintsHueAndPlasticShineIsWhite()
+    {
+        var blue = new Rgba8(40, 60, 160, 255);
+        Bevel shiny = new() { Width = 12, Height = 12, Profile = BevelProfile.SoftRound, Light = new BevelLight(135, 60) };
+        using Raster<Rgba8> metal = Fill(blue, shiny with { Material = BevelMaterial.Metal });
+        using Raster<Rgba8> plastic = Fill(blue, shiny with { Material = BevelMaterial.Plastic });
+        Rgba8 brightestMetal = Brightest(metal), brightestPlastic = Brightest(plastic);
+        Assert.True(brightestMetal.B > 200 && brightestMetal.R < 150, $"metal {brightestMetal}");
+        Assert.True(brightestPlastic.R > 150 && brightestPlastic.G > 150, $"plastic {brightestPlastic}");
+
+        static Rgba8 Brightest(Raster<Rgba8> r)
+        {
+            Rgba8 best = default;
+            for (int y = 20; y < 120; y++)
+            {
+                for (int x = 20; x < 120; x++)
+                {
+                    Rgba8 c = r.GetPixel(x, y);
+                    if (Luma(c) > Luma(best))
+                    {
+                        best = c;
+                    }
+                }
+            }
+
+            return best;
+        }
+    }
+
+    [Fact]
+    public void LitFillMatchesFillPathWhenTheBevelLightsNothing()
+    {
+        foreach (Bevel bevel in new[] { new Bevel { Material = BevelMaterial.Flat }, new Bevel { Width = 0 }, new Bevel { Light = new BevelLight(135, 45, 0) } })
+        {
+            using Raster<Rgba8> filled = Raster.Create(140, 140, Rgba8.White);
+            using (RasterCanvas<Rgba8> canvas = filled.CreateCanvas())
+            {
+                canvas.FillPath(Path.Rect(new RectF(20, 20, 100, 100)), Gray);
+            }
+
+            using Raster<Rgba8> drawn = Fill(Gray, bevel);
+            Assert.Equal(filled.GetPixel(70, 23), drawn.GetPixel(70, 23));
+            Assert.Equal(filled.GetPixel(70, 70), drawn.GetPixel(70, 70));
+        }
+    }
+
+    [Fact]
+    public void LitFillFollowsTheTransformAndTheGradient()
+    {
+        // The gradient runs in local units under a 2x scale: left of the face is its start color, right its end color.
+        var gradient = new LinearGradient(new Vector2(20, 0), new Vector2(120, 0), new RgbaF32(1, 0, 0, 1), new RgbaF32(0, 0, 1, 1));
+        using Raster<Rgba8> raster = Raster.Create(280, 280, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = raster.CreateCanvas())
+        {
+            canvas.Scale(2);
+            canvas.FillBevel(Path.Rect(new RectF(20, 20, 100, 100)), gradient, new Bevel { Width = 10, Height = 10, Material = BevelMaterial.Matte });
+        }
+
+        Rgba8 left = raster.GetPixel(70, 140), right = raster.GetPixel(210, 140);
+        Assert.True(left.R > left.B && right.B > right.R, $"{left} {right}");
+        Assert.Equal(Rgba8.White, raster.GetPixel(30, 30));
+        Assert.True(Luma(raster.GetPixel(140, 45)) > Luma(raster.GetPixel(140, 235)), "top rim lighter than bottom rim");
+    }
+
+    [Fact]
+    public void LitFillTakesThePaintsOpacity()
+    {
+        using Raster<Rgba8> half = Fill(new SolidPaint(Rgba8.Black) { Opacity = 0.5f }, new Bevel { Width = 10, Height = 10 });
+        Assert.InRange(half.GetPixel(70, 70).R, 120, 135);
+    }
+
     [Fact]
     public void BadArgumentsThrow()
     {
@@ -132,5 +229,8 @@ public class BevelTests
         using RasterCanvas<Rgba8> canvas = raster.CreateCanvas();
         Assert.Throws<ArgumentNullException>(() => canvas.DrawBevel(null!, new Bevel()));
         Assert.Throws<ArgumentNullException>(() => canvas.DrawBevel(Path.Rect(new RectF(0, 0, 5, 5)), null!));
+        Assert.Throws<ArgumentNullException>(() => canvas.FillBevel(null!, Gray, new Bevel()));
+        Assert.Throws<ArgumentNullException>(() => canvas.FillBevel(Path.Rect(new RectF(0, 0, 5, 5)), null!, new Bevel()));
+        Assert.Throws<ArgumentNullException>(() => canvas.FillBevel(Path.Rect(new RectF(0, 0, 5, 5)), Gray, null!));
     }
 }

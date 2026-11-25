@@ -150,6 +150,12 @@ the same thing.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#bevel)]
 
+`FillBevel` fills the shape and lights it in one call: the paint's own color is scaled by the light, so a red rim stays red
+as it darkens, and the material's shine is laid over it, in the paint's hue for `Metal` and `SoftMetal`. This is closer to
+how DrawingML draws a metal or clear bevel than `DrawBevel` over a fill, and it works with any paint, gradients included.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#lit-bevel)]
+
 The profiles and materials are Egami's own curves and weights, named after DrawingML's presets; they are not tuned to match
 another renderer pixel for pixel.
 

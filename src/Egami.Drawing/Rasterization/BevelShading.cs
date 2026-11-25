@@ -8,15 +8,17 @@ namespace Egami.Drawing.Rasterization;
 /// <summary>
 /// Lights a bevel in device pixels: a height field from the signed distance to the shape's edge (<see cref="EdgeDistance"/>, as
 /// the PSD flattener's bevel and emboss) through the profile, its normals by central differences, Lambert's diffuse term and
-/// Blinn-Phong's specular term against the flat face's, written as white (or a tint) where lighter and black where darker.
+/// Blinn-Phong's specular term against the flat face's. As an overlay it is written as white (or a tint) where lighter and black
+/// where darker; as a lit fill the paint's own color is scaled by the diffuse light, and the shine is the material's tint, or
+/// for metals the paint's hue at full brightness.
 /// </summary>
 internal static class BevelShading
 {
     /// <summary>
     /// Turns <paramref name="image"/>, whose alpha is the shape's coverage, into the bevel's light and shade as straight-alpha
-    /// colors over transparency.
+    /// colors over transparency; or, with <paramref name="fill"/> (the paint drawn over the same pixels), into that fill lit.
     /// </summary>
-    internal static void Shade(Raster<RgbaF32> image, Bevel bevel, float width, float height)
+    internal static void Shade(Raster<RgbaF32> image, Bevel bevel, float width, float height, Raster<RgbaF32>? fill = null)
     {
         int w = image.Width, h = image.Height, n = w * h;
         float[] cover = new float[n], distance = new float[n], field = new float[n];
@@ -51,13 +53,14 @@ internal static class BevelShading
         for (int y = 0; y < h; y++)
         {
             Span<RgbaF32> row = image.Row(y);
+            ReadOnlySpan<RgbaF32> paint = fill is null ? default : fill.Row(y);
             for (int x = 0; x < w; x++)
             {
                 int i = (y * w) + x;
                 float t = Math.Clamp(-distance[i] / width, 0, 1);
                 if (cover[i] <= 0 || t >= 1)
                 {
-                    row[x] = default;
+                    row[x] = fill is null ? default : paint[x];
                     continue;
                 }
 
@@ -70,12 +73,43 @@ internal static class BevelShading
                 float specular = m.Specular > 0 && flatSpecular < 1
                     ? MathF.Max(0, MathF.Pow(MathF.Max(0, Vector3.Dot(normal, half)), m.Shininess) - flatSpecular) / (1 - flatSpecular)
                     : 0;
+                float strength = light.Intensity * (m.EdgeFade ? t : 1);
+                if (fill is not null)
+                {
+                    row[x] = Lit(paint[x], m, strength, lighter, darker, specular, t);
+                    continue;
+                }
+
                 float net = (m.Diffuse * lighter) + (m.Specular * specular) - (m.Shadow * darker) - (m.EdgeDark * (1 - t) * (1 - t));
-                net *= light.Intensity * (m.EdgeFade ? t : 1);
+                net *= strength;
                 float alpha = Math.Min(1, Math.Abs(net)) * cover[i];
                 row[x] = net > 0 ? new RgbaF32(m.Tint.X, m.Tint.Y, m.Tint.Z, alpha) : new RgbaF32(0, 0, 0, alpha);
             }
         }
+    }
+
+    /// <summary>
+    /// Lights one pixel of a fill: its color scaled by the diffuse light (so it keeps its hue, and black stays black), then moved
+    /// toward the shine's color by the specular term. Alpha is the fill's.
+    /// </summary>
+    private static RgbaF32 Lit(RgbaF32 c, Model m, float strength, float lighter, float darker, float specular, float t)
+    {
+        float shade = MathF.Max(0, 1 + (strength * ((m.Diffuse * lighter) - (m.Shadow * darker) - (m.EdgeDark * (1 - t) * (1 - t)))));
+        var rgb = Vector3.Min(new Vector3(c.R, c.G, c.B) * shade, Vector3.One);
+        float shine = Math.Min(1, strength * m.Specular * specular);
+        if (shine > 0)
+        {
+            Vector3 tint = m.Tint;
+            if (m.Metallic)
+            {
+                float peak = MathF.Max(c.R, MathF.Max(c.G, c.B));
+                tint = peak > 1e-3f ? new Vector3(c.R, c.G, c.B) / peak : Vector3.One;
+            }
+
+            rgb = Vector3.Lerp(rgb, tint, shine);
+        }
+
+        return new RgbaF32(rgb.X, rgb.Y, rgb.Z, c.A);
     }
 
     /// <summary>Filters the plane by [1 2 1] / 4 across and then down, edges repeated; <paramref name="scratch"/> is the same size.</summary>
@@ -125,8 +159,11 @@ internal static class BevelShading
         return (step + (riser * riser * (3 - (2 * riser)))) / 3;
     }
 
-    /// <summary>A material: the diffuse, specular and shadow weights, the shine's exponent, the highlight's tint and edge effects.</summary>
-    private readonly record struct Model(float Diffuse, float Specular, float Shininess, float Shadow, Vector3 Tint, float EdgeDark = 0, bool EdgeFade = false)
+    /// <summary>
+    /// A material: the diffuse, specular and shadow weights, the shine's exponent, the highlight's tint, edge effects, and whether
+    /// a lit fill's shine takes the fill's own hue, as a metal's does.
+    /// </summary>
+    private readonly record struct Model(float Diffuse, float Specular, float Shininess, float Shadow, Vector3 Tint, float EdgeDark = 0, bool EdgeFade = false, bool Metallic = false)
     {
         private static readonly Vector3 White = Vector3.One;
 
@@ -135,8 +172,8 @@ internal static class BevelShading
             BevelMaterial.Matte => new(1, 0, 1, 1, White),
             BevelMaterial.WarmMatte => new(1, 0, 1, 1, new Vector3(1, 0.95f, 0.85f)),
             BevelMaterial.Plastic => new(0.8f, 0.6f, 40, 1, White),
-            BevelMaterial.Metal => new(0.4f, 1, 20, 1.3f, White),
-            BevelMaterial.SoftMetal => new(0.5f, 0.7f, 8, 1.1f, White),
+            BevelMaterial.Metal => new(0.4f, 1, 20, 1.3f, White, Metallic: true),
+            BevelMaterial.SoftMetal => new(0.5f, 0.7f, 8, 1.1f, White, Metallic: true),
             BevelMaterial.DarkEdge => new(1, 0, 1, 1, White, EdgeDark: 0.5f),
             BevelMaterial.SoftEdge => new(1, 0, 1, 1, White, EdgeFade: true),
             BevelMaterial.Clear => new(0.25f, 0.9f, 60, 0.4f, White),

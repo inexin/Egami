@@ -50,6 +50,7 @@ Egami.Drawing.BevelProfile.Riblet = 9 -> Egami.Drawing.BevelProfile
 Egami.Drawing.BevelProfile.Slope = 7 -> Egami.Drawing.BevelProfile
 Egami.Drawing.BevelProfile.SoftRound = 5 -> Egami.Drawing.BevelProfile
 Egami.Drawing.Canvas.DrawBevel(Egami.Drawing.Path! path, Egami.Drawing.Bevel! bevel) -> void
+Egami.Drawing.Canvas.FillBevel(Egami.Drawing.Path! path, Egami.Drawing.Paint! paint, Egami.Drawing.Bevel! bevel) -> void
 Egami.Drawing.LightDirection
 Egami.Drawing.LightDirection.Bottom = 6 -> Egami.Drawing.LightDirection
 Egami.Drawing.LightDirection.BottomLeft = 5 -> Egami.Drawing.LightDirection

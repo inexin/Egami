@@ -441,6 +441,32 @@ public class Drawing
     }
 
     [Fact]
+    public void LitBevel()
+    {
+        #region lit-bevel
+        // A gold plaque: the gradient fill lit as a metal bevel, its shine in the gold's own hue.
+        using Raster<Rgba8> plaque = Raster.Create(220, 90, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = plaque.CreateCanvas())
+        {
+            Path shape = Path.RoundRect(new RoundRect(new RectF(10, 10, 200, 70), 12));
+            var gold = new LinearGradient(new Vector2(0, 10), new Vector2(0, 80), new RgbaF32(0.9f, 0.75f, 0.3f, 1), new RgbaF32(0.65f, 0.45f, 0.1f, 1));
+            canvas.FillBevel(shape, gold, new Bevel
+            {
+                Profile = BevelProfile.Angle,
+                Width = 8,
+                Height = 6,
+                Material = BevelMaterial.Metal,
+                Light = BevelLight.FromDirection(LightDirection.TopLeft),
+            });
+        }
+        #endregion
+
+        Rgba8 rim = plaque.GetPixel(110, 13);
+        Assert.True(rim.R > rim.B, "the shine keeps the gold's hue");
+        Assert.Equal(Rgba8.White, plaque.GetPixel(5, 5));
+    }
+
+    [Fact]
     public void WarpText()
     {
         Typeface face = Typeface.FromFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSans-Regular.ttf"));

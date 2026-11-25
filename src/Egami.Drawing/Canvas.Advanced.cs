@@ -26,12 +26,51 @@ public abstract partial class Canvas
     {
         ArgumentNullException.ThrowIfNull(path);
         ArgumentNullException.ThrowIfNull(bevel);
+        DrawBevelImage(path, bevel, fill: null);
+    }
+
+    /// <summary>
+    /// Fills a path with a paint lit as a bevel: the rim's own color is lightened where it faces the light and darkened where it
+    /// faces away, and the material's shine is laid over it (a metal's shine takes the paint's hue, as DrawingML's metal does), so
+    /// a metal or clear bevel looks closer to DrawingML than <see cref="DrawBevel"/> over a fill. The flat face inside is the paint
+    /// as <see cref="FillPath(Path, Paint)"/> draws it. It is worked out in device pixels under the current transform and drawn as
+    /// an image with the paint's blend mode and opacity, so every backend draws it the same way.
+    /// </summary>
+    /// <param name="path">The shape, in local coordinates; its fill rule decides what is inside.</param>
+    /// <param name="paint">The fill: any paint, a color, gradient or image.</param>
+    /// <param name="bevel">The bevel. When it lights nothing (a <see cref="BevelMaterial.Flat"/> material, no width, height or light)
+    /// the path is filled as <see cref="FillPath(Path, Paint)"/> fills it.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="path"/>, <paramref name="paint"/> or <paramref name="bevel"/> is
+    /// <see langword="null"/>.</exception>
+    /// <exception cref="LimitExceededException">The shape's device area is larger than the context's limits allow.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="lit-bevel"/>
+    /// </example>
+    public void FillBevel(Path path, Paint paint, Bevel bevel)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        ArgumentNullException.ThrowIfNull(paint);
+        ArgumentNullException.ThrowIfNull(bevel);
+        if (!DrawBevelImage(path, bevel, paint))
+        {
+            FillPath(path, paint);
+        }
+    }
+
+    /// <summary>Draws a bevel's overlay, or with <paramref name="fill"/> the lit fill; returns <see langword="false"/> when the bevel lights nothing.</summary>
+    private bool DrawBevelImage(Path path, Bevel bevel, Paint? fill)
+    {
         Matrix3x2 m = Matrix;
         float scale = MathF.Sqrt(MathF.Abs(m.GetDeterminant()));
         float width = bevel.Width * scale, height = bevel.Height * scale;
-        if (path.IsEmpty || bevel.Material == BevelMaterial.Flat || !(width > 0) || !(height > 0) || bevel.Light.Intensity == 0)
+        if (bevel.Material == BevelMaterial.Flat || !(width > 0) || !(height > 0) || bevel.Light.Intensity == 0)
         {
-            return;
+            return false;
+        }
+
+        if (path.IsEmpty)
+        {
+            return true;
         }
 
         // The shape is measured a bevel's width (and a pixel) past the clip, so the clip's edge is not taken for the shape's.
@@ -41,7 +80,7 @@ public abstract partial class Canvas
         RectF bounds = device.Bounds.Intersect(new RectF(clip.X - reach, clip.Y - reach, clip.Width + (2 * reach), clip.Height + (2 * reach)));
         if (bounds.IsEmpty)
         {
-            return;
+            return true;
         }
 
         int x0 = (int)MathF.Floor(bounds.X) - 1, y0 = (int)MathF.Floor(bounds.Y) - 1;
@@ -53,17 +92,29 @@ public abstract partial class Canvas
             mask.FillPath(device, new RgbaF32(1, 1, 1, 1));
         }
 
-        Rasterization.BevelShading.Shade(image, bevel, width, height);
+        using Raster<RgbaF32>? painted = fill is null ? null : Raster.Create<RgbaF32>(w, h);
+        if (painted is not null)
+        {
+            // The paint is drawn in local coordinates, so gradients and images follow the transform as FillPath's do.
+            using RasterCanvas<RgbaF32> canvas = painted.CreateCanvas();
+            canvas.SetMatrix(m * Matrix3x2.CreateTranslation(-x0, -y0));
+            canvas.FillPath(path, fill! with { BlendMode = BlendMode.SourceOver, Opacity = 1 });
+        }
+
+        Rasterization.BevelShading.Shade(image, bevel, width, height, painted);
         Save();
         try
         {
             ResetMatrix();
-            DrawImage(image, new RectF(x0, y0, w, h), FallbackSampling);
+            Paint? place = fill is null ? null : new SolidPaint(new RgbaF32(1, 1, 1, 1)) { BlendMode = fill.BlendMode, Opacity = fill.Opacity };
+            DrawImage(image, new RectF(x0, y0, w, h), FallbackSampling, place);
         }
         finally
         {
             Restore();
         }
+
+        return true;
     }
 
     /// <summary>
