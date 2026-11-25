@@ -14,6 +14,7 @@ public sealed partial class EmfCanvas
     private PictureRecorder? _recorder;
     private int _recordDepth;
     private string? _recordReason;
+    private bool _recordBackdrop;
 
     // Folding a layer's opacity into its shapes: whether the layer being recorded still may be, its opacity, the device boxes of
     // its shapes so far, the opacity applied while it is played back, and whether the next SaveLayer is the folded layer's own.
@@ -82,20 +83,7 @@ public sealed partial class EmfCanvas
         _recorder.SaveLayer(options);
         _recordDepth = 1;
         _recordReason = reason;
-    }
-
-    /// <inheritdoc/>
-    protected override void OnDrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
-    {
-        if (Recording())
-        {
-            _recorder!.DrawImage(image, source, destination, sampling, paint);
-            _foldable = false;
-        }
-        else if (_quiet == 0)
-        {
-            Fallback(destination, 1, c => c.DrawImage(image, source, destination, sampling, paint), "an image");
-        }
+        _recordBackdrop = options.BlendMode != BlendMode.SourceOver || options.Backdrop is not null;
     }
 
     /// <inheritdoc/>
@@ -108,7 +96,8 @@ public sealed partial class EmfCanvas
         }
         else if (_quiet == 0)
         {
-            Fallback(destination, 1, c => c.DrawImageMask(mask, destination, paint, sampling), "an image mask");
+            Remember(c => c.DrawImageMask(mask, destination, paint, sampling));
+            Fallback(destination, 1, c => c.DrawImageMask(mask, destination, paint, sampling), "an image mask", backdrop: paint.BlendMode != BlendMode.SourceOver);
         }
     }
 
@@ -123,7 +112,8 @@ public sealed partial class EmfCanvas
         }
         else if (_quiet == 0)
         {
-            Fallback(mesh.Bounds, 1, c => c.DrawMesh(mesh, paint, colorBlend, stops), "a mesh");
+            Remember(c => c.DrawMesh(mesh, paint, colorBlend, stops));
+            Fallback(mesh.Bounds, 1, c => c.DrawMesh(mesh, paint, colorBlend, stops), "a mesh", backdrop: paint.BlendMode != BlendMode.SourceOver);
         }
     }
 
@@ -145,7 +135,12 @@ public sealed partial class EmfCanvas
         _recorder = null;
         if (!_foldable)
         {
-            Fallback(null, 0, picture.Playback, _recordReason!);
+            _history.Add((c, under) =>
+            {
+                c.SetMatrix(under);
+                picture.Playback(c);
+            });
+            Fallback(null, 0, picture.Playback, _recordReason!, backdrop: _recordBackdrop);
             return;
         }
 
@@ -207,9 +202,11 @@ public sealed partial class EmfCanvas
     /// <summary>
     /// Draws a call into an image through <see cref="Canvas.RasterizeFallback"/> at <see cref="EmfWriteOptions.FallbackScale"/> and
     /// writes it in device coordinates: over the local bounds given (grown by an outset in device units), or over the whole clip.
-    /// With bounds, <paramref name="draw"/> draws in local coordinates; without, in device coordinates.
+    /// With bounds, <paramref name="draw"/> draws in local coordinates; without, in device coordinates. A call whose result depends
+    /// on what is beneath it (a blend mode other than source-over, a backdrop filter) is drawn over everything drawn before it,
+    /// replayed, and the image replaces those pixels (EMF+ CompositingModeSourceCopy).
     /// </summary>
-    private void Fallback(RectF? localBounds, float outset, Action<Canvas> draw, string what, bool plus = true)
+    private void Fallback(RectF? localBounds, float outset, Action<Canvas> draw, string what, bool plus = true, bool backdrop = false)
     {
         if (!plus && !_gdi)
         {
@@ -239,11 +236,17 @@ public sealed partial class EmfCanvas
                 ClipRect(device);
             }
 
+            Action<Canvas> call = localBounds is null ? draw : c =>
+            {
+                c.SetMatrix(m * c.Matrix);
+                draw(c);
+            };
+            int before = _history.Count - 1; // the call itself is the last one remembered
             image = RasterizeFallback(
-                localBounds is null ? draw : c =>
+                !backdrop ? call : c =>
                 {
-                    c.SetMatrix(m * c.Matrix);
-                    draw(c);
+                    PlayHistory(c, before);
+                    call(c);
                 },
                 Options.FallbackScale);
         }
@@ -260,7 +263,7 @@ public sealed partial class EmfCanvas
 
         using (image.Image)
         {
-            WriteImage(image.Image, image.DeviceBounds, plus && _plus);
+            WriteImage(image.Image, image.DeviceBounds, plus && _plus, backdrop);
         }
 
         // A warning when a reader of the file gets the image: always but when only the GDI copy of an exact EMF+ drawing is one.
@@ -273,42 +276,31 @@ public sealed partial class EmfCanvas
     /// <summary>
     /// Writes an image at a device rectangle: an EMF+ image object (PNG) drawn by DrawImage, and a GDI AlphaBlend of a 32-bit DIB.
     /// </summary>
-    private void WriteImage(Raster<RgbaF32> image, RectF device, bool plus)
+    private void WriteImage(Raster<RgbaF32> image, RectF device, bool plus, bool replace = false)
     {
         using Raster<Rgba8> rgba = image.As<Rgba8>();
         if (plus)
         {
             int id = _w.PlusObject(5, ImageObject(rgba));
             SetPlusWorld(Matrix3x2.Identity);
+            if (replace)
+            {
+                _w.Plus(0x4023, 1, []); // SetCompositingMode: CompositingModeSourceCopy
+            }
+
             _w.Plus(0x401A, (ushort)id, _w.Data()
                 .U32(0).I32(2) // no image attributes, UnitPixel
                 .F32(0).F32(0).F32(rgba.Width).F32(rgba.Height)
                 .F32(device.X).F32(device.Y).F32(device.Width).F32(device.Height).Span);
+            if (replace)
+            {
+                _w.Plus(0x4023, 0, []); // CompositingModeSourceOver
+            }
         }
 
         if (_gdi)
         {
-            SetGdiWorld(Matrix3x2.Identity);
-            int w = rgba.Width, h = rgba.Height;
-            RecordBuffer b = new((w * h * 4) + 160);
-            b.Bytes(Bounds16(device));
-            b.I32(Fix(device.X)).I32(Fix(device.Y)).I32(Fix(device.Width)).I32(Fix(device.Height));
-            b.U32(0x01FF0000); // BLENDFUNCTION: AC_SRC_OVER, constant alpha 255, AC_SRC_ALPHA
-            b.I32(0).I32(0).Matrix(Matrix3x2.Identity).U32(0).U32(0); // source corner, source transform, background, DIB_RGB_COLORS
-            const int Header = 108, Info = 40;
-            b.U32(Header).U32(Info).U32(Header + Info).U32((uint)(w * h * 4)).I32(w).I32(h);
-
-            // BITMAPINFOHEADER of a bottom-up 32-bit BI_RGB DIB, then its premultiplied BGRA rows.
-            b.U32(Info).I32(w).I32(h).U16(1).U16(32).U32(0).U32((uint)(w * h * 4)).I32(0).I32(0).U32(0).U32(0);
-            for (int y = h - 1; y >= 0; y--)
-            {
-                foreach (Rgba8 p in rgba.Row(y))
-                {
-                    b.Bytes([(byte)(((p.B * p.A) + 127) / 255), (byte)(((p.G * p.A) + 127) / 255), (byte)(((p.R * p.A) + 127) / 255), p.A]);
-                }
-            }
-
-            _w.Gdi(114, b.Span); // EMR_ALPHABLEND
+            WriteAlphaBlend(rgba, new RectF(0, 0, rgba.Width, rgba.Height), device, Matrix3x2.Identity, 1);
         }
 
         RectF clipped = device.Intersect(new RectF(0, 0, Width, Height));

@@ -333,6 +333,41 @@ public sealed partial class EmfCanvas
             return false;
         }
 
+        byte[] bitmap = BitmapObject(image, opacity);
+        RecordBuffer b = new(bitmap.Length + 40);
+        b.U32(GdiPlusData.Version).I32(2).U32(0x02).I32(wrap).Matrix(transform).Bytes(bitmap); // TextureBrush with a transform
+        plan = new BrushPlan(b.ToArray(), interpolation, null);
+        return true;
+    }
+
+    /// <summary>
+    /// A picture paint's tile drawn by Egami as a texture at the device scale and sampled bilinearly, as Egami's raster backend
+    /// draws picture paints, so a hatch or pixel pattern looks the same in the file.
+    /// </summary>
+    private bool TryPicture(PicturePaint paint, float opacity, out BrushPlan? plan, out string? reason)
+    {
+        Matrix3x2 m = paint.LocalMatrix * Matrix;
+        RectF tile = paint.Tile;
+        float sx = new Vector2(m.M11, m.M12).Length(), sy = new Vector2(m.M21, m.M22).Length();
+        int w = (int)Math.Clamp(Math.Ceiling(tile.Width * (double)sx), 1, 4096), h = (int)Math.Clamp(Math.Ceiling(tile.Height * (double)sy), 1, 4096);
+        using Raster<Rgba8> image = Raster.Create<Rgba8>(w, h);
+        using (RasterCanvas<Rgba8> canvas = image.CreateCanvas())
+        {
+            canvas.Scale(w / tile.Width, h / tile.Height);
+            canvas.Translate(-tile.X, -tile.Y);
+            paint.Picture.Playback(canvas);
+        }
+
+        Matrix3x2 transform = Matrix3x2.CreateScale(tile.Width / w, tile.Height / h) * Matrix3x2.CreateTranslation(tile.X, tile.Y) * paint.LocalMatrix;
+        return TryTexture(image, paint.TileX, paint.TileY, transform, 3, opacity, out plan, out reason);
+    }
+
+    /// <summary>
+    /// The EmfPlusImage of an image with its alpha times an opacity, written once per image and opacity: a PNG, as
+    /// <see cref="ImageObject"/>.
+    /// </summary>
+    private byte[] BitmapObject(Raster image, float opacity)
+    {
         if (!_textures.TryGetValue((image, opacity), out byte[]? bitmap))
         {
             using Raster<Rgba8> rgba = image.As<Rgba8>();
@@ -351,37 +386,19 @@ public sealed partial class EmfCanvas
             _textures[(image, opacity)] = bitmap;
         }
 
-        RecordBuffer b = new(bitmap.Length + 40);
-        b.U32(GdiPlusData.Version).I32(2).U32(0x02).I32(wrap).Matrix(transform).Bytes(bitmap); // TextureBrush with a transform
-        plan = new BrushPlan(b.ToArray(), interpolation, null);
-        return true;
+        return bitmap;
     }
 
-    /// <summary>A picture paint's tile drawn by Egami at the device scale times <see cref="EmfWriteOptions.FallbackScale"/>, as a texture.</summary>
-    private bool TryPicture(PicturePaint paint, float opacity, out BrushPlan? plan, out string? reason)
-    {
-        Matrix3x2 m = paint.LocalMatrix * Matrix;
-        float scale = Options.FallbackScale;
-        float sx = new Vector2(m.M11, m.M12).Length() * scale, sy = new Vector2(m.M21, m.M22).Length() * scale;
-        RectF tile = paint.Tile;
-        int w = (int)Math.Clamp(Math.Ceiling(tile.Width * (double)sx), 1, 4096), h = (int)Math.Clamp(Math.Ceiling(tile.Height * (double)sy), 1, 4096);
-        using Raster<Rgba8> image = Raster.Create<Rgba8>(w, h);
-        using (RasterCanvas<Rgba8> canvas = image.CreateCanvas())
-        {
-            canvas.Scale(w / tile.Width, h / tile.Height);
-            canvas.Translate(-tile.X, -tile.Y);
-            paint.Picture.Playback(canvas);
-        }
-
-        Matrix3x2 transform = Matrix3x2.CreateScale(tile.Width / w, tile.Height / h) * Matrix3x2.CreateTranslation(tile.X, tile.Y) * paint.LocalMatrix;
-        return TryTexture(image, paint.TileX, paint.TileY, transform, 7, opacity, out plan, out reason);
-    }
-
-    /// <summary>GDI+'s interpolation mode closest to an Egami filter: nearest neighbor (5), bilinear (3), else high-quality bicubic (7).</summary>
+    /// <summary>
+    /// GDI+'s interpolation mode for an Egami filter: nearest neighbor (5), bilinear (3), GDI+'s own filters as themselves (bicubic
+    /// 4, high-quality bilinear 6), else high-quality bicubic (7).
+    /// </summary>
     private static int Interpolation(ResampleFilter filter) => filter switch
     {
         ResampleFilter.Nearest => 5,
-        ResampleFilter.Bilinear => 3,
+        ResampleFilter.Bilinear or ResampleFilter.GdiPlusBilinear => 3,
+        ResampleFilter.GdiPlusBicubic => 4,
+        ResampleFilter.GdiPlusHighQualityBilinear => 6,
         _ => 7,
     };
 

@@ -73,6 +73,23 @@ EMF writing, stage B: paints as brushes.
 - Egami's EMF+ player now draws path gradients with preset colors from their own colors. Before, it mixed them from the
   surrounding and center colors.
 
+EMF writing, stage C: images, text and pictures.
+
+- Images are EMF+ images drawn with `DrawImagePoints`, their source rectangle and interpolation mode, and GDI `AlphaBlend`
+  bitmaps of the pixels they use (premultiplied, 32-bit). An `EncodedImage` that is a PNG, or a baseline or progressive
+  JPEG, keeps its bytes as they are; other images are written as PNG, with a paint's opacity baked in. `EmfPlusOnly` files
+  have no bitmap copy. In the GDI copy, a turned or mirrored image is an image of the call.
+- Lattices and atlases are drawn as their images; pictures are played inline, `cacheAsImage` or not.
+- `EmfText.Glyphs` writes glyph runs as text: an EMF+ font (the face's family name, the em size, bold and italic) with
+  `DrawDriverString`, and a GDI font with `ExtTextOutW` and glyph indices. Synthesized, emboldened and variable faces,
+  turned glyphs, mirrored text and paints other than one color stay outlines. Color glyphs are drawn as their layers or
+  images in both modes.
+- A call that blends with what is beneath it (a blend mode, a backdrop filter) is drawn by Egami over everything drawn before
+  it, and its image replaces those pixels (`CompositingModeSourceCopy`), so raster operations and compositing modes keep
+  their look.
+- A picture paint's tile is drawn at the resolution, as Egami draws picture paints on a raster, not at `FallbackScale`.
+- `Metafile.Load(...).Draw(emfCanvas)` writes every WMF, EMF and EMF+ file in the test corpus again with the same playback.
+
 ## Egami.Svg and Egami.Css 1.6.0 (unreleased)
 
 SVG animation (roadmap 2.10.1): SMIL and CSS animations drawn at any moment, as frames, animated rasters, frozen static copies
