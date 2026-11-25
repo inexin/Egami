@@ -2288,43 +2288,55 @@ internal sealed class JxlModularEncoder
 
         totalPixels = Math.Max(totalPixels, 1);
         List<(int Stream, int Channel)> units = [.. Units().Where(u => only is null || only.Contains(u.Stream))];
-        SampleBuffer[] buffers = new SampleBuffer[units.Count];
-
-        // The largest channels start first, so the threads finish together; each channel's samples keep their place.
+        // First each channel's weighted predictions, which run down the rows, and which samples the xorshift takes in each band
+        // of rows; the largest channels start first, so the threads finish together.
         long Size(int u) => (long)_streams[units[u].Stream].Channels[units[u].Channel].Width * _streams[units[u].Stream].Channels[units[u].Channel].Height;
         int[] largestFirst = [.. Enumerable.Range(0, units.Count).OrderByDescending(Size)];
+        GatherPlan[] plans = new GatherPlan[units.Count];
         Parallel.ForEach(Partitioner.Create(largestFirst, EnumerablePartitionerOptions.NoBuffering), parallel, u =>
         {
             (int st, int ch) = units[u];
-            buffers[u] = GatherTreeData(_streams[st].Channels[ch], ch, st, repeats, predictors, properties, _streams[st].Wp, _wpRows is not null, _longs, _ints);
-            if (buffers[u].Wp is { } rows)
-            {
-                _wpRows![(st, ch)] = rows;
-                buffers[u].Wp = null;
-            }
+            plans[u] = PlanTreeData(_streams[st].Channels[ch], repeats, _streams[st].Wp, _longs, _ints);
         });
-        // The learner sized for every sample, so it never grows.
-        JxlTreeLearner learner = new(predictors, properties, Math.Max(1 << 10, buffers.Sum(b => b.Count)));
-        learner.Quantize(groupPixels, channelPixels, pixelCounts, diffCounts, maxValues);
-        int[] at = new int[buffers.Length + 1];
-        for (int u = 0; u < buffers.Length; u++)
+
+        // Each channel's samples keep their place, so the learner, sized for every sample, takes the bands in any order.
+        int[] at = new int[units.Count + 1];
+        int[] firstBand = new int[units.Count + 1];
+        for (int u = 0; u < units.Count; u++)
         {
-            totalPixels += buffers[u].Pixels;
-            at[u + 1] = at[u] + buffers[u].Count;
+            totalPixels += Size(u);
+            at[u + 1] = at[u] + plans[u].Offsets[^1];
+            firstBand[u + 1] = firstBand[u] + plans[u].Bands;
         }
 
-        Parallel.For(0, buffers.Length, parallel, u =>
+        JxlTreeLearner learner = new(predictors, properties, Math.Max(1 << 10, at[^1]));
+        learner.Quantize(groupPixels, channelPixels, pixelCounts, diffCounts, maxValues);
+        Parallel.For(0, firstBand[^1], parallel, i =>
         {
-            SampleBuffer b = buffers[u];
-            for (int i = 0; i < b.Count; i++)
+            // The last channel whose first band is at or before i; channels with no bands share their start with the next.
+            int u = Array.BinarySearch(firstBand, i);
+            u = u >= 0 ? u : ~u - 1;
+            while (firstBand[u + 1] <= i)
             {
-                learner.Set(at[u] + i, b.Values[i], b.Properties.AsSpan(i * properties.Length, properties.Length), b.Predictions.AsSpan(i * predictors.Length, predictors.Length));
+                u++;
             }
 
-            _longs.Return(b.Values);
-            _ints.Return(b.Properties);
-            _longs.Return(b.Predictions);
+            (int st, int ch) = units[u];
+            GatherBand(plans[u], i - firstBand[u], ch, st, predictors, properties, learner, at[u]);
         });
+
+        for (int u = 0; u < units.Count; u++)
+        {
+            if (_wpRows is not null)
+            {
+                _wpRows[units[u]] = plans[u].Rows;
+            }
+            else
+            {
+                ReturnWpRows(plans[u].Rows);
+            }
+        }
+
         learner.AddAll(at[^1], parallel);
 
         if (learner.SampleCount == 0)
@@ -2429,19 +2441,14 @@ internal sealed class JxlModularEncoder
         }
     }
 
-    /// <summary>Samples of one channel for the learner: values, the learner's properties and predictions, and the channel's pixel count.</summary>
-    private sealed class SampleBuffer(int capacity, int properties, int predictors, Reuse<long> longs, Reuse<int> ints)
-    {
-        internal WpRows? Wp;
-        internal int Count;
-        internal long Pixels;
+    /// <summary>
+    /// What the tree samples of one channel: the weighted predictions of every sample, and for each band of rows the xorshift's
+    /// state at its start and the samples taken before it (the last entry the channel's count).
+    /// </summary>
+    private sealed record GatherPlan(JxlChannel Channel, WpRows Rows, int BandRows, int Bands, ulong Threshold, ulong[] State, int[] Offsets);
 
-        // The arrays may be longer than asked for; Capacity is the samples all three hold.
-        internal int Capacity = capacity;
-        internal long[] Values = longs.Rent(capacity);
-        internal int[] Properties = ints.Rent(capacity * properties);
-        internal long[] Predictions = longs.Rent(capacity * predictors);
-    }
+    // The samples a band of rows holds, about: enough that a band is worth a thread's while, few enough to share the work out.
+    private const int GatherBandPixels = 8192;
 
     /// <summary>Arrays handed back for reuse within one encode; one too short for a request is dropped.</summary>
     private sealed class Reuse<T>
@@ -2479,8 +2486,11 @@ internal sealed class JxlModularEncoder
         }
     }
 
-    /// <summary>Takes samples of one channel, chosen by libjxl's xorshift (GatherTreeData).</summary>
-    private static SampleBuffer GatherTreeData(JxlChannel ch, int c, int stream, float repeats, int[] predictors, int[] properties, JxlWpParams wpParams, bool keepWp, Reuse<long> longs, Reuse<int> ints)
+    /// <summary>
+    /// Plans the samples of one channel that libjxl's GatherTreeData takes with its xorshift: runs the weighted predictor down
+    /// the rows and the xorshift over every sample, keeping its state at the start of each band of rows.
+    /// </summary>
+    private static GatherPlan PlanTreeData(JxlChannel ch, float repeats, JxlWpParams wpParams, Reuse<long> longs, Reuse<int> ints)
     {
         int width = ch.Width;
         int height = ch.Height;
@@ -2491,29 +2501,28 @@ internal sealed class JxlModularEncoder
         }
 
         ulong threshold = (ulong)((ulong.MaxValue >> 32) * fraction);
-        ulong s0 = 0x94D049BB133111EB;
-        ulong s1 = 0xBF58476D1CE4E5B9;
-        SampleBuffer buffer = new((int)Math.Min((long)width * height, (long)(((double)width * height * fraction) + 64)), properties.Length, predictors.Length, longs, ints) { Pixels = (long)width * height };
-        Span<int> props = stackalloc int[16];
-        Span<long> near = stackalloc long[8];
-        props[0] = c;
-        props[1] = stream;
-        // With keepWp, the predictions of every row are kept for coding to take.
         JxlWeightedPredictor wp = new(width, wpParams);
-        WpRows rows = keepWp ? new(longs.Rent(width * height), ints.Rent(width * height)) : new(new long[width], new int[width]);
-        buffer.Wp = keepWp ? rows : null;
-        int[] d = ch.Data;
+        WpRows rows = new(longs.Rent(width * height), ints.Rent(width * height));
         for (int y = 0; y < height; y++)
         {
-            props[2] = y;
-            props[9] = 0;
-            int row = y * width;
-            Span<long> wpRow = rows.Prediction.AsSpan(keepWp ? row : 0, width);
-            Span<int> errorRow = rows.MaxError.AsSpan(keepWp ? row : 0, width);
-            wp.Row(d, y, wpRow, errorRow);
-            for (int x = 0; x < width; x++)
+            wp.Row(ch.Data, y, rows.Prediction.AsSpan(y * width, width), rows.MaxError.AsSpan(y * width, width));
+        }
+
+        int bandRows = Math.Max(1, GatherBandPixels / Math.Max(1, width));
+        int bands = width == 0 ? 0 : (height + bandRows - 1) / bandRows;
+        ulong[] state = new ulong[2 * bands];
+        int[] offsets = new int[bands + 1];
+        ulong s0 = 0x94D049BB133111EB;
+        ulong s1 = 0xBF58476D1CE4E5B9;
+        int count = 0;
+        for (int band = 0; band < bands; band++)
+        {
+            state[2 * band] = s0;
+            state[(2 * band) + 1] = s1;
+            offsets[band] = count;
+            int pixels = (Math.Min(height, (band + 1) * bandRows) - (band * bandRows)) * width;
+            for (int i = 0; i < pixels; i++)
             {
-                Compute(d, width, x, y, row, props, near, wpRow[x], errorRow[x], false);
                 ulong a = s0;
                 ulong b = s1;
                 ulong bits = a + b;
@@ -2523,32 +2532,82 @@ internal sealed class JxlModularEncoder
                 s1 = a;
                 if ((bits >> 32) <= threshold)
                 {
-                    int n = buffer.Count;
-                    if (n == buffer.Capacity)
-                    {
-                        buffer.Capacity = n * 2;
-                        Array.Resize(ref buffer.Values, n * 2);
-                        Array.Resize(ref buffer.Properties, n * 2 * properties.Length);
-                        Array.Resize(ref buffer.Predictions, n * 2 * predictors.Length);
-                    }
-
-                    buffer.Values[n] = d[row + x];
-                    for (int k = 0; k < properties.Length; k++)
-                    {
-                        buffer.Properties[(n * properties.Length) + k] = props[properties[k]];
-                    }
-
-                    for (int k = 0; k < predictors.Length; k++)
-                    {
-                        buffer.Predictions[(n * predictors.Length) + k] = JxlModularDecoder.Predict(predictors[k], (int)near[1], (int)near[2], (int)near[3], (int)near[4], (int)near[5], (int)near[6], (int)near[7], near[0]);
-                    }
-
-                    buffer.Count++;
+                    count++;
                 }
             }
         }
 
-        return buffer;
+        offsets[bands] = count;
+        return new GatherPlan(ch, rows, bandRows, bands, threshold, state, offsets);
+    }
+
+    /// <summary>
+    /// Gives the learner the samples of one band of rows, at the places the plan keeps for them after <paramref name="at"/>:
+    /// each sample's value, properties and predictions.
+    /// </summary>
+    private static void GatherBand(GatherPlan plan, int band, int c, int stream, int[] predictors, int[] properties, JxlTreeLearner learner, int at)
+    {
+        JxlChannel ch = plan.Channel;
+        int width = ch.Width;
+        int[] d = ch.Data;
+        Span<int> props = stackalloc int[16];
+        Span<long> near = stackalloc long[8];
+        Span<int> chosen = stackalloc int[properties.Length];
+        Span<long> predictions = stackalloc long[predictors.Length];
+        props[0] = c;
+        props[1] = stream;
+        ulong threshold = plan.Threshold;
+        ulong s0 = plan.State[2 * band];
+        ulong s1 = plan.State[(2 * band) + 1];
+        int n = at + plan.Offsets[band];
+        int end = Math.Min(ch.Height, (band + 1) * plan.BandRows);
+        for (int y = band * plan.BandRows; y < end; y++)
+        {
+            props[2] = y;
+            int row = y * width;
+            ReadOnlySpan<long> wpRow = plan.Rows.Prediction.AsSpan(row, width);
+            ReadOnlySpan<int> errorRow = plan.Rows.MaxError.AsSpan(row, width);
+            for (int x = 0; x < width; x++)
+            {
+                ulong a = s0;
+                ulong b = s1;
+                ulong bits = a + b;
+                s0 = b;
+                a ^= a << 23;
+                a ^= b ^ (a >> 18) ^ (b >> 5);
+                s1 = a;
+                if ((bits >> 32) > threshold)
+                {
+                    continue;
+                }
+
+                // Entry 9 carries the gradient of the sample to the left, as working along the row would leave it.
+                props[9] = x == 0 ? 0 : Gradient(d, width, x - 1, y, row);
+                Compute(d, width, x, y, row, props, near, wpRow[x], errorRow[x], false);
+                for (int k = 0; k < chosen.Length; k++)
+                {
+                    chosen[k] = props[properties[k]];
+                }
+
+                for (int k = 0; k < predictions.Length; k++)
+                {
+                    predictions[k] = JxlModularDecoder.Predict(predictors[k], (int)near[1], (int)near[2], (int)near[3], (int)near[4], (int)near[5], (int)near[6], (int)near[7], near[0]);
+                }
+
+                learner.Set(n++, d[row + x], chosen, predictions);
+            }
+        }
+    }
+
+    /// <summary>The gradient W + N - NW of sample (x, y), as <see cref="Compute"/> leaves it in entry 9.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int Gradient(int[] d, int width, int x, int y, int row)
+    {
+        int at = row + x;
+        int w = x > 0 ? d[at - 1] : y > 0 ? d[at - width] : 0;
+        int n = y > 0 ? d[at - width] : w;
+        int nw = x > 0 && y > 0 ? d[at - width - 1] : w;
+        return unchecked(w + n - nw);
     }
 
     /// <summary>
