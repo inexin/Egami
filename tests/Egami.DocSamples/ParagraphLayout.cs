@@ -560,11 +560,20 @@ public class ParagraphLayout
         withNames.Save(compiled);                                       // the compiled .edict form, far faster to load than a list
         compiled.Position = 0;
         WordDictionary back = WordDictionary.Load(compiled);
+
+        // Line breaking uses the built-in set unless the options name another; WordDictionaries.None breaks only at spaces.
+        LineBreakOptions options = new() { Dictionaries = dictionaries };   // or ParagraphStyle.LineBreaking
+        List<int> breaks = [];
+        foreach (LineBreak b in LineBreaks.Enumerate("ภาษาไทยง่าย", options))
+        {
+            breaks.Add(b.Index);                                        // 4, 7 and 11: ภาษา|ไทย|ง่าย
+        }
         #endregion
 
         Assert.True(known);
         Assert.Equal(thai.Count + 1, back.Count);
         Assert.True(dictionaries.TryGet(Script.Thai, out WordDictionary? found) && found.Contains("อีกามิ"));
+        Assert.Equal([4, 7, 11], breaks);
     }
 
     [Fact]

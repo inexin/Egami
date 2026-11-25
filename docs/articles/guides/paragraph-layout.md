@@ -27,8 +27,9 @@ The rules are Unicode's line breaking algorithm (UAX #14) from Egami's own Unico
   breaks between any two grapheme clusters.
 - `OverflowWrap` says whether a piece too wide for its line may break between grapheme clusters; line filling uses it.
 
-Thai, Lao, Khmer and Myanmar text breaks only at spaces and zero width spaces: line breaking uses no dictionaries yet. An
-object replacement character (U+FFFC, as placeholders use) breaks before and after.
+Thai, Lao, Khmer and Myanmar leave no spaces between words, so inside a run of their letters a line also breaks where a word
+dictionary finds a word end, as browsers break them (see Word dictionaries below). An object replacement character (U+FFFC,
+as placeholders use) breaks before and after.
 
 ### Word dictionaries
 
@@ -38,6 +39,14 @@ answers `Contains` for a word, spelled exactly; `WordDictionary.FromWords` makes
 names and terms to a copy, and `Load` reads a UTF-8 list with one word per line (lines starting with `#` are comments) or the
 compiled `.edict` form `Save` writes. `new WordDictionaries(WordDictionaries.BuiltIn)` copies the set to add a script Egami
 ships no list for, such as Tai Tham, or to replace one; `WordDictionaries.None` is the empty set.
+
+Line breaking uses the built-in set unless `LineBreakOptions.Dictionaries` names another, and `WordDictionaries.None` turns
+dictionary breaks off. Inside each run of one script's complex-context (line breaking class SA) letters the segmenter matches
+words as ICU's dictionary break engines do: it prefers the word that two more words follow, lets letters no word fits run on
+to where the next word can begin, keeps combining marks and the repetition and abbreviation marks (ๆ, ฯ, ໆ, ຯ) with the word
+before them, and never breaks inside a grapheme cluster. UAX #14 still decides at the run's edges, and `WordBreak.BreakAll`
+breaks between any two letters without a dictionary. Chromium breaks Lao and Khmer with older, smaller lists than ICU's
+current ones, so it splits some compounds Egami keeps whole.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#word-dictionaries)]
 

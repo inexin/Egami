@@ -20,7 +20,7 @@ internal sealed class AdvanceTable
         int n = s.Length;
         float[] advance = new float[n];
         float[] spacing = new float[n];
-        Unsafe = new bool[n + 1];
+        Unsafe = new byte[n + 1];
         RunOf = new int[n];
         TabsBefore = new int[n + 1];
         for (int r = 0; r < runs.Length; r++)
@@ -39,9 +39,11 @@ internal sealed class AdvanceTable
                     advance[cluster] += run.Upright ? -glyphs.Positions[g].YAdvance : glyphs.Positions[g].XAdvance;
                     if ((glyphs.Flags[g] & GlyphFlags.UnsafeToBreak) != 0 && cluster > run.Start)
                     {
-                        Unsafe[cluster] = true;
+                        Unsafe[cluster] |= UnsafeToBreak;
                     }
                 }
+
+                MarkInsideClusters(glyphs, run.Start + run.Length);
             }
         }
 
@@ -80,6 +82,46 @@ internal sealed class AdvanceTable
         Advance = advance;
     }
 
+    /// <summary>
+    /// Marks the indexes inside a glyph cluster (after its first code unit): a window shaped again around an unsafe line end
+    /// must not start or end there, or a lone mark, such as a Myanmar asat before a dictionary word end, would be measured with
+    /// a dotted circle.
+    /// </summary>
+    private void MarkInsideClusters(GlyphBuffer glyphs, int runEnd)
+    {
+        if (glyphs.Count == 0)
+        {
+            return;
+        }
+
+        bool ascending = glyphs.Clusters[0] <= glyphs.Clusters[glyphs.Count - 1];
+        int previous = -1;
+        for (int k = 0; k < glyphs.Count; k++)
+        {
+            int cluster = glyphs.Clusters[ascending ? k : glyphs.Count - 1 - k];
+            if (cluster > previous)
+            {
+                for (int i = previous + 1; previous >= 0 && i < cluster; i++)
+                {
+                    Unsafe[i] |= InsideCluster;
+                }
+
+                previous = cluster;
+            }
+        }
+
+        for (int i = previous + 1; i < runEnd; i++)
+        {
+            Unsafe[i] |= InsideCluster;
+        }
+    }
+
+    /// <summary>A flag of <see cref="Unsafe"/>: the shaping marks the index unsafe to break at.</summary>
+    public const byte UnsafeToBreak = 1;
+
+    /// <summary>A flag of <see cref="Unsafe"/>: the index is inside a glyph cluster.</summary>
+    public const byte InsideCluster = 2;
+
     /// <summary>The sum of advances and spacing before each index.</summary>
     public float[] Prefix { get; }
 
@@ -89,8 +131,9 @@ internal sealed class AdvanceTable
     /// <summary>The letter and word spacing after the cluster starting at each index.</summary>
     public float[] Spacing { get; }
 
-    /// <summary>Whether a line breaking before an index inside a run must shape the pieces again.</summary>
-    public bool[] Unsafe { get; }
+    /// <summary>Per index: <see cref="UnsafeToBreak"/> when a line breaking before it inside a run must shape the pieces again,
+    /// and <see cref="InsideCluster"/> when it falls inside a glyph cluster.</summary>
+    public byte[] Unsafe { get; }
 
     /// <summary>The run each UTF-16 index belongs to.</summary>
     public int[] RunOf { get; }
@@ -631,7 +674,10 @@ internal sealed partial class LineBuilder
     }
 
     /// <summary>Whether a line breaking before <paramref name="i"/> must shape its pieces again.</summary>
-    private bool UnsafeAt(int i) => _m.Unsafe[i] || (_lazy?.Breaks?.ForcedUnsafe?.Contains(i) ?? false);
+    private bool UnsafeAt(int i) => (_m.Unsafe[i] & AdvanceTable.UnsafeToBreak) != 0 || (_lazy?.Breaks?.ForcedUnsafe?.Contains(i) ?? false);
+
+    /// <summary>Whether a window shaped again may not start or end at an index: unsafe to break, or inside a cluster.</summary>
+    private bool NoWindowEdgeAt(int i) => (_m.Unsafe[i] & AdvanceTable.InsideCluster) != 0 || UnsafeAt(i);
 
     /// <summary>What kashida justification and automatic hyphenation keep, made only when a paragraph uses them, so the
     /// builder of a plain paragraph stays small.</summary>
@@ -901,7 +947,7 @@ internal sealed partial class LineBuilder
     private int SafeAfter(int start, int limit)
     {
         int i = start + 1;
-        while (i < limit && UnsafeAt(i))
+        while (i < limit && NoWindowEdgeAt(i))
         {
             i++;
         }
@@ -914,7 +960,7 @@ internal sealed partial class LineBuilder
     private int SafeBefore(int end, int limit)
     {
         int i = end - 1;
-        while (i > limit && UnsafeAt(i))
+        while (i > limit && NoWindowEdgeAt(i))
         {
             i--;
         }
