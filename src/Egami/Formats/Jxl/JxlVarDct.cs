@@ -29,7 +29,7 @@ internal sealed class JxlVarDct
     private static readonly int[] ZeroDensityContext = MakeZeroDensityContext();
 
     // The products of the LLF scales a large varblock's LF coefficients are divided by, by log2 of its width and height in blocks.
-    private static readonly float[]?[] LlfDivisors = new float[36][];
+    private static readonly float[]?[] LlfMultipliers = new float[36][];
 
     private readonly JxlImageHeader _image;
     private readonly JxlFrameHeader _frame;
@@ -635,28 +635,7 @@ internal sealed class JxlVarDct
             float numerator = _numerator;
             for (int y = 0; y < height; y++)
             {
-                int row = o + (y * stride);
-                int x = 0;
-                if (Vector256.IsHardwareAccelerated)
-                {
-                    Vector256<float> vBias = Vector256.Create(bias);
-                    Vector256<float> vNumerator = Vector256.Create(numerator);
-                    Vector256<float> vMul = Vector256.Create(mul);
-                    for (; x + 8 <= width; x += 8)
-                    {
-                        Vector256<float> q = Vector256.ConvertToSingle(Vector256.Create(coeffs.AsSpan(from + (y * rowStride) + x, 8)));
-                        Vector256<float> small = Vector256.LessThanOrEqual(Vector256.Abs(q), Vector256<float>.One);
-                        q = Vector256.ConditionalSelect(small, q * vBias, q - (vNumerator / q));
-                        (q * Vector256.Create(matrix.AsSpan((y * width) + x, 8)) * vMul).CopyTo(plane.AsSpan(row + x, 8));
-                    }
-                }
-
-                for (; x < width; x++)
-                {
-                    float q = coeffs[from + (y * rowStride) + x];
-                    q = MathF.Abs(q) <= 1 ? q * bias : q - (numerator / q);
-                    plane[row + x] = q * matrix[(y * width) + x] * mul;
-                }
+                DequantizeRow(coeffs.AsSpan(from + (y * rowStride), width), matrix.AsSpan(y * width, width), plane.AsSpan(o + (y * stride), width), bias, numerator, mul);
             }
 
             if (coefficients == s.Coefficients)
@@ -679,33 +658,91 @@ internal sealed class JxlVarDct
                 int tile = tileRow + Math.Min(((bx * 8) + x0) / 64, _tiles - 1);
                 float kx = _global.BaseCorrelationX + (_xFromY[tile] / (float)_global.ColourFactor);
                 float kb = _global.BaseCorrelationB + (_bFromY[tile] / (float)_global.ColourFactor);
-                int at = row + x0;
-                int end = Math.Min(width - x0, 64);
-                int x = 0;
-                if (Vector256.IsHardwareAccelerated)
-                {
-                    Vector256<float> vkx = Vector256.Create(kx);
-                    Vector256<float> vkb = Vector256.Create(kb);
-                    for (; x + 8 <= end; x += 8)
-                    {
-                        Vector256<float> yv = Vector256.Create(py.AsSpan(at + x, 8));
-                        (Vector256.Create(px.AsSpan(at + x, 8)) + (vkx * yv)).CopyTo(px.AsSpan(at + x, 8));
-                        (Vector256.Create(pb.AsSpan(at + x, 8)) + (vkb * yv)).CopyTo(pb.AsSpan(at + x, 8));
-                    }
-                }
-
-                for (; x < end; x++)
-                {
-                    float yv = py[at + x];
-                    px[at + x] += kx * yv;
-                    pb[at + x] += kb * yv;
-                }
+                ChromaFromLumaRow(px, py, pb, row + x0, Math.Min(width - x0, 64), kx, kb);
             }
         }
 
         for (int c = 0; c < 3; c++)
         {
             PlaceLfAndTransform(s.Planes[c], o, stride, _lf[c], PlaneBlocksX(c), bx, by, t);
+        }
+    }
+
+    /// <summary>
+    /// Dequantizes a row of a varblock's HF coefficients (I.2.4): a quantized ±1 or 0 times the bias, any other q as
+    /// q − numerator / q, then times the matrix entry and the scale. With FMA eight at a time, the division as the reciprocal
+    /// estimate refined by one Newton step.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void DequantizeRow(ReadOnlySpan<int> coeffs, ReadOnlySpan<float> matrix, Span<float> output, float bias, float numerator, float mul)
+    {
+        int width = output.Length;
+        int x = 0;
+        if (System.Runtime.Intrinsics.X86.Fma.IsSupported && coeffs.Length >= width && matrix.Length >= width)
+        {
+            ref int c = ref MemoryMarshal.GetReference(coeffs);
+            ref float m = ref MemoryMarshal.GetReference(matrix);
+            ref float to = ref MemoryMarshal.GetReference(output);
+            Vector256<float> vBias = Vector256.Create(bias);
+            Vector256<float> vNumerator = Vector256.Create(numerator);
+            Vector256<float> vMul = Vector256.Create(mul);
+            for (; x + 8 <= width; x += 8)
+            {
+                Vector256<int> qi = Vector256.LoadUnsafe(ref c, (nuint)x);
+                // At q = 0 the reciprocal is infinite and the large form NaN, in a lane not chosen.
+                Vector256<float> q = Vector256.ConvertToSingle(qi);
+                Vector256<float> small = Vector256.LessThanOrEqual(Vector256.Abs(q), Vector256<float>.One);
+                Vector256<float> r = System.Runtime.Intrinsics.X86.Avx.Reciprocal(q);
+                r *= System.Runtime.Intrinsics.X86.Fma.MultiplyAddNegated(q, r, Vector256.Create(2f));
+                q = Vector256.ConditionalSelect(small, q * vBias, System.Runtime.Intrinsics.X86.Fma.MultiplyAddNegated(vNumerator, r, q));
+                (q * Vector256.LoadUnsafe(ref m, (nuint)x) * vMul).StoreUnsafe(ref to, (nuint)x);
+            }
+        }
+
+        for (; x < width; x++)
+        {
+            float q = coeffs[x];
+            q = MathF.Abs(q) <= 1 ? q * bias : q - (numerator / q);
+            output[x] = q * matrix[x] * mul;
+        }
+    }
+
+    /// <summary>Chroma from luma (I.2.5) on <paramref name="count"/> samples from <paramref name="at"/>: X += kx · Y and B += kb · Y, fused where there is FMA.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void ChromaFromLumaRow(float[] px, float[] py, float[] pb, int at, int count, float kx, float kb)
+    {
+        if (!System.Runtime.Intrinsics.X86.Fma.IsSupported)
+        {
+            for (int i = at; i < at + count; i++)
+            {
+                float yv = py[i];
+                px[i] += kx * yv;
+                pb[i] += kb * yv;
+            }
+
+            return;
+        }
+
+        Span<float> sx = px.AsSpan(at, count);
+        Span<float> sy = py.AsSpan(at, count);
+        Span<float> sb = pb.AsSpan(at, count);
+        ref float rx = ref MemoryMarshal.GetReference(sx);
+        ref float ry = ref MemoryMarshal.GetReference(sy);
+        ref float rb = ref MemoryMarshal.GetReference(sb);
+        Vector256<float> vkx = Vector256.Create(kx);
+        Vector256<float> vkb = Vector256.Create(kb);
+        int x = 0;
+        for (; x + 8 <= count; x += 8)
+        {
+            Vector256<float> yv = Vector256.LoadUnsafe(ref ry, (nuint)x);
+            System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(vkx, yv, Vector256.LoadUnsafe(ref rx, (nuint)x)).StoreUnsafe(ref rx, (nuint)x);
+            System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(vkb, yv, Vector256.LoadUnsafe(ref rb, (nuint)x)).StoreUnsafe(ref rb, (nuint)x);
+        }
+
+        for (; x < count; x++)
+        {
+            sx[x] = MathF.FusedMultiplyAdd(kx, sy[x], sx[x]);
+            sb[x] = MathF.FusedMultiplyAdd(kb, sy[x], sb[x]);
         }
     }
 
@@ -730,7 +767,7 @@ internal sealed class JxlVarDct
             JxlDct.Dct2D(plane, o, stride, bw, bh, forward: true);
             int logW = System.Numerics.BitOperations.Log2((uint)bw);
             int logH = System.Numerics.BitOperations.Log2((uint)bh);
-            float[] divisors = LlfDivisors[(logH * 6) + logW] ??= MakeLlfDivisors(logW, logH);
+            float[] multipliers = LlfMultipliers[(logH * 6) + logW] ??= MakeLlfMultipliers(logW, logH);
             for (int y = 0; y < bh; y++)
             {
                 int x = 0;
@@ -739,13 +776,13 @@ internal sealed class JxlVarDct
                     for (; x + 8 <= bw; x += 8)
                     {
                         Span<float> row = plane.AsSpan(o + (y * stride) + x, 8);
-                        (Vector256.Create(row) / Vector256.Create(divisors.AsSpan((y * bw) + x, 8))).CopyTo(row);
+                        (Vector256.Create(row) * Vector256.Create(multipliers.AsSpan((y * bw) + x, 8))).CopyTo(row);
                     }
                 }
 
                 for (; x < bw; x++)
                 {
-                    plane[o + (y * stride) + x] /= divisors[(y * bw) + x];
+                    plane[o + (y * stride) + x] *= multipliers[(y * bw) + x];
                 }
             }
         }
@@ -753,20 +790,20 @@ internal sealed class JxlVarDct
         JxlDct.Inverse(t, plane, o, stride);
     }
 
-    private static float[] MakeLlfDivisors(int logW, int logH)
+    private static float[] MakeLlfMultipliers(int logW, int logH)
     {
         int bw = 1 << logW;
         int bh = 1 << logH;
-        float[] divisors = new float[bw * bh];
+        float[] multipliers = new float[bw * bh];
         for (int y = 0; y < bh; y++)
         {
             for (int x = 0; x < bw; x++)
             {
-                divisors[(y * bw) + x] = JxlDct.Scale(y, 5 - logH) * JxlDct.Scale(x, 5 - logW);
+                multipliers[(y * bw) + x] = 1 / (JxlDct.Scale(y, 5 - logH) * JxlDct.Scale(x, 5 - logW));
             }
         }
 
-        return divisors;
+        return multipliers;
     }
 
     /// <summary>Gets the LF image alone (1:8, X, Y and B, cropped to the frame), after chroma from luma and smoothing.</summary>
@@ -829,28 +866,7 @@ internal sealed class JxlVarDct
                 for (int y = 0; y < h8 * 8; y++)
                 {
                     int row = o + (y * stride);
-                    int x = 0;
-                    if (Vector256.IsHardwareAccelerated)
-                    {
-                        // The same operations as below, eight coefficients at a time (a division by 0 is in the lane not chosen).
-                        Vector256<float> vBias = Vector256.Create(bias);
-                        Vector256<float> vNumerator = Vector256.Create(numerator);
-                        Vector256<float> vMul = Vector256.Create(mul);
-                        for (; x + 8 <= width; x += 8)
-                        {
-                            Vector256<float> q = Vector256.ConvertToSingle(Vector256.Create(coeffs.AsSpan(row + x, 8)));
-                            Vector256<float> small = Vector256.LessThanOrEqual(Vector256.Abs(q), Vector256<float>.One);
-                            q = Vector256.ConditionalSelect(small, q * vBias, q - (vNumerator / q));
-                            (q * Vector256.Create(matrix.AsSpan((y * width) + x, 8)) * vMul).CopyTo(plane.AsSpan(row + x, 8));
-                        }
-                    }
-
-                    for (; x < width; x++)
-                    {
-                        float q = coeffs[row + x];
-                        q = MathF.Abs(q) <= 1 ? q * bias : q - (numerator / q);
-                        plane[row + x] = q * matrix[(y * width) + x] * mul;
-                    }
+                    DequantizeRow(coeffs.AsSpan(row, width), matrix.AsSpan(y * width, width), plane.AsSpan(row, width), bias, numerator, mul);
                 }
             });
         }
@@ -1002,27 +1018,7 @@ internal sealed class JxlVarDct
                 int tile = tileRow + Math.Min(x0 / 64, _tiles - 1);
                 float kx = _global.BaseCorrelationX + (_xFromY[tile] / (float)_global.ColourFactor);
                 float kb = _global.BaseCorrelationB + (_bFromY[tile] / (float)_global.ColourFactor);
-                int at = (y * stride) + x0;
-                int end = Math.Min(stride, x0 + 64) - x0;
-                int x = 0;
-                if (Vector256.IsHardwareAccelerated)
-                {
-                    Vector256<float> vkx = Vector256.Create(kx);
-                    Vector256<float> vkb = Vector256.Create(kb);
-                    for (; x + 8 <= end; x += 8)
-                    {
-                        Vector256<float> yv = Vector256.Create(py.AsSpan(at + x, 8));
-                        (Vector256.Create(px.AsSpan(at + x, 8)) + (vkx * yv)).CopyTo(px.AsSpan(at + x, 8));
-                        (Vector256.Create(pb.AsSpan(at + x, 8)) + (vkb * yv)).CopyTo(pb.AsSpan(at + x, 8));
-                    }
-                }
-
-                for (; x < end; x++)
-                {
-                    float yv = py[at + x];
-                    px[at + x] += kx * yv;
-                    pb[at + x] += kb * yv;
-                }
+                ChromaFromLumaRow(px, py, pb, (y * stride) + x0, Math.Min(stride, x0 + 64) - x0, kx, kb);
             }
         });
     }
