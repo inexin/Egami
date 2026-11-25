@@ -296,6 +296,38 @@ public class EpsTests
         Assert.Contains(EpsFile.Load(Text(Header.Replace("0 0 80 24", "0 0 zero 24", StringComparison.Ordinal))).Warnings, w => w.Id == "Eps.BoundingBoxInvalid");
     }
 
+    [Theory]
+    [InlineData(" ", 32)]
+    [InlineData("\r\n", 1)]
+    [InlineData("\t ", 32)]
+    public void WhitespaceBeforeTheFirstLineIsSkipped(string unit, int count)
+    {
+        // A USGS figure from Micrografx has 32 spaces before %!PS-Adobe; up to 64 bytes of whitespace are skipped, with a warning.
+        string padding = string.Concat(Enumerable.Repeat(unit, count));
+        byte[] data = [.. Encoding.ASCII.GetBytes(padding), .. Text()];
+        Assert.True(EpsFormat.Info.Matches(data.AsSpan(0, Math.Min(data.Length, EpsFormat.Info.SignatureLength))));
+        EpsFile file = EpsFile.Load(data);
+        Assert.Equal(80, file.BoundingBox?.Width);
+        Assert.True(file.IsEncapsulated);
+        Assert.Contains(file.Warnings, w => w.Id == "Eps.LeadingWhitespace");
+        Assert.True(file.PostScript.Span.StartsWith("%!PS"u8));
+
+        RasterInfo info = Raster.Probe(data);
+        Assert.Equal(EpsFormat.Info, info.Format);
+        Assert.Equal(80, info.Width);
+        Assert.Throws<CorruptDataException>(() => Raster.Probe(data, options: new ReaderOptions { Recovery = RecoveryMode.Strict }));
+    }
+
+    [Fact]
+    public void TooMuchWhitespaceIsNotEps()
+    {
+        byte[] data = [.. Encoding.ASCII.GetBytes(new string(' ', 65)), .. Text()];
+        Assert.False(EpsFormat.Info.Matches(data.AsSpan(0, EpsFormat.Info.SignatureLength)));
+        Assert.Throws<CorruptDataException>(() => EpsFile.Load(data));
+        Assert.False(EpsFormat.Info.Matches("    "u8));
+        Assert.False(EpsFormat.Info.Matches("  \n%PDF-1.7"u8));
+    }
+
     [Fact]
     public void OtherFormatsAreStillDetected()
     {

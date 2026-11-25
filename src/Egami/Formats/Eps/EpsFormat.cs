@@ -21,7 +21,7 @@ public static class EpsFormat
         Name = "EPS",
         MimeTypes = ["application/postscript", "application/eps", "image/x-eps"],
         Extensions = ["eps", "epsf", "epsi", "ept"],
-        SignatureLength = 4,
+        SignatureLength = EpsFile.SignatureLength,
         Matches = EpsFile.Matches,
         Reader = EpsReader.Instance,
         MissingWriter = "Egami reads EPS previews but does not write EPS.",
