@@ -23,6 +23,13 @@ EPS previews (roadmap 2.3.14).
 - The EPS format page, a recipe in the formats guide and a fuzz target (`eps`).
 - New diagnostics: `Eps.PreviewLoaded` on every load, and `Eps.*` warnings for damaged headers, sections and previews.
 
+## Egami.Drawing 1.6.0 (unreleased)
+
+- `Path.Warp` sends every point of a path through any function of the plane (a wave, an arch, text bent between two
+  curves): lines and curves are split until the result stays within a tolerance, a line whose image stays straight stays a
+  line, closed contours stay closed (their closing line bends too) and the fill rule is kept. A recipe in the drawing guide
+  bends text into an arch.
+
 ## Egami.Svg and Egami.Css 1.6.0 (unreleased)
 
 SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation element, drawn at a chosen time.
