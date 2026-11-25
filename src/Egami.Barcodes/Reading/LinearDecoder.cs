@@ -48,6 +48,11 @@ internal static partial class LinearDecoder
                 read = Codabar(runs, offsets, i);
             }
 
+            if (read is null && (formats & BarcodeFormat.DataBarLimited) != 0)
+            {
+                read = DataBarLimited(runs, offsets, i);
+            }
+
             if (read is not null)
             {
                 return read;

@@ -7,8 +7,8 @@ namespace Egami.Barcodes.Tests;
 /// <summary>Every reference symbol, rendered as it is written, reads back as its text.</summary>
 public class ReadPureTests
 {
-    // GS1 DataBar reading comes in a later change.
-    public static TheoryData<string> Cases => [.. ReferenceTests.Cases.Where(row => !row.Data.StartsWith("databar", StringComparison.Ordinal))];
+    // GS1 DataBar Expanded reading comes in a later change.
+    public static TheoryData<string> Cases => [.. ReferenceTests.Cases.Where(row => !row.Data.StartsWith("databar-expanded", StringComparison.Ordinal))];
 
     [Theory]
     [MemberData(nameof(Cases))]

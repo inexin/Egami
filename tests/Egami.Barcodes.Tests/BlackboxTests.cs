@@ -26,6 +26,9 @@ public class BlackboxTests
         ["itf"] = BarcodeFormat.Itf,
         ["pdf417"] = BarcodeFormat.Pdf417,
         ["qrcode"] = BarcodeFormat.Qr,
+        ["rss14"] = BarcodeFormat.DataBar,
+        ["rssexpanded"] = BarcodeFormat.DataBarExpanded,
+        ["rssexpandedstacked"] = BarcodeFormat.DataBarExpanded,
         ["upca"] = BarcodeFormat.UpcA,
         ["upce"] = BarcodeFormat.UpcE,
         ["upcean"] = BarcodeFormat.Ean13 | BarcodeFormat.UpcA,
@@ -70,7 +73,7 @@ public class BlackboxTests
                 total++;
                 string expected = File.ReadAllText(text);
                 using Raster<Gray8> image = Raster.Load<Gray8>(file);
-                if (image.ReadBarcodes(new BarcodeReaderOptions { Formats = formats }).Any(r => r.Text == expected || r.Text.StartsWith(expected + " ", StringComparison.Ordinal) || "0" + r.Text == expected || Inner(r) == expected))
+                if (image.ReadBarcodes(new BarcodeReaderOptions { Formats = formats }).Any(r => r.Text == expected || r.Text.StartsWith(expected + " ", StringComparison.Ordinal) || "0" + r.Text == expected || Inner(r) == expected || r.Text == "(01)" + expected))
                 {
                     passed++;
                 }
