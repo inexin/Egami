@@ -135,7 +135,8 @@ transform, and `discard` removes an element for good once it begins.
 CSS animations run too: an `@keyframes` rule and the `animation` properties (or the `animation` shorthand) on an element, with
 CSS Easing's timing functions, delays, iteration counts, directions, fill modes, `animation-play-state` and
 `animation-composition`. Each starts when the document loads. Keyframe values are computed in the element's context, so
-`inherit`, `var()` and `currentcolor` work, and a keyframe that leaves out a property takes the value below. Numbers, lengths,
+`currentcolor` and `em` resolve as on the element, custom properties animate (and `var()` in the element's rules reads them),
+and a keyframe that leaves out a property takes the value below. Numbers, lengths,
 colors (in premultiplied sRGB), transform lists, `translate`, `rotate`, `scale`, `d: path()` with the same commands,
 `offset-path` and `offset-distance` interpolate; other values, custom properties among them, change halfway. Animated values
 win over every normal rule and lose to `!important` ones; where SMIL animates the same property, SMIL sets the value below
@@ -175,6 +176,52 @@ with all its frames, as `RasterizeAnimation` draws them, ready for the animation
 animations are taken away, so any viewer shows that moment.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#freeze)]
+
+### Video
+
+Egami.Video encodes the frames `RenderFrames` hands over: write each one to a `VideoWriter` at the frame rate you drew them
+at, with `MergeDuplicates` off so every frame lasts the same. The recipe [Make a video from an animated SVG](#make-a-video-from-an-animated-svg)
+does that. The `egami-video encode` command takes an animated SVG as its input and does the same from a shell
+([egami-video](../video-cli/index.md)): `--rate` sets the frame rate (25 by default), `--duration` how long to draw, and
+`--size` draws each frame at the size that fits, so it stays sharp.
+
+```
+egami-video encode spinner.svg --rate 30 --duration 4 --size 640x360 -o spinner.webm --codec vp9
+```
+
+### On the command line
+
+Every `egami` command that reads images takes `--animate [fps]` and `--at <time>` for SVG inputs ([commands](../cli/commands.md)).
+`--animate` loads an animated SVG as all its frames, 30 a second unless you give a rate, as `RasterizeAnimation` draws them;
+`--at` draws the moment that long after the document loads (`1.5s`, `1500ms` or `1.5`), or, with `--animate`, starts the frames
+there. The MCP server's tools take the same two options.
+
+```
+egami convert spinner.svg -o spinner.gif --animate 25
+egami convert spinner.svg -o still.png --at 0.75s
+```
+
+### Limits
+
+`SvgAnimationOptions.MaxLength` (10 seconds) bounds what is drawn when you set no `Length`: a document that runs forever
+without a common loop period, or whose last animation ends later, is drawn for that long, with an `Svg.AnimationLength`
+warning. Set `Length` to draw longer. `SafetyLimits.MaxFrames` and `MaxTotalBytes` are checked against every frame before
+anything is drawn, so a high frame rate over a long stretch fails at once with a `LimitExceededException` rather than
+after minutes of work. SMIL timing that would need more interval steps than the timeline allows stops with
+`Svg.AnimationLimit`, and begin values that depend on each other in a loop are cut with `Svg.AnimationCycle`. Animations
+that wait for a click, a key or a wall-clock time never begin.
+
+Frames share what does not change between them (the parsed style sheets, the cascade of each element no animation touches,
+the keyframes of CSS animations), so an animated frame costs about what a static draw of the same moment does.
+
+### Known gaps
+
+- A keyframe value of `inherit`, or one that holds `var()`, such as `@keyframes k { to { fill: var(--c) } }`, is dropped,
+  so that property does not animate. Animate the custom property itself instead: `@keyframes k { to { --c: red } }` with
+  `fill: var(--c)` in the element's rule works.
+- `Freeze` writes an element's CSS-animated values into that element. Where `use` draws it several times and the values
+  differ between the copies (because they inherit from each `use`), the frozen copy shows one copy's values for all.
+- The CSS `d` property in a `style` attribute is not read; `d` in a style sheet rule and in a keyframe works.
 
 ## Untrusted files
 
@@ -239,3 +286,15 @@ A symbol's viewBox fits it into each cell; the same calls draw on a PDF page.
 ### Flow SVG text into a shape
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#wrapped-text)]
+
+### Make a GIF from an animated SVG
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#svg-to-gif)]
+
+The GIF loops when the SVG does. Save as `.webp` or `.png` (APNG) for those formats instead.
+
+### Make a video from an animated SVG
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Svg.cs#svg-to-video)]
+
+Every frame lasts the same 1/30 s, as a video needs; any other codec Egami.Video writes works the same way.

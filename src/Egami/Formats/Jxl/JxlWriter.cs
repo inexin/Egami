@@ -620,6 +620,7 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
             };
             JxlLossySettings settings = LossySettings(options, start.Context.MaxParallelism) with { Report = SaveReporter.Current };
             byte[] codestream = JxlVarDctEncoder.Encode(image, header, settings, _rows.IntensityTarget);
+            _rows.Release();
             byte[]? exif = strip || metadata.Exif is null ? null : metadata.Exif.ToBytes().ToArray();
             byte[]? xmp = strip || metadata.Xmp.IsEmpty ? null : metadata.Xmp.ToArray();
             byte[]? gainMap = strip || metadata.GainMap is null ? null : GainMapBundle(metadata.GainMap, options.Effort, start.Context.MaxParallelism);
@@ -767,6 +768,7 @@ internal sealed partial class JxlWriter : IFormatWriter, IRowFormatWriter
 
                 int index = (cy * _frame.LfGroupsX) + cx;
                 JxlVarDctEncoder.EncodeChunk(_frame, index, rows.Image, (x0 - left, y0 - top, right - x1, bottom - y1), alpha, _alphaBits, rows.Image.Black);
+                rows.Release();
             }
 
             int keep = Math.Max(0, y1 - Border);

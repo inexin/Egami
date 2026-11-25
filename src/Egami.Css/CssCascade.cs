@@ -18,6 +18,8 @@ public enum CssOrigin
     /// <summary>
     /// The values running CSS animations give (CSS Cascade 4, "Cascade Origins"): above every normal declaration, below every
     /// important one. Style sheets never have this origin; <see cref="CssCascadedStyle.WithAnimationValues"/> adds its declarations.
+    /// Do not compare origins as numbers: this one is above <see cref="Author"/> only for normal declarations, and an important
+    /// declaration of any origin wins over it.
     /// </summary>
     Animation,
 }

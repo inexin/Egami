@@ -194,7 +194,7 @@ internal sealed class SvgCssAnimator(SvgStyleSheets sheets, double time, double 
 
                 foreach (double offset in keyframe.Offsets)
                 {
-                    int same = frames.FindIndex(f => f.Offset == offset && f.Easing.ToString() == easing.ToString() && f.Composite == composite);
+                    int same = frames.FindIndex(f => f.Offset == offset && f.Easing.Equals(easing) && f.Composite == composite);
                     if (same >= 0)
                     {
                         frames[same] = frames[same] with { Value = value };
