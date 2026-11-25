@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 using Egami.Css;
 using Egami.Svg.Animation;
 using Egami.Svg.Reading;
@@ -13,93 +15,49 @@ namespace Egami.Svg.Styling;
 /// </summary>
 internal sealed class SvgStyler
 {
-    private const string UserAgentSheet = """
-        @namespace url(http://www.w3.org/2000/svg);
-        svg:not(:root), image, marker, pattern, symbol { overflow: hidden; }
-        """;
-
-    private static readonly CssPropertyRegistry s_registry = SvgProperties.CreateRegistry();
-    private static readonly CssStyleSheet s_userAgent = CssStyleSheet.Parse(UserAgentSheet);
-
+    private readonly SvgStyleSheets _sheets;
+    private readonly bool _shared;
     private readonly CssCascade _cascade;
     private readonly Dictionary<SvgElement, CssCascadedStyle> _cascaded = new(IdentityComparer.Instance);
     private readonly SvgReport _report;
     private readonly Dictionary<(string Name, string Value), CssDeclaration> _hints = [];
     private readonly Dictionary<string, IReadOnlyList<CssDeclaration>> _inline = new(StringComparer.Ordinal);
     private readonly SvgAnimationFrame? _frame;
-    private Dictionary<string, CssKeyframesRule>? _keyframes;
     private readonly SvgCssAnimator? _animator;
     private Dictionary<SvgElement, Dictionary<string, string>>? _animated;
 
     /// <summary>
     /// Builds the cascade of a document. With a frame, SMIL's values at that moment take part; when <paramref name="cssAnimations"/>
-    /// is set too, so do the document's CSS animations at the frame's time.
+    /// is set too, so do the document's CSS animations at the frame's time. <paramref name="sheets"/>, when given, are the
+    /// document's parsed sheets that frames share (their errors are noted again here); else the sheets are parsed for this styler.
     /// </summary>
-    public SvgStyler(SvgDocument document, SvgReport report, CssMediaContext media, SvgAnimationFrame? frame = null, bool cssAnimations = false)
+    public SvgStyler(SvgDocument document, SvgReport report, CssMediaContext media, SvgAnimationFrame? frame = null, bool cssAnimations = false, SvgStyleSheets? sheets = null)
     {
         _report = report;
         _frame = frame;
-        List<(CssStyleSheet, CssOrigin)> sheets = [(s_userAgent, CssOrigin.UserAgent)];
-        foreach (SvgElement element in Descendants(document.Root))
+        if (sheets is null)
         {
-            if (!element.IsSvgOrBare(document) || element.Name != "style")
-            {
-                continue;
-            }
-
-            string type = element.Attributes["type"]?.Trim() ?? "";
-            if (type.Length > 0 && !type.Equals("text/css", StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            if (element.Attributes["media"] is string mediaText && !CssMediaQueryList.Parse(mediaText).Matches(media))
-            {
-                continue;
-            }
-
-            CssStyleSheet sheet = CssStyleSheet.Parse(element.Text, new CssParseOptions
-            {
-                Errors = e => report.Note("Svg.BadStyleSheet", $"A style sheet has an error at its line {e.Line}, column {e.Column}: {e.Message}", element),
-            });
-            sheets.Add((sheet, CssOrigin.Author));
-            CollectFontFaces(sheet.Rules, media, element);
-            CollectKeyframes(sheet.Rules, media);
+            _sheets = new SvgStyleSheets(document, report, media);
+        }
+        else
+        {
+            _sheets = sheets;
+            _shared = true;
+            sheets.Report(report);
         }
 
-        _cascade = new CssCascade(sheets, new CssCascadeOptions { Media = media, Registry = s_registry });
-        if (cssAnimations && frame is not null && _keyframes is not null)
+        _cascade = _sheets.Cascade;
+        if (cssAnimations && frame is not null && _sheets.Keyframes.Count > 0)
         {
-            _animator = new SvgCssAnimator(_cascade, _keyframes, frame.Time, media.Width, media.Height);
+            _animator = new SvgCssAnimator(_sheets, frame.Time, media.Width, media.Height);
         }
     }
 
     /// <summary>Gets the @keyframes rules of the document's style sheets by name: the last of each name, those in matching @media rules too.</summary>
-    public IReadOnlyDictionary<string, CssKeyframesRule> Keyframes => _keyframes ?? s_noKeyframes;
-
-    private static readonly Dictionary<string, CssKeyframesRule> s_noKeyframes = [];
+    public IReadOnlyDictionary<string, CssKeyframesRule> Keyframes => _sheets.Keyframes;
 
     /// <summary>Gets a value indicating whether CSS animations are run.</summary>
     public bool Animates => _animator is not null;
-
-    private void CollectKeyframes(IReadOnlyList<CssRule> rules, CssMediaContext media)
-    {
-        foreach (CssRule rule in rules)
-        {
-            switch (rule)
-            {
-                case CssKeyframesRule keyframes:
-                    (_keyframes ??= new(StringComparer.Ordinal))[keyframes.Name] = keyframes;
-                    break;
-                case CssMediaRule m when m.Media.Matches(media):
-                    CollectKeyframes(m.Rules, media);
-                    break;
-                case CssLayerRule { Rules: { } layerRules }:
-                    CollectKeyframes(layerRules, media);
-                    break;
-            }
-        }
-    }
 
     /// <summary>Gets the values CSS animations gave each element styled so far, by property; null when none did.</summary>
     public IReadOnlyDictionary<SvgElement, Dictionary<string, string>>? AnimatedValues => _animated;
@@ -109,34 +67,33 @@ internal sealed class SvgStyler
         _animated is not null && _animated.TryGetValue(element, out Dictionary<string, string>? values) && values.TryGetValue(name, out string? value) ? value : null;
 
     /// <summary>Gets the @font-face rules of the document's style sheets (those inside matching @media rules too), with their style element.</summary>
-    public List<(CssFontFaceRule Rule, SvgElement Element)> FontFaces { get; } = [];
-
-    private void CollectFontFaces(IReadOnlyList<CssRule> rules, CssMediaContext media, SvgElement element)
-    {
-        foreach (CssRule rule in rules)
-        {
-            if (rule is CssFontFaceRule face)
-            {
-                FontFaces.Add((face, element));
-            }
-            else if (rule is CssMediaRule m && m.Media.Matches(media))
-            {
-                CollectFontFaces(m.Rules, media, element);
-            }
-        }
-    }
+    public List<(CssFontFaceRule Rule, SvgElement Element)> FontFaces => _sheets.FontFaces;
 
     /// <summary>Gets the registry of SVG's properties.</summary>
-    public static CssPropertyRegistry Registry => s_registry;
+    public static CssPropertyRegistry Registry => SvgStyleSheets.Registry;
 
     /// <summary>The element's cascaded style, computed once.</summary>
     public CssCascadedStyle Cascaded(SvgElement element)
     {
         if (!_cascaded.TryGetValue(element, out CssCascadedStyle? style))
         {
-            // When an animation sets a class, selectors match the classes of this moment.
-            ICssElement matched = _frame?.AnimatesClass == true ? _frame.CssElement(element) : element;
-            style = _cascade.Cascade(matched, Hints(element), Inline(element));
+            // An element no animation touches at this moment cascades as in every other frame, so frames share its cascade.
+            if (_shared && _frame is { AnimatesClass: false } && _frame.For(element) is null)
+            {
+                ConcurrentDictionary<SvgElement, CssCascadedStyle> shared = _sheets.Cascades;
+                if (!shared.TryGetValue(element, out style))
+                {
+                    style = _cascade.Cascade(element, Hints(element), Inline(element));
+                    shared.TryAdd(element, style);
+                }
+            }
+            else
+            {
+                // When an animation sets a class, selectors match the classes of this moment.
+                ICssElement matched = _frame?.AnimatesClass == true ? _frame.CssElement(element) : element;
+                style = _cascade.Cascade(matched, Hints(element), Inline(element));
+            }
+
             _cascaded[element] = style;
         }
 
@@ -279,14 +236,5 @@ internal sealed class SvgStyler
         }
 
         return declarations;
-    }
-
-    private static IEnumerable<SvgElement> Descendants(SvgElement root)
-    {
-        yield return root;
-        foreach (SvgElement element in root.Descendants())
-        {
-            yield return element;
-        }
     }
 }

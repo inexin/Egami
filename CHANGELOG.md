@@ -94,6 +94,10 @@ SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation
 - Fixed: a rect, circle, ellipse, line, polyline or polygon whose coordinates are too large for a float (such as
   `height="1e48"`) threw an `ArgumentException` while loading; it is now not drawn, with `Svg.BadAttribute` for rects and
   polygons. Found by the svg-timeline fuzz target.
+- Animation frames share what does not change from one frame to the next: the parsed style sheets, the cascade of each
+  element no animation touches, and each CSS animation's keyframes when their values do not depend on the element. A
+  CSS-animated frame now costs about what a static draw of the same moment does (it was up to 2.4 times as much), with the
+  same output byte for byte.
 
 Command line:
 

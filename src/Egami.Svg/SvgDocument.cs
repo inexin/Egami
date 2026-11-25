@@ -1,11 +1,13 @@
 using System.Numerics;
 
+using Egami.Css;
 using Egami.Drawing;
 using Egami.Pixels;
 using Egami.Svg.Animation;
 using Egami.Svg.Reading;
 using Egami.Svg.Rendering;
 using Egami.Svg.Resolving;
+using Egami.Svg.Styling;
 using Egami.Svg.Values;
 
 namespace Egami.Svg;
@@ -44,6 +46,7 @@ public sealed partial class SvgDocument
     private SvgAnimationInfo? _animation;
     private int _timelineVersion = -1;
     private HashSet<string>? _frameDiagnostics;
+    private (SvgStyleSheets Sheets, int Version, double Width, double Height)? _frameSheets;
 
     /// <summary>Initializes a new instance of the <see cref="SvgDocument"/> class around a root element made in code.</summary>
     /// <param name="root">The root, an <c>svg</c> element without a parent or another document.</param>
@@ -507,6 +510,24 @@ public sealed partial class SvgDocument
         }
 
         return tree;
+    }
+
+    /// <summary>
+    /// The style sheets animation frames share for a media size, parsed once per version of the document (frames on other
+    /// threads share them too); each styler notes their errors in its own report.
+    /// </summary>
+    internal SvgStyleSheets FrameStyleSheets(CssMediaContext media)
+    {
+        lock (_timelineLock)
+        {
+            if (_frameSheets is not { } cached || cached.Version != Version || cached.Width != media.Width || cached.Height != media.Height)
+            {
+                cached = (new SvgStyleSheets(this, new SvgReport(strict: false), media), Version, media.Width, media.Height);
+                _frameSheets = cached;
+            }
+
+            return cached.Sheets;
+        }
     }
 
     /// <summary>The animated values at a time for the reader's languages, or null when the document has no animations.</summary>
