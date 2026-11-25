@@ -158,6 +158,55 @@ public sealed class AnimationTests
         Assert.Equal(expected, CssEasingFunction.Parse(text).Evaluate(input), 1e-12);
     }
 
+    [Theory]
+    [InlineData("ease", "cubic-bezier(0.25, 0.1, 0.25, 1)")]
+    [InlineData("ease-in", "cubic-bezier(0.42, 0, 1, 1)")]
+    [InlineData("step-end", "steps(1)")]
+    [InlineData("step-start", "steps(1, jump-start)")]
+    [InlineData("steps(4, end)", "steps(4, jump-end)")]
+    [InlineData("linear", "LINEAR")]
+    [InlineData("linear(0, 0.5 25%, 1)", "linear(0, 0.5 25%, 1)")]
+    [InlineData("cubic-bezier(-0, 0, 1, 1)", "cubic-bezier(0, 0, 1, 1)")]
+    public void EqualEasingFunctions(string left, string right)
+    {
+        CssEasingFunction a = CssEasingFunction.Parse(left);
+        CssEasingFunction b = CssEasingFunction.Parse(right);
+        Assert.True(a.Equals(b));
+        Assert.True(a.Equals((object)b));
+        Assert.True(a == b);
+        Assert.False(a != b);
+        Assert.Equal(a.GetHashCode(), b.GetHashCode());
+    }
+
+    [Theory]
+    [InlineData("linear", "cubic-bezier(0, 0, 1, 1)")]
+    [InlineData("ease", "ease-in")]
+    [InlineData("steps(4)", "steps(5)")]
+    [InlineData("steps(4)", "steps(4, jump-both)")]
+    [InlineData("linear(0, 1)", "linear(0, 0.5, 1)")]
+    [InlineData("linear(0, 0.5 25%, 1)", "linear(0, 0.5 30%, 1)")]
+    [InlineData("step-end", "cubic-bezier(0, 0, 1, 1)")]
+    public void UnequalEasingFunctions(string left, string right)
+    {
+        CssEasingFunction a = CssEasingFunction.Parse(left);
+        CssEasingFunction b = CssEasingFunction.Parse(right);
+        Assert.False(a.Equals(b));
+        Assert.False(a == b);
+        Assert.True(a != b);
+    }
+
+    [Fact]
+    public void EasingEqualityHandlesNull()
+    {
+        CssEasingFunction? none = null;
+        Assert.False(CssEasingFunction.Ease.Equals(none));
+        Assert.False(CssEasingFunction.Ease.Equals((object?)null));
+        Assert.False(CssEasingFunction.Ease.Equals("ease"));
+        Assert.True(none == null);
+        Assert.False(CssEasingFunction.Ease == none);
+        Assert.True(none != CssEasingFunction.Ease);
+    }
+
     [Fact]
     public void TheMostStepsDoNotOverflow()
     {

@@ -205,6 +205,7 @@ internal sealed partial class JxlVarDctEncoder
         JxlStageTimes.Lap(JxlStage.EpfSharpness);
         e.PrepareChunkExtras(patch.Width, border, alpha, alphaBits, black);
         e.ChunkSections();
+        e.ReleaseBuffers();
     }
 
     /// <summary>Writes the coefficient orders of a chunked frame's HF global.</summary>
@@ -472,6 +473,7 @@ internal sealed partial class JxlVarDctEncoder
 
             w.ZeroPadToByte();
             frame.Sections[2 + lf + FrameGroup(g)] = w.ToArray();
+            JxlTokenLists.Return(acTokens[g]);
         });
         JxlStageTimes.Lap(JxlStage.Write);
     }

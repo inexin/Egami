@@ -1,5 +1,6 @@
 #nullable enable
 Egami.Css.CssEasingFunction
+Egami.Css.CssEasingFunction.Equals(Egami.Css.CssEasingFunction? other) -> bool
 Egami.Css.CssEasingFunction.Evaluate(double progress, bool beforeFlag = false) -> double
 Egami.Css.CssEasingFunction.IsLinear.get -> bool
 Egami.Css.CssKeyframe
@@ -10,7 +11,11 @@ Egami.Css.CssKeyframe.Offsets.get -> System.Collections.Generic.IReadOnlyList<do
 Egami.Css.CssKeyframesRule
 Egami.Css.CssKeyframesRule.Keyframes.get -> System.Collections.Generic.IReadOnlyList<Egami.Css.CssKeyframe!>!
 Egami.Css.CssKeyframesRule.Name.get -> string!
+override Egami.Css.CssEasingFunction.Equals(object? obj) -> bool
+override Egami.Css.CssEasingFunction.GetHashCode() -> int
 override Egami.Css.CssEasingFunction.ToString() -> string!
+static Egami.Css.CssEasingFunction.operator !=(Egami.Css.CssEasingFunction? left, Egami.Css.CssEasingFunction? right) -> bool
+static Egami.Css.CssEasingFunction.operator ==(Egami.Css.CssEasingFunction? left, Egami.Css.CssEasingFunction? right) -> bool
 static Egami.Css.CssEasingFunction.Ease.get -> Egami.Css.CssEasingFunction!
 static Egami.Css.CssEasingFunction.Linear.get -> Egami.Css.CssEasingFunction!
 static Egami.Css.CssEasingFunction.Parse(string! text) -> Egami.Css.CssEasingFunction!

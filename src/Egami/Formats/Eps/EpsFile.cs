@@ -26,6 +26,15 @@ public sealed class EpsFile
     /// <summary>The length of the DOS EPS binary header: magic, three offset and length pairs, and the checksum.</summary>
     internal const int BinaryHeaderLength = 30;
 
+    /// <summary>
+    /// The most whitespace accepted before <c>%!PS</c>. EPS files start at <c>%!</c>, but some programs and servers wrote spaces or
+    /// line breaks in front of it (a USGS figure from Micrografx has 32 spaces), which PostScript interpreters skip.
+    /// </summary>
+    internal const int MaxLeadingWhitespace = 64;
+
+    /// <summary>Gets the signature length detection needs: the whitespace allowed before it and <c>%!PS</c>.</summary>
+    internal const int SignatureLength = MaxLeadingWhitespace + 4;
+
     private const int MaxTextLength = 1024;
 
     private readonly WarningList _warnings;
@@ -140,7 +149,23 @@ public sealed class EpsFile
     /// <summary>Returns whether the data starts like EPS or PostScript: a DOS binary header or <c>%!PS</c>.</summary>
     internal static bool Matches(ReadOnlySpan<byte> header)
     {
-        return header.StartsWith(BinarySignature) || header.StartsWith("%!PS"u8);
+        return header.StartsWith(BinarySignature) || header[LeadingWhitespace(header)..].StartsWith("%!PS"u8);
+    }
+
+    /// <summary>
+    /// Counts the spaces, tabs and line breaks before the first other byte, or returns 0 when there are more than
+    /// <see cref="MaxLeadingWhitespace"/>. Only data whose first byte is whitespace is scanned.
+    /// </summary>
+    internal static int LeadingWhitespace(ReadOnlySpan<byte> data)
+    {
+        if (data.IsEmpty || data[0] is not ((byte)' ' or (byte)'\t' or (byte)'\r' or (byte)'\n'))
+        {
+            return 0;
+        }
+
+        ReadOnlySpan<byte> head = data[..Math.Min(data.Length, MaxLeadingWhitespace + 1)];
+        int count = head.IndexOfAnyExcept(" \t\r\n"u8);
+        return count is > 0 and <= MaxLeadingWhitespace ? count : 0;
     }
 
     internal static EpsFile Parse(ReadOnlyMemory<byte> data, SafetyLimits limits)
@@ -154,6 +179,11 @@ public sealed class EpsFile
         else if (span.StartsWith("%!"u8))
         {
             file.PostScript = data;
+        }
+        else if (LeadingWhitespace(span) is int skip and > 0 && span[skip..].StartsWith("%!"u8))
+        {
+            file.PostScript = data[skip..];
+            file._warnings.Add("Eps.LeadingWhitespace", $"The file has {skip} bytes of whitespace before its %! line, which EPS does not allow; they were skipped.", 0);
         }
         else
         {

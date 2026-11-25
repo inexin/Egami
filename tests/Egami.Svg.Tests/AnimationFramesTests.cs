@@ -228,6 +228,27 @@ public class AnimationFramesTests
     }
 
     [Fact]
+    public void DecodeOptionsCheckTheirValuesWhenSet()
+    {
+        // As Scale here and the other formats' reader options do, the init accessors refuse a bad value, before any load.
+        foreach (double rate in new[] { 0, -1, double.NaN, double.PositiveInfinity, 1000.5 })
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new SvgDecodeOptions { AnimationFrameRate = rate });
+            Assert.Throws<ArgumentOutOfRangeException>(() => new SvgDecodeOptions() with { AnimationFrameRate = rate });
+        }
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => new SvgDecodeOptions { Time = TimeSpan.FromTicks(-1) });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new SvgDecodeOptions() with { Time = TimeSpan.MinValue });
+
+        SvgDecodeOptions edges = new() { AnimationFrameRate = 1000, Time = TimeSpan.Zero };
+        Assert.Equal(1000, edges.AnimationFrameRate);
+        Assert.Equal(TimeSpan.Zero, edges.Time);
+        SvgDecodeOptions cleared = edges with { AnimationFrameRate = null, Time = null };
+        Assert.Null(cleared.AnimationFrameRate);
+        Assert.Null(cleared.Time);
+    }
+
+    [Fact]
     public void LoadingWithAFrameRateGivesAnAnimation()
     {
         byte[] data = Encoding.UTF8.GetBytes(Loop);
