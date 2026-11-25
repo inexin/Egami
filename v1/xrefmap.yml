@@ -32126,6 +32126,214 @@ references:
   commentId: F:Egami.Fonts.Layout.WordBreak.Normal
   fullName: Egami.Fonts.Layout.WordBreak.Normal
   nameWithType: WordBreak.Normal
+- uid: Egami.Fonts.Layout.WordDictionaries
+  name: WordDictionaries
+  href: api/Egami.Fonts.Layout.WordDictionaries.html
+  commentId: T:Egami.Fonts.Layout.WordDictionaries
+  fullName: Egami.Fonts.Layout.WordDictionaries
+  nameWithType: WordDictionaries
+- uid: Egami.Fonts.Layout.WordDictionaries.#ctor
+  name: WordDictionaries()
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries__ctor
+  commentId: M:Egami.Fonts.Layout.WordDictionaries.#ctor
+  name.vb: New()
+  fullName: Egami.Fonts.Layout.WordDictionaries.WordDictionaries()
+  fullName.vb: Egami.Fonts.Layout.WordDictionaries.New()
+  nameWithType: WordDictionaries.WordDictionaries()
+  nameWithType.vb: WordDictionaries.New()
+- uid: Egami.Fonts.Layout.WordDictionaries.#ctor(Egami.Fonts.Layout.WordDictionaries)
+  name: WordDictionaries(WordDictionaries)
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries__ctor_Egami_Fonts_Layout_WordDictionaries_
+  commentId: M:Egami.Fonts.Layout.WordDictionaries.#ctor(Egami.Fonts.Layout.WordDictionaries)
+  name.vb: New(WordDictionaries)
+  fullName: Egami.Fonts.Layout.WordDictionaries.WordDictionaries(Egami.Fonts.Layout.WordDictionaries)
+  fullName.vb: Egami.Fonts.Layout.WordDictionaries.New(Egami.Fonts.Layout.WordDictionaries)
+  nameWithType: WordDictionaries.WordDictionaries(WordDictionaries)
+  nameWithType.vb: WordDictionaries.New(WordDictionaries)
+- uid: Egami.Fonts.Layout.WordDictionaries.#ctor*
+  name: WordDictionaries
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries__ctor_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionaries.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Fonts.Layout.WordDictionaries.WordDictionaries
+  fullName.vb: Egami.Fonts.Layout.WordDictionaries.New
+  nameWithType: WordDictionaries.WordDictionaries
+  nameWithType.vb: WordDictionaries.New
+- uid: Egami.Fonts.Layout.WordDictionaries.Add(Egami.Fonts.Unicode.Script,Egami.Fonts.Layout.WordDictionary)
+  name: Add(Script, WordDictionary)
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_Add_Egami_Fonts_Unicode_Script_Egami_Fonts_Layout_WordDictionary_
+  commentId: M:Egami.Fonts.Layout.WordDictionaries.Add(Egami.Fonts.Unicode.Script,Egami.Fonts.Layout.WordDictionary)
+  fullName: Egami.Fonts.Layout.WordDictionaries.Add(Egami.Fonts.Unicode.Script, Egami.Fonts.Layout.WordDictionary)
+  nameWithType: WordDictionaries.Add(Script, WordDictionary)
+- uid: Egami.Fonts.Layout.WordDictionaries.Add*
+  name: Add
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_Add_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionaries.Add
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.WordDictionaries.Add
+  nameWithType: WordDictionaries.Add
+- uid: Egami.Fonts.Layout.WordDictionaries.BuiltIn
+  name: BuiltIn
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_BuiltIn
+  commentId: P:Egami.Fonts.Layout.WordDictionaries.BuiltIn
+  fullName: Egami.Fonts.Layout.WordDictionaries.BuiltIn
+  nameWithType: WordDictionaries.BuiltIn
+- uid: Egami.Fonts.Layout.WordDictionaries.BuiltIn*
+  name: BuiltIn
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_BuiltIn_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionaries.BuiltIn
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.WordDictionaries.BuiltIn
+  nameWithType: WordDictionaries.BuiltIn
+- uid: Egami.Fonts.Layout.WordDictionaries.IsReadOnly
+  name: IsReadOnly
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_IsReadOnly
+  commentId: P:Egami.Fonts.Layout.WordDictionaries.IsReadOnly
+  fullName: Egami.Fonts.Layout.WordDictionaries.IsReadOnly
+  nameWithType: WordDictionaries.IsReadOnly
+- uid: Egami.Fonts.Layout.WordDictionaries.IsReadOnly*
+  name: IsReadOnly
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_IsReadOnly_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionaries.IsReadOnly
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.WordDictionaries.IsReadOnly
+  nameWithType: WordDictionaries.IsReadOnly
+- uid: Egami.Fonts.Layout.WordDictionaries.None
+  name: None
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_None
+  commentId: P:Egami.Fonts.Layout.WordDictionaries.None
+  fullName: Egami.Fonts.Layout.WordDictionaries.None
+  nameWithType: WordDictionaries.None
+- uid: Egami.Fonts.Layout.WordDictionaries.None*
+  name: None
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_None_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionaries.None
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.WordDictionaries.None
+  nameWithType: WordDictionaries.None
+- uid: Egami.Fonts.Layout.WordDictionaries.Scripts
+  name: Scripts
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_Scripts
+  commentId: P:Egami.Fonts.Layout.WordDictionaries.Scripts
+  fullName: Egami.Fonts.Layout.WordDictionaries.Scripts
+  nameWithType: WordDictionaries.Scripts
+- uid: Egami.Fonts.Layout.WordDictionaries.Scripts*
+  name: Scripts
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_Scripts_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionaries.Scripts
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.WordDictionaries.Scripts
+  nameWithType: WordDictionaries.Scripts
+- uid: Egami.Fonts.Layout.WordDictionaries.TryGet(Egami.Fonts.Unicode.Script,Egami.Fonts.Layout.WordDictionary@)
+  name: TryGet(Script, out WordDictionary?)
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_TryGet_Egami_Fonts_Unicode_Script_Egami_Fonts_Layout_WordDictionary__
+  commentId: M:Egami.Fonts.Layout.WordDictionaries.TryGet(Egami.Fonts.Unicode.Script,Egami.Fonts.Layout.WordDictionary@)
+  name.vb: TryGet(Script, WordDictionary)
+  fullName: Egami.Fonts.Layout.WordDictionaries.TryGet(Egami.Fonts.Unicode.Script, out Egami.Fonts.Layout.WordDictionary?)
+  fullName.vb: Egami.Fonts.Layout.WordDictionaries.TryGet(Egami.Fonts.Unicode.Script, Egami.Fonts.Layout.WordDictionary)
+  nameWithType: WordDictionaries.TryGet(Script, out WordDictionary?)
+  nameWithType.vb: WordDictionaries.TryGet(Script, WordDictionary)
+- uid: Egami.Fonts.Layout.WordDictionaries.TryGet*
+  name: TryGet
+  href: api/Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_TryGet_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionaries.TryGet
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.WordDictionaries.TryGet
+  nameWithType: WordDictionaries.TryGet
+- uid: Egami.Fonts.Layout.WordDictionary
+  name: WordDictionary
+  href: api/Egami.Fonts.Layout.WordDictionary.html
+  commentId: T:Egami.Fonts.Layout.WordDictionary
+  fullName: Egami.Fonts.Layout.WordDictionary
+  nameWithType: WordDictionary
+- uid: Egami.Fonts.Layout.WordDictionary.Contains(System.ReadOnlySpan{System.Char})
+  name: Contains(ReadOnlySpan<char>)
+  href: api/Egami.Fonts.Layout.WordDictionary.html#Egami_Fonts_Layout_WordDictionary_Contains_System_ReadOnlySpan_System_Char__
+  commentId: M:Egami.Fonts.Layout.WordDictionary.Contains(System.ReadOnlySpan{System.Char})
+  name.vb: Contains(ReadOnlySpan(Of Char))
+  fullName: Egami.Fonts.Layout.WordDictionary.Contains(System.ReadOnlySpan<char>)
+  fullName.vb: Egami.Fonts.Layout.WordDictionary.Contains(System.ReadOnlySpan(Of Char))
+  nameWithType: WordDictionary.Contains(ReadOnlySpan<char>)
+  nameWithType.vb: WordDictionary.Contains(ReadOnlySpan(Of Char))
+- uid: Egami.Fonts.Layout.WordDictionary.Contains*
+  name: Contains
+  href: api/Egami.Fonts.Layout.WordDictionary.html#Egami_Fonts_Layout_WordDictionary_Contains_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionary.Contains
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.WordDictionary.Contains
+  nameWithType: WordDictionary.Contains
+- uid: Egami.Fonts.Layout.WordDictionary.Count
+  name: Count
+  href: api/Egami.Fonts.Layout.WordDictionary.html#Egami_Fonts_Layout_WordDictionary_Count
+  commentId: P:Egami.Fonts.Layout.WordDictionary.Count
+  fullName: Egami.Fonts.Layout.WordDictionary.Count
+  nameWithType: WordDictionary.Count
+- uid: Egami.Fonts.Layout.WordDictionary.Count*
+  name: Count
+  href: api/Egami.Fonts.Layout.WordDictionary.html#Egami_Fonts_Layout_WordDictionary_Count_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionary.Count
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.WordDictionary.Count
+  nameWithType: WordDictionary.Count
+- uid: Egami.Fonts.Layout.WordDictionary.FromWords(System.Collections.Generic.IEnumerable{System.String})
+  name: FromWords(IEnumerable<string>)
+  href: api/Egami.Fonts.Layout.WordDictionary.html#Egami_Fonts_Layout_WordDictionary_FromWords_System_Collections_Generic_IEnumerable_System_String__
+  commentId: M:Egami.Fonts.Layout.WordDictionary.FromWords(System.Collections.Generic.IEnumerable{System.String})
+  name.vb: FromWords(IEnumerable(Of String))
+  fullName: Egami.Fonts.Layout.WordDictionary.FromWords(System.Collections.Generic.IEnumerable<string>)
+  fullName.vb: Egami.Fonts.Layout.WordDictionary.FromWords(System.Collections.Generic.IEnumerable(Of String))
+  nameWithType: WordDictionary.FromWords(IEnumerable<string>)
+  nameWithType.vb: WordDictionary.FromWords(IEnumerable(Of String))
+- uid: Egami.Fonts.Layout.WordDictionary.FromWords*
+  name: FromWords
+  href: api/Egami.Fonts.Layout.WordDictionary.html#Egami_Fonts_Layout_WordDictionary_FromWords_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionary.FromWords
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.WordDictionary.FromWords
+  nameWithType: WordDictionary.FromWords
+- uid: Egami.Fonts.Layout.WordDictionary.Load(System.IO.Stream)
+  name: Load(Stream)
+  href: api/Egami.Fonts.Layout.WordDictionary.html#Egami_Fonts_Layout_WordDictionary_Load_System_IO_Stream_
+  commentId: M:Egami.Fonts.Layout.WordDictionary.Load(System.IO.Stream)
+  fullName: Egami.Fonts.Layout.WordDictionary.Load(System.IO.Stream)
+  nameWithType: WordDictionary.Load(Stream)
+- uid: Egami.Fonts.Layout.WordDictionary.Load*
+  name: Load
+  href: api/Egami.Fonts.Layout.WordDictionary.html#Egami_Fonts_Layout_WordDictionary_Load_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionary.Load
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.WordDictionary.Load
+  nameWithType: WordDictionary.Load
+- uid: Egami.Fonts.Layout.WordDictionary.Save(System.IO.Stream)
+  name: Save(Stream)
+  href: api/Egami.Fonts.Layout.WordDictionary.html#Egami_Fonts_Layout_WordDictionary_Save_System_IO_Stream_
+  commentId: M:Egami.Fonts.Layout.WordDictionary.Save(System.IO.Stream)
+  fullName: Egami.Fonts.Layout.WordDictionary.Save(System.IO.Stream)
+  nameWithType: WordDictionary.Save(Stream)
+- uid: Egami.Fonts.Layout.WordDictionary.Save*
+  name: Save
+  href: api/Egami.Fonts.Layout.WordDictionary.html#Egami_Fonts_Layout_WordDictionary_Save_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionary.Save
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.WordDictionary.Save
+  nameWithType: WordDictionary.Save
+- uid: Egami.Fonts.Layout.WordDictionary.WithWords(System.Collections.Generic.IEnumerable{System.String})
+  name: WithWords(IEnumerable<string>)
+  href: api/Egami.Fonts.Layout.WordDictionary.html#Egami_Fonts_Layout_WordDictionary_WithWords_System_Collections_Generic_IEnumerable_System_String__
+  commentId: M:Egami.Fonts.Layout.WordDictionary.WithWords(System.Collections.Generic.IEnumerable{System.String})
+  name.vb: WithWords(IEnumerable(Of String))
+  fullName: Egami.Fonts.Layout.WordDictionary.WithWords(System.Collections.Generic.IEnumerable<string>)
+  fullName.vb: Egami.Fonts.Layout.WordDictionary.WithWords(System.Collections.Generic.IEnumerable(Of String))
+  nameWithType: WordDictionary.WithWords(IEnumerable<string>)
+  nameWithType.vb: WordDictionary.WithWords(IEnumerable(Of String))
+- uid: Egami.Fonts.Layout.WordDictionary.WithWords*
+  name: WithWords
+  href: api/Egami.Fonts.Layout.WordDictionary.html#Egami_Fonts_Layout_WordDictionary_WithWords_
+  commentId: Overload:Egami.Fonts.Layout.WordDictionary.WithWords
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.WordDictionary.WithWords
+  nameWithType: WordDictionary.WithWords
 - uid: Egami.Fonts.Layout.WritingMode
   name: WritingMode
   href: api/Egami.Fonts.Layout.WritingMode.html

@@ -5167,6 +5167,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.WordDictionaries.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.WordDictionaries.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.WordDictionaries",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.WordDictionaries.yml\" sourcestartlinenumber=\"1\">Word dictionaries by script, for breaking text written without spaces between words. Add the dictionaries before laying\ntext out; reading from several threads is safe while nothing is added.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.WordDictionary.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.WordDictionary.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.WordDictionary",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.WordDictionary.yml\" sourcestartlinenumber=\"1\">One script's word list, for breaking text written without spaces between words (Thai, Lao, Khmer, Myanmar) into words.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Fonts.Layout.WritingMode.yml",
       "output": {
         ".html": {
