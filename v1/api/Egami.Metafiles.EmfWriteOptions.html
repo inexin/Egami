@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Metafiles_EmfWriteOptions" data-uid="Egami.Metafiles.EmfWriteOptions" class="text-break">
-Class EmfWriteOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L24"><i class="bi bi-code-slash"></i></a>
+Class EmfWriteOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L26"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -151,13 +151,16 @@ Class EmfWriteOptions  <a class="header-action link-secondary" title="View sourc
 
   <h2 id="Egami_Metafiles_EmfWriteOptions_examples">Examples</h2>
   <pre><code class="lang-csharp">// A dual EMF+ file at 96 DPI, 300 by 200 pixels: Office and GDI+ play the EMF+ records, older programs the GDI ones.
+// Text is written as text (the font's name, glyph indices and positions) rather than outlines.
+Font font = new(Typeface.FromFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSans-Regular.ttf")), 16);
 using (FileStream stream = File.Create(output))
-using (EmfCanvas emf = new(stream, 300, 200, new EmfWriteOptions { Description = "Sales chart" }))
+using (EmfCanvas emf = new(stream, 300, 200, new EmfWriteOptions { Description = "Sales chart", Text = EmfText.Glyphs }))
 {
     // A linear gradient is an EMF+ gradient brush, and GDI gradient fills in the GDI copy.
     emf.FillRect(new RectF(20, 20, 260, 160), new LinearGradient(new Vector2(0, 20), new Vector2(0, 180), new RgbaF32(1, 1, 1, 1), new RgbaF32(0.86f, 0.91f, 0.96f, 1)));
     emf.DrawLine(new Vector2(40, 160), new Vector2(260, 60), new Stroke(3) { Cap = LineCap.Round }, new Rgba8(0, 102, 204, 255));
     emf.FillOval(new RectF(250, 50, 20, 20), new Rgba8(204, 51, 0, 255));
+    emf.DrawText("Sales", new Vector2(30, 45), font, new SolidPaint(new Rgba8(30, 30, 30, 255)));
     foreach (EgamiDiagnostic warning in emf.Warnings)
     {
         Console.WriteLine(warning.Message); // anything drawn as an image instead
@@ -177,7 +180,7 @@ Metafile written = Metafile.Load(output);</code></pre>
 
   <h3 id="Egami_Metafiles_EmfWriteOptions_Compress" data-uid="Egami.Metafiles.EmfWriteOptions.Compress">
   Compress
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L83"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets a value indicating whether the file is gzip-compressed (EMZ). Defaults to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.</p>
@@ -209,7 +212,7 @@ Metafile written = Metafile.Load(output);</code></pre>
 
   <h3 id="Egami_Metafiles_EmfWriteOptions_Default" data-uid="Egami.Metafiles.EmfWriteOptions.Default">
   Default
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L29"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the defaults: EMF+ dual at 96 DPI, text as outlines, fallback images at 2 pixels per unit, uncompressed.</p>
@@ -241,7 +244,7 @@ Metafile written = Metafile.Load(output);</code></pre>
 
   <h3 id="Egami_Metafiles_EmfWriteOptions_Description" data-uid="Egami.Metafiles.EmfWriteOptions.Description">
   Description
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L80"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the picture's name, written to the header's description after the application name &quot;Egami&quot;, or
@@ -274,7 +277,7 @@ Metafile written = Metafile.Load(output);</code></pre>
 
   <h3 id="Egami_Metafiles_EmfWriteOptions_Dpi" data-uid="Egami.Metafiles.EmfWriteOptions.Dpi">
   Dpi
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L51"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the resolution of the reference device, in device units per inch: the canvas's units are its pixels, so a canvas
@@ -313,11 +316,11 @@ Metafile written = Metafile.Load(output);</code></pre>
 
   <h3 id="Egami_Metafiles_EmfWriteOptions_FallbackScale" data-uid="Egami.Metafiles.EmfWriteOptions.FallbackScale">
   FallbackScale
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L70"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the resolution of fallback images (calls EMF cannot express, drawn by Egami and embedded as bitmaps) and of picture
-paints' tiles, in image pixels per device unit. Defaults to 2.</p>
+  <div class="markdown level1 summary"><p>Gets the resolution of fallback images (calls EMF cannot express, drawn by Egami and embedded as bitmaps), in image pixels
+per device unit. Defaults to 2.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -352,7 +355,7 @@ paints' tiles, in image pixels per device unit. Defaults to 2.</p>
 
   <h3 id="Egami_Metafiles_EmfWriteOptions_Kind" data-uid="Egami.Metafiles.EmfWriteOptions.Kind">
   Kind
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L38"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets which records are written. <a class="xref" href="Egami.Metafiles.MetafileKind.html#Egami_Metafiles_MetafileKind_EmfPlusDual">EmfPlusDual</a> (the default, as GDI+ writes) has EMF+ records,
@@ -393,7 +396,7 @@ for programs without GDI+; <a class="xref" href="Egami.Metafiles.MetafileKind.ht
 
   <h3 id="Egami_Metafiles_EmfWriteOptions_Text" data-uid="Egami.Metafiles.EmfWriteOptions.Text">
   Text
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L59"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how text is written. Defaults to <a class="xref" href="Egami.Metafiles.EmfText.html#Egami_Metafiles_EmfText_Outlines">Outlines</a>.</p>
@@ -431,7 +434,7 @@ for programs without GDI+; <a class="xref" href="Egami.Metafiles.MetafileKind.ht
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L24" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfWriteOptions.cs/#L26" class="edit-link">Edit this page</a>
         </div>
 
 

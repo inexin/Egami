@@ -69425,6 +69425,35 @@ references:
   isSpec: "True"
   fullName: Egami.Metafiles.EmfCanvas.OnClipRoundRect
   nameWithType: EmfCanvas.OnClipRoundRect
+- uid: Egami.Metafiles.EmfCanvas.OnDrawEncodedImage(Egami.Drawing.EncodedImage,Egami.Drawing.RectF,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)
+  name: OnDrawEncodedImage(EncodedImage, RectF, RectF, SamplingOptions, Paint?)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawEncodedImage_Egami_Drawing_EncodedImage_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnDrawEncodedImage(Egami.Drawing.EncodedImage,Egami.Drawing.RectF,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)
+  name.vb: OnDrawEncodedImage(EncodedImage, RectF, RectF, SamplingOptions, Paint)
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawEncodedImage(Egami.Drawing.EncodedImage, Egami.Drawing.RectF, Egami.Drawing.RectF, Egami.Operations.SamplingOptions, Egami.Drawing.Paint?)
+  fullName.vb: Egami.Metafiles.EmfCanvas.OnDrawEncodedImage(Egami.Drawing.EncodedImage, Egami.Drawing.RectF, Egami.Drawing.RectF, Egami.Operations.SamplingOptions, Egami.Drawing.Paint)
+  nameWithType: EmfCanvas.OnDrawEncodedImage(EncodedImage, RectF, RectF, SamplingOptions, Paint?)
+  nameWithType.vb: EmfCanvas.OnDrawEncodedImage(EncodedImage, RectF, RectF, SamplingOptions, Paint)
+- uid: Egami.Metafiles.EmfCanvas.OnDrawEncodedImage*
+  name: OnDrawEncodedImage
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawEncodedImage_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnDrawEncodedImage
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawEncodedImage
+  nameWithType: EmfCanvas.OnDrawEncodedImage
+- uid: Egami.Metafiles.EmfCanvas.OnDrawGlyphRun(Egami.Fonts.GlyphRun,System.Numerics.Vector2,Egami.Drawing.Paint)
+  name: OnDrawGlyphRun(GlyphRun, Vector2, Paint)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawGlyphRun_Egami_Fonts_GlyphRun_System_Numerics_Vector2_Egami_Drawing_Paint_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnDrawGlyphRun(Egami.Fonts.GlyphRun,System.Numerics.Vector2,Egami.Drawing.Paint)
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawGlyphRun(Egami.Fonts.GlyphRun, System.Numerics.Vector2, Egami.Drawing.Paint)
+  nameWithType: EmfCanvas.OnDrawGlyphRun(GlyphRun, Vector2, Paint)
+- uid: Egami.Metafiles.EmfCanvas.OnDrawGlyphRun*
+  name: OnDrawGlyphRun
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawGlyphRun_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnDrawGlyphRun
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawGlyphRun
+  nameWithType: EmfCanvas.OnDrawGlyphRun
 - uid: Egami.Metafiles.EmfCanvas.OnDrawImage(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)
   name: OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint?)
   href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_
@@ -69502,6 +69531,22 @@ references:
   isSpec: "True"
   fullName: Egami.Metafiles.EmfCanvas.OnDrawPath
   nameWithType: EmfCanvas.OnDrawPath
+- uid: Egami.Metafiles.EmfCanvas.OnDrawPicture(Egami.Drawing.Picture,System.Numerics.Matrix3x2,Egami.Drawing.Paint,System.Boolean)
+  name: OnDrawPicture(Picture, Matrix3x2, Paint?, bool)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawPicture_Egami_Drawing_Picture_System_Numerics_Matrix3x2_Egami_Drawing_Paint_System_Boolean_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnDrawPicture(Egami.Drawing.Picture,System.Numerics.Matrix3x2,Egami.Drawing.Paint,System.Boolean)
+  name.vb: OnDrawPicture(Picture, Matrix3x2, Paint, Boolean)
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawPicture(Egami.Drawing.Picture, System.Numerics.Matrix3x2, Egami.Drawing.Paint?, bool)
+  fullName.vb: Egami.Metafiles.EmfCanvas.OnDrawPicture(Egami.Drawing.Picture, System.Numerics.Matrix3x2, Egami.Drawing.Paint, Boolean)
+  nameWithType: EmfCanvas.OnDrawPicture(Picture, Matrix3x2, Paint?, bool)
+  nameWithType.vb: EmfCanvas.OnDrawPicture(Picture, Matrix3x2, Paint, Boolean)
+- uid: Egami.Metafiles.EmfCanvas.OnDrawPicture*
+  name: OnDrawPicture
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawPicture_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnDrawPicture
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawPicture
+  nameWithType: EmfCanvas.OnDrawPicture
 - uid: Egami.Metafiles.EmfCanvas.OnDrawRect(Egami.Drawing.RectF,Egami.Drawing.Stroke,Egami.Drawing.Paint)
   name: OnDrawRect(RectF, Stroke?, Paint)
   href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawRect_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint_

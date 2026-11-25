@@ -102,11 +102,14 @@ GDI+ open. Paths, rectangles, round rectangles, ovals and points are filled with
 GDI) and stroked with every <a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a> setting; transforms, save and restore, and rectangle and path clips carry over.
 Linear and centered radial gradients, image and picture paints become EMF+ brushes (opaque linear gradients are GDI gradient
 fills in the GDI part, the rest images there); a color matrix or blend paint over solid colors becomes its color; and a
-layer with only an opacity is folded into its shapes when they do not overlap.
-What this version does not write as vectors (sweep and two-point conical gradients, other blend modes, blurs, images,
-meshes and other layers with opacity, blend modes, filters or masks) is drawn by Egami into a bitmap of that area at
+layer with only an opacity is folded into its shapes when they do not overlap. Images are EMF+ images (PNG and JPEG files
+kept as they are) and GDI AlphaBlend bitmaps; pictures are played inline. Glyph runs are written as outlines, or as text
+with <a class="xref" href="Egami.Metafiles.EmfText.html#Egami_Metafiles_EmfText_Glyphs">Glyphs</a>.
+What this version does not write as vectors (sweep and two-point conical gradients, other blend modes, blurs, meshes and
+other layers with opacity, blend modes, filters or masks) is drawn by Egami into a bitmap of that area at
 <a class="xref" href="Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_FallbackScale">FallbackScale</a> and embedded, with one <code>Metafile.FallbackImage</code> warning per kind in
-<a class="xref" href="Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_Warnings">Warnings</a>. Glyph runs are written as outlines.</p>
+<a class="xref" href="Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_Warnings">Warnings</a>; a call that blends with what is beneath it is drawn over everything before it, and its bitmap
+replaces those pixels.</p>
 <p>
 The canvas's units are pixels of a reference device at <a class="xref" href="Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Dpi">Dpi</a>. The header's frame covers the
 canvas in 0.01 mm, inclusive of its last pixel row and column as GDI+ writes it, so GDI+ and Office show the picture at the
