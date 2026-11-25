@@ -254,6 +254,7 @@ static Action<Stream> Target(string name) => name switch
     "svg" => stream => Egami.Fuzz.SvgFuzzTarget.Run(ReadAll(stream)),
     "svg-timeline" => stream => Egami.Fuzz.SvgFuzzTarget.Timeline(ReadAll(stream)),
     "trace" => stream => Egami.Fuzz.TraceFuzzTarget.Run(ReadAll(stream)),
+    "eps" => stream => Egami.Fuzz.EpsFuzzTarget.Run(stream, Context()),
     "wmf" or "emf" => stream => Egami.Fuzz.MetafileFuzzTarget.Run(ReadAll(stream)),
     "emfplus" => stream => Egami.Fuzz.MetafileFuzzTarget.RunPlus(ReadAll(stream)),
     "sysdrawing" => stream => Egami.Fuzz.SystemDrawingFuzzTarget.Run(ReadAll(stream)),

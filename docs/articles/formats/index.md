@@ -2,7 +2,7 @@
 
 Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float
 map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors, and reads JBIG2, raw CCITT fax data, JPEG
-2000, Windows animated cursors (ANI), Photoshop's PSD and PSB, layers included, and the previews of EPS files. HEIC phone photos load and save through the
+2000, Windows animated cursors (ANI), Photoshop's PSD and PSB, layers included, and EPS files by their previews or Photoshop's own image. HEIC phone photos load and save through the
 separate, opt-in Egami.Heic package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
 [Egami.Svg](../guides/svg.md) and [Egami.Metafiles](../guides/metafiles.md) packages, and PCX, SGI, Sun raster, XBM, XPM, WBMP
 Farbfeld, JPEG-LS, DDS and KTX textures, DPX and Cineon film frames, FITS, camera RAW (DNG and the camera makers' formats, with DNG written) and, as a preview, DICOM images and datasets through
@@ -26,7 +26,7 @@ through [`Vp8StreamDecoder`](vp8.md) and [`Av1StreamDecoder`](av1.md), VP8 and A
 | [QOI](qoi.md) | The whole format, 3 or 4 channels, both colorspaces | 3 or 4 channels, byte-identical to the reference encoder | `Rgb8` or `Rgba8` | Egami |
 | [TIFF](tiff.md) | Every page, strips and tiles, chunky and planar, classic and BigTIFF; None, LZW, Deflate, PackBits, CCITT G3 and G4, JPEG, old-style JPEG, ThunderScan, SGILog, WebP, JPEG XL, Zstd, LZMA, lossless JPEG at 2 to 16 bits; gray, palette, RGB, CMYK, YCbCr, Lab and LogLuv at 1 to 64 bits | Every pixel type at its own depth, strips or tiles, classic or BigTIFF; None, LZW, Deflate, Zstd, LZMA, PackBits, CCITT G3 and G4, JPEG (lossless at `Quality` 100), WebP | The page's own: `Gray8`, `Gray16`, `Rgb8`, `Rgb16`, `Cmyk8`, `Cmyk16`, float types and more | Egami |
 | [CCITT](ccitt.md) | Raw Group 3 and Group 4 data (T.4, T.6) with PDF's eight CCITTFaxDecode parameters, byte-aligned rows included | No | `Gray8`, black 0 and white 255 | Egami |
-| [EPS](eps.md) | The preview an EPS file carries: a TIFF or Windows metafile preview behind the DOS binary header, or an EPSI bitmap; bounding box, creator, title, date, XMP and ICC. PostScript is not run | No | The preview's own: the TIFF's, `Rgba8` for a metafile, `Gray8` for EPSI | Egami |
+| [EPS](eps.md) | Photoshop's full image (`%ImageData`: gray, bitmap, RGB or CMYK, binary, hex or JPEG), else the preview an EPS file carries: a TIFF or Windows metafile preview behind the DOS binary header, or an EPSI bitmap; bounding box, creator, title, date, XMP, ICC and IPTC. PostScript is not run | No | Photoshop's: `Gray8`, `Rgb8` or `Cmyk8`; a preview's own: the TIFF's, `Rgba8` for a metafile, `Gray8` for EPSI | Egami |
 | [JBIG2](jbig2.md) | Every T.88 region and dictionary but the colour extension; standalone files (sequential and random-access, many pages) and the embedded form a PDF holds, with its globals | No | `Gray8`, black 0 and white 255 | Egami |
 | [JPEG 2000](jpeg2000.md) | All of Part 1 (T.800): every progression order, code-block style, tiling and precinct size, reversible and irreversible; JP2 and JPX boxes, palettes, channel definitions, sYCC, CIELab, ICC; reduced and region decodes | No | `Gray8`, `Rgb8`, `Rgba8`, `Cmyk8` or their 16-bit forms, by depth and color space | Egami |
 | [ICO, CUR](ico.md) | Every entry: PNG, and BMP at 1 to 32 bits with the AND mask; the best entry, or one by `MinimumSize` or index; cursor hotspots | One entry a raster, or sets resized to favicon or Windows sizes; PNG at 256 and 32-bit BMP below; hotspots | `Rgba8` | Egami |
@@ -140,6 +140,13 @@ Short answers to common tasks in this area. Each one compiles and runs in Egami'
 [!code-csharp[](../../../tests/Egami.DocSamples/Cookbook.cs#read-size)]
 
 `Probe` reads only the header, and reports the EXIF orientation, so you know how the image will be shown.
+
+### Show an EPS file
+
+Egami never runs PostScript, so an EPS file loads only by an image it carries. Register Egami.Metafiles so Windows metafile
+previews draw too, and fall back to the bounding box for files with only PostScript. [EPS](eps.md) has the details.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Eps.cs#eps-recipe)]
 
 ## Run it
 

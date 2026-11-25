@@ -4,6 +4,7 @@ using System.Text;
 using Egami.Formats;
 using Egami.Formats.Eps;
 using Egami.Formats.Tiff;
+using Egami.Metafiles;
 using Egami.Pixels;
 
 namespace Egami.DocSamples;
@@ -29,6 +30,14 @@ public class Eps
         ps.CopyTo(file, 30);
         tiff.CopyTo(file, 30 + ps.Length);
         File.WriteAllBytes("logo.eps", file);
+    }
+
+    /// <summary>Writes photo.eps the way Photoshop saves a CMYK image: an %ImageData comment, then 8 × 4 pixels of binary data.</summary>
+    private static void WritePhotoshopSample()
+    {
+        byte[] head = Encoding.ASCII.GetBytes("%!PS-Adobe-3.0 EPSF-3.0\n%%Creator: Adobe Photoshop\n%%BoundingBox: 0 0 8 4\n%%EndComments\n%ImageData: 8 4 8 4 0 1 1 \"beginimage\"\nbeginimage\n");
+        byte[] pixels = [.. Enumerable.Repeat<byte[]>([0, 160, 255, 0], 32).SelectMany(p => p)];
+        File.WriteAllBytes("photo.eps", [.. head, .. pixels, .. "\n%%EOF\n"u8]);
     }
 
     [Fact]
@@ -69,5 +78,49 @@ public class Eps
         Assert.Equal("Logo", eps.Title);
         Assert.True(File.Exists("logo-preview.tif"));
         Assert.Equal(TiffFormat.Info, Raster.Probe("logo-preview.tif").Format);
+    }
+
+    [Fact]
+    public void PhotoshopImage()
+    {
+        using SampleFiles files = new();
+        WritePhotoshopSample();
+
+        #region eps-photoshop
+        // A Photoshop EPS loads at full size in its own colours: here CMYK, kept as Cmyk8.
+        using Raster image = Raster.Load("photo.eps");
+        if (image is Raster<Cmyk8> cmyk)
+        {
+            Cmyk8 first = cmyk.Row(0)[0];
+            Console.WriteLine($"{cmyk.Width} × {cmyk.Height} CMYK, first pixel {first.C} {first.M} {first.Y} {first.K}");
+        }
+        #endregion
+
+        Assert.IsType<Raster<Cmyk8>>(image);
+        Assert.Equal(EpsPreviewKind.PhotoshopImage, ((EpsDetails)image.Metadata.FormatDetails!).Preview);
+    }
+
+    [Fact]
+    public void Recipe()
+    {
+        using SampleFiles files = new();
+        WriteSample();
+
+        #region eps-recipe
+        // Metafile previews draw only with a metafile format registered; files with only PostScript have no image to load.
+        EgamiContext context = EgamiContext.Default.WithFormat(MetafileFormat.Info);
+        try
+        {
+            using Raster<Rgba8> image = Raster.Load<Rgba8>("logo.eps", context);
+            image.Save("logo.png");
+        }
+        catch (UnsupportedFormatException)
+        {
+            RasterInfo box = Raster.Probe("logo.eps", context);
+            Console.WriteLine($"Only PostScript: {box.Width} × {box.Height} pt, render it with a PostScript interpreter");
+        }
+        #endregion
+
+        Assert.True(File.Exists("logo.png"));
     }
 }

@@ -55,3 +55,4 @@ static Egami.Formats.Eps.EpsFile.Load(System.ReadOnlyMemory<byte> data, Egami.Sa
 static Egami.Formats.Eps.EpsFormat.Info.get -> Egami.Formats.FormatInfo!
 ~override Egami.Formats.Eps.EpsBoundingBox.Equals(object obj) -> bool
 ~override Egami.Formats.Eps.EpsBoundingBox.ToString() -> string
+Egami.Formats.Eps.EpsPreviewKind.PhotoshopImage = 4 -> Egami.Formats.Eps.EpsPreviewKind
