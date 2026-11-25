@@ -26,7 +26,7 @@ one version and release together; the other packages have versions of their own.
 
 | Package | Version | What it does | Needs | Docs |
 | --- | --- | --- | --- | --- |
-| [Egami.Svg](https://github.com/inexin/Egami/tree/main/src/Egami.Svg) | 1.x | Reads SVG 1.1 and SVG 2 into an editable element tree, saves it back, and draws it onto any canvas | Egami, Egami.Drawing, Egami.Fonts, Egami.Css | [SVG](guides/svg.md) |
+| [Egami.Svg](https://github.com/inexin/Egami/tree/main/src/Egami.Svg) | 1.x | Reads SVG 1.1 and SVG 2 into an editable element tree, saves it back, and draws it onto any canvas, animations included | Egami, Egami.Drawing, Egami.Fonts, Egami.Css | [SVG](guides/svg.md) |
 | [Egami.Css](https://github.com/inexin/Egami/tree/main/src/Egami.Css) | 1.x | CSS syntax, selectors, the cascade, media queries and value parsers | Nothing | [CSS](guides/css.md) |
 | [Egami.Metafiles](https://github.com/inexin/Egami/tree/main/src/Egami.Metafiles) | 1.0 | Plays WMF, EMF and EMF+ pictures onto a canvas | Egami, Egami.Drawing, Egami.Fonts | [Windows metafiles](guides/metafiles.md) |
 
