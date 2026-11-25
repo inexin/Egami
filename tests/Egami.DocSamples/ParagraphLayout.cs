@@ -317,6 +317,29 @@ public class ParagraphLayout
     }
 
     [Fact]
+    public void JustifiedLineBreaks()
+    {
+        FontFamily family = Noto();
+        #region justify-line-breaks
+        // Justified as Word lays out Shift+Enter: the line before a line break stretches like a wrapped line, and no-break
+        // spaces keep their width.
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [family], Size = 16 },
+            Align = TextAlign.Justify,
+            JustifyLineBreaks = true,       // lines before LF, CRLF, U+2028 ... stretch; U+2029 and the last line do not
+            StretchNoBreakSpaces = false,   // U+00A0 keeps its width
+        };
+        string text = "Deliver 10\u00A0kg of flour\nto the mill by Friday.";
+        TextLayout layout = Paragraph.Create(text, style).Layout(300);
+        #endregion
+
+        Assert.True(layout.Lines[0].HardBreak);
+        Assert.Equal(300, layout.Lines[0].Width, 3);
+        Assert.True(layout.Lines[^1].Width < 299);
+    }
+
+    [Fact]
     public void KashidaJustifiedArabic()
     {
         FontCollection fonts = new();

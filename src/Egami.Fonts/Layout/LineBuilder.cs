@@ -221,7 +221,7 @@ internal sealed partial class LineBuilder
             if (w > width + Epsilon)
             {
                 // ParagraphStyle.SpaceShrink: the line may still fit with its word spaces shrunk.
-                if (!shrinks || !CanShrink(b.IsMandatory)
+                if (!shrinks || !CanShrink(AlignsLast(b.Index, b.IsMandatory))
                     || !FitsShrunk(start, ContentEnd(start, b.Index), w, width, i > k ? ContentEnd(start, breaks[i - 1].Index) : -1, previousWidth))
                 {
                     over = i;
@@ -392,7 +392,7 @@ internal sealed partial class LineBuilder
 
     /// <summary>Whether a line may shrink its word spaces (<see cref="ParagraphStyle.SpaceShrink"/>): one that
     /// <see cref="ParagraphStyle.Align"/> or <see cref="ParagraphStyle.AlignLast"/> justifies, or the
-    /// <paramref name="last"/> line (or one before a hard break) of a justified paragraph.</summary>
+    /// <paramref name="last"/> line (see <see cref="AlignsLast"/>) of a justified paragraph.</summary>
     private bool CanShrink(bool last)
     {
         ParagraphStyle style = _paragraph.Style;
@@ -400,10 +400,51 @@ internal sealed partial class LineBuilder
             && (style.Align == TextAlign.Justify || (last && style.AlignLast == TextAlignLast.Justify));
     }
 
+    /// <summary>
+    /// Whether the line ending at <paramref name="end"/> (at a hard break when <paramref name="hard"/>) aligns as the last line,
+    /// by <see cref="ParagraphStyle.AlignLast"/>: the paragraph's last line, and a line before a hard break unless
+    /// <see cref="ParagraphStyle.JustifyLineBreaks"/> justifies it.
+    /// </summary>
+    private bool AlignsLast(int end, bool hard)
+    {
+        if (end >= _text.Length)
+        {
+            return true;
+        }
+
+        if (!hard)
+        {
+            return false;
+        }
+
+        ParagraphStyle style = _paragraph.Style;
+        return !style.JustifyLineBreaks || style.Align != TextAlign.Justify || style.Justify == TextJustify.None || end <= 0
+            || _text[end - 1] == '\u2029';
+    }
+
+    /// <summary>Where justification opportunities of the line content <c>[start, end)</c> begin: after its last tab, so text after
+    /// each tab stays on its stop, or at <paramref name="start"/> when it has none.</summary>
+    private int AfterLastTab(int start, int end)
+    {
+        if (end <= start || _m.TabsBefore[end] == _m.TabsBefore[start])
+        {
+            return start;
+        }
+
+        int i = end - 1;
+        while (_text[i] != '\t')
+        {
+            i--;
+        }
+
+        return i + 1;
+    }
+
     /// <summary>The summed width and count of the shrinkable word spaces (<see cref="IsShrinkableSpace"/>) of the line content
-    /// <c>[start, contentEnd)</c>, its last character left out as justification leaves it out.</summary>
+    /// <c>[start, contentEnd)</c> after its last tab, its last character left out as justification leaves it out.</summary>
     private (float Width, int Count) ShrinkableSpaces(int start, int contentEnd)
     {
+        start = AfterLastTab(start, contentEnd);
         int end = contentEnd - 1;
         if (end > start && char.IsLowSurrogate(_text[end]) && char.IsHighSurrogate(_text[end - 1]))
         {
@@ -1621,8 +1662,9 @@ internal sealed partial class LineBuilder
         bool rtl = (draft.ParagraphLevel & 1) != 0;
         float boxWidth = float.IsFinite(width) ? width : draft.ContentWidth;
 
-        // Alignment: the last line and lines before a hard break use AlignLast; justified lines stretch from the start edge.
-        bool last = draft.HardBreak || draft.End >= _text.Length;
+        // Alignment: the last line and lines before a hard break use AlignLast (unless JustifyLineBreaks justifies the latter);
+        // justified lines stretch from the start edge.
+        bool last = AlignsLast(draft.End, draft.HardBreak);
         TextAlignLast alignment = Alignment(last);
         Dictionary<(DraftRun, int), float>? expansion = null;
         Dictionary<DraftRun, List<Tatweels>>? tatweels = null;
@@ -1889,8 +1931,8 @@ internal sealed partial class LineBuilder
         return previous;
     }
 
-    /// <summary>A line's alignment: <see cref="ParagraphStyle.Align"/>, or for the last line and lines before a hard break
-    /// <see cref="ParagraphStyle.AlignLast"/>, whose Auto is the start for justified paragraphs.</summary>
+    /// <summary>A line's alignment: <see cref="ParagraphStyle.Align"/>, or for the <paramref name="last"/> line (see
+    /// <see cref="AlignsLast"/>) <see cref="ParagraphStyle.AlignLast"/>, whose Auto is the start for justified paragraphs.</summary>
     private TextAlignLast Alignment(bool last)
     {
         ParagraphStyle style = _paragraph.Style;
@@ -1916,7 +1958,8 @@ internal sealed partial class LineBuilder
     /// when the line has none. Opportunities sit between grapheme clusters of the content: after word separators
     /// (<see cref="TextJustify.InterWord"/> and <see cref="TextJustify.Kashida"/>), between any two clusters outside cursive scripts
     /// (<see cref="TextJustify.InterCharacter"/>), or, for <see cref="TextJustify.Auto"/>, after word separators and on both sides
-    /// of Chinese, Japanese and Korean characters, as browsers justify; never after the content's last cluster. With
+    /// of Chinese, Japanese and Korean characters, as browsers justify; never after the content's last cluster, nor before the
+    /// line's last tab, and with <see cref="ParagraphStyle.StretchNoBreakSpaces"/> false never after U+00A0. With
     /// <see cref="TextJustify.Kashida"/>, <paramref name="tatweels"/> first takes what whole tatweels can (see <see cref="Kashida"/>).
     /// A line too wide shrinks its word separators only, with <paramref name="shrinkOnly"/> those
     /// <see cref="ParagraphStyle.SpaceShrink"/> shrinks (no-break spaces keep their width).
@@ -1966,21 +2009,30 @@ internal sealed partial class LineBuilder
 
         clusters.Sort((a, b) => a.Cluster.CompareTo(b.Cluster));
         bool kashida = mode == TextJustify.Kashida && !Vertical;
+        bool stretchNoBreak = _paragraph.Style.StretchNoBreakSpaces;
+        int from = AfterLastTab(draft.Start, draft.ContentEnd);
         List<(DraftRun Piece, int Glyph)> opportunities = [];
         List<KashidaPoint>? points = kashida ? [] : null;
         KashidaPoint? best = null;
         for (int i = 0; i + 1 < clusters.Count; i++)
         {
+            // Before the line's last tab nothing stretches, so the text after each tab stays on its stop.
+            if (clusters[i].Cluster < from)
+            {
+                continue;
+            }
+
             int cp = TextSegmenter.CodePointAt(_text, clusters[i].Cluster, out _);
             int next = TextSegmenter.CodePointAt(_text, clusters[i + 1].Cluster, out _);
-            bool separator = shrinkOnly ? IsShrinkableSpace(cp) : AdvanceTable.IsWordSeparator(cp);
+            bool boundary = AdvanceTable.IsWordSeparator(cp);
+            bool separator = shrinkOnly ? IsShrinkableSpace(cp) : boundary;
             bool opportunity = mode switch
             {
                 TextJustify.InterWord or TextJustify.Kashida => separator,
                 TextJustify.InterCharacter => separator || (!AdvanceTable.IsCursive(clusters[i].Piece.Script) && !AdvanceTable.IsCursive(clusters[i + 1].Piece.Script)),
                 _ => separator || IsCjk(cp) || IsCjk(next),
             };
-            if (opportunity)
+            if (opportunity && (cp != 0xA0 || stretchNoBreak))
             {
                 opportunities.Add((clusters[i].Piece, clusters[i].Glyph));
             }
@@ -1993,7 +2045,7 @@ internal sealed partial class LineBuilder
                     best = point;
                 }
 
-                if (separator && best is not null)
+                if (boundary && best is not null)
                 {
                     points!.Add(best.Value);
                     best = null;

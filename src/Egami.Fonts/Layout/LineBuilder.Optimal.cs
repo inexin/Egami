@@ -443,7 +443,8 @@ internal sealed partial class LineBuilder
     /// to fill <paramref name="width"/>, as a share of what it can: below -1 is overfull. Justified lines stretch their word
     /// spaces by half a space each and, with <see cref="OptimalLineOptions.ShrinkSpaces"/>, shrink them by a third (one without
     /// spaces cannot stretch). Ragged lines are <paramref name="ragged"/>: the ratio is the space left at the end in units of
-    /// 2 em. The line before a mandatory break stretches without limit.
+    /// 2 em. Only spaces after the line's last tab stretch or shrink. The last line (see <see cref="AlignsLast"/>) stretches
+    /// without limit.
     /// </summary>
     private double Ratio(int start, Candidate candidate, float width, OptimalLineOptions options, out bool ragged)
     {
@@ -452,7 +453,8 @@ internal sealed partial class LineBuilder
         float natural = Measure(start, end) + candidate.Hyphen;
         bool justified = _paragraph.Style.Align == TextAlign.Justify && _paragraph.Style.Justify != TextJustify.None;
         float[]? stretch = justified ? Stretch() : null;
-        double spaces = stretch is null ? 0 : stretch[end] - stretch[start];
+        double spaces = stretch is null ? 0 : stretch[end] - stretch[AfterLastTab(start, end)];
+        bool last = candidate.Forced && AlignsLast(candidate.Index, true);
         if (natural > width + Epsilon)
         {
             // ParagraphStyle.SpaceShrink sets the limit when it is on. Otherwise the last line before a mandatory break or the
@@ -460,18 +462,18 @@ internal sealed partial class LineBuilder
             double shrink;
             if (_paragraph.Style.SpaceShrink > 0)
             {
-                shrink = CanShrink(candidate.Forced) ? _paragraph.Style.SpaceShrink * ShrinkableSpaces(start, end).Width : 0;
+                shrink = CanShrink(last) ? _paragraph.Style.SpaceShrink * ShrinkableSpaces(start, end).Width : 0;
             }
             else
             {
-                bool shrinks = justified && options.ShrinkSpaces && (!candidate.Forced || Alignment(true) == TextAlignLast.Justify);
+                bool shrinks = justified && options.ShrinkSpaces && (!last || Alignment(true) == TextAlignLast.Justify);
                 shrink = shrinks ? spaces * (2.0 / 3) : 0;
             }
 
             return shrink > 0 ? (width - natural) / shrink : double.NegativeInfinity;
         }
 
-        if (candidate.Forced)
+        if (last)
         {
             return 0;
         }
@@ -489,20 +491,20 @@ internal sealed partial class LineBuilder
     {
         if (_paragraph.Style.SpaceShrink > 0)
         {
-            return CanShrink(draft.HardBreak || draft.End >= _text.Length)
+            return CanShrink(AlignsLast(draft.End, draft.HardBreak))
                 ? _paragraph.Style.SpaceShrink * ShrinkableSpaces(draft.Start, draft.ContentEnd).Width
                 : 0;
         }
 
         bool justified = _paragraph.Style.Align == TextAlign.Justify && _paragraph.Style.Justify != TextJustify.None;
         if (!justified || _paragraph.Style.OptimalLines is not { ShrinkSpaces: true }
-            || Alignment(draft.HardBreak || draft.End >= _text.Length) != TextAlignLast.Justify)
+            || Alignment(AlignsLast(draft.End, draft.HardBreak)) != TextAlignLast.Justify)
         {
             return 0;
         }
 
         float[] stretch = Stretch();
-        return (stretch[draft.ContentEnd] - stretch[draft.Start]) * (2f / 3);
+        return (stretch[draft.ContentEnd] - stretch[AfterLastTab(draft.Start, draft.ContentEnd)]) * (2f / 3);
     }
 
     /// <summary>TeX's badness, 100 |r|^3, or for ragged lines 100 r^2 (the squared space left), capped at 10000 (infinitely
@@ -558,7 +560,8 @@ internal sealed partial class LineBuilder
         return d;
     }
 
-    /// <summary>The running sum of the stretch of word separators (half their advance), made the first time it is needed.</summary>
+    /// <summary>The running sum of the stretch of word separators (half their advance; none for U+00A0 when
+    /// <see cref="ParagraphStyle.StretchNoBreakSpaces"/> is false), made the first time it is needed.</summary>
     private float[] Stretch()
     {
         BreakState state = Breaks;
@@ -569,10 +572,11 @@ internal sealed partial class LineBuilder
 
         float[] sums = new float[_text.Length + 1];
         float sum = 0;
+        bool noBreak = _paragraph.Style.StretchNoBreakSpaces;
         for (int i = 0; i < _text.Length; i++)
         {
             if (Rune.DecodeFromUtf16(_text.AsSpan(i), out Rune rune, out _) == System.Buffers.OperationStatus.Done
-                && AdvanceTable.IsWordSeparator(rune.Value))
+                && AdvanceTable.IsWordSeparator(rune.Value) && (noBreak || rune.Value != 0xA0))
             {
                 sum += _m.Advance[i] / 2;
             }
