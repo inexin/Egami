@@ -57,6 +57,7 @@ Commands:
   overlay <inputs>                  Lay an image (a logo, a watermark, an SVG) on images, placed by anchor, with opacity and a blend mode.
   montage <inputs>                  Lay images out on a contact sheet: a grid of tiles, optionally labeled with their file names.
   trace <inputs>                    Trace images into vector shapes (logos, line art, scans, posters, photos, pixel art) and write them as SVG.
+  font                              Convert fonts to WOFF2, WOFF or back to TTF/OTF, subset them to the characters a page uses, and describe them.
   formats <format>                  List the formats egami reads and writes, or one format's writer settings for --set.
   mcp                               Serve egami's commands as tools to an AI assistant over the Model Context Protocol, on standard input and output. Tools read and write only inside the folders the assistant opened and those given with --allow, and never replace an input unless asked.
 ```
@@ -847,6 +848,103 @@ Options:
   -r, --recursive                      Take every image in folders given as inputs, at any depth.
   -j, --jobs <count>                   How many files to work on at once; 0 (the default) for one per processor.
   --in-place                           Allow outputs to replace their inputs.
+  --fail-fast                          Stop at the first file that fails.
+  --animate <fps>                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at <time>                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
+```
+
+## font
+
+```text
+Description:
+  Convert fonts to WOFF2, WOFF or back to TTF/OTF, subset them to the characters a page uses, and describe them.
+
+Usage:
+  egami font [command] [options]
+
+Options:
+  --animate <fps>                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at <time>                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
+
+Commands:
+  convert <inputs>  Convert fonts losslessly: to WOFF2 (the default) or WOFF for the web, or from WOFF and WOFF2 back to TTF, OTF or a TTC collection. Collections convert to WOFF2 or TTC only.
+  subset <inputs>   Subset fonts to the characters a page uses and write WOFF2 (the default), WOFF, TTF or OTF. By default the subset keeps the layout tables and every glyph they can substitute, so it shapes the text as the full font does; prints the glyphs kept, the characters the font lacks and the sizes.
+  info <inputs>     Describe fonts: names, container, outlines, glyphs, units per em, variation axes, embedding rights, tables and the Unicode blocks covered.
+```
+
+### font convert
+
+```text
+Description:
+  Convert fonts losslessly: to WOFF2 (the default) or WOFF for the web, or from WOFF and WOFF2 back to TTF, OTF or a TTC collection. Collections convert to WOFF2 or TTC only.
+
+Usage:
+  egami font convert <inputs>... [options]
+
+Arguments:
+  <inputs>  Font files (TTF, OTF, TTC, WOFF, WOFF2), globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output <path>                  Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output. The extension picks the format.
+  -f, --format <format>                The output format, when -o's extension does not say: woff2 (the default), woff, ttf, otf or ttc.
+  --no-transform                       Store WOFF2's glyf, loca and hmtx as they are, without the transforms that make TrueType outlines smaller.
+  --metadata <file>                    An XML file to store as the WOFF or WOFF2 extended metadata block, replacing the source's.
+  -r, --recursive                      Take every font in folders given as inputs, at any depth.
+  -j, --jobs <count>                   How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                           Allow outputs to replace their inputs; without -o, each input is written over in its own format.
+  --fail-fast                          Stop at the first file that fails.
+  --animate <fps>                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at <time>                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
+```
+
+### font subset
+
+```text
+Description:
+  Subset fonts to the characters a page uses and write WOFF2 (the default), WOFF, TTF or OTF. By default the subset keeps the layout tables and every glyph they can substitute, so it shapes the text as the full font does; prints the glyphs kept, the characters the font lacks and the sizes.
+
+Usage:
+  egami font subset <inputs>... [options]
+
+Arguments:
+  <inputs>  Font files (TTF, OTF, TTC, WOFF, WOFF2), globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  -o, --output <path>                  Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output. The extension picks the format.
+  -f, --format <format>                The output format, when -o's extension does not say: woff2 (the default), woff, ttf or otf.
+  --text <text>                        Characters to keep. Repeat it, and combine it with --text-file and --unicodes; together they say what to keep.
+  --text-file <file>                   Files or globs whose characters to keep, read as UTF-8 text (HTML and all: tags add only ASCII).
+  --unicodes <ranges>                  Code points to keep in CSS unicode-range syntax, such as U+0020-007E,U+00E5,U+4??.
+  --no-layout                          Keep only the glyphs the characters map to, without GSUB, GPOS and GDEF, renumbered densely: the smallest file, shaped without ligatures, kerning or contextual forms.
+  --retain-gids                        Keep every glyph's id, with empty glyphs in the gaps (the default unless --no-layout).
+  --variation <axis=value,...>         Where a variable font is instanced, such as wght=700,wdth=90; the subset is always a static font, by default at the font's default position.
+  --no-hinting                         Leave out TrueType hinting (fpgm, prep, cvt and glyph instructions); CFF hints stay.
+  --name-prefix <prefix>               Put this before the PostScript and CFF font names, such as ABCDEF+.
+  --face <index>                       Which font of a collection to subset, from 0.
+  -r, --recursive                      Take every font in folders given as inputs, at any depth.
+  -j, --jobs <count>                   How many files to work on at once; 0 (the default) for one per processor.
+  --in-place                           Allow outputs to replace their inputs; without -o, each input is written over in its own format.
+  --fail-fast                          Stop at the first file that fails.
+  --animate <fps>                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at <time>                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
+```
+
+### font info
+
+```text
+Description:
+  Describe fonts: names, container, outlines, glyphs, units per em, variation axes, embedding rights, tables and the Unicode blocks covered.
+
+Usage:
+  egami font info <inputs>... [options]
+
+Arguments:
+  <inputs>  Font files (TTF, OTF, TTC, WOFF, WOFF2), globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input.
+
+Options:
+  --json                               Write JSON, with every name, table and block, and the coverage as a CSS unicode-range.
+  -r, --recursive                      Take every font in folders given as inputs, at any depth.
+  -j, --jobs <count>                   How many files to read at once; 0 (the default) for one per processor.
   --fail-fast                          Stop at the first file that fails.
   --animate <fps>                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
   --at <time>                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.

@@ -305,6 +305,12 @@ default features), and GSUB, GPOS and GDEF are copied unchanged. The copied tabl
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-layout)]
 
+`SubsetOptions.DropHinting` leaves TrueType hinting out: the fpgm, prep and cvt programs and every glyph's instructions, which
+on a hinted font are a good share of each glyph. Renderers draw such a subset unhinted, as most screens draw web fonts anyway.
+CFF hints are kept.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-unhinted)]
+
 ## Web fonts
 
 `WebFontWriter.Write` writes a face, a subset or font data as a web font: WOFF2 by default, WOFF 1.0 with
@@ -319,6 +325,12 @@ at level 9 or 8, whichever is smaller, giving files within about 0.5 % of Google
 The metadata and private data blocks of a WOFF or WOFF2 source are kept unless `Metadata` or `PrivateData` replace them; an empty
 value writes none. A glyf table the writer cannot read is stored untransformed, with a `Font.TransformSkipped` warning. A bare CFF
 font has no sfnt tables and throws `ArgumentException`; subset it to OpenType CFF first.
+
+`WebFontReader.ToSfnt` goes the other way: a WOFF or WOFF2 file becomes the TrueType or OpenType font it holds, with WOFF2's glyf,
+loca and hmtx rebuilt, and a WOFF2 collection a TTC. The `egami font` commands of [the egami command](../cli/index.md#fonts) do
+all of this from a shell.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#webfont-unwrap)]
 
 ## Font data for PDF
 

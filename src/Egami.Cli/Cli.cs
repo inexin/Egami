@@ -113,6 +113,7 @@ internal static class Cli
         root.Subcommands.Add(DrawingCommands.Overlay(session));
         root.Subcommands.Add(DrawingCommands.Montage(session));
         root.Subcommands.Add(TraceCommand.Create(session));
+        root.Subcommands.Add(FontCommands.Create(session));
         root.Subcommands.Add(InfoCommands.Formats(session));
         root.Subcommands.Add(Mcp.McpCommand.Create(session));
         return root;

@@ -46,7 +46,7 @@ public sealed class McpTests : IAsyncDisposable
         [
             "info", "convert", "resize", "thumbnail", "crop", "rotate", "flip", "auto_orient", "run", "compare", "stats", "frames_split",
             "frames_join", "layers", "metadata_show", "metadata_strip", "metadata_copy", "color", "text", "overlay", "montage", "trace",
-            "formats",
+            "font_convert", "font_subset", "font_info", "formats",
         ];
         Assert.Equal(expected, tools.Select(t => t.Name));
 

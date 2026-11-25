@@ -6,7 +6,7 @@ WMF, EMF and [Egami.Formats.Extended](../formats/extended.md)'s PCX, SGI, Sun ra
 KTX, DPX, Cineon, FITS and camera RAW included. It has three layers:
 
 - **Single commands** for everyday jobs: `info`, `convert`, `resize`, `thumbnail`, `crop`, `rotate`, `flip`, `auto-orient`,
-  `compare`, `stats`, `frames`, `metadata`, `color`, `text`, `overlay`, `montage`, `trace` and `formats`.
+  `compare`, `stats`, `frames`, `metadata`, `color`, `text`, `overlay`, `montage`, `trace`, `font` and `formats`.
 - **`run`**, which chains any number of steps over each image. Every Egami operation is a step, and the same steps can be
   saved as a JSON workflow file.
 - **Batches**: every command takes many files, globs and folders, and works on several at once.
@@ -249,6 +249,35 @@ image's size, and `--precision` sets the SVG's decimal places.
 egami trace logo.png --preset logo --colors 4 -o logo.svg --preview-png logo-trace.png
 egami trace signature.png --preset black-and-white > signature.svg
 egami trace "scans/*.png" --preset sketch -o "svg/{name}.svg" --preview-png "previews/{name}.png"
+```
+
+## Fonts
+
+`font` works on font files rather than images, with [Egami.Fonts](../guides/text.md) (TTF, OTF, TTC, WOFF and WOFF2 in;
+every command takes many files, globs and folders with `--recursive` as the image commands do):
+
+- `font convert` writes fonts losslessly: WOFF2 by default, or WOFF, or a WOFF or WOFF2 file back to TTF, OTF or, for a
+  collection, TTC, by `-o`'s extension or `--format`. A collection converts to WOFF2 or TTC only. `--no-transform` stores
+  WOFF2's glyf, loca and hmtx untransformed; `--metadata` stores an XML file as the WOFF or WOFF2 metadata block.
+- `font subset` keeps the characters of `--text`, `--text-file` (files or globs, read as UTF-8 text, HTML and all) and
+  `--unicodes` (CSS unicode-range syntax: `U+0020-007E`, `U+00E5`, `U+4??`), which add up. By default the subset keeps
+  GSUB, GPOS and GDEF and every glyph they can substitute for the kept ones, with the glyph ids, so the text shapes as with the
+  full font (ligatures, kerning, contextual forms); `--no-layout` keeps only the mapped glyphs, renumbered, for the smallest
+  file (`--retain-gids` keeps the ids). A variable font becomes a static font at its default position, or at `--variation
+  wght=700,wdth=90`. `--no-hinting` leaves out TrueType hinting, `--name-prefix` prefixes the PostScript name and `--face`
+  picks a font of a collection. It prints one line per font: the glyphs kept of the total, the asked characters the font
+  lacks (characters in `--unicodes` ranges keep whatever the font has) and the sizes, and warns when the subset leaves out
+  color, bitmap, vertical, kern or MATH tables.
+- `font info` prints each font's names, container, outlines, glyph count, units per em, variation axes, embedding rights,
+  tables and the Unicode blocks it covers; `--json` adds every name and table and the coverage as a CSS `unicode-range`.
+
+```sh
+egami font convert NotoSans-Regular.ttf -o web/
+egami font convert "fonts/*.woff2" -o "ttf/{name}.ttf"
+egami font subset NotoSans-Regular.ttf --text-file "site/**/*.html" -o web/NotoSans-subset.woff2
+egami font subset NotoSans-Regular.ttf --unicodes U+0020-007E,U+00A0-00FF --no-layout -o latin1.woff2
+egami font subset RobotoFlex.ttf --text "Headline" --variation wght=800 -o headline.woff2
+egami font info NotoSans-Regular.ttf --json
 ```
 
 ## Other tools
