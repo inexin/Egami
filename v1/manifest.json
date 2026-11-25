@@ -6091,6 +6091,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.WebFontReader.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.WebFontReader.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.WebFontReader",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.WebFontReader.yml\" sourcestartlinenumber=\"1\">Unwraps WOFF 1.0 and WOFF 2.0 files into the TrueType or OpenType font they hold, as <xref href=\"Egami.Fonts.WebFontWriter\" data-throw-if-not-resolved=\"false\"></xref> wrapped it:\nthe reverse of the writer, for tools that want the sfnt back.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Fonts.WebFontWriter.yml",
       "output": {
         ".html": {

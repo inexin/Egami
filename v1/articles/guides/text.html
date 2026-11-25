@@ -572,13 +572,31 @@ bool restricted = face.Embedding.HasFlag(FontEmbedding.Restricted);
 </code></pre>
 <p>A PDF needs only the glyphs it draws. A subset that is to be shaped again, such as a web font for a known set of pages, sets
 <code>SubsetOptions.LayoutClosure</code>: the kept glyphs gain every glyph GSUB can substitute for them (<code>OpenTypeLayout.GetClosure</code> with the
-default features), and GSUB, GPOS and GDEF are copied unchanged. The copied tables use the old glyph ids, so it needs
+default features), the dotted circle the shaper puts before a mark that starts a run, and the larger variants and assembly parts
+MATH gives them, and GSUB, GPOS, GDEF and MATH are copied unchanged. The copied tables use the old glyph ids, so it needs
 <code>RetainGlyphIds</code>.</p>
 <pre><code class="lang-csharp">// Keep what the text's characters can become (ligatures, contextual forms) and the layout tables, so the subset shapes
 // the text as the full face does; the copied tables use the old glyph ids, so the ids are kept.
 ushort[] glyphs = [.. &quot;office&quot;.Select(c =&gt; face.GetGlyph(c))];
 FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
 GlyphRun shaped = new Font(subset.ToTypeface(), 12).Shape(&quot;office&quot;);
+</code></pre>
+<p>The shaper draws a character the face lacks from its canonical decomposition, and composes a base and a mark to the precomposed
+character when the face has it, so the glyphs of a text are more than those its characters map to. <code>FontSubsetter.GlyphsFor</code>
+gives them all.</p>
+<pre><code class="lang-csharp">// The glyphs a text needs as the shaper draws it: &quot;e&quot; with a combining acute also keeps the precomposed &quot;é&quot; the shaper
+// composes them to, and a character the face lacks keeps the glyphs of its decomposition.
+string text = &quot;résumé&quot;;
+IReadOnlyList&lt;ushort&gt; glyphs = FontSubsetter.GlyphsFor(face, text.EnumerateRunes().Select(r =&gt; r.Value));
+FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+</code></pre>
+<p><code>SubsetOptions.DropHinting</code> leaves TrueType hinting out: the fpgm, prep and cvt programs and every glyph's instructions, which
+on a hinted font are a good share of each glyph. Renderers draw such a subset unhinted, as most screens draw web fonts anyway.
+CFF hints are kept.</p>
+<pre><code class="lang-csharp">// For screens that ignore TrueType hints anyway, leave them out: fpgm, prep, cvt and every glyph's instructions.
+ushort[] glyphs = [.. &quot;Hello&quot;.Select(c =&gt; face.GetGlyph(c))];
+FontSubset hinted = FontSubsetter.Subset(face, glyphs);
+FontSubset unhinted = FontSubsetter.Subset(face, glyphs, new SubsetOptions { DropHinting = true });
 </code></pre><h2 id="web-fonts">Web fonts</h2>
 <p><code>WebFontWriter.Write</code> writes a face, a subset or font data as a web font: WOFF2 by default, WOFF 1.0 with
 <code>WebFontOptions.Format</code>. Both keep every table, so the file reads back as the font it came from; WOFF2 stores glyf and loca in its
@@ -600,7 +618,13 @@ File.WriteAllBytes(System.IO.Path.Combine(folder, &quot;NotoSans-Regular.woff&qu
 <p>The metadata and private data blocks of a WOFF or WOFF2 source are kept unless <code>Metadata</code> or <code>PrivateData</code> replace them; an empty
 value writes none. A glyf table the writer cannot read is stored untransformed, with a <code>Font.TransformSkipped</code> warning. A bare CFF
 font has no sfnt tables and throws <code>ArgumentException</code>; subset it to OpenType CFF first.</p>
-<h2 id="font-data-for-pdf">Font data for PDF</h2>
+<p><code>WebFontReader.ToSfnt</code> goes the other way: a WOFF or WOFF2 file becomes the TrueType or OpenType font it holds, with WOFF2's glyf,
+loca and hmtx rebuilt, and a WOFF2 collection a TTC. The <code>egami font</code> commands of <a href="../cli/index.html#fonts">the egami command</a> do
+all of this from a shell.</p>
+<pre><code class="lang-csharp">// Back from WOFF2 to a TrueType font a desktop app installs: glyf, loca and hmtx rebuilt, every other table as it was.
+byte[] ttf = WebFontReader.ToSfnt(woff2File);
+Typeface installed = Typeface.FromMemory(ttf);
+</code></pre><h2 id="font-data-for-pdf">Font data for PDF</h2>
 <p>A PDF font reaches its glyphs in ways a text layout never does: by glyph name, by CID, through one particular cmap subtable or
 through the font program's own encoding. <code>Typeface</code> gives each as FreeType does, so a PDF reader built on Egami finds the glyphs
 PDFium finds.</p>

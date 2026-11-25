@@ -27699,6 +27699,22 @@ references:
   commentId: T:Egami.Fonts.FontSubsetter
   fullName: Egami.Fonts.FontSubsetter
   nameWithType: FontSubsetter
+- uid: Egami.Fonts.FontSubsetter.GlyphsFor(Egami.Fonts.Typeface,System.Collections.Generic.IEnumerable{System.Int32})
+  name: GlyphsFor(Typeface, IEnumerable<int>)
+  href: api/Egami.Fonts.FontSubsetter.html#Egami_Fonts_FontSubsetter_GlyphsFor_Egami_Fonts_Typeface_System_Collections_Generic_IEnumerable_System_Int32__
+  commentId: M:Egami.Fonts.FontSubsetter.GlyphsFor(Egami.Fonts.Typeface,System.Collections.Generic.IEnumerable{System.Int32})
+  name.vb: GlyphsFor(Typeface, IEnumerable(Of Integer))
+  fullName: Egami.Fonts.FontSubsetter.GlyphsFor(Egami.Fonts.Typeface, System.Collections.Generic.IEnumerable<int>)
+  fullName.vb: Egami.Fonts.FontSubsetter.GlyphsFor(Egami.Fonts.Typeface, System.Collections.Generic.IEnumerable(Of Integer))
+  nameWithType: FontSubsetter.GlyphsFor(Typeface, IEnumerable<int>)
+  nameWithType.vb: FontSubsetter.GlyphsFor(Typeface, IEnumerable(Of Integer))
+- uid: Egami.Fonts.FontSubsetter.GlyphsFor*
+  name: GlyphsFor
+  href: api/Egami.Fonts.FontSubsetter.html#Egami_Fonts_FontSubsetter_GlyphsFor_
+  commentId: Overload:Egami.Fonts.FontSubsetter.GlyphsFor
+  isSpec: "True"
+  fullName: Egami.Fonts.FontSubsetter.GlyphsFor
+  nameWithType: FontSubsetter.GlyphsFor
 - uid: Egami.Fonts.FontSubsetter.Subset(Egami.Fonts.Typeface,System.Collections.Generic.IEnumerable{System.UInt16},Egami.Fonts.SubsetOptions)
   name: Subset(Typeface, IEnumerable<ushort>, SubsetOptions?)
   href: api/Egami.Fonts.FontSubsetter.html#Egami_Fonts_FontSubsetter_Subset_Egami_Fonts_Typeface_System_Collections_Generic_IEnumerable_System_UInt16__Egami_Fonts_SubsetOptions_
@@ -35269,6 +35285,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.SubsetOptions.Default
   nameWithType: SubsetOptions.Default
+- uid: Egami.Fonts.SubsetOptions.DropHinting
+  name: DropHinting
+  href: api/Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_DropHinting
+  commentId: P:Egami.Fonts.SubsetOptions.DropHinting
+  fullName: Egami.Fonts.SubsetOptions.DropHinting
+  nameWithType: SubsetOptions.DropHinting
+- uid: Egami.Fonts.SubsetOptions.DropHinting*
+  name: DropHinting
+  href: api/Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_DropHinting_
+  commentId: Overload:Egami.Fonts.SubsetOptions.DropHinting
+  isSpec: "True"
+  fullName: Egami.Fonts.SubsetOptions.DropHinting
+  nameWithType: SubsetOptions.DropHinting
 - uid: Egami.Fonts.SubsetOptions.FontNamePrefix
   name: FontNamePrefix
   href: api/Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_FontNamePrefix
@@ -41286,6 +41315,28 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.WebFontOptions.TransformHmtx
   nameWithType: WebFontOptions.TransformHmtx
+- uid: Egami.Fonts.WebFontReader
+  name: WebFontReader
+  href: api/Egami.Fonts.WebFontReader.html
+  commentId: T:Egami.Fonts.WebFontReader
+  fullName: Egami.Fonts.WebFontReader
+  nameWithType: WebFontReader
+- uid: Egami.Fonts.WebFontReader.ToSfnt(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext)
+  name: ToSfnt(ReadOnlyMemory<byte>, EgamiContext?)
+  href: api/Egami.Fonts.WebFontReader.html#Egami_Fonts_WebFontReader_ToSfnt_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_
+  commentId: M:Egami.Fonts.WebFontReader.ToSfnt(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext)
+  name.vb: ToSfnt(ReadOnlyMemory(Of Byte), EgamiContext)
+  fullName: Egami.Fonts.WebFontReader.ToSfnt(System.ReadOnlyMemory<byte>, Egami.EgamiContext?)
+  fullName.vb: Egami.Fonts.WebFontReader.ToSfnt(System.ReadOnlyMemory(Of Byte), Egami.EgamiContext)
+  nameWithType: WebFontReader.ToSfnt(ReadOnlyMemory<byte>, EgamiContext?)
+  nameWithType.vb: WebFontReader.ToSfnt(ReadOnlyMemory(Of Byte), EgamiContext)
+- uid: Egami.Fonts.WebFontReader.ToSfnt*
+  name: ToSfnt
+  href: api/Egami.Fonts.WebFontReader.html#Egami_Fonts_WebFontReader_ToSfnt_
+  commentId: Overload:Egami.Fonts.WebFontReader.ToSfnt
+  isSpec: "True"
+  fullName: Egami.Fonts.WebFontReader.ToSfnt
+  nameWithType: WebFontReader.ToSfnt
 - uid: Egami.Fonts.WebFontWriter
   name: WebFontWriter
   href: api/Egami.Fonts.WebFontWriter.html

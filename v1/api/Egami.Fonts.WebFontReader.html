@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class WebFontReader | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class WebFontReader | Egami ">
+      
+      <meta name="description" content="Unwraps WOFF 1.0 and WOFF 2.0 files into the TrueType or OpenType font they hold, as  wrapped it: the reverse of the writer, for tools that want the sfnt back.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Fonts_WebFontReader.md&amp;value=---%0Auid%3A%20Egami.Fonts.WebFontReader%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Fonts.WebFontReader">
+
+
+
+  <h1 id="Egami_Fonts_WebFontReader" data-uid="Egami.Fonts.WebFontReader" class="text-break">
+Class WebFontReader  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontReader.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Fonts.html">Fonts</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Fonts.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Unwraps WOFF 1.0 and WOFF 2.0 files into the TrueType or OpenType font they hold, as <a class="xref" href="Egami.Fonts.WebFontWriter.html">WebFontWriter</a> wrapped it:
+the reverse of the writer, for tools that want the sfnt back.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class WebFontReader</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">WebFontReader</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Fonts_WebFontReader_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Back from WOFF2 to a TrueType font a desktop app installs: glyf, loca and hmtx rebuilt, every other table as it was.
+byte[] ttf = WebFontReader.ToSfnt(woff2File);
+Typeface installed = Typeface.FromMemory(ttf);</code></pre>
+
+
+  <h2 id="Egami_Fonts_WebFontReader_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>WOFF 1.0 tables are inflated as they were stored. A WOFF2 file's glyf, loca and hmtx are rebuilt from their transformed
+forms (WOFF 2.0, sections 5.1 and 5.4), so glyf's glyphs read the same as the original's but may be laid out more compactly;
+a WOFF2 collection becomes a TrueType or OpenType collection (.ttc) with its shared tables stored once. The container's
+extended metadata and private data are not part of the sfnt; <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GetWoffMetadata">GetWoffMetadata()</a> and
+<a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GetWoffPrivateData">GetWoffPrivateData()</a> read them.</p>
+</div>
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Fonts_WebFontReader_ToSfnt_" data-uid="Egami.Fonts.WebFontReader.ToSfnt*"></a>
+
+  <h3 id="Egami_Fonts_WebFontReader_ToSfnt_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext_" data-uid="Egami.Fonts.WebFontReader.ToSfnt(System.ReadOnlyMemory{System.Byte},Egami.EgamiContext)">
+  ToSfnt(ReadOnlyMemory&lt;byte&gt;, EgamiContext?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontReader.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Turns a WOFF or WOFF2 file back into the sfnt, or the collection, it holds.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static byte[] ToSfnt(ReadOnlyMemory&lt;byte&gt; data, EgamiContext? context = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
+    <dd><p>The WOFF or WOFF2 file.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.EgamiContext.html">EgamiContext</a></dt>
+    <dd><p>The context whose <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a> bounds the font the file unpacks to and which receives
+diagnostics, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.EgamiContext.html#Egami_EgamiContext_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>[]</dt>
+    <dd><p>The TrueType or OpenType font (.ttf, .otf), or a collection (.ttc) for a WOFF2 collection.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_WebFontReader_ToSfnt_System_ReadOnlyMemory_System_Byte__Egami_EgamiContext__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Back from WOFF2 to a TrueType font a desktop app installs: glyf, loca and hmtx rebuilt, every other table as it was.
+byte[] ttf = WebFontReader.ToSfnt(woff2File);
+Typeface installed = Typeface.FromMemory(ttf);</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The data is not a WOFF or WOFF2 file.</p>
+</dd>
+    <dt><a class="xref" href="Egami.CorruptDataException.html">CorruptDataException</a></dt>
+    <dd><p>A table does not decompress, or a transformed table cannot be rebuilt.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The font would be larger than the context's <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontReader.cs/#L20" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

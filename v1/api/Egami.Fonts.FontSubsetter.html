@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Fonts_FontSubsetter" data-uid="Egami.Fonts.FontSubsetter" class="text-break">
-Class FontSubsetter  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L122"><i class="bi bi-code-slash"></i></a>
+Class FontSubsetter  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L134"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -172,11 +172,63 @@ whether a face may be subsetted and embedded.</p>
 </h2>
 
 
+  <a id="Egami_Fonts_FontSubsetter_GlyphsFor_" data-uid="Egami.Fonts.FontSubsetter.GlyphsFor*"></a>
+
+  <h3 id="Egami_Fonts_FontSubsetter_GlyphsFor_Egami_Fonts_Typeface_System_Collections_Generic_IEnumerable_System_Int32__" data-uid="Egami.Fonts.FontSubsetter.GlyphsFor(Egami.Fonts.Typeface,System.Collections.Generic.IEnumerable{System.Int32})">
+  GlyphsFor(Typeface, IEnumerable&lt;int&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L148"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the glyphs that draw characters as the shaper does: the glyph of each one the face maps; for one the face lacks, the
+glyphs of its canonical decomposition when the face draws every part (the shaper draws a missing &quot;é&quot; as &quot;e&quot; and a combining
+acute); and the glyph of each precomposed character the face maps whose decomposition the characters hold (the shaper
+composes &quot;e&quot; and a combining acute to &quot;é&quot;). Characters the face cannot draw add nothing; .notdef is not included.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static IReadOnlyList&lt;ushort&gt; GlyphsFor(Typeface face, IEnumerable&lt;int&gt; codePoints)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>face</code> <a class="xref" href="Egami.Fonts.Typeface.html">Typeface</a></dt>
+    <dd><p>The face.</p>
+</dd>
+    <dt><code>codePoints</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd><p>The characters, as Unicode code points; duplicates are fine.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a>&gt;</dt>
+    <dd><p>The glyphs, in ascending order, ready for <a class="xref" href="Egami.Fonts.FontSubsetter.html#Egami_Fonts_FontSubsetter_Subset_Egami_Fonts_Typeface_System_Collections_Generic_IEnumerable_System_UInt16__Egami_Fonts_SubsetOptions_">Subset(Typeface, IEnumerable&lt;ushort&gt;, SubsetOptions?)</a>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_FontSubsetter_GlyphsFor_Egami_Fonts_Typeface_System_Collections_Generic_IEnumerable_System_Int32___examples">Examples</h4>
+  <pre><code class="lang-csharp">// The glyphs a text needs as the shaper draws it: "e" with a combining acute also keeps the precomposed "é" the shaper
+// composes them to, and a character the face lacks keeps the glyphs of its decomposition.
+string text = "résumé";
+IReadOnlyList&lt;ushort&gt; glyphs = FontSubsetter.GlyphsFor(face, text.EnumerateRunes().Select(r =&gt; r.Value));
+FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });</code></pre>
+
+
+
+
+
+
   <a id="Egami_Fonts_FontSubsetter_Subset_" data-uid="Egami.Fonts.FontSubsetter.Subset*"></a>
 
   <h3 id="Egami_Fonts_FontSubsetter_Subset_Egami_Fonts_Typeface_System_Collections_Generic_IEnumerable_System_UInt16__Egami_Fonts_SubsetOptions_" data-uid="Egami.Fonts.FontSubsetter.Subset(Egami.Fonts.Typeface,System.Collections.Generic.IEnumerable{System.UInt16},Egami.Fonts.SubsetOptions)">
   Subset(Typeface, IEnumerable&lt;ushort&gt;, SubsetOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L138"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L231"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes a subset of a face.</p>
@@ -248,7 +300,7 @@ is set without <a class="xref" href="Egami.Fonts.SubsetOptions.html#Egami_Fonts_
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L122" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L134" class="edit-link">Edit this page</a>
         </div>
 
 
