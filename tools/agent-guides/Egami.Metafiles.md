@@ -13,6 +13,7 @@ Namespaces: `Egami.Metafiles`, with `Egami`, `Egami.Pixels`, `Egami.Drawing` and
 - `metafile.Rasterize<TPixel>(MetafileRenderOptions)`: a raster at a `Dpi`, or a `Width` or `Height`, over a `Background`.
 - `metafile.Draw(canvas, rect)`: stretched to a box on any canvas, raster or PDF page.
 - `MetafileRenderOptions.Fonts`: the fonts its text is set in.
+- `new EmfCanvas(stream, width, height, EmfWriteOptions)`: a canvas that writes an EMF (dual EMF+ by default) when disposed.
 
 ## Samples
 
@@ -24,6 +25,10 @@ Draw on a canvas:
 
 {{sample Metafiles.cs#metafile-draw}}
 
+Write an EMF:
+
+{{sample Metafiles.cs#emf-canvas}}
+
 Fonts that are not installed:
 
 {{sample Metafiles.cs#metafile-substitutes}}
@@ -33,6 +38,7 @@ Fonts that are not installed:
 - Rendering on a server and getting the wrong fonts. Text uses the installed fonts by default, and metafiles name Arial, Calibri
   and Times New Roman, which Linux machines lack: add Egami.Fonts.Substitutes as in the sample.
 - Leaving the background transparent and saving JPEG. Set `Background` when the output has no alpha.
+- Forgetting to dispose `EmfCanvas`: the file is written only then.
 - Rasterizing a metafile to put it into a PDF or SVG. `Draw` it on that canvas instead, so it stays vector.
 
 ## More

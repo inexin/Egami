@@ -73,6 +73,25 @@ sets another resolution.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-format)]
 
+## Writing EMF
+
+`EmfCanvas` is a `Canvas` that writes an EMF: anything drawn on it, by your code or by a `Picture`, becomes a metafile that
+Word, PowerPoint, Windows and Egami.Metafiles play. Disposing it writes the file to the stream, which stays open. Device
+units are pixels at `EmfWriteOptions.Dpi` (96 by default).
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#emf-canvas)]
+
+`EmfWriteOptions.Kind` picks what goes in the file: `EmfPlusDual` (the default) writes EMF+ records and a GDI copy of each
+drawing for programs without GDI+, `EmfPlusOnly` the EMF+ records alone and `Emf` the GDI records alone. `Compress` writes
+EMZ, `Description` the header's description.
+
+Paths, rectangles, rounded rectangles, ovals and points with solid paints, every `Stroke` setting, transforms, save and
+restore, clips and aliased drawing are written as vectors; equal pens, brushes and paths are written once and shared. The
+GDI copy draws colors opaque, since GDI has no alpha. Text is written as outlines; `EmfText.Glyphs` (`EmfWriteOptions.Text`)
+is reserved for EMF+ text records and writes outlines too for now. Gradients and other paints, images, meshes
+and layers with opacity, blending, filters or masks are drawn by Egami as an image at `FallbackScale` times the resolution
+and placed in the file, with one `Metafile.FallbackImage` warning in `Warnings` for each kind.
+
 ## What plays, and how close it is
 
 The GDI records of WMF and EMF play as GDI plays them: map modes, the world transform, pens and brushes (hatches and pattern
