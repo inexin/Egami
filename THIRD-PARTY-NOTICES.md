@@ -319,6 +319,9 @@ transcribed through zint's backend library (zint 2.16.0, BSD-3), whose frontends
   `backend/dmatrix.h`), in `src/Egami.Barcodes/Matrix/DataMatrixTables.cs`.
 - PDF417 symbol character patterns for clusters 0, 3 and 6 (ISO/IEC 15438 Annex A; zint `backend/pdf417_tabs.h`), in
   `src/Egami.Barcodes/Matrix/Pdf417Tables.cs`.
+- GS1 DataBar character groups, finder patterns, checksum weights, Limited check character patterns and Expanded finder
+  sequences (ISO/IEC 24724 Tables 1, 2, 4 to 8, 14 to 16 and Annex C; zint `backend/rss.h`), in
+  `src/Egami.Barcodes/Linear/DataBarTables.cs`.
 
 Egami's Data Matrix encodation (`src/Egami.Barcodes/Matrix/DataMatrixEncoder.cs`) is translated from zint's minimal
 encodation in `backend/dmatrix.c` (itself based on Alex Geller's algorithm), with its end-of-data rules, padding, block
