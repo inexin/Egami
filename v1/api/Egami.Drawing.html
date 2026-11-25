@@ -100,6 +100,13 @@ Classes
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.Bevel.html">Bevel</a></dt>
+      <dd><p>A bevel along a shape's edge, lit by a light: the rim the width wide rises by the profile to the height, and where it faces
+the light more than the flat face does it is lightened, where less it is darkened. <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawBevel_Egami_Drawing_Path_Egami_Drawing_Bevel_">DrawBevel(Path, Bevel)</a> draws it
+over a shape that is already filled.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Drawing.BlendPaint.html">BlendPaint</a></dt>
       <dd><p>Two paints combined pixel by pixel with a blend mode, as Skia's blend shader: <a class="xref" href="Egami.Drawing.BlendPaint.html#Egami_Drawing_BlendPaint_Source">Source</a> is blended onto
 <a class="xref" href="Egami.Drawing.BlendPaint.html#Egami_Drawing_BlendPaint_Destination">Destination</a>, and the result is what this paint draws. Each part keeps its own <a class="xref" href="Egami.Drawing.Paint.html#Egami_Drawing_Paint_LocalMatrix">LocalMatrix</a>
@@ -444,6 +451,11 @@ at <a class="xref" href="Egami.Drawing.SweepGradient.html#Egami_Drawing_SweepGra
 Structs
 </h3>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.BevelLight.html">BevelLight</a></dt>
+      <dd><p>A distant light over the page, as a bevel sees it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Drawing.CornerRadii.html">CornerRadii</a></dt>
       <dd><p>The x and y radius of each corner of a <a class="xref" href="Egami.Drawing.RoundRect.html">RoundRect</a>, clockwise from the top-left. A radius below 0 counts as 0, and a
 corner with either radius 0 is square.</p>
@@ -509,6 +521,19 @@ Enums
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.BevelMaterial.html">BevelMaterial</a></dt>
+      <dd><p>How a bevel's surface takes the light: how much it scatters (diffuse), how much it mirrors (specular) and how sharply. The
+names are DrawingML's preset materials (<code>prstMaterial</code>); the values are Egami's own.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.BevelProfile.html">BevelProfile</a></dt>
+      <dd><p>The cross-section of a bevel: how its height rises from the shape's edge to the flat face inside it. The names are DrawingML's
+bevel presets (<code>a:bevelT prst</code>); each is a smooth curve of Egami's own, tuned to the look of its name rather than to
+another renderer's pixels.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Drawing.BlurStyle.html">BlurStyle</a></dt>
       <dd><p>How a <a class="xref" href="Egami.Drawing.MaskBlur.html">MaskBlur</a> keeps or removes the blurred shape's inside and outside, as Skia's blur styles.</p>
 </dd>
@@ -541,6 +566,11 @@ Enums
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Drawing.LcdSampling.html">LcdSampling</a></dt>
       <dd><p>How LCD text samples a glyph before filtering.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Drawing.LightDirection.html">LightDirection</a></dt>
+      <dd><p>The eight directions a DrawingML light rig shines from (<code>a:lightRig dir</code>).</p>
 </dd>
     </dl>
     <dl class="jumplist">

@@ -2381,6 +2381,62 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.Bevel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.Bevel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.Bevel",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.Bevel.yml\" sourcestartlinenumber=\"1\">A bevel along a shape's edge, lit by a light: the rim the width wide rises by the profile to the height, and where it faces\nthe light more than the flat face does it is lightened, where less it is darkened. <xref href=\"Egami.Drawing.Canvas.DrawBevel(Egami.Drawing.Path%2cEgami.Drawing.Bevel)\" data-throw-if-not-resolved=\"false\"></xref> draws it\nover a shape that is already filled.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.BevelLight.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.BevelLight.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.BevelLight",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.BevelLight.yml\" sourcestartlinenumber=\"1\">A distant light over the page, as a bevel sees it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.BevelMaterial.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.BevelMaterial.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.BevelMaterial",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.BevelMaterial.yml\" sourcestartlinenumber=\"1\">How a bevel's surface takes the light: how much it scatters (diffuse), how much it mirrors (specular) and how sharply. The\nnames are DrawingML's preset materials (<code>prstMaterial</code>); the values are Egami's own.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.BevelProfile.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.BevelProfile.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.BevelProfile",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.BevelProfile.yml\" sourcestartlinenumber=\"1\">The cross-section of a bevel: how its height rises from the shape's edge to the flat face inside it. The names are DrawingML's\nbevel presets (<code>a:bevelT prst</code>); each is a smooth curve of Egami's own, tuned to the look of its name rather than to\nanother renderer's pixels.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Drawing.BlendPaint.yml",
       "output": {
         ".html": {
@@ -2826,6 +2882,20 @@
       "IsMRef": true,
       "Title": "Egami.Drawing.LcdSampling",
       "Summary": "<p sourcefile=\"api/Egami.Drawing.LcdSampling.yml\" sourcestartlinenumber=\"1\">How LCD text samples a glyph before filtering.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Drawing.LightDirection.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Drawing.LightDirection.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Drawing.LightDirection",
+      "Summary": "<p sourcefile=\"api/Egami.Drawing.LightDirection.yml\" sourcestartlinenumber=\"1\">The eight directions a DrawingML light rig shines from (<code>a:lightRig dir</code>).</p>\n"
     },
     {
       "type": "ManagedReference",

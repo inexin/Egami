@@ -14262,6 +14262,320 @@ references:
   commentId: F:Egami.Drawing.Antialiasing.GdiPlus
   fullName: Egami.Drawing.Antialiasing.GdiPlus
   nameWithType: Antialiasing.GdiPlus
+- uid: Egami.Drawing.Bevel
+  name: Bevel
+  href: api/Egami.Drawing.Bevel.html
+  commentId: T:Egami.Drawing.Bevel
+  fullName: Egami.Drawing.Bevel
+  nameWithType: Bevel
+- uid: Egami.Drawing.Bevel.Height
+  name: Height
+  href: api/Egami.Drawing.Bevel.html#Egami_Drawing_Bevel_Height
+  commentId: P:Egami.Drawing.Bevel.Height
+  fullName: Egami.Drawing.Bevel.Height
+  nameWithType: Bevel.Height
+- uid: Egami.Drawing.Bevel.Height*
+  name: Height
+  href: api/Egami.Drawing.Bevel.html#Egami_Drawing_Bevel_Height_
+  commentId: Overload:Egami.Drawing.Bevel.Height
+  isSpec: "True"
+  fullName: Egami.Drawing.Bevel.Height
+  nameWithType: Bevel.Height
+- uid: Egami.Drawing.Bevel.Light
+  name: Light
+  href: api/Egami.Drawing.Bevel.html#Egami_Drawing_Bevel_Light
+  commentId: P:Egami.Drawing.Bevel.Light
+  fullName: Egami.Drawing.Bevel.Light
+  nameWithType: Bevel.Light
+- uid: Egami.Drawing.Bevel.Light*
+  name: Light
+  href: api/Egami.Drawing.Bevel.html#Egami_Drawing_Bevel_Light_
+  commentId: Overload:Egami.Drawing.Bevel.Light
+  isSpec: "True"
+  fullName: Egami.Drawing.Bevel.Light
+  nameWithType: Bevel.Light
+- uid: Egami.Drawing.Bevel.Material
+  name: Material
+  href: api/Egami.Drawing.Bevel.html#Egami_Drawing_Bevel_Material
+  commentId: P:Egami.Drawing.Bevel.Material
+  fullName: Egami.Drawing.Bevel.Material
+  nameWithType: Bevel.Material
+- uid: Egami.Drawing.Bevel.Material*
+  name: Material
+  href: api/Egami.Drawing.Bevel.html#Egami_Drawing_Bevel_Material_
+  commentId: Overload:Egami.Drawing.Bevel.Material
+  isSpec: "True"
+  fullName: Egami.Drawing.Bevel.Material
+  nameWithType: Bevel.Material
+- uid: Egami.Drawing.Bevel.Profile
+  name: Profile
+  href: api/Egami.Drawing.Bevel.html#Egami_Drawing_Bevel_Profile
+  commentId: P:Egami.Drawing.Bevel.Profile
+  fullName: Egami.Drawing.Bevel.Profile
+  nameWithType: Bevel.Profile
+- uid: Egami.Drawing.Bevel.Profile*
+  name: Profile
+  href: api/Egami.Drawing.Bevel.html#Egami_Drawing_Bevel_Profile_
+  commentId: Overload:Egami.Drawing.Bevel.Profile
+  isSpec: "True"
+  fullName: Egami.Drawing.Bevel.Profile
+  nameWithType: Bevel.Profile
+- uid: Egami.Drawing.Bevel.Width
+  name: Width
+  href: api/Egami.Drawing.Bevel.html#Egami_Drawing_Bevel_Width
+  commentId: P:Egami.Drawing.Bevel.Width
+  fullName: Egami.Drawing.Bevel.Width
+  nameWithType: Bevel.Width
+- uid: Egami.Drawing.Bevel.Width*
+  name: Width
+  href: api/Egami.Drawing.Bevel.html#Egami_Drawing_Bevel_Width_
+  commentId: Overload:Egami.Drawing.Bevel.Width
+  isSpec: "True"
+  fullName: Egami.Drawing.Bevel.Width
+  nameWithType: Bevel.Width
+- uid: Egami.Drawing.BevelLight
+  name: BevelLight
+  href: api/Egami.Drawing.BevelLight.html
+  commentId: T:Egami.Drawing.BevelLight
+  fullName: Egami.Drawing.BevelLight
+  nameWithType: BevelLight
+- uid: Egami.Drawing.BevelLight.#ctor(System.Single,System.Single,System.Single)
+  name: BevelLight(float, float, float)
+  href: api/Egami.Drawing.BevelLight.html#Egami_Drawing_BevelLight__ctor_System_Single_System_Single_System_Single_
+  commentId: M:Egami.Drawing.BevelLight.#ctor(System.Single,System.Single,System.Single)
+  name.vb: New(Single, Single, Single)
+  fullName: Egami.Drawing.BevelLight.BevelLight(float, float, float)
+  fullName.vb: Egami.Drawing.BevelLight.New(Single, Single, Single)
+  nameWithType: BevelLight.BevelLight(float, float, float)
+  nameWithType.vb: BevelLight.New(Single, Single, Single)
+- uid: Egami.Drawing.BevelLight.#ctor*
+  name: BevelLight
+  href: api/Egami.Drawing.BevelLight.html#Egami_Drawing_BevelLight__ctor_
+  commentId: Overload:Egami.Drawing.BevelLight.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Drawing.BevelLight.BevelLight
+  fullName.vb: Egami.Drawing.BevelLight.New
+  nameWithType: BevelLight.BevelLight
+  nameWithType.vb: BevelLight.New
+- uid: Egami.Drawing.BevelLight.Angle
+  name: Angle
+  href: api/Egami.Drawing.BevelLight.html#Egami_Drawing_BevelLight_Angle
+  commentId: P:Egami.Drawing.BevelLight.Angle
+  fullName: Egami.Drawing.BevelLight.Angle
+  nameWithType: BevelLight.Angle
+- uid: Egami.Drawing.BevelLight.Angle*
+  name: Angle
+  href: api/Egami.Drawing.BevelLight.html#Egami_Drawing_BevelLight_Angle_
+  commentId: Overload:Egami.Drawing.BevelLight.Angle
+  isSpec: "True"
+  fullName: Egami.Drawing.BevelLight.Angle
+  nameWithType: BevelLight.Angle
+- uid: Egami.Drawing.BevelLight.Default
+  name: Default
+  href: api/Egami.Drawing.BevelLight.html#Egami_Drawing_BevelLight_Default
+  commentId: P:Egami.Drawing.BevelLight.Default
+  fullName: Egami.Drawing.BevelLight.Default
+  nameWithType: BevelLight.Default
+- uid: Egami.Drawing.BevelLight.Default*
+  name: Default
+  href: api/Egami.Drawing.BevelLight.html#Egami_Drawing_BevelLight_Default_
+  commentId: Overload:Egami.Drawing.BevelLight.Default
+  isSpec: "True"
+  fullName: Egami.Drawing.BevelLight.Default
+  nameWithType: BevelLight.Default
+- uid: Egami.Drawing.BevelLight.Elevation
+  name: Elevation
+  href: api/Egami.Drawing.BevelLight.html#Egami_Drawing_BevelLight_Elevation
+  commentId: P:Egami.Drawing.BevelLight.Elevation
+  fullName: Egami.Drawing.BevelLight.Elevation
+  nameWithType: BevelLight.Elevation
+- uid: Egami.Drawing.BevelLight.Elevation*
+  name: Elevation
+  href: api/Egami.Drawing.BevelLight.html#Egami_Drawing_BevelLight_Elevation_
+  commentId: Overload:Egami.Drawing.BevelLight.Elevation
+  isSpec: "True"
+  fullName: Egami.Drawing.BevelLight.Elevation
+  nameWithType: BevelLight.Elevation
+- uid: Egami.Drawing.BevelLight.FromDirection(Egami.Drawing.LightDirection,System.Single,System.Single)
+  name: FromDirection(LightDirection, float, float)
+  href: api/Egami.Drawing.BevelLight.html#Egami_Drawing_BevelLight_FromDirection_Egami_Drawing_LightDirection_System_Single_System_Single_
+  commentId: M:Egami.Drawing.BevelLight.FromDirection(Egami.Drawing.LightDirection,System.Single,System.Single)
+  name.vb: FromDirection(LightDirection, Single, Single)
+  fullName: Egami.Drawing.BevelLight.FromDirection(Egami.Drawing.LightDirection, float, float)
+  fullName.vb: Egami.Drawing.BevelLight.FromDirection(Egami.Drawing.LightDirection, Single, Single)
+  nameWithType: BevelLight.FromDirection(LightDirection, float, float)
+  nameWithType.vb: BevelLight.FromDirection(LightDirection, Single, Single)
+- uid: Egami.Drawing.BevelLight.FromDirection*
+  name: FromDirection
+  href: api/Egami.Drawing.BevelLight.html#Egami_Drawing_BevelLight_FromDirection_
+  commentId: Overload:Egami.Drawing.BevelLight.FromDirection
+  isSpec: "True"
+  fullName: Egami.Drawing.BevelLight.FromDirection
+  nameWithType: BevelLight.FromDirection
+- uid: Egami.Drawing.BevelLight.Intensity
+  name: Intensity
+  href: api/Egami.Drawing.BevelLight.html#Egami_Drawing_BevelLight_Intensity
+  commentId: P:Egami.Drawing.BevelLight.Intensity
+  fullName: Egami.Drawing.BevelLight.Intensity
+  nameWithType: BevelLight.Intensity
+- uid: Egami.Drawing.BevelLight.Intensity*
+  name: Intensity
+  href: api/Egami.Drawing.BevelLight.html#Egami_Drawing_BevelLight_Intensity_
+  commentId: Overload:Egami.Drawing.BevelLight.Intensity
+  isSpec: "True"
+  fullName: Egami.Drawing.BevelLight.Intensity
+  nameWithType: BevelLight.Intensity
+- uid: Egami.Drawing.BevelMaterial
+  name: BevelMaterial
+  href: api/Egami.Drawing.BevelMaterial.html
+  commentId: T:Egami.Drawing.BevelMaterial
+  fullName: Egami.Drawing.BevelMaterial
+  nameWithType: BevelMaterial
+- uid: Egami.Drawing.BevelMaterial.Clear
+  name: Clear
+  href: api/Egami.Drawing.BevelMaterial.html#Egami_Drawing_BevelMaterial_Clear
+  commentId: F:Egami.Drawing.BevelMaterial.Clear
+  fullName: Egami.Drawing.BevelMaterial.Clear
+  nameWithType: BevelMaterial.Clear
+- uid: Egami.Drawing.BevelMaterial.DarkEdge
+  name: DarkEdge
+  href: api/Egami.Drawing.BevelMaterial.html#Egami_Drawing_BevelMaterial_DarkEdge
+  commentId: F:Egami.Drawing.BevelMaterial.DarkEdge
+  fullName: Egami.Drawing.BevelMaterial.DarkEdge
+  nameWithType: BevelMaterial.DarkEdge
+- uid: Egami.Drawing.BevelMaterial.Flat
+  name: Flat
+  href: api/Egami.Drawing.BevelMaterial.html#Egami_Drawing_BevelMaterial_Flat
+  commentId: F:Egami.Drawing.BevelMaterial.Flat
+  fullName: Egami.Drawing.BevelMaterial.Flat
+  nameWithType: BevelMaterial.Flat
+- uid: Egami.Drawing.BevelMaterial.Matte
+  name: Matte
+  href: api/Egami.Drawing.BevelMaterial.html#Egami_Drawing_BevelMaterial_Matte
+  commentId: F:Egami.Drawing.BevelMaterial.Matte
+  fullName: Egami.Drawing.BevelMaterial.Matte
+  nameWithType: BevelMaterial.Matte
+- uid: Egami.Drawing.BevelMaterial.Metal
+  name: Metal
+  href: api/Egami.Drawing.BevelMaterial.html#Egami_Drawing_BevelMaterial_Metal
+  commentId: F:Egami.Drawing.BevelMaterial.Metal
+  fullName: Egami.Drawing.BevelMaterial.Metal
+  nameWithType: BevelMaterial.Metal
+- uid: Egami.Drawing.BevelMaterial.Plastic
+  name: Plastic
+  href: api/Egami.Drawing.BevelMaterial.html#Egami_Drawing_BevelMaterial_Plastic
+  commentId: F:Egami.Drawing.BevelMaterial.Plastic
+  fullName: Egami.Drawing.BevelMaterial.Plastic
+  nameWithType: BevelMaterial.Plastic
+- uid: Egami.Drawing.BevelMaterial.Powder
+  name: Powder
+  href: api/Egami.Drawing.BevelMaterial.html#Egami_Drawing_BevelMaterial_Powder
+  commentId: F:Egami.Drawing.BevelMaterial.Powder
+  fullName: Egami.Drawing.BevelMaterial.Powder
+  nameWithType: BevelMaterial.Powder
+- uid: Egami.Drawing.BevelMaterial.SoftEdge
+  name: SoftEdge
+  href: api/Egami.Drawing.BevelMaterial.html#Egami_Drawing_BevelMaterial_SoftEdge
+  commentId: F:Egami.Drawing.BevelMaterial.SoftEdge
+  fullName: Egami.Drawing.BevelMaterial.SoftEdge
+  nameWithType: BevelMaterial.SoftEdge
+- uid: Egami.Drawing.BevelMaterial.SoftMetal
+  name: SoftMetal
+  href: api/Egami.Drawing.BevelMaterial.html#Egami_Drawing_BevelMaterial_SoftMetal
+  commentId: F:Egami.Drawing.BevelMaterial.SoftMetal
+  fullName: Egami.Drawing.BevelMaterial.SoftMetal
+  nameWithType: BevelMaterial.SoftMetal
+- uid: Egami.Drawing.BevelMaterial.TranslucentPowder
+  name: TranslucentPowder
+  href: api/Egami.Drawing.BevelMaterial.html#Egami_Drawing_BevelMaterial_TranslucentPowder
+  commentId: F:Egami.Drawing.BevelMaterial.TranslucentPowder
+  fullName: Egami.Drawing.BevelMaterial.TranslucentPowder
+  nameWithType: BevelMaterial.TranslucentPowder
+- uid: Egami.Drawing.BevelMaterial.WarmMatte
+  name: WarmMatte
+  href: api/Egami.Drawing.BevelMaterial.html#Egami_Drawing_BevelMaterial_WarmMatte
+  commentId: F:Egami.Drawing.BevelMaterial.WarmMatte
+  fullName: Egami.Drawing.BevelMaterial.WarmMatte
+  nameWithType: BevelMaterial.WarmMatte
+- uid: Egami.Drawing.BevelProfile
+  name: BevelProfile
+  href: api/Egami.Drawing.BevelProfile.html
+  commentId: T:Egami.Drawing.BevelProfile
+  fullName: Egami.Drawing.BevelProfile
+  nameWithType: BevelProfile
+- uid: Egami.Drawing.BevelProfile.Angle
+  name: Angle
+  href: api/Egami.Drawing.BevelProfile.html#Egami_Drawing_BevelProfile_Angle
+  commentId: F:Egami.Drawing.BevelProfile.Angle
+  fullName: Egami.Drawing.BevelProfile.Angle
+  nameWithType: BevelProfile.Angle
+- uid: Egami.Drawing.BevelProfile.ArtDeco
+  name: ArtDeco
+  href: api/Egami.Drawing.BevelProfile.html#Egami_Drawing_BevelProfile_ArtDeco
+  commentId: F:Egami.Drawing.BevelProfile.ArtDeco
+  fullName: Egami.Drawing.BevelProfile.ArtDeco
+  nameWithType: BevelProfile.ArtDeco
+- uid: Egami.Drawing.BevelProfile.Circle
+  name: Circle
+  href: api/Egami.Drawing.BevelProfile.html#Egami_Drawing_BevelProfile_Circle
+  commentId: F:Egami.Drawing.BevelProfile.Circle
+  fullName: Egami.Drawing.BevelProfile.Circle
+  nameWithType: BevelProfile.Circle
+- uid: Egami.Drawing.BevelProfile.Convex
+  name: Convex
+  href: api/Egami.Drawing.BevelProfile.html#Egami_Drawing_BevelProfile_Convex
+  commentId: F:Egami.Drawing.BevelProfile.Convex
+  fullName: Egami.Drawing.BevelProfile.Convex
+  nameWithType: BevelProfile.Convex
+- uid: Egami.Drawing.BevelProfile.CoolSlant
+  name: CoolSlant
+  href: api/Egami.Drawing.BevelProfile.html#Egami_Drawing_BevelProfile_CoolSlant
+  commentId: F:Egami.Drawing.BevelProfile.CoolSlant
+  fullName: Egami.Drawing.BevelProfile.CoolSlant
+  nameWithType: BevelProfile.CoolSlant
+- uid: Egami.Drawing.BevelProfile.Cross
+  name: Cross
+  href: api/Egami.Drawing.BevelProfile.html#Egami_Drawing_BevelProfile_Cross
+  commentId: F:Egami.Drawing.BevelProfile.Cross
+  fullName: Egami.Drawing.BevelProfile.Cross
+  nameWithType: BevelProfile.Cross
+- uid: Egami.Drawing.BevelProfile.Divot
+  name: Divot
+  href: api/Egami.Drawing.BevelProfile.html#Egami_Drawing_BevelProfile_Divot
+  commentId: F:Egami.Drawing.BevelProfile.Divot
+  fullName: Egami.Drawing.BevelProfile.Divot
+  nameWithType: BevelProfile.Divot
+- uid: Egami.Drawing.BevelProfile.HardEdge
+  name: HardEdge
+  href: api/Egami.Drawing.BevelProfile.html#Egami_Drawing_BevelProfile_HardEdge
+  commentId: F:Egami.Drawing.BevelProfile.HardEdge
+  fullName: Egami.Drawing.BevelProfile.HardEdge
+  nameWithType: BevelProfile.HardEdge
+- uid: Egami.Drawing.BevelProfile.RelaxedInset
+  name: RelaxedInset
+  href: api/Egami.Drawing.BevelProfile.html#Egami_Drawing_BevelProfile_RelaxedInset
+  commentId: F:Egami.Drawing.BevelProfile.RelaxedInset
+  fullName: Egami.Drawing.BevelProfile.RelaxedInset
+  nameWithType: BevelProfile.RelaxedInset
+- uid: Egami.Drawing.BevelProfile.Riblet
+  name: Riblet
+  href: api/Egami.Drawing.BevelProfile.html#Egami_Drawing_BevelProfile_Riblet
+  commentId: F:Egami.Drawing.BevelProfile.Riblet
+  fullName: Egami.Drawing.BevelProfile.Riblet
+  nameWithType: BevelProfile.Riblet
+- uid: Egami.Drawing.BevelProfile.Slope
+  name: Slope
+  href: api/Egami.Drawing.BevelProfile.html#Egami_Drawing_BevelProfile_Slope
+  commentId: F:Egami.Drawing.BevelProfile.Slope
+  fullName: Egami.Drawing.BevelProfile.Slope
+  nameWithType: BevelProfile.Slope
+- uid: Egami.Drawing.BevelProfile.SoftRound
+  name: SoftRound
+  href: api/Egami.Drawing.BevelProfile.html#Egami_Drawing_BevelProfile_SoftRound
+  commentId: F:Egami.Drawing.BevelProfile.SoftRound
+  fullName: Egami.Drawing.BevelProfile.SoftRound
+  nameWithType: BevelProfile.SoftRound
 - uid: Egami.Drawing.BlendPaint
   name: BlendPaint
   href: api/Egami.Drawing.BlendPaint.html
@@ -14551,6 +14865,19 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Canvas.DrawAtlas
   nameWithType: Canvas.DrawAtlas
+- uid: Egami.Drawing.Canvas.DrawBevel(Egami.Drawing.Path,Egami.Drawing.Bevel)
+  name: DrawBevel(Path, Bevel)
+  href: api/Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawBevel_Egami_Drawing_Path_Egami_Drawing_Bevel_
+  commentId: M:Egami.Drawing.Canvas.DrawBevel(Egami.Drawing.Path,Egami.Drawing.Bevel)
+  fullName: Egami.Drawing.Canvas.DrawBevel(Egami.Drawing.Path, Egami.Drawing.Bevel)
+  nameWithType: Canvas.DrawBevel(Path, Bevel)
+- uid: Egami.Drawing.Canvas.DrawBevel*
+  name: DrawBevel
+  href: api/Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawBevel_
+  commentId: Overload:Egami.Drawing.Canvas.DrawBevel
+  isSpec: "True"
+  fullName: Egami.Drawing.Canvas.DrawBevel
+  nameWithType: Canvas.DrawBevel
 - uid: Egami.Drawing.Canvas.DrawColorGlyphs(Egami.Fonts.GlyphRun,System.Numerics.Vector2,Egami.Drawing.Paint)
   name: DrawColorGlyphs(GlyphRun, Vector2, Paint)
   href: api/Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawColorGlyphs_Egami_Fonts_GlyphRun_System_Numerics_Vector2_Egami_Drawing_Paint_
@@ -14901,6 +15228,19 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Canvas.FillArc
   nameWithType: Canvas.FillArc
+- uid: Egami.Drawing.Canvas.FillBevel(Egami.Drawing.Path,Egami.Drawing.Paint,Egami.Drawing.Bevel)
+  name: FillBevel(Path, Paint, Bevel)
+  href: api/Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillBevel_Egami_Drawing_Path_Egami_Drawing_Paint_Egami_Drawing_Bevel_
+  commentId: M:Egami.Drawing.Canvas.FillBevel(Egami.Drawing.Path,Egami.Drawing.Paint,Egami.Drawing.Bevel)
+  fullName: Egami.Drawing.Canvas.FillBevel(Egami.Drawing.Path, Egami.Drawing.Paint, Egami.Drawing.Bevel)
+  nameWithType: Canvas.FillBevel(Path, Paint, Bevel)
+- uid: Egami.Drawing.Canvas.FillBevel*
+  name: FillBevel
+  href: api/Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillBevel_
+  commentId: Overload:Egami.Drawing.Canvas.FillBevel
+  isSpec: "True"
+  fullName: Egami.Drawing.Canvas.FillBevel
+  nameWithType: Canvas.FillBevel
 - uid: Egami.Drawing.Canvas.FillCircle(System.Numerics.Vector2,System.Single,Egami.Drawing.Paint)
   name: FillCircle(Vector2, float, Paint)
   href: api/Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillCircle_System_Numerics_Vector2_System_Single_Egami_Drawing_Paint_
@@ -18255,6 +18595,60 @@ references:
   commentId: F:Egami.Drawing.LcdSampling.Smooth
   fullName: Egami.Drawing.LcdSampling.Smooth
   nameWithType: LcdSampling.Smooth
+- uid: Egami.Drawing.LightDirection
+  name: LightDirection
+  href: api/Egami.Drawing.LightDirection.html
+  commentId: T:Egami.Drawing.LightDirection
+  fullName: Egami.Drawing.LightDirection
+  nameWithType: LightDirection
+- uid: Egami.Drawing.LightDirection.Bottom
+  name: Bottom
+  href: api/Egami.Drawing.LightDirection.html#Egami_Drawing_LightDirection_Bottom
+  commentId: F:Egami.Drawing.LightDirection.Bottom
+  fullName: Egami.Drawing.LightDirection.Bottom
+  nameWithType: LightDirection.Bottom
+- uid: Egami.Drawing.LightDirection.BottomLeft
+  name: BottomLeft
+  href: api/Egami.Drawing.LightDirection.html#Egami_Drawing_LightDirection_BottomLeft
+  commentId: F:Egami.Drawing.LightDirection.BottomLeft
+  fullName: Egami.Drawing.LightDirection.BottomLeft
+  nameWithType: LightDirection.BottomLeft
+- uid: Egami.Drawing.LightDirection.BottomRight
+  name: BottomRight
+  href: api/Egami.Drawing.LightDirection.html#Egami_Drawing_LightDirection_BottomRight
+  commentId: F:Egami.Drawing.LightDirection.BottomRight
+  fullName: Egami.Drawing.LightDirection.BottomRight
+  nameWithType: LightDirection.BottomRight
+- uid: Egami.Drawing.LightDirection.Left
+  name: Left
+  href: api/Egami.Drawing.LightDirection.html#Egami_Drawing_LightDirection_Left
+  commentId: F:Egami.Drawing.LightDirection.Left
+  fullName: Egami.Drawing.LightDirection.Left
+  nameWithType: LightDirection.Left
+- uid: Egami.Drawing.LightDirection.Right
+  name: Right
+  href: api/Egami.Drawing.LightDirection.html#Egami_Drawing_LightDirection_Right
+  commentId: F:Egami.Drawing.LightDirection.Right
+  fullName: Egami.Drawing.LightDirection.Right
+  nameWithType: LightDirection.Right
+- uid: Egami.Drawing.LightDirection.Top
+  name: Top
+  href: api/Egami.Drawing.LightDirection.html#Egami_Drawing_LightDirection_Top
+  commentId: F:Egami.Drawing.LightDirection.Top
+  fullName: Egami.Drawing.LightDirection.Top
+  nameWithType: LightDirection.Top
+- uid: Egami.Drawing.LightDirection.TopLeft
+  name: TopLeft
+  href: api/Egami.Drawing.LightDirection.html#Egami_Drawing_LightDirection_TopLeft
+  commentId: F:Egami.Drawing.LightDirection.TopLeft
+  fullName: Egami.Drawing.LightDirection.TopLeft
+  nameWithType: LightDirection.TopLeft
+- uid: Egami.Drawing.LightDirection.TopRight
+  name: TopRight
+  href: api/Egami.Drawing.LightDirection.html#Egami_Drawing_LightDirection_TopRight
+  commentId: F:Egami.Drawing.LightDirection.TopRight
+  fullName: Egami.Drawing.LightDirection.TopRight
+  nameWithType: LightDirection.TopRight
 - uid: Egami.Drawing.LineCap
   name: LineCap
   href: api/Egami.Drawing.LineCap.html

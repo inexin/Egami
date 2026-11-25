@@ -915,7 +915,7 @@ canvas.EndMarkedContent();</code></pre>
 
   <h3 id="Egami_Drawing_Canvas_DrawAtlas_Egami_Raster_System_ReadOnlySpan_Egami_Drawing_SpriteTransform__System_ReadOnlySpan_Egami_Drawing_RectF__System_ReadOnlySpan_Egami_Pixels_RgbaF32__Egami_Operations_BlendMode_Egami_Operations_SamplingOptions_System_Nullable_Egami_Drawing_RectF__Egami_Drawing_Paint_" data-uid="Egami.Drawing.Canvas.DrawAtlas(Egami.Raster,System.ReadOnlySpan{Egami.Drawing.SpriteTransform},System.ReadOnlySpan{Egami.Drawing.RectF},System.ReadOnlySpan{Egami.Pixels.RgbaF32},Egami.Operations.BlendMode,Egami.Operations.SamplingOptions,System.Nullable{Egami.Drawing.RectF},Egami.Drawing.Paint)">
   DrawAtlas(Raster, ReadOnlySpan&lt;SpriteTransform&gt;, ReadOnlySpan&lt;RectF&gt;, ReadOnlySpan&lt;RgbaF32&gt;, BlendMode, SamplingOptions?, RectF?, Paint?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L183"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws many sprites from one image in one call, as Skia's drawAtlas: sprite i is <code class="paramref">sources</code>[i] of the image,
@@ -995,6 +995,71 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
     <dd><p>The lists' lengths differ, or a number is not finite.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Drawing_Canvas_DrawBevel_" data-uid="Egami.Drawing.Canvas.DrawBevel*"></a>
+
+  <h3 id="Egami_Drawing_Canvas_DrawBevel_Egami_Drawing_Path_Egami_Drawing_Bevel_" data-uid="Egami.Drawing.Canvas.DrawBevel(Egami.Drawing.Path,Egami.Drawing.Bevel)">
+  DrawBevel(Path, Bevel)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Draws a bevel's light and shade over a path's area: lighter where the rim faces the light, darker where it faces away,
+nothing on the flat face inside. Fill the path first; the bevel goes on top, so it lights any fill. It is worked out in
+device pixels under the current transform (width and height scale with it, the light keeps its device direction) and drawn
+as an image, so every backend draws it the same way.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void DrawBevel(Path path, Bevel bevel)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The shape, in local coordinates; its fill rule decides what is inside.</p>
+</dd>
+    <dt><code>bevel</code> <a class="xref" href="Egami.Drawing.Bevel.html">Bevel</a></dt>
+    <dd><p>The bevel.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Canvas_DrawBevel_Egami_Drawing_Path_Egami_Drawing_Bevel__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A raised button: fill the shape, then draw a bevel over it, lit from the top left.
+using Raster&lt;Rgba8&gt; button = Raster.Create(220, 90, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = button.CreateCanvas())
+{
+    Path shape = Path.RoundRect(new RoundRect(new RectF(10, 10, 200, 70), 16));
+    canvas.FillPath(shape, new Rgba8(40, 110, 200, 255));
+    canvas.DrawBevel(shape, new Bevel
+    {
+        Profile = BevelProfile.Circle,
+        Width = 10,
+        Height = 8,
+        Material = BevelMaterial.Plastic,
+        Light = BevelLight.FromDirection(LightDirection.TopLeft),
+    });
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">path</code> or <code class="paramref">bevel</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The shape's device area is larger than the context's limits allow.</p>
 </dd>
   </dl>
 
@@ -1389,7 +1454,7 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = page.CreateCanvas())
 
   <h3 id="Egami_Drawing_Canvas_DrawImageLattice_Egami_Raster_Egami_Drawing_Lattice_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Drawing.Canvas.DrawImageLattice(Egami.Raster,Egami.Drawing.Lattice,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
   DrawImageLattice(Raster, Lattice, RectF, SamplingOptions?, Paint?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L151"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws an image through a <a class="xref" href="Egami.Drawing.Lattice.html">Lattice</a>: fixed columns and rows keep their size, stretchable ones share the rest of
@@ -1522,7 +1587,7 @@ canvas.Restore();</code></pre>
 
   <h3 id="Egami_Drawing_Canvas_DrawImageNinePatch_Egami_Raster_Egami_Rect_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Drawing.Canvas.DrawImageNinePatch(Egami.Raster,Egami.Rect,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
   DrawImageNinePatch(Raster, Rect, RectF, SamplingOptions?, Paint?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L134"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws an image stretched to a rectangle while its corners keep their size: the edges stretch one way and the center both
@@ -1647,7 +1712,7 @@ canvas.StrokeCircle(new Vector2(150, 160), 30, Stroke.Hairline, Rgba8.Red);</cod
 
   <h3 id="Egami_Drawing_Canvas_DrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__" data-uid="Egami.Drawing.Canvas.DrawMesh(Egami.Drawing.Mesh,Egami.Drawing.Paint,Egami.Operations.BlendMode,System.ReadOnlySpan{Egami.Drawing.GradientStop})">
   DrawMesh(Mesh, Paint?, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L255"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws a triangle mesh. The triangles' union is filled once, with antialiasing on its outer edges only, so meshes show no
@@ -1747,7 +1812,7 @@ color space, premultiplied; values interpolate and then look up <code class="par
 
   <h3 id="Egami_Drawing_Canvas_DrawPatch_Egami_Drawing_Patch_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__" data-uid="Egami.Drawing.Canvas.DrawPatch(Egami.Drawing.Patch,Egami.Drawing.Paint,Egami.Operations.BlendMode,System.ReadOnlySpan{Egami.Drawing.GradientStop})">
   DrawPatch(Patch, Paint?, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L177"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L285"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws a Coons or tensor-product patch: the surface is cut into triangles under the current transform until each strays less
@@ -1818,7 +1883,7 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = raster.CreateCanvas())
 
   <h3 id="Egami_Drawing_Canvas_DrawPicture_Egami_Drawing_Picture_System_Nullable_System_Numerics_Matrix3x2__Egami_Drawing_Paint_System_Boolean_" data-uid="Egami.Drawing.Canvas.DrawPicture(Egami.Drawing.Picture,System.Nullable{System.Numerics.Matrix3x2},Egami.Drawing.Paint,System.Boolean)">
   DrawPicture(Picture, Matrix3x2?, Paint?, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L206"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L314"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Replays a recorded <a class="xref" href="Egami.Drawing.Picture.html">Picture</a>: inside a <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Save">Save()</a> and <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Restore">Restore()</a>, with <code class="paramref">matrix</code>
@@ -2528,6 +2593,77 @@ GlyphRun dial = GlyphRun.CreateTransformed(font, [face.GetGlyph('N'), face.GetGl
 
 
 
+  <a id="Egami_Drawing_Canvas_FillBevel_" data-uid="Egami.Drawing.Canvas.FillBevel*"></a>
+
+  <h3 id="Egami_Drawing_Canvas_FillBevel_Egami_Drawing_Path_Egami_Drawing_Paint_Egami_Drawing_Bevel_" data-uid="Egami.Drawing.Canvas.FillBevel(Egami.Drawing.Path,Egami.Drawing.Paint,Egami.Drawing.Bevel)">
+  FillBevel(Path, Paint, Bevel)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Fills a path with a paint lit as a bevel: the rim's own color is lightened where it faces the light and darkened where it
+faces away, and the material's shine is laid over it (a metal's shine takes the paint's hue, as DrawingML's metal does), so
+a metal or clear bevel looks closer to DrawingML than <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DrawBevel_Egami_Drawing_Path_Egami_Drawing_Bevel_">DrawBevel(Path, Bevel)</a> over a fill. The flat face inside is the paint
+as <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillPath_Egami_Drawing_Path_Egami_Drawing_Paint_">FillPath(Path, Paint)</a> draws it. It is worked out in device pixels under the current transform and drawn as
+an image with the paint's blend mode and opacity, so every backend draws it the same way.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void FillBevel(Path path, Paint paint, Bevel bevel)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="Egami.Drawing.Path.html">Path</a></dt>
+    <dd><p>The shape, in local coordinates; its fill rule decides what is inside.</p>
+</dd>
+    <dt><code>paint</code> <a class="xref" href="Egami.Drawing.Paint.html">Paint</a></dt>
+    <dd><p>The fill: any paint, a color, gradient or image.</p>
+</dd>
+    <dt><code>bevel</code> <a class="xref" href="Egami.Drawing.Bevel.html">Bevel</a></dt>
+    <dd><p>The bevel. When it lights nothing (a <a class="xref" href="Egami.Drawing.BevelMaterial.html#Egami_Drawing_BevelMaterial_Flat">Flat</a> material, no width, height or light)
+the path is filled as <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_FillPath_Egami_Drawing_Path_Egami_Drawing_Paint_">FillPath(Path, Paint)</a> fills it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Drawing_Canvas_FillBevel_Egami_Drawing_Path_Egami_Drawing_Paint_Egami_Drawing_Bevel__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A gold plaque: the gradient fill lit as a metal bevel, its shine in the gold's own hue.
+using Raster&lt;Rgba8&gt; plaque = Raster.Create(220, 90, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = plaque.CreateCanvas())
+{
+    Path shape = Path.RoundRect(new RoundRect(new RectF(10, 10, 200, 70), 12));
+    var gold = new LinearGradient(new Vector2(0, 10), new Vector2(0, 80), new RgbaF32(0.9f, 0.75f, 0.3f, 1), new RgbaF32(0.65f, 0.45f, 0.1f, 1));
+    canvas.FillBevel(shape, gold, new Bevel
+    {
+        Profile = BevelProfile.Angle,
+        Width = 8,
+        Height = 6,
+        Material = BevelMaterial.Metal,
+        Light = BevelLight.FromDirection(LightDirection.TopLeft),
+    });
+}</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p><code class="paramref">path</code>, <code class="paramref">paint</code> or <code class="paramref">bevel</code> is
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
+</dd>
+    <dt><a class="xref" href="Egami.LimitExceededException.html">LimitExceededException</a></dt>
+    <dd><p>The shape's device area is larger than the context's limits allow.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Drawing_Canvas_FillCircle_" data-uid="Egami.Drawing.Canvas.FillCircle*"></a>
 
   <h3 id="Egami_Drawing_Canvas_FillCircle_System_Numerics_Vector2_System_Single_Egami_Drawing_Paint_" data-uid="Egami.Drawing.Canvas.FillCircle(System.Numerics.Vector2,System.Single,Egami.Drawing.Paint)">
@@ -3037,7 +3173,7 @@ page; by default it is <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Dra
 
   <h3 id="Egami_Drawing_Canvas_OnDrawAtlas_Egami_Raster_System_ReadOnlySpan_Egami_Drawing_SpriteTransform__System_ReadOnlySpan_Egami_Drawing_RectF__System_ReadOnlySpan_Egami_Pixels_RgbaF32__Egami_Operations_BlendMode_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Drawing.Canvas.OnDrawAtlas(Egami.Raster,System.ReadOnlySpan{Egami.Drawing.SpriteTransform},System.ReadOnlySpan{Egami.Drawing.RectF},System.ReadOnlySpan{Egami.Pixels.RgbaF32},Egami.Operations.BlendMode,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
   OnDrawAtlas(Raster, ReadOnlySpan&lt;SpriteTransform&gt;, ReadOnlySpan&lt;RectF&gt;, ReadOnlySpan&lt;RgbaF32&gt;, BlendMode, SamplingOptions, Paint?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L260"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L368"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws sprites from one image; the lists have equal lengths and colors is empty or as long. By default a sprite without a
@@ -3305,7 +3441,7 @@ public sealed class SvgCanvas(float width, float height) : Canvas(width, height)
 
   <h3 id="Egami_Drawing_Canvas_OnDrawImageLattice_Egami_Raster_Egami_Drawing_Lattice_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Drawing.Canvas.OnDrawImageLattice(Egami.Raster,Egami.Drawing.Lattice,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
   OnDrawImageLattice(Raster, Lattice, RectF, SamplingOptions, Paint?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L230"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L338"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws an image through a lattice; the lattice fits the image. By default each cell is an <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnDrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_">OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint?)</a> call of
@@ -3425,7 +3561,7 @@ canvas.Restore();</code></pre>
 
   <h3 id="Egami_Drawing_Canvas_OnDrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__" data-uid="Egami.Drawing.Canvas.OnDrawMesh(Egami.Drawing.Mesh,Egami.Drawing.Paint,Egami.Operations.BlendMode,System.ReadOnlySpan{Egami.Drawing.GradientStop})">
   OnDrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L288"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L396"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws a mesh with at least one triangle; a mesh with values comes with stops. A PDF backend can write it as a free-form or
@@ -3541,7 +3677,7 @@ device unit, over the mesh's bounds, and placed with <a class="xref" href="Egami
 
   <h3 id="Egami_Drawing_Canvas_OnDrawPatch_Egami_Drawing_Patch_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__" data-uid="Egami.Drawing.Canvas.OnDrawPatch(Egami.Drawing.Patch,Egami.Drawing.Paint,Egami.Operations.BlendMode,System.ReadOnlySpan{Egami.Drawing.GradientStop})">
   OnDrawPatch(Patch, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L317"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L425"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws a patch. A PDF backend can write it as a Coons or tensor-product shading (types 6 and 7). By default it is cut into
@@ -3675,7 +3811,7 @@ public sealed class SvgCanvas(float width, float height) : Canvas(width, height)
 
   <h3 id="Egami_Drawing_Canvas_OnDrawPicture_Egami_Drawing_Picture_System_Numerics_Matrix3x2_Egami_Drawing_Paint_System_Boolean_" data-uid="Egami.Drawing.Canvas.OnDrawPicture(Egami.Drawing.Picture,System.Numerics.Matrix3x2,Egami.Drawing.Paint,System.Boolean)">
   OnDrawPicture(Picture, Matrix3x2, Paint?, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L334"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Drawing/Canvas.Advanced.cs/#L442"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws a recorded picture. A PDF backend can write it once as a form XObject and reference it each time. By default it saves

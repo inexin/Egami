@@ -408,7 +408,52 @@ a light, after Skia's shadow utilities; a group's drop shadow is a layer filter.
     canvas.FillRect(new RectF(140, 80, 60, 30), new Rgba8(40, 120, 220, 255));
     canvas.Restore();
 }
-</code></pre><h2 id="clips">Clips</h2>
+</code></pre><h3 id="bevels">Bevels</h3>
+<p><code>DrawBevel</code> lights the rim of a shape that is already filled: a <code>Bevel</code> gives the <code>BevelProfile</code> (DrawingML's twelve preset
+cross-sections, from <code>Circle</code> to <code>ArtDeco</code>), its <code>Width</code> and <code>Height</code> in local units, a <code>BevelMaterial</code> (DrawingML's eleven
+preset materials: how much the surface scatters and mirrors the light) and a <code>BevelLight</code> (an angle, an elevation and an
+intensity; <code>BevelLight.FromDirection</code> takes a DrawingML rig's <code>LightDirection</code>). Where the rim faces the light more than the
+flat face does it is lightened, where less darkened, and the face inside is left alone. It is worked out in device pixels from
+the distance to the shape's edge, as the PSD flattener's bevel and emboss is, and drawn as an image, so every backend shows
+the same thing.</p>
+<pre><code class="lang-csharp">// A raised button: fill the shape, then draw a bevel over it, lit from the top left.
+using Raster&lt;Rgba8&gt; button = Raster.Create(220, 90, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = button.CreateCanvas())
+{
+    Path shape = Path.RoundRect(new RoundRect(new RectF(10, 10, 200, 70), 16));
+    canvas.FillPath(shape, new Rgba8(40, 110, 200, 255));
+    canvas.DrawBevel(shape, new Bevel
+    {
+        Profile = BevelProfile.Circle,
+        Width = 10,
+        Height = 8,
+        Material = BevelMaterial.Plastic,
+        Light = BevelLight.FromDirection(LightDirection.TopLeft),
+    });
+}
+</code></pre>
+<p><code>FillBevel</code> fills the shape and lights it in one call: the paint's own color is scaled by the light, so a red rim stays red
+as it darkens, and the material's shine is laid over it, in the paint's hue for <code>Metal</code> and <code>SoftMetal</code>. This is closer to
+how DrawingML draws a metal or clear bevel than <code>DrawBevel</code> over a fill, and it works with any paint, gradients included.</p>
+<pre><code class="lang-csharp">// A gold plaque: the gradient fill lit as a metal bevel, its shine in the gold's own hue.
+using Raster&lt;Rgba8&gt; plaque = Raster.Create(220, 90, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = plaque.CreateCanvas())
+{
+    Path shape = Path.RoundRect(new RoundRect(new RectF(10, 10, 200, 70), 12));
+    var gold = new LinearGradient(new Vector2(0, 10), new Vector2(0, 80), new RgbaF32(0.9f, 0.75f, 0.3f, 1), new RgbaF32(0.65f, 0.45f, 0.1f, 1));
+    canvas.FillBevel(shape, gold, new Bevel
+    {
+        Profile = BevelProfile.Angle,
+        Width = 8,
+        Height = 6,
+        Material = BevelMaterial.Metal,
+        Light = BevelLight.FromDirection(LightDirection.TopLeft),
+    });
+}
+</code></pre>
+<p>The profiles and materials are Egami's own curves and weights, named after DrawingML's presets; they are not tuned to match
+another renderer pixel for pixel.</p>
+<h2 id="clips">Clips</h2>
 <p><code>ClipRect</code>, <code>ClipRoundRect</code> and <code>ClipPath</code> take a <code>ClipOp</code>: <code>Intersect</code> keeps the inside, <code>Difference</code> the outside. Clips are
 antialiased unless asked not to be. A clip that is a pixel-aligned rectangle costs nothing; any other clip is a coverage mask
 of one byte per pixel of its bounds, and drawing through it costs about 1.2 times drawing without.</p>
