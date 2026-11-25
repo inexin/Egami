@@ -11,11 +11,12 @@ Egami.SystemDrawing is a System.Drawing drop-in: System.Drawing.Common's API on 
 - Fonts and text: `Font`, `FontFamily`, `StringFormat`, `DrawString` and `MeasureString` laid out as GDI+ lays text out, with
   ClearType. Reference Egami.Fonts.Substitutes and set `SystemDrawingOptions.FontSubstitutes = SubstituteFonts.Find` for
   metric-compatible stand-ins where Windows' fonts are not installed.
-- Metafiles (WMF, EMF, EMF+), the GDI+ 1.1 effects, `BufferedGraphics` and `ImageAnimator`.
+- Metafiles: WMF, EMF and EMF+ read and drawn, and EMF and EMF+ recorded with `Graphics.FromImage`. The GDI+ 1.1 effects,
+  `BufferedGraphics` and `ImageAnimator`.
 - Swap the package reference: `System.Drawing` and `Egami.SystemDrawing` come in as implicit usings. Members that need Windows
   handles throw `PlatformNotSupportedException` and warn at compile time.
 
-This is a preview (1.0.0-preview.3). See the
+This is a preview (1.0.0-preview.4). See the
 [System.Drawing drop-in guide](https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html) for moving code over and
 the known differences, and the [migration guide](https://inexin.github.io/Egami/v1/articles/guides/system-drawing-migration.html)
 for moving on to Egami's own API.

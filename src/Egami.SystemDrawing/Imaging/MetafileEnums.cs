@@ -766,9 +766,9 @@ public enum EmfPlusRecordType
     Min = 16385,
 }
 
-/// <summary>The kind of EMF a recording would write; Egami does not record metafiles.</summary>
+/// <summary>The kind of EMF a recording metafile writes: GDI records only, EMF+ records only, or EMF+ with a GDI copy.</summary>
 /// <example>
-/// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="metafiles"/>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
 /// </example>
 public enum EmfType
 {
@@ -807,9 +807,9 @@ public enum MetafileType
     EmfPlusDual = 5,
 }
 
-/// <summary>The unit of a recording's frame rectangle; Egami does not record metafiles.</summary>
+/// <summary>The unit of a recording metafile's frame rectangle.</summary>
 /// <example>
-/// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="metafiles"/>
+/// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
 /// </example>
 public enum MetafileFrameUnit
 {

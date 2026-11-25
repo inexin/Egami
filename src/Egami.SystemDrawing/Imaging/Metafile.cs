@@ -9,7 +9,10 @@ namespace Egami.SystemDrawing.Imaging;
 /// <summary>
 /// A WMF, EMF or EMF+ picture, read and drawn by Egami.Metafiles: an <see cref="Image"/> sized by its frame, which
 /// <see cref="Graphics.DrawImage(Image, float, float)"/> plays as vectors and <see cref="Graphics.EnumerateMetafile(Metafile, PointF, Graphics.EnumerateMetafileProc)"/>
-/// walks record by record. Egami reads metafiles but does not record them, so the recording constructors throw.
+/// walks record by record. The recording constructors start a metafile that <see cref="Graphics.FromImage(Image)"/> records into:
+/// Egami.Metafiles writes what that Graphics draws as an EMF (with EMF+ records unless the <see cref="EmfType"/> says GDI only,
+/// text as glyph records), into memory, a file or a stream, for a 96 DPI screen whatever reference handle is given. Disposing the
+/// Graphics finishes the file, and the metafile is then that file, to draw, walk or save like a loaded one.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="metafiles"/>
@@ -19,7 +22,8 @@ public sealed partial class Metafile : Image
     /// <summary>GDI+'s image flags for a metafile: scalable, alpha, read-only and a resolution of its own.</summary>
     private const int MetafileFlags = 327683;
 
-    private readonly MetafileScan _scan;
+    private MetafileScan _scan;
+    private MetafileRecording? _recording;
     private bool _played;
 
     /// <summary>Initializes a new instance of the <see cref="Metafile"/> class from a file.</summary>
@@ -44,9 +48,60 @@ public sealed partial class Metafile : Image
     private Metafile(MetafileScan scan)
     {
         _scan = scan;
+        Picture = Adopt(scan);
+    }
+
+    private Metafile(MetafileRecording recording)
+        : this(MetafileScan.Read(MetafileRecording.Empty))
+    {
+        _recording = recording;
+    }
+
+    internal Egami.Metafiles.Metafile Picture { get; private set; }
+
+    /// <summary>Gets the frame in pixels at the metafile's resolution, as GDI+ maps a source rectangle onto it.</summary>
+    internal RectangleF FrameBounds => _scan.Frame;
+
+    /// <summary>Gets the records as GDI+ enumerates them.</summary>
+    internal MetafileScan Scan => _scan;
+
+    /// <summary>Gets the recording a Graphics is drawing into, or null.</summary>
+    internal MetafileRecording? Recording => _recording;
+
+    /// <summary>Gets a value indicating whether the metafile waits for its recording, when GDI+ refuses its size and pixels.</summary>
+    private protected override bool Busy => _recording is not null;
+
+    /// <summary>Starts the recording for <see cref="Graphics.FromImage(Image)"/>.</summary>
+    /// <returns>The recording.</returns>
+    /// <exception cref="ExternalException">The metafile was loaded, is being recorded, or was recorded, as GDI+ refuses it.</exception>
+    internal MetafileRecording BeginRecording()
+    {
+        if (_recording is null || _recording.Started)
+        {
+            throw GdiErrors.NotCreated();
+        }
+
+        _recording.Start();
+        return _recording;
+    }
+
+    /// <summary>Ends the recording: writes the file and makes it this metafile's.</summary>
+    internal void EndRecording()
+    {
+        MetafileRecording recording = _recording!;
+        _recording = null;
+        MetafileScan scan = MetafileScan.Read(recording.Finish());
+        Picture = Adopt(scan);
+        _scan = scan;
+    }
+
+    /// <summary>Loads the picture, and sets the image's size and file state from the header.</summary>
+    private Egami.Metafiles.Metafile Adopt(MetafileScan scan)
+    {
+        Egami.Metafiles.Metafile picture;
         try
         {
-            Picture = Egami.Metafiles.Metafile.Load(scan.Data);
+            picture = Egami.Metafiles.Metafile.Load(scan.Data);
         }
         catch (EgamiException)
         {
@@ -59,16 +114,8 @@ public sealed partial class Metafile : Image
         Frame frame = new(Math.Max(1, bounds.Width), Math.Max(1, bounds.Height), PixelFormat.Format32bppArgb, 0, IntPtr.Zero);
         SetFrames([frame], FrameDimension.Page.Guid);
         SetFileState(scan.Type is MetafileType.Wmf or MetafileType.WmfPlaceable ? ImageFormat.Wmf.Guid : ImageFormat.Emf.Guid, MetafileFlags, scan.Dpi.X, scan.Dpi.Y);
+        return picture;
     }
-
-    /// <summary>Gets the picture Egami.Metafiles plays.</summary>
-    internal Egami.Metafiles.Metafile Picture { get; }
-
-    /// <summary>Gets the frame in pixels at the metafile's resolution, as GDI+ maps a source rectangle onto it.</summary>
-    internal RectangleF FrameBounds => _scan.Frame;
-
-    /// <summary>Gets the records as GDI+ enumerates them.</summary>
-    internal MetafileScan Scan => _scan;
 
     /// <summary>The header.</summary>
     /// <returns>The header.</returns>
@@ -85,7 +132,11 @@ public sealed partial class Metafile : Image
     public static MetafileHeader GetMetafileHeader(Stream stream) => new(MetafileScan.Read(ReadAll(stream)));
 
     /// <inheritdoc/>
-    public override object Clone() => new Metafile(_scan.Data);
+    public override object Clone()
+    {
+        CheckAlive();
+        return new Metafile(_scan.Data);
+    }
 
     /// <summary>
     /// Marks a record as played during <see cref="Graphics.EnumerateMetafile(Metafile, PointF, Graphics.EnumerateMetafileProc)"/>:

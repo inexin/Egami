@@ -17,8 +17,8 @@ internal static class GdiErrors
     /// <summary>The exception for an indexed bitmap's SetPixel.</summary>
     public static InvalidOperationException IndexedSetPixel() => new("SetPixel is not supported for images with indexed pixel formats.");
 
-    /// <summary>A metafile recording member: Egami reads metafiles and does not write them.</summary>
-    public static NotSupportedException Recording() => new("Egami.SystemDrawing reads metafiles but does not record them. Draw on a Bitmap, or write SVG or PDF with Egami.Drawing's canvases.");
+    /// <summary>The error GDI+ gives for a Graphics it cannot make: on a metafile that is loaded, being recorded or recorded.</summary>
+    public static ExternalException NotCreated() => new("An object could not be created, possibly due to a lack of memory, but most likely due to invalid input.", unchecked((int)0x8000FFFF));
 
     /// <summary>A Windows-only member: the message names what to use instead.</summary>
     public static PlatformNotSupportedException WindowsOnly(string member, string alternative) =>
@@ -37,17 +37,12 @@ internal static class Diagnostics
     /// <summary>Windows' own icons: SystemIcons, stock icons and icons extracted from files.</summary>
     public const string StockIcons = "EGSD0003";
 
-    /// <summary>Metafile recording: the Metafile constructors that write a new metafile.</summary>
-    public const string Recording = "EGSD0004";
-
     /// <summary>The page each id links to, with the id as the anchor.</summary>
     public const string Url = "https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}";
 
     public const string HandlesMessage = "Windows GDI handles are not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException. Use Bitmap.LockBits to reach the pixels.";
 
     public const string ScreenMessage = "Screen capture is not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException.";
-
-    public const string RecordingMessage = "Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.";
 
     public const string StockIconsMessage = "Windows' own icons are not available in Egami.SystemDrawing; it always throws PlatformNotSupportedException. Load an icon file with new Icon(path).";
 }

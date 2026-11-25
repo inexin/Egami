@@ -501,6 +501,9 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable
         Dimension = dimension;
     }
 
+    /// <summary>Gets a value indicating whether the image has no size or pixels yet: a metafile waiting for its recording.</summary>
+    private protected virtual bool Busy => false;
+
     /// <summary>A frame with its pixels: a metafile draws its own when they are first needed; others have them already.</summary>
     private protected virtual Frame Realize(Frame frame) => frame;
 
@@ -538,7 +541,7 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable
     /// <summary>Throws as GDI+ does when the image is disposed.</summary>
     internal void CheckAlive()
     {
-        if (_disposed)
+        if (_disposed || Busy)
         {
             throw GdiErrors.InvalidParameter();
         }

@@ -115,8 +115,13 @@ public sealed partial class Graphics
     {
         get
         {
+            if (Alive()._recording is MetafileRecording recording)
+            {
+                return Prepared(recording.Canvas);
+            }
+
             // Checks the lock every time, and builds the canvas again when the bitmap's pixels were replaced.
-            Frame frame = Alive()._image.UnlockedFrame();
+            Frame frame = _image!.UnlockedFrame();
             if (!ReferenceEquals(frame, _canvasFrame))
             {
                 _canvas?.Dispose();
@@ -131,16 +136,20 @@ public sealed partial class Graphics
                 _canvasFrame = frame;
             }
 
-            Canvas canvas = _canvas!;
-            canvas.RestoreToCount(1);
-            canvas.Save();
-            if (EffectiveClip is Path clip)
-            {
-                canvas.ClipPath(clip, ClipOp.Intersect, antialias: false);
-            }
-
-            canvas.SetMatrix(ShapeTransform);
-            return canvas;
+            return Prepared(_canvas!);
         }
+    }
+
+    private Canvas Prepared(Canvas canvas)
+    {
+        canvas.RestoreToCount(1);
+        canvas.Save();
+        if (EffectiveClip is Path clip)
+        {
+            canvas.ClipPath(clip, ClipOp.Intersect, antialias: false);
+        }
+
+        canvas.SetMatrix(ShapeTransform);
+        return canvas;
     }
 }
