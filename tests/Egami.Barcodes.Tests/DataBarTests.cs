@@ -75,4 +75,49 @@ public class DataBarTests
         Assert.Equal(-1, DataBarWidths.Value([9, 1, 1, 1], 8, false));
         Assert.Equal(-1, DataBarWidths.Value([0, 4, 4, 4], 8, false));
     }
+
+    [Fact]
+    public void DataBarTakesAGtinWithOrWithoutItsCheckDigit()
+    {
+        Barcode barcode = Barcode.DataBar("0950110153000");
+        Assert.Equal(BarcodeFormat.DataBar, barcode.Format);
+        Assert.Equal("(01)09501101530003", barcode.HumanReadableText);
+        Assert.True(barcode.Modules.IsLinear);
+        Assert.Equal(95, barcode.Modules.Width);
+        Assert.Equal(33, barcode.Modules.Height);
+        Assert.Equal(1, barcode.QuietZone);
+        Assert.Equal(barcode.Modules.Runs.ToArray(), Barcode.DataBar("09501101530003").Modules.Runs.ToArray());
+        Assert.Equal(barcode.Modules.Runs.ToArray(), Barcode.Create(BarcodeFormat.DataBar, "0950110153000").Modules.Runs.ToArray());
+        Assert.Throws<ArgumentException>(() => Barcode.DataBar("09501101530004"));
+        Assert.Throws<ArgumentException>(() => Barcode.DataBar("095011015300"));
+        Assert.Throws<ArgumentException>(() => Barcode.DataBar("095011015300031"));
+        Assert.Throws<ArgumentException>(() => Barcode.DataBar("095O110153000"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new DataBarOptions { Kind = (DataBarKind)9 });
+    }
+
+    [Fact]
+    public void DataBarKindsShareTheirCharacters()
+    {
+        Barcode omni = Barcode.DataBar("0950110153000");
+        Barcode truncated = Barcode.DataBar("0950110153000", new DataBarOptions { Kind = DataBarKind.Truncated });
+        Barcode stacked = Barcode.DataBar("0950110153000", new DataBarOptions { Kind = DataBarKind.Stacked });
+        Barcode stackedOmni = Barcode.DataBar("0950110153000", new DataBarOptions { Kind = DataBarKind.StackedOmnidirectional });
+        Assert.Equal(omni.Modules.Runs.ToArray(), truncated.Modules.Runs.ToArray());
+        Assert.Equal(13, truncated.Modules.Height);
+        Assert.False(stacked.Modules.IsLinear);
+        Assert.Equal((50, 13), (stacked.Modules.Width, stacked.Modules.Height));
+        Assert.Equal((50, 69), (stackedOmni.Modules.Width, stackedOmni.Modules.Height));
+
+        // The top row of each stacked form is the left half of the one-row symbol.
+        for (int x = 0; x < 48; x++)
+        {
+            bool dark = x > 0 && omni.Modules[x - 1, 0];
+            Assert.Equal(dark, stacked.Modules[x, 0]);
+            Assert.Equal(dark, stackedOmni.Modules[x, 0]);
+        }
+
+        // FromModules takes DataBar as a row or as a grid.
+        Assert.Equal(BarcodeFormat.DataBar, Barcode.FromModules(BarcodeFormat.DataBar, stacked.Modules).Format);
+        Assert.Equal(BarcodeFormat.DataBar, Barcode.FromModules(BarcodeFormat.DataBar, omni.Modules).Format);
+    }
 }

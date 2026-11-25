@@ -52,8 +52,14 @@ public enum BarcodeFormat
     /// <summary>Codabar (EN 798), linear; quiet zone 10 modules.</summary>
     Codabar = 1 << 12,
 
+    /// <summary>
+    /// GS1 DataBar Omnidirectional, Truncated, Stacked and Stacked Omnidirectional (ISO/IEC 24724), linear (the stacked forms
+    /// as grids of their rows); quiet zone 1 module.
+    /// </summary>
+    DataBar = 1 << 13,
+
     /// <summary>The linear symbologies.</summary>
-    Linear = Code128 | Code39 | Code93 | Codabar | Itf | Ean13 | Ean8 | UpcA | UpcE,
+    Linear = Code128 | Code39 | Code93 | Codabar | DataBar | Itf | Ean13 | Ean8 | UpcA | UpcE,
 
     /// <summary>The 2D symbologies.</summary>
     Matrix = Qr | DataMatrix | Pdf417 | Aztec,

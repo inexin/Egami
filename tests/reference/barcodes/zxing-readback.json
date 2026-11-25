@@ -374,6 +374,136 @@
   "grid": "fed8472c8092012b",
   "text": "0"
  },
+ "databar-omnidirectional-1": {
+  "format": "DataBarOmni",
+  "grid": "a03b4446454fd6ae",
+  "text": "(01)00000000000000"
+ },
+ "databar-omnidirectional-2": {
+  "format": "DataBarOmni",
+  "grid": "36b7326533590bac",
+  "text": "(01)99999999999997"
+ },
+ "databar-omnidirectional-3": {
+  "format": "DataBarOmni",
+  "grid": "fcd44295ea9eb065",
+  "text": "(01)09501101530003"
+ },
+ "databar-omnidirectional-4": {
+  "format": "DataBarOmni",
+  "grid": "9b46dc7abb87d43a",
+  "text": "(01)20012345678909"
+ },
+ "databar-omnidirectional-5": {
+  "format": "DataBarOmni",
+  "grid": "618ca656856b77d5",
+  "text": "(01)12345678901231"
+ },
+ "databar-omnidirectional-6": {
+  "format": "DataBarOmni",
+  "grid": "59888c2626b3ab10",
+  "text": "(01)87125568272139"
+ },
+ "databar-omnidirectional-7": {
+  "format": "DataBarOmni",
+  "grid": "2d18bc0ffee2823f",
+  "text": "(01)00614141999996"
+ },
+ "databar-omnidirectional-8": {
+  "format": "DataBarOmni",
+  "grid": "1b19f6dbe09e81d7",
+  "text": "(01)40063813339314"
+ },
+ "databar-stacked-1": {
+  "format": "DataBarStk",
+  "grid": "46657bb4f9c4a9cb",
+  "text": "(01)00000000000000"
+ },
+ "databar-stacked-2": {
+  "format": "DataBarStk",
+  "grid": "3406874655b0e1df",
+  "text": "(01)09501101530003"
+ },
+ "databar-stacked-3": {
+  "format": "DataBarStk",
+  "grid": "93cc552e3ee66803",
+  "text": "(01)20012345678909"
+ },
+ "databar-stacked-4": {
+  "format": "DataBarStk",
+  "grid": "e340ee6c33b2925e",
+  "text": "(01)73500538500196"
+ },
+ "databar-stacked-5": {
+  "format": "DataBarStk",
+  "grid": "3d472be406ca2b1c",
+  "text": "(01)33333333333339"
+ },
+ "databar-stacked-6": {
+  "format": "DataBarStk",
+  "grid": "376a04cd99011330",
+  "text": "(01)66093862273770"
+ },
+ "databar-stackedomnidirectional-1": {
+  "format": "DataBarStk",
+  "grid": "68ee1883760216dd",
+  "text": "(01)00000000000000"
+ },
+ "databar-stackedomnidirectional-2": {
+  "format": "DataBarStk",
+  "grid": "d73be539c374f77c",
+  "text": "(01)09501101530003"
+ },
+ "databar-stackedomnidirectional-3": {
+  "format": "DataBarStk",
+  "grid": "0115099742369007",
+  "text": "(01)87125568272139"
+ },
+ "databar-stackedomnidirectional-4": {
+  "format": "DataBarStk",
+  "grid": "7440300e49e692d6",
+  "text": "(01)66093862273770"
+ },
+ "databar-stackedomnidirectional-5": {
+  "format": "DataBarStk",
+  "grid": "21956150ee86be04",
+  "text": "(01)04242394913108"
+ },
+ "databar-stackedomnidirectional-6": {
+  "format": "DataBarStk",
+  "grid": "0886fc41cf534785",
+  "text": "(01)93231581660561"
+ },
+ "databar-stackedomnidirectional-7": {
+  "format": "DataBarStk",
+  "grid": "f41cdfaeae32dc6f",
+  "text": "(01)11111111111113"
+ },
+ "databar-truncated-1": {
+  "format": "DataBarOmni",
+  "grid": "1f571dabc98f3638",
+  "text": "(01)00000000000017"
+ },
+ "databar-truncated-2": {
+  "format": "DataBarOmni",
+  "grid": "fcd44295ea9eb065",
+  "text": "(01)09501101530003"
+ },
+ "databar-truncated-3": {
+  "format": "DataBarOmni",
+  "grid": "d619e034cdbaedb6",
+  "text": "(01)10000000000007"
+ },
+ "databar-truncated-4": {
+  "format": "DataBarOmni",
+  "grid": "7c9e8f18044a2cfe",
+  "text": "(01)50123456789000"
+ },
+ "databar-truncated-5": {
+  "format": "DataBarOmni",
+  "grid": "d8280328e6a9b56f",
+  "text": "(01)98765432109879"
+ },
  "dm-144": {
   "format": "DataMatrix",
   "grid": "4a4f1cdc128a4f00",
