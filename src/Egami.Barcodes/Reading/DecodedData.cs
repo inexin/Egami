@@ -168,54 +168,79 @@ internal static class Gs1Raw
         elements = null;
         var list = new List<Gs1ElementString>();
         int at = 0;
-        while (at < raw.Length)
+        while (Next(raw, ref at, out string? ai, out string? value))
         {
-            if (raw[at] == '\x1D')
-            {
-                at++;
-                continue;
-            }
-
-            // The longest AI that GS1 defines at this point, 2 to 4 digits.
-            Gs1AiSpec? spec = null;
-            string ai = "";
-            for (int length = 2; length <= 4 && at + length <= raw.Length; length++)
-            {
-                string candidate = raw.Substring(at, length);
-                if (Gs1Dictionary.Find(candidate) is Gs1AiSpec found)
-                {
-                    (spec, ai) = (found, candidate);
-                    break;
-                }
-            }
-
-            if (spec is null)
-            {
-                return false;
-            }
-
-            at += ai.Length;
-            int end = raw.IndexOf('\x1D', at);
-            if (spec.PredefinedLength)
-            {
-                int length = spec.Components.Sum(c => c.Length);
-                end = Math.Min(raw.Length, at + length);
-            }
-            else if (end < 0)
-            {
-                end = raw.Length;
-            }
-
-            if (!Gs1ElementString.TryCreate(ai, raw[at..end], out Gs1ElementString? element, out _))
+            if (!Gs1ElementString.TryCreate(ai, value, out Gs1ElementString? element, out _))
             {
                 return false;
             }
 
             list.Add(element);
-            at = end;
+        }
+
+        if (at < raw.Length)
+        {
+            return false;
         }
 
         elements = list;
         return list.Count > 0;
+    }
+
+    /// <summary>
+    /// The element strings in their human-readable form with their values as they are, checked or not, or
+    /// <see langword="null"/> when an AI is not one GS1 defines.
+    /// </summary>
+    public static string? Shown(string raw)
+    {
+        var text = new StringBuilder();
+        int at = 0;
+        while (Next(raw, ref at, out string? ai, out string? value))
+        {
+            text.Append('(').Append(ai).Append(')').Append(value);
+        }
+
+        return at < raw.Length || text.Length == 0 ? null : text.ToString();
+    }
+
+    /// <summary>The next AI and its value from <paramref name="at"/>; false at the end or at an AI that GS1 does not define.</summary>
+    private static bool Next(string raw, ref int at, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? ai, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? value)
+    {
+        (ai, value) = (null, null);
+        while (at < raw.Length && raw[at] == '\x1D')
+        {
+            at++;
+        }
+
+        // The longest AI that GS1 defines at this point, 2 to 4 digits.
+        Gs1AiSpec? spec = null;
+        for (int length = 2; length <= 4 && at + length <= raw.Length; length++)
+        {
+            string candidate = raw.Substring(at, length);
+            if (Gs1Dictionary.Find(candidate) is Gs1AiSpec found)
+            {
+                (spec, ai) = (found, candidate);
+                break;
+            }
+        }
+
+        if (spec is null || ai is null)
+        {
+            return false;
+        }
+
+        int start = at + ai.Length, end = raw.IndexOf('\x1D', start);
+        if (spec.PredefinedLength)
+        {
+            end = Math.Min(raw.Length, start + spec.Components.Sum(c => c.Length));
+        }
+        else if (end < 0)
+        {
+            end = raw.Length;
+        }
+
+        value = raw[start..end];
+        at = end;
+        return true;
     }
 }

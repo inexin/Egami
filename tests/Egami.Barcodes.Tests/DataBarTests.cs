@@ -1,4 +1,5 @@
 using Egami.Barcodes.Linear;
+using Egami.Pixels;
 
 namespace Egami.Barcodes.Tests;
 
@@ -175,5 +176,38 @@ public class DataBarTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new DataBarExpandedOptions { SegmentsPerRow = 3 });
         Assert.Throws<ArgumentOutOfRangeException>(() => new DataBarExpandedOptions { SegmentsPerRow = 22 });
         Assert.Throws<ArgumentOutOfRangeException>(() => new DataBarExpandedOptions { SegmentsPerRow = 0 });
+    }
+
+    [Theory]
+    [InlineData("(01)99501101530006(3103)032767", null)] // Method 3
+    [InlineData("(01)99501101530006(3202)009999", null)] // Method 4
+    [InlineData("(01)99501101530006(3203)022767", null)]
+    [InlineData("(01)99501101530006(3922)12345", null)] // Method 5
+    [InlineData("(01)99501101530006(3932)97812345", null)] // Method 6
+    [InlineData("(01)99501101530006(3102)001234", null)] // Methods 7 to 14
+    [InlineData("(01)99501101530006(3205)012345(11)261231", null)]
+    [InlineData("(01)99501101530006(3101)099999(17)000101", null)]
+    [InlineData("(01)09501101530003(10)abc(21)A-1/2", null)] // Method 1, all three general field modes
+    [InlineData("(90)ABC123!(91)xyz", 2)] // Method 2, stacked a block a row
+    [InlineData("(01)09501101530003(21)ABCDEFGHIJKLMNOPQRST", 6)]
+    public void DataBarExpandedReadsBack(string data, int? segmentsPerRow)
+    {
+        Barcode barcode = Barcode.DataBarExpanded(data, new DataBarExpandedOptions { SegmentsPerRow = segmentsPerRow });
+        using Raster<Gray8> image = barcode.ToRaster(3);
+        BarcodeResult? result = image.ReadBarcode();
+        Assert.NotNull(result);
+        Assert.Equal(BarcodeFormat.DataBarExpanded, result.Format);
+        Assert.Equal(data, result.Text);
+        Assert.Equal(Gs1.Parse(data), result.Gs1);
+    }
+
+    [Fact]
+    public void DataBarExpandedReadsTheFirstEditionsFnc1()
+    {
+        // A symbol from a ZXing test image: (10)123456A1234A then (15)991231, made to ISO/IEC 24724:2006, where the
+        // alphanumeric mode carries on after an FNC1; read as this edition has it, the data makes no valid element strings.
+        int[] values = [19, 683, 1576, 1030, 929, 771, 3096, 3717, 1360];
+        Assert.Equal("10123456A1234A\u001D15991231", Egami.Barcodes.Reading.DataBarExpandedReader.Data(values, 10, true));
+        Assert.NotEqual("10123456A1234A\u001D15991231", Egami.Barcodes.Reading.DataBarExpandedReader.Data(values, 10, false));
     }
 }

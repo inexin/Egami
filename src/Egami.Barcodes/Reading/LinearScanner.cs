@@ -231,9 +231,9 @@ internal static class LinearScanner
             Vote(read, start + (step * read.Start), start + (step * read.End), (start, step, length), reads);
         }
 
-        if ((formats & BarcodeFormat.DataBar) != 0)
+        if ((formats & DataBarCollector.Formats) != 0)
         {
-            reads.DataBar.Add(runs, offsets, start, step, reads.DataBarFound);
+            reads.DataBar.Add(runs, offsets, start, step, formats, reads.DataBarFound);
         }
 
         // Reversed: the runs backwards, light first again; positions measured from the far end.
@@ -262,9 +262,9 @@ internal static class LinearScanner
             Vote(reversed, start + (step * (length - reversed.Start)), start + (step * (length - reversed.End)), (start, step, length), reads);
         }
 
-        if ((formats & BarcodeFormat.DataBar) != 0)
+        if ((formats & DataBarCollector.Formats) != 0)
         {
-            reads.DataBar.Add(back, backPositions, start + (step * length), -step, reads.DataBarFound);
+            reads.DataBar.Add(back, backPositions, start + (step * length), -step, formats, reads.DataBarFound);
             foreach ((DecodedData data, Vector2 from, Vector2 to) in reads.DataBarFound)
             {
                 Vote(new LinearRead(data, 0, 0), from, to, (start, step, length), reads);
@@ -286,7 +286,7 @@ internal static class LinearScanner
         }
 
         // DataBar pairs meet by chance more often than a whole symbol reads, so its votes come from different lines.
-        if ((read.Data.Format & BarcodeFormat.DataBar) != 0 && line.Start == candidate.LastLine)
+        if ((read.Data.Format & DataBarCollector.Formats) != 0 && line.Start == candidate.LastLine)
         {
             return;
         }

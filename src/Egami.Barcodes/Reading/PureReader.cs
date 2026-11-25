@@ -61,7 +61,7 @@ internal static class PureReader
             return pdf;
         }
 
-        if ((formats & BarcodeFormat.DataBar) != 0 && DataBar(bits, top, height) is (DecodedData dataBar, Vector2 from, Vector2 to))
+        if ((formats & DataBarCollector.Formats) != 0 && DataBar(bits, top, height, formats) is (DecodedData dataBar, Vector2 from, Vector2 to))
         {
             Vector2 offset = new(image.Left, image.Top);
             return new Found(dataBar, [from + offset, to + offset]);
@@ -234,7 +234,7 @@ internal static class PureReader
     }
 
     /// <summary>GS1 DataBar from rows across the symbol, each read both ways, so that the pairs of stacked rows meet.</summary>
-    private static (DecodedData, Vector2, Vector2)? DataBar(BitImage bits, int top, int height)
+    private static (DecodedData, Vector2, Vector2)? DataBar(BitImage bits, int top, int height, BarcodeFormat formats)
     {
         var runs = new List<float>();
         var offsets = new List<float>();
@@ -247,9 +247,9 @@ internal static class PureReader
             int y = top + (int)((k + 0.5f) * height / lines);
             Binarizer.BitRuns(bits.Row(y), runs, offsets);
             float[] forward = [.. runs], forwardOffsets = [.. offsets];
-            collector.Add(forward, forwardOffsets, new Vector2(0, y), Vector2.UnitX, found);
+            collector.Add(forward, forwardOffsets, new Vector2(0, y), Vector2.UnitX, formats, found);
             (float[] back, float[] backOffsets) = Reversed(forward, bits.Width);
-            collector.Add(back, backOffsets, new Vector2(bits.Width, y), -Vector2.UnitX, found);
+            collector.Add(back, backOffsets, new Vector2(bits.Width, y), -Vector2.UnitX, formats, found);
             // A symbol counts when two rows make it: pairs can meet by chance.
             foreach ((DecodedData data, Vector2 from, Vector2 to) in found)
             {

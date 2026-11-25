@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 using Egami.Barcodes.Linear;
@@ -245,14 +246,15 @@ internal static class DataBarReader
 
     /// <summary>
     /// The finder a run of 5 widths in modules matches, or -1; and the ink spread its bars show (in modules, positive when bars
-    /// are wide). <paramref name="darkFirst"/> is 0 when the first element is dark, 1 when light.
+    /// are wide). <paramref name="darkFirst"/> is 0 when the first element is dark, 1 when light. Only the patterns from
+    /// <paramref name="first"/> in steps of <paramref name="step"/> are tried.
     /// </summary>
-    internal static int FinderValue(ReadOnlySpan<float> finder, ReadOnlySpan<byte> patterns, int count, int darkFirst, out float spread)
+    internal static int FinderValue(ReadOnlySpan<float> finder, ReadOnlySpan<byte> patterns, int count, int darkFirst, out float spread, int first = 0, int step = 1)
     {
         spread = 0;
         int best = -1;
         float bestError = 0.5f;
-        for (int p = 0; p < count; p++)
+        for (int p = first; p < count; p += step)
         {
             ReadOnlySpan<byte> pattern = patterns.Slice(p * 5, 5);
 
@@ -293,7 +295,7 @@ internal static class DataBarReader
     }
 
     /// <summary>A run in modules, less the ink spread on a bar or plus it on a space (runs at odd indices are dark).</summary>
-    private static float Corrected(float run, float module, int index, float spread) => (run / module) + (index % 2 == 1 ? -spread : spread);
+    internal static float Corrected(float run, float module, int index, float spread) => (run / module) + (index % 2 == 1 ? -spread : spread);
 
     private static bool Near(float run, float module) => run >= 0.4f * module && run <= 2.2f * module;
 
@@ -310,16 +312,39 @@ internal static class DataBarReader
 }
 
 /// <summary>
-/// The DataBar pairs a scan collects, in image coordinates, and the symbols they make: pairs combine when their checksum holds
-/// and they lie next to each other (side by side on one row, or one above the other in a stacked symbol).
+/// The DataBar pairs and Expanded segments a scan collects, in image coordinates, and the symbols they make: pairs combine
+/// when their checksum holds and they lie next to each other (side by side on one row, or one above the other in a stacked
+/// symbol); segments join in a finder sequence, from one line or from the rows of a stacked symbol, when the check character
+/// holds.
 /// </summary>
 internal sealed class DataBarCollector
 {
+    /// <summary>The formats the collector reads.</summary>
+    public const BarcodeFormat Formats = BarcodeFormat.DataBar | BarcodeFormat.DataBarExpanded;
+
+    private const int MaxSegments = 64;
+
     private readonly List<(DataBarReader.OmniPair Pair, Vector2 From, Vector2 To)> _left = [], _right = [];
     private readonly List<DataBarReader.OmniPair> _pairs = [];
+    private readonly List<(DataBarExpandedReader.Block[] Blocks, float Start, float End)> _lineSegments = [];
+    private readonly List<(DataBarExpandedReader.Block[] Blocks, Vector2 From, Vector2 To)> _segments = [];
+    private readonly List<DataBarExpandedReader.Block> _assembly = [];
 
-    /// <summary>Reads the pairs on a line and returns each symbol a new pair completes, with the ends of the symbol.</summary>
-    public void Add(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, Vector2 origin, Vector2 direction, List<(DecodedData Data, Vector2 From, Vector2 To)> found)
+    /// <summary>Reads the pairs and segments on a line and returns each symbol they complete, with the ends of the symbol.</summary>
+    public void Add(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, Vector2 origin, Vector2 direction, BarcodeFormat formats, List<(DecodedData Data, Vector2 From, Vector2 To)> found)
+    {
+        if ((formats & BarcodeFormat.DataBar) != 0)
+        {
+            AddPairs(runs, offsets, origin, direction, found);
+        }
+
+        if ((formats & BarcodeFormat.DataBarExpanded) != 0)
+        {
+            AddSegments(runs, offsets, origin, direction, found);
+        }
+    }
+
+    private void AddPairs(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, Vector2 origin, Vector2 direction, List<(DecodedData Data, Vector2 From, Vector2 To)> found)
     {
         _pairs.Clear();
         DataBarReader.OmniPairs(runs, offsets, _pairs);
@@ -346,6 +371,101 @@ internal sealed class DataBarCollector
                 mine.Add((pair, from, to));
             }
         }
+    }
+
+    /// <summary>
+    /// Adds the line's Expanded segments (a segment read before counts again) and returns the symbols each one completes: a
+    /// one-row symbol alone, a stacked one with the segments of its other rows.
+    /// </summary>
+    private void AddSegments(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, Vector2 origin, Vector2 direction, List<(DecodedData Data, Vector2 From, Vector2 To)> found)
+    {
+        _lineSegments.Clear();
+        DataBarExpandedReader.Segments(runs, offsets, _lineSegments);
+        foreach ((DataBarExpandedReader.Block[] blocks, float start, float end) in _lineSegments)
+        {
+            int index = _segments.FindIndex(s => Same(s.Blocks, blocks));
+            if (index < 0)
+            {
+                if (_segments.Count >= MaxSegments)
+                {
+                    continue;
+                }
+
+                index = _segments.Count;
+                _segments.Add((blocks, origin + (direction * start), origin + (direction * end)));
+            }
+
+            int budget = 512;
+            _assembly.Clear();
+            Assemble(index, false, -1, -1, ref budget, found);
+        }
+    }
+
+    /// <summary>
+    /// Extends the blocks assembled so far with each stored segment (from any of its blocks) that continues a finder sequence,
+    /// and reports the symbols that use segment <paramref name="required"/>.
+    /// </summary>
+    private void Assemble(int required, bool used, int first, int last, ref int budget, List<(DecodedData Data, Vector2 From, Vector2 To)> found)
+    {
+        if (--budget < 0)
+        {
+            return;
+        }
+
+        int count = _assembly.Count;
+        if (count >= 2 && DataBarExpandedReader.Decode(CollectionsMarshal.AsSpan(_assembly)) is DecodedData data)
+        {
+            if (used)
+            {
+                found.Add((data, _segments[first].From, _segments[last].To));
+            }
+
+            return;
+        }
+
+        if (count > 0 && _assembly[^1].Right < 0)
+        {
+            return;
+        }
+
+        for (int s = 0; s < _segments.Count; s++)
+        {
+            DataBarExpandedReader.Block[] blocks = _segments[s].Blocks;
+            for (int o = 0; o < blocks.Length; o++)
+            {
+                // A symbol starts at A1, which only its first block has.
+                if ((count == 0) != (blocks[o].Finder == 0) || count + blocks.Length - o > 11)
+                {
+                    continue;
+                }
+
+                _assembly.AddRange(blocks.AsSpan(o));
+                if (DataBarExpandedReader.Begins(CollectionsMarshal.AsSpan(_assembly)))
+                {
+                    Assemble(required, used || s == required, count == 0 ? s : first, s, ref budget, found);
+                }
+
+                _assembly.RemoveRange(count, _assembly.Count - count);
+            }
+        }
+    }
+
+    private static bool Same(DataBarExpandedReader.Block[] a, DataBarExpandedReader.Block[] b)
+    {
+        if (a.Length != b.Length)
+        {
+            return false;
+        }
+
+        for (int k = 0; k < a.Length; k++)
+        {
+            if (!a[k].SameAs(b[k]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
