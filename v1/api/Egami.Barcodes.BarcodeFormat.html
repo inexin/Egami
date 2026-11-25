@@ -127,6 +127,10 @@ public enum BarcodeFormat</code></pre>
   
   <dd><p>Aztec Code (ISO/IEC 24778); no quiet zone, as its finder is in the middle.</p>
 </dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_Codabar"><code>Codabar = 4096</code></dt>
+  
+  <dd><p>Codabar (EN 798), linear; quiet zone 10 modules.</p>
+</dd>
     <dt id="Egami_Barcodes_BarcodeFormat_Code128"><code>Code128 = 16</code></dt>
   
   <dd><p>Code 128 and GS1-128 (ISO/IEC 15417), linear; quiet zone 10 modules.</p>
@@ -134,6 +138,10 @@ public enum BarcodeFormat</code></pre>
     <dt id="Egami_Barcodes_BarcodeFormat_Code39"><code>Code39 = 32</code></dt>
   
   <dd><p>Code 39 (ISO/IEC 16388), linear; quiet zone 10 modules.</p>
+</dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_Code93"><code>Code93 = 2048</code></dt>
+  
+  <dd><p>Code 93 (ANSI/AIM BC5), linear; quiet zone 10 modules.</p>
 </dd>
     <dt id="Egami_Barcodes_BarcodeFormat_DataMatrix"><code>DataMatrix = 2</code></dt>
   
@@ -151,7 +159,7 @@ public enum BarcodeFormat</code></pre>
   
   <dd><p>Interleaved 2 of 5 and ITF-14 (ISO/IEC 16390), linear; quiet zone 10 modules.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_Linear"><code>Linear = Code128 | Code39 | Itf | Ean13 | Ean8 | UpcA | UpcE</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_Linear"><code>Linear = Code128 | Code39 | Itf | Ean13 | Ean8 | UpcA | UpcE | Code93 | Codabar</code></dt>
   
   <dd><p>The linear symbologies.</p>
 </dd>

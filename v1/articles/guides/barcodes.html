@@ -89,8 +89,8 @@
 
 <p>Egami.Barcodes writes and reads barcodes. It draws them through Egami.Drawing's canvas, so a barcode stays vector on a PDF page
 or in SVG output, and reads them from rasters. It is fully managed.</p>
-<p>It writes and reads QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, ITF and
-ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on <code>Barcode</code> with typed options; <code>Barcode.Create</code> takes a
+<p>It writes and reads QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, Code 93,
+Codabar, ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on <code>Barcode</code> with typed options; <code>Barcode.Create</code> takes a
 format chosen at run time with the default options.</p>
 <pre><code class="lang-csharp">// Labels from a table that stores each barcode's format with its data.
 (BarcodeFormat Format, string Data)[] rows =
@@ -203,6 +203,29 @@ reader has to be set to Full ASCII to read such text back. <code>Code39Options.C
 <pre><code class="lang-csharp">// Capitals, digits and a few symbols; lowercase switches to Full ASCII on its own.
 Barcode part = Barcode.Code39(&quot;PART-0042&quot;, new Code39Options { CheckDigit = true });
 Console.WriteLine(part.HumanReadableText); // PART-0042 and its mod 43 check character
+</code></pre><h3 id="code-93">Code 93</h3>
+<p><code>Barcode.Code93</code> writes digits, capital letters, space and <code>- . $ / + %</code>, in a symbol shorter than Code 39's for the same
+text. Two check characters, C and K, are always added; they are not part of the human-readable text. Text with other ASCII
+characters, such as lowercase letters, is written as Full ASCII, a shift character and a letter for each; Code 93's shift
+characters are characters of their own, so readers decode Full ASCII without being told. <code>Code93Options.FullAscii</code> set to
+<code>false</code> rejects such text instead.</p>
+<pre><code class="lang-csharp">// The check characters C and K are added on their own; lowercase switches to Full ASCII.
+Barcode part = Barcode.Code93(&quot;PART-0042&quot;);
+Barcode mixed = Barcode.Code93(&quot;Part 42, lot b&quot;);
+Console.WriteLine(part.HumanReadableText); // PART-0042
+</code></pre><h3 id="codabar">Codabar</h3>
+<p><code>Barcode.Codabar</code> writes digits and <code>- $ : / . +</code> between a start and a stop character, A, B, C or D, as libraries, blood
+banks and parcel services use it. Text that begins and ends with A to D keeps those; other text gets <code>CodabarOptions.Start</code>
+and <code>Stop</code>, A by default. <code>CheckDigit</code> adds a modulo 16 check character before the stop character, and <code>WideRatio</code> makes wide
+elements 2 (the default) or 3 times as wide as narrow ones. The human-readable text is every character of the symbol, start,
+stop and any check character included, as a reader returns it. A symbol needs two characters between start and stop, or one
+and the check character: readers ignore shorter ones.</p>
+<pre><code class="lang-csharp">// A library card number between start character A and stop character B.
+Barcode card = Barcode.Codabar(&quot;A31117013206375B&quot;);
+
+// Start and stop characters from the options, and a modulo 16 check character.
+Barcode checkedCode = Barcode.Codabar(&quot;40156&quot;, new CodabarOptions { Start = 'C', Stop = 'D', CheckDigit = true });
+Console.WriteLine(checkedCode.HumanReadableText); // C40156, its check character, D
 </code></pre><h3 id="itf-and-itf-14">ITF and ITF-14</h3>
 <p><code>Barcode.Itf</code> writes Interleaved 2 of 5 from digits; an odd number of digits gets a leading zero. <code>Barcode.Itf14</code> writes a
 GTIN-14 for cartons: 13 digits get their check digit added, 14 are checked, and bearer bars 5 modules thick frame the symbol
@@ -286,7 +309,7 @@ font, the text.</p>
 using Raster&lt;Gray8&gt; image = qr.ToRaster(pixelsPerModule: 4);
 </code></pre><h2 id="barcodes-from-modules">Barcodes from modules</h2>
 <p>A <code>Barcode</code> is one symbol: its <code>BarcodeFormat</code>, its <code>Modules</code>, the <code>QuietZone</code> its standard asks for in modules (4 for QR, 1 for
-Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39 and ITF, 11 for EAN-13, 7
+Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7
 for EAN-8 and 9 for UPC) and the <code>HumanReadableText</code> printed under a linear symbol. <code>Barcode.FromModules</code> makes one from
 modules you already have, such as from another encoder.</p>
 <pre><code class="lang-csharp">// Modules from another encoder become a barcode with the quiet zone of their standard: 4 modules for QR.

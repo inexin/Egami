@@ -88,7 +88,7 @@
 <h1 id="reading-barcodes">Reading barcodes</h1>
 
 <p>Egami.Barcodes reads every symbology it writes: QR Code, Data Matrix (DMRE too), PDF417 (compact too), Aztec Code (runes too),
-Code 128 and GS1-128, Code 39, ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E with their add-ons. It reads rendered barcodes,
+Code 128 and GS1-128, Code 39, Code 93, Codabar, ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E with their add-ons. It reads rendered barcodes,
 scans and photos: turned, in perspective, blurred, noisy, light on dark or mirrored, several in one image.</p>
 <h2 id="reading-an-image">Reading an image</h2>
 <p><code>ReadBarcodes</code>, an extension method in <code>BarcodeReader</code>, finds every barcode in a raster of any pixel type and returns a
@@ -137,6 +137,10 @@ BarcodeResult? code = BarcodeReader.ReadBarcode(yPlane, width, height, stride);
 directions with its edges placed between pixels, so low-resolution and blurred photos read. From effort 5 rows are also read
 through the local threshold, which keeps bars under glare apart. A linear barcode counts once two scan lines agree on it.
 ITF, whose check is weakest, is read from 4 digits on.</p>
+<p>Code 93 comes back without its check characters C and K, which are verified, and with Full ASCII decoded. Codabar comes back
+with its start and stop characters, A to D, as zxing-cpp returns it, and with any check character, as a reader cannot tell
+whether a symbol has one; it is read from four characters on, start and stop included, with its quiet zones, as bars in
+noise look like Codabar easily.</p>
 <p>QR Codes are found by their three finder patterns, at any rotation and in perspective; from version 2 the alignment pattern
 corrects the perspective (each one near the expected place is tried, nearest first), and a mirrored symbol reads too.</p>
 <p>Data Matrix symbols are found by their L-shaped finder, square and rectangular (DMRE too), at any rotation and in
@@ -173,7 +177,8 @@ string? batch = code?.Gs1?.FirstOrDefault(e =&gt; e.Ai == &quot;10&quot;)?.Value
 <ul>
 <li>Two pixels or more per module. Linear barcodes read down to about one pixel per narrow bar, as their edges are placed between
 pixels.</li>
-<li>The quiet zone the symbology asks for, or most of it: 10 modules beside Code 128 and Code 39, 4 around a QR code.</li>
+<li>The quiet zone the symbology asks for, or most of it: 10 modules beside Code 128, Code 39, Code 93 and Codabar, 4 around a
+QR code.</li>
 <li>Contrast between bars and background; uneven light is fine, as each part of the image gets its own threshold.</li>
 <li>A sharp image. Blur that merges neighbouring modules cannot be undone, although error correction fills in damaged parts of
 2D symbols.</li>
