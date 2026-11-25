@@ -19711,6 +19711,22 @@ references:
   isSpec: "True"
   fullName: Egami.Drawing.Path.Verbs
   nameWithType: Path.Verbs
+- uid: Egami.Drawing.Path.Warp(System.Func{System.Numerics.Vector2,System.Numerics.Vector2},System.Single)
+  name: Warp(Func<Vector2, Vector2>, float)
+  href: api/Egami.Drawing.Path.html#Egami_Drawing_Path_Warp_System_Func_System_Numerics_Vector2_System_Numerics_Vector2__System_Single_
+  commentId: M:Egami.Drawing.Path.Warp(System.Func{System.Numerics.Vector2,System.Numerics.Vector2},System.Single)
+  name.vb: Warp(Func(Of Vector2, Vector2), Single)
+  fullName: Egami.Drawing.Path.Warp(System.Func<System.Numerics.Vector2, System.Numerics.Vector2>, float)
+  fullName.vb: Egami.Drawing.Path.Warp(System.Func(Of System.Numerics.Vector2, System.Numerics.Vector2), Single)
+  nameWithType: Path.Warp(Func<Vector2, Vector2>, float)
+  nameWithType.vb: Path.Warp(Func(Of Vector2, Vector2), Single)
+- uid: Egami.Drawing.Path.Warp*
+  name: Warp
+  href: api/Egami.Drawing.Path.html#Egami_Drawing_Path_Warp_
+  commentId: Overload:Egami.Drawing.Path.Warp
+  isSpec: "True"
+  fullName: Egami.Drawing.Path.Warp
+  nameWithType: Path.Warp
 - uid: Egami.Drawing.Path.WithFillRule(Egami.Drawing.FillRule)
   name: WithFillRule(FillRule)
   href: api/Egami.Drawing.Path.html#Egami_Drawing_Path_WithFillRule_Egami_Drawing_FillRule_

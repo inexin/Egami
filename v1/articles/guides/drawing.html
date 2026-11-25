@@ -176,7 +176,8 @@ RectF box = heart.TightBounds;                       // curves measured at their
 <li><code>FillRule</code> decides what is inside: <code>NonZero</code> (the default) or <code>EvenOdd</code>. Shapes are added clockwise; a
 <code>PathDirection.CounterClockwise</code> contour inside a clockwise one makes a hole under <code>NonZero</code> too.</li>
 <li><code>Contains</code> uses the winding number on the curves themselves, and counts a point on the outline as inside.</li>
-<li><code>Transform</code> takes a <code>Matrix3x2</code>, or a <code>Homography</code> for perspective.</li>
+<li><code>Transform</code> takes a <code>Matrix3x2</code>, or a <code>Homography</code> for perspective. <code>Warp</code> sends every point through any function of the
+plane (a wave, an arch, text bent between two curves), splitting lines and curves until the result stays within a tolerance.</li>
 </ul>
 <h2 id="strokes">Strokes</h2>
 <p><code>Stroke</code> is the pen: <code>Width</code>, <code>Cap</code> (<code>LineCap.Butt</code>, <code>Round</code>, <code>Square</code>), <code>Join</code> (<code>LineJoin.Miter</code>, <code>Round</code>, <code>Bevel</code>) and
@@ -886,6 +887,26 @@ for (int i = 1; i &lt;= 24; i++)
 }
 </code></pre>
 <p><code>PathEffect.Trim</code> keeps a fraction of the path's length; stepping it from 0 to 1 gives the frames.</p>
+<h3 id="bend-text-into-an-arch">Bend text into an arch</h3>
+<pre><code class="lang-csharp">// Word art: the outline of a line of text, bent so its top follows an arch while its baseline stays straight.
+Path text = new Font(face, 64).GetTextPath(&quot;ARCHED&quot;, new Vector2(10, 110));
+RectF box = text.TightBounds;
+Path arched = text.Warp(p =&gt;
+{
+    float across = (p.X - box.Left) / box.Width;      // 0 at the left edge, 1 at the right
+    float up = (box.Bottom - p.Y) / box.Height;        // 0 on the baseline, 1 at the top
+    float lift = 40 * MathF.Sin(MathF.PI * across);    // how far the top curve rises above the box
+    return new Vector2(p.X, p.Y - (up * lift));
+});
+
+using Raster&lt;Rgba8&gt; banner = Raster.Create(300, 130, Rgba8.White);
+using (RasterCanvas&lt;Rgba8&gt; canvas = banner.CreateCanvas())
+{
+    canvas.FillPath(arched, new Rgba8(170, 40, 120, 255));
+}
+</code></pre>
+<p><code>Warp</code> takes any function of the plane. A line whose image stays straight stays a line, so straight parts of a warp cost
+nothing extra; lower the tolerance for print sizes.</p>
 <h3 id="paint-a-dusk-sky">Paint a dusk sky</h3>
 <pre><code class="lang-csharp">// A dusk sky: stops in Oklch so the hues turn smoothly, dithered so the wide soft ramp shows no bands, and a sun.
 using Raster&lt;Rgba8&gt; sky = Raster.Create&lt;Rgba8&gt;(800, 450);
