@@ -120,7 +120,9 @@ Enum CssOrigin  <a class="header-action link-secondary" title="View source" href
     <dt id="Egami_Css_CssOrigin_Animation"><code>Animation = 3</code></dt>
   
   <dd><p>The values running CSS animations give (CSS Cascade 4, &quot;Cascade Origins&quot;): above every normal declaration, below every
-important one. Style sheets never have this origin; <a class="xref" href="Egami.Css.CssCascadedStyle.html#Egami_Css_CssCascadedStyle_WithAnimationValues_System_Collections_Generic_IEnumerable_Egami_Css_CssDeclaration__">WithAnimationValues(IEnumerable&lt;CssDeclaration&gt;)</a> adds its declarations.</p>
+important one. Style sheets never have this origin; <a class="xref" href="Egami.Css.CssCascadedStyle.html#Egami_Css_CssCascadedStyle_WithAnimationValues_System_Collections_Generic_IEnumerable_Egami_Css_CssDeclaration__">WithAnimationValues(IEnumerable&lt;CssDeclaration&gt;)</a> adds its declarations.
+Do not compare origins as numbers: this one is above <a class="xref" href="Egami.Css.CssOrigin.html#Egami_Css_CssOrigin_Author">Author</a> only for normal declarations, and an important
+declaration of any origin wins over it.</p>
 </dd>
     <dt id="Egami_Css_CssOrigin_Author"><code>Author = 2</code></dt>
   

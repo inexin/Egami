@@ -283,7 +283,8 @@ SvgGroup tree = document.RenderTreeAt(TimeSpan.FromSeconds(0.5));
 <p>CSS animations run too: an <code>@keyframes</code> rule and the <code>animation</code> properties (or the <code>animation</code> shorthand) on an element, with
 CSS Easing's timing functions, delays, iteration counts, directions, fill modes, <code>animation-play-state</code> and
 <code>animation-composition</code>. Each starts when the document loads. Keyframe values are computed in the element's context, so
-<code>inherit</code>, <code>var()</code> and <code>currentcolor</code> work, and a keyframe that leaves out a property takes the value below. Numbers, lengths,
+<code>currentcolor</code> and <code>em</code> resolve as on the element, custom properties animate (and <code>var()</code> in the element's rules reads them),
+and a keyframe that leaves out a property takes the value below. Numbers, lengths,
 colors (in premultiplied sRGB), transform lists, <code>translate</code>, <code>rotate</code>, <code>scale</code>, <code>d: path()</code> with the same commands,
 <code>offset-path</code> and <code>offset-distance</code> interpolate; other values, custom properties among them, change halfway. Animated values
 win over every normal rule and lose to <code>!important</code> ones; where SMIL animates the same property, SMIL sets the value below
@@ -344,7 +345,42 @@ animations are taken away, so any viewer shows that moment.</p>
 <pre><code class="lang-csharp">// A static SVG of the moment half a second in: the circle where it is then, no animation left.
 SvgDocument still = document.Freeze(TimeSpan.FromSeconds(0.5));
 still.Save(stream);
-</code></pre><h2 id="untrusted-files">Untrusted files</h2>
+</code></pre><h3 id="video">Video</h3>
+<p>Egami.Video encodes the frames <code>RenderFrames</code> hands over: write each one to a <code>VideoWriter</code> at the frame rate you drew them
+at, with <code>MergeDuplicates</code> off so every frame lasts the same. The recipe <a href="#make-a-video-from-an-animated-svg">Make a video from an animated SVG</a>
+does that. The <code>egami-video encode</code> command takes an animated SVG as its input and does the same from a shell
+(<a href="../video-cli/index.html">egami-video</a>): <code>--rate</code> sets the frame rate (25 by default), <code>--duration</code> how long to draw, and
+<code>--size</code> draws each frame at the size that fits, so it stays sharp.</p>
+<pre><code>egami-video encode spinner.svg --rate 30 --duration 4 --size 640x360 -o spinner.webm --codec vp9
+</code></pre>
+<h3 id="on-the-command-line">On the command line</h3>
+<p>Every <code>egami</code> command that reads images takes <code>--animate [fps]</code> and <code>--at &lt;time&gt;</code> for SVG inputs (<a href="../cli/commands.html">commands</a>).
+<code>--animate</code> loads an animated SVG as all its frames, 30 a second unless you give a rate, as <code>RasterizeAnimation</code> draws them;
+<code>--at</code> draws the moment that long after the document loads (<code>1.5s</code>, <code>1500ms</code> or <code>1.5</code>), or, with <code>--animate</code>, starts the frames
+there. The MCP server's tools take the same two options.</p>
+<pre><code>egami convert spinner.svg -o spinner.gif --animate 25
+egami convert spinner.svg -o still.png --at 0.75s
+</code></pre>
+<h3 id="limits">Limits</h3>
+<p><code>SvgAnimationOptions.MaxLength</code> (10 seconds) bounds what is drawn when you set no <code>Length</code>: a document that runs forever
+without a common loop period, or whose last animation ends later, is drawn for that long, with an <code>Svg.AnimationLength</code>
+warning. Set <code>Length</code> to draw longer. <code>SafetyLimits.MaxFrames</code> and <code>MaxTotalBytes</code> are checked against every frame before
+anything is drawn, so a high frame rate over a long stretch fails at once with a <code>LimitExceededException</code> rather than
+after minutes of work. SMIL timing that would need more interval steps than the timeline allows stops with
+<code>Svg.AnimationLimit</code>, and begin values that depend on each other in a loop are cut with <code>Svg.AnimationCycle</code>. Animations
+that wait for a click, a key or a wall-clock time never begin.</p>
+<p>Frames share what does not change between them (the parsed style sheets, the cascade of each element no animation touches,
+the keyframes of CSS animations), so an animated frame costs about what a static draw of the same moment does.</p>
+<h3 id="known-gaps">Known gaps</h3>
+<ul>
+<li>A keyframe value of <code>inherit</code>, or one that holds <code>var()</code>, such as <code>@keyframes k { to { fill: var(--c) } }</code>, is dropped,
+so that property does not animate. Animate the custom property itself instead: <code>@keyframes k { to { --c: red } }</code> with
+<code>fill: var(--c)</code> in the element's rule works.</li>
+<li><code>Freeze</code> writes an element's CSS-animated values into that element. Where <code>use</code> draws it several times and the values
+differ between the copies (because they inherit from each <code>use</code>), the frozen copy shows one copy's values for all.</li>
+<li>The CSS <code>d</code> property in a <code>style</code> attribute is not read; <code>d</code> in a style sheet rule and in a keyframe works.</li>
+</ul>
+<h2 id="untrusted-files">Untrusted files</h2>
 <p>An SVG file is untrusted input. A load honors the context's <code>SafetyLimits</code>: the file, after gzip, is bounded by
 <code>MaxTotalBytes</code> (a gzip bomb stops there), entity expansion by <code>MaxMetadataBytes</code> (so a billion-laughs DTD stops), the number
 of elements grows with <code>MaxTotalBytes</code>, and elements nest at most 256 deep. Internal DTD entities are expanded, because
@@ -451,7 +487,35 @@ SvgDocument card = SvgDocument.Parse(&quot;&quot;&quot;
     &lt;/svg&gt;
     &quot;&quot;&quot;, options);
 using Raster&lt;Rgba8&gt; raster = card.Rasterize&lt;Rgba8&gt;();
+</code></pre><h3 id="make-a-gif-from-an-animated-svg">Make a GIF from an animated SVG</h3>
+<pre><code class="lang-csharp">// The SVG's animation as a GIF, 200 pixels wide at 20 frames a second: one loop, or up to its last animation's end.
+SvgDocument document = SvgDocument.Load(&quot;spinner.svg&quot;);
+SvgAnimationOptions options = new() { FrameRate = 20, Render = new SvgRenderOptions { Width = 200 } };
+using Raster&lt;Rgba8&gt; animation = document.RasterizeAnimation&lt;Rgba8&gt;(options);
+animation.Save(&quot;spinner.gif&quot;);
 </code></pre>
+<p>The GIF loops when the SVG does. Save as <code>.webp</code> or <code>.png</code> (APNG) for those formats instead.</p>
+<h3 id="make-a-video-from-an-animated-svg">Make a video from an animated SVG</h3>
+<pre><code class="lang-csharp">// Four seconds of the SVG's animation as VP8 in WebM, 30 frames a second, each frame drawn 320 pixels wide.
+SvgDocument document = SvgDocument.Load(&quot;spinner.svg&quot;);
+SvgAnimationOptions frames = new()
+{
+    FrameRate = 30,
+    Length = TimeSpan.FromSeconds(4),
+    MergeDuplicates = false,                   // a frame every 1/30 s, as a video needs
+    Render = new SvgRenderOptions { Width = 320, Background = new RgbaF32(1, 1, 1, 1) },
+};
+using (VideoWriter writer = VideoWriter.Create(&quot;spinner.webm&quot;, new VideoWriterOptions { Codec = VideoCodecs.Vp8, FrameRate = new Rational(30, 1) }))
+{
+    foreach (SvgFrame&lt;Rgba8&gt; frame in document.RenderFrames&lt;Rgba8&gt;(frames))
+    {
+        using Raster&lt;Rgba8&gt; picture = frame.Raster;
+        writer.WriteFrame(picture);
+    }
+}
+</code></pre>
+<p>Every frame lasts the same 1/30 s, as a video needs; any other codec Egami.Video writes works the same way.</p>
+
 </article>
 
         <div class="contribution d-print-none">

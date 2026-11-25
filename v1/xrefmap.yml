@@ -8774,6 +8774,31 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssEasingFunction.Ease
   nameWithType: CssEasingFunction.Ease
+- uid: Egami.Css.CssEasingFunction.Equals(Egami.Css.CssEasingFunction)
+  name: Equals(CssEasingFunction?)
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_Equals_Egami_Css_CssEasingFunction_
+  commentId: M:Egami.Css.CssEasingFunction.Equals(Egami.Css.CssEasingFunction)
+  name.vb: Equals(CssEasingFunction)
+  fullName: Egami.Css.CssEasingFunction.Equals(Egami.Css.CssEasingFunction?)
+  fullName.vb: Egami.Css.CssEasingFunction.Equals(Egami.Css.CssEasingFunction)
+  nameWithType: CssEasingFunction.Equals(CssEasingFunction?)
+  nameWithType.vb: CssEasingFunction.Equals(CssEasingFunction)
+- uid: Egami.Css.CssEasingFunction.Equals(System.Object)
+  name: Equals(object?)
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_Equals_System_Object_
+  commentId: M:Egami.Css.CssEasingFunction.Equals(System.Object)
+  name.vb: Equals(Object)
+  fullName: Egami.Css.CssEasingFunction.Equals(object?)
+  fullName.vb: Egami.Css.CssEasingFunction.Equals(Object)
+  nameWithType: CssEasingFunction.Equals(object?)
+  nameWithType.vb: CssEasingFunction.Equals(Object)
+- uid: Egami.Css.CssEasingFunction.Equals*
+  name: Equals
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_Equals_
+  commentId: Overload:Egami.Css.CssEasingFunction.Equals
+  isSpec: "True"
+  fullName: Egami.Css.CssEasingFunction.Equals
+  nameWithType: CssEasingFunction.Equals
 - uid: Egami.Css.CssEasingFunction.Evaluate(System.Double,System.Boolean)
   name: Evaluate(double, bool)
   href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_Evaluate_System_Double_System_Boolean_
@@ -8790,6 +8815,19 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssEasingFunction.Evaluate
   nameWithType: CssEasingFunction.Evaluate
+- uid: Egami.Css.CssEasingFunction.GetHashCode
+  name: GetHashCode()
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_GetHashCode
+  commentId: M:Egami.Css.CssEasingFunction.GetHashCode
+  fullName: Egami.Css.CssEasingFunction.GetHashCode()
+  nameWithType: CssEasingFunction.GetHashCode()
+- uid: Egami.Css.CssEasingFunction.GetHashCode*
+  name: GetHashCode
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_GetHashCode_
+  commentId: Overload:Egami.Css.CssEasingFunction.GetHashCode
+  isSpec: "True"
+  fullName: Egami.Css.CssEasingFunction.GetHashCode
+  nameWithType: CssEasingFunction.GetHashCode
 - uid: Egami.Css.CssEasingFunction.IsLinear
   name: IsLinear
   href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_IsLinear
@@ -8870,6 +8908,44 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssEasingFunction.TryParse
   nameWithType: CssEasingFunction.TryParse
+- uid: Egami.Css.CssEasingFunction.op_Equality(Egami.Css.CssEasingFunction,Egami.Css.CssEasingFunction)
+  name: operator ==(CssEasingFunction?, CssEasingFunction?)
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_op_Equality_Egami_Css_CssEasingFunction_Egami_Css_CssEasingFunction_
+  commentId: M:Egami.Css.CssEasingFunction.op_Equality(Egami.Css.CssEasingFunction,Egami.Css.CssEasingFunction)
+  name.vb: =(CssEasingFunction, CssEasingFunction)
+  fullName: Egami.Css.CssEasingFunction.operator ==(Egami.Css.CssEasingFunction?, Egami.Css.CssEasingFunction?)
+  fullName.vb: Egami.Css.CssEasingFunction.=(Egami.Css.CssEasingFunction, Egami.Css.CssEasingFunction)
+  nameWithType: CssEasingFunction.operator ==(CssEasingFunction?, CssEasingFunction?)
+  nameWithType.vb: CssEasingFunction.=(CssEasingFunction, CssEasingFunction)
+- uid: Egami.Css.CssEasingFunction.op_Equality*
+  name: operator ==
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_op_Equality_
+  commentId: Overload:Egami.Css.CssEasingFunction.op_Equality
+  isSpec: "True"
+  name.vb: =
+  fullName: Egami.Css.CssEasingFunction.operator ==
+  fullName.vb: Egami.Css.CssEasingFunction.=
+  nameWithType: CssEasingFunction.operator ==
+  nameWithType.vb: CssEasingFunction.=
+- uid: Egami.Css.CssEasingFunction.op_Inequality(Egami.Css.CssEasingFunction,Egami.Css.CssEasingFunction)
+  name: operator !=(CssEasingFunction?, CssEasingFunction?)
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_op_Inequality_Egami_Css_CssEasingFunction_Egami_Css_CssEasingFunction_
+  commentId: M:Egami.Css.CssEasingFunction.op_Inequality(Egami.Css.CssEasingFunction,Egami.Css.CssEasingFunction)
+  name.vb: <>(CssEasingFunction, CssEasingFunction)
+  fullName: Egami.Css.CssEasingFunction.operator !=(Egami.Css.CssEasingFunction?, Egami.Css.CssEasingFunction?)
+  fullName.vb: Egami.Css.CssEasingFunction.<>(Egami.Css.CssEasingFunction, Egami.Css.CssEasingFunction)
+  nameWithType: CssEasingFunction.operator !=(CssEasingFunction?, CssEasingFunction?)
+  nameWithType.vb: CssEasingFunction.<>(CssEasingFunction, CssEasingFunction)
+- uid: Egami.Css.CssEasingFunction.op_Inequality*
+  name: operator !=
+  href: api/Egami.Css.CssEasingFunction.html#Egami_Css_CssEasingFunction_op_Inequality_
+  commentId: Overload:Egami.Css.CssEasingFunction.op_Inequality
+  isSpec: "True"
+  name.vb: <>
+  fullName: Egami.Css.CssEasingFunction.operator !=
+  fullName.vb: Egami.Css.CssEasingFunction.<>
+  nameWithType: CssEasingFunction.operator !=
+  nameWithType.vb: CssEasingFunction.<>
 - uid: Egami.Css.CssFont
   name: CssFont
   href: api/Egami.Css.CssFont.html
