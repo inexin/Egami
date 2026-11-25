@@ -11,8 +11,10 @@ namespace Egami.Svg.Animation;
 /// each on the result of those before it, the first on the element's computed value (which holds what SMIL animates, as a
 /// presentation hint). The results go to the cascade's animation origin.
 /// </summary>
-internal sealed class SvgCssAnimator(CssCascade cascade, IReadOnlyDictionary<string, CssKeyframesRule> keyframes, double time, double viewportWidth, double viewportHeight)
+internal sealed class SvgCssAnimator(SvgStyleSheets sheets, double time, double viewportWidth, double viewportHeight)
 {
+    private readonly CssCascade _cascade = sheets.Cascade;
+
     /// <summary>Gets the time, in seconds since the document loaded, the animations are run at.</summary>
     public double Time => time;
 
@@ -23,21 +25,22 @@ internal sealed class SvgCssAnimator(CssCascade cascade, IReadOnlyDictionary<str
     /// </summary>
     public Dictionary<string, string>? Animate(CssCascadedStyle cascaded, CssComputedStyle computed, CssComputedStyle? parent, Func<string, string?> attributeValue)
     {
-        if (SvgCssAnimation.Read(computed, keyframes) is not List<SvgCssAnimation> animations)
+        if (sheets.Animations(computed) is not { Animations: List<SvgCssAnimation> animations } set)
         {
             return null;
         }
 
         SvgCssValueContext context = new(FontSize(computed), 16, viewportWidth, viewportHeight, CurrentColor(computed));
         Dictionary<string, string>? values = null;
-        foreach (SvgCssAnimation animation in animations)
+        for (int i = 0; i < animations.Count; i++)
         {
+            SvgCssAnimation animation = animations[i];
             if (!animation.TryProgress(time, out double progress, out _))
             {
                 continue;
             }
 
-            foreach ((string name, List<Frame> frames) in PropertyKeyframes(animation, cascaded, parent))
+            foreach ((string name, List<Frame> frames) in Keyframes(set, i, cascaded, parent))
             {
                 values ??= new Dictionary<string, string>(StringComparer.Ordinal);
                 string underlying = values.TryGetValue(name, out string? below) ? below : Base(computed, name, attributeValue);
@@ -52,11 +55,93 @@ internal sealed class SvgCssAnimator(CssCascade cascade, IReadOnlyDictionary<str
     private readonly record struct Frame(double Offset, string? Value, CssEasingFunction Easing, SvgCssComposite Composite);
 
     /// <summary>
+    /// The property keyframes of the set's animation at <paramref name="index"/> for an element. An animation whose keyframe
+    /// values compute to themselves wherever they are used (no <c>var()</c>, no CSS-wide keyword, no custom property) has them
+    /// prepared once for every element and frame; the element only has to have no <c>!important</c> declaration of their
+    /// properties, which would win over the animation. Other keyframes are computed in the element's context each time.
+    /// </summary>
+    private Dictionary<string, List<Frame>> Keyframes(SvgCssAnimationSet set, int index, CssCascadedStyle cascaded, CssComputedStyle? parent)
+    {
+        SvgCssAnimation animation = set.Animations![index];
+        if (set.Prepared[index] is not Prepared prepared)
+        {
+            prepared = Prepare(animation);
+            set.Prepared[index] = prepared;
+        }
+
+        if (prepared.Frames is { } frames)
+        {
+            foreach (string name in frames.Keys)
+            {
+                if (cascaded.TryGetDeclaration(name, out CssDeclaration? declaration) && declaration.Important)
+                {
+                    return PropertyKeyframes(animation, cascaded, parent);
+                }
+            }
+
+            return frames;
+        }
+
+        return PropertyKeyframes(animation, cascaded, parent);
+    }
+
+    /// <summary>An animation's keyframes prepared for every element; null when some value depends on the element.</summary>
+    private sealed record class Prepared(Dictionary<string, List<Frame>>? Frames);
+
+    private Prepared Prepare(SvgCssAnimation animation)
+    {
+        foreach (CssKeyframe keyframe in animation.Keyframes.Keyframes)
+        {
+            List<CssDeclaration> declarations = [];
+            foreach (CssDeclaration declaration in keyframe.Declarations)
+            {
+                if (declaration.Name is not "animation-timing-function" and not "animation-composition")
+                {
+                    Expand(declaration, declarations);
+                }
+            }
+
+            foreach (CssDeclaration declaration in declarations)
+            {
+                if (declaration.IsCustomProperty || IsCssWideKeyword(declaration.Value) || ContainsVar(declaration.Value))
+                {
+                    return new Prepared(null);
+                }
+            }
+        }
+
+        // With no context in the values, the computed value of each is the value itself.
+        return new Prepared(PropertyKeyframes(animation, null, null));
+    }
+
+    // As CSS Cascade's CSS-wide keywords, compared without case: a value that is one does not compute to itself.
+    private static bool IsCssWideKeyword(IReadOnlyList<CssComponentValue> value) =>
+        value.Count == 1 && value[0] is CssTokenValue { Token: { Kind: CssTokenKind.Ident } token }
+        && (token.Value.Equals("inherit", StringComparison.OrdinalIgnoreCase) || token.Value.Equals("initial", StringComparison.OrdinalIgnoreCase)
+            || token.Value.Equals("unset", StringComparison.OrdinalIgnoreCase) || token.Value.Equals("revert", StringComparison.OrdinalIgnoreCase)
+            || token.Value.Equals("revert-layer", StringComparison.OrdinalIgnoreCase));
+
+    private static bool ContainsVar(IReadOnlyList<CssComponentValue> values)
+    {
+        foreach (CssComponentValue value in values)
+        {
+            switch (value)
+            {
+                case CssFunction function when function.NameIs("var") || ContainsVar(function.Arguments):
+                case CssSimpleBlock block when ContainsVar(block.Content):
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
     /// The keyframes of each property an animation names (Web Animations 1, "property-specific keyframes"), sorted by offset,
     /// keyframes with the same offset, easing and composite merged (the later wins), and the implicit 0 and 1 keyframes added,
     /// whose value (null here) is the value below.
     /// </summary>
-    private Dictionary<string, List<Frame>> PropertyKeyframes(SvgCssAnimation animation, CssCascadedStyle cascaded, CssComputedStyle? parent)
+    private Dictionary<string, List<Frame>> PropertyKeyframes(SvgCssAnimation animation, CssCascadedStyle? cascaded, CssComputedStyle? parent)
     {
         Dictionary<string, List<Frame>> byProperty = new(StringComparer.Ordinal);
         foreach (CssKeyframe keyframe in animation.Keyframes.Keyframes)
@@ -90,11 +175,12 @@ internal sealed class SvgCssAnimator(CssCascade cascade, IReadOnlyDictionary<str
                 continue;
             }
 
-            // The keyframe's values computed as the element would compute them.
-            CssComputedStyle style = cascade.Compute(cascaded.WithAnimationValues(declarations), parent);
+            // The keyframe's values computed as the element would compute them; without an element (Prepare), each is its
+            // own value, the last of a property winning as in the cascade's animation origin.
+            CssComputedStyle? style = cascaded is null ? null : _cascade.Compute(cascaded.WithAnimationValues(declarations), parent);
             foreach (CssDeclaration declaration in declarations)
             {
-                string? value = style.GetValueText(declaration.Name);
+                string? value = style is not null ? style.GetValueText(declaration.Name) : CssComponentValue.Serialize(Last(declarations, declaration.Name).Value);
                 if (value is null)
                 {
                     continue;
@@ -141,6 +227,17 @@ internal sealed class SvgCssAnimator(CssCascade cascade, IReadOnlyDictionary<str
         return byProperty;
     }
 
+    private static CssDeclaration Last(List<CssDeclaration> declarations, string name)
+    {
+        for (int i = declarations.Count - 1; ; i--)
+        {
+            if (declarations[i].Name == name)
+            {
+                return declarations[i];
+            }
+        }
+    }
+
     // A declaration as the longhands it sets; animation properties, and properties SVG does not know, are not animated.
     private void Expand(CssDeclaration declaration, List<CssDeclaration> into)
     {
@@ -155,7 +252,7 @@ internal sealed class SvgCssAnimator(CssCascade cascade, IReadOnlyDictionary<str
             return;
         }
 
-        if (cascade.Registry.TryGetShorthand(declaration.Name, out CssShorthandDefinition? shorthand))
+        if (_cascade.Registry.TryGetShorthand(declaration.Name, out CssShorthandDefinition? shorthand))
         {
             if (shorthand.Expand(declaration.Value) is IReadOnlyList<CssDeclaration> longhands)
             {
@@ -168,7 +265,7 @@ internal sealed class SvgCssAnimator(CssCascade cascade, IReadOnlyDictionary<str
             return;
         }
 
-        if (cascade.Registry.TryGetProperty(declaration.Name, out CssPropertyDefinition? definition) && definition.Validate?.Invoke(declaration.Value) != false)
+        if (_cascade.Registry.TryGetProperty(declaration.Name, out CssPropertyDefinition? definition) && definition.Validate?.Invoke(declaration.Value) != false)
         {
             into.Add(declaration);
         }
@@ -223,7 +320,7 @@ internal sealed class SvgCssAnimator(CssCascade cascade, IReadOnlyDictionary<str
             return value;
         }
 
-        return cascade.Registry.TryGetProperty(name, out CssPropertyDefinition? definition) && definition.InitialValue is string initial ? initial : "";
+        return _cascade.Registry.TryGetProperty(name, out CssPropertyDefinition? definition) && definition.InitialValue is string initial ? initial : "";
     }
 
     /// <summary>The font size in px a style resolves to, for em lengths; 16 at the root.</summary>

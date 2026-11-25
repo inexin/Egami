@@ -90,7 +90,8 @@ internal sealed partial class SvgResolver
         _limits = new SvgLimits(_options.EffectiveContext.Limits);
         _languages = languages ?? ["en"];
         Vector2 size = document.Size;
-        _styler = new SvgStyler(document, report, new CssMediaContext { Width = size.X, Height = size.Y }, frame, cssAnimations: frame?.CssAnimations == true);
+        CssMediaContext media = new() { Width = size.X, Height = size.Y };
+        _styler = new SvgStyler(document, report, media, frame, cssAnimations: frame?.CssAnimations == true, frame is null ? null : document.FrameStyleSheets(media));
         _geometry = new SvgGeometry(report) { Frame = frame };
         if (_styler.Animates)
         {

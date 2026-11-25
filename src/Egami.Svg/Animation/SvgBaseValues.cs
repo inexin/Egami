@@ -44,7 +44,12 @@ internal sealed class SvgBaseValues(SvgDocument document)
             chain.Add(e);
         }
 
-        _styler ??= new SvgStyler(document, new SvgReport(strict: false), new CssMediaContext { Width = document.Size.X, Height = document.Size.Y }, frame);
+        if (_styler is null)
+        {
+            CssMediaContext media = new() { Width = document.Size.X, Height = document.Size.Y };
+            _styler = new SvgStyler(document, new SvgReport(strict: false), media, frame, sheets: document.FrameStyleSheets(media));
+        }
+
         for (int i = chain.Count - 1; i >= 0; i--)
         {
             SvgElement e = chain[i];
