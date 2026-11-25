@@ -185,6 +185,33 @@ public class Barcodes
     }
 
     [Fact]
+    public void MakeDataBar()
+    {
+        #region barcode-databar
+        // A GTIN-14 for a retail item, in the full-height form and stacked for a small pack.
+        Barcode item = Barcode.DataBar("0950110153000");
+        Barcode stacked = Barcode.DataBar("09501101530003", new DataBarOptions { Kind = DataBarKind.Stacked });
+        Barcode limited = Barcode.DataBarLimited("09501101530003");
+        Console.WriteLine(item.HumanReadableText); // (01)09501101530003
+        #endregion
+        Assert.Equal("(01)09501101530003", item.HumanReadableText);
+        Assert.False(stacked.Modules.IsLinear);
+        Assert.Equal(BarcodeFormat.DataBarLimited, limited.Format);
+    }
+
+    [Fact]
+    public void MakeDataBarExpanded()
+    {
+        #region barcode-databar-expanded
+        // A GTIN with a net weight of 1.750 kg and a best-before date, in one row and in rows of four characters.
+        Barcode weighed = Barcode.DataBarExpanded("(01)99501101530006(3103)001750(15)261231");
+        Barcode narrow = Barcode.DataBarExpanded("(01)99501101530006(3103)001750(15)261231", new DataBarExpandedOptions { SegmentsPerRow = 4 });
+        #endregion
+        Assert.Equal("(01)99501101530006(3103)001750(15)261231", weighed.HumanReadableText);
+        Assert.False(narrow.Modules.IsLinear);
+    }
+
+    [Fact]
     public void MakeItf14()
     {
         #region barcode-itf
