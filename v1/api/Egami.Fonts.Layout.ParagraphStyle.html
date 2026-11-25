@@ -224,10 +224,11 @@ Paragraph paragraph = Paragraph.Create(text, style);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_AlignLast" data-uid="Egami.Fonts.Layout.ParagraphStyle.AlignLast">
   AlignLast
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L37"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets how the last line, and lines before a hard break, align.</p>
+  <div class="markdown level1 summary"><p>Gets how the last line, and lines before a hard break, align (see <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_JustifyLineBreaks">JustifyLineBreaks</a> for the
+lines before a hard break of a justified paragraph).</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -354,7 +355,7 @@ character (UAX #9 rules P2 and P3).</p>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_Ellipsis" data-uid="Egami.Fonts.Layout.ParagraphStyle.Ellipsis">
   Ellipsis
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L99"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L128"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the text that ends the last line when <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_MaxLines">MaxLines</a> or <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_MaxHeight">MaxHeight</a> cuts text: U+2026,
@@ -387,7 +388,7 @@ a custom string, or null to cut without one.</p>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_Fallback" data-uid="Egami.Fonts.Layout.ParagraphStyle.Fallback">
   Fallback
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L142"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L171"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the families and resolver tried after a style's own families.</p>
@@ -419,7 +420,7 @@ a custom string, or null to cut without one.</p>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_Hyphen" data-uid="Egami.Fonts.Layout.ParagraphStyle.Hyphen">
   Hyphen
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L109"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the text drawn where a line ends at a soft hyphen or an automatic hyphenation point: U+2010 (U+002D when the
@@ -452,7 +453,7 @@ font has none), a custom string, or null for none.</p>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_Hyphenation" data-uid="Egami.Fonts.Layout.ParagraphStyle.Hyphenation">
   Hyphenation
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L95"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L124"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the dictionaries and limits <a class="xref" href="Egami.Fonts.Layout.Hyphens.html#Egami_Fonts_Layout_Hyphens_Auto">Auto</a> uses; without them it hyphenates only at soft
@@ -505,7 +506,7 @@ TextLayout layout = Paragraph.Create(
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_Hyphens" data-uid="Egami.Fonts.Layout.ParagraphStyle.Hyphens">
   Hyphens
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L116"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether words break with hyphens at line ends: only at soft hyphens (the default), never, or also where
@@ -557,10 +558,11 @@ TextLayout layout = Paragraph.Create(
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_Justify" data-uid="Egami.Fonts.Layout.ParagraphStyle.Justify">
   Justify
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L41"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets how justified lines stretch.</p>
+  <div class="markdown level1 summary"><p>Gets how justified lines stretch. On a line with tabs, only the opportunities after its last tab stretch (or
+shrink), so text after each tab stays on its tab stop.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -585,11 +587,64 @@ TextLayout layout = Paragraph.Create(
 
 
 
+  <a id="Egami_Fonts_Layout_ParagraphStyle_JustifyLineBreaks_" data-uid="Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_JustifyLineBreaks" data-uid="Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks">
+  JustifyLineBreaks
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether, in a justified paragraph, a line that ends in a hard break other than U+2029 PARAGRAPH SEPARATOR (LF, CR,
+CRLF, VT, FF, NEL or U+2028) is justified like a wrapped line, as Word justifies the line before a manual line break
+(Shift+Enter) unless a document sets <code>doNotExpandShiftReturn</code>. Off by default, as CSS lays such lines out like the
+last line. When on, and <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Align">Align</a> justifies and <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Justify">Justify</a> is not <a class="xref" href="Egami.Fonts.Layout.TextJustify.html#Egami_Fonts_Layout_TextJustify_None">None</a>,
+such lines stretch to the width (or, with <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_SpaceShrink">SpaceShrink</a>, shrink and stretch as any justified line), and
+<a class="xref" href="Egami.Fonts.Layout.LineFill.html#Egami_Fonts_Layout_LineFill_Optimal">Optimal</a> weighs their stretch as it weighs other lines'; a line without justification
+opportunities stays at the start, and <a class="xref" href="Egami.Fonts.Layout.TextLine.html#Egami_Fonts_Layout_TextLine_HardBreak">HardBreak</a> is still true. The paragraph's last line, and lines
+before U+2029, keep <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_AlignLast">AlignLast</a>; a hard break at the very end of the text adds no empty line, so the line
+before it is the last line.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool JustifyLineBreaks { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_ParagraphStyle_JustifyLineBreaks_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Justified as Word lays out Shift+Enter: the line before a line break stretches like a wrapped line, and no-break
+// spaces keep their width.
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle { FontFamilies = [family], Size = 16 },
+    Align = TextAlign.Justify,
+    JustifyLineBreaks = true,       // lines before LF, CRLF, U+2028 ... stretch; U+2029 and the last line do not
+    StretchNoBreakSpaces = false,   // U+00A0 keeps its width
+};
+string text = "Deliver 10\u00A0kg of flour\nto the mill by Friday.";
+TextLayout layout = Paragraph.Create(text, style).Layout(300);</code></pre>
+
+
+
+
+
+
   <a id="Egami_Fonts_Layout_ParagraphStyle_Kashida_" data-uid="Egami.Fonts.Layout.ParagraphStyle.Kashida*"></a>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_Kashida" data-uid="Egami.Fonts.Layout.ParagraphStyle.Kashida">
   Kashida
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L44"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how far <a class="xref" href="Egami.Fonts.Layout.TextJustify.html#Egami_Fonts_Layout_TextJustify_Kashida">Kashida</a> lengthens words before word spaces take the rest.</p>
@@ -621,7 +676,7 @@ TextLayout layout = Paragraph.Create(
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_LineBreaking" data-uid="Egami.Fonts.Layout.ParagraphStyle.LineBreaking">
   LineBreaking
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L96"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets where lines may break.</p>
@@ -653,7 +708,7 @@ TextLayout layout = Paragraph.Create(
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_LineFill" data-uid="Egami.Fonts.Layout.ParagraphStyle.LineFill">
   LineFill
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L99"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how lines are filled.</p>
@@ -685,7 +740,7 @@ TextLayout layout = Paragraph.Create(
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_MaxHeight" data-uid="Egami.Fonts.Layout.ParagraphStyle.MaxHeight">
   MaxHeight
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L140"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the height the lines must fit in, in canvas units, or null for no limit.</p>
@@ -723,7 +778,7 @@ TextLayout layout = Paragraph.Create(
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_MaxLines" data-uid="Egami.Fonts.Layout.ParagraphStyle.MaxLines">
   MaxLines
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L132"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the most lines laid out, or null for no limit.</p>
@@ -761,7 +816,7 @@ TextLayout layout = Paragraph.Create(
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_OptimalLines" data-uid="Egami.Fonts.Layout.ParagraphStyle.OptimalLines">
   OptimalLines
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L105"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the penalties and tolerances <a class="xref" href="Egami.Fonts.Layout.LineFill.html#Egami_Fonts_Layout_LineFill_Optimal">Optimal</a> weighs, or null for the defaults.</p>
@@ -808,7 +863,7 @@ TextLayout layout = Paragraph.Create(text, style).Layout(160);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_SpaceShrink" data-uid="Egami.Fonts.Layout.ParagraphStyle.SpaceShrink">
   SpaceShrink
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L63"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how far word spaces on justified lines may shrink to fit more on a line, as a share of their width: from 0 (the
@@ -818,7 +873,8 @@ than half of what it would stretch had the line ended at the break before, as Wo
 is kept whole by shrinking before automatic hyphenation is tried. Such lines are drawn with their word spaces shrunk
 evenly; glyphs and letter spacing keep their widths. It applies to lines <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Align">Align</a> or <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_AlignLast">AlignLast</a>
 justifies and, in a justified paragraph, also to the last line and lines before a hard break, which shrink to fit but
-never stretch. <a class="xref" href="Egami.Fonts.Layout.LineFill.html#Egami_Fonts_Layout_LineFill_Optimal">Optimal</a> uses it as its shrink limit (see
+never stretch (unless <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_JustifyLineBreaks">JustifyLineBreaks</a> justifies the latter). Only word spaces after a line's last tab
+shrink. <a class="xref" href="Egami.Fonts.Layout.LineFill.html#Egami_Fonts_Layout_LineFill_Optimal">Optimal</a> uses it as its shrink limit (see
 <a class="xref" href="Egami.Fonts.Layout.OptimalLineOptions.html#Egami_Fonts_Layout_OptimalLineOptions_ShrinkSpaces">ShrinkSpaces</a>). Nothing shrinks when <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Justify">Justify</a> is
 <a class="xref" href="Egami.Fonts.Layout.TextJustify.html#Egami_Fonts_Layout_TextJustify_None">None</a>.</p>
 </div>
@@ -861,11 +917,58 @@ TextLayout layout = Paragraph.Create(text, style).Layout(200);</code></pre>
 
 
 
+  <a id="Egami_Fonts_Layout_ParagraphStyle_StretchNoBreakSpaces_" data-uid="Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces*"></a>
+
+  <h3 id="Egami_Fonts_Layout_ParagraphStyle_StretchNoBreakSpaces" data-uid="Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces">
+  StretchNoBreakSpaces
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the no-break space U+00A0 stretches on justified lines, as CSS makes it a word separator: true, the default.
+False keeps it at its width, as Word does, so text joined by it stays as set; it then takes no stretch on any justified
+line and counts for none in <a class="xref" href="Egami.Fonts.Layout.LineFill.html#Egami_Fonts_Layout_LineFill_Optimal">Optimal</a>. <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_SpaceShrink">SpaceShrink</a> never shrinks it either way.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StretchNoBreakSpaces { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_ParagraphStyle_StretchNoBreakSpaces_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Justified as Word lays out Shift+Enter: the line before a line break stretches like a wrapped line, and no-break
+// spaces keep their width.
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle { FontFamilies = [family], Size = 16 },
+    Align = TextAlign.Justify,
+    JustifyLineBreaks = true,       // lines before LF, CRLF, U+2028 ... stretch; U+2029 and the last line do not
+    StretchNoBreakSpaces = false,   // U+00A0 keeps its width
+};
+string text = "Deliver 10\u00A0kg of flour\nto the mill by Friday.";
+TextLayout layout = Paragraph.Create(text, style).Layout(300);</code></pre>
+
+
+
+
+
+
   <a id="Egami_Fonts_Layout_ParagraphStyle_Strut_" data-uid="Egami.Fonts.Layout.ParagraphStyle.Strut*"></a>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_Strut" data-uid="Egami.Fonts.Layout.ParagraphStyle.Strut">
   Strut
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L147"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the minimum (or, with <a class="xref" href="Egami.Fonts.Layout.Strut.html#Egami_Fonts_Layout_Strut_Force">Force</a>, exact) line box every line has.</p>
@@ -897,7 +1000,7 @@ TextLayout layout = Paragraph.Create(text, style).Layout(200);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_TabSize" data-uid="Egami.Fonts.Layout.ParagraphStyle.TabSize">
   TabSize
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L126"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L155"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the distance between default tab stops, in spaces of the default font.</p>
@@ -935,7 +1038,7 @@ TextLayout layout = Paragraph.Create(text, style).Layout(200);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_TabStops" data-uid="Egami.Fonts.Layout.ParagraphStyle.TabStops">
   TabStops
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L133"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L162"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets explicit tab stops; past the last one, tabs fall back to <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_TabSize">TabSize</a>.</p>
@@ -967,7 +1070,7 @@ TextLayout layout = Paragraph.Create(text, style).Layout(200);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_TextOrientation" data-uid="Egami.Fonts.Layout.ParagraphStyle.TextOrientation">
   TextOrientation
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L168"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how characters stand in vertical lines.</p>
@@ -999,7 +1102,7 @@ TextLayout layout = Paragraph.Create(text, style).Layout(200);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_TrimEdges" data-uid="Egami.Fonts.Layout.ParagraphStyle.TrimEdges">
   TrimEdges
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L122"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L151"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the first line's space above its ascent and the last line's below its descent are dropped
@@ -1032,7 +1135,7 @@ TextLayout layout = Paragraph.Create(text, style).Layout(200);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_ParagraphStyle_WritingMode" data-uid="Egami.Fonts.Layout.ParagraphStyle.WritingMode">
   WritingMode
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L136"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/ParagraphStyle.cs/#L165"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether lines run horizontally or vertically.</p>

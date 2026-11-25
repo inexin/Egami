@@ -582,6 +582,16 @@ hyphenated piece may fit by shrinking too. The shrink is spread evenly over the 
 and letter spacing keep their widths, and a kashida line that shrinks gets no tatweels. The last line and lines before a hard
 break shrink when they must but never stretch. It is 0 by default, so lines only stretch, as in browsers.
 <code>LineFill.Optimal</code> takes it as its shrink limit in place of <code>OptimalLineOptions.ShrinkSpaces</code>' third.</p>
+<p><code>ParagraphStyle.JustifyLineBreaks</code> justifies the lines before a hard break too, as Word justifies the line before a manual
+line break (Shift+Enter): in a justified paragraph, a line that ends in LF, CR, CRLF, VT, FF, NEL or U+2028 stretches to the
+width like a wrapped line (and with <code>SpaceShrink</code> shrinks and stretches like one), and <code>LineFill.Optimal</code> weighs its stretch
+rather than letting it be as loose as it likes. A line without justification opportunities, such as one word, stays at the
+start. The paragraph's last line and a line before U+2029 PARAGRAPH SEPARATOR keep <code>AlignLast</code>, so a caller picks per break
+which lines stretch; a break at the very end of the text adds no empty line, so the line before it is the last line.
+<code>TextLine.HardBreak</code> is still true for such lines.</p>
+<p>On a line with tabs, only the justification opportunities after its last tab stretch or shrink, so text after each tab stays
+on its tab stop, as in Word. No-break spaces (U+00A0) stretch, as CSS makes them word separators;
+<code>ParagraphStyle.StretchNoBreakSpaces = false</code> keeps them at their width, as Word does.</p>
 <p><code>TextJustify</code> says where justified lines stretch: <code>InterWord</code> at word separators, <code>InterCharacter</code> between any two grapheme
 clusters except inside cursive scripts such as Arabic, and <code>Auto</code> (the default) at word separators and around Chinese,
 Japanese and Korean characters, as browsers justify. <code>None</code> leaves justified lines at the start.</p>
@@ -782,6 +792,21 @@ TextLayout layout = Paragraph.Create(text, style).Layout(200);
 </code></pre>
 <p>With <code>SpaceShrink</code>, a line that would overflow by a little shrinks its word spaces and keeps the next word, so justified text
 takes fewer lines and its spaces vary less between loose and tight lines.</p>
+<h3 id="justified-lines-before-a-line-break-as-in-word">Justified lines before a line break, as in Word</h3>
+<pre><code class="lang-csharp">// Justified as Word lays out Shift+Enter: the line before a line break stretches like a wrapped line, and no-break
+// spaces keep their width.
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle { FontFamilies = [family], Size = 16 },
+    Align = TextAlign.Justify,
+    JustifyLineBreaks = true,       // lines before LF, CRLF, U+2028 ... stretch; U+2029 and the last line do not
+    StretchNoBreakSpaces = false,   // U+00A0 keeps its width
+};
+string text = &quot;Deliver 10\u00A0kg of flour\nto the mill by Friday.&quot;;
+TextLayout layout = Paragraph.Create(text, style).Layout(300);
+</code></pre>
+<p>The line before <code>\n</code> stretches to the width like a wrapped line; the paragraph's last line stays at the start, and the
+no-break space keeps &quot;10 kg&quot; at its natural width.</p>
 <h3 id="a-chat-bubble-with-an-emoji">A chat bubble with an emoji</h3>
 <pre><code class="lang-csharp">// A chat bubble: at most two lines, cut with an ellipsis; the bubble shrinks to the longest line, so short messages get
 // short bubbles. Emoji come from the second family, character by character.

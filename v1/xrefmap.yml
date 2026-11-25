@@ -30087,6 +30087,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.ParagraphStyle.Justify
   nameWithType: ParagraphStyle.Justify
+- uid: Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks
+  name: JustifyLineBreaks
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_JustifyLineBreaks
+  commentId: P:Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks
+  fullName: Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks
+  nameWithType: ParagraphStyle.JustifyLineBreaks
+- uid: Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks*
+  name: JustifyLineBreaks
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_JustifyLineBreaks_
+  commentId: Overload:Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks
+  nameWithType: ParagraphStyle.JustifyLineBreaks
 - uid: Egami.Fonts.Layout.ParagraphStyle.Kashida
   name: Kashida
   href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Kashida
@@ -30178,6 +30191,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.ParagraphStyle.SpaceShrink
   nameWithType: ParagraphStyle.SpaceShrink
+- uid: Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces
+  name: StretchNoBreakSpaces
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_StretchNoBreakSpaces
+  commentId: P:Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces
+  fullName: Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces
+  nameWithType: ParagraphStyle.StretchNoBreakSpaces
+- uid: Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces*
+  name: StretchNoBreakSpaces
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_StretchNoBreakSpaces_
+  commentId: Overload:Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces
+  nameWithType: ParagraphStyle.StretchNoBreakSpaces
 - uid: Egami.Fonts.Layout.ParagraphStyle.Strut
   name: Strut
   href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Strut
