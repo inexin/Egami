@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class Metafile | Egami ">
       
-      <meta name="description" content="A WMF, EMF or EMF+ picture, read and drawn by Egami.Metafiles: an  sized by its frame, which  plays as vectors and  walks record by record. Egami reads metafiles but does not record them, so the recording constructors throw.">
+      <meta name="description" content="A WMF, EMF or EMF+ picture, read and drawn by Egami.Metafiles: an  sized by its frame, which  plays as vectors and  walks record by record. The recording constructors start a metafile that  records into: Egami.Metafiles writes what that Graphics draws as an EMF (with EMF+ records unless the  says GDI only, text as glyph records), into memory, a file or a stream, for a 96 DPI screen whatever reference handle is given. Disposing the Graphics finishes the file, and the metafile is then that file, to draw, walk or save like a loaded one.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -99,7 +99,10 @@ Class Metafile  <a class="header-action link-secondary" title="View source" href
 
   <div class="markdown summary"><p>A WMF, EMF or EMF+ picture, read and drawn by Egami.Metafiles: an <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a> sized by its frame, which
 <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawImage_Egami_SystemDrawing_Image_System_Single_System_Single_">DrawImage(Image, float, float)</a> plays as vectors and <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_">EnumerateMetafile(Metafile, PointF, EnumerateMetafileProc)</a>
-walks record by record. Egami reads metafiles but does not record them, so the recording constructors throw.</p>
+walks record by record. The recording constructors start a metafile that <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_FromImage_Egami_SystemDrawing_Image_">FromImage(Image)</a> records into:
+Egami.Metafiles writes what that Graphics draws as an EMF (with EMF+ records unless the <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a> says GDI only,
+text as glyph records), into memory, a file or a stream, for a 96 DPI screen whatever reference handle is given. Disposing the
+Graphics finishes the file, and the metafile is then that file, to draw, walk or save like a loaded one.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -314,7 +317,7 @@ using (Graphics g = Graphics.FromImage(bitmap))
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IO.Stream)">
   Metafile(Stream)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L38"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class from a stream.</p>
@@ -347,25 +350,24 @@ using (Graphics g = Graphics.FromImage(bitmap))
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IO.Stream,System.IntPtr)">
   Metafile(Stream, nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L238"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L315"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a stream. Without a frame, the frame is the bounds of what is drawn.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(Stream stream, nint referenceHdc)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(Stream stream, nint referenceHdc)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream to record to.</p>
+    <dd><p>The stream to write to, from its position when the recording Graphics is disposed; left open.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
   </dl>
 
@@ -375,8 +377,30 @@ public Metafile(Stream stream, nint referenceHdc)</code></pre>
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -384,28 +408,27 @@ public Metafile(Stream stream, nint referenceHdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_Egami_SystemDrawing_Imaging_EmfType_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IO.Stream,System.IntPtr,Egami.SystemDrawing.Imaging.EmfType)">
   Metafile(Stream, nint, EmfType)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L248"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L328"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a stream. Without a frame, the frame is the bounds of what is drawn.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(Stream stream, nint referenceHdc, EmfType type)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(Stream stream, nint referenceHdc, EmfType type)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream to record to.</p>
+    <dd><p>The stream to write to, from its position when the recording Graphics is disposed; left open.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
   </dl>
 
@@ -415,8 +438,30 @@ public Metafile(Stream stream, nint referenceHdc, EmfType type)</code></pre>
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_Egami_SystemDrawing_Imaging_EmfType__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -424,31 +469,30 @@ public Metafile(Stream stream, nint referenceHdc, EmfType type)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_Egami_SystemDrawing_Imaging_EmfType_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IO.Stream,System.IntPtr,Egami.SystemDrawing.Imaging.EmfType,System.String)">
   Metafile(Stream, nint, EmfType, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L381"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L502"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a stream. Without a frame, the frame is the bounds of what is drawn.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(Stream stream, nint referenceHdc, EmfType type, string description)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(Stream stream, nint referenceHdc, EmfType type, string description)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream to record to.</p>
+    <dd><p>The stream to write to, from its position when the recording Graphics is disposed; left open.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
     <dt><code>description</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The description.</p>
+    <dd><p>The description stored in the header, or null.</p>
 </dd>
   </dl>
 
@@ -458,8 +502,30 @@ public Metafile(Stream stream, nint referenceHdc, EmfType type, string descripti
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_Egami_SystemDrawing_Imaging_EmfType_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -467,28 +533,27 @@ public Metafile(Stream stream, nint referenceHdc, EmfType type, string descripti
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IO.Stream,System.IntPtr,System.Drawing.Rectangle)">
   Metafile(Stream, nint, Rectangle)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L291"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L387"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a stream.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream to record to.</p>
+    <dd><p>The stream to write to, from its position when the recording Graphics is disposed; left open.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
   </dl>
 
@@ -498,8 +563,33 @@ public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect)</code></p
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_Rectangle__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -507,28 +597,27 @@ public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect)</code></p
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IO.Stream,System.IntPtr,System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.MetafileFrameUnit)">
   Metafile(Stream, nint, Rectangle, MetafileFrameUnit)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L302"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L402"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a stream.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream to record to.</p>
+    <dd><p>The stream to write to, from its position when the recording Graphics is disposed; left open.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
@@ -541,8 +630,33 @@ public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect, MetafileF
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -550,34 +664,33 @@ public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect, MetafileF
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IO.Stream,System.IntPtr,System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.MetafileFrameUnit,Egami.SystemDrawing.Imaging.EmfType)">
   Metafile(Stream, nint, Rectangle, MetafileFrameUnit, EmfType)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L314"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L418"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a stream.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream to record to.</p>
+    <dd><p>The stream to write to, from its position when the recording Graphics is disposed; left open.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
   </dl>
 
@@ -587,8 +700,33 @@ public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect, MetafileF
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -596,37 +734,36 @@ public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect, MetafileF
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IO.Stream,System.IntPtr,System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.MetafileFrameUnit,Egami.SystemDrawing.Imaging.EmfType,System.String)">
   Metafile(Stream, nint, Rectangle, MetafileFrameUnit, EmfType, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L407"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L536"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a stream.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream to record to.</p>
+    <dd><p>The stream to write to, from its position when the recording Graphics is disposed; left open.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
     <dt><code>description</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The description.</p>
+    <dd><p>The description stored in the header, or null.</p>
 </dd>
   </dl>
 
@@ -636,8 +773,33 @@ public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect, MetafileF
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -645,28 +807,27 @@ public Metafile(Stream stream, nint referenceHdc, Rectangle frameRect, MetafileF
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IO.Stream,System.IntPtr,System.Drawing.RectangleF)">
   Metafile(Stream, nint, RectangleF)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L258"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L342"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a stream.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream to record to.</p>
+    <dd><p>The stream to write to, from its position when the recording Graphics is disposed; left open.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
   </dl>
 
@@ -676,8 +837,33 @@ public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect)</code></
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_RectangleF__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -685,28 +871,27 @@ public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect)</code></
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IO.Stream,System.IntPtr,System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.MetafileFrameUnit)">
   Metafile(Stream, nint, RectangleF, MetafileFrameUnit)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L269"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L357"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a stream.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream to record to.</p>
+    <dd><p>The stream to write to, from its position when the recording Graphics is disposed; left open.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
@@ -719,8 +904,33 @@ public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect, Metafile
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -728,34 +938,33 @@ public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect, Metafile
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IO.Stream,System.IntPtr,System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.MetafileFrameUnit,Egami.SystemDrawing.Imaging.EmfType)">
   Metafile(Stream, nint, RectangleF, MetafileFrameUnit, EmfType)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L281"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L373"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a stream.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream to record to.</p>
+    <dd><p>The stream to write to, from its position when the recording Graphics is disposed; left open.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
   </dl>
 
@@ -765,8 +974,33 @@ public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect, Metafile
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -774,37 +1008,36 @@ public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect, Metafile
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IO.Stream,System.IntPtr,System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.MetafileFrameUnit,Egami.SystemDrawing.Imaging.EmfType,System.String)">
   Metafile(Stream, nint, RectangleF, MetafileFrameUnit, EmfType, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L394"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L519"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a stream.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>stream</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.io.stream">Stream</a></dt>
-    <dd><p>The stream to record to.</p>
+    <dd><p>The stream to write to, from its position when the recording Graphics is disposed; left open.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
     <dt><code>description</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The description.</p>
+    <dd><p>The description stored in the header, or null.</p>
 </dd>
   </dl>
 
@@ -814,8 +1047,33 @@ public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect, Metafile
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IO_Stream_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -823,25 +1081,24 @@ public Metafile(Stream stream, nint referenceHdc, RectangleF frameRect, Metafile
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_Egami_SystemDrawing_Imaging_EmfType_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IntPtr,Egami.SystemDrawing.Imaging.EmfType)">
   Metafile(nint, EmfType)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L52"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into memory. Without a frame, the frame is the bounds of what is drawn.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(nint referenceHdc, EmfType emfType)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(nint referenceHdc, EmfType emfType)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>emfType</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
   </dl>
 
@@ -851,8 +1108,30 @@ public Metafile(nint referenceHdc, EmfType emfType)</code></pre>
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_Egami_SystemDrawing_Imaging_EmfType__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -860,28 +1139,27 @@ public Metafile(nint referenceHdc, EmfType emfType)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_Egami_SystemDrawing_Imaging_EmfType_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IntPtr,Egami.SystemDrawing.Imaging.EmfType,System.String)">
   Metafile(nint, EmfType, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L334"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L441"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into memory. Without a frame, the frame is the bounds of what is drawn.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(nint referenceHdc, EmfType emfType, string description)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(nint referenceHdc, EmfType emfType, string description)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>emfType</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
     <dt><code>description</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The description.</p>
+    <dd><p>The description stored in the header, or null.</p>
 </dd>
   </dl>
 
@@ -891,8 +1169,30 @@ public Metafile(nint referenceHdc, EmfType emfType, string description)</code></
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_Egami_SystemDrawing_Imaging_EmfType_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -900,7 +1200,7 @@ public Metafile(nint referenceHdc, EmfType emfType, string description)</code></
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_Egami_SystemDrawing_Imaging_WmfPlaceableFileHeader_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IntPtr,Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader)">
   Metafile(nint, WmfPlaceableFileHeader)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L323"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L426"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows metafile handles. Always throws.</p>
@@ -1014,25 +1314,24 @@ public Metafile(nint henhmetafile, bool deleteEmf)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IntPtr,System.Drawing.Rectangle)">
   Metafile(nint, Rectangle)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L40"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into memory.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(nint referenceHdc, Rectangle frameRect)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(nint referenceHdc, Rectangle frameRect)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
   </dl>
 
@@ -1042,8 +1341,33 @@ public Metafile(nint referenceHdc, Rectangle frameRect)</code></pre>
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_Rectangle__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1051,25 +1375,24 @@ public Metafile(nint referenceHdc, Rectangle frameRect)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IntPtr,System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.MetafileFrameUnit)">
   Metafile(nint, Rectangle, MetafileFrameUnit)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L96"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L124"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into memory.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
@@ -1082,8 +1405,33 @@ public Metafile(nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameU
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1091,31 +1439,30 @@ public Metafile(nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameU
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IntPtr,System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.MetafileFrameUnit,Egami.SystemDrawing.Imaging.EmfType)">
   Metafile(nint, Rectangle, MetafileFrameUnit, EmfType)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L107"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L139"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into memory.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
   </dl>
 
@@ -1125,8 +1472,33 @@ public Metafile(nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameU
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1134,34 +1506,33 @@ public Metafile(nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameU
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IntPtr,System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.MetafileFrameUnit,Egami.SystemDrawing.Imaging.EmfType,System.String)">
   Metafile(nint, Rectangle, MetafileFrameUnit, EmfType, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L346"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L457"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into memory.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type, string desc)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type, string desc)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
     <dt><code>desc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The description.</p>
+    <dd><p>The description stored in the header, or null.</p>
 </dd>
   </dl>
 
@@ -1171,8 +1542,33 @@ public Metafile(nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameU
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1180,25 +1576,24 @@ public Metafile(nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameU
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IntPtr,System.Drawing.RectangleF)">
   Metafile(nint, RectangleF)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L65"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into memory.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(nint referenceHdc, RectangleF frameRect)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(nint referenceHdc, RectangleF frameRect)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
   </dl>
 
@@ -1208,8 +1603,33 @@ public Metafile(nint referenceHdc, RectangleF frameRect)</code></pre>
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_RectangleF__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1217,25 +1637,24 @@ public Metafile(nint referenceHdc, RectangleF frameRect)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IntPtr,System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.MetafileFrameUnit)">
   Metafile(nint, RectangleF, MetafileFrameUnit)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L79"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into memory.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
@@ -1248,8 +1667,33 @@ public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frame
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1257,31 +1701,30 @@ public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frame
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IntPtr,System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.MetafileFrameUnit,Egami.SystemDrawing.Imaging.EmfType)">
   Metafile(nint, RectangleF, MetafileFrameUnit, EmfType)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L94"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into memory.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
   </dl>
 
@@ -1291,8 +1734,33 @@ public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frame
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1300,34 +1768,33 @@ public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frame
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.IntPtr,System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.MetafileFrameUnit,Egami.SystemDrawing.Imaging.EmfType,System.String)">
   Metafile(nint, RectangleF, MetafileFrameUnit, EmfType, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L110"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into memory.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
     <dt><code>description</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The description.</p>
+    <dd><p>The description stored in the header, or null.</p>
 </dd>
   </dl>
 
@@ -1337,8 +1804,33 @@ public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frame
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1346,7 +1838,7 @@ public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frame
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String)">
   Metafile(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L27"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L31"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class from a file.</p>
@@ -1379,25 +1871,24 @@ public Metafile(nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frame
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr)">
   Metafile(string, nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L151"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file. Without a frame, the frame is the bounds of what is drawn.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
   </dl>
 
@@ -1407,8 +1898,30 @@ public Metafile(string fileName, nint referenceHdc)</code></pre>
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1416,28 +1929,27 @@ public Metafile(string fileName, nint referenceHdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_Egami_SystemDrawing_Imaging_EmfType_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr,Egami.SystemDrawing.Imaging.EmfType)">
   Metafile(string, nint, EmfType)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L126"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L164"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file. Without a frame, the frame is the bounds of what is drawn.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc, EmfType type)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc, EmfType type)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
   </dl>
 
@@ -1447,8 +1959,30 @@ public Metafile(string fileName, nint referenceHdc, EmfType type)</code></pre>
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_Egami_SystemDrawing_Imaging_EmfType__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1456,31 +1990,30 @@ public Metafile(string fileName, nint referenceHdc, EmfType type)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_Egami_SystemDrawing_Imaging_EmfType_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr,Egami.SystemDrawing.Imaging.EmfType,System.String)">
   Metafile(string, nint, EmfType, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L357"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L471"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file. Without a frame, the frame is the bounds of what is drawn.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc, EmfType type, string description)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc, EmfType type, string description)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
     <dt><code>description</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The description.</p>
+    <dd><p>The description stored in the header, or null.</p>
 </dd>
   </dl>
 
@@ -1490,8 +2023,30 @@ public Metafile(string fileName, nint referenceHdc, EmfType type, string descrip
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_Egami_SystemDrawing_Imaging_EmfType_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1499,28 +2054,27 @@ public Metafile(string fileName, nint referenceHdc, EmfType type, string descrip
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr,System.Drawing.Rectangle)">
   Metafile(string, nint, Rectangle)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L194"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L256"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc, Rectangle frameRect)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc, Rectangle frameRect)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
   </dl>
 
@@ -1530,8 +2084,33 @@ public Metafile(string fileName, nint referenceHdc, Rectangle frameRect)</code><
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_Rectangle__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1539,28 +2118,27 @@ public Metafile(string fileName, nint referenceHdc, Rectangle frameRect)</code><
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr,System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.MetafileFrameUnit)">
   Metafile(string, nint, Rectangle, MetafileFrameUnit)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L205"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L271"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
@@ -1573,8 +2151,33 @@ public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, Metafil
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1582,34 +2185,33 @@ public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, Metafil
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr,System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.MetafileFrameUnit,Egami.SystemDrawing.Imaging.EmfType)">
   Metafile(string, nint, Rectangle, MetafileFrameUnit, EmfType)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L217"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L287"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
   </dl>
 
@@ -1619,8 +2221,33 @@ public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, Metafil
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1628,37 +2255,36 @@ public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, Metafil
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr,System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.MetafileFrameUnit,Egami.SystemDrawing.Imaging.EmfType,System.String)">
   Metafile(string, nint, Rectangle, MetafileFrameUnit, EmfType, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L370"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L488"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
     <dt><code>description</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The description.</p>
+    <dd><p>The description stored in the header, or null.</p>
 </dd>
   </dl>
 
@@ -1668,8 +2294,33 @@ public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, Metafil
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1677,34 +2328,33 @@ public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, Metafil
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr,System.Drawing.Rectangle,Egami.SystemDrawing.Imaging.MetafileFrameUnit,System.String)">
   Metafile(string, nint, Rectangle, MetafileFrameUnit, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L229"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L303"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, string description)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, string description)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectangle">Rectangle</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>description</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The description.</p>
+    <dd><p>The description stored in the header, or null.</p>
 </dd>
   </dl>
 
@@ -1714,8 +2364,33 @@ public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, Metafil
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_Rectangle_Egami_SystemDrawing_Imaging_MetafileFrameUnit_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1723,28 +2398,27 @@ public Metafile(string fileName, nint referenceHdc, Rectangle frameRect, Metafil
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr,System.Drawing.RectangleF)">
   Metafile(string, nint, RectangleF)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L136"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L178"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc, RectangleF frameRect)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc, RectangleF frameRect)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
   </dl>
 
@@ -1754,8 +2428,33 @@ public Metafile(string fileName, nint referenceHdc, RectangleF frameRect)</code>
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_RectangleF__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1763,28 +2462,27 @@ public Metafile(string fileName, nint referenceHdc, RectangleF frameRect)</code>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr,System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.MetafileFrameUnit)">
   Metafile(string, nint, RectangleF, MetafileFrameUnit)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L193"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
@@ -1797,8 +2495,33 @@ public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, Metafi
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1806,34 +2529,33 @@ public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, Metafi
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr,System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.MetafileFrameUnit,Egami.SystemDrawing.Imaging.EmfType)">
   Metafile(string, nint, RectangleF, MetafileFrameUnit, EmfType)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L159"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L209"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
   </dl>
 
@@ -1843,8 +2565,33 @@ public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, Metafi
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1852,37 +2599,36 @@ public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, Metafi
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr,System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.MetafileFrameUnit,Egami.SystemDrawing.Imaging.EmfType,System.String)">
   Metafile(string, nint, RectangleF, MetafileFrameUnit, EmfType, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L184"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L242"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>type</code> <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-    <dd><p>The kind of EMF.</p>
+    <dd><p>The kind of EMF: GDI records only, EMF+ records only, or both.</p>
 </dd>
     <dt><code>description</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The description.</p>
+    <dd><p>The description stored in the header, or null.</p>
 </dd>
   </dl>
 
@@ -1892,8 +2638,33 @@ public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, Metafi
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_Egami_SystemDrawing_Imaging_EmfType_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1901,34 +2672,33 @@ public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, Metafi
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.#ctor(System.String,System.IntPtr,System.Drawing.RectangleF,Egami.SystemDrawing.Imaging.MetafileFrameUnit,System.String)">
   Metafile(string, nint, RectangleF, MetafileFrameUnit, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L171"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L225"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Not supported: Egami does not record metafiles. Always throws.</p>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a> class that records into a file.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">[Obsolete(&quot;Egami.SystemDrawing does not record metafiles; it always throws NotSupportedException. Draw on a Bitmap instead.&quot;, DiagnosticId = &quot;EGSD0004&quot;, UrlFormat = &quot;https://inexin.github.io/Egami/v1/articles/guides/system-drawing.html#{0}&quot;)]
-public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, string desc)</code></pre>
+    <pre><code class="lang-csharp hljs">public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, string desc)</code></pre>
   </div>
 
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>fileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file to record to.</p>
+    <dd><p>The file to write, created at once and written when the recording Graphics is disposed.</p>
 </dd>
     <dt><code>referenceHdc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr">nint</a></dt>
-    <dd><p>The reference device context.</p>
+    <dd><p>Ignored: Egami records for a 96 DPI screen, whatever device context is given, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.intptr.zero">Zero</a> included.</p>
 </dd>
     <dt><code>frameRect</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.drawing.rectanglef">RectangleF</a></dt>
-    <dd><p>The frame.</p>
+    <dd><p>The frame, the part of the drawing the metafile shows; in <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html#Egami_SystemDrawing_Imaging_MetafileFrameUnit_GdiCompatible">GdiCompatible</a> units, 0.01 mm, unless a unit is given.</p>
 </dd>
     <dt><code>frameUnit</code> <a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
     <dd><p>The frame's unit.</p>
 </dd>
     <dt><code>desc</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The description.</p>
+    <dd><p>The description stored in the header, or null.</p>
 </dd>
   </dl>
 
@@ -1938,8 +2708,33 @@ public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, Metafi
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Imaging_Metafile__ctor_System_String_System_IntPtr_System_Drawing_RectangleF_Egami_SystemDrawing_Imaging_MetafileFrameUnit_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The EMF type or frame unit is not one, as GDI+ reports it.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
+    <dd><p>The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</p>
+</dd>
+  </dl>
 
 
 
@@ -1951,7 +2746,7 @@ public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, Metafi
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile_Clone" data-uid="Egami.SystemDrawing.Imaging.Metafile.Clone">
   Clone()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L135"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>A copy of the image with all its frames and properties.</p>
@@ -1984,7 +2779,7 @@ public Metafile(string fileName, nint referenceHdc, RectangleF frameRect, Metafi
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile_GetHenhmetafile" data-uid="Egami.SystemDrawing.Imaging.Metafile.GetHenhmetafile">
   GetHenhmetafile()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L417"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L545"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows metafile handles. Always throws.</p>
@@ -2018,7 +2813,7 @@ public nint GetHenhmetafile()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile_GetMetafileHeader" data-uid="Egami.SystemDrawing.Imaging.Metafile.GetMetafileHeader">
   GetMetafileHeader()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L122"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The header.</p>
@@ -2051,7 +2846,7 @@ public nint GetHenhmetafile()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile_GetMetafileHeader_System_IO_Stream_" data-uid="Egami.SystemDrawing.Imaging.Metafile.GetMetafileHeader(System.IO.Stream)">
   GetMetafileHeader(Stream)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L132"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The header of a metafile stream.</p>
@@ -2090,7 +2885,7 @@ public nint GetHenhmetafile()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile_GetMetafileHeader_System_IntPtr_" data-uid="Egami.SystemDrawing.Imaging.Metafile.GetMetafileHeader(System.IntPtr)">
   GetMetafileHeader(nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L430"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L558"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows metafile handles. Always throws.</p>
@@ -2130,7 +2925,7 @@ public static MetafileHeader GetMetafileHeader(nint henhmetafile)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile_GetMetafileHeader_System_IntPtr_Egami_SystemDrawing_Imaging_WmfPlaceableFileHeader_" data-uid="Egami.SystemDrawing.Imaging.Metafile.GetMetafileHeader(System.IntPtr,Egami.SystemDrawing.Imaging.WmfPlaceableFileHeader)">
   GetMetafileHeader(nint, WmfPlaceableFileHeader)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L424"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.Recording.cs/#L552"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows metafile handles. Always throws.</p>
@@ -2173,7 +2968,7 @@ public static MetafileHeader GetMetafileHeader(nint hmetafile, WmfPlaceableFileH
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile_GetMetafileHeader_System_String_" data-uid="Egami.SystemDrawing.Imaging.Metafile.GetMetafileHeader(System.String)">
   GetMetafileHeader(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L127"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The header of a metafile file.</p>
@@ -2212,7 +3007,7 @@ public static MetafileHeader GetMetafileHeader(nint hmetafile, WmfPlaceableFileH
 
   <h3 id="Egami_SystemDrawing_Imaging_Metafile_PlayRecord_Egami_SystemDrawing_Imaging_EmfPlusRecordType_System_Int32_System_Int32_System_Byte___" data-uid="Egami.SystemDrawing.Imaging.Metafile.PlayRecord(Egami.SystemDrawing.Imaging.EmfPlusRecordType,System.Int32,System.Int32,System.Byte[])">
   PlayRecord(EmfPlusRecordType, int, int, byte[]?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L98"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Imaging/Metafile.cs/#L149"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Marks a record as played during <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_">EnumerateMetafile(Metafile, PointF, EnumerateMetafileProc)</a>:

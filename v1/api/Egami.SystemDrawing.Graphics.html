@@ -189,7 +189,7 @@ using (Graphics exact = Graphics.FromImage(bitmap))
 
   <h3 id="Egami_SystemDrawing_Graphics_ArgbDrawing" data-uid="Egami.SystemDrawing.Graphics.ArgbDrawing">
   ArgbDrawing
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L60"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets how this Graphics draws on a 32-bit ARGB bitmap: in place (the default, from
@@ -372,7 +372,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_CompositingMode" data-uid="Egami.SystemDrawing.Graphics.CompositingMode">
   CompositingMode
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L140"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L150"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets whether drawing blends or replaces.</p>
@@ -404,7 +404,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_CompositingQuality" data-uid="Egami.SystemDrawing.Graphics.CompositingQuality">
   CompositingQuality
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L157"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets the blending quality; Egami blends the same way for every value.</p>
@@ -436,10 +436,10 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_DpiX" data-uid="Egami.SystemDrawing.Graphics.DpiX">
   DpiX
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L115"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L125"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the horizontal resolution of the bitmap drawn on.</p>
+  <div class="markdown level1 summary"><p>Gets the horizontal resolution of the bitmap drawn on, or 96 for a metafile.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -468,10 +468,10 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_DpiY" data-uid="Egami.SystemDrawing.Graphics.DpiY">
   DpiY
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L128"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the vertical resolution of the bitmap drawn on.</p>
+  <div class="markdown level1 summary"><p>Gets the vertical resolution of the bitmap drawn on, or 96 for a metafile.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -500,7 +500,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_InterpolationMode" data-uid="Egami.SystemDrawing.Graphics.InterpolationMode">
   InterpolationMode
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L154"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L164"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets how images are sampled; <a class="xref" href="Egami.SystemDrawing.Drawing2D.InterpolationMode.html#Egami_SystemDrawing_Drawing2D_InterpolationMode_Bilinear">Bilinear</a> by default.</p>
@@ -596,7 +596,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_PageScale" data-uid="Egami.SystemDrawing.Graphics.PageScale">
   PageScale
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L100"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L110"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets the scale of page coordinates; 1 by default.</p>
@@ -634,7 +634,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_PageUnit" data-uid="Egami.SystemDrawing.Graphics.PageUnit">
   PageUnit
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L94"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets the unit of page coordinates; <a class="xref" href="Egami.SystemDrawing.GraphicsUnit.html#Egami_SystemDrawing_GraphicsUnit_World">World</a> cannot be set.</p>
@@ -672,7 +672,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_PixelOffsetMode" data-uid="Egami.SystemDrawing.Graphics.PixelOffsetMode">
   PixelOffsetMode
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L133"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L143"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets where pixel centers are.</p>
@@ -704,7 +704,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_RenderingOrigin" data-uid="Egami.SystemDrawing.Graphics.RenderingOrigin">
   RenderingOrigin
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L180"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L190"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets the origin of hatch brushes and dithering, in device pixels.</p>
@@ -736,7 +736,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_SmoothingMode" data-uid="Egami.SystemDrawing.Graphics.SmoothingMode">
   SmoothingMode
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L131"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets whether shapes are antialiased; <a class="xref" href="Egami.SystemDrawing.Drawing2D.SmoothingMode.html#Egami_SystemDrawing_Drawing2D_SmoothingMode_None">None</a> by default. As in GDI+, Default and HighSpeed read back as None, HighQuality as AntiAlias.</p>
@@ -768,7 +768,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_TextContrast" data-uid="Egami.SystemDrawing.Graphics.TextContrast">
   TextContrast
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L173"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L183"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets the text contrast, 0 to 12; 4 by default.</p>
@@ -800,7 +800,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_TextRenderingHint" data-uid="Egami.SystemDrawing.Graphics.TextRenderingHint">
   TextRenderingHint
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L166"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L176"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets how text is rendered.</p>
@@ -832,7 +832,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_Transform" data-uid="Egami.SystemDrawing.Graphics.Transform">
   Transform
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L65"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L75"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets the world transform, a copy.</p>
@@ -864,7 +864,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_TransformElements" data-uid="Egami.SystemDrawing.Graphics.TransformElements">
   TransformElements
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L86"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets the world transform as a .NET matrix.</p>
@@ -965,7 +965,7 @@ using Bitmap back = Bitmap.FromRaster(view);  // a copy, 32-bit ARGB</code></pre
 
   <h3 id="Egami_SystemDrawing_Graphics_BeginContainer" data-uid="Egami.SystemDrawing.Graphics.BeginContainer">
   BeginContainer()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L453"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L488"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Starts a container: inside it the transform, page unit, clip and quality settings start again from their defaults, drawn
@@ -999,7 +999,7 @@ through the transform at this point and kept inside the clip at this point.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_BeginContainer_System_Drawing_Rectangle_System_Drawing_Rectangle_Egami_SystemDrawing_GraphicsUnit_" data-uid="Egami.SystemDrawing.Graphics.BeginContainer(System.Drawing.Rectangle,System.Drawing.Rectangle,Egami.SystemDrawing.GraphicsUnit)">
   BeginContainer(Rectangle, Rectangle, GraphicsUnit)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L474"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L509"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Starts a container that maps a source rectangle onto a destination rectangle.</p>
@@ -1044,7 +1044,7 @@ through the transform at this point and kept inside the clip at this point.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_BeginContainer_System_Drawing_RectangleF_System_Drawing_RectangleF_Egami_SystemDrawing_GraphicsUnit_" data-uid="Egami.SystemDrawing.Graphics.BeginContainer(System.Drawing.RectangleF,System.Drawing.RectangleF,Egami.SystemDrawing.GraphicsUnit)">
   BeginContainer(RectangleF, RectangleF, GraphicsUnit)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L460"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L495"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Starts a container that maps a source rectangle onto a destination rectangle.</p>
@@ -1089,7 +1089,7 @@ through the transform at this point and kept inside the clip at this point.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_Clear_System_Drawing_Color_" data-uid="Egami.SystemDrawing.Graphics.Clear(System.Drawing.Color)">
   Clear(Color)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L336"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L364"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Fills the area inside the clip with a color, replacing what is there.</p>
@@ -1122,7 +1122,7 @@ through the transform at this point and kept inside the clip at this point.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_CopyFromScreen_System_Drawing_Point_System_Drawing_Point_System_Drawing_Size_" data-uid="Egami.SystemDrawing.Graphics.CopyFromScreen(System.Drawing.Point,System.Drawing.Point,System.Drawing.Size)">
   CopyFromScreen(Point, Point, Size)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L282"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L300"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: screen capture. Always throws.</p>
@@ -1162,7 +1162,7 @@ public void CopyFromScreen(Point upperLeftSource, Point upperLeftDestination, Si
 
   <h3 id="Egami_SystemDrawing_Graphics_CopyFromScreen_System_Drawing_Point_System_Drawing_Point_System_Drawing_Size_Egami_SystemDrawing_CopyPixelOperation_" data-uid="Egami.SystemDrawing.Graphics.CopyFromScreen(System.Drawing.Point,System.Drawing.Point,System.Drawing.Size,Egami.SystemDrawing.CopyPixelOperation)">
   CopyFromScreen(Point, Point, Size, CopyPixelOperation)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L290"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L308"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: screen capture. Always throws.</p>
@@ -1205,7 +1205,7 @@ public void CopyFromScreen(Point upperLeftSource, Point upperLeftDestination, Si
 
   <h3 id="Egami_SystemDrawing_Graphics_CopyFromScreen_System_Int32_System_Int32_System_Int32_System_Int32_System_Drawing_Size_" data-uid="Egami.SystemDrawing.Graphics.CopyFromScreen(System.Int32,System.Int32,System.Int32,System.Int32,System.Drawing.Size)">
   CopyFromScreen(int, int, int, int, Size)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L299"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L317"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: screen capture. Always throws.</p>
@@ -1251,7 +1251,7 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
   <h3 id="Egami_SystemDrawing_Graphics_CopyFromScreen_System_Int32_System_Int32_System_Int32_System_Int32_System_Drawing_Size_Egami_SystemDrawing_CopyPixelOperation_" data-uid="Egami.SystemDrawing.Graphics.CopyFromScreen(System.Int32,System.Int32,System.Int32,System.Int32,System.Drawing.Size,Egami.SystemDrawing.CopyPixelOperation)">
   CopyFromScreen(int, int, int, int, Size, CopyPixelOperation)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L309"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L327"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: screen capture. Always throws.</p>
@@ -1300,10 +1300,10 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
   <h3 id="Egami_SystemDrawing_Graphics_Dispose" data-uid="Egami.SystemDrawing.Graphics.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L313"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L331"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Releases the graphics; the bitmap keeps what was drawn.</p>
+  <div class="markdown level1 summary"><p>Releases the graphics; the bitmap keeps what was drawn. A recording ends: the metafile's file is written, to its file or stream too.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -4954,7 +4954,7 @@ public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int desti
 
   <h3 id="Egami_SystemDrawing_Graphics_DrawPath_Egami_SystemDrawing_Pen_Egami_SystemDrawing_Drawing2D_GraphicsPath_" data-uid="Egami.SystemDrawing.Graphics.DrawPath(Egami.SystemDrawing.Pen,Egami.SystemDrawing.Drawing2D.GraphicsPath)">
   DrawPath(Pen, GraphicsPath)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L102"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L105"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Strokes a path with a pen; each figure is stroked on its own, closed ones joined all round.</p>
@@ -6514,7 +6514,7 @@ Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, form
 
   <h3 id="Egami_SystemDrawing_Graphics_EndContainer_Egami_SystemDrawing_Drawing2D_GraphicsContainer_" data-uid="Egami.SystemDrawing.Graphics.EndContainer(Egami.SystemDrawing.Drawing2D.GraphicsContainer)">
   EndContainer(GraphicsContainer)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L478"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L513"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Ends a container, restoring the state from before it.</p>
@@ -8203,7 +8203,7 @@ the metafile would be drawn is not used: records are walked, not drawn.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_ExcludeClip_Egami_SystemDrawing_Region_" data-uid="Egami.SystemDrawing.Graphics.ExcludeClip(Egami.SystemDrawing.Region)">
   ExcludeClip(Region)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L144"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L147"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Removes a region from the clip.</p>
@@ -8236,7 +8236,7 @@ the metafile would be drawn is not used: records are walked, not drawn.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_ExcludeClip_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Graphics.ExcludeClip(System.Drawing.Rectangle)">
   ExcludeClip(Rectangle)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L140"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L143"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Removes a rectangle from the clip.</p>
@@ -8899,7 +8899,7 @@ the metafile would be drawn is not used: records are walked, not drawn.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_FillPath_Egami_SystemDrawing_Brush_Egami_SystemDrawing_Drawing2D_GraphicsPath_" data-uid="Egami.SystemDrawing.Graphics.FillPath(Egami.SystemDrawing.Brush,Egami.SystemDrawing.Drawing2D.GraphicsPath)">
   FillPath(Brush, GraphicsPath)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L111"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L114"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Fills a path with a brush, by its fill mode.</p>
@@ -9841,7 +9841,7 @@ the metafile would be drawn is not used: records are walked, not drawn.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_Flush" data-uid="Egami.SystemDrawing.Graphics.Flush">
   Flush()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L322"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L350"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Does nothing: Egami draws each call at once.</p>
@@ -9868,7 +9868,7 @@ the metafile would be drawn is not used: records are walked, not drawn.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_Flush_Egami_SystemDrawing_Drawing2D_FlushIntention_" data-uid="Egami.SystemDrawing.Graphics.Flush(Egami.SystemDrawing.Drawing2D.FlushIntention)">
   Flush(FlushIntention)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L329"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L357"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Does nothing: Egami draws each call at once.</p>
@@ -9901,7 +9901,7 @@ the metafile would be drawn is not used: records are walked, not drawn.</p>
 
   <h3 id="Egami_SystemDrawing_Graphics_FromHdc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.FromHdc(System.IntPtr)">
   FromHdc(nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L219"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L237"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows device contexts. Always throws.</p>
@@ -9941,7 +9941,7 @@ public static Graphics FromHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_FromHdc_System_IntPtr_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.FromHdc(System.IntPtr,System.IntPtr)">
   FromHdc(nint, nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L227"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L245"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows device contexts. Always throws.</p>
@@ -9984,7 +9984,7 @@ public static Graphics FromHdc(nint hdc, nint hdevice)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_FromHwnd_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.FromHwnd(System.IntPtr)">
   FromHwnd(nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L234"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L252"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows windows. Always throws.</p>
@@ -10024,10 +10024,10 @@ public static Graphics FromHwnd(nint hwnd)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_FromImage_Egami_SystemDrawing_Image_" data-uid="Egami.SystemDrawing.Graphics.FromImage(Egami.SystemDrawing.Image)">
   FromImage(Image)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L194"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L208"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>A graphics that draws on a bitmap.</p>
+  <div class="markdown level1 summary"><p>A graphics that draws on a bitmap, or records into a metafile made with a recording constructor.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -10038,7 +10038,7 @@ public static Graphics FromHwnd(nint hwnd)</code></pre>
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>image</code> <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a></dt>
-    <dd><p>The bitmap.</p>
+    <dd><p>The bitmap or metafile.</p>
 </dd>
   </dl>
 
@@ -10054,6 +10054,22 @@ public static Graphics FromHwnd(nint hwnd)</code></pre>
 
 
 
+  <h4 class="section" id="Egami_SystemDrawing_Graphics_FromImage_Egami_SystemDrawing_Image__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
+
 
 
   <h4 class="section">Exceptions</h4>
@@ -10062,7 +10078,8 @@ public static Graphics FromHwnd(nint hwnd)</code></pre>
     <dd><p>The bitmap is indexed.</p>
 </dd>
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.externalexception">ExternalException</a></dt>
-    <dd><p>The bitmap is 16-bit gray or 16-bit ARGB 1555, which GDI+ cannot draw on either.</p>
+    <dd><p>The bitmap is 16-bit gray or 16-bit ARGB 1555, which GDI+
+cannot draw on either; or the metafile was loaded, is being recorded by another Graphics, or was recorded.</p>
 </dd>
   </dl>
 
@@ -10072,7 +10089,7 @@ public static Graphics FromHwnd(nint hwnd)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_GetContextInfo_System_Drawing_PointF__" data-uid="Egami.SystemDrawing.Graphics.GetContextInfo(System.Drawing.PointF@)">
   GetContextInfo(out PointF)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L168"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the translation of the transform and the clip.</p>
@@ -10105,7 +10122,7 @@ public static Graphics FromHwnd(nint hwnd)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_GetContextInfo_System_Drawing_PointF__Egami_SystemDrawing_Region__" data-uid="Egami.SystemDrawing.Graphics.GetContextInfo(System.Drawing.PointF@,Egami.SystemDrawing.Region@)">
   GetContextInfo(out PointF, out Region?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L170"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L173"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the translation of the transform and the clip.</p>
@@ -10141,7 +10158,7 @@ public static Graphics FromHwnd(nint hwnd)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_GetHalftonePalette" data-uid="Egami.SystemDrawing.Graphics.GetHalftonePalette">
   GetHalftonePalette()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L260"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L278"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows palettes. Always throws.</p>
@@ -10175,7 +10192,7 @@ public static nint GetHalftonePalette()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_GetHdc" data-uid="Egami.SystemDrawing.Graphics.GetHdc">
   GetHdc()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L265"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L283"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows device contexts. Always throws.</p>
@@ -10209,7 +10226,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_GetNearestColor_System_Drawing_Color_" data-uid="Egami.SystemDrawing.Graphics.GetNearestColor(System.Drawing.Color)">
   GetNearestColor(Color)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L344"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L379"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>The nearest color GDI+ reports for the bitmap's pixel format: the 16-bit formats cut the low bits; the others keep the color.</p>
@@ -10248,7 +10265,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_IntersectClip_Egami_SystemDrawing_Region_" data-uid="Egami.SystemDrawing.Graphics.IntersectClip(Egami.SystemDrawing.Region)">
   IntersectClip(Region)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L136"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L139"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Intersects the clip with a region.</p>
@@ -10281,7 +10298,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_IntersectClip_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Graphics.IntersectClip(System.Drawing.Rectangle)">
   IntersectClip(Rectangle)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L128"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L131"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Intersects the clip with a rectangle.</p>
@@ -10314,7 +10331,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_IntersectClip_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Graphics.IntersectClip(System.Drawing.RectangleF)">
   IntersectClip(RectangleF)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L135"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Intersects the clip with a rectangle.</p>
@@ -10386,7 +10403,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_IsVisible_System_Drawing_PointF_" data-uid="Egami.SystemDrawing.Graphics.IsVisible(System.Drawing.PointF)">
   IsVisible(PointF)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L186"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L189"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether a point is inside the bitmap and the clip.</p>
@@ -10464,7 +10481,7 @@ public nint GetHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_IsVisible_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Graphics.IsVisible(System.Drawing.RectangleF)">
   IsVisible(RectangleF)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L197"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L201"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether any of a rectangle is inside the bitmap and the clip.</p>
@@ -11884,7 +11901,7 @@ Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, form
 
   <h3 id="Egami_SystemDrawing_Graphics_MultiplyTransform_Egami_SystemDrawing_Drawing2D_Matrix_" data-uid="Egami.SystemDrawing.Graphics.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix)">
   MultiplyTransform(Matrix)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L354"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L389"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Multiplies the world transform by a matrix, applied before it.</p>
@@ -11917,7 +11934,7 @@ Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, form
 
   <h3 id="Egami_SystemDrawing_Graphics_MultiplyTransform_Egami_SystemDrawing_Drawing2D_Matrix_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.Graphics.MultiplyTransform(Egami.SystemDrawing.Drawing2D.Matrix,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
   MultiplyTransform(Matrix, MatrixOrder)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L359"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L394"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Multiplies the world transform by a matrix, applied before or after it.</p>
@@ -11953,7 +11970,7 @@ Region[] quick = g.MeasureCharacterRanges("The quick brown fox", font, box, form
 
   <h3 id="Egami_SystemDrawing_Graphics_ReleaseHdc" data-uid="Egami.SystemDrawing.Graphics.ReleaseHdc">
   ReleaseHdc()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L275"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L293"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows device contexts. Always throws.</p>
@@ -11981,7 +11998,7 @@ public void ReleaseHdc()</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_ReleaseHdc_System_IntPtr_" data-uid="Egami.SystemDrawing.Graphics.ReleaseHdc(System.IntPtr)">
   ReleaseHdc(nint)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L270"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L288"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Not supported: Windows device contexts. Always throws.</p>
@@ -12015,7 +12032,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_ResetClip" data-uid="Egami.SystemDrawing.Graphics.ResetClip">
   ResetClip()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L150"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Removes the clip.</p>
@@ -12042,7 +12059,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_ResetTransform" data-uid="Egami.SystemDrawing.Graphics.ResetTransform">
   ResetTransform()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L366"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L401"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes the world transform the identity.</p>
@@ -12069,7 +12086,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_Restore_Egami_SystemDrawing_Drawing2D_GraphicsState_" data-uid="Egami.SystemDrawing.Graphics.Restore(Egami.SystemDrawing.Drawing2D.GraphicsState)">
   Restore(GraphicsState)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L442"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L477"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Restores a saved state, dropping every state and container saved after it.</p>
@@ -12102,7 +12119,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_RotateTransform_System_Single_" data-uid="Egami.SystemDrawing.Graphics.RotateTransform(System.Single)">
   RotateTransform(float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L392"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L427"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Rotates the world transform clockwise, before it.</p>
@@ -12135,7 +12152,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_RotateTransform_System_Single_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.Graphics.RotateTransform(System.Single,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
   RotateTransform(float, MatrixOrder)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L397"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L432"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Rotates the world transform clockwise, before or after it.</p>
@@ -12171,7 +12188,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_Save" data-uid="Egami.SystemDrawing.Graphics.Save">
   Save()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L433"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L468"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Saves the transform, page settings, clip and quality settings.</p>
@@ -12204,7 +12221,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_ScaleTransform_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Graphics.ScaleTransform(System.Single,System.Single)">
   ScaleTransform(float, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L382"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L417"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Scales the world transform, before it.</p>
@@ -12240,7 +12257,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_ScaleTransform_System_Single_System_Single_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.Graphics.ScaleTransform(System.Single,System.Single,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
   ScaleTransform(float, float, MatrixOrder)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L388"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L423"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Scales the world transform, before or after it.</p>
@@ -12279,7 +12296,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_SetClip_Egami_SystemDrawing_Drawing2D_GraphicsPath_" data-uid="Egami.SystemDrawing.Graphics.SetClip(Egami.SystemDrawing.Drawing2D.GraphicsPath)">
   SetClip(GraphicsPath)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L91"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes the clip a path's area.</p>
@@ -12312,7 +12329,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_SetClip_Egami_SystemDrawing_Drawing2D_GraphicsPath_Egami_SystemDrawing_Drawing2D_CombineMode_" data-uid="Egami.SystemDrawing.Graphics.SetClip(Egami.SystemDrawing.Drawing2D.GraphicsPath,Egami.SystemDrawing.Drawing2D.CombineMode)">
   SetClip(GraphicsPath, CombineMode)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L96"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Combines the clip with a path's area.</p>
@@ -12348,7 +12365,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_SetClip_Egami_SystemDrawing_Graphics_" data-uid="Egami.SystemDrawing.Graphics.SetClip(Egami.SystemDrawing.Graphics)">
   SetClip(Graphics)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L60"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes the clip another graphics' clip.</p>
@@ -12381,7 +12398,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_SetClip_Egami_SystemDrawing_Graphics_Egami_SystemDrawing_Drawing2D_CombineMode_" data-uid="Egami.SystemDrawing.Graphics.SetClip(Egami.SystemDrawing.Graphics,Egami.SystemDrawing.Drawing2D.CombineMode)">
   SetClip(Graphics, CombineMode)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L65"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Combines the clip with another graphics' clip.</p>
@@ -12417,7 +12434,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_SetClip_Egami_SystemDrawing_Region_Egami_SystemDrawing_Drawing2D_CombineMode_" data-uid="Egami.SystemDrawing.Graphics.SetClip(Egami.SystemDrawing.Region,Egami.SystemDrawing.Drawing2D.CombineMode)">
   SetClip(Region, CombineMode)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L120"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L123"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Combines the clip with a region.</p>
@@ -12453,7 +12470,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_SetClip_System_Drawing_Rectangle_" data-uid="Egami.SystemDrawing.Graphics.SetClip(System.Drawing.Rectangle)">
   SetClip(Rectangle)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L73"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes the clip a rectangle.</p>
@@ -12486,7 +12503,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_SetClip_System_Drawing_Rectangle_Egami_SystemDrawing_Drawing2D_CombineMode_" data-uid="Egami.SystemDrawing.Graphics.SetClip(System.Drawing.Rectangle,Egami.SystemDrawing.Drawing2D.CombineMode)">
   SetClip(Rectangle, CombineMode)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L78"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Combines the clip with a rectangle.</p>
@@ -12522,7 +12539,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_SetClip_System_Drawing_RectangleF_" data-uid="Egami.SystemDrawing.Graphics.SetClip(System.Drawing.RectangleF)">
   SetClip(RectangleF)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L79"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L82"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes the clip a rectangle.</p>
@@ -12555,7 +12572,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_SetClip_System_Drawing_RectangleF_Egami_SystemDrawing_Drawing2D_CombineMode_" data-uid="Egami.SystemDrawing.Graphics.SetClip(System.Drawing.RectangleF,Egami.SystemDrawing.Drawing2D.CombineMode)">
   SetClip(RectangleF, CombineMode)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L87"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Combines the clip with a rectangle.</p>
@@ -12591,7 +12608,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TransformPoints_Egami_SystemDrawing_Drawing2D_CoordinateSpace_Egami_SystemDrawing_Drawing2D_CoordinateSpace_System_Drawing_PointF___" data-uid="Egami.SystemDrawing.Graphics.TransformPoints(Egami.SystemDrawing.Drawing2D.CoordinateSpace,Egami.SystemDrawing.Drawing2D.CoordinateSpace,System.Drawing.PointF[])">
   TransformPoints(CoordinateSpace, CoordinateSpace, params PointF[])
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L403"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L438"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Transforms points from one coordinate space to another.</p>
@@ -12630,7 +12647,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TransformPoints_Egami_SystemDrawing_Drawing2D_CoordinateSpace_Egami_SystemDrawing_Drawing2D_CoordinateSpace_System_Drawing_Point___" data-uid="Egami.SystemDrawing.Graphics.TransformPoints(Egami.SystemDrawing.Drawing2D.CoordinateSpace,Egami.SystemDrawing.Drawing2D.CoordinateSpace,System.Drawing.Point[])">
   TransformPoints(CoordinateSpace, CoordinateSpace, params Point[])
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L419"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L454"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Transforms points from one coordinate space to another, rounding to whole coordinates.</p>
@@ -12669,7 +12686,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TransformPoints_Egami_SystemDrawing_Drawing2D_CoordinateSpace_Egami_SystemDrawing_Drawing2D_CoordinateSpace_System_ReadOnlySpan_System_Drawing_PointF__" data-uid="Egami.SystemDrawing.Graphics.TransformPoints(Egami.SystemDrawing.Drawing2D.CoordinateSpace,Egami.SystemDrawing.Drawing2D.CoordinateSpace,System.ReadOnlySpan{System.Drawing.PointF})">
   TransformPoints(CoordinateSpace, CoordinateSpace, params ReadOnlySpan&lt;PointF&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L413"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L448"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Transforms points from one coordinate space to another.</p>
@@ -12708,7 +12725,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TransformPoints_Egami_SystemDrawing_Drawing2D_CoordinateSpace_Egami_SystemDrawing_Drawing2D_CoordinateSpace_System_ReadOnlySpan_System_Drawing_Point__" data-uid="Egami.SystemDrawing.Graphics.TransformPoints(Egami.SystemDrawing.Drawing2D.CoordinateSpace,Egami.SystemDrawing.Drawing2D.CoordinateSpace,System.ReadOnlySpan{System.Drawing.Point})">
   TransformPoints(CoordinateSpace, CoordinateSpace, params ReadOnlySpan&lt;Point&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L429"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L464"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Transforms points from one coordinate space to another, rounding to whole coordinates.</p>
@@ -12747,7 +12764,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TranslateClip_System_Int32_System_Int32_" data-uid="Egami.SystemDrawing.Graphics.TranslateClip(System.Int32,System.Int32)">
   TranslateClip(int, int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L161"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L164"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Moves the clip.</p>
@@ -12783,7 +12800,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TranslateClip_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Graphics.TranslateClip(System.Single,System.Single)">
   TranslateClip(float, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L152"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.Drawing.cs/#L155"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Moves the clip.</p>
@@ -12819,7 +12836,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TranslateTransform_System_Single_System_Single_" data-uid="Egami.SystemDrawing.Graphics.TranslateTransform(System.Single,System.Single)">
   TranslateTransform(float, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L371"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L406"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Translates the world transform, before it.</p>
@@ -12855,7 +12872,7 @@ public void ReleaseHdc(nint hdc)</code></pre>
 
   <h3 id="Egami_SystemDrawing_Graphics_TranslateTransform_System_Single_System_Single_Egami_SystemDrawing_Drawing2D_MatrixOrder_" data-uid="Egami.SystemDrawing.Graphics.TranslateTransform(System.Single,System.Single,Egami.SystemDrawing.Drawing2D.MatrixOrder)">
   TranslateTransform(float, float, MatrixOrder)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L377"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.SystemDrawing/Graphics.cs/#L412"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Translates the world transform, before or after it.</p>

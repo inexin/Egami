@@ -552,7 +552,7 @@ resolutions, size and EMF+ header, and a <code>MetaHeader</code> and <code>WmfPl
 vectors into the destination. <code>EnumerateMetafile</code> calls an <code>EnumerateMetafileProc</code> back for each record as GDI+ enumerates them, with its
 <code>EmfPlusRecordType</code>, flags and pinned data: a placeable WMF's records without header and end, an EMF's from header to end, and
 for EMF+ the EMF header, the EMF+ records and the end record. Egami plays metafiles whole, so when the callback calls
-<code>PlayRecord</code>, the metafile is drawn once the walk ends; the <code>PlayRecordCallback</code> GDI+ passes for that is always null. As in GDI+, <code>Graphics.FromImage</code> on a metafile throws
+<code>PlayRecord</code>, the metafile is drawn once the walk ends; the <code>PlayRecordCallback</code> GDI+ passes for that is always null. As in GDI+, <code>Graphics.FromImage</code> on a loaded metafile throws
 <code>ExternalException</code> and <code>RotateFlip</code> throws <code>NotImplementedException</code>; saving or copying it into a <code>Bitmap</code> rasterizes it.</p>
 <pre><code class="lang-csharp">// A metafile is an Image sized by its frame; DrawImage plays it as vectors, EnumerateMetafile walks its records.
 using Metafile metafile = new(System.IO.Path.Combine(Images, &quot;shapes-plus.emf&quot;));
@@ -569,10 +569,40 @@ using (Graphics g = Graphics.FromImage(bitmap))
         return true;
     });
 }
-</code></pre>
-<p>Egami reads metafiles but does not record them: the constructors that would record one take an <code>EmfType</code> or a
-<code>MetafileFrameUnit</code>, and throw <code>NotSupportedException</code> with the EGSD0004 warning.</p>
-<h2 id="effects">Effects</h2>
+</code></pre><h3 id="recording-metafiles">Recording metafiles</h3>
+<p>The constructors that take a reference device context record a new metafile, into memory, a file or a stream, as GDI+ does.
+<code>Graphics.FromImage</code> on such a metafile returns a Graphics that writes every call into it through Egami.Metafiles' <code>EmfCanvas</code>:
+shapes, pens, brushes, images, clips, transforms, containers and compositing, with the smoothing, interpolation, text rendering,
+page unit and scale settings taking effect as on a bitmap, and <code>DrawString</code> written as glyph records (EMF+ <code>DrawDriverString</code>
+and GDI <code>ExtTextOutW</code> with glyph indices). Measuring works as on a bitmap. The <code>EmfType</code> chooses EMF+ dual (the default), EMF+
+only or GDI only, and the description goes into the header. Egami records for a 96 DPI screen whatever device context is
+given, <code>IntPtr.Zero</code> included, so <code>DpiX</code> is 96.</p>
+<p>Disposing the Graphics finishes the file: a file is written then (it is created, empty, by the constructor, as GDI+ creates
+it), and a stream from its position at that moment, left open. The metafile is then that file: its <code>Size</code>, header,
+<code>DrawImage</code>, <code>EnumerateMetafile</code> and <code>Save</code> (PNG, as GDI+ has no EMF encoder) work as for a loaded one.</p>
+<p>The frame is written as GDI+ writes it: in 0.01 mm, from the frame's left and top to its right and bottom less one device pixel
+in the pixel, point, inch, document and millimeter units, and as it is in <code>GdiCompatible</code>, which the constructors without a
+unit use. GDI+ refuses an empty frame in units other than <code>GdiCompatible</code> and a negative one in any, with <code>ExternalException</code>.
+The constructors without a frame make the frame the bounds of what is drawn (the header's bounds, the pixels whose centers the
+drawing covers; a <code>Clear</code> adds nothing).</p>
+<p>As in GDI+, only one Graphics records a metafile: a second <code>FromImage</code>, or one after the recording, throws <code>ExternalException</code>,
+and until the recording ends the metafile's size throws <code>ArgumentException</code>. Drawing the metafile onto its own Graphics draws
+nothing.</p>
+<pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, &quot;Chart&quot;);
+using (Graphics g = Graphics.FromImage(metafile))
+{
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new(&quot;Arial&quot;, 16);
+    g.DrawString(&quot;Egami&quot;, font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);
+</code></pre><h2 id="effects">Effects</h2>
 <p>The GDI+ 1.1 effects of <code>Egami.SystemDrawing.Imaging.Effects</code> apply to a bitmap with <code>Bitmap.ApplyEffect</code>, to an area or the
 whole of it, or while drawing with <code>DrawImage(image, effect)</code>. <code>ColorMatrixEffect</code>, <code>ColorLookupTableEffect</code>,
 <code>GrayScaleEffect</code>, <code>InvertEffect</code> and <code>SepiaEffect</code> give GDI+'s pixels, and <code>BrightnessContrastEffect</code>, <code>ColorBalanceEffect</code>,
@@ -662,8 +692,8 @@ the <code>Metafile</code> handle constructors and <code>GetHenhmetafile</code>, 
 </ul>
 <p><a id="egsd0004"></a></p>
 <ul>
-<li><strong>EGSD0004, metafile recording</strong>: the <code>Metafile</code> constructors that record a new metafile. Draw on a <code>Bitmap</code>, or write SVG or
-PDF with Egami.Drawing's canvases.</li>
+<li><strong>EGSD0004, metafile recording</strong> (until 1.0.0-preview.4): the <code>Metafile</code> constructors that record a new metafile. They record
+now (<a href="#recording-metafiles">Recording metafiles</a>), and the warning is gone.</li>
 </ul>
 <h2 id="known-differences">Known differences</h2>
 <p>The package is measured against System.Drawing on Windows with the same probe programs compiled against both (egami-compare,
@@ -686,6 +716,10 @@ making them transparent.</li>
 <li>Compound pens draw their strips on both sides of the line, and <code>PathGradientBrush.FocusScales</code> is kept but not drawn.</li>
 <li>A WMF without a placeable header is read as WMF, sized by its first window extent; GDI+ converts it to EMF first, so its
 size, header and records differ. Metafiles are drawn by Egami.Metafiles, which is close to GDI+ but not equal to it.</li>
+<li>A recorded metafile holds Egami's records, not GDI+'s: shapes in device pixels with their pen outlines, a hatch as a pattern
+image, translucent colors opaque in the GDI copy. Played by Egami, the EMF+ part of the same calls looks like GDI+'s within a
+mean of 0.005 to 5 levels. The header's bounds are the pixels drawn, where GDI+ adds a margin for pens and antialiasing, so
+a metafile without a frame can be a pixel or more smaller. The description is written; GDI+ leaves it out.</li>
 <li><code>BlurEffect</code>, <code>SharpenEffect</code>, <code>TintEffect</code>, <code>VividEffect</code> and the highlight, shadow and contrast curves are Egami's own
 versions; <code>PlayRecord</code> plays the whole metafile, not one record.</li>
 <li>Text is laid out as GDI+ lays it out (line breaks, trimming and alignment match), and <code>MeasureString</code> agrees with GDI+ to

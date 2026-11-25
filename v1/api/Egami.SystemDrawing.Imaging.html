@@ -171,7 +171,10 @@ decoders listed; the list matches GDI+'s so code that looks a codec up by its MI
       <dt><a class="xref" href="Egami.SystemDrawing.Imaging.Metafile.html">Metafile</a></dt>
       <dd><p>A WMF, EMF or EMF+ picture, read and drawn by Egami.Metafiles: an <a class="xref" href="Egami.SystemDrawing.Image.html">Image</a> sized by its frame, which
 <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_DrawImage_Egami_SystemDrawing_Image_System_Single_System_Single_">DrawImage(Image, float, float)</a> plays as vectors and <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_EnumerateMetafile_Egami_SystemDrawing_Imaging_Metafile_System_Drawing_PointF_Egami_SystemDrawing_Graphics_EnumerateMetafileProc_">EnumerateMetafile(Metafile, PointF, EnumerateMetafileProc)</a>
-walks record by record. Egami reads metafiles but does not record them, so the recording constructors throw.</p>
+walks record by record. The recording constructors start a metafile that <a class="xref" href="Egami.SystemDrawing.Graphics.html#Egami_SystemDrawing_Graphics_FromImage_Egami_SystemDrawing_Image_">FromImage(Image)</a> records into:
+Egami.Metafiles writes what that Graphics draws as an EMF (with EMF+ records unless the <a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a> says GDI only,
+text as glyph records), into memory, a file or a stream, for a 96 DPI screen whatever reference handle is given. Disposing the
+Graphics finishes the file, and the metafile is then that file, to draw, walk or save like a loaded one.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -231,7 +234,7 @@ Enums
     </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Imaging.EmfType.html">EmfType</a></dt>
-      <dd><p>The kind of EMF a recording would write; Egami does not record metafiles.</p>
+      <dd><p>The kind of EMF a recording metafile writes: GDI records only, EMF+ records only, or EMF+ with a GDI copy.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -261,7 +264,7 @@ Enums
     </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.SystemDrawing.Imaging.MetafileFrameUnit.html">MetafileFrameUnit</a></dt>
-      <dd><p>The unit of a recording's frame rectangle; Egami does not record metafiles.</p>
+      <dd><p>The unit of a recording metafile's frame rectangle.</p>
 </dd>
     </dl>
     <dl class="jumplist">

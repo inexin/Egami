@@ -94,7 +94,7 @@ every step the program builds, runs and gives the same pictures, so the move can
 <p>Replace the System.Drawing.Common package reference with Egami.SystemDrawing, as the <a href="system-drawing.html#moving-code-over">drop-in guide</a>
 describes: <code>System.Drawing</code> and <code>Egami.SystemDrawing</code> come in as implicit usings, and files that name <code>System.Drawing.Imaging</code>,
 <code>System.Drawing.Drawing2D</code> or <code>System.Drawing.Text</code> change those lines to <code>Egami.SystemDrawing.Imaging</code>, <code>.Drawing2D</code> and
-<code>.Text</code>. Members that need Windows handles compile with a warning, EGSD0001 to EGSD0004, and throw when called: each warning
+<code>.Text</code>. Members that need Windows handles compile with a warning, EGSD0001 to EGSD0003, and throw when called: each warning
 marks code that has to change anyway (an HBITMAP becomes <code>LockBits</code> or <code>AsRaster</code>, <code>CopyFromScreen</code> has no replacement, an
 <code>Icon</code> comes from a file). The <a href="system-drawing.html#what-throws-on-every-os">drop-in guide's list</a> names every member.</p>
 <h2 id="the-strategy">The strategy</h2>

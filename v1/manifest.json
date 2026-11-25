@@ -15579,7 +15579,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Imaging.EmfType",
-      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.EmfType.yml\" sourcestartlinenumber=\"1\">The kind of EMF a recording would write; Egami does not record metafiles.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.EmfType.yml\" sourcestartlinenumber=\"1\">The kind of EMF a recording metafile writes: GDI records only, EMF+ records only, or EMF+ with a GDI copy.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -15775,7 +15775,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Imaging.Metafile",
-      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Metafile.yml\" sourcestartlinenumber=\"1\">A WMF, EMF or EMF+ picture, read and drawn by Egami.Metafiles: an <xref href=\"Egami.SystemDrawing.Image\" data-throw-if-not-resolved=\"false\"></xref> sized by its frame, which\n<xref href=\"Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image%2cSystem.Single%2cSystem.Single)\" data-throw-if-not-resolved=\"false\"></xref> plays as vectors and <xref href=\"Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile%2cSystem.Drawing.PointF%2cEgami.SystemDrawing.Graphics.EnumerateMetafileProc)\" data-throw-if-not-resolved=\"false\"></xref>\nwalks record by record. Egami reads metafiles but does not record them, so the recording constructors throw.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.Metafile.yml\" sourcestartlinenumber=\"1\">A WMF, EMF or EMF+ picture, read and drawn by Egami.Metafiles: an <xref href=\"Egami.SystemDrawing.Image\" data-throw-if-not-resolved=\"false\"></xref> sized by its frame, which\n<xref href=\"Egami.SystemDrawing.Graphics.DrawImage(Egami.SystemDrawing.Image%2cSystem.Single%2cSystem.Single)\" data-throw-if-not-resolved=\"false\"></xref> plays as vectors and <xref href=\"Egami.SystemDrawing.Graphics.EnumerateMetafile(Egami.SystemDrawing.Imaging.Metafile%2cSystem.Drawing.PointF%2cEgami.SystemDrawing.Graphics.EnumerateMetafileProc)\" data-throw-if-not-resolved=\"false\"></xref>\nwalks record by record. The recording constructors start a metafile that <xref href=\"Egami.SystemDrawing.Graphics.FromImage(Egami.SystemDrawing.Image)\" data-throw-if-not-resolved=\"false\"></xref> records into:\nEgami.Metafiles writes what that Graphics draws as an EMF (with EMF+ records unless the <xref href=\"Egami.SystemDrawing.Imaging.EmfType\" data-throw-if-not-resolved=\"false\"></xref> says GDI only,\ntext as glyph records), into memory, a file or a stream, for a 96 DPI screen whatever reference handle is given. Disposing the\nGraphics finishes the file, and the metafile is then that file, to draw, walk or save like a loaded one.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -15789,7 +15789,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.SystemDrawing.Imaging.MetafileFrameUnit",
-      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.MetafileFrameUnit.yml\" sourcestartlinenumber=\"1\">The unit of a recording's frame rectangle; Egami does not record metafiles.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.SystemDrawing.Imaging.MetafileFrameUnit.yml\" sourcestartlinenumber=\"1\">The unit of a recording metafile's frame rectangle.</p>\n"
     },
     {
       "type": "ManagedReference",

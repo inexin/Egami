@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Enum EmfType | Egami ">
       
-      <meta name="description" content="The kind of EMF a recording would write; Egami does not record metafiles.">
+      <meta name="description" content="The kind of EMF a recording metafile writes: GDI records only, EMF+ records only, or EMF+ with a GDI copy.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -98,7 +98,7 @@ Enum EmfType  <a class="header-action link-secondary" title="View source" href="
   <dl><dt>Assembly</dt><dd>Egami.SystemDrawing.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>The kind of EMF a recording would write; Egami does not record metafiles.</p>
+  <div class="markdown summary"><p>The kind of EMF a recording metafile writes: GDI records only, EMF+ records only, or EMF+ with a GDI copy.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -132,21 +132,20 @@ Enum EmfType  <a class="header-action link-secondary" title="View source" href="
   </dl>
 
   <h2 id="Egami_SystemDrawing_Imaging_EmfType_examples">Examples</h2>
-  <pre><code class="lang-csharp">// A metafile is an Image sized by its frame; DrawImage plays it as vectors, EnumerateMetafile walks its records.
-using Metafile metafile = new(System.IO.Path.Combine(Images, "shapes-plus.emf"));
-MetafileHeader header = metafile.GetMetafileHeader();  // EmfPlusDual, its bounds and resolution
-int records = 0;
-using Bitmap bitmap = new(400, 300);
-using (Graphics g = Graphics.FromImage(bitmap))
+  <pre><code class="lang-csharp">// A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+using MemoryStream file = new();
+using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+using (Graphics g = Graphics.FromImage(metafile))
 {
-    g.Clear(Color.White);
-    g.DrawImage(metafile, new Rectangle(0, 0, 400, 300));
-    g.EnumerateMetafile(metafile, new PointF(0, 0), (type, flags, size, data, play) =&gt;
-    {
-        records++;
-        return true;
-    });
-}</code></pre>
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+    using Font font = new("Arial", 16);
+    g.DrawString("Egami", font, Brushes.Black, 190, 80);
+}
+
+// Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+using MemoryStream png = new();
+metafile.Save(png, ImageFormat.Png);</code></pre>
 
 
 
