@@ -29,6 +29,7 @@ public sealed partial class Barcode
         BarcodeFormat.UpcA => UpcA(text),
         BarcodeFormat.UpcE => UpcE(text),
         BarcodeFormat.Code93 => Code93(text),
+        BarcodeFormat.Codabar => Codabar(text),
         _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
     };
 }
