@@ -415,6 +415,31 @@ public class Drawing
     }
 
     [Fact]
+    public void BevelButton()
+    {
+        #region bevel
+        // A raised button: fill the shape, then draw a bevel over it, lit from the top left.
+        using Raster<Rgba8> button = Raster.Create(220, 90, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = button.CreateCanvas())
+        {
+            Path shape = Path.RoundRect(new RoundRect(new RectF(10, 10, 200, 70), 16));
+            canvas.FillPath(shape, new Rgba8(40, 110, 200, 255));
+            canvas.DrawBevel(shape, new Bevel
+            {
+                Profile = BevelProfile.Circle,
+                Width = 10,
+                Height = 8,
+                Material = BevelMaterial.Plastic,
+                Light = BevelLight.FromDirection(LightDirection.TopLeft),
+            });
+        }
+        #endregion
+
+        Assert.NotEqual(new Rgba8(40, 110, 200, 255), button.GetPixel(110, 13));
+        Assert.Equal(new Rgba8(40, 110, 200, 255), button.GetPixel(110, 45));
+    }
+
+    [Fact]
     public void Badge()
     {
         #region badge

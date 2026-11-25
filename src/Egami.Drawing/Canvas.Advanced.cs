@@ -10,6 +10,63 @@ public abstract partial class Canvas
     private static readonly SamplingOptions FallbackSampling = new() { Filter = ResampleFilter.Nearest };
 
     /// <summary>
+    /// Draws a bevel's light and shade over a path's area: lighter where the rim faces the light, darker where it faces away,
+    /// nothing on the flat face inside. Fill the path first; the bevel goes on top, so it lights any fill. It is worked out in
+    /// device pixels under the current transform (width and height scale with it, the light keeps its device direction) and drawn
+    /// as an image, so every backend draws it the same way.
+    /// </summary>
+    /// <param name="path">The shape, in local coordinates; its fill rule decides what is inside.</param>
+    /// <param name="bevel">The bevel.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="path"/> or <paramref name="bevel"/> is <see langword="null"/>.</exception>
+    /// <exception cref="LimitExceededException">The shape's device area is larger than the context's limits allow.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="bevel"/>
+    /// </example>
+    public void DrawBevel(Path path, Bevel bevel)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        ArgumentNullException.ThrowIfNull(bevel);
+        Matrix3x2 m = Matrix;
+        float scale = MathF.Sqrt(MathF.Abs(m.GetDeterminant()));
+        float width = bevel.Width * scale, height = bevel.Height * scale;
+        if (path.IsEmpty || bevel.Material == BevelMaterial.Flat || !(width > 0) || !(height > 0) || bevel.Light.Intensity == 0)
+        {
+            return;
+        }
+
+        // The shape is measured a bevel's width (and a pixel) past the clip, so the clip's edge is not taken for the shape's.
+        Path device = path.Transform(m);
+        RectF clip = DeviceClipBounds;
+        float reach = width + 2;
+        RectF bounds = device.Bounds.Intersect(new RectF(clip.X - reach, clip.Y - reach, clip.Width + (2 * reach), clip.Height + (2 * reach)));
+        if (bounds.IsEmpty)
+        {
+            return;
+        }
+
+        int x0 = (int)MathF.Floor(bounds.X) - 1, y0 = (int)MathF.Floor(bounds.Y) - 1;
+        int w = (int)MathF.Ceiling(bounds.Right) + 1 - x0, h = (int)MathF.Ceiling(bounds.Bottom) + 1 - y0;
+        using Raster<RgbaF32> image = Raster.Create<RgbaF32>(w, h);
+        using (RasterCanvas<RgbaF32> mask = image.CreateCanvas())
+        {
+            mask.Translate(-x0, -y0);
+            mask.FillPath(device, new RgbaF32(1, 1, 1, 1));
+        }
+
+        Rasterization.BevelShading.Shade(image, bevel, width, height);
+        Save();
+        try
+        {
+            ResetMatrix();
+            DrawImage(image, new RectF(x0, y0, w, h), FallbackSampling);
+        }
+        finally
+        {
+            Restore();
+        }
+    }
+
+    /// <summary>
     /// Draws an image stretched to a rectangle while its corners keep their size: the edges stretch one way and the center both
     /// ways, as Skia's drawImageNine. When the destination is smaller than the corners, they shrink in proportion. It is
     /// <see cref="DrawImageLattice"/> with <see cref="Lattice.NinePatch(Rect)"/>.
