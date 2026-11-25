@@ -23,7 +23,7 @@ internal enum SvgRestart : byte
 /// <summary>One active interval of an animation, in seconds of document time.</summary>
 /// <param name="Begin">When it begins.</param>
 /// <param name="End">When it ends: begin plus the active duration, which <c>min</c> may extend; infinite when it never ends.</param>
-/// <param name="PlayEnd">When the animation function stops, before a <c>min</c> extension, after which the fill applies.</param>
+/// <param name="PlayEnd">When the animation function stops: the end, or within a <c>min</c> extension when its repetitions end; the fill applies after.</param>
 internal readonly record struct SvgInterval(double Begin, double End, double PlayEnd);
 
 /// <summary>
@@ -276,7 +276,8 @@ internal sealed class SvgAnimation
     /// <summary>
     /// The active duration of an interval that begins at <paramref name="begin"/> and whose end list gave
     /// <paramref name="end"/> (infinite for none or unresolved), as SMIL 3.0 computes it: the intermediate active duration from
-    /// dur, repeatCount and repeatDur; cut by the end; then bounded by min and max. Also returns the part before min extends it.
+    /// dur, repeatCount and repeatDur; cut by the end; then bounded by min and max. Also returns how long the animation function plays: the active duration, less any
+    /// part of a min extension after its repetitions end.
     /// </summary>
     public (double Active, double Played) ActiveDuration(double begin, double end)
     {
@@ -313,8 +314,11 @@ internal sealed class SvgAnimation
         }
 
         pad = Math.Max(0, pad);
-        double played = Math.Min(pad, Max);
         double active = Math.Min(Math.Max(pad, Min), Max);
+
+        // Within a min extension the animation plays on, as the SVG 1.1 suite's min test (animate-elem-65) has it, until
+        // its own repetitions end; the fill applies after that.
+        double played = Math.Min(Math.Max(iad, pad), active);
         return (active, played);
     }
 }

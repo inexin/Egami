@@ -37,7 +37,8 @@ internal sealed partial class SvgResolver
     };
 
     /// <summary>The elements switch may pick: graphics and containers; unknown elements are passed over, as resvg drops them.</summary>
-    private static readonly HashSet<string> s_switchable = new(StringComparer.Ordinal)
+    /// <summary>The children a switch chooses among.</summary>
+    internal static readonly HashSet<string> Switchable = new(StringComparer.Ordinal)
     {
         "g", "a", "svg", "use", "switch", "path", "rect", "circle", "ellipse", "line", "polyline", "polygon", "image", "text", "foreignObject",
     };
@@ -68,6 +69,9 @@ internal sealed partial class SvgResolver
     private readonly SvgAnimationFrame? _frame;
     private readonly SvgLimits _limits;
     private readonly IReadOnlyList<string> _languages;
+
+    /// <summary>Attr as a delegate, made once, for <see cref="ConditionsHold"/>.</summary>
+    private Func<SvgElement, string, string?>? _attribute;
     private readonly Dictionary<SvgElement, (SvgStyle Style, CssComputedStyle Css)> _original = new(IdentityComparer.Instance);
     private readonly HashSet<SvgElement> _active = new(IdentityComparer.Instance);
 
@@ -285,7 +289,7 @@ internal sealed partial class SvgResolver
     {
         foreach (SvgElement child in element.Elements())
         {
-            if (!child.IsSvgOrBare(_document) || !s_switchable.Contains(child.Name) || !Conditions(child))
+            if (!child.IsSvgOrBare(_document) || !Switchable.Contains(child.Name) || !Conditions(child))
             {
                 continue;
             }
@@ -607,15 +611,18 @@ internal sealed partial class SvgResolver
     }
 
     /// <summary>The conditional processing attributes (SVG 2 section 5.8): requiredExtensions, systemLanguage, requiredFeatures.</summary>
-    private bool Conditions(SvgElement element)
+    private bool Conditions(SvgElement element) => ConditionsHold(element, _languages, _attribute ??= Attr);
+
+    /// <summary>Gets a value indicating whether an element's conditional processing attributes hold for the reader's languages.</summary>
+    internal static bool ConditionsHold(SvgElement element, IReadOnlyList<string> languages, Func<SvgElement, string, string?> attribute)
     {
         // Egami supports no extensions, so any requiredExtensions, even an empty one, fails, as in browsers.
-        if (Attr(element, "requiredExtensions") is not null)
+        if (attribute(element, "requiredExtensions") is not null)
         {
             return false;
         }
 
-        if (Attr(element, "requiredFeatures") is string features)
+        if (attribute(element, "requiredFeatures") is string features)
         {
             foreach (string feature in features.Split(' '))
             {
@@ -626,12 +633,12 @@ internal sealed partial class SvgResolver
             }
         }
 
-        if (Attr(element, "systemLanguage") is string languages)
+        if (attribute(element, "systemLanguage") is string listed)
         {
             bool any = false;
-            foreach (string language in languages.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+            foreach (string language in listed.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
             {
-                foreach (string wanted in _languages)
+                foreach (string wanted in languages)
                 {
                     if (LanguageMatches(language, wanted))
                     {

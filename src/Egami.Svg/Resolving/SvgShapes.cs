@@ -45,10 +45,12 @@ internal static class SvgShapes
                 }
 
             case "line":
-                return new PathBuilder()
-                    .MoveTo(geometry.Length(element, "x1", context, SvgAxis.X, 0), geometry.Length(element, "y1", context, SvgAxis.Y, 0))
-                    .LineTo(geometry.Length(element, "x2", context, SvgAxis.X, 0), geometry.Length(element, "y2", context, SvgAxis.Y, 0))
-                    .ToPath();
+                {
+                    float x1 = geometry.Length(element, "x1", context, SvgAxis.X, 0), y1 = geometry.Length(element, "y1", context, SvgAxis.Y, 0);
+                    float x2 = geometry.Length(element, "x2", context, SvgAxis.X, 0), y2 = geometry.Length(element, "y2", context, SvgAxis.Y, 0);
+                    return Finite(x1, y1) && Finite(x2, y2) ? new PathBuilder().MoveTo(x1, y1).LineTo(x2, y2).ToPath() : null;
+                }
+
             case "polyline":
             case "polygon":
                 return Poly(element, geometry, element.Name == "polygon", maxCommands, report);
@@ -68,6 +70,12 @@ internal static class SvgShapes
         if (w < 0 || h < 0)
         {
             report.Warn("Svg.BadAttribute", "The rect has a negative width or height; it is not drawn.", element);
+            return null;
+        }
+
+        if (!Finite(x, y) || !Finite(x + w, y + h))
+        {
+            report.Warn("Svg.BadAttribute", "The rect's position or size is too large to draw; it is not drawn.", element);
             return null;
         }
 
@@ -105,8 +113,16 @@ internal static class SvgShapes
             .Close().ToPath();
     }
 
-    private static Path Ellipse(float cx, float cy, float rx, float ry)
+    /// <summary>Gets a value indicating whether a point's coordinates are finite: a length too large for a float is not drawn.</summary>
+    private static bool Finite(float x, float y) => float.IsFinite(x) && float.IsFinite(y);
+
+    private static Path? Ellipse(float cx, float cy, float rx, float ry)
     {
+        if (!Finite(cx + rx, cy + ry) || !Finite(cx - rx, cy - ry))
+        {
+            return null;
+        }
+
         Vector2 r = new(rx, ry);
         return new PathBuilder().MoveTo(cx + rx, cy)
             .ArcTo(r, 0, false, true, new Vector2(cx, cy + ry))
@@ -139,6 +155,15 @@ internal static class SvgShapes
         if (count > maxCommands)
         {
             throw new SvgException(element.Line, element.Column, $"The {element.Name} has more than {maxCommands:N0} points.");
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            if (!Finite((float)numbers[2 * i], (float)numbers[(2 * i) + 1]))
+            {
+                report.Warn("Svg.BadAttribute", $"The {element.Name} has a point too large to draw; it is not drawn.", element);
+                return null;
+            }
         }
 
         PathBuilder b = new();

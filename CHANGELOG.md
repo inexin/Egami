@@ -78,6 +78,22 @@ SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation
   motion into the transform, discarded elements and the animations themselves taken out.
 - Fixed: `translate()` in the CSS `transform` property now resolves `em`, `rem` and viewport units against the element's font
   size and viewport, as the `translate` property does; they were taken at 16 px and a 100 px viewport.
+- Checked against headless Chromium at 5,860 frozen moments of 637 animated files (egami-compare's animation gate; 98.6 % of
+  frames pass). Fixes from it:
+  - An animation with a value that is not legal for its attribute (a misspelt length, color, transform or path; an empty
+    `by` path) has no effect, as SMIL says, instead of stepping to the bad value.
+  - `currentColor` in a color animation's values interpolates as the element's color at that moment, its animated `color`
+    included.
+  - An animation that `end` cuts short but `min` extends plays on through the extension until its own repetitions end;
+    the fill applies only after that.
+  - `animateMotion` with paced timing (the default) follows `keyPoints`, paced by their distances; a motion path of no
+    length holds the element at its point; at a corner, `rotate="auto"` turns with the segment that ends there.
+  - Animation elements under a failing `systemLanguage`, `requiredExtensions` or `requiredFeatures`, or in a `switch`
+    branch that is not chosen, have no effect.
+  - An additive sum of path data whose commands differ leaves the value below it.
+- Fixed: a rect, circle, ellipse, line, polyline or polygon whose coordinates are too large for a float (such as
+  `height="1e48"`) threw an `ArgumentException` while loading; it is now not drawn, with `Svg.BadAttribute` for rects and
+  polygons. Found by the svg-timeline fuzz target.
 
 Command line:
 

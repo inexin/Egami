@@ -1,5 +1,7 @@
 using System.Globalization;
 
+using Egami.Css;
+
 using Egami.Svg.Reading;
 using Egami.Svg.Values;
 
@@ -56,6 +58,15 @@ internal sealed class SvgAnimationFunction
     /// <summary>Gets a value indicating whether the result depends on the underlying value.</summary>
     public bool NeedsUnderlying => Additive || IsTo;
 
+    /// <summary>
+    /// Gets a value indicating whether a color value is currentColor, which interpolates as the element's color at the moment
+    /// (SVG Animations Level 2, after CSS Color 4: currentColor is computed to the used color when animated).
+    /// </summary>
+    public bool UsesCurrentColor { get; private set; }
+
+    /// <summary>Gets a value indicating whether a text is the currentColor keyword.</summary>
+    public static bool IsCurrentColor(string? text) => text is not null && text.Trim().Equals("currentColor", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>The value kind of an attribute: colors, path data, transforms, else numbers and lengths (keywords fall back to steps).</summary>
     public static SvgValueKind KindOf(SvgAnimationKind element, string attribute) => element == SvgAnimationKind.AnimateTransform
         ? SvgValueKind.Transform
@@ -66,6 +77,37 @@ internal sealed class SvgAnimationFunction
             "transform" or "gradientTransform" or "patternTransform" or "class" or "href" => SvgValueKind.Discrete,
             _ => SvgValueKind.Numeric,
         };
+
+    /// <summary>
+    /// Gets a value indicating whether a value that does not read as its kind is not legal for the attribute at all, rather
+    /// than a keyword that steps: transforms and path data have no keywords; a paint may be none, a url or a context paint; a
+    /// geometry or filter number has only the CSS-wide keywords (and auto for sizes).
+    /// </summary>
+    private static bool IsInvalid(SvgValueKind kind, string attribute, string text)
+    {
+        string t = text.Trim();
+        if (t is "inherit" or "initial" or "unset" or "revert" or "revert-layer")
+        {
+            // d is a property too (SVG 2), so inherit is a legal path; a transform has no keywords.
+            return kind is SvgValueKind.Transform;
+        }
+
+        return kind switch
+        {
+            SvgValueKind.Transform or SvgValueKind.Path => true,
+            SvgValueKind.Color => !CssColor.TryParse(t, out _) &&
+                !((attribute is "fill" or "stroke") && (t is "none" or "context-fill" or "context-stroke" || t.StartsWith("url(", StringComparison.Ordinal))),
+            SvgValueKind.Numeric => NumbersOnly.Contains(attribute) && !(t == "auto" && attribute is "width" or "height" or "rx" or "ry"),
+            _ => false,
+        };
+    }
+
+    /// <summary>The attributes whose values are only numbers, lengths or lists of them.</summary>
+    private static readonly HashSet<string> NumbersOnly = new(StringComparer.Ordinal)
+    {
+        "x", "y", "width", "height", "cx", "cy", "r", "rx", "ry", "x1", "y1", "x2", "y2", "dx", "dy", "rotate", "points",
+        "stdDeviation", "k1", "k2", "k3", "k4", "pathLength", "radius", "scale", "baseFrequency", "fx", "fy", "fr",
+    };
 
     /// <summary>Reads an animation's values; null (reported) when they are in error, so the animation has no effect.</summary>
     public static SvgAnimationFunction? Create(SvgAnimation animation, SvgReport report)
@@ -144,9 +186,17 @@ internal sealed class SvgAnimationFunction
             values = new SvgAnimatedValue[texts.Length];
             for (int i = 0; i < texts.Length && values is not null; i++)
             {
-                if (SvgAnimatedValue.Parse(kind, texts[i], transformType) is SvgAnimatedValue v)
+                // currentColor is read as black here, to check the values fit; it is resolved at each moment.
+                string text = kind == SvgValueKind.Color && !by && IsCurrentColor(texts[i]) ? "black" : texts[i];
+                if (SvgAnimatedValue.Parse(kind, text, transformType) is SvgAnimatedValue v)
                 {
                     values[i] = v;
+                }
+                else if (IsInvalid(kind, animation.AttributeName!, texts[i]))
+                {
+                    // SMIL: if any value is not legal for the attribute, the animation has no effect.
+                    report.Warn("Svg.BadAnimation", $"The {e.Name}'s value \"{Resolving.SvgGeometry.Clip(texts[i])}\" is not a legal {animation.AttributeName}; it has no effect.", e);
+                    return null;
                 }
                 else
                 {
@@ -166,6 +216,13 @@ internal sealed class SvgAnimationFunction
 
         if (by)
         {
+            if (kind == SvgValueKind.Path && texts[^1].Length == 0)
+            {
+                // An empty by path adds nothing to anything; the animation is in error (wpt's from-by both-empty test).
+                report.Warn("Svg.BadAnimation", $"The {e.Name}'s by path is empty; it has no effect.", e);
+                return null;
+            }
+
             if (values is null)
             {
                 // by needs addition; a value that cannot be added has nothing to add to.
@@ -236,6 +293,7 @@ internal sealed class SvgAnimationFunction
             Additive = !isTo && interpolates && (sum || (by && attributes["from"] is null)),
             Accumulates = !isTo && interpolates && accumulate,
             Mode = mode,
+            UsesCurrentColor = kind == SvgValueKind.Color && !by && interpolates && texts.Any(t => IsCurrentColor(t)),
         };
     }
 
@@ -243,12 +301,17 @@ internal sealed class SvgAnimationFunction
     /// The value at a fraction <paramref name="p"/> of the simple duration in repetition <paramref name="iteration"/> (from 0),
     /// on <paramref name="underlying"/>, the value below it in the sandwich (or the base value).
     /// </summary>
-    public string Evaluate(double p, long iteration, string? underlying)
+    public string Evaluate(double p, long iteration, string? underlying, string? currentColor = null)
     {
         p = Math.Clamp(p, 0, 1);
+        if (Kind == SvgValueKind.Color && currentColor is not null && IsCurrentColor(underlying))
+        {
+            underlying = currentColor;
+        }
+
         if (IsTo)
         {
-            return EvaluateTo(p, underlying);
+            return EvaluateTo(p, underlying, currentColor);
         }
 
         if (_values is null)
@@ -256,10 +319,16 @@ internal sealed class SvgAnimationFunction
             return _texts[Index(p, _texts.Length)];
         }
 
-        SvgAnimatedValue value = At(_values, p);
+        SvgAnimatedValue[] values = _values;
+        if (UsesCurrentColor && currentColor is not null && SvgColorValue.TryParse(currentColor) is SvgColorValue current)
+        {
+            values = [.. _texts.Select((t, i) => IsCurrentColor(t) ? current : _values[i])];
+        }
+
+        SvgAnimatedValue value = At(values, p);
         if (Accumulates && iteration > 0)
         {
-            value = value.Add(_values[^1], iteration) ?? value;
+            value = value.Add(values[^1], iteration) ?? value;
         }
 
         if (Additive && underlying is not null)
@@ -271,19 +340,17 @@ internal sealed class SvgAnimationFunction
                 return below.Length == 0 || below == "none" ? value.ToText() : below + " " + value.ToText();
             }
 
-            if (SvgAnimatedValue.Parse(Kind, underlying, _transformType) is SvgAnimatedValue belowValue)
-            {
-                value = belowValue.Add(value) ?? value;
-            }
+            // A sum that fails (path data with other commands, an empty path) leaves the underlying value as it is.
+            return SvgAnimatedValue.Parse(Kind, underlying, _transformType)?.Add(value)?.ToText() ?? underlying;
         }
 
         return value.ToText();
     }
 
     /// <summary>A to animation: from the underlying value to the to value, in steps when the two do not interpolate.</summary>
-    private string EvaluateTo(double p, string? underlying)
+    private string EvaluateTo(double p, string? underlying, string? currentColor)
     {
-        string to = _texts[0];
+        string to = UsesCurrentColor && currentColor is not null ? currentColor : _texts[0];
         if (Kind == SvgValueKind.Transform && SvgTransformValue.TryParse(_transformType!, to) is SvgTransformValue toTransform)
         {
             // animateTransform: from the underlying transform when it is one of this type, else from the type's identity.

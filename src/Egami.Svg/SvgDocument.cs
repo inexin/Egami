@@ -276,7 +276,7 @@ public sealed partial class SvgDocument
         options ??= SvgRenderOptions.Default;
         SvgElement element = FindById(id) ?? throw new ArgumentException("No element has the id " + id + ".", nameof(id));
         SvgReport report = new(strict: false);
-        SvgNode? node = new SvgResolver(this, report, options.Languages, options.Time is TimeSpan time ? Frame(time) : null).ResolveElement(element);
+        SvgNode? node = new SvgResolver(this, report, options.Languages, options.Time is TimeSpan time ? Frame(time, options.Languages) : null).ResolveElement(element);
         report.Deliver(Options.EffectiveContext);
         if (node is null)
         {
@@ -476,7 +476,7 @@ public sealed partial class SvgDocument
     /// </summary>
     private SvgGroup TreeAt(TimeSpan time, IReadOnlyList<string>? languages)
     {
-        SvgAnimationFrame? frame = Frame(time);
+        SvgAnimationFrame? frame = Frame(time, languages);
         if (frame is null || frame.IsEmpty)
         {
             return Tree(languages);
@@ -509,8 +509,8 @@ public sealed partial class SvgDocument
         return tree;
     }
 
-    /// <summary>The animated values at a time, or null when the document has no animations.</summary>
-    private SvgAnimationFrame? Frame(TimeSpan time)
+    /// <summary>The animated values at a time for the reader's languages, or null when the document has no animations.</summary>
+    private SvgAnimationFrame? Frame(TimeSpan time, IReadOnlyList<string>? languages)
     {
         double seconds = time.TotalSeconds;
         SvgTimeline timeline;
@@ -525,7 +525,37 @@ public sealed partial class SvgDocument
         }
 
         SvgBaseValues bases = new(this);
-        return SvgAnimationFrame.Compute(timeline, seconds, bases.Get);
+        IReadOnlyList<string> wanted = languages ?? _treeLanguages;
+        Dictionary<SvgElement, bool> applies = new(IdentityComparer.Instance);
+        return SvgAnimationFrame.Compute(timeline, seconds, bases.Get, e => Applies(e, wanted, applies));
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether an animation element takes effect: its conditional processing attributes and its
+    /// ancestors' hold, and wherever an ancestor is a child of a switch, that child is the one the switch picks. An animation
+    /// element directly in a switch is not one of its choices; only its own conditions count (as SVG 1.1's animate-elem-36).
+    /// </summary>
+    private bool Applies(SvgElement element, IReadOnlyList<string> languages, Dictionary<SvgElement, bool> known)
+    {
+        // Ancestors first, without recursion, so a deep tree cannot overflow the stack.
+        List<SvgElement> chain = [];
+        for (SvgElement? e = element; e is not null && !known.ContainsKey(e); e = e.Parent)
+        {
+            chain.Add(e);
+        }
+
+        for (int i = chain.Count - 1; i >= 0; i--)
+        {
+            SvgElement e = chain[i];
+            known[e] = Holds(e) && (e.Parent is not SvgElement parent || (known[parent] &&
+                (parent.Name != "switch" || !Switched(e) || ReferenceEquals(parent.Elements().FirstOrDefault(c => Switched(c) && Holds(c)), e))));
+        }
+
+        return known[element];
+
+        bool Holds(SvgElement e) => Resolving.SvgResolver.ConditionsHold(e, languages, static (x, name) => x.Attributes[name]);
+
+        bool Switched(SvgElement e) => e.IsSvgOrBare(this) && Resolving.SvgResolver.Switchable.Contains(e.Name);
     }
 
     /// <summary>

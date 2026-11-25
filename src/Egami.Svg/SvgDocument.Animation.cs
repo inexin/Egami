@@ -118,7 +118,7 @@ public sealed partial class SvgDocument
         }
 
         SvgDocument frozen = new(root, Options);
-        if (Frame(time) is not SvgAnimationFrame frame)
+        if (Frame(time, _treeLanguages) is not SvgAnimationFrame frame)
         {
             RemoveAnimationElements(source, map);
             return frozen;
