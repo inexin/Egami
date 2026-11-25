@@ -16,8 +16,10 @@ public class BlackboxTests
     private static readonly Dictionary<string, BarcodeFormat> s_sets = new()
     {
         ["aztec"] = BarcodeFormat.Aztec,
+        ["codabar"] = BarcodeFormat.Codabar,
         ["code128"] = BarcodeFormat.Code128,
         ["code39"] = BarcodeFormat.Code39,
+        ["code93"] = BarcodeFormat.Code93,
         ["datamatrix"] = BarcodeFormat.DataMatrix,
         ["ean13"] = BarcodeFormat.Ean13 | BarcodeFormat.UpcA,
         ["ean8"] = BarcodeFormat.Ean8,
@@ -28,6 +30,9 @@ public class BlackboxTests
         ["upce"] = BarcodeFormat.UpcE,
         ["upcean"] = BarcodeFormat.Ean13 | BarcodeFormat.UpcA,
     };
+
+    /// <summary>A Codabar read without its start and stop characters, as the blackbox sets' texts have it (ZXing drops them).</summary>
+    private static string? Inner(BarcodeResult result) => result.Format == BarcodeFormat.Codabar && result.Text.Length > 2 ? result.Text[1..^1] : null;
 
     [Fact]
     public void ReadRates()
@@ -65,7 +70,7 @@ public class BlackboxTests
                 total++;
                 string expected = File.ReadAllText(text);
                 using Raster<Gray8> image = Raster.Load<Gray8>(file);
-                if (image.ReadBarcodes(new BarcodeReaderOptions { Formats = formats }).Any(r => r.Text == expected || r.Text.StartsWith(expected + " ", StringComparison.Ordinal) || "0" + r.Text == expected))
+                if (image.ReadBarcodes(new BarcodeReaderOptions { Formats = formats }).Any(r => r.Text == expected || r.Text.StartsWith(expected + " ", StringComparison.Ordinal) || "0" + r.Text == expected || Inner(r) == expected))
                 {
                     passed++;
                 }

@@ -157,6 +157,34 @@ public class Barcodes
     }
 
     [Fact]
+    public void MakeCode93()
+    {
+        #region barcode-code93
+        // The check characters C and K are added on their own; lowercase switches to Full ASCII.
+        Barcode part = Barcode.Code93("PART-0042");
+        Barcode mixed = Barcode.Code93("Part 42, lot b");
+        Console.WriteLine(part.HumanReadableText); // PART-0042
+        #endregion
+        Assert.Equal("PART-0042", part.HumanReadableText);
+        Assert.Equal(BarcodeFormat.Code93, mixed.Format);
+    }
+
+    [Fact]
+    public void MakeCodabar()
+    {
+        #region barcode-codabar
+        // A library card number between start character A and stop character B.
+        Barcode card = Barcode.Codabar("A31117013206375B");
+
+        // Start and stop characters from the options, and a modulo 16 check character.
+        Barcode checkedCode = Barcode.Codabar("40156", new CodabarOptions { Start = 'C', Stop = 'D', CheckDigit = true });
+        Console.WriteLine(checkedCode.HumanReadableText); // C40156, its check character, D
+        #endregion
+        Assert.Equal("A31117013206375B", card.HumanReadableText);
+        Assert.Equal("C40156", checkedCode.HumanReadableText![..6]);
+    }
+
+    [Fact]
     public void MakeItf14()
     {
         #region barcode-itf

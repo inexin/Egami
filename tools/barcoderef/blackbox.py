@@ -3,7 +3,7 @@
 Run by tools/make-barcode-references.py (blackbox step) inside egami-barcoderef, with the corpus folder as argument. Each image
 counts once, with the set's format only and zxing-cpp's default search (rotations included): the same rule as
 Egami.Barcodes.Tests' BlackboxTests, so the numbers compare. The expected text is the image's .txt (an EAN or UPC add-on is not
-part of it); UPC-A may come back as a GTIN-13 and UPC-E expanded to one.
+part of it); UPC-A may come back as a GTIN-13 and UPC-E expanded to one, and Codabar with its start and stop characters.
 """
 import json
 import os
@@ -13,7 +13,8 @@ import zxingcpp
 from PIL import Image
 
 SETS = {
-    "aztec": zxingcpp.BarcodeFormat.Aztec, "code128": zxingcpp.BarcodeFormat.Code128, "code39": zxingcpp.BarcodeFormat.Code39,
+    "aztec": zxingcpp.BarcodeFormat.Aztec, "codabar": zxingcpp.BarcodeFormat.Codabar, "code128": zxingcpp.BarcodeFormat.Code128,
+    "code39": zxingcpp.BarcodeFormat.Code39, "code93": zxingcpp.BarcodeFormat.Code93,
     "datamatrix": zxingcpp.BarcodeFormat.DataMatrix, "ean13": zxingcpp.BarcodeFormat.EAN13, "ean8": zxingcpp.BarcodeFormat.EAN8,
     "itf": zxingcpp.BarcodeFormat.ITF, "pdf417": zxingcpp.BarcodeFormat.PDF417, "qrcode": zxingcpp.BarcodeFormat.QRCode,
     "upca": zxingcpp.BarcodeFormat.UPCA, "upce": zxingcpp.BarcodeFormat.UPCE, "upcean": zxingcpp.BarcodeFormat.EAN13,
@@ -53,7 +54,8 @@ def main():
             formats = [SETS[kind]] + ([zxingcpp.BarcodeFormat.UPCA] if kind in ("ean13", "upcean") else [])
             results = zxingcpp.read_barcodes(Image.open(os.path.join(path, file)).convert("L"), formats=formats)
             accepted = {expected, "0" + expected} | ({upce_to_gtin(expected)} if kind == "upce" and len(expected) == 8 else set())
-            if any(r.text in accepted for r in results):
+            # Codabar's start and stop characters, which zxing-cpp returns and the sets' texts (from ZXing) leave out.
+            if any(r.text in accepted or (kind == "codabar" and r.text[1:-1] in accepted) for r in results):
                 passed += 1
             else:
                 # The misses go to stderr, one per line, for comparing with Egami's .cache/egami-blackbox-missed.txt.

@@ -1,7 +1,7 @@
 # Reading barcodes
 
 Egami.Barcodes reads every symbology it writes: QR Code, Data Matrix (DMRE too), PDF417 (compact too), Aztec Code (runes too),
-Code 128 and GS1-128, Code 39, ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E with their add-ons. It reads rendered barcodes,
+Code 128 and GS1-128, Code 39, Code 93, Codabar, ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E with their add-ons. It reads rendered barcodes,
 scans and photos: turned, in perspective, blurred, noisy, light on dark or mirrored, several in one image.
 
 ## Reading an image
@@ -41,6 +41,11 @@ directions with its edges placed between pixels, so low-resolution and blurred p
 through the local threshold, which keeps bars under glare apart. A linear barcode counts once two scan lines agree on it.
 ITF, whose check is weakest, is read from 4 digits on.
 
+Code 93 comes back without its check characters C and K, which are verified, and with Full ASCII decoded. Codabar comes back
+with its start and stop characters, A to D, as zxing-cpp returns it, and with any check character, as a reader cannot tell
+whether a symbol has one; it is read from four characters on, start and stop included, with its quiet zones, as bars in
+noise look like Codabar easily.
+
 QR Codes are found by their three finder patterns, at any rotation and in perspective; from version 2 the alignment pattern
 corrects the perspective (each one near the expected place is tried, nearest first), and a mirrored symbol reads too.
 
@@ -76,7 +81,8 @@ any character set is applied.
 
 - Two pixels or more per module. Linear barcodes read down to about one pixel per narrow bar, as their edges are placed between
   pixels.
-- The quiet zone the symbology asks for, or most of it: 10 modules beside Code 128 and Code 39, 4 around a QR code.
+- The quiet zone the symbology asks for, or most of it: 10 modules beside Code 128, Code 39, Code 93 and Codabar, 4 around a
+  QR code.
 - Contrast between bars and background; uneven light is fine, as each part of the image gets its own threshold.
 - A sharp image. Blur that merges neighbouring modules cannot be undone, although error correction fills in damaged parts of
   2D symbols.

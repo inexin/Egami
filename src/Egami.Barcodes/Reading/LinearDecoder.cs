@@ -10,7 +10,7 @@ internal sealed record class LinearRead(DecodedData Data, float Start, float End
 /// decoder finds its start pattern after a quiet zone, matches characters by their bar and space widths, checks the stop
 /// pattern, quiet zone and check characters, and returns the first symbol it reads.
 /// </summary>
-internal static class LinearDecoder
+internal static partial class LinearDecoder
 {
     /// <summary>Reads the first symbol of the allowed formats on the line, left to right.</summary>
     public static LinearRead? Read(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, BarcodeFormat formats)
@@ -36,6 +36,16 @@ internal static class LinearDecoder
             if (read is null && (formats & BarcodeFormat.Itf) != 0)
             {
                 read = Itf(runs, offsets, i);
+            }
+
+            if (read is null && (formats & BarcodeFormat.Code93) != 0)
+            {
+                read = Code93(runs, offsets, i);
+            }
+
+            if (read is null && (formats & BarcodeFormat.Codabar) != 0)
+            {
+                read = Codabar(runs, offsets, i);
             }
 
             if (read is not null)
