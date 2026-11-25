@@ -83,6 +83,50 @@ internal static class DataBarEncoder
         return end;
     }
 
+    /// <summary>The largest value a Limited symbol holds: a GTIN-14 that starts with 0 or 1, before its check digit.</summary>
+    public const long MaxLimitedValue = 1_999_999_999_999;
+
+    /// <summary>The 47 element widths of a Limited symbol, first a space: guard, character, check pattern, character, guard.</summary>
+    public static int[] LimitedWidths(long value)
+    {
+        System.Diagnostics.Debug.Assert(value is >= 0 and <= MaxLimitedValue);
+        int[] left = LimitedCharacter((int)(value / 2013571)), right = LimitedCharacter((int)(value % 2013571));
+        int checksum = 0;
+        for (int i = 0; i < 14; i++)
+        {
+            checksum += (DataBarTables.LimitedChecksumWeights[i] * left[i]) + (DataBarTables.LimitedChecksumWeights[14 + i] * right[i]);
+        }
+
+        checksum %= 89;
+        int[] total = new int[47];
+        total[0] = total[1] = total[44] = total[45] = 1;
+        total[46] = 5;
+        for (int i = 0; i < 14; i++)
+        {
+            total[i + 2] = left[i];
+            total[i + 16] = DataBarTables.LimitedFinders[(checksum * 14) + i];
+            total[i + 30] = right[i];
+        }
+
+        return total;
+    }
+
+    /// <summary>The 14 element widths of a Limited character (26 modules).</summary>
+    public static int[] LimitedCharacter(int value)
+    {
+        int group = 6;
+        while (value < DataBarTables.LimitedGroupSum[group])
+        {
+            group--;
+        }
+
+        int v = value - DataBarTables.LimitedGroupSum[group], t = DataBarTables.LimitedEvenCombinations[group];
+        int modules = DataBarTables.LimitedModules[group];
+        int[] widths = new int[14];
+        DataBarWidths.Character(widths, v / t, v % t, modules, 26 - modules, 7, DataBarTables.LimitedWidest[group], false);
+        return widths;
+    }
+
     /// <summary>The bars of a one-row symbol: the widths without their first space, ending with a bar.</summary>
     public static int[] Runs(ReadOnlySpan<int> widths)
     {

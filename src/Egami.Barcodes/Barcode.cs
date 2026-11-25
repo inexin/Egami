@@ -34,7 +34,8 @@ public sealed partial class Barcode
     /// <summary>
     /// Gets the width of the clear margin readers need around the symbol, in modules: 4 for QR, 1 for Data Matrix, 2 for PDF417
     /// and 0 for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7 for EAN-8, 9 for
-    /// UPC-A and UPC-E, and 1 for GS1 DataBar, whose guard patterns hold their own space.
+    /// UPC-A and UPC-E, and 1 for GS1 DataBar, whose guard patterns hold their own space (5 for DataBar Limited, the space of its
+    /// right guard).
     /// </summary>
     public int QuietZone { get; }
 
@@ -65,6 +66,7 @@ public sealed partial class Barcode
             BarcodeFormat.Ean8 => 7,
             BarcodeFormat.UpcA or BarcodeFormat.UpcE => 9,
             BarcodeFormat.DataBar => 1,
+            BarcodeFormat.DataBarLimited => 5,
             _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
         };
         if (format is not BarcodeFormat.DataBar && modules.IsLinear != format is not (BarcodeFormat.Qr or BarcodeFormat.DataMatrix or BarcodeFormat.Pdf417 or BarcodeFormat.Aztec))

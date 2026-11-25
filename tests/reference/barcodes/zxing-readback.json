@@ -374,6 +374,106 @@
   "grid": "fed8472c8092012b",
   "text": "0"
  },
+ "databar-limited-1": {
+  "format": "DataBarLtd",
+  "grid": "3c7753a8901433a1",
+  "text": "(01)00000000000000"
+ },
+ "databar-limited-10": {
+  "format": "DataBarLtd",
+  "grid": "e863bcf4cdbcb5e2",
+  "text": "(01)04355458228428"
+ },
+ "databar-limited-11": {
+  "format": "DataBarLtd",
+  "grid": "b9b2df9d5b86a7c7",
+  "text": "(01)01195014366972"
+ },
+ "databar-limited-12": {
+  "format": "DataBarLtd",
+  "grid": "f4dd35ba59042f45",
+  "text": "(01)01995217834793"
+ },
+ "databar-limited-13": {
+  "format": "DataBarLtd",
+  "grid": "2cc48013978e7977",
+  "text": "(01)07484111441021"
+ },
+ "databar-limited-14": {
+  "format": "DataBarLtd",
+  "grid": "1508fc416c67ef63",
+  "text": "(01)11891672867475"
+ },
+ "databar-limited-15": {
+  "format": "DataBarLtd",
+  "grid": "7937fac6fea23c38",
+  "text": "(01)16691476379717"
+ },
+ "databar-limited-16": {
+  "format": "DataBarLtd",
+  "grid": "e5d4fdb957735222",
+  "text": "(01)07497066059579"
+ },
+ "databar-limited-17": {
+  "format": "DataBarLtd",
+  "grid": "a21ad01d3d7a3e18",
+  "text": "(01)15483087416100"
+ },
+ "databar-limited-18": {
+  "format": "DataBarLtd",
+  "grid": "c3e1941539df6735",
+  "text": "(01)04009848541023"
+ },
+ "databar-limited-19": {
+  "format": "DataBarLtd",
+  "grid": "b2789f2d197faa17",
+  "text": "(01)00348423395458"
+ },
+ "databar-limited-2": {
+  "format": "DataBarLtd",
+  "grid": "80327e02f6bae8be",
+  "text": "(01)19999999999991"
+ },
+ "databar-limited-20": {
+  "format": "DataBarLtd",
+  "grid": "eed06a10d3748a49",
+  "text": "(01)08928357636883"
+ },
+ "databar-limited-3": {
+  "format": "DataBarLtd",
+  "grid": "3e692de14ea1c90f",
+  "text": "(01)09501101530003"
+ },
+ "databar-limited-4": {
+  "format": "DataBarLtd",
+  "grid": "89b2841e646839d2",
+  "text": "(01)10000000000007"
+ },
+ "databar-limited-5": {
+  "format": "DataBarLtd",
+  "grid": "cec68b4a0794c8da",
+  "text": "(01)00123456789050"
+ },
+ "databar-limited-6": {
+  "format": "DataBarLtd",
+  "grid": "aaf3d9b32f9f1ad8",
+  "text": "(01)00000000000017"
+ },
+ "databar-limited-7": {
+  "format": "DataBarLtd",
+  "grid": "03e2cb460b08e049",
+  "text": "(01)12345678901231"
+ },
+ "databar-limited-8": {
+  "format": "DataBarLtd",
+  "grid": "d69806a3ef79449c",
+  "text": "(01)06141419999968"
+ },
+ "databar-limited-9": {
+  "format": "DataBarLtd",
+  "grid": "99f7c500d2de08c3",
+  "text": "(01)09834441747665"
+ },
  "databar-omnidirectional-1": {
   "format": "DataBarOmni",
   "grid": "a03b4446454fd6ae",

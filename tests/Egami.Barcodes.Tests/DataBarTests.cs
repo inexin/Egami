@@ -120,4 +120,19 @@ public class DataBarTests
         Assert.Equal(BarcodeFormat.DataBar, Barcode.FromModules(BarcodeFormat.DataBar, stacked.Modules).Format);
         Assert.Equal(BarcodeFormat.DataBar, Barcode.FromModules(BarcodeFormat.DataBar, omni.Modules).Format);
     }
+
+    [Fact]
+    public void DataBarLimitedTakesGtinsStartingWithZeroOrOne()
+    {
+        Barcode barcode = Barcode.DataBarLimited("1501234567890");
+        Assert.Equal(BarcodeFormat.DataBarLimited, barcode.Format);
+        Assert.Equal("(01)15012345678907", barcode.HumanReadableText);
+        Assert.Equal(73, barcode.Modules.Width);
+        Assert.Equal(10, barcode.Modules.Height);
+        Assert.Equal(5, barcode.QuietZone);
+        Assert.Equal(barcode.Modules.Runs.ToArray(), Barcode.Create(BarcodeFormat.DataBarLimited, "15012345678907").Modules.Runs.ToArray());
+        Assert.Throws<ArgumentException>(() => Barcode.DataBarLimited("2501234567890"));
+        Assert.Throws<ArgumentException>(() => Barcode.DataBarLimited("15012345678906"));
+        Assert.Throws<ArgumentException>(() => Barcode.DataBarLimited("150123456789"));
+    }
 }

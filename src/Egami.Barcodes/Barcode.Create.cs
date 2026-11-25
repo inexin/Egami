@@ -31,6 +31,7 @@ public sealed partial class Barcode
         BarcodeFormat.Code93 => Code93(text),
         BarcodeFormat.Codabar => Codabar(text),
         BarcodeFormat.DataBar => DataBar(text),
+        BarcodeFormat.DataBarLimited => DataBarLimited(text),
         _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
     };
 }

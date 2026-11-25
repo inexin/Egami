@@ -3,7 +3,8 @@
 Egami.Barcodes.BarcodeFormat.Codabar = 4096 -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.BarcodeFormat.Code93 = 2048 -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.BarcodeFormat.DataBar = 8192 -> Egami.Barcodes.BarcodeFormat
-Egami.Barcodes.BarcodeFormat.Linear = Egami.Barcodes.BarcodeFormat.Code128 | Egami.Barcodes.BarcodeFormat.Code39 | Egami.Barcodes.BarcodeFormat.Itf | Egami.Barcodes.BarcodeFormat.Ean13 | Egami.Barcodes.BarcodeFormat.Ean8 | Egami.Barcodes.BarcodeFormat.UpcA | Egami.Barcodes.BarcodeFormat.UpcE | Egami.Barcodes.BarcodeFormat.Code93 | Egami.Barcodes.BarcodeFormat.Codabar | Egami.Barcodes.BarcodeFormat.DataBar -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormat.DataBarLimited = 16384 -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormat.Linear = Egami.Barcodes.BarcodeFormat.Code128 | Egami.Barcodes.BarcodeFormat.Code39 | Egami.Barcodes.BarcodeFormat.Itf | Egami.Barcodes.BarcodeFormat.Ean13 | Egami.Barcodes.BarcodeFormat.Ean8 | Egami.Barcodes.BarcodeFormat.UpcA | Egami.Barcodes.BarcodeFormat.UpcE | Egami.Barcodes.BarcodeFormat.Code93 | Egami.Barcodes.BarcodeFormat.Codabar | Egami.Barcodes.BarcodeFormat.DataBar | Egami.Barcodes.BarcodeFormat.DataBarLimited -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.CodabarOptions
 Egami.Barcodes.CodabarOptions.<Clone>$() -> Egami.Barcodes.CodabarOptions!
 Egami.Barcodes.CodabarOptions.CheckDigit.get -> bool
@@ -49,6 +50,7 @@ override Egami.Barcodes.DataBarOptions.ToString() -> string!
 static Egami.Barcodes.Barcode.Codabar(string! text, Egami.Barcodes.CodabarOptions? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Code93(string! text, Egami.Barcodes.Code93Options? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.DataBar(string! gtin, Egami.Barcodes.DataBarOptions? options = null) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.DataBarLimited(string! gtin) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.CodabarOptions.Default.get -> Egami.Barcodes.CodabarOptions!
 static Egami.Barcodes.CodabarOptions.operator !=(Egami.Barcodes.CodabarOptions? left, Egami.Barcodes.CodabarOptions? right) -> bool
 static Egami.Barcodes.CodabarOptions.operator ==(Egami.Barcodes.CodabarOptions? left, Egami.Barcodes.CodabarOptions? right) -> bool
