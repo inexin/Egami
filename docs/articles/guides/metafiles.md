@@ -85,12 +85,31 @@ units are pixels at `EmfWriteOptions.Dpi` (96 by default).
 drawing for programs without GDI+, `EmfPlusOnly` the EMF+ records alone and `Emf` the GDI records alone. `Compress` writes
 EMZ, `Description` the header's description.
 
-Paths, rectangles, rounded rectangles, ovals and points with solid paints, every `Stroke` setting, transforms, save and
-restore, clips and aliased drawing are written as vectors; equal pens, brushes and paths are written once and shared. The
-GDI copy draws colors opaque, since GDI has no alpha. Text is written as outlines; `EmfText.Glyphs` (`EmfWriteOptions.Text`)
-is reserved for EMF+ text records and writes outlines too for now. Gradients and other paints, images, meshes
-and layers with opacity, blending, filters or masks are drawn by Egami as an image at `FallbackScale` times the resolution
-and placed in the file, with one `Metafile.FallbackImage` warning in `Warnings` for each kind.
+Paths, rectangles, rounded rectangles, ovals and points, every `Stroke` setting, transforms, save and restore, clips and
+aliased drawing are written as vectors; equal pens, brushes and paths are written once and shared. The GDI copy draws
+colors opaque, since GDI has no alpha. Text is written as outlines; `EmfText.Glyphs` (`EmfWriteOptions.Text`) is reserved
+for EMF+ text records and writes outlines too for now.
+
+Paints are written as EMF+ brushes where one draws the same thing:
+
+- A `SolidPaint` is a color with its alpha. A `ColorMatrixPaint` or `BlendPaint` made only of solid paints is the color
+  Egami works out for it.
+- A `LinearGradient` is a linear gradient brush with its stops as preset colors (clamped, repeated or mirrored). When its
+  colors are opaque, the GDI copy draws it exactly too, with gradient fills clipped to the shape.
+- A `RadialGradient` is a path gradient brush on a circle around its center (clamped, repeated or mirrored).
+- An `ImagePaint` or `PicturePaint` is a texture brush that repeats, mirrors or draws one copy; a picture's tile is drawn by
+  Egami at `FallbackScale` times the resolution.
+- Gradients mixed in linear light, or between stops of different alpha, get extra stops mixed as Egami mixes them.
+- A stroke with any of these paints is written as its outline, filled.
+
+The GDI copy has no form for radial gradients, translucent gradients or textures, so it gets an image of those calls; the
+EMF+ part stays vector and there is no warning, except in a GDI-only file (`Kind = Emf`).
+
+A layer with only an opacity whose shapes cover no pixel in common is written as those shapes with the opacity in each paint.
+Sweep and two-point conical gradients, gradients mixed in other spaces or transparent past their ends, clamped image
+paints, other blend modes, blurs, images, meshes, and any other layer with opacity, blending, filters or masks are drawn by
+Egami as an image at `FallbackScale` times the resolution and placed in the file, with one `Metafile.FallbackImage` warning
+in `Warnings` for each kind.
 
 ## What plays, and how close it is
 

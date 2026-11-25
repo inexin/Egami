@@ -66,7 +66,7 @@ internal sealed partial class EmfPlusPlayer
 
             case PlusBrush.PathGradientType:
                 // A path gradient is a Gouraud mesh in device space (design, stage C).
-                return new PlusFill(null, GdiPlusBrushes.PathGradient(brush.BoundaryPoints ?? GdiPlusBrushes.Flatten(brush.Boundary), brush.Center, brush.Color, brush.Surround, brush.Stops, local));
+                return new PlusFill(null, GdiPlusBrushes.PathGradient(brush.BoundaryPoints ?? GdiPlusBrushes.Flatten(brush.Boundary), brush.Center, brush.Color, brush.Surround, brush.Stops, local, brush.PresetColors));
 
             default:
                 return new PlusFill(Solid(brush.Color), null);

@@ -323,7 +323,7 @@ public class EmfWriterTests
     [Fact]
     public void PaintsOtherThanSolidFallBackToImagesWithOneWarningPerKind()
     {
-        LinearGradient gradient = new(new Vector2(10, 0), new Vector2(150, 0), new RgbaF32(1, 0, 0, 1), new RgbaF32(0, 0, 1, 1));
+        SweepGradient gradient = new(new Vector2(80, 60), new GradientStop(0, new RgbaF32(1, 0, 0, 1)), new GradientStop(1, new RgbaF32(0, 0, 1, 1)));
         Action<Canvas> draw = c =>
         {
             c.FillRect(new RectF(5, 5, 60, 40), Teal);
@@ -333,7 +333,7 @@ public class EmfWriterTests
         };
         (Metafile m, EmfCanvas canvas, byte[] file) = WriteWithCanvas(draw);
         Assert.Equal(["Metafile.FallbackImage", "Metafile.FallbackImage"], canvas.Warnings.Select(w => w.Id));
-        Assert.Contains("LinearGradient", canvas.Warnings[0].Message, StringComparison.Ordinal);
+        Assert.Contains("sweep gradient", canvas.Warnings[0].Message, StringComparison.Ordinal);
         Assert.Contains("Multiply", canvas.Warnings[1].Message, StringComparison.Ordinal);
         Assert.All(canvas.Warnings, w => Assert.Equal(DiagnosticLevel.Warning, w.Level));
         Assert.Equal(3, m.Content.PlusRecords.Count(r => r.Type == 0x401A));
@@ -341,14 +341,16 @@ public class EmfWriterTests
         Assert.Empty(m.Warnings);
 
         using Raster<Rgba8> direct = EmfCanvasTests.Direct(draw), played = EmfCanvasTests.Play(file), gdi = EmfCanvasTests.Play(file, MetafilePlayback.Gdi);
-        Assert.True(EmfCanvasTests.Difference(direct, played).Mean < 1.5, $"EMF+ {EmfCanvasTests.Difference(direct, played)}");
+
+        // The images are drawn at twice the resolution and resampled; the sweep's hard seam is where they differ most.
+        Assert.True(EmfCanvasTests.Difference(direct, played).Mean < 2, $"EMF+ {EmfCanvasTests.Difference(direct, played)}");
         Assert.True(EmfCanvasTests.Difference(direct, gdi).Mean < 6, $"GDI {EmfCanvasTests.Difference(direct, gdi)}");
     }
 
     [Fact]
     public void FallbackImagesHaveTheirLayout()
     {
-        (Metafile m, _, byte[] file) = WriteWithCanvas(c => c.FillRect(new RectF(10, 20, 30, 15), new LinearGradient(new Vector2(10, 0), new Vector2(40, 0), new RgbaF32(1, 0, 0, 1), new RgbaF32(0, 0, 1, 0.5f))));
+        (Metafile m, _, byte[] file) = WriteWithCanvas(c => c.FillRect(new RectF(10, 20, 30, 15), new SweepGradient(new Vector2(25, 27), new GradientStop(0, new RgbaF32(1, 0, 0, 1)), new GradientStop(1, new RgbaF32(0, 0, 1, 0.5f)))));
         ReadOnlySpan<byte> d = file;
 
         // EMR_ALPHABLEND ([MS-EMF] 2.3.1.1): destination in sixteenths, AC_SRC_ALPHA with constant alpha 255, identity source

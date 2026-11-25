@@ -41,6 +41,9 @@ internal sealed class PlusBrush : PlusObject
 
     public bool GammaCorrected { get; init; }
 
+    /// <summary>Gets a value indicating whether a path gradient's stops are preset colors, whose own colors are the rings' colors.</summary>
+    public bool PresetColors { get; init; }
+
     /// <summary>Gets a path gradient's center point and color.</summary>
     public Vector2 Center { get; init; }
 
@@ -282,6 +285,7 @@ internal static class PlusObjectReader
                         BoundaryPoints = points,
                         Transform = transform,
                         Stops = stops,
+                        PresetColors = (flags & 0x04) != 0,
                         Focus = focus,
                     };
                 }
