@@ -5,7 +5,8 @@ using Egami.Colors;
 using Egami.Pixels;
 using Egami.Video.Codecs;
 using Egami.Video.Hardware.Vulkan;
-using Egami.Video.Hardware.Vulkan.Native;
+
+using Vortice.Vulkan;
 
 namespace Egami.Video.Hardware.Encoding;
 
@@ -60,7 +61,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
     private readonly uint _qualityLevel;
     private readonly int _slices;
     private readonly bool _cabac;
-    private readonly VkVideoEncodeRateControlModeFlagBitsKHR _rateMode;
+    private readonly VkVideoEncodeRateControlModeFlagsKHR _rateMode;
     private readonly Rational _timeBase;
     private VulkanObjectHandle? _parameters;
     private byte[] _sps = [];
@@ -118,9 +119,9 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
         long bitrate = 0;
         _rateMode = options.RateControl switch
         {
-            RateControlMode.Quality or RateControlMode.Quantizer => VkVideoEncodeRateControlModeFlagBitsKHR.DISABLED_BIT_KHR,
-            RateControlMode.Bitrate => VkVideoEncodeRateControlModeFlagBitsKHR.VBR_BIT_KHR,
-            RateControlMode.ConstantBitrate => VkVideoEncodeRateControlModeFlagBitsKHR.CBR_BIT_KHR,
+            RateControlMode.Quality or RateControlMode.Quantizer => VkVideoEncodeRateControlModeFlagsKHR.Disabled,
+            RateControlMode.Bitrate => VkVideoEncodeRateControlModeFlagsKHR.Vbr,
+            RateControlMode.ConstantBitrate => VkVideoEncodeRateControlModeFlagsKHR.Cbr,
             _ => throw new ArgumentOutOfRangeException(nameof(options), options.RateControl, "Unknown rate control mode."),
         };
         if (options.RateControl is RateControlMode.Bitrate or RateControlMode.ConstantBitrate)
@@ -138,13 +139,13 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
 
         (StdVideoH264ProfileIdc profileIdc, string profileName) = h264.Profile switch
         {
-            H264Profile.ConstrainedBaseline => (StdVideoH264ProfileIdc.BASELINE, "Baseline"),
-            H264Profile.Main => (StdVideoH264ProfileIdc.MAIN, "Main"),
-            _ => (StdVideoH264ProfileIdc.HIGH, "High"),
+            H264Profile.ConstrainedBaseline => (StdVideoH264ProfileIdc.Baseline, "Baseline"),
+            H264Profile.Main => (StdVideoH264ProfileIdc.Main, "Main"),
+            _ => (StdVideoH264ProfileIdc.High, "High"),
         };
-        _device = VulkanVideoContext.GetDevice(VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR, profileName);
+        _device = VulkanVideoContext.GetDevice(VkVideoCodecOperationFlagsKHR.EncodeH264, profileName);
         _queue = _device.EncodeQueue ?? throw new HardwareVideoException($"{_device.Physical.Name} has no video encode queue.");
-        if ((_device.Physical.QueueFamilies[_queue.Family].Flags & VkQueueFlagBits.TRANSFER_BIT) == 0)
+        if ((_device.Physical.QueueFamilies[_queue.Family].Flags & VkQueueFlags.Transfer) == 0)
         {
             throw new HardwareVideoException($"{_device.Physical.Name}'s encode queue cannot copy frames to the GPU (no transfer support).");
         }
@@ -171,7 +172,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
 
             // B pictures only when asked for: drivers may prefer them and still not predict from the later reference
             // (NVIDIA Pascal codes every B macroblock from the earlier one), which makes them cost more than P pictures.
-            bool canB = profileIdc != StdVideoH264ProfileIdc.BASELINE && caps.H264.maxBPictureL0ReferenceCount > 0 && caps.H264.maxL1ReferenceCount > 0;
+            bool canB = profileIdc != StdVideoH264ProfileIdc.Baseline && caps.H264.maxBPictureL0ReferenceCount > 0 && caps.H264.maxL1ReferenceCount > 0;
             int bFrames = options.LatencyMode != LatencyMode.Quality || !canB ? 0 : h264.BFrames ?? 0;
             _bFrames = Math.Clamp(bFrames, 0, 16);
             _pReferences = (int)Math.Clamp(Math.Min(caps.H264.maxPPictureL0ReferenceCount, (uint)RefFrames(effort)), 1, 16);
@@ -179,11 +180,11 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             int maxRef = Math.Max(_pReferences, _bFrames > 0 ? 2 : 1);
             long peak = _rateMode switch
             {
-                VkVideoEncodeRateControlModeFlagBitsKHR.CBR_BIT_KHR => bitrate,
-                VkVideoEncodeRateControlModeFlagBitsKHR.VBR_BIT_KHR => options.MaxBitrate is > 0 and var m ? Math.Max(m, bitrate) : bitrate * 2,
+                VkVideoEncodeRateControlModeFlagsKHR.Cbr => bitrate,
+                VkVideoEncodeRateControlModeFlagsKHR.Vbr => options.MaxBitrate is > 0 and var m ? Math.Max(m, bitrate) : bitrate * 2,
                 _ => 0,
             };
-            bool high = profileIdc == StdVideoH264ProfileIdc.HIGH;
+            bool high = profileIdc == StdVideoH264ProfileIdc.High;
             H264Levels.Level level;
             if (h264.Level is int fixedLevel)
             {
@@ -217,7 +218,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
                 throw new NotSupportedException($"{_device.Physical.Name} encodes H.264 up to level {H264Levels.All[(int)caps.H264.maxLevelIdc].Idc / 10.0:0.0}; this stream needs {level.Idc / 10.0:0.0}.");
             }
 
-            _cabac = profileIdc != StdVideoH264ProfileIdc.BASELINE && h264.Entropy != H264EntropyCoder.Cavlc;
+            _cabac = profileIdc != StdVideoH264ProfileIdc.Baseline && h264.Entropy != H264EntropyCoder.Cavlc;
             _slices = (int)Math.Clamp((uint)(h264.Slices ?? 1), 1u, Math.Max(1u, caps.H264.maxSliceCount));
 
             uint slots = (uint)_maxRefFrames + 1;
@@ -231,9 +232,9 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             {
                 queueFamilyIndex = (uint)_queue.Family,
                 pVideoProfile = &_profile->Profile,
-                pictureFormat = VkFormat.G8_B8R8_2PLANE_420_UNORM,
+                pictureFormat = VkFormat.G8B8R82Plane420Unorm,
                 maxCodedExtent = new VkExtent2D { width = _codedWidth, height = _codedHeight },
-                referencePictureFormat = VkFormat.G8_B8R8_2PLANE_420_UNORM,
+                referencePictureFormat = VkFormat.G8B8R82Plane420Unorm,
                 maxDpbSlots = slots,
                 maxActiveReferencePictures = (uint)_maxRefFrames,
                 pStdHeaderVersion = &header,
@@ -243,7 +244,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             _dpb = new VulkanImage[slots];
             for (int i = 0; i < slots; i++)
             {
-                _dpb[i] = CreatePicture(VkImageUsageFlagBits.VIDEO_ENCODE_DPB_BIT_KHR);
+                _dpb[i] = CreatePicture(VkImageUsageFlags.VideoEncodeDpbKHR);
             }
 
             // Each picture in flight has its own share of the bitstream buffer: room for a raw picture and a margin, which no
@@ -251,19 +252,19 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             ulong alignment = Math.Max(caps.Video.minBitstreamBufferOffsetAlignment, caps.Video.minBitstreamBufferSizeAlignment);
             _regionSize = AlignUp((ulong)Nv12Writer.Size((int)_codedWidth, (int)_codedHeight) + (1 << 20), Math.Max(alignment, 1));
             _bitstream = _device.CreateBuffer(
-                _regionSize * InFlight, VkBufferUsageFlagBits.VIDEO_ENCODE_DST_BIT_KHR, VkMemoryPropertyFlagBits.HOST_VISIBLE_BIT, &_profile->List);
+                _regionSize * InFlight, VkBufferUsageFlags.VideoEncodeDstKHR, VkMemoryPropertyFlags.HostVisible, &_profile->List);
             VkQueryPoolVideoEncodeFeedbackCreateInfoKHR feedback = new()
             {
                 pNext = &_profile->Profile,
-                encodeFeedbackFlags = VkVideoEncodeFeedbackFlagBitsKHR.BITSTREAM_BUFFER_OFFSET_BIT_KHR | VkVideoEncodeFeedbackFlagBitsKHR.BITSTREAM_BYTES_WRITTEN_BIT_KHR,
+                encodeFeedbackFlags = VkVideoEncodeFeedbackFlagsKHR.BitstreamBufferOffset | VkVideoEncodeFeedbackFlagsKHR.BitstreamBytesWritten,
             };
-            VkQueryPoolCreateInfo queryInfo = new() { pNext = &feedback, queryType = VkQueryType.VIDEO_ENCODE_FEEDBACK_KHR, queryCount = InFlight };
-            ulong queryPool;
-            VkCheck.ThrowIfFailed(_device.Commands.vkCreateQueryPool(_device.Raw, &queryInfo, null, &queryPool), "vkCreateQueryPool");
-            _queryPool = new VulkanObjectHandle(_device.Handle, queryPool, _device.Commands.vkDestroyQueryPool);
+            VkQueryPoolCreateInfo queryInfo = new() { pNext = &feedback, queryType = VkQueryType.VideoEncodeFeedbackKHR, queryCount = InFlight };
+            VkQueryPool queryPool;
+            VkCheck.ThrowIfFailed(_device.Commands.vkCreateQueryPool(&queryInfo, null, &queryPool), "vkCreateQueryPool");
+            _queryPool = new VulkanObjectHandle(_device.Handle, queryPool, _device.Commands.vkDestroyQueryPool_ptr);
             for (int i = 0; i < InFlight; i++)
             {
-                _jobs[i] = new Job(CreatePicture(VkImageUsageFlagBits.VIDEO_ENCODE_SRC_BIT_KHR | VkImageUsageFlagBits.TRANSFER_DST_BIT), _pool.Allocate(), _device.CreateFence());
+                _jobs[i] = new Job(CreatePicture(VkImageUsageFlags.VideoEncodeSrcKHR | VkImageUsageFlags.TransferDst), _pool.Allocate(), _device.CreateFence());
             }
         }
         catch
@@ -367,7 +368,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
         {
             _lastKey = index;
             CodeRun();
-            Code(input, StdVideoH264PictureType.IDR);
+            Code(input, StdVideoH264PictureType.Idr);
         }
         else
         {
@@ -392,7 +393,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
     public bool TryReceive([NotNullWhen(true)] out EncodedPacket? packet)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        while (_submitted.Count > 0 && _device.Commands.vkGetFenceStatus(_device.Raw, _jobs[_submitted.Peek()].Fence.Value) == VkResult.SUCCESS)
+        while (_submitted.Count > 0 && _device.Commands.vkGetFenceStatus(_jobs[_submitted.Peek()].Fence.Value) == VkResult.Success)
         {
             Collect(_submitted.Dequeue(), wait: true);
         }
@@ -450,7 +451,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             Collect(_submitted.Dequeue(), wait: true);
         }
 
-        bool idr = type == StdVideoH264PictureType.IDR;
+        bool idr = type == StdVideoH264PictureType.Idr;
         bool reference = type != StdVideoH264PictureType.B;
         if (idr)
         {
@@ -498,52 +499,52 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
 
     private void Record(Job job, int jobIndex, Input input, StdVideoH264PictureType type, int poc, int setupSlot)
     {
-        VkDeviceCommands vk = _device.Commands;
-        nint cb = job.Commands;
+        VkDeviceApi vk = _device.Commands;
+        VkCommandBuffer cb = job.Commands;
         _pool.Begin(cb);
         vk.vkCmdResetQueryPool(cb, _queryPool.Value, (uint)jobIndex, 1);
 
         // Upload: staging buffer to the source picture.
         VkImageMemoryBarrier2* barriers = stackalloc VkImageMemoryBarrier2[1 + 17];
-        barriers[0] = Barrier(job.Source.Handle, VkImageLayout.UNDEFINED, VkImageLayout.TRANSFER_DST_OPTIMAL, VkPipelineStageFlagBits2.VIDEO_ENCODE_BIT_KHR, 0, VkPipelineStageFlagBits2.ALL_TRANSFER_BIT, VkAccessFlagBits2.TRANSFER_WRITE_BIT);
+        barriers[0] = Barrier(job.Source.Handle, VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal, VkPipelineStageFlags2.VideoEncodeKHR, 0, VkPipelineStageFlags2.AllTransfer, VkAccessFlags2.TransferWrite);
         PipelineBarrier(cb, barriers, 1, null);
         VkBufferImageCopy* regions = stackalloc VkBufferImageCopy[2];
         regions[0] = new VkBufferImageCopy
         {
-            imageSubresource = new VkImageSubresourceLayers { aspectMask = VkImageAspectFlagBits.PLANE_0_BIT, layerCount = 1 },
+            imageSubresource = new VkImageSubresourceLayers { aspectMask = VkImageAspectFlags.Plane0, layerCount = 1 },
             imageExtent = new VkExtent3D { width = _codedWidth, height = _codedHeight, depth = 1 },
         };
         regions[1] = new VkBufferImageCopy
         {
             bufferOffset = (ulong)_codedWidth * _codedHeight,
-            imageSubresource = new VkImageSubresourceLayers { aspectMask = VkImageAspectFlagBits.PLANE_1_BIT, layerCount = 1 },
+            imageSubresource = new VkImageSubresourceLayers { aspectMask = VkImageAspectFlags.Plane1, layerCount = 1 },
             imageExtent = new VkExtent3D { width = _codedWidth / 2, height = _codedHeight / 2, depth = 1 },
         };
-        vk.vkCmdCopyBufferToImage(cb, input.Staging.Handle, job.Source.Handle, VkImageLayout.TRANSFER_DST_OPTIMAL, 2, regions);
+        vk.vkCmdCopyBufferToImage(cb, input.Staging.Handle, job.Source.Handle, VkImageLayout.TransferDstOptimal, 2, regions);
 
         int count = 0;
-        barriers[count++] = Barrier(job.Source.Handle, VkImageLayout.TRANSFER_DST_OPTIMAL, VkImageLayout.VIDEO_ENCODE_SRC_KHR, VkPipelineStageFlagBits2.ALL_TRANSFER_BIT, VkAccessFlagBits2.TRANSFER_WRITE_BIT, VkPipelineStageFlagBits2.VIDEO_ENCODE_BIT_KHR, VkAccessFlagBits2.VIDEO_ENCODE_READ_BIT_KHR);
+        barriers[count++] = Barrier(job.Source.Handle, VkImageLayout.TransferDstOptimal, VkImageLayout.VideoEncodeSrcKHR, VkPipelineStageFlags2.AllTransfer, VkAccessFlags2.TransferWrite, VkPipelineStageFlags2.VideoEncodeKHR, VkAccessFlags2.VideoEncodeReadKHR);
         if (!_dpbReady)
         {
             _dpbReady = true;
             for (int i = 0; i < _dpb.Length; i++)
             {
-                barriers[count++] = Barrier(_dpb[i].Handle, VkImageLayout.UNDEFINED, VkImageLayout.VIDEO_ENCODE_DPB_KHR, VkPipelineStageFlagBits2.NONE, 0, VkPipelineStageFlagBits2.VIDEO_ENCODE_BIT_KHR, VkAccessFlagBits2.VIDEO_ENCODE_READ_BIT_KHR | VkAccessFlagBits2.VIDEO_ENCODE_WRITE_BIT_KHR);
+                barriers[count++] = Barrier(_dpb[i].Handle, VkImageLayout.Undefined, VkImageLayout.VideoEncodeDpbKHR, VkPipelineStageFlags2.None, 0, VkPipelineStageFlags2.VideoEncodeKHR, VkAccessFlags2.VideoEncodeReadKHR | VkAccessFlags2.VideoEncodeWriteKHR);
             }
         }
 
         // The pictures coded before this one wrote the references it reads.
         VkMemoryBarrier2 dpbHazard = new()
         {
-            srcStageMask = VkPipelineStageFlagBits2.VIDEO_ENCODE_BIT_KHR,
-            srcAccessMask = VkAccessFlagBits2.VIDEO_ENCODE_WRITE_BIT_KHR,
-            dstStageMask = VkPipelineStageFlagBits2.VIDEO_ENCODE_BIT_KHR,
-            dstAccessMask = VkAccessFlagBits2.VIDEO_ENCODE_READ_BIT_KHR | VkAccessFlagBits2.VIDEO_ENCODE_WRITE_BIT_KHR,
+            srcStageMask = VkPipelineStageFlags2.VideoEncodeKHR,
+            srcAccessMask = VkAccessFlags2.VideoEncodeWriteKHR,
+            dstStageMask = VkPipelineStageFlags2.VideoEncodeKHR,
+            dstAccessMask = VkAccessFlags2.VideoEncodeReadKHR | VkAccessFlags2.VideoEncodeWriteKHR,
         };
         PipelineBarrier(cb, barriers, count, &dpbHazard);
 
         // The references this picture uses: P pictures the most recent ones, B pictures the reference shown before and after.
-        bool idr = type == StdVideoH264PictureType.IDR;
+        bool idr = type == StdVideoH264PictureType.Idr;
         Span<int> l0 = stackalloc int[16];
         Span<int> l1 = stackalloc int[1];
         int l0Count = 0, l1Count = 0;
@@ -588,7 +589,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             beginSlots[i + 1] = new VkVideoReferenceSlotInfoKHR { slotIndex = r.Slot, pPictureResource = &resources[i + 2] };
             refInfos[i] = new StdVideoEncodeH264ReferenceInfo
             {
-                primary_pic_type = r.Idr ? StdVideoH264PictureType.IDR : StdVideoH264PictureType.P,
+                primary_pic_type = r.Idr ? StdVideoH264PictureType.Idr : StdVideoH264PictureType.P,
                 FrameNum = (uint)r.FrameNum,
                 PicOrderCnt = r.Poc,
             };
@@ -620,7 +621,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             VkVideoCodingControlInfoKHR control = new()
             {
                 pNext = &quality,
-                flags = VkVideoCodingControlFlagBitsKHR.RESET_BIT_KHR | VkVideoCodingControlFlagBitsKHR.ENCODE_RATE_CONTROL_BIT_KHR | VkVideoCodingControlFlagBitsKHR.ENCODE_QUALITY_LEVEL_BIT_KHR,
+                flags = VkVideoCodingControlFlagsKHR.Reset | VkVideoCodingControlFlagsKHR.EncodeRateControl | VkVideoCodingControlFlagsKHR.EncodeQualityLevel,
             };
             vk.vkCmdControlVideoCodingKHR(cb, &control);
             _rateSet = true;
@@ -654,8 +655,8 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             PicOrderCnt = poc,
             pRefLists = &lists,
         };
-        picture.flags.IdrPicFlag = idr;
-        picture.flags.is_reference = type != StdVideoH264PictureType.B;
+        picture.flags.IdrPicFlag = VulkanBits.Of(idr);
+        picture.flags.is_reference = VulkanBits.Of(type != StdVideoH264PictureType.B);
         StdVideoH264SliceType sliceType = type switch
         {
             StdVideoH264PictureType.B => StdVideoH264SliceType.B,
@@ -663,15 +664,15 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             _ => StdVideoH264SliceType.I,
         };
         StdVideoEncodeH264SliceHeader slice = new() { slice_type = sliceType };
-        slice.flags.direct_spatial_mv_pred_flag = sliceType == StdVideoH264SliceType.B;
-        slice.flags.num_ref_idx_active_override_flag = (sliceType == StdVideoH264SliceType.P && l0Count != 1) || (sliceType == StdVideoH264SliceType.B && (l0Count != 1 || l1Count != 1));
+        slice.flags.direct_spatial_mv_pred_flag = VulkanBits.Of(sliceType == StdVideoH264SliceType.B);
+        slice.flags.num_ref_idx_active_override_flag = VulkanBits.Of((sliceType == StdVideoH264SliceType.P && l0Count != 1) || (sliceType == StdVideoH264SliceType.B && (l0Count != 1 || l1Count != 1)));
         int qp = Math.Clamp(sliceType switch { StdVideoH264SliceType.I => _qp + _qpOffsetI, StdVideoH264SliceType.B => _qp + _qpOffsetB, _ => _qp }, _h264.MinQuantizer, _h264.MaxQuantizer);
         VkVideoEncodeH264NaluSliceInfoKHR* sliceInfos = stackalloc VkVideoEncodeH264NaluSliceInfoKHR[_slices];
         for (int i = 0; i < _slices; i++)
         {
             sliceInfos[i] = new VkVideoEncodeH264NaluSliceInfoKHR
             {
-                constantQp = _rateMode == VkVideoEncodeRateControlModeFlagBitsKHR.DISABLED_BIT_KHR ? qp : 0,
+                constantQp = _rateMode == VkVideoEncodeRateControlModeFlagsKHR.Disabled ? qp : 0,
                 pStdSliceHeader = &slice,
             };
         }
@@ -704,10 +705,10 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
 
         VkMemoryBarrier2 toHost = new()
         {
-            srcStageMask = VkPipelineStageFlagBits2.VIDEO_ENCODE_BIT_KHR,
-            srcAccessMask = VkAccessFlagBits2.VIDEO_ENCODE_WRITE_BIT_KHR,
-            dstStageMask = VkPipelineStageFlagBits2.HOST_BIT,
-            dstAccessMask = VkAccessFlagBits2.HOST_READ_BIT,
+            srcStageMask = VkPipelineStageFlags2.VideoEncodeKHR,
+            srcAccessMask = VkAccessFlags2.VideoEncodeWriteKHR,
+            dstStageMask = VkPipelineStageFlags2.Host,
+            dstAccessMask = VkAccessFlags2.HostRead,
         };
         PipelineBarrier(cb, null, 0, &toHost);
         _pool.End(cb);
@@ -720,26 +721,26 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
     private void RateControl(VkVideoEncodeRateControlInfoKHR* rate, VkVideoEncodeH264RateControlInfoKHR* h264Rate, VkVideoEncodeRateControlLayerInfoKHR* layer, VkVideoEncodeH264RateControlLayerInfoKHR* h264Layer)
     {
         *rate = new VkVideoEncodeRateControlInfoKHR { rateControlMode = _rateMode };
-        if (_rateMode == VkVideoEncodeRateControlModeFlagBitsKHR.DISABLED_BIT_KHR)
+        if (_rateMode == VkVideoEncodeRateControlModeFlagsKHR.Disabled)
         {
             return;
         }
 
         long bitrate = _options.Bitrate!.Value;
-        long peak = _rateMode == VkVideoEncodeRateControlModeFlagBitsKHR.CBR_BIT_KHR
+        long peak = _rateMode == VkVideoEncodeRateControlModeFlagsKHR.Cbr
             ? bitrate
             : _options.MaxBitrate is > 0 and var m ? Math.Max(m, bitrate) : bitrate * 2;
         long buffer = _options.BufferSize is > 0 and var size ? size : bitrate;
         *h264Layer = new VkVideoEncodeH264RateControlLayerInfoKHR();
         if (_h264.MinQuantizer > 0)
         {
-            h264Layer->useMinQp = 1;
+            h264Layer->useMinQp = true;
             h264Layer->minQp = new VkVideoEncodeH264QpKHR { qpI = _h264.MinQuantizer, qpP = _h264.MinQuantizer, qpB = _h264.MinQuantizer };
         }
 
         if (_h264.MaxQuantizer < 51)
         {
-            h264Layer->useMaxQp = 1;
+            h264Layer->useMaxQp = true;
             h264Layer->maxQp = new VkVideoEncodeH264QpKHR { qpI = _h264.MaxQuantizer, qpP = _h264.MaxQuantizer, qpB = _h264.MaxQuantizer };
         }
 
@@ -753,7 +754,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
         };
         *h264Rate = new VkVideoEncodeH264RateControlInfoKHR
         {
-            flags = VkVideoEncodeH264RateControlFlagBitsKHR.REGULAR_GOP_BIT_KHR | VkVideoEncodeH264RateControlFlagBitsKHR.REFERENCE_PATTERN_FLAT_BIT_KHR,
+            flags = VkVideoEncodeH264RateControlFlagsKHR.RegularGop | VkVideoEncodeH264RateControlFlagsKHR.ReferencePatternFlat,
             gopFrameCount = (uint)_keyInterval,
             idrPeriod = (uint)_keyInterval,
             consecutiveBFrameCount = (uint)_bFrames,
@@ -778,7 +779,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
 
         uint* result = stackalloc uint[3];
         VkCheck.ThrowIfFailed(
-            _device.Commands.vkGetQueryPoolResults(_device.Raw, _queryPool.Value, (uint)jobIndex, 1, 12, result, 12, VkQueryResultFlagBits.WAIT_BIT | VkQueryResultFlagBits.WITH_STATUS_BIT_KHR),
+            _device.Commands.vkGetQueryPoolResults(_queryPool.Value, (uint)jobIndex, 1, 12, result, 12, VkQueryResultFlags.Wait | VkQueryResultFlags.WithStatusKHR),
             "vkGetQueryPoolResults");
         Input input = job.Input!;
         job.Busy = false;
@@ -849,7 +850,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
     {
         StdVideoH264SequenceParameterSetVui vui = new()
         {
-            aspect_ratio_idc = StdVideoH264AspectRatioIdc.SQUARE,
+            aspect_ratio_idc = StdVideoH264AspectRatioIdc.Square,
             sar_width = 1,
             sar_height = 1,
             video_format = 5,
@@ -861,22 +862,22 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             max_num_reorder_frames = (byte)(_bFrames > 0 ? 1 : 0),
             max_dec_frame_buffering = (byte)_maxRefFrames,
         };
-        vui.flags.aspect_ratio_info_present_flag = true;
-        vui.flags.video_signal_type_present_flag = true;
-        vui.flags.video_full_range_flag = color.FullRange;
-        vui.flags.color_description_present_flag = true;
-        vui.flags.timing_info_present_flag = true;
-        vui.flags.fixed_frame_rate_flag = true;
-        vui.flags.bitstream_restriction_flag = true;
+        vui.flags.aspect_ratio_info_present_flag = VulkanBits.Of(true);
+        vui.flags.video_signal_type_present_flag = VulkanBits.Of(true);
+        vui.flags.video_full_range_flag = VulkanBits.Of(color.FullRange);
+        vui.flags.color_description_present_flag = VulkanBits.Of(true);
+        vui.flags.timing_info_present_flag = VulkanBits.Of(true);
+        vui.flags.fixed_frame_rate_flag = VulkanBits.Of(true);
+        vui.flags.bitstream_restriction_flag = VulkanBits.Of(true);
 
         StdVideoH264ProfileIdc profileIdc = _profile->H264.stdProfileIdc;
         StdVideoH264SequenceParameterSet sps = new()
         {
             profile_idc = profileIdc,
             level_idc = (StdVideoH264LevelIdc)_levelIndex,
-            chroma_format_idc = StdVideoH264ChromaFormatIdc._420,
+            chroma_format_idc = StdVideoH264ChromaFormatIdc.Idc420,
             log2_max_frame_num_minus4 = 12,
-            pic_order_cnt_type = StdVideoH264PocType._0,
+            pic_order_cnt_type = StdVideoH264PocType.Type0,
             log2_max_pic_order_cnt_lsb_minus4 = 12,
             max_num_ref_frames = (byte)_maxRefFrames,
             pic_width_in_mbs_minus1 = (_codedWidth / 16) - 1,
@@ -885,35 +886,35 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             frame_crop_bottom_offset = (_codedHeight - (uint)_options.Height) / 2,
             pSequenceParameterSetVui = &vui,
         };
-        sps.flags.constraint_set1_flag = profileIdc == StdVideoH264ProfileIdc.BASELINE; // Constrained Baseline
-        sps.flags.frame_mbs_only_flag = true;
-        sps.flags.direct_8x8_inference_flag = true;
-        sps.flags.frame_cropping_flag = _codedWidth != (uint)_options.Width || _codedHeight != (uint)_options.Height;
-        sps.flags.vui_parameters_present_flag = true;
+        sps.flags.constraint_set1_flag = VulkanBits.Of(profileIdc == StdVideoH264ProfileIdc.Baseline); // Constrained Baseline
+        sps.flags.frame_mbs_only_flag = VulkanBits.Of(true);
+        sps.flags.direct_8x8_inference_flag = VulkanBits.Of(true);
+        sps.flags.frame_cropping_flag = VulkanBits.Of(_codedWidth != (uint)_options.Width || _codedHeight != (uint)_options.Height);
+        sps.flags.vui_parameters_present_flag = VulkanBits.Of(true);
 
         StdVideoH264PictureParameterSet pps = new();
-        pps.flags.entropy_coding_mode_flag = _cabac;
-        pps.flags.transform_8x8_mode_flag = profileIdc == StdVideoH264ProfileIdc.HIGH;
-        pps.flags.deblocking_filter_control_present_flag = true;
+        pps.flags.entropy_coding_mode_flag = VulkanBits.Of(_cabac);
+        pps.flags.transform_8x8_mode_flag = VulkanBits.Of(profileIdc == StdVideoH264ProfileIdc.High);
+        pps.flags.deblocking_filter_control_present_flag = VulkanBits.Of(true);
 
         VkVideoEncodeH264SessionParametersAddInfoKHR add = new() { stdSPSCount = 1, pStdSPSs = &sps, stdPPSCount = 1, pStdPPSs = &pps };
         VkVideoEncodeQualityLevelInfoKHR quality = new() { qualityLevel = _qualityLevel };
         VkVideoEncodeH264SessionParametersCreateInfoKHR h264Info = new() { pNext = &quality, maxStdSPSCount = 1, maxStdPPSCount = 1, pParametersAddInfo = &add };
         VkVideoSessionParametersCreateInfoKHR info = new() { pNext = &h264Info, videoSession = _session.Handle };
-        ulong raw;
-        VkCheck.ThrowIfFailed(_device.Commands.vkCreateVideoSessionParametersKHR(_device.Raw, &info, null, &raw), "vkCreateVideoSessionParametersKHR");
-        _parameters = new VulkanObjectHandle(_device.Handle, raw, _device.Commands.vkDestroyVideoSessionParametersKHR);
+        VkVideoSessionParametersKHR raw;
+        VkCheck.ThrowIfFailed(_device.Commands.vkCreateVideoSessionParametersKHR(&info, null, &raw), "vkCreateVideoSessionParametersKHR");
+        _parameters = new VulkanObjectHandle(_device.Handle, raw, _device.Commands.vkDestroyVideoSessionParametersKHR_ptr);
 
-        VkVideoEncodeH264SessionParametersGetInfoKHR h264Get = new() { writeStdSPS = 1, writeStdPPS = 1 };
+        VkVideoEncodeH264SessionParametersGetInfoKHR h264Get = new() { writeStdSPS = true, writeStdPPS = true };
         VkVideoEncodeSessionParametersGetInfoKHR get = new() { pNext = &h264Get, videoSessionParameters = raw };
         VkVideoEncodeH264SessionParametersFeedbackInfoKHR h264Feedback = new();
         VkVideoEncodeSessionParametersFeedbackInfoKHR feedback = new() { pNext = &h264Feedback };
         nuint size = 0;
-        VkCheck.ThrowIfFailed(_device.Commands.vkGetEncodedVideoSessionParametersKHR(_device.Raw, &get, &feedback, &size, null), "vkGetEncodedVideoSessionParametersKHR");
+        VkCheck.ThrowIfFailed(_device.Commands.vkGetEncodedVideoSessionParametersKHR(&get, &feedback, &size, null), "vkGetEncodedVideoSessionParametersKHR");
         byte[] written = new byte[size];
         fixed (byte* p = written)
         {
-            VkCheck.ThrowIfFailed(_device.Commands.vkGetEncodedVideoSessionParametersKHR(_device.Raw, &get, &feedback, &size, p), "vkGetEncodedVideoSessionParametersKHR");
+            VkCheck.ThrowIfFailed(_device.Commands.vkGetEncodedVideoSessionParametersKHR(&get, &feedback, &size, p), "vkGetEncodedVideoSessionParametersKHR");
         }
 
         foreach (Range unit in NalUnits.SplitAnnexB(written.AsSpan(0, (int)size)))
@@ -935,7 +936,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             throw new HardwareVideoException("The driver wrote no SPS or PPS.");
         }
 
-        ParametersOverridden = h264Feedback.hasStdSPSOverrides != 0 || h264Feedback.hasStdPPSOverrides != 0;
+        ParametersOverridden = h264Feedback.hasStdSPSOverrides || h264Feedback.hasStdPPSOverrides;
     }
 
     /// <summary>Gets whether the driver changed Egami's SPS or PPS values, for tests.</summary>
@@ -1012,29 +1013,29 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
     private VulkanBuffer RentStaging() =>
         _freeStaging.TryPop(out VulkanBuffer? buffer)
             ? buffer
-            : _device.CreateBuffer((ulong)Nv12Writer.Size((int)_codedWidth, (int)_codedHeight), VkBufferUsageFlagBits.TRANSFER_SRC_BIT, VkMemoryPropertyFlagBits.HOST_VISIBLE_BIT);
+            : _device.CreateBuffer((ulong)Nv12Writer.Size((int)_codedWidth, (int)_codedHeight), VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible);
 
-    private VulkanImage CreatePicture(VkImageUsageFlagBits usage)
+    private VulkanImage CreatePicture(VkImageUsageFlags usage)
     {
         VkImageCreateInfo info = new()
         {
             pNext = &_profile->List,
-            imageType = VkImageType._2D,
-            format = VkFormat.G8_B8R8_2PLANE_420_UNORM,
+            imageType = VkImageType.Image2D,
+            format = VkFormat.G8B8R82Plane420Unorm,
             extent = new VkExtent3D { width = _codedWidth, height = _codedHeight, depth = 1 },
             mipLevels = 1,
             arrayLayers = 1,
-            samples = VkSampleCountFlagBits._1_BIT,
-            tiling = VkImageTiling.OPTIMAL,
+            samples = VkSampleCountFlags.Count1,
+            tiling = VkImageTiling.Optimal,
             usage = usage,
-            sharingMode = VkSharingMode.EXCLUSIVE,
-            initialLayout = VkImageLayout.UNDEFINED,
+            sharingMode = VkSharingMode.Exclusive,
+            initialLayout = VkImageLayout.Undefined,
         };
         return _device.CreateImage(info);
     }
 
     private static VkImageMemoryBarrier2 Barrier(
-        ulong image, VkImageLayout from, VkImageLayout to, VkPipelineStageFlagBits2 srcStage, VkAccessFlagBits2 srcAccess, VkPipelineStageFlagBits2 dstStage, VkAccessFlagBits2 dstAccess) => new()
+        ulong image, VkImageLayout from, VkImageLayout to, VkPipelineStageFlags2 srcStage, VkAccessFlags2 srcAccess, VkPipelineStageFlags2 dstStage, VkAccessFlags2 dstAccess) => new()
         {
             srcStageMask = srcStage,
             srcAccessMask = srcAccess,
@@ -1045,7 +1046,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             srcQueueFamilyIndex = uint.MaxValue,
             dstQueueFamilyIndex = uint.MaxValue,
             image = image,
-            subresourceRange = new VkImageSubresourceRange { aspectMask = VkImageAspectFlagBits.COLOR_BIT, levelCount = 1, layerCount = 1 },
+            subresourceRange = new VkImageSubresourceRange { aspectMask = VkImageAspectFlags.Color, levelCount = 1, layerCount = 1 },
         };
 
     private void PipelineBarrier(nint cb, VkImageMemoryBarrier2* images, int imageCount, VkMemoryBarrier2* memory)
@@ -1154,18 +1155,18 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
         {
             self->Usage = new VkVideoEncodeUsageInfoKHR
             {
-                videoUsageHints = realtime ? VkVideoEncodeUsageFlagBitsKHR.STREAMING_BIT_KHR : VkVideoEncodeUsageFlagBitsKHR.TRANSCODING_BIT_KHR,
-                videoContentHints = VkVideoEncodeContentFlagBitsKHR.DEFAULT_KHR,
-                tuningMode = realtime ? VkVideoEncodeTuningModeKHR.LOW_LATENCY_KHR : VkVideoEncodeTuningModeKHR.HIGH_QUALITY_KHR,
+                videoUsageHints = realtime ? VkVideoEncodeUsageFlagsKHR.Streaming : VkVideoEncodeUsageFlagsKHR.Transcoding,
+                videoContentHints = VkVideoEncodeContentFlagsKHR.Default,
+                tuningMode = realtime ? VkVideoEncodeTuningModeKHR.LowLatency : VkVideoEncodeTuningModeKHR.HighQuality,
             };
             self->H264 = new VkVideoEncodeH264ProfileInfoKHR { pNext = &self->Usage, stdProfileIdc = profileIdc };
             self->Profile = new VkVideoProfileInfoKHR
             {
                 pNext = &self->H264,
-                videoCodecOperation = VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR,
-                chromaSubsampling = VkVideoChromaSubsamplingFlagBitsKHR._420_BIT_KHR,
-                lumaBitDepth = VkVideoComponentBitDepthFlagBitsKHR._8_BIT_KHR,
-                chromaBitDepth = VkVideoComponentBitDepthFlagBitsKHR._8_BIT_KHR,
+                videoCodecOperation = VkVideoCodecOperationFlagsKHR.EncodeH264,
+                chromaSubsampling = VkVideoChromaSubsamplingFlagsKHR.Subsampling420,
+                lumaBitDepth = VkVideoComponentBitDepthFlagsKHR.Depth8,
+                chromaBitDepth = VkVideoComponentBitDepthFlagsKHR.Depth8,
             };
             self->List = new VkVideoProfileListInfoKHR { profileCount = 1, pProfiles = &self->Profile };
         }
@@ -1187,7 +1188,7 @@ internal sealed unsafe class H264HardwareEncoder : IVideoEncoder
             if (result < 0)
             {
                 // Some drivers refuse a tuning mode; ask again with the default one.
-                profile->Usage.tuningMode = VkVideoEncodeTuningModeKHR.DEFAULT_KHR;
+                profile->Usage.tuningMode = VkVideoEncodeTuningModeKHR.Default;
                 result = physical.Instance.Commands.vkGetPhysicalDeviceVideoCapabilitiesKHR(physical.Handle, &profile->Profile, &video);
             }
 

@@ -1,10 +1,11 @@
 using Egami.Video.Hardware.Vulkan;
-using Egami.Video.Hardware.Vulkan.Native;
+
+using Vortice.Vulkan;
 
 namespace Egami.Video.Hardware.Tests;
 
 /// <summary>The probe's contract, on any machine: with or without a GPU it answers and never throws.</summary>
-public sealed class ProbeTests
+public sealed unsafe class ProbeTests
 {
     [Fact]
     public void AnswersWithoutThrowing()
@@ -63,11 +64,15 @@ public sealed class ProbeTests
     }
 
     [Fact]
-    public void LevelNamesComeFromTheStdEnums()
+    public void LevelNamesFollowTheStdEnums()
     {
-        // The probe turns the enum member names into level strings; a regenerated enum must keep that shape.
-        Assert.Equal("_5_2", StdVideoH264LevelIdc._5_2.ToString());
-        Assert.Equal("_6_2", StdVideoH265LevelIdc._6_2.ToString());
+        // The probe turns the drivers' maximum level indices into level strings through tables in the Std enums' order.
+        Assert.Equal("5.2", VulkanProbe.H264Levels[(int)StdVideoH264LevelIdc.Idc52]);
+        Assert.Equal("6.2", VulkanProbe.H264Levels[(int)StdVideoH264LevelIdc.Idc62]);
+        Assert.Equal((int)StdVideoH264LevelIdc.Idc62 + 1, VulkanProbe.H264Levels.Length);
+        Assert.Equal("2.0", VulkanProbe.H265Levels[(int)StdVideoH265LevelIdc.Idc20]);
+        Assert.Equal("6.2", VulkanProbe.H265Levels[(int)StdVideoH265LevelIdc.Idc62]);
+        Assert.Equal((int)StdVideoH265LevelIdc.Idc62 + 1, VulkanProbe.H265Levels.Length);
     }
 
     [Fact]
@@ -80,31 +85,33 @@ public sealed class ProbeTests
     [Fact]
     public void FailedResultsThrowWithTheCode()
     {
-        HardwareVideoException e = Assert.Throws<HardwareVideoException>(() => VkCheck.ThrowIfFailed(VkResult.ERROR_DEVICE_LOST, "vkQueueSubmit"));
+        HardwareVideoException e = Assert.Throws<HardwareVideoException>(() => VkCheck.ThrowIfFailed(VkResult.ErrorDeviceLost, "vkQueueSubmit"));
         Assert.Equal(-4, e.ResultCode);
         Assert.Contains("vkQueueSubmit", e.Message, StringComparison.Ordinal);
         Assert.Contains("ERROR_DEVICE_LOST", e.Message, StringComparison.Ordinal);
-        VkCheck.ThrowIfFailed(VkResult.SUCCESS, "vkQueueSubmit");
-        VkCheck.ThrowIfFailed(VkResult.INCOMPLETE, "vkQueueSubmit");
+        VkCheck.ThrowIfFailed(VkResult.Success, "vkQueueSubmit");
+        VkCheck.ThrowIfFailed(VkResult.Incomplete, "vkQueueSubmit");
     }
 
     [Fact]
-    public void GeneratedStructsSetTheirStructureType()
+    public void StructsSetTheirStructureType()
     {
-        Assert.Equal(VkStructureType.VIDEO_PROFILE_INFO_KHR, new VkVideoProfileInfoKHR().sType);
+        Assert.Equal(VkStructureType.VideoProfileInfoKHR, new VkVideoProfileInfoKHR().sType);
         Assert.Equal(1000023000, (int)new VkVideoProfileInfoKHR().sType);
-        Assert.Equal(VkStructureType.VIDEO_ENCODE_USAGE_INFO_KHR, new VkVideoEncodeUsageInfoKHR().sType);
+        Assert.Equal(VkStructureType.VideoEncodeUsageInfoKHR, new VkVideoEncodeUsageInfoKHR().sType);
     }
 
     [Fact]
     public void BitfieldFlagsPackFromTheLowestBit()
     {
         StdVideoH264SpsFlags flags = default;
-        flags.constraint_set0_flag = true;
-        flags.frame_mbs_only_flag = true;
-        Assert.Equal((1u << 0) | (1u << 8), flags.bits0);
-        flags.constraint_set0_flag = false;
-        Assert.Equal(1u << 8, flags.bits0);
-        Assert.True(flags.frame_mbs_only_flag);
+        flags.constraint_set0_flag = 1;
+        flags.frame_mbs_only_flag = 1;
+        Assert.Equal((1u << 0) | (1u << 8), Bits(flags));
+        flags.constraint_set0_flag = 0;
+        Assert.Equal(1u << 8, Bits(flags));
+        Assert.Equal(1u, flags.frame_mbs_only_flag);
     }
+
+    private static uint Bits(StdVideoH264SpsFlags flags) => *(uint*)&flags;
 }
