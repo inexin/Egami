@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -2242,14 +2243,37 @@ internal sealed class JxlModularEncoder
 
         List<long> groupPixels = [];
         List<long> channelPixels = [];
-        List<int> pixelSamples = [];
-        List<int> diffSamples = [];
         int[] streams = only ?? [.. Enumerable.Range(0, _streams.Length)];
         foreach (int s in streams)
         {
-            CollectPixelSamples(_streams[s], s, repeats, groupPixels, channelPixels, pixelSamples, diffSamples);
+            CountPixels(_streams[s], s, groupPixels, channelPixels);
         }
 
+        // The sampled pixel values and differences, counted by value; each thread counts the streams it samples, and the counts
+        // add up to the same on any number of threads.
+        long[] pixelCounts = new long[(2 * JxlTreeLearner.SampleRange) + 1];
+        long[] diffCounts = new long[(2 * JxlTreeLearner.SampleRange) + 1];
+        Parallel.For(
+            0,
+            streams.Length,
+            parallel,
+            () => (Pixels: new long[pixelCounts.Length], Diffs: new long[diffCounts.Length]),
+            (i, _, mine) =>
+            {
+                CollectPixelSamples(_streams[streams[i]], streams[i], repeats, mine.Pixels, mine.Diffs);
+                return mine;
+            },
+            mine =>
+            {
+                lock (pixelCounts)
+                {
+                    for (int v = 0; v < pixelCounts.Length; v++)
+                    {
+                        pixelCounts[v] += mine.Pixels[v];
+                        diffCounts[v] += mine.Diffs[v];
+                    }
+                }
+            });
 
         int start = streams.FirstOrDefault(s => _streams[s].Channels.Count > 0, -1);
         long totalPixels = 0;
@@ -2265,7 +2289,11 @@ internal sealed class JxlModularEncoder
         totalPixels = Math.Max(totalPixels, 1);
         List<(int Stream, int Channel)> units = [.. Units().Where(u => only is null || only.Contains(u.Stream))];
         SampleBuffer[] buffers = new SampleBuffer[units.Count];
-        Parallel.For(0, units.Count, parallel, u =>
+
+        // The largest channels start first, so the threads finish together; each channel's samples keep their place.
+        long Size(int u) => (long)_streams[units[u].Stream].Channels[units[u].Channel].Width * _streams[units[u].Stream].Channels[units[u].Channel].Height;
+        int[] largestFirst = [.. Enumerable.Range(0, units.Count).OrderByDescending(Size)];
+        Parallel.ForEach(Partitioner.Create(largestFirst, EnumerablePartitionerOptions.NoBuffering), parallel, u =>
         {
             (int st, int ch) = units[u];
             buffers[u] = GatherTreeData(_streams[st].Channels[ch], ch, st, repeats, predictors, properties, _streams[st].Wp, _wpRows is not null, _longs, _ints);
@@ -2277,7 +2305,7 @@ internal sealed class JxlModularEncoder
         });
         // The learner sized for every sample, so it never grows.
         JxlTreeLearner learner = new(predictors, properties, Math.Max(1 << 10, buffers.Sum(b => b.Count)));
-        learner.Quantize(groupPixels, channelPixels, pixelSamples, diffSamples, maxValues);
+        learner.Quantize(groupPixels, channelPixels, pixelCounts, diffCounts, maxValues);
         int[] at = new int[buffers.Length + 1];
         for (int u = 0; u < buffers.Length; u++)
         {
@@ -2309,7 +2337,8 @@ internal sealed class JxlModularEncoder
         return learner.Learn(threshold * required, 1.001f, parallel.MaxDegreeOfParallelism);
     }
 
-    private void CollectPixelSamples(JxlEncodeImage img, int stream, float repeats, List<long> groupPixels, List<long> channelPixels, List<int> pixelSamples, List<int> diffSamples)
+    /// <summary>Adds a stream's pixels, of the channels the tree samples, to its group's and each channel's count.</summary>
+    private void CountPixels(JxlEncodeImage img, int stream, List<long> groupPixels, List<long> channelPixels)
     {
         while (groupPixels.Count <= stream)
         {
@@ -2321,6 +2350,21 @@ internal sealed class JxlModularEncoder
             channelPixels.Add(0);
         }
 
+        for (int i = 0; i < img.CodedPrefix(_groupDim); i++)
+        {
+            JxlChannel ch = img.Channels[i];
+            if (ch.Width > 1 && ch.Height > 0)
+            {
+                long px = (long)ch.Width * ch.Height;
+                groupPixels[stream] += px;
+                channelPixels[i] += px;
+            }
+        }
+    }
+
+    /// <summary>Samples a stream's pixel values and their differences from the pixel to the left, counting them by value.</summary>
+    private void CollectPixelSamples(JxlEncodeImage img, int stream, float repeats, long[] pixelCounts, long[] diffCounts)
+    {
         JxlRng rng = new((ulong)stream);
         float fraction = Math.Min(repeats * 0.1f, 0.99f);
         float dist = (float)(1.0 / Math.Log(1 - fraction));
@@ -2335,9 +2379,6 @@ internal sealed class JxlModularEncoder
             }
 
             ids.Add(i);
-            long px = (long)ch.Width * ch.Height;
-            groupPixels[stream] += px;
-            channelPixels[i] += px;
         }
 
         if (ids.Count == 0)
@@ -2378,9 +2419,9 @@ internal sealed class JxlModularEncoder
         {
             JxlChannel ch = img.Channels[ids[k]];
             int row = y * ch.Width;
-            pixelSamples.Add(ch.Data[row + x]);
             int xp = x == 0 ? 1 : x - 1;
-            diffSamples.Add(unchecked(ch.Data[row + x] - ch.Data[row + xp]));
+            pixelCounts[Math.Clamp(ch.Data[row + x], -JxlTreeLearner.SampleRange, JxlTreeLearner.SampleRange) + JxlTreeLearner.SampleRange]++;
+            diffCounts[Math.Clamp(unchecked(ch.Data[row + x] - ch.Data[row + xp]), -JxlTreeLearner.SampleRange, JxlTreeLearner.SampleRange) + JxlTreeLearner.SampleRange]++;
             if (!Advance(rng.Geometric(dist) + 1))
             {
                 break;
