@@ -47,7 +47,7 @@ public sealed partial class Barcode
 
     /// <summary>Makes a barcode from modules you already have, with the quiet zone of its format's standard.</summary>
     /// <param name="format">The symbology the modules are.</param>
-    /// <param name="modules">The modules: a linear symbol for the linear formats, a 2D grid for the others; GS1 DataBar takes either, for its stacked forms.</param>
+    /// <param name="modules">The modules: a linear symbol for the linear formats, a 2D grid for the others; GS1 DataBar and DataBar Expanded take either, for their stacked forms.</param>
     /// <param name="humanReadableText">The text to print under the symbol, or <see langword="null"/>.</param>
     /// <returns>The barcode.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="format"/> is not a <see cref="BarcodeFormat"/>.</exception>
@@ -65,11 +65,11 @@ public sealed partial class Barcode
             BarcodeFormat.Ean13 => 11,
             BarcodeFormat.Ean8 => 7,
             BarcodeFormat.UpcA or BarcodeFormat.UpcE => 9,
-            BarcodeFormat.DataBar => 1,
+            BarcodeFormat.DataBar or BarcodeFormat.DataBarExpanded => 1,
             BarcodeFormat.DataBarLimited => 5,
             _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
         };
-        if (format is not BarcodeFormat.DataBar && modules.IsLinear != format is not (BarcodeFormat.Qr or BarcodeFormat.DataMatrix or BarcodeFormat.Pdf417 or BarcodeFormat.Aztec))
+        if (format is not (BarcodeFormat.DataBar or BarcodeFormat.DataBarExpanded) && modules.IsLinear != format is not (BarcodeFormat.Qr or BarcodeFormat.DataMatrix or BarcodeFormat.Pdf417 or BarcodeFormat.Aztec))
         {
             throw new ArgumentException(modules.IsLinear ? $"{format} is a 2D format; the modules are linear." : $"{format} is a linear format; the modules are a 2D grid.", nameof(modules));
         }

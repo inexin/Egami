@@ -327,6 +327,10 @@ Egami's Data Matrix encodation (`src/Egami.Barcodes/Matrix/DataMatrixEncoder.cs`
 encodation in `backend/dmatrix.c` (itself based on Alex Geller's algorithm), with its end-of-data rules, padding, block
 interleaving and 144 x 144 placement, so that Egami's symbols equal zint's.
 
+Egami's GS1 DataBar encoders (`src/Egami.Barcodes/Linear/DataBarEncoder.cs` and `DataBarExpandedEncoder.cs`) are translated
+from zint's `backend/rss.c` and `backend/general_field.c`: the choice of DataBar Expanded encodation method, the general-purpose
+field rules of ISO/IEC 24724 7.2.5.5, and the separator rows of the stacked forms, so that Egami's symbols equal zint's.
+
 zint's backend is distributed under the BSD 3-clause license:
 
     libzint - the open source barcode library

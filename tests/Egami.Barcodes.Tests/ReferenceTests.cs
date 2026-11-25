@@ -16,7 +16,7 @@ public class ReferenceTests
         [.. Load("cases.json").GetProperty("cases").EnumerateArray()]);
 
     /// <summary>The factories the cases may name; cases for others are not run yet.</summary>
-    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Code93", "Codabar", "DataBar", "DataBarLimited", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune"];
+    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Code93", "Codabar", "DataBar", "DataBarLimited", "DataBarExpanded", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune"];
 
     public static TheoryData<string> Cases =>
         [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!)).Select(c => c.GetProperty("name").GetString()!)];
@@ -46,7 +46,7 @@ public class ReferenceTests
             return;
         }
 
-        if (barcode.Format is BarcodeFormat.DataBar or BarcodeFormat.DataBarLimited)
+        if (barcode.Format is BarcodeFormat.DataBar or BarcodeFormat.DataBarLimited or BarcodeFormat.DataBarExpanded)
         {
             // zint starts a DataBar row with its guard's space (and ends Limited with one), which Egami's linear symbols leave
             // to the quiet zone; zint's stacked grids give each row once, Egami's repeat each for its height.
@@ -129,6 +129,7 @@ public class ReferenceTests
             }),
             "DataBar" => Barcode.DataBar(data, new DataBarOptions { Kind = Text(options, "kind") is string kind ? Enum.Parse<DataBarKind>(kind) : default }),
             "DataBarLimited" => Barcode.DataBarLimited(data),
+            "DataBarExpanded" => Barcode.DataBarExpanded(data, new DataBarExpandedOptions { SegmentsPerRow = Number(options, "segmentsPerRow") }),
             "Itf" => Barcode.Itf(data),
             "Itf14" => Barcode.Itf14(data),
             "Ean13" => Barcode.Ean13(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),

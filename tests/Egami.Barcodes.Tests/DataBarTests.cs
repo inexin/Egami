@@ -135,4 +135,45 @@ public class DataBarTests
         Assert.Throws<ArgumentException>(() => Barcode.DataBarLimited("15012345678906"));
         Assert.Throws<ArgumentException>(() => Barcode.DataBarLimited("150123456789"));
     }
+
+    [Fact]
+    public void DataBarExpandedTakesElementStrings()
+    {
+        Barcode barcode = Barcode.DataBarExpanded("(01)09501101530003(3103)000123");
+        Assert.Equal(BarcodeFormat.DataBarExpanded, barcode.Format);
+        Assert.Equal("(01)09501101530003(3103)000123", barcode.HumanReadableText);
+        Assert.True(barcode.Modules.IsLinear);
+        Assert.Equal(34, barcode.Modules.Height);
+        Assert.Equal(1, barcode.QuietZone);
+        Assert.Equal(barcode.Modules.Runs.ToArray(), Barcode.DataBarExpanded(Gs1.Parse("(01)09501101530003(3103)000123")).Modules.Runs.ToArray());
+        Assert.Equal(barcode.Modules.Runs.ToArray(), Barcode.Create(BarcodeFormat.DataBarExpanded, "(01)09501101530003(3103)000123").Modules.Runs.ToArray());
+        Assert.Throws<FormatException>(() => Barcode.DataBarExpanded("(01)09501101530004"));
+        Assert.Throws<ArgumentException>(() => Barcode.DataBarExpanded(Array.Empty<Gs1ElementString>()));
+
+        // AI 8010 takes '#', which the general field cannot hold.
+        Assert.Throws<ArgumentException>(() => Barcode.DataBarExpanded("(8010)A#B"));
+
+        // 21 data characters at most: 74 digits fit, with the GTIN compressed, 76 do not.
+        Barcode.DataBarExpanded("(01)09501101530003(91)" + new string('1', 56));
+        Assert.Throws<ArgumentException>(() => Barcode.DataBarExpanded("(01)09501101530003(91)" + new string('1', 58)));
+    }
+
+    [Fact]
+    public void DataBarExpandedStackedPutsSegmentsInRows()
+    {
+        const string data = "(01)09501101530003(21)ABCDEFGHIJKLMNOPQRST";
+        Barcode stacked = Barcode.DataBarExpanded(data, new DataBarExpandedOptions { SegmentsPerRow = 4 });
+        Assert.False(stacked.Modules.IsLinear);
+        Assert.Equal((4 * 49 / 2) + 4, stacked.Modules.Width);
+
+        // Each row is 34 modules tall, with three separator rows between rows.
+        Assert.Equal(0, (stacked.Modules.Height + 3) % 37);
+        Assert.Equal(data, stacked.HumanReadableText);
+
+        // Segments enough for the whole symbol give one row.
+        Assert.True(Barcode.DataBarExpanded("(01)09501101530003", new DataBarExpandedOptions { SegmentsPerRow = 20 }).Modules.IsLinear);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new DataBarExpandedOptions { SegmentsPerRow = 3 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new DataBarExpandedOptions { SegmentsPerRow = 22 });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new DataBarExpandedOptions { SegmentsPerRow = 0 });
+    }
 }

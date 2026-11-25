@@ -8,10 +8,11 @@ public sealed partial class Barcode
     /// <see cref="Ean13(string, EanUpcOptions?)"/>.
     /// </summary>
     /// <param name="format">The symbology.</param>
-    /// <param name="text">The text or digits.</param>
+    /// <param name="text">The text or digits; for <see cref="BarcodeFormat.DataBarExpanded"/>, element strings with each AI in parentheses.</param>
     /// <returns>The barcode.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="format"/> is not a <see cref="BarcodeFormat"/>.</exception>
     /// <exception cref="ArgumentException">The text does not suit the format or does not fit in a symbol.</exception>
+    /// <exception cref="FormatException">The format is <see cref="BarcodeFormat.DataBarExpanded"/> and the text is not valid element strings.</exception>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Barcodes.cs" region="barcode-create"/>
     /// </example>
@@ -32,6 +33,7 @@ public sealed partial class Barcode
         BarcodeFormat.Codabar => Codabar(text),
         BarcodeFormat.DataBar => DataBar(text),
         BarcodeFormat.DataBarLimited => DataBarLimited(text),
+        BarcodeFormat.DataBarExpanded => DataBarExpanded(text),
         _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
     };
 }

@@ -61,8 +61,14 @@ public enum BarcodeFormat
     /// <summary>GS1 DataBar Limited (ISO/IEC 24724), linear; quiet zone 5 modules, the space of its right guard.</summary>
     DataBarLimited = 1 << 14,
 
+    /// <summary>
+    /// GS1 DataBar Expanded and Expanded Stacked (ISO/IEC 24724), linear (Expanded Stacked as a grid of its rows); quiet zone 1
+    /// module.
+    /// </summary>
+    DataBarExpanded = 1 << 15,
+
     /// <summary>The linear symbologies.</summary>
-    Linear = Code128 | Code39 | Code93 | Codabar | DataBar | DataBarLimited | Itf | Ean13 | Ean8 | UpcA | UpcE,
+    Linear = Code128 | Code39 | Code93 | Codabar | DataBar | DataBarLimited | DataBarExpanded | Itf | Ean13 | Ean8 | UpcA | UpcE,
 
     /// <summary>The 2D symbologies.</summary>
     Matrix = Qr | DataMatrix | Pdf417 | Aztec,
