@@ -554,6 +554,131 @@
   "grid": "b60c137c0c7b0212",
   "text": "15400141288763"
  },
+ "microqr-kanji-and-latin": {
+  "format": "MicroQRCode",
+  "grid": "009ec1ae2ccc5eea",
+  "text": "ab\u6f22\u5b5712"
+ },
+ "microqr-latin1": {
+  "format": "MicroQRCode",
+  "grid": "394fb8b82d9c19df",
+  "text": "Gr\u00fc\u00dfe"
+ },
+ "microqr-level-l-no-raise": {
+  "format": "MicroQRCode",
+  "grid": "7ade86053ee513f2",
+  "text": "123456"
+ },
+ "microqr-level-m": {
+  "format": "MicroQRCode",
+  "grid": "0bff160fbd90023b",
+  "text": "12345"
+ },
+ "microqr-level-q": {
+  "format": "MicroQRCode",
+  "grid": "2b54a47bbf9aa7ac",
+  "text": "HELLO"
+ },
+ "microqr-m1-digit": {
+  "format": "MicroQRCode",
+  "grid": "a6330596dabcff60",
+  "text": "1"
+ },
+ "microqr-m1-five-digits": {
+  "format": "MicroQRCode",
+  "grid": "c2be85d8e1aba743",
+  "text": "12345"
+ },
+ "microqr-m2-alphanumeric": {
+  "format": "MicroQRCode",
+  "grid": "f85a84ebc4835f93",
+  "text": "ABC"
+ },
+ "microqr-m2-alphanumeric-six": {
+  "format": "MicroQRCode",
+  "grid": "962fc1d9ee95c568",
+  "text": "AB-12 "
+ },
+ "microqr-m2-numeric": {
+  "format": "MicroQRCode",
+  "grid": "051234ef6f022879",
+  "text": "123456"
+ },
+ "microqr-m2-numeric-ten": {
+  "format": "MicroQRCode",
+  "grid": "358a20e9c486f9a1",
+  "text": "1234567890"
+ },
+ "microqr-m3-alphanumeric": {
+  "format": "MicroQRCode",
+  "grid": "038711bd8ac98713",
+  "text": "MICRO QR CODE1"
+ },
+ "microqr-m3-byte": {
+  "format": "MicroQRCode",
+  "grid": "806a4010d8e35e70",
+  "text": "hello"
+ },
+ "microqr-m3-byte-nine": {
+  "format": "MicroQRCode",
+  "grid": "a73d78c9393f18b5",
+  "text": "Hello, wo"
+ },
+ "microqr-m3-kanji": {
+  "format": "MicroQRCode",
+  "grid": "96fc3d5b9b4fa916",
+  "text": "\u6f22\u5b57"
+ },
+ "microqr-m3-numeric": {
+  "format": "MicroQRCode",
+  "grid": "001034e76f9a13e4",
+  "text": "12345678901234567890"
+ },
+ "microqr-m4-alphanumeric": {
+  "format": "MicroQRCode",
+  "grid": "4c097ed09c279806",
+  "text": "HTTPS://EGAMI.DEV/ABC"
+ },
+ "microqr-m4-byte": {
+  "format": "MicroQRCode",
+  "grid": "478736ebb9648e7f",
+  "text": "Hello, world!!!"
+ },
+ "microqr-m4-kanji": {
+  "format": "MicroQRCode",
+  "grid": "40aded270442105e",
+  "text": "\u65e5\u672c\u8a9e\u306e\u30c6\u30ad\u30b9\u30c8"
+ },
+ "microqr-m4-numeric": {
+  "format": "MicroQRCode",
+  "grid": "e9e2abc5966c6d40",
+  "text": "12345678901234567890123456789012345"
+ },
+ "microqr-min-version-2-level-m": {
+  "format": "MicroQRCode",
+  "grid": "7b4f25db00991b7e",
+  "text": "42"
+ },
+ "microqr-min-version-3": {
+  "format": "MicroQRCode",
+  "grid": "df898ff1440dc4f9",
+  "text": "1"
+ },
+ "microqr-min-version-4": {
+  "format": "MicroQRCode",
+  "grid": "1949ac28b00a6a69",
+  "text": "ABC"
+ },
+ "microqr-mixed-segments": {
+  "format": "MicroQRCode",
+  "grid": "4d89847d80e25510",
+  "text": "ABC123456789def"
+ },
+ "microqr-numeric-then-letters": {
+  "format": "MicroQRCode",
+  "grid": "05238122d61afad9",
+  "text": "12345678ABC"
+ },
  "pdf417-byte-shift": {
   "format": "PDF417",
   "grid": "e81ec85bc380c1ca",

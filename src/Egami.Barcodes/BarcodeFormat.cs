@@ -52,11 +52,14 @@ public enum BarcodeFormat
     /// <summary>Codabar (EN 798), linear; quiet zone 10 modules.</summary>
     Codabar = 1 << 12,
 
+    /// <summary>Micro QR Code, versions M1 to M4 (ISO/IEC 18004); quiet zone 2 modules.</summary>
+    MicroQr = 1 << 16,
+
     /// <summary>The linear symbologies.</summary>
     Linear = Code128 | Code39 | Code93 | Codabar | Itf | Ean13 | Ean8 | UpcA | UpcE,
 
     /// <summary>The 2D symbologies.</summary>
-    Matrix = Qr | DataMatrix | Pdf417 | Aztec,
+    Matrix = Qr | MicroQr | DataMatrix | Pdf417 | Aztec,
 
     /// <summary>Every symbology.</summary>
     All = Linear | Matrix,
