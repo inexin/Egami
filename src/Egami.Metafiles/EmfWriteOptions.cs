@@ -61,8 +61,8 @@ public sealed record class EmfWriteOptions
     }
 
     /// <summary>
-    /// Gets the resolution of fallback images (calls EMF cannot express, drawn by Egami and embedded as bitmaps), in image pixels
-    /// per device unit. Defaults to 2.
+    /// Gets the resolution of fallback images (calls EMF cannot express, drawn by Egami and embedded as bitmaps) and of picture
+    /// paints' tiles, in image pixels per device unit. Defaults to 2.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is not positive and finite.</exception>
     public float FallbackScale

@@ -65,16 +65,34 @@ public sealed partial class EmfCanvas
 
     private void DrawShape(ShapeKind kind, Path? path, RectF rect, Stroke? stroke, Paint paint)
     {
+        Matrix3x2 m = Matrix;
+        RectF local = path?.Bounds ?? rect;
+        float scale = MathF.Sqrt(MathF.Abs(m.GetDeterminant()));
+        float outset = stroke is null ? 1 : (MathF.Max(stroke.Width * scale, 1) * MathF.Max(stroke.MiterLimit, 1) / 2) + 1;
+        Path Geometry() => path ?? (kind == ShapeKind.Oval ? Path.Oval(rect) : Path.Rect(rect));
         if (Recording())
         {
-            Path p = path ?? (kind == ShapeKind.Oval ? Path.Oval(rect) : Path.Rect(rect));
-            if (stroke is null)
+            NoteLayerShape(local, outset, paint);
+            switch (kind, stroke)
             {
-                _recorder!.FillPath(p, paint);
-            }
-            else
-            {
-                _recorder!.StrokePath(p, stroke, paint);
+                case (ShapeKind.Rect, null):
+                    _recorder!.FillRect(rect, paint);
+                    break;
+                case (ShapeKind.Rect, Stroke s):
+                    _recorder!.StrokeRect(rect, s, paint);
+                    break;
+                case (ShapeKind.Oval, null):
+                    _recorder!.FillOval(rect, paint);
+                    break;
+                case (ShapeKind.Oval, Stroke s):
+                    _recorder!.StrokeOval(rect, s, paint);
+                    break;
+                case (_, null):
+                    _recorder!.FillPath(Geometry(), paint);
+                    break;
+                default:
+                    _recorder!.StrokePath(Geometry(), stroke, paint);
+                    break;
             }
 
             return;
@@ -85,24 +103,27 @@ public sealed partial class EmfCanvas
             return;
         }
 
-        Matrix3x2 m = Matrix;
-        RectF local = path?.Bounds ?? rect;
-        float scale = MathF.Sqrt(MathF.Abs(m.GetDeterminant()));
-        float outset = stroke is null ? 1 : (MathF.Max(stroke.Width * scale, 1) * MathF.Max(stroke.MiterLimit, 1) / 2) + 1;
-        if (Unsupported(paint) is string what)
+        if (_fold < 1)
         {
-            Path p = path ?? (kind == ShapeKind.Oval ? Path.Oval(rect) : Path.Rect(rect));
-            Fallback(local, outset, c =>
+            paint = paint with { Opacity = paint.Opacity * _fold };
+        }
+
+        void Draw(Canvas c)
+        {
+            if (stroke is null)
             {
-                if (stroke is null)
-                {
-                    c.FillPath(p, paint);
-                }
-                else
-                {
-                    c.StrokePath(p, stroke, paint);
-                }
-            }, what);
+                c.FillPath(Geometry(), paint);
+            }
+            else
+            {
+                c.StrokePath(Geometry(), stroke, paint);
+            }
+        }
+
+        RgbaF32? constant = Constant(paint);
+        if (Unsupported(paint, constant) is string what)
+        {
+            Fallback(local, outset, Draw, what);
             return;
         }
 
@@ -111,8 +132,57 @@ public sealed partial class EmfCanvas
             return;
         }
 
-        Rgba8 color = Color8(((SolidPaint)paint).Color, paint.Opacity);
-        if (color.A == 0)
+        if (constant is RgbaF32 solid)
+        {
+            Rgba8 color = Color8(solid, paint.Opacity);
+            if (color.A == 0)
+            {
+                return;
+            }
+
+            Touch(local, outset);
+            if (_plus)
+            {
+                WritePlusShape(kind, path, rect, stroke, color, paint.Antialias, scale);
+            }
+
+            if (_gdi)
+            {
+                WriteGdiShape(Geometry(), stroke, color, scale);
+            }
+
+            return;
+        }
+
+        // A paint EMF+ has a brush for fills the shape, or the outline of its stroke, with that brush.
+        Path? fill;
+        try
+        {
+            fill = stroke is null ? Geometry() : stroke.IsHairline ? null : stroke.ToPath(Geometry(), MathF.Max(scale, 1e-3f), simplify: true);
+        }
+        catch (ArgumentException)
+        {
+            fill = null;
+        }
+
+        if (fill is null)
+        {
+            Fallback(local, outset, Draw, $"a hairline with a {paint.GetType().Name}");
+            return;
+        }
+
+        if (fill.IsEmpty)
+        {
+            return;
+        }
+
+        if (!TryBrush(paint, fill.Bounds, paint.Opacity, out BrushPlan? plan, out string? reason))
+        {
+            Fallback(local, outset, Draw, reason!);
+            return;
+        }
+
+        if (plan is null)
         {
             return;
         }
@@ -120,23 +190,31 @@ public sealed partial class EmfCanvas
         Touch(local, outset);
         if (_plus)
         {
-            WritePlusShape(kind, path, rect, stroke, color, paint.Antialias, scale);
+            SetPlusWorld(m);
+            SetSmooth(paint.Antialias);
+            SetInterpolation(plan.Interpolation);
+            int brush = _w.PlusObject(1, plan.Brush);
+            int shape = _w.PlusObject(3, GdiPlusData.WritePath(EvenOdd(fill)));
+            _w.Plus(0x4014, (ushort)shape, _w.Data().U32((uint)brush).Span); // FillPath with a brush object
         }
 
         if (_gdi)
         {
-            WriteGdiShape(path ?? (kind == ShapeKind.Oval ? Path.Oval(rect) : Path.Rect(rect)), stroke, color, scale);
+            if (plan.Gradient is GdiGradient gradient)
+            {
+                WriteGdiGradient(fill, m, gradient);
+            }
+            else
+            {
+                // GDI has no form for this paint: its part is an image of the call.
+                Fallback(local, outset, Draw, reason ?? $"a {paint.GetType().Name}", plus: false);
+            }
         }
     }
 
-    /// <summary>Why a paint cannot be written as a solid EMF fill, or null when it can.</summary>
-    private static string? Unsupported(Paint paint)
+    /// <summary>Why a paint has no vector form in EMF (its blend mode or blur), or null when it may have one.</summary>
+    private static string? Unsupported(Paint paint, RgbaF32? constant)
     {
-        if (paint is not SolidPaint solid)
-        {
-            return $"a {paint.GetType().Name}";
-        }
-
         if (paint.Blur is not null)
         {
             return "a paint with a blur";
@@ -145,7 +223,7 @@ public sealed partial class EmfCanvas
         return paint.BlendMode switch
         {
             BlendMode.SourceOver or BlendMode.Destination => null,
-            BlendMode.Source when solid.Color.A * solid.Opacity >= 1 => null,
+            BlendMode.Source when constant is RgbaF32 c && c.A * paint.Opacity >= 1 => null,
             _ => $"the {paint.BlendMode} blend mode",
         };
     }

@@ -10,8 +10,11 @@ namespace Egami.Metafiles;
 /// thing, so anything drawn on a <see cref="Canvas"/> can be saved as vectors that Word, PowerPoint, Excel, LibreOffice, GDI and
 /// GDI+ open. Paths, rectangles, round rectangles, ovals and points are filled with solid colors (with alpha in EMF+, opaque in
 /// GDI) and stroked with every <see cref="Stroke"/> setting; transforms, save and restore, and rectangle and path clips carry over.
-/// What this version does not write as vectors (paints other than <see cref="SolidPaint"/>, blend modes, blurs, images, meshes
-/// and layers with opacity, blend modes, filters or masks) is drawn by Egami into a bitmap of that area at
+/// Linear and centered radial gradients, image and picture paints become EMF+ brushes (opaque linear gradients are GDI gradient
+/// fills in the GDI part, the rest images there); a color matrix or blend paint over solid colors becomes its color; and a
+/// layer with only an opacity is folded into its shapes when they do not overlap.
+/// What this version does not write as vectors (sweep and two-point conical gradients, other blend modes, blurs, images,
+/// meshes and other layers with opacity, blend modes, filters or masks) is drawn by Egami into a bitmap of that area at
 /// <see cref="EmfWriteOptions.FallbackScale"/> and embedded, with one <c>Metafile.FallbackImage</c> warning per kind in
 /// <see cref="Warnings"/>. Glyph runs are written as outlines.
 /// <para>
@@ -36,6 +39,7 @@ public sealed partial class EmfCanvas : Canvas
     private readonly List<EgamiDiagnostic> _warnings = [];
     private readonly HashSet<string> _warned = [];
     private readonly List<FileState> _saved = [];
+    private readonly List<FileState> _gdiSaved = [];
     private FileState _file;
     private RectF _drawn = RectF.Empty;
     private uint _plusSaves;
@@ -98,6 +102,7 @@ public sealed partial class EmfCanvas : Canvas
         public int FillMode;
         public float Miter;
         public uint PlusSave;
+        public int Interpolation;
     }
 
     /// <inheritdoc/>
@@ -270,6 +275,31 @@ public sealed partial class EmfCanvas : Canvas
         }
     }
 
+    /// <summary>EmfPlusSetInterpolationMode, which samples images and texture brushes.</summary>
+    private void SetInterpolation(int mode)
+    {
+        if (_file.Interpolation != mode && mode != 0)
+        {
+            _w.Plus(0x4021, (ushort)mode, []);
+            _file.Interpolation = mode;
+        }
+    }
+
+    /// <summary>EMR_SAVEDC alone, around GDI records that clip; <see cref="GdiRestore"/> brings back the GDI part of the state.</summary>
+    private void GdiSave()
+    {
+        _gdiSaved.Add(_file);
+        _w.Gdi(33, []);
+    }
+
+    private void GdiRestore()
+    {
+        FileState s = _gdiSaved[^1];
+        _gdiSaved.RemoveAt(_gdiSaved.Count - 1);
+        _w.Gdi(34, _w.Data().I32(-1).Span); // EMR_RESTOREDC
+        (_file.GdiWorld, _file.Pen, _file.Brush, _file.FillMode, _file.Miter) = (s.GdiWorld, s.Pen, s.Brush, s.FillMode, s.Miter);
+    }
+
     /// <summary>SetAntiAliasMode: SmoothingModeAntiAlias (4) with the antialias bit, or SmoothingModeNone (3).</summary>
     private void SetSmooth(bool smooth)
     {
@@ -316,7 +346,7 @@ public sealed partial class EmfCanvas : Canvas
             return true;
         }
 
-        foreach (FileState s in _saved)
+        foreach (FileState s in _saved.Concat(_gdiSaved))
         {
             if (s.Pen == handle || s.Brush == handle)
             {

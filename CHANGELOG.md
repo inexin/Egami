@@ -54,6 +54,25 @@ EMF writing, stage A (roadmap 2.3.7.1).
   `Metafile.FallbackImage` warning per kind in `EmfCanvas.Warnings`. Text is written as outlines.
 - A "Writing EMF" section in the metafiles guide.
 
+EMF writing, stage B: paints as brushes.
+
+- Linear gradients become EMF+ linear gradient brushes with preset colors and the wrap mode for repeat and mirror. A clamped
+  gradient gets a brush wide enough to cover the shape. Opaque ones are drawn in the GDI copy exactly too, as
+  `EMR_GRADIENTFILL` triangles clipped to the shape.
+- Centered radial gradients become EMF+ path gradient brushes on a circle large enough to hold the shape. Repeating and
+  mirrored ones are unrolled into stops.
+- `ImagePaint` and `PicturePaint` become EMF+ texture brushes with the paint's matrix, its wrap mode and the matching
+  interpolation mode. A picture's tile is drawn at `FallbackScale`.
+- Gradients mixed in linear light, or with stops of different alpha, get extra stops so EMF+ readers mix them as Egami does.
+- Strokes with these paints are written as their filled outlines.
+- In a dual file, the GDI copy of what GDI cannot draw is an image without a warning.
+- Exact vectors are written instead of images where they exist:
+  - A layer with only an opacity is folded into its shapes' paints when it holds one shape, or shapes whose pixels do not meet.
+  - A `ColorMatrixPaint` or `BlendPaint` over solid paints becomes the color it draws.
+- Sweep and two-point conical gradients, and overlapping shapes in a layer with opacity, still fall back to images.
+- Egami's EMF+ player now draws path gradients with preset colors from their own colors. Before, it mixed them from the
+  surrounding and center colors.
+
 ## Egami.Svg and Egami.Css 1.6.0 (unreleased)
 
 SVG animation (roadmap 2.10.1): SMIL and CSS animations drawn at any moment, as frames, animated rasters, frozen static copies
