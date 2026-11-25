@@ -1,6 +1,7 @@
 using System.Numerics;
 
 using Egami.Drawing;
+using Egami.Fonts;
 using Egami.Operations;
 using Egami.Pixels;
 
@@ -437,6 +438,34 @@ public class Drawing
 
         Assert.NotEqual(new Rgba8(40, 110, 200, 255), button.GetPixel(110, 13));
         Assert.Equal(new Rgba8(40, 110, 200, 255), button.GetPixel(110, 45));
+    }
+
+    [Fact]
+    public void WarpText()
+    {
+        Typeface face = Typeface.FromFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSans-Regular.ttf"));
+
+        #region warp
+        // Word art: the outline of a line of text, bent so its top follows an arch while its baseline stays straight.
+        Path text = new Font(face, 64).GetTextPath("ARCHED", new Vector2(10, 110));
+        RectF box = text.TightBounds;
+        Path arched = text.Warp(p =>
+        {
+            float across = (p.X - box.Left) / box.Width;      // 0 at the left edge, 1 at the right
+            float up = (box.Bottom - p.Y) / box.Height;        // 0 on the baseline, 1 at the top
+            float lift = 40 * MathF.Sin(MathF.PI * across);    // how far the top curve rises above the box
+            return new Vector2(p.X, p.Y - (up * lift));
+        });
+
+        using Raster<Rgba8> banner = Raster.Create(300, 130, Rgba8.White);
+        using (RasterCanvas<Rgba8> canvas = banner.CreateCanvas())
+        {
+            canvas.FillPath(arched, new Rgba8(170, 40, 120, 255));
+        }
+        #endregion
+
+        Assert.True(arched.TightBounds.Top < box.Top - 30);
+        Assert.Equal(box.Bottom, arched.TightBounds.Bottom, 0.5f);
     }
 
     [Fact]

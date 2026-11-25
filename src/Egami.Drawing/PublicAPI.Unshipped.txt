@@ -71,3 +71,4 @@ static Egami.Drawing.BevelLight.operator !=(Egami.Drawing.BevelLight left, Egami
 static Egami.Drawing.BevelLight.operator ==(Egami.Drawing.BevelLight left, Egami.Drawing.BevelLight right) -> bool
 ~override Egami.Drawing.BevelLight.Equals(object obj) -> bool
 ~override Egami.Drawing.BevelLight.ToString() -> string
+Egami.Drawing.Path.Warp(System.Func<System.Numerics.Vector2, System.Numerics.Vector2>! map, float tolerance = 0.05) -> Egami.Drawing.Path!

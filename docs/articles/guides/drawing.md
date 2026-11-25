@@ -39,7 +39,8 @@ points, for code that reads paths back.
 - `FillRule` decides what is inside: `NonZero` (the default) or `EvenOdd`. Shapes are added clockwise; a
   `PathDirection.CounterClockwise` contour inside a clockwise one makes a hole under `NonZero` too.
 - `Contains` uses the winding number on the curves themselves, and counts a point on the outline as inside.
-- `Transform` takes a `Matrix3x2`, or a `Homography` for perspective.
+- `Transform` takes a `Matrix3x2`, or a `Homography` for perspective. `Warp` sends every point through any function of the
+  plane (a wave, an arch, text bent between two curves), splitting lines and curves until the result stays within a tolerance.
 
 ## Strokes
 
@@ -378,6 +379,13 @@ Hairlines on half-pixel coordinates fill exactly one column or row of pixels.
 [!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#draw-itself)]
 
 `PathEffect.Trim` keeps a fraction of the path's length; stepping it from 0 to 1 gives the frames.
+
+### Bend text into an arch
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#warp)]
+
+`Warp` takes any function of the plane. A line whose image stays straight stays a line, so straight parts of a warp cost
+nothing extra; lower the tolerance for print sizes.
 
 ### Paint a dusk sky
 

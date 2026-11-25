@@ -154,6 +154,37 @@ public sealed partial class Path
         return PerspectivePath.Transform(this, homography);
     }
 
+    /// <summary>
+    /// Returns the path with every point sent through a function of the plane, such as a wave, an arch or text bent between two
+    /// curves. Lines and curves are split until the new path stays within <paramref name="tolerance"/> of where the function
+    /// sends them; a line whose image stays straight stays a line. Contours keep their order and closed state, a closed contour's
+    /// closing line bends too, and the fill rule is kept. An affine function gives the same path as <see cref="Transform(Matrix3x2)"/>.
+    /// </summary>
+    /// <remarks>
+    /// The function is sampled at a few points along each piece, so detail much finer than a segment of the path can be missed:
+    /// split long straight lines first when the function has ripples shorter than they are. The function should be continuous;
+    /// it is called on the calling thread only, about a dozen times per output segment.
+    /// </remarks>
+    /// <param name="map">The function that sends each point of the plane to its new place.</param>
+    /// <param name="tolerance">How far, in output units, the new path may stray from the true image. The default suits pixels.</param>
+    /// <returns>The warped path.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="map"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="tolerance"/> is not a positive finite number.</exception>
+    /// <exception cref="ArgumentException">The function returns a point that is not finite.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Drawing.cs" region="warp"/>
+    /// </example>
+    public Path Warp(Func<Vector2, Vector2> map, float tolerance = 0.05f)
+    {
+        ArgumentNullException.ThrowIfNull(map);
+        if (!(tolerance > 0) || !float.IsFinite(tolerance))
+        {
+            throw new ArgumentOutOfRangeException(nameof(tolerance), tolerance, "The tolerance must be a positive finite number.");
+        }
+
+        return _verbs.Length == 0 ? this : WarpPath.Warp(this, map, tolerance);
+    }
+
     /// <summary>Returns the path with each contour running the other way; contours keep their order and closed state.</summary>
     /// <returns>The reversed path.</returns>
     public Path Reverse()
