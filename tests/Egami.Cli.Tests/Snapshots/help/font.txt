@@ -1,0 +1,36 @@
+Description:
+  Convert fonts to WOFF2, WOFF or back to TTF/OTF, subset them to the characters a page uses, and describe them.
+
+Usage:
+  egami font [command] [options]
+
+Options:
+  -?, -h, --help                       Show help and usage information
+  -v, --verbose                        Write information to standard error.
+  -vv, --debug                         Write debugging detail to standard error.
+  -q, --quiet                          Write only errors to standard error.
+  --limit <name=value,...>             Safety limits, such as pixels=100M,memory=2GB,frames=500 (names: pixels, width, height, frames, memory, metadata). EGAMI_LIMITS sets them too.
+  --preview-formats                    Also read and write the formats in preview (DICOM in this release); they may change or go in any minor release.
+  --raw-output <value>                 What a camera RAW input loads as: developed (default), half-size, preview or mosaic.
+  --raw-preview <value>                Which embedded preview --raw-output preview loads, 0 for the largest.
+  --raw-white-balance <value>          White balance of a RAW develop: as-shot (default), auto or custom (with --raw-temperature and --raw-tint).
+  --raw-temperature <value>            Color temperature in kelvin for --raw-white-balance custom.
+  --raw-tint <value>                   Tint for --raw-white-balance custom, positive toward magenta.
+  --raw-exposure <value>               Exposure of a RAW develop in stops, such as +0.5 or -1.
+  --raw-demosaic <value>               Demosaic method: ahd (default), malvar or bilinear.
+  --raw-highlights <value>             Clipped highlights: clip (default), blend or rebuild.
+  --raw-noise-reduction <value>        Luminance noise reduction of a RAW develop, 0 to 100 (default 0).
+  --raw-color-noise-reduction <value>  Color noise reduction of a RAW develop, 0 to 100 (default 25).
+  --raw-lens-profiles <value>          Folders of Lensfun (.xml) and Adobe (.lcp) lens profiles, separated by the system's path separator.
+  --raw-no-lens-corrections            Apply no lens corrections.
+  --raw-auto-ca                        Measure and correct lateral chromatic aberration when no lens profile covers the file.
+  --raw-tone-curve                     Give a develop without a profile tone curve the default contrast curve.
+  --raw-no-profile                     Leave out the camera profile's look (HueSatMap, LookTable and tone curve).
+  --animate <fps>                      Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds.
+  --at <time>                          Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment.
+
+Commands:
+  convert <inputs>  Convert fonts losslessly: to WOFF2 (the default) or WOFF for the web, or from WOFF and WOFF2 back to TTF, OTF or a TTC collection. Collections convert to WOFF2 or TTC only.
+  subset <inputs>   Subset fonts to the characters a page uses and write WOFF2 (the default), WOFF, TTF or OTF. By default the subset keeps the layout tables and every glyph they can substitute, so it shapes the text as the full font does; prints the glyphs kept, the characters the font lacks and the sizes.
+  info <inputs>     Describe fonts: names, container, outlines, glyphs, units per em, variation axes, embedding rights, tables and the Unicode blocks covered.
+

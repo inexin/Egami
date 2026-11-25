@@ -369,6 +369,7 @@ public sealed class McpTests : IAsyncDisposable
         string png = _tool.Copy(Png);
         _tool.Copy("gif/loop-3.gif", "anim.gif");
         _tool.Copy("psd/layers.psd", "layers.psd");
+        _tool.Copy("../fonts/NotoSans-Regular.ttf", "font.ttf");
         McpClient client = await Connect();
         Dictionary<string, Dictionary<string, object?>> calls = new()
         {
@@ -394,6 +395,9 @@ public sealed class McpTests : IAsyncDisposable
             ["overlay"] = new() { ["inputs"] = new[] { jpeg }, ["image"] = png, ["output"] = "t/overlay.png" },
             ["montage"] = new() { ["inputs"] = new[] { jpeg, png }, ["output"] = "t/montage.png" },
             ["trace"] = new() { ["inputs"] = new[] { png }, ["preset"] = "poster", ["output"] = "t/trace.svg", ["preview_png"] = "t/trace.png" },
+            ["font_convert"] = new() { ["inputs"] = new[] { "font.ttf" }, ["output"] = "t/font.woff2" },
+            ["font_subset"] = new() { ["inputs"] = new[] { "font.ttf" }, ["text"] = new[] { "egami" }, ["output"] = "t/subset.woff2" },
+            ["font_info"] = new() { ["inputs"] = new[] { "font.ttf" } },
             ["formats"] = new() { ["format"] = "png" },
         };
         Assert.Equal(ToolCatalog.Tools.Select(t => t.Name).Order(), calls.Keys.Order());

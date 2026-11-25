@@ -2253,6 +2253,207 @@
       }
     },
     {
+      "name": "font_convert",
+      "title": "egami font convert",
+      "description": "Convert fonts losslessly: to WOFF2 (the default) or WOFF for the web, or from WOFF and WOFF2 back to TTF, OTF or a TTC collection. Collections convert to WOFF2 or TTC only.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Font files (TTF, OTF, TTC, WOFF, WOFF2), globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output. The extension picks the format."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format, when -o's extension does not say: woff2 (the default), woff, ttf, otf or ttc."
+          },
+          "no_transform": {
+            "type": "boolean",
+            "description": "Store WOFF2's glyf, loca and hmtx as they are, without the transforms that make TrueType outlines smaller."
+          },
+          "metadata": {
+            "type": "string",
+            "description": "An XML file to store as the WOFF or WOFF2 extended metadata block, replacing the source's."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every font in folders given as inputs, at any depth."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs; without -o, each input is written over in its own format."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "font_subset",
+      "title": "egami font subset",
+      "description": "Subset fonts to the characters a page uses and write WOFF2 (the default), WOFF, TTF or OTF. By default the subset keeps the layout tables and every glyph they can substitute, so it shapes the text as the full font does; prints the glyphs kept, the characters the font lacks and the sizes.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Font files (TTF, OTF, TTC, WOFF, WOFF2), globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "output": {
+            "type": "string",
+            "description": "Where to write: a file, a folder, a template with {name}, {ext}, {dir}, {index} and {format}, or - for standard output. The extension picks the format."
+          },
+          "format": {
+            "type": "string",
+            "description": "The output format, when -o's extension does not say: woff2 (the default), woff, ttf or otf."
+          },
+          "text": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Characters to keep. Repeat it, and combine it with --text-file and --unicodes; together they say what to keep."
+          },
+          "text_file": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Files or globs whose characters to keep, read as UTF-8 text (HTML and all: tags add only ASCII)."
+          },
+          "unicodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Code points to keep in CSS unicode-range syntax, such as U+0020-007E,U+00E5,U+4??."
+          },
+          "no_layout": {
+            "type": "boolean",
+            "description": "Keep only the glyphs the characters map to, without GSUB, GPOS and GDEF, renumbered densely: the smallest file, shaped without ligatures, kerning or contextual forms."
+          },
+          "retain_gids": {
+            "type": "boolean",
+            "description": "Keep every glyph's id, with empty glyphs in the gaps (the default unless --no-layout)."
+          },
+          "variation": {
+            "type": "string",
+            "description": "Where a variable font is instanced, such as wght=700,wdth=90; the subset is always a static font, by default at the font's default position."
+          },
+          "no_hinting": {
+            "type": "boolean",
+            "description": "Leave out TrueType hinting (fpgm, prep, cvt and glyph instructions); CFF hints stay."
+          },
+          "name_prefix": {
+            "type": "string",
+            "description": "Put this before the PostScript and CFF font names, such as ABCDEF+."
+          },
+          "face": {
+            "type": "integer",
+            "description": "Which font of a collection to subset, from 0."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every font in folders given as inputs, at any depth."
+          },
+          "in_place": {
+            "type": "boolean",
+            "description": "Allow outputs to replace their inputs; without -o, each input is written over in its own format."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
+          },
+          "preview": {
+            "type": "boolean",
+            "description": "Also return the first file written as a picture, fit to 1024 pixels."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      }
+    },
+    {
+      "name": "font_info",
+      "title": "egami font info",
+      "description": "Describe fonts: names, container, outlines, glyphs, units per em, variation axes, embedding rights, tables and the Unicode blocks covered.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Font files (TTF, OTF, TTC, WOFF, WOFF2), globs (*, ?, **) expanded the same way in every shell, folders with --recursive, or - for standard input."
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "Take every font in folders given as inputs, at any depth."
+          },
+          "animate": {
+            "type": "number",
+            "description": "Load an animated SVG input as all its frames, this many a second (30 when no rate is given): one loop, or up to the end of its last animation, at most 10 seconds."
+          },
+          "at": {
+            "type": "string",
+            "description": "Draw an SVG input as it looks this long after it loads, such as 1.5s, 1500ms or 1.5 (seconds); with --animate, the first frame's moment."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      }
+    },
+    {
       "name": "formats",
       "title": "egami formats",
       "description": "List the formats egami reads and writes, or one format's writer settings for --set.",
