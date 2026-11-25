@@ -44481,6 +44481,12 @@ references:
   commentId: F:Egami.Formats.Eps.EpsPreviewKind.None
   fullName: Egami.Formats.Eps.EpsPreviewKind.None
   nameWithType: EpsPreviewKind.None
+- uid: Egami.Formats.Eps.EpsPreviewKind.PhotoshopImage
+  name: PhotoshopImage
+  href: api/Egami.Formats.Eps.EpsPreviewKind.html#Egami_Formats_Eps_EpsPreviewKind_PhotoshopImage
+  commentId: F:Egami.Formats.Eps.EpsPreviewKind.PhotoshopImage
+  fullName: Egami.Formats.Eps.EpsPreviewKind.PhotoshopImage
+  nameWithType: EpsPreviewKind.PhotoshopImage
 - uid: Egami.Formats.Eps.EpsPreviewKind.Tiff
   name: Tiff
   href: api/Egami.Formats.Eps.EpsPreviewKind.html#Egami_Formats_Eps_EpsPreviewKind_Tiff

@@ -89,7 +89,7 @@
 
 <p>Egami reads and writes PNG, APNG, JPEG, GIF, WebP, BMP, TGA, QOI and the Netpbm formats (PBM, PGM, PPM, PAM and the PFM float
 map), TIFF, Radiance .hdr, OpenEXR, JPEG XL, AVIF, and Windows icons and cursors, and reads JBIG2, raw CCITT fax data, JPEG
-2000, Windows animated cursors (ANI), Photoshop's PSD and PSB, layers included, and the previews of EPS files. HEIC phone photos load and save through the
+2000, Windows animated cursors (ANI), Photoshop's PSD and PSB, layers included, and EPS files by their previews or Photoshop's own image. HEIC phone photos load and save through the
 separate, opt-in Egami.Heic package; core Egami detects and probes them. SVG and Windows metafiles (WMF, EMF) load through the separate
 <a href="../guides/svg.html">Egami.Svg</a> and <a href="../guides/metafiles.html">Egami.Metafiles</a> packages, and PCX, SGI, Sun raster, XBM, XPM, WBMP
 Farbfeld, JPEG-LS, DDS and KTX textures, DPX and Cineon film frames, FITS, camera RAW (DNG and the camera makers' formats, with DNG written) and, as a preview, DICOM images and datasets through
@@ -181,9 +181,9 @@ through <a href="vp8.html"><code>Vp8StreamDecoder</code></a> and <a href="av1.ht
 </tr>
 <tr>
 <td><a href="eps.html">EPS</a></td>
-<td>The preview an EPS file carries: a TIFF or Windows metafile preview behind the DOS binary header, or an EPSI bitmap; bounding box, creator, title, date, XMP and ICC. PostScript is not run</td>
+<td>Photoshop's full image (<code>%ImageData</code>: gray, bitmap, RGB or CMYK, binary, hex or JPEG), else the preview an EPS file carries: a TIFF or Windows metafile preview behind the DOS binary header, or an EPSI bitmap; bounding box, creator, title, date, XMP, ICC and IPTC. PostScript is not run</td>
 <td>No</td>
-<td>The preview's own: the TIFF's, <code>Rgba8</code> for a metafile, <code>Gray8</code> for EPSI</td>
+<td>Photoshop's: <code>Gray8</code>, <code>Rgb8</code> or <code>Cmyk8</code>; a preview's own: the TIFF's, <code>Rgba8</code> for a metafile, <code>Gray8</code> for EPSI</td>
 <td>Egami</td>
 </tr>
 <tr>
@@ -515,7 +515,22 @@ bool sideways = info.Orientation is &gt;= Egami.Metadata.ImageOrientation.Transp
 Console.WriteLine($&quot;{info.Format.Name}, shown as {width} × {height}, about {info.EstimatedBytes:N0} bytes to load&quot;);
 </code></pre>
 <p><code>Probe</code> reads only the header, and reports the EXIF orientation, so you know how the image will be shown.</p>
-<h2 id="run-it">Run it</h2>
+<h3 id="show-an-eps-file">Show an EPS file</h3>
+<p>Egami never runs PostScript, so an EPS file loads only by an image it carries. Register Egami.Metafiles so Windows metafile
+previews draw too, and fall back to the bounding box for files with only PostScript. <a href="eps.html">EPS</a> has the details.</p>
+<pre><code class="lang-csharp">// Metafile previews draw only with a metafile format registered; files with only PostScript have no image to load.
+EgamiContext context = EgamiContext.Default.WithFormat(MetafileFormat.Info);
+try
+{
+    using Raster&lt;Rgba8&gt; image = Raster.Load&lt;Rgba8&gt;(&quot;logo.eps&quot;, context);
+    image.Save(&quot;logo.png&quot;);
+}
+catch (UnsupportedFormatException)
+{
+    RasterInfo box = Raster.Probe(&quot;logo.eps&quot;, context);
+    Console.WriteLine($&quot;Only PostScript: {box.Width} × {box.Height} pt, render it with a PostScript interpreter&quot;);
+}
+</code></pre><h2 id="run-it">Run it</h2>
 <p><a href="https://github.com/inexin/Egami/tree/main/samples/Formats"><code>samples/Formats</code></a> is a console app that does what this guide shows on the bundled
 images: <code>dotnet run --project samples/Formats</code> writes its results to <code>./output</code>.</p>
 

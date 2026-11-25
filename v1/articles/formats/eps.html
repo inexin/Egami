@@ -2,9 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-      <title>EPS (previews) | Egami </title>
+      <title>EPS | Egami </title>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="title" content="EPS (previews) | Egami ">
+      <meta name="title" content="EPS | Egami ">
       
       
       <link rel="icon" href="../../images/favicon.ico">
@@ -85,28 +85,35 @@
         </div>
 
         <article data-uid="">
-<h1 id="eps-previews">EPS (previews)</h1>
+<h1 id="eps">EPS</h1>
 
-<p>Egami reads Encapsulated PostScript by the preview image the file carries. It never runs PostScript, so the image is the
-preview the writing program saved, not the drawing the PostScript makes; a <code>Eps.PreviewLoaded</code> warning says so on every load.
-<code>EpsFormat.Info</code> is registered in <code>EgamiContext.Default</code> and detected by the DOS binary header (bytes C5 D0 D3 C6) or a
+<p>Egami reads Encapsulated PostScript by the images the file carries. It never runs PostScript, so what Load returns is either
+Photoshop's own copy of the image or the preview the writing program saved, not the drawing the PostScript makes. Egami does
+not write EPS.</p>
+<p><code>EpsFormat.Info</code> is registered in <code>EgamiContext.Default</code>. It is detected by the DOS binary header (bytes C5 D0 D3 C6) or a
 <code>%!PS</code> first line; plain PostScript is detected too, so it fails with a message saying PostScript is not run rather than as an
-unknown format. Egami does not write EPS.</p>
+unknown format. The extensions are <code>.eps</code>, <code>.epsf</code>, <code>.epsi</code> and <code>.ept</code>, and the MIME types <code>application/postscript</code>,
+<code>application/eps</code> and <code>image/x-eps</code>.</p>
 <pre><code class="lang-csharp">// Load gives the preview the EPS file carries (here a TIFF); its PostScript is never run.
 using Raster preview = Raster.Load(&quot;logo.eps&quot;);
 EpsDetails details = (EpsDetails)preview.Metadata.FormatDetails!;
 Console.WriteLine($&quot;{details.Preview} preview, {preview.Width} × {preview.Height} pixels, box {details.BoundingBox?.Width} × {details.BoundingBox?.Height} pt&quot;);
-</code></pre>
+</code></pre><h2 id="what-load-returns">What Load returns</h2>
 <p>Load takes the first of these the file has:</p>
 <table>
 <thead>
 <tr>
-<th>Preview</th>
+<th>Image</th>
 <th>Written by</th>
 <th>What Load returns</th>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>Photoshop's image, described by a <code>%ImageData</code> comment</td>
+<td>Photoshop, when it saves a raster as EPS</td>
+<td>The full image at full resolution: <code>Gray8</code> for gray and bitmap, <code>Rgb8</code> or <code>Cmyk8</code>, from binary, hex or JPEG data</td>
+</tr>
 <tr>
 <td>TIFF, behind the binary header</td>
 <td>Illustrator, Photoshop, InDesign, CorelDRAW on Windows</td>
@@ -129,15 +136,39 @@ Console.WriteLine($&quot;{details.Preview} preview, {preview.Width} × {preview.
 </tr>
 </tbody>
 </table>
-<p>Core Egami does not depend on Egami.Metafiles: without a metafile format in the context a metafile preview is skipped for the
-file's EPSI preview, with an <code>Eps.MetafileSkipped</code> warning, or Load fails with a message naming Egami.Metafiles.</p>
-<p>The metadata holds an <code>EpsDetails</code> (which preview was loaded, the bounding box in points as an <code>EpsBoundingBox</code>, preferring
+<p>A preview is a picture of the drawing, often small and sometimes only black and white, so every load of a preview carries an
+<code>Eps.PreviewLoaded</code> warning. Photoshop's image is the picture itself and carries none.</p>
+<h2 id="photoshops-image">Photoshop's image</h2>
+<p>Photoshop writes the whole raster into the PostScript and describes it in a <code>%ImageData</code> comment: the size, 1 or 8 bits a
+channel, the mode (bitmap or gray, Lab, RGB or CMYK), padding channels, whether the channels are interleaved by pixel or by row,
+and whether the data is binary, hex or JPEG. Egami reads gray, bitmap, RGB and CMYK in all of these layouts. CMYK stays
+<code>Cmyk8</code>, with 0 meaning no ink, and the file's ICC profile, XMP and IPTC come with it.</p>
+<pre><code class="lang-csharp">// A Photoshop EPS loads at full size in its own colours: here CMYK, kept as Cmyk8.
+using Raster image = Raster.Load(&quot;photo.eps&quot;);
+if (image is Raster&lt;Cmyk8&gt; cmyk)
+{
+    Cmyk8 first = cmyk.Row(0)[0];
+    Console.WriteLine($&quot;{cmyk.Width} × {cmyk.Height} CMYK, first pixel {first.C} {first.M} {first.Y} {first.K}&quot;);
+}
+</code></pre>
+<p>An EPS file placed inside another (between <code>%%BeginDocument</code> and <code>%%EndDocument</code>, as Illustrator embeds a placed Photoshop
+file) belongs to the drawing: its image and comments are passed over, not loaded as the outer file's. Lab images are left to
+the file's preview, with an <code>Eps.ImageDataSkipped</code> warning. Data that cannot be decoded falls back to
+the preview too, with <code>Eps.ImageDataDamaged</code>; data cut short gives 0 for the missing samples, with <code>Eps.ImageDataTruncated</code>.</p>
+<h2 id="metafile-previews">Metafile previews</h2>
+<p>Core Egami does not depend on Egami.Metafiles. It draws a metafile preview through any format the context registers that reads
+metafiles and is not one of core's own: with Egami.Metafiles, <code>EgamiContext.Default.WithFormat(MetafileFormat.Info)</code>. The
+metafile is fitted to the bounding box, at 96 DPI or the <code>MetafileDecodeOptions.Dpi</code> passed in the reader options. Without a
+metafile format a metafile preview is skipped for the file's EPSI preview, with an <code>Eps.MetafileSkipped</code> warning, or Load fails
+with a message naming Egami.Metafiles.</p>
+<h2 id="metadata">Metadata</h2>
+<p>The metadata holds an <code>EpsDetails</code> (which image was loaded, the bounding box in points as an <code>EpsBoundingBox</code>, preferring
 <code>%%HiResBoundingBox</code>, the creator, title and creation date), the same three comments as text entries, and Photoshop's XMP
 packet, ICC profile and IPTC when the file has them.</p>
 <h2 id="the-container">The container</h2>
-<p><code>EpsFile</code> gives the parts without decoding anything: the PostScript, the TIFF and metafile previews as bytes, which preview
-Load takes (<code>EpsPreviewKind</code>), the header comments, Photoshop's sections and what was damaged. A program that draws vectors can
-hand <code>WmfPreview</code> to Egami.Metafiles itself.</p>
+<p><code>EpsFile</code> gives the parts without decoding anything: the PostScript, the TIFF and metafile previews as bytes, which image Load
+takes (<code>EpsPreviewKind</code>), the header comments, Photoshop's sections and what was damaged. A program that draws vectors can hand
+<code>WmfPreview</code> to Egami.Metafiles itself.</p>
 <pre><code class="lang-csharp">// EpsFile gives the parts: the PostScript, the TIFF or metafile preview, and the header comments.
 EpsFile eps = EpsFile.Load(File.ReadAllBytes(&quot;logo.eps&quot;));
 if (eps.Preview == EpsPreviewKind.Tiff)
@@ -146,10 +177,15 @@ if (eps.Preview == EpsPreviewKind.Tiff)
 }
 
 Console.WriteLine($&quot;{eps.Title} by {eps.Creator}: {eps.BoundingBox}, {eps.PostScript.Length} bytes of PostScript&quot;);
-</code></pre>
+</code></pre><h2 id="damaged-files">Damaged files</h2>
 <p>Damage never crashes the reader: sections the binary header puts past the end of the file are cut short or left out, a
-checksum that does not match is a warning, and a bounding box or preview header that cannot be read is left unset. A strict
-load (<code>RecoveryMode.Strict</code>) throws <code>CorruptDataException</code> instead.</p>
+checksum that does not match is a warning, and a bounding box, preview header or <code>%ImageData</code> comment that cannot be read is
+left unset. A strict load (<code>RecoveryMode.Strict</code>) throws <code>CorruptDataException</code> instead. The <code>Eps.*</code> entries in
+<a href="../diagnostics.html">Diagnostics</a> list every warning.</p>
+<h2 id="references">References</h2>
+<p>Adobe's <em>Encapsulated PostScript File Format Specification</em> 3.0 (Technical Note 5002) and <em>PostScript Language Document
+Structuring Conventions Specification</em> 3.0 (Technical Note 5001) for the container and comments, Adobe's Photoshop File Format
+Specification for <code>%ImageData</code>, and Microsoft's MS-WMF for the placeable header.</p>
 
 </article>
 
