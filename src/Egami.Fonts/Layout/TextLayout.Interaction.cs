@@ -376,22 +376,6 @@ public sealed partial class TextLayout
         ArgumentOutOfRangeException.ThrowIfNegative(index);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(index, text.Length);
         TextSegment last = new(0, 0);
-        if (TextSegmenter.NextComplexCandidate(text, 0) < 0)
-        {
-            // Without complex-context letters, the dictionaries change nothing; the plain walk is faster.
-            foreach (TextSegment word in TextSegmenter.Words(text))
-            {
-                if (index < word.End)
-                {
-                    return word;
-                }
-
-                last = word;
-            }
-
-            return last;
-        }
-
         foreach (TextSegment word in TextSegmenter.Words(text, Paragraph.Style.LineBreaking.Dictionaries))
         {
             if (index < word.End)

@@ -64,3 +64,4 @@ Egami.Fonts.Unicode.DictionaryWordEnumerator.Current.get -> Egami.Fonts.Unicode.
 Egami.Fonts.Unicode.DictionaryWordEnumerator.DictionaryWordEnumerator() -> void
 Egami.Fonts.Unicode.DictionaryWordEnumerator.GetEnumerator() -> Egami.Fonts.Unicode.DictionaryWordEnumerator
 Egami.Fonts.Unicode.DictionaryWordEnumerator.MoveNext() -> bool
+Egami.Fonts.Unicode.DictionaryWordEnumerator.Dispose() -> void

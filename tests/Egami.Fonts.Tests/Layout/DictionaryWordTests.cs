@@ -130,6 +130,32 @@ public sealed class DictionaryWordTests
     }
 
     [Fact]
+    public void AStoredEnumeratorEnumeratesTwiceAlike()
+    {
+        // Each foreach works on its own copy, which takes and returns its own segmenter.
+        string text = "ภาษาไทย ง่าย Hello ភាសាខ្មែរ";
+        DictionaryWordEnumerator words = TextSegmenter.Words(text, null);
+        List<int> first = [];
+        foreach (TextSegment w in words)
+        {
+            first.Add(w.Start);
+        }
+
+        List<int> second = [];
+        foreach (TextSegment w in words)
+        {
+            second.Add(w.Start);
+            foreach (TextSegment inner in TextSegmenter.Words(text, null))
+            {
+                Assert.True(inner.Length > 0); // a nested walk takes another segmenter
+            }
+        }
+
+        Assert.Equal(first, second);
+        Assert.Equal(Starts(text, null), first);
+    }
+
+    [Fact]
     public void LatinIsUnchanged()
     {
         string text = "Hello, world! It's 3.14 o'clock — don't panic.";

@@ -55,6 +55,7 @@ public static class TextSegmenter
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/Unicode.cs" region="dictionary-words"/>
     /// </example>
+    [MethodImpl(MethodImplOptions.NoInlining)] // keeps the caller's inlining budget for the walk
     public static DictionaryWordEnumerator Words(ReadOnlySpan<char> text, WordDictionaries? dictionaries)
     {
         WordDictionaries set = dictionaries ?? WordDictionaries.BuiltIn;
@@ -431,24 +432,23 @@ public static class TextSegmenter
     /// <summary>The index of the first character from <paramref name="start"/> on that may be a complex-context letter, or -1.</summary>
     internal static int NextComplexCandidate(ReadOnlySpan<char> text, int start)
     {
-        int found = text[start..].IndexOfAny(ComplexBlocks);
+        ReadOnlySpan<char> rest = text[start..];
+        int found = rest.IndexOfAny(ComplexBlocks);
+        int foundB = (found < 0 ? rest : rest[..found]).IndexOfAny(ComplexBlocksB);
+        found = foundB >= 0 ? foundB : found;
         return found < 0 ? -1 : start + found;
     }
 
-    private static readonly SearchValues<char> ComplexBlocks = SearchValues.Create(ComplexBlockChars());
+    // Each a single range, which SearchValues vectorizes as a range test.
+    private static readonly SearchValues<char> ComplexBlocks = SearchValues.Create(Range(FirstComplex, LastComplex));
+    private static readonly SearchValues<char> ComplexBlocksB = SearchValues.Create(Range(FirstComplexB, LastComplexB));
 
-    private static string ComplexBlockChars()
+    private static string Range(char first, char last)
     {
-        var chars = new char[LastComplex - FirstComplex + 1 + LastComplexB - FirstComplexB + 1];
-        int n = 0;
-        for (char c = FirstComplex; c <= LastComplex; c++)
+        var chars = new char[last - first + 1];
+        for (int i = 0; i < chars.Length; i++)
         {
-            chars[n++] = c;
-        }
-
-        for (char c = FirstComplexB; c <= LastComplexB; c++)
-        {
-            chars[n++] = c;
+            chars[i] = (char)(first + i);
         }
 
         return new string(chars);
@@ -568,6 +568,9 @@ public ref struct WordEnumerator
 public ref struct DictionaryWordEnumerator
 {
     private readonly ReadOnlySpan<char> _text;
+
+    /// <summary>Whether the text holds no complex-context letters, so that the plain UAX #29 walk gives the same segments.</summary>
+    private readonly bool _plain;
     private int _next;
 
     /// <summary>Where the rule walk has reached; <see cref="_state"/> is the walk's state there. It runs ahead of
@@ -577,7 +580,12 @@ public ref struct DictionaryWordEnumerator
     /// <summary>The next complex-context letter at or after where the last search began (int.MaxValue for none): segments
     /// before it need no dictionary.</summary>
     private int _complex;
-    private DictionarySegmenter _words;
+
+    private readonly WordDictionaries? _set;
+
+    /// <summary>The dictionary segmenter, taken from a per-thread cache when the walk first meets a complex-context letter, so
+    /// that the enumerator stays small; <see cref="Dispose"/> returns it.</summary>
+    private SegmenterBox? _words;
 
     internal DictionaryWordEnumerator(ReadOnlySpan<char> text, WordDictionaries? set)
     {
@@ -586,9 +594,11 @@ public ref struct DictionaryWordEnumerator
         _next = 0;
         _walked = 0;
         _state = default;
-        _words = new DictionarySegmenter(set);
-        int found = _words.IsOn ? TextSegmenter.NextComplexCandidate(text, 0) : -1;
-        _complex = found < 0 ? int.MaxValue : found;
+        _set = set;
+        _words = null;
+        int found = TextSegmenter.NextComplexCandidate(text, 0);
+        _plain = found < 0;
+        _complex = found < 0 || set is null ? int.MaxValue : found;
     }
 
     /// <summary>Gets the current segment.</summary>
@@ -608,24 +618,37 @@ public ref struct DictionaryWordEnumerator
             return false;
         }
 
-        int end = _walked > _next ? _walked : (_walked = TextSegmenter.NextWordBoundary<TextSegmenter.IcuWords>(_text, _next, ref _state));
-        if (_complex < end)
-        {
-            end = WordEnd();
-        }
-
+        int end = _plain ? TextSegmenter.NextWordBoundary(_text, _next, ref _state) : NextWithComplex();
         Current = new TextSegment(_next, end - _next);
         _next = end;
         return true;
     }
 
-    /// <summary>The first dictionary word end inside a complex-context run before the rule boundary, or the boundary.</summary>
+    /// <summary>The next boundary in text with complex-context letters: the ICU walk, split at the dictionaries' word ends.</summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
+    private int NextWithComplex()
+    {
+        int end = _walked > _next ? _walked : (_walked = TextSegmenter.NextWordBoundary<TextSegmenter.IcuWords>(_text, _next, ref _state));
+        return _complex < end ? WordEnd() : end;
+    }
+
+    /// <summary>Returns the dictionary segmenter to the per-thread cache; <c>foreach</c> calls this at the end.</summary>
+    public void Dispose()
+    {
+        if (_words is not null)
+        {
+            SegmenterBox.Return(_words);
+            _words = null;
+        }
+    }
+
+    /// <summary>The first dictionary word end inside a complex-context run before the rule boundary, or the boundary.</summary>
     private int WordEnd()
     {
+        _words ??= SegmenterBox.Take(_set!);
         for (int i = Math.Max(_next + 1, _complex); i < _walked; i++)
         {
-            if (TextSegmenter.MayBeComplex(_text[i]) && DictionarySegmenter.IsInsideRun(_text, i) && _words.IsWordEnd(_text, i))
+            if (TextSegmenter.MayBeComplex(_text[i]) && DictionarySegmenter.IsInsideRun(_text, i) && _words!.Segmenter.IsWordEnd(_text, i))
             {
                 return i;
             }
@@ -634,5 +657,29 @@ public ref struct DictionaryWordEnumerator
         int found = TextSegmenter.NextComplexCandidate(_text, _walked);
         _complex = found < 0 ? int.MaxValue : found;
         return _walked;
+    }
+
+    /// <summary>A <see cref="DictionarySegmenter"/> on the heap, kept per thread so that enumerating allocates nothing.</summary>
+    private sealed class SegmenterBox
+    {
+        [ThreadStatic]
+        private static SegmenterBox? t_cached;
+
+        public DictionarySegmenter Segmenter;
+
+        public static SegmenterBox Take(WordDictionaries set)
+        {
+            SegmenterBox box = t_cached ?? new SegmenterBox();
+            t_cached = null;
+            box.Segmenter = new DictionarySegmenter(set);
+            return box;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void Return(SegmenterBox box)
+        {
+            box.Segmenter = default;
+            t_cached = box;
+        }
     }
 }
