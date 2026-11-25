@@ -58,6 +58,8 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [CharLS](https://github.com/team-charls/charls) | C++ | BSD-3 | Run as a black box only: its public C API decodes and encodes for the JPEG-LS gates, and its output showed how HP's colour transforms (APP8 "mrfx") behave. The codec is written from ITU-T T.87 and the LOCO-I paper (Weinberger, Seroussi and Sapiro, IEEE Trans. Image Processing, 2000); its test images (the T.87 conformance set) are the test corpus | JPEG-LS |
 | [VectorCraft](https://github.com/storytold/vectorcraft) (`crates/trace`) | Rust | MIT or Apache 2.0 | A clean-room bitmap tracer: the pipeline's shape (quantise, merge small regions, crack-edge loops, fit curves) and its option set | 2.6.6 |
 | [VTracer](https://github.com/visioncortex/vtracer) | Rust | MIT | Colour tracing options and behaviour (speckle filter, corner threshold, presets); its CLI is a speed gate | 2.6.6 |
+| [ICU4C](https://github.com/unicode-org/icu) (dictionary break engines, `dictbe.cpp`) | C++ | Unicode License v3 | How Thai, Lao, Khmer and Myanmar runs are split into words by maximal matching with look-ahead, as browsers break them; read for behaviour (2.8.5 Q3). A close translation gets a THIRD-PARTY-NOTICES entry. Its word lists (`icu4c/source/data/brkitr/dictionaries`) ship as data under their own licences | 2.8.5 |
+| [ICU4X segmenter](https://github.com/unicode-org/icu4x/tree/main/components/segmenter) | Rust | Unicode License v3 | Dictionary word and line segmentation for the same scripts; read for behaviour (2.8.5 Q3) | 2.8.5 |
 | [Apache Batik](https://xmlgraphics.apache.org/batik/) | Java | Apache 2.0 | Read for behaviour only, never translated: how a complete SVG 1.1 implementation runs SMIL timing (interval lists, syncbase and repeat dependencies, `min` and `max`) and animation values. The only SVG renderer whose source may be read for SVG animation; browser engines (Blink, WebKit, Gecko) and librsvg are never read, and Chromium only runs as a black box for the animation gate | 2.10.1 |
 
 Specifications, textbooks and papers are always fine.
@@ -137,6 +139,11 @@ under the GPL and are never used.
 For kashida justification (2.8.3), the W3C Arabic Layout Requirements, Microsoft's public notes on Arabic justification and
 ECMA-376 (Word's three kashida levels) are the references; HarfBuzz gives the safe-to-insert-tatweel flag. LibreOffice
 (MPL-2.0) is not read.
+
+For dictionary line and word breaking of Thai, Lao, Khmer and Myanmar (2.8.5), UAX #14 and UAX #29 are the references, with
+ICU4C's dictionary break engines and ICU4X's segmenter (both Unicode License v3) read for behaviour. ICU's four word lists ship
+as data (`tools/make-word-dictionaries.py`; notices in THIRD-PARTY-NOTICES.md). libthai and its dictionary (LGPL-2.1) are
+never read.
 
 For OCR (2.12), Egami ships no engine. The hOCR 1.2 specification (kba/hocr-spec) and the Library of Congress ALTO schemas
 (versions 2 to 4) are the references for the readers and writers. Tesseract (Apache-2.0) runs only as an outside program, through
