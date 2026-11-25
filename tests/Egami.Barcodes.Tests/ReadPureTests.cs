@@ -15,13 +15,12 @@ public class ReadPureTests
     {
         JsonElement test = ReferenceTests.Case(name);
         Barcode barcode = ReferenceTests.Make(test);
-        string expected = test.GetProperty("text").GetString()!;
+        string expected = Shown(test.GetProperty("text").GetString()!);
         using Raster<Gray8> image = barcode.ToRaster(3);
 
         BarcodeResult? pure = image.ReadBarcode(new BarcodeReaderOptions { PureBarcode = true });
         Assert.NotNull(pure);
         Assert.Equal(barcode.Format, pure.Format);
-        // The references join an add-on to the main digits with a space.
         Assert.Equal(expected, Joined(pure));
 
         BarcodeResult? searched = image.ReadBarcode();
@@ -29,5 +28,9 @@ public class ReadPureTests
         Assert.Equal(expected, Joined(searched));
     }
 
-    private static string Joined(BarcodeResult result) => result.AddOn is null ? result.Text : $"{result.Text} {result.AddOn}";
+    /// <summary>The text with an add-on after a space, as the references join them.</summary>
+    private static string Joined(BarcodeResult result) => Shown(result.AddOn is null ? result.Text : $"{result.Text} {result.AddOn}");
+
+    /// <summary>Control characters as spaces, as human-readable text shows them.</summary>
+    private static string Shown(string text) => string.Concat(text.Select(c => char.IsControl(c) ? ' ' : c));
 }

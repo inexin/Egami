@@ -320,6 +320,19 @@ WOFF and WOFF2 writing (roadmap 2.7.7) and Word-style justified lines. Additive 
 - A name-keyed CFF subset keeps only the strings its dicts and glyph names use: the String INDEX held every glyph's name, most
   of a small subset's CFF (a 66-character SourceSans3 subset drops from 28 KB to 6 KB).
 
+## Egami.Barcodes 1.1.0 (unreleased)
+
+Code 93 and Codabar (roadmap 2.11.2, stage A).
+
+- `Barcode.Code93` and `Code93Options` write Code 93 (ANSI/AIM BC5) with its two check characters, C and K, and Full ASCII
+  when the text needs it; `Barcode.Codabar` and `CodabarOptions` write Codabar (EN 798) with a start and stop character A to
+  D, an optional modulo 16 check character and a wide ratio of 2 or 3. `Barcode.Create` makes both.
+- Both are read: Code 93 without its check characters and with Full ASCII decoded, Codabar with its start and stop
+  characters, as zxing-cpp returns it.
+- `BarcodeFormat.Code93` and `BarcodeFormat.Codabar` are new, and `BarcodeFormat.Linear` and `All` include them, so reads
+  with the default options look for them too. A program built against 1.0 that names `Linear` or `All` keeps 1.0's value
+  until it is built again, as enum values are compiled into it.
+
 ## Egami.Cli 1.6.0 (unreleased)
 
 MCP prompts and resources, a guide for coding agents, animated SVG input and font commands. Additive to 1.5.0.

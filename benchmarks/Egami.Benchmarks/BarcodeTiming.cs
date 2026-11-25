@@ -18,8 +18,10 @@ internal static class BarcodeTiming
     private static readonly Dictionary<string, (BarcodeFormat Formats, string Symbology)> s_sets = new()
     {
         ["aztec"] = (BarcodeFormat.Aztec, "Aztec"),
+        ["codabar"] = (BarcodeFormat.Codabar, "Codabar"),
         ["code128"] = (BarcodeFormat.Code128, "Code 128"),
         ["code39"] = (BarcodeFormat.Code39, "Code 39"),
+        ["code93"] = (BarcodeFormat.Code93, "Code 93"),
         ["datamatrix"] = (BarcodeFormat.DataMatrix, "Data Matrix"),
         ["ean13"] = (BarcodeFormat.Ean13 | BarcodeFormat.UpcA, "EAN and UPC"),
         ["ean8"] = (BarcodeFormat.Ean8, "EAN and UPC"),

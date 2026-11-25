@@ -3,8 +3,8 @@
 Egami.Barcodes writes and reads barcodes. It draws them through Egami.Drawing's canvas, so a barcode stays vector on a PDF page
 or in SVG output, and reads them from rasters. It is fully managed.
 
-It writes and reads QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, ITF and
-ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on `Barcode` with typed options; `Barcode.Create` takes a
+It writes and reads QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, Code 93,
+Codabar, ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on `Barcode` with typed options; `Barcode.Create` takes a
 format chosen at run time with the default options.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-create)]
@@ -87,6 +87,27 @@ reader has to be set to Full ASCII to read such text back. `Code39Options.CheckD
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-code39)]
 
+### Code 93
+
+`Barcode.Code93` writes digits, capital letters, space and `- . $ / + %`, in a symbol shorter than Code 39's for the same
+text. Two check characters, C and K, are always added; they are not part of the human-readable text. Text with other ASCII
+characters, such as lowercase letters, is written as Full ASCII, a shift character and a letter for each; Code 93's shift
+characters are characters of their own, so readers decode Full ASCII without being told. `Code93Options.FullAscii` set to
+`false` rejects such text instead.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-code93)]
+
+### Codabar
+
+`Barcode.Codabar` writes digits and `- $ : / . +` between a start and a stop character, A, B, C or D, as libraries, blood
+banks and parcel services use it. Text that begins and ends with A to D keeps those; other text gets `CodabarOptions.Start`
+and `Stop`, A by default. `CheckDigit` adds a modulo 16 check character before the stop character, and `WideRatio` makes wide
+elements 2 (the default) or 3 times as wide as narrow ones. The human-readable text is every character of the symbol, start,
+stop and any check character included, as a reader returns it. A symbol needs two characters between start and stop, or one
+and the check character: readers ignore shorter ones.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-codabar)]
+
 ### ITF and ITF-14
 
 `Barcode.Itf` writes Interleaved 2 of 5 from digits; an odd number of digits gets a leading zero. `Barcode.Itf14` writes a
@@ -155,7 +176,7 @@ font, the text.
 ## Barcodes from modules
 
 A `Barcode` is one symbol: its `BarcodeFormat`, its `Modules`, the `QuietZone` its standard asks for in modules (4 for QR, 1 for
-Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39 and ITF, 11 for EAN-13, 7
+Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7
 for EAN-8 and 9 for UPC) and the `HumanReadableText` printed under a linear symbol. `Barcode.FromModules` makes one from
 modules you already have, such as from another encoder.
 
