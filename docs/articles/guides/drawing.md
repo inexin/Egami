@@ -138,6 +138,27 @@ a light, after Skia's shadow utilities; a group's drop shadow is a layer filter.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Paints.cs#shadows)]
 
+### Bevels
+
+`DrawBevel` lights the rim of a shape that is already filled: a `Bevel` gives the `BevelProfile` (DrawingML's twelve preset
+cross-sections, from `Circle` to `ArtDeco`), its `Width` and `Height` in local units, a `BevelMaterial` (DrawingML's eleven
+preset materials: how much the surface scatters and mirrors the light) and a `BevelLight` (an angle, an elevation and an
+intensity; `BevelLight.FromDirection` takes a DrawingML rig's `LightDirection`). Where the rim faces the light more than the
+flat face does it is lightened, where less darkened, and the face inside is left alone. It is worked out in device pixels from
+the distance to the shape's edge, as the PSD flattener's bevel and emboss is, and drawn as an image, so every backend shows
+the same thing.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#bevel)]
+
+`FillBevel` fills the shape and lights it in one call: the paint's own color is scaled by the light, so a red rim stays red
+as it darkens, and the material's shine is laid over it, in the paint's hue for `Metal` and `SoftMetal`. This is closer to
+how DrawingML draws a metal or clear bevel than `DrawBevel` over a fill, and it works with any paint, gradients included.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Drawing.cs#lit-bevel)]
+
+The profiles and materials are Egami's own curves and weights, named after DrawingML's presets; they are not tuned to match
+another renderer pixel for pixel.
+
 ## Clips
 
 `ClipRect`, `ClipRoundRect` and `ClipPath` take a `ClipOp`: `Intersect` keeps the inside, `Difference` the outside. Clips are

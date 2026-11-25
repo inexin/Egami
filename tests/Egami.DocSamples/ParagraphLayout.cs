@@ -1,6 +1,7 @@
 using Egami.Drawing;
 using Egami.Fonts;
 using Egami.Fonts.Layout;
+using Egami.Fonts.Unicode;
 using Egami.Pixels;
 
 namespace Egami.DocSamples;
@@ -541,6 +542,29 @@ public class ParagraphLayout
         Assert.NotNull(german);
         Assert.False(swedish);
         Assert.True(dictionaries.TryGet("en-x-mine", out _));
+    }
+
+    [Fact]
+    public void BuiltInAndOwnWordLists()
+    {
+        #region word-dictionaries
+        // The built-in lists load on first use; copy the set to add your own words or a script Egami ships no list for.
+        WordDictionaries.BuiltIn.TryGet(Script.Thai, out WordDictionary? thai);
+        bool known = thai!.Contains("ภาษา");                            // true: "language" is in ICU's Thai list
+        WordDictionary withNames = thai.WithWords(["อีกามิ"]);           // a copy with a product name added
+
+        WordDictionaries dictionaries = new(WordDictionaries.BuiltIn);
+        dictionaries.Add(Script.Thai, withNames);
+
+        using MemoryStream compiled = new();
+        withNames.Save(compiled);                                       // the compiled .edict form, far faster to load than a list
+        compiled.Position = 0;
+        WordDictionary back = WordDictionary.Load(compiled);
+        #endregion
+
+        Assert.True(known);
+        Assert.Equal(thai.Count + 1, back.Count);
+        Assert.True(dictionaries.TryGet(Script.Thai, out WordDictionary? found) && found.Contains("อีกามิ"));
     }
 
     [Fact]

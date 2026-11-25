@@ -40,3 +40,19 @@ Egami.Fonts.SubsetOptions.DropHinting.init -> void
 Egami.Fonts.WebFontReader
 static Egami.Fonts.WebFontReader.ToSfnt(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null) -> byte[]!
 static Egami.Fonts.FontSubsetter.GlyphsFor(Egami.Fonts.Typeface! face, System.Collections.Generic.IEnumerable<int>! codePoints) -> System.Collections.Generic.IReadOnlyList<ushort>!
+Egami.Fonts.Layout.WordDictionaries
+Egami.Fonts.Layout.WordDictionaries.Add(Egami.Fonts.Unicode.Script script, Egami.Fonts.Layout.WordDictionary! dictionary) -> void
+Egami.Fonts.Layout.WordDictionaries.IsReadOnly.get -> bool
+Egami.Fonts.Layout.WordDictionaries.Scripts.get -> System.Collections.Generic.IReadOnlyCollection<Egami.Fonts.Unicode.Script>!
+Egami.Fonts.Layout.WordDictionaries.TryGet(Egami.Fonts.Unicode.Script script, out Egami.Fonts.Layout.WordDictionary? dictionary) -> bool
+Egami.Fonts.Layout.WordDictionaries.WordDictionaries() -> void
+Egami.Fonts.Layout.WordDictionaries.WordDictionaries(Egami.Fonts.Layout.WordDictionaries! source) -> void
+Egami.Fonts.Layout.WordDictionary
+Egami.Fonts.Layout.WordDictionary.Contains(System.ReadOnlySpan<char> word) -> bool
+Egami.Fonts.Layout.WordDictionary.Count.get -> int
+Egami.Fonts.Layout.WordDictionary.Save(System.IO.Stream! stream) -> void
+Egami.Fonts.Layout.WordDictionary.WithWords(System.Collections.Generic.IEnumerable<string!>! words) -> Egami.Fonts.Layout.WordDictionary!
+static Egami.Fonts.Layout.WordDictionaries.BuiltIn.get -> Egami.Fonts.Layout.WordDictionaries!
+static Egami.Fonts.Layout.WordDictionaries.None.get -> Egami.Fonts.Layout.WordDictionaries!
+static Egami.Fonts.Layout.WordDictionary.FromWords(System.Collections.Generic.IEnumerable<string!>! words) -> Egami.Fonts.Layout.WordDictionary!
+static Egami.Fonts.Layout.WordDictionary.Load(System.IO.Stream! stream) -> Egami.Fonts.Layout.WordDictionary!
