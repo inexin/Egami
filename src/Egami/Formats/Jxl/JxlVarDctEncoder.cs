@@ -202,7 +202,7 @@ internal sealed partial class JxlVarDctEncoder
             _borderRows = fullHeight;
             (_borderLeft, _borderTop) = (border.L, border.T);
             int iw = Ceil(innerWidth, 8) * 8, ih = Ceil(innerHeight, 8) * 8;
-            float[][] inner = [new float[iw * ih], new float[iw * ih], new float[iw * ih]];
+            float[][] inner = [JxlBuffers<float>.Rent(iw * ih), JxlBuffers<float>.Rent(iw * ih), JxlBuffers<float>.Rent(iw * ih)];
             for (int c = 0; c < 3; c++)
             {
                 for (int y = 0; y < ih; y++)
@@ -772,8 +772,26 @@ internal sealed partial class JxlVarDctEncoder
         e.WriteFrame(w, header);
         report?.Advance(2);
         byte[] bytes = w.ToArray();
+        e.ReleaseBuffers();
         JxlStageTimes.Lap(JxlStage.Write);
         return bytes;
+    }
+
+    /// <summary>Hands the planes and coefficients back for a later encode, once the frame is written.</summary>
+    private void ReleaseBuffers()
+    {
+        foreach (float[] plane in _xyb.Concat(_bordered ?? []))
+        {
+            JxlBuffers<float>.Return(plane);
+        }
+
+        foreach (int[][]? group in _coeffs)
+        {
+            foreach (int[] coeffs in group ?? [])
+            {
+                JxlBuffers<int>.Return(coeffs);
+            }
+        }
     }
 
     /// <summary>Writes the codestream with the frame as it stands: image header, frame header, TOC and sections.</summary>
@@ -906,10 +924,11 @@ internal sealed partial class JxlVarDctEncoder
     {
         int w = image.Width;
         int h = image.Height;
+        // Every sample is written below, so the planes need no clearing.
         float[][] xyb = new float[3][];
         for (int c = 0; c < 3; c++)
         {
-            xyb[c] = new float[(long)width * height];
+            xyb[c] = JxlBuffers<float>.Rent(width * height);
         }
 
         Parallel.For(0, h, parallel, y =>
@@ -2062,7 +2081,7 @@ internal sealed partial class JxlVarDctEncoder
         {
             (int gx0, int gy0, int gw, int gh) = GroupRect(g);
             // The varblocks cover the group once: its coefficients fill these exactly.
-            int[][] outCoeffs = [new int[gw * gh * 64], new int[gw * gh * 64], new int[gw * gh * 64]];
+            int[][] outCoeffs = [JxlBuffers<int>.Rent(gw * gh * 64), JxlBuffers<int>.Rent(gw * gh * 64), JxlBuffers<int>.Rent(gw * gh * 64)];
             int filled = 0;
             float[] pixels = new float[64 * 64];
             float[][] coeffs = [new float[64 * 64], new float[64 * 64], new float[64 * 64]];
@@ -2969,7 +2988,7 @@ internal sealed partial class JxlVarDctEncoder
     private List<JxlToken> TokenizeGroup(int g, int pass)
     {
         (int x0, int y0, int w, int h) = GroupRect(g);
-        List<JxlToken> tokens = new(w * h * 3 * 16);
+        List<JxlToken> tokens = JxlTokenLists.Rent(w * h * 3 * 16);
         int[][] rows = [new int[w], new int[w], new int[w]];
         int[] offsets = new int[3];
         ReadOnlySpan<int> channels = [1, 0, 2];
@@ -3368,6 +3387,7 @@ internal sealed partial class JxlVarDctEncoder
             int g = i % _groups, pass = i / _groups;
             JxlBitWriter w = new();
             acCodes[pass].WriteTokens(w, acTokens[i]);
+            JxlTokenLists.Return(acTokens[i]);
             int id = 1 + (3 * _lfGroups) + 17 + i;
             if (_extraStreams is not null && extraTokens.TryGetValue(id, out List<JxlToken>? groupTokens))
             {

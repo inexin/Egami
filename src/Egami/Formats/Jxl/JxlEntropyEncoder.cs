@@ -657,6 +657,19 @@ internal sealed class JxlAnsEncodingHistogram
         if (binCount > 0)
         {
             int maxLog = ac[1].StepLog;
+
+            // Each bin's gain from a step up and loss from a step down, and those steps' sizes, kept up to date as the bin moves:
+            // only the balancing bin's terms change between steps for the others.
+            Span<long> gainUp = stackalloc long[MaxAlphabet];
+            Span<int> logUp = stackalloc int[MaxAlphabet];
+            Span<long> lossDown = stackalloc long[MaxAlphabet];
+            Span<int> logDown = stackalloc int[MaxAlphabet];
+            Span<bool> floor = stackalloc bool[MaxAlphabet];
+            for (int i = 0; i < binCount; i++)
+            {
+                Terms(ac, freqs[i], indices[i], out gainUp[i], out logUp[i], out lossDown[i], out logDown[i], out floor[i]);
+            }
+
             while (true)
             {
                 for (int log = 0; log <= maxLog; log++)
@@ -681,42 +694,47 @@ internal sealed class JxlAnsEncodingHistogram
 
                 // The first bin whose step gains most per unit of change (std::max_element keeps the first of equals).
                 int bestInc = 0;
-                long bestIncKey = DeltaInc(ac, balanceInc, freqs[0], indices[0]) >> ac[indices[0]].StepLog;
+                long bestIncKey = (gainUp[0] - balanceInc[logUp[0]]) >> logUp[0];
                 for (int i = 1; i < binCount; i++)
                 {
-                    long key = DeltaInc(ac, balanceInc, freqs[i], indices[i]) >> ac[indices[i]].StepLog;
+                    long key = (gainUp[i] - balanceInc[logUp[i]]) >> logUp[i];
                     if (bestIncKey < key)
                     {
                         (bestInc, bestIncKey) = (i, key);
                     }
                 }
 
-                if (DeltaInc(ac, balanceInc, freqs[bestInc], indices[bestInc]) > 0)
+                int moved;
+                if (gainUp[bestInc] - balanceInc[logUp[bestInc]] > 0)
                 {
-                    rest -= 1 << ac[indices[bestInc]].StepLog;
+                    rest -= 1 << logUp[bestInc];
                     indices[bestInc]--;
+                    moved = bestInc;
                 }
                 else
                 {
                     int bestDec = 0;
-                    long bestDecKey = DeltaDec(ac, balanceDec, freqs[0], indices[0]) >> ac[indices[0] + 1].StepLog;
+                    long bestDecKey = (floor[0] ? long.MaxValue : lossDown[0] - balanceDec[logDown[0]]) >> logDown[0];
                     for (int i = 1; i < binCount; i++)
                     {
-                        long key = DeltaDec(ac, balanceDec, freqs[i], indices[i]) >> ac[indices[i] + 1].StepLog;
+                        long key = (floor[i] ? long.MaxValue : lossDown[i] - balanceDec[logDown[i]]) >> logDown[i];
                         if (key < bestDecKey)
                         {
                             (bestDec, bestDecKey) = (i, key);
                         }
                     }
 
-                    if (DeltaDec(ac, balanceDec, freqs[bestDec], indices[bestDec]) >= 0)
+                    if ((floor[bestDec] ? long.MaxValue : lossDown[bestDec] - balanceDec[logDown[bestDec]]) >= 0)
                     {
                         break;
                     }
 
-                    rest += 1 << ac[indices[bestDec] + 1].StepLog;
+                    rest += 1 << logDown[bestDec];
                     indices[bestDec]++;
+                    moved = bestDec;
                 }
+
+                Terms(ac, freqs[moved], indices[moved], out gainUp[moved], out logUp[moved], out lossDown[moved], out logDown[moved], out floor[moved]);
             }
 
             for (int i = 0; i < binCount; i++)
@@ -741,13 +759,20 @@ internal sealed class JxlAnsEncodingHistogram
         return _counts[remainder] > 0;
     }
 
-    private static long DeltaInc((int Count, int StepLog, int DeltaLg2)[] ac, ReadOnlySpan<long> balanceInc, int freq, int index) =>
-        (freq * (long)ac[index].DeltaLg2) - balanceInc[ac[index].StepLog];
-
-    // A count never goes to 0: libjxl's guard (the largest delta) can be outweighed when the balancing bin is nearly empty, as
-    // it is when every symbol has a count (streaming mode's add_missing_symbols).
-    private static long DeltaDec((int Count, int StepLog, int DeltaLg2)[] ac, ReadOnlySpan<long> balanceDec, int freq, int index) =>
-        ac[index + 1].Count == 0 ? long.MaxValue : (freq * (long)ac[index + 1].DeltaLg2) - balanceDec[ac[index + 1].StepLog];
+    /// <summary>
+    /// A bin's terms for a step: the bits a step up gains before the balancing bin's share, and its size's log; the same for a
+    /// step down, which <paramref name="floor"/> rules out. A count never goes to 0: libjxl's guard (the largest delta) can be
+    /// outweighed when the balancing bin is nearly empty, as it is when every symbol has a count (streaming mode's
+    /// add_missing_symbols).
+    /// </summary>
+    private static void Terms((int Count, int StepLog, int DeltaLg2)[] ac, int freq, int index, out long gainUp, out int logUp, out long lossDown, out int logDown, out bool floor)
+    {
+        gainUp = freq * (long)ac[index].DeltaLg2;
+        logUp = ac[index].StepLog;
+        lossDown = freq * (long)ac[index + 1].DeltaLg2;
+        logDown = ac[index + 1].StepLog;
+        floor = ac[index + 1].Count == 0;
+    }
 }
 
 /// <summary>
