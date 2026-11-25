@@ -35,3 +35,7 @@ Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks.get -> bool
 Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks.init -> void
 Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces.get -> bool
 Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces.init -> void
+Egami.Fonts.SubsetOptions.DropHinting.get -> bool
+Egami.Fonts.SubsetOptions.DropHinting.init -> void
+Egami.Fonts.WebFontReader
+static Egami.Fonts.WebFontReader.ToSfnt(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null) -> byte[]!

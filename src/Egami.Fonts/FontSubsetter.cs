@@ -72,6 +72,16 @@ public sealed record SubsetOptions
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset-layout"/>
     /// </example>
     public bool LayoutClosure { get; init; }
+
+    /// <summary>
+    /// Gets whether TrueType hinting is left out: the fpgm, prep and cvt tables and every glyph's instructions, with maxp's
+    /// hinting limits set to none, so the subset is smaller and renderers rasterize it unhinted (gasp is kept). Defaults to false.
+    /// TrueType only: the hints of CFF and CFF2 charstrings are kept.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset-unhinted"/>
+    /// </example>
+    public bool DropHinting { get; init; }
 }
 
 /// <summary>A font holding only some glyphs of another, from <see cref="FontSubsetter"/>.</summary>

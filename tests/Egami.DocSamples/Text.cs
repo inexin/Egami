@@ -500,6 +500,36 @@ public class Text
     }
 
     [Fact]
+    public void WebFontToSfnt()
+    {
+        byte[] woff2File = WebFontWriter.Write(Typeface.FromFile(FontFile));
+
+        #region webfont-unwrap
+        // Back from WOFF2 to a TrueType font a desktop app installs: glyf, loca and hmtx rebuilt, every other table as it was.
+        byte[] ttf = WebFontReader.ToSfnt(woff2File);
+        Typeface installed = Typeface.FromMemory(ttf);
+        #endregion
+
+        Assert.Equal(FontFileKind.Sfnt, installed.Container);
+        Assert.Equal(Typeface.FromFile(FontFile).GlyphCount, installed.GlyphCount);
+    }
+
+    [Fact]
+    public void SubsetUnhinted()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+
+        #region subset-unhinted
+        // For screens that ignore TrueType hints anyway, leave them out: fpgm, prep, cvt and every glyph's instructions.
+        ushort[] glyphs = [.. "Hello".Select(c => face.GetGlyph(c))];
+        FontSubset hinted = FontSubsetter.Subset(face, glyphs);
+        FontSubset unhinted = FontSubsetter.Subset(face, glyphs, new SubsetOptions { DropHinting = true });
+        #endregion
+
+        Assert.True(unhinted.Data.Length < hinted.Data.Length);
+    }
+
+    [Fact]
     public void BareCff()
     {
         Typeface otf = Typeface.FromMemory(FontSubsetter.Subset(Typeface.FromFile(FontFile), [36]).Data);
