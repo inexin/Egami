@@ -15,6 +15,7 @@ public class FontBenchmarks
     private Typeface _notoFace = null!;
     private Typeface _sourceFace = null!;
     private readonly CountingSink _sink = new();
+    private readonly byte[] _notFont = new byte[64];
 
     [GlobalSetup]
     public void Setup()
@@ -25,6 +26,11 @@ public class FontBenchmarks
         _notoFace = Typeface.FromMemory(_noto);
         _sourceFace = Typeface.FromMemory(_source);
     }
+
+    /// <summary>Format detection on a TrueType font, a CFF font and data that is no font (which passes every check, EOT's too).</summary>
+    [Benchmark]
+    public int Probe() =>
+        (int)FontLoader.Probe(_noto).Kind + (int)FontLoader.Probe(_source).Kind + (int)FontLoader.Probe(_notFont).Kind;
 
     [Benchmark]
     public string LoadTrueTypeAndName() => Typeface.FromMemory(_noto).FamilyName;

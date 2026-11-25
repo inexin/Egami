@@ -1,6 +1,6 @@
 # Fonts and text
 
-Egami.Fonts is a separate package that reads TrueType, OpenType, WOFF, WOFF2 and variable fonts in managed code: faces, glyph
+Egami.Fonts is a separate package that reads TrueType, OpenType, WOFF, WOFF2, EOT and variable fonts in managed code: faces, glyph
 outlines, metrics, kerning, installed fonts and subsets. Egami.Drawing uses it to draw and measure a line of text on a canvas. Egami.Drawing and Egami.Fonts are at
 1.0 and their APIs are frozen. Egami.Fonts ships no font: text needs a face from a file, a stream,
 memory or the installed fonts, or from the opt-in [substitute fonts](#substitute-fonts) package.
@@ -9,7 +9,7 @@ memory or the installed fonts, or from the opt-in [substitute fonts](#substitute
 
 A `Typeface` is one face, immutable and shared by every thread. `Typeface.FromFile`, `FromStream` and `FromMemory` read TrueType
 (.ttf), OpenType CFF and CFF2 (.otf), collections (.ttc, .otc, with a face index), WOFF and WOFF2 (.woff, .woff2, collections
-too) and bare CFF; `FromCff` reads a bare CFF stream as PDF
+too), Embedded OpenType (.eot, and the .fntdata files PowerPoint embeds) and bare CFF; `FromCff` reads a bare CFF stream as PDF
 embeds it, with `CffOptions` for the units per em and widths it lacks. `FontLoader.Probe` tells a `FontProbe` (its `FontFileKind`,
 face count and `FontOutlines`) from the header, and `FontLoader.LoadAll` loads every face of a collection.
 
@@ -22,6 +22,11 @@ face count and `FontOutlines`) from the header, and `FontLoader.LoadAll` loads e
 - A WOFF or WOFF2 file is unwrapped once into an ordinary font in new memory (zlib, and Brotli through .NET's own decoder, with
   WOFF2's glyf, loca and hmtx transforms); the compressed bytes are not kept. `Container` says where a face came from, and
   `GetWoffMetadata` and `GetWoffPrivateData` return the file's own blocks. Every decoded table equals the reference decoders'.
+- An EOT file (versions 0x00010000, 0x00020001 and 0x00020002) is unwrapped the same way: XOR-ed data is restored and
+  MicroType Express compression undone (LZCOMP, then the compact glyf, cvt, hdmx and VDMX tables, with loca rebuilt). Every
+  table but glyf and loca comes back as it was; glyphs come back as they were, written in the compact form WOFF2 decoders use,
+  their push instructions written anew and without overlap flags, which MicroType Express does not keep. The root string and
+  the embedding bits are not enforced; a root string whose checksum is wrong gets a `Font.BadContainer` warning.
 - `GetNames` returns every `FontNameRecord`; `TryGetTable` returns any table's bytes by `FontTag`. `Embedding` reports the
   `FontEmbedding` permissions, which Egami never enforces.
 
@@ -307,7 +312,7 @@ default features), and GSUB, GPOS and GDEF are copied unchanged. The copied tabl
 
 ## Web fonts
 
-`WebFontWriter.Write` writes a face, a subset or font data as a web font: WOFF2 by default, WOFF 1.0 with
+`WebFontWriter.Write` writes a face, a subset or font data as a web font: WOFF2 by default, WOFF 1.0 or EOT with
 `WebFontOptions.Format`. Both keep every table, so the file reads back as the font it came from; WOFF2 stores glyf and loca in its
 compact transformed form and leaves out the hmtx bearings each glyph's bounding box gives (`TransformGlyf`, `TransformHmtx`), and
 its glyphs read back the same, laid out as WOFF2 decoders lay them out. A collection (TTC or OTC) becomes a WOFF2 collection whose
@@ -319,6 +324,12 @@ at level 9 or 8, whichever is smaller, giving files within about 0.5 % of Google
 The metadata and private data blocks of a WOFF or WOFF2 source are kept unless `Metadata` or `PrivateData` replace them; an empty
 value writes none. A glyf table the writer cannot read is stored untransformed, with a `Font.TransformSkipped` warning. A bare CFF
 font has no sfnt tables and throws `ArgumentException`; subset it to OpenType CFF first.
+
+EOT is written as version 0x00020001 with the font uncompressed (Egami does not write MicroType Express), its header filled
+from the font's OS/2, head and name tables. `XorFontData` XORs the font data with 0x50 and `RootString` names the pages that may
+use it (none by default, which lets any page). EOT holds a single font and no metadata or private data.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#eot)]
 
 ## Font data for PDF
 

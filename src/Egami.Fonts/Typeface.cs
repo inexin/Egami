@@ -132,7 +132,7 @@ public sealed partial class Typeface
 
     /// <summary>
     /// Gets the container the face was read from: <see cref="FontFileKind.Sfnt"/>, <see cref="FontFileKind.Collection"/>,
-    /// <see cref="FontFileKind.Cff"/>, or <see cref="FontFileKind.Woff"/> and <see cref="FontFileKind.Woff2"/> for a web font, whose
+    /// <see cref="FontFileKind.Cff"/>, or <see cref="FontFileKind.Woff"/>, <see cref="FontFileKind.Woff2"/> and <see cref="FontFileKind.Eot"/> for a web font, whose
     /// tables <see cref="TryGetTable(FontTag, out ReadOnlyMemory{byte})"/> returns decoded.
     /// </summary>
     public FontFileKind Container => _web?.Container ?? (IsBareCff ? FontFileKind.Cff : FaceOffset > 0 || IsInCollection ? FontFileKind.Collection : FontFileKind.Sfnt);
@@ -157,7 +157,7 @@ public sealed partial class Typeface
     internal IReadOnlyList<TableRecord> Tables => _tables;
 
     /// <summary>Loads one face from a font file, reading the whole file into memory and closing it.</summary>
-    /// <param name="path">The file: .ttf, .otf, .ttc, .otc, .woff, .woff2 or a bare CFF stream.</param>
+    /// <param name="path">The file: .ttf, .otf, .ttc, .otc, .woff, .woff2, .eot or a bare CFF stream.</param>
     /// <param name="index">The face to load from a collection; 0 for a single font.</param>
     /// <param name="options">How to load, or <see langword="null"/> for <see cref="FontLoadOptions.Default"/>.</param>
     /// <returns>The face.</returns>
@@ -195,10 +195,10 @@ public sealed partial class Typeface
     }
 
     /// <summary>
-    /// Loads one face from memory, which is kept, not copied, and must not change afterwards. A WOFF or WOFF2 file is unwrapped
+    /// Loads one face from memory, which is kept, not copied, and must not change afterwards. A WOFF, WOFF2 or EOT file is unwrapped
     /// into an sfnt in new memory once, and the compressed input is not kept.
     /// </summary>
-    /// <param name="data">The font data: an sfnt, a collection, a WOFF or WOFF2 file, or a bare CFF stream.</param>
+    /// <param name="data">The font data: an sfnt, a collection, a WOFF, WOFF2 or EOT file, or a bare CFF stream.</param>
     /// <param name="index">The face to load from a collection; 0 for a single font.</param>
     /// <param name="options">How to load, or <see langword="null"/> for <see cref="FontLoadOptions.Default"/>.</param>
     /// <returns>The face.</returns>
@@ -226,6 +226,7 @@ public sealed partial class Typeface
                 return FromCff(data, CffOptions.Default with { LoadOptions = options });
             case FontFileKind.Woff:
             case FontFileKind.Woff2:
+            case FontFileKind.Eot:
                 return FromDecoded(WebFontDecoder.Decode(data, options), index, options);
             case FontFileKind.Unknown:
                 throw new UnsupportedFormatException("The data is not a TrueType, OpenType or CFF font.");

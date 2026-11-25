@@ -5,9 +5,9 @@ using Egami.Fonts.Parsing;
 
 namespace Egami.Fonts.Woff;
 
-/// <summary>A WOFF or WOFF2 file unwrapped into an ordinary sfnt or collection, with the container's own blocks.</summary>
+/// <summary>A WOFF, WOFF2 or EOT file unwrapped into an ordinary sfnt or collection, with the container's own blocks.</summary>
 /// <param name="Data">The sfnt or collection bytes, which become the faces' memory.</param>
-/// <param name="Container">Woff or Woff2.</param>
+/// <param name="Container">Woff, Woff2 or Eot.</param>
 /// <param name="Metadata">The decompressed extended metadata block (UTF-8 XML), or <see langword="null"/>.</param>
 /// <param name="PrivateData">The private data block, or <see langword="null"/>.</param>
 /// <param name="FaceCount">The number of faces: 1, or the collection's count.</param>
@@ -29,7 +29,8 @@ internal static class WebFontDecoder
         {
             SfntDirectory.WoffTag => DecodeWoff(data, limit, options),
             SfntDirectory.Woff2Tag => Woff2Decoder.Decode(data, limit, options),
-            _ => throw new UnsupportedFormatException("The data is not a WOFF or WOFF2 font."),
+            _ when Eot.IsEot(data.Span) => Eot.Decode(data, limit, options),
+            _ => throw new UnsupportedFormatException("The data is not a WOFF, WOFF2 or EOT font."),
         };
     }
 

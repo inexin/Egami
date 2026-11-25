@@ -500,6 +500,22 @@ public class Text
     }
 
     [Fact]
+    public void Eot()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+
+        #region eot
+        // An Embedded OpenType file, as PowerPoint embeds fonts (.fntdata) and old Internet Explorer loads them: the font after a
+        // header with its names, XOR-ed here. Reading one, MicroType Express compressed or not, is just loading it.
+        byte[] eot = WebFontWriter.Write(face, new WebFontOptions { Format = WebFontFormat.Eot, XorFontData = true });
+        Typeface back = Typeface.FromMemory(eot);
+        #endregion
+
+        Assert.Equal(FontFileKind.Eot, back.Container);
+        Assert.Equal(face.FullName, back.FullName);
+    }
+
+    [Fact]
     public void BareCff()
     {
         Typeface otf = Typeface.FromMemory(FontSubsetter.Subset(Typeface.FromFile(FontFile), [36]).Data);

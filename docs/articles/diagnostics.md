@@ -165,7 +165,7 @@ The activity and tag names are never renamed once shipped, like the diagnostic i
 | `Exr.BlocksDamaged` | Warning | Blocks of an OpenEXR part cannot be read or decompressed; their pixels are zero |
 | `Exr.ChunkTableRebuilt` | Warning | An OpenEXR part's chunk offset table is incomplete or damaged; it was rebuilt by walking the chunks |
 | `Font.BadColorGlyph` | Warning | A glyph's color data (COLR, sbix, CBDT or SVG) is damaged, cyclic or deeper than 64 paints; the part that cannot be drawn is left out, or the glyph draws as its outline (Egami.Fonts) |
-| `Font.BadContainer` | Warning | A WOFF or WOFF2 file's header or blocks disagree with its data (a wrong length, a misplaced metadata block); the tables are still read (Egami.Fonts) |
+| `Font.BadContainer` | Warning | A WOFF, WOFF2 or EOT file's header or blocks disagree with its data (a wrong length, a misplaced metadata block, an EOT root string checksum that does not match); the tables are still read (Egami.Fonts) |
 | `Font.BadDirectory` | Warning | A font's table directory lists a table outside the file; it was dropped or cut short (Egami.Fonts) |
 | `Font.BadGlyph` | Warning | A glyph's data cannot be read; it draws empty (Egami.Fonts) |
 | `Font.BadTable` | Warning | A font table is damaged; its documented default is used (Egami.Fonts) |

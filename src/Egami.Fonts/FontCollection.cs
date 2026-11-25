@@ -156,7 +156,7 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
     }
 
     /// <summary>Adds every face of a font file, indexed from its names and loaded when matched.</summary>
-    /// <param name="path">A .ttf, .otf, .ttc, .otc, .woff or .woff2 file; a web font is decompressed and loaded at once.</param>
+    /// <param name="path">A .ttf, .otf, .ttc, .otc, .woff, .woff2 or .eot file; a web font is decompressed and loaded at once.</param>
     /// <returns>The number of faces added.</returns>
     /// <exception cref="UnsupportedFormatException">The file is not a TrueType or OpenType font or collection.</exception>
     /// <exception cref="CorruptDataException">The file's headers cannot be read.</exception>
@@ -457,7 +457,8 @@ public sealed class FontCollection : IReadOnlyCollection<FontFamily>
             string ext = Path.GetExtension(file);
             if (ext.Equals(".ttf", StringComparison.OrdinalIgnoreCase) || ext.Equals(".otf", StringComparison.OrdinalIgnoreCase)
                 || ext.Equals(".ttc", StringComparison.OrdinalIgnoreCase) || ext.Equals(".otc", StringComparison.OrdinalIgnoreCase)
-                || ext.Equals(".woff", StringComparison.OrdinalIgnoreCase) || ext.Equals(".woff2", StringComparison.OrdinalIgnoreCase))
+                || ext.Equals(".woff", StringComparison.OrdinalIgnoreCase) || ext.Equals(".woff2", StringComparison.OrdinalIgnoreCase)
+                || ext.Equals(".eot", StringComparison.OrdinalIgnoreCase))
             {
                 yield return file;
             }

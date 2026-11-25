@@ -35,6 +35,7 @@ internal static class WebFontEncoder
         {
             WebFontFormat.Woff => EncodeWoff(source, metadata, priv, limit),
             WebFontFormat.Woff2 => EncodeWoff2(source, options, metadata, priv, context),
+            WebFontFormat.Eot => EncodeEot(source, options, limit),
             _ => throw new ArgumentOutOfRangeException(nameof(options), $"Unknown web font format {options.Format}."),
         };
     }
@@ -48,6 +49,23 @@ internal static class WebFontEncoder
 
         using DiagnosticReporter reporter = context.StartDiagnostics();
         reporter.Report(DiagnosticLevel.Warning, id, message, offset >= 0 ? offset : null);
+    }
+
+    private static byte[] EncodeEot(WebFontSource source, WebFontOptions options, long limit)
+    {
+        if (source.Faces.Count != 1)
+        {
+            throw new ArgumentException("EOT holds a single font; write a collection as WOFF2.");
+        }
+
+        var bodies = new byte[source.Tables.Count][];
+        for (int i = 0; i < bodies.Length; i++)
+        {
+            bodies[i] = source.Tables[i].Data.ToArray();
+        }
+
+        byte[] sfnt = SfntAssembler.Build(source.Faces, bodies, collectionVersion: 0, limit);
+        return Eot.Encode(sfnt, options.RootString, options.XorFontData, limit);
     }
 
     private static byte[] EncodeWoff(WebFontSource source, byte[]? metadata, ReadOnlyMemory<byte> priv, long limit)

@@ -14,6 +14,12 @@ public enum WebFontFormat
 
     /// <summary>WOFF 2.0 (W3C): every table in one Brotli stream, with the glyf, loca and hmtx transforms; holds collections too.</summary>
     Woff2,
+
+    /// <summary>
+    /// Embedded OpenType (W3C member submission), version 0x00020001: the font uncompressed after a header with its names and OS/2
+    /// summary, as PowerPoint and old browsers read it. Holds a single font only; metadata and private data are left out.
+    /// </summary>
+    Eot,
 }
 
 /// <summary>How <see cref="WebFontWriter"/> writes a web font.</summary>
@@ -31,13 +37,13 @@ public sealed record WebFontOptions
     /// <summary>
     /// Gets whether WOFF2 stores glyf and loca in the transformed form (WOFF 2.0, section 5.1), which compresses TrueType outlines
     /// by about a third more. Defaults to true. A glyf table that cannot be read is stored as it is, with a
-    /// <c>Font.TransformSkipped</c> diagnostic. Ignored for WOFF 1.0.
+    /// <c>Font.TransformSkipped</c> diagnostic. Ignored for WOFF 1.0 and EOT.
     /// </summary>
     public bool TransformGlyf { get; init; } = true;
 
     /// <summary>
     /// Gets whether WOFF2 leaves out the left side bearings of hmtx that equal each glyph's xMin (WOFF 2.0, section 5.4), when glyf
-    /// is transformed too. Defaults to true. Ignored for WOFF 1.0.
+    /// is transformed too. Defaults to true. Ignored for WOFF 1.0 and EOT.
     /// </summary>
     public bool TransformHmtx { get; init; } = true;
 
@@ -54,6 +60,15 @@ public sealed record WebFontOptions
     public ReadOnlyMemory<byte>? PrivateData { get; init; }
 
     /// <summary>
+    /// Gets the EOT root string: the URLs, separated by NUL characters, of the pages that may use the font, or
+    /// <see langword="null"/> (the default) for none, which lets any page use it. Ignored for WOFF and WOFF2.
+    /// </summary>
+    public string? RootString { get; init; }
+
+    /// <summary>Gets whether EOT font data is XOR-ed with 0x50 (TTEMBED_XORENCRYPTDATA). Defaults to false. Ignored for WOFF and WOFF2.</summary>
+    public bool XorFontData { get; init; }
+
+    /// <summary>
     /// Gets the context whose <see cref="SafetyLimits.MaxTotalBytes"/> bounds the input and output and which receives diagnostics,
     /// or <see langword="null"/> for the face's own context (<see cref="FontLoadOptions.Context"/>), else <see cref="EgamiContext.Default"/>.
     /// </summary>
@@ -61,7 +76,7 @@ public sealed record WebFontOptions
 }
 
 /// <summary>
-/// Writes fonts as WOFF 1.0 and WOFF 2.0 files for the web, losslessly: every table of the font is kept, and a WOFF2 file read
+/// Writes fonts as WOFF 1.0, WOFF 2.0 and EOT files for the web, losslessly: every table of the font is kept, and a WOFF2 file read
 /// back gives the same tables but glyf and loca, whose glyphs read the same but may be laid out more compactly, and head, whose
 /// flags gain bit 11 (the font has been through a lossless modifying transform), as the reference encoder sets it.
 /// </summary>
@@ -78,7 +93,7 @@ public static class WebFontWriter
     /// <summary>Writes a face as a web font: its tables as loaded; a face of a collection becomes a single font.</summary>
     /// <param name="face">The face.</param>
     /// <param name="options">How to write it, or <see langword="null"/> for <see cref="WebFontOptions.Default"/>.</param>
-    /// <returns>The WOFF or WOFF2 file.</returns>
+    /// <returns>The WOFF, WOFF2 or EOT file.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="face"/> is null.</exception>
     /// <exception cref="ArgumentException">The face is a bare CFF font, which has no sfnt tables.</exception>
     /// <exception cref="LimitExceededException">The font is larger than the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
@@ -118,7 +133,7 @@ public static class WebFontWriter
     /// <summary>Writes a subset as a web font.</summary>
     /// <param name="subset">The subset, from <see cref="FontSubsetter"/>.</param>
     /// <param name="options">How to write it, or <see langword="null"/> for <see cref="WebFontOptions.Default"/>.</param>
-    /// <returns>The WOFF or WOFF2 file.</returns>
+    /// <returns>The WOFF, WOFF2 or EOT file.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="subset"/> is null.</exception>
     /// <exception cref="ArgumentException">The subset is a bare CFF stream (<see cref="SubsetFormat.BareCff"/>).</exception>
     /// <exception cref="LimitExceededException">The subset is larger than the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
@@ -138,14 +153,14 @@ public static class WebFontWriter
 
     /// <summary>
     /// Writes font data as a web font: an sfnt, or a TrueType or OpenType collection (WOFF2 only), whose tables are shared as in the
-    /// collection. A WOFF or WOFF2 file is unwrapped and written again, keeping its metadata and private data unless the options
+    /// collection. A WOFF, WOFF2 or EOT file is unwrapped and written again, keeping its metadata and private data unless the options
     /// replace them.
     /// </summary>
     /// <param name="data">The font data.</param>
     /// <param name="options">How to write it, or <see langword="null"/> for <see cref="WebFontOptions.Default"/>.</param>
-    /// <returns>The WOFF or WOFF2 file.</returns>
+    /// <returns>The WOFF, WOFF2 or EOT file.</returns>
     /// <exception cref="ArgumentException">
-    /// The data is not an sfnt, collection or web font (a bare CFF stream, say), or is a collection and the format is WOFF 1.0.
+    /// The data is not an sfnt, collection or web font (a bare CFF stream, say), or is a collection and the format is WOFF 1.0 or EOT.
     /// </exception>
     /// <exception cref="CorruptDataException">The table directory or a web font's data cannot be read.</exception>
     /// <exception cref="LimitExceededException">The data is larger than the context's <see cref="SafetyLimits.MaxTotalBytes"/>.</exception>
