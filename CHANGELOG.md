@@ -38,6 +38,22 @@ EPS previews (roadmap 2.3.14).
   line, closed contours stay closed (their closing line bends too) and the fill rule is kept. A recipe in the drawing guide
   bends text into an arch.
 
+## Egami.Metafiles 1.1.0 (unreleased)
+
+EMF writing, stage A (roadmap 2.3.7.1).
+
+- `EmfCanvas` is a `Canvas` that writes an EMF to a stream when disposed, leaving the stream open: dual EMF+ by default, or
+  EMF+ only or plain EMF (`EmfWriteOptions.Kind`), at a DPI, with a description, or gzipped as EMZ (`Compress`). Paths,
+  rectangles, rounded rectangles, ovals and points with solid paints (alpha kept in EMF+), strokes with every `Stroke`
+  setting (a hairline as GDI+'s one-pixel pen), transforms, save and restore, rectangle and path clips (intersect and
+  difference), the antialias flag, `Clear` and `DrawPaint` are written as EMF+ records and as GDI records (paths,
+  `ExtCreatePen`, solid brushes, the world transform, `SaveDC`, clip regions and clip paths). Equal pens, brushes and paths
+  are written once; the EMF+ and GDI object tables reuse their slots.
+- Other paints (on shapes and text), images, meshes and layers with opacity, blending, filters or masks are drawn by
+  Egami as an image at `EmfWriteOptions.FallbackScale` and written as an EMF+ image and a GDI `AlphaBlend`, with one new
+  `Metafile.FallbackImage` warning per kind in `EmfCanvas.Warnings`. Text is written as outlines.
+- A "Writing EMF" section in the metafiles guide.
+
 ## Egami.Svg and Egami.Css 1.6.0 (unreleased)
 
 SVG animation (roadmap 2.10.1): SMIL and CSS animations drawn at any moment, as frames, animated rasters, frozen static copies

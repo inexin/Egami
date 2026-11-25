@@ -1,3 +1,5 @@
+using System.Numerics;
+
 using Egami.Drawing;
 using Egami.Fonts;
 using Egami.Fonts.Substitutes;
@@ -154,5 +156,35 @@ public class Metafiles
         using Raster<Rgba8> gdi = picture.Rasterize<Rgba8>(new MetafileRenderOptions { Playback = MetafilePlayback.Gdi });
         #endregion
         Assert.True(gdi.Width > 0);
+    }
+
+    [Fact]
+    public void WriteAnEmf()
+    {
+        string output = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"egami-doc-{Guid.NewGuid():N}.emf");
+        try
+        {
+            #region emf-canvas
+            // A dual EMF+ file at 96 DPI, 300 by 200 pixels: Office and GDI+ play the EMF+ records, older programs the GDI ones.
+            using (FileStream stream = File.Create(output))
+            using (EmfCanvas emf = new(stream, 300, 200, new EmfWriteOptions { Description = "Sales chart" }))
+            {
+                emf.FillRect(new RectF(20, 20, 260, 160), new Rgba8(240, 244, 248, 255));
+                emf.DrawLine(new Vector2(40, 160), new Vector2(260, 60), new Stroke(3) { Cap = LineCap.Round }, new Rgba8(0, 102, 204, 255));
+                emf.FillOval(new RectF(250, 50, 20, 20), new Rgba8(204, 51, 0, 255));
+                foreach (EgamiDiagnostic warning in emf.Warnings)
+                {
+                    Console.WriteLine(warning.Message); // anything drawn as an image instead
+                }
+            }
+
+            Metafile written = Metafile.Load(output);
+            #endregion
+            Assert.Equal(MetafileKind.EmfPlusDual, written.Kind);
+        }
+        finally
+        {
+            File.Delete(output);
+        }
     }
 }
