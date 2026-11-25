@@ -27,6 +27,12 @@ EPS previews (roadmap 2.3.14).
 
 ## Egami.Drawing 1.6.0 (unreleased)
 
+- `Canvas.DrawBevel` draws a `Bevel` over a filled shape: DrawingML's twelve bevel profiles (`BevelProfile`) with a width and
+  height, eleven preset materials (`BevelMaterial`) and a `BevelLight` (angle, elevation, intensity; `FromDirection` takes a
+  DrawingML rig's `LightDirection`). It is lit in device pixels from the shape's edge distance, which it shares with the PSD
+  flattener's bevel and emboss, and drawn as an image on every backend. `Canvas.FillBevel` fills the shape with any paint
+  lit as a bevel instead: the paint's own color is lightened and darkened, and a metal's shine takes its hue, closer to
+  DrawingML's metal and clear materials. A section in the drawing guide shows both.
 - `Path.Warp` sends every point of a path through any function of the plane (a wave, an arch, text bent between two
   curves): lines and curves are split until the result stays within a tolerance, a line whose image stays straight stays a
   line, closed contours stay closed (their closing line bends too) and the fill rule is kept. A recipe in the drawing guide

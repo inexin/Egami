@@ -1,2 +1,75 @@
 #nullable enable
+Egami.Drawing.Bevel
+Egami.Drawing.Bevel.<Clone>$() -> Egami.Drawing.Bevel!
+Egami.Drawing.Bevel.Bevel() -> void
+Egami.Drawing.Bevel.Equals(Egami.Drawing.Bevel? other) -> bool
+Egami.Drawing.Bevel.Height.get -> float
+Egami.Drawing.Bevel.Height.init -> void
+Egami.Drawing.Bevel.Light.get -> Egami.Drawing.BevelLight
+Egami.Drawing.Bevel.Light.init -> void
+Egami.Drawing.Bevel.Material.get -> Egami.Drawing.BevelMaterial
+Egami.Drawing.Bevel.Material.init -> void
+Egami.Drawing.Bevel.Profile.get -> Egami.Drawing.BevelProfile
+Egami.Drawing.Bevel.Profile.init -> void
+Egami.Drawing.Bevel.Width.get -> float
+Egami.Drawing.Bevel.Width.init -> void
+Egami.Drawing.BevelLight
+Egami.Drawing.BevelLight.Angle.get -> float
+Egami.Drawing.BevelLight.Angle.init -> void
+Egami.Drawing.BevelLight.BevelLight() -> void
+Egami.Drawing.BevelLight.BevelLight(float Angle, float Elevation, float Intensity = 1) -> void
+Egami.Drawing.BevelLight.Deconstruct(out float Angle, out float Elevation, out float Intensity) -> void
+Egami.Drawing.BevelLight.Elevation.get -> float
+Egami.Drawing.BevelLight.Elevation.init -> void
+Egami.Drawing.BevelLight.Equals(Egami.Drawing.BevelLight other) -> bool
+Egami.Drawing.BevelLight.Intensity.get -> float
+Egami.Drawing.BevelLight.Intensity.init -> void
+Egami.Drawing.BevelMaterial
+Egami.Drawing.BevelMaterial.Clear = 8 -> Egami.Drawing.BevelMaterial
+Egami.Drawing.BevelMaterial.DarkEdge = 5 -> Egami.Drawing.BevelMaterial
+Egami.Drawing.BevelMaterial.Flat = 7 -> Egami.Drawing.BevelMaterial
+Egami.Drawing.BevelMaterial.Matte = 0 -> Egami.Drawing.BevelMaterial
+Egami.Drawing.BevelMaterial.Metal = 3 -> Egami.Drawing.BevelMaterial
+Egami.Drawing.BevelMaterial.Plastic = 2 -> Egami.Drawing.BevelMaterial
+Egami.Drawing.BevelMaterial.Powder = 9 -> Egami.Drawing.BevelMaterial
+Egami.Drawing.BevelMaterial.SoftEdge = 6 -> Egami.Drawing.BevelMaterial
+Egami.Drawing.BevelMaterial.SoftMetal = 4 -> Egami.Drawing.BevelMaterial
+Egami.Drawing.BevelMaterial.TranslucentPowder = 10 -> Egami.Drawing.BevelMaterial
+Egami.Drawing.BevelMaterial.WarmMatte = 1 -> Egami.Drawing.BevelMaterial
+Egami.Drawing.BevelProfile
+Egami.Drawing.BevelProfile.Angle = 4 -> Egami.Drawing.BevelProfile
+Egami.Drawing.BevelProfile.ArtDeco = 11 -> Egami.Drawing.BevelProfile
+Egami.Drawing.BevelProfile.Circle = 0 -> Egami.Drawing.BevelProfile
+Egami.Drawing.BevelProfile.Convex = 6 -> Egami.Drawing.BevelProfile
+Egami.Drawing.BevelProfile.CoolSlant = 3 -> Egami.Drawing.BevelProfile
+Egami.Drawing.BevelProfile.Cross = 2 -> Egami.Drawing.BevelProfile
+Egami.Drawing.BevelProfile.Divot = 8 -> Egami.Drawing.BevelProfile
+Egami.Drawing.BevelProfile.HardEdge = 10 -> Egami.Drawing.BevelProfile
+Egami.Drawing.BevelProfile.RelaxedInset = 1 -> Egami.Drawing.BevelProfile
+Egami.Drawing.BevelProfile.Riblet = 9 -> Egami.Drawing.BevelProfile
+Egami.Drawing.BevelProfile.Slope = 7 -> Egami.Drawing.BevelProfile
+Egami.Drawing.BevelProfile.SoftRound = 5 -> Egami.Drawing.BevelProfile
+Egami.Drawing.Canvas.DrawBevel(Egami.Drawing.Path! path, Egami.Drawing.Bevel! bevel) -> void
+Egami.Drawing.Canvas.FillBevel(Egami.Drawing.Path! path, Egami.Drawing.Paint! paint, Egami.Drawing.Bevel! bevel) -> void
+Egami.Drawing.LightDirection
+Egami.Drawing.LightDirection.Bottom = 6 -> Egami.Drawing.LightDirection
+Egami.Drawing.LightDirection.BottomLeft = 5 -> Egami.Drawing.LightDirection
+Egami.Drawing.LightDirection.BottomRight = 7 -> Egami.Drawing.LightDirection
+Egami.Drawing.LightDirection.Left = 3 -> Egami.Drawing.LightDirection
+Egami.Drawing.LightDirection.Right = 4 -> Egami.Drawing.LightDirection
+Egami.Drawing.LightDirection.Top = 1 -> Egami.Drawing.LightDirection
+Egami.Drawing.LightDirection.TopLeft = 0 -> Egami.Drawing.LightDirection
+Egami.Drawing.LightDirection.TopRight = 2 -> Egami.Drawing.LightDirection
+override Egami.Drawing.Bevel.Equals(object? obj) -> bool
+override Egami.Drawing.Bevel.GetHashCode() -> int
+override Egami.Drawing.Bevel.ToString() -> string!
+override Egami.Drawing.BevelLight.GetHashCode() -> int
+static Egami.Drawing.Bevel.operator !=(Egami.Drawing.Bevel? left, Egami.Drawing.Bevel? right) -> bool
+static Egami.Drawing.Bevel.operator ==(Egami.Drawing.Bevel? left, Egami.Drawing.Bevel? right) -> bool
+static Egami.Drawing.BevelLight.Default.get -> Egami.Drawing.BevelLight
+static Egami.Drawing.BevelLight.FromDirection(Egami.Drawing.LightDirection direction, float elevation = 45, float intensity = 1) -> Egami.Drawing.BevelLight
+static Egami.Drawing.BevelLight.operator !=(Egami.Drawing.BevelLight left, Egami.Drawing.BevelLight right) -> bool
+static Egami.Drawing.BevelLight.operator ==(Egami.Drawing.BevelLight left, Egami.Drawing.BevelLight right) -> bool
+~override Egami.Drawing.BevelLight.Equals(object obj) -> bool
+~override Egami.Drawing.BevelLight.ToString() -> string
 Egami.Drawing.Path.Warp(System.Func<System.Numerics.Vector2, System.Numerics.Vector2>! map, float tolerance = 0.05) -> Egami.Drawing.Path!
