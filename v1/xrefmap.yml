@@ -69150,6 +69150,381 @@ references:
   commentId: N:Egami.Metafiles
   fullName: Egami.Metafiles
   nameWithType: Egami.Metafiles
+- uid: Egami.Metafiles.EmfCanvas
+  name: EmfCanvas
+  href: api/Egami.Metafiles.EmfCanvas.html
+  commentId: T:Egami.Metafiles.EmfCanvas
+  fullName: Egami.Metafiles.EmfCanvas
+  nameWithType: EmfCanvas
+- uid: Egami.Metafiles.EmfCanvas.#ctor(System.IO.Stream,System.Single,System.Single,Egami.Metafiles.EmfWriteOptions)
+  name: EmfCanvas(Stream, float, float, EmfWriteOptions?)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas__ctor_System_IO_Stream_System_Single_System_Single_Egami_Metafiles_EmfWriteOptions_
+  commentId: M:Egami.Metafiles.EmfCanvas.#ctor(System.IO.Stream,System.Single,System.Single,Egami.Metafiles.EmfWriteOptions)
+  name.vb: New(Stream, Single, Single, EmfWriteOptions)
+  fullName: Egami.Metafiles.EmfCanvas.EmfCanvas(System.IO.Stream, float, float, Egami.Metafiles.EmfWriteOptions?)
+  fullName.vb: Egami.Metafiles.EmfCanvas.New(System.IO.Stream, Single, Single, Egami.Metafiles.EmfWriteOptions)
+  nameWithType: EmfCanvas.EmfCanvas(Stream, float, float, EmfWriteOptions?)
+  nameWithType.vb: EmfCanvas.New(Stream, Single, Single, EmfWriteOptions)
+- uid: Egami.Metafiles.EmfCanvas.#ctor*
+  name: EmfCanvas
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas__ctor_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Metafiles.EmfCanvas.EmfCanvas
+  fullName.vb: Egami.Metafiles.EmfCanvas.New
+  nameWithType: EmfCanvas.EmfCanvas
+  nameWithType.vb: EmfCanvas.New
+- uid: Egami.Metafiles.EmfCanvas.Dispose(System.Boolean)
+  name: Dispose(bool)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_Dispose_System_Boolean_
+  commentId: M:Egami.Metafiles.EmfCanvas.Dispose(System.Boolean)
+  name.vb: Dispose(Boolean)
+  fullName: Egami.Metafiles.EmfCanvas.Dispose(bool)
+  fullName.vb: Egami.Metafiles.EmfCanvas.Dispose(Boolean)
+  nameWithType: EmfCanvas.Dispose(bool)
+  nameWithType.vb: EmfCanvas.Dispose(Boolean)
+- uid: Egami.Metafiles.EmfCanvas.Dispose*
+  name: Dispose
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_Dispose_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.Dispose
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.Dispose
+  nameWithType: EmfCanvas.Dispose
+- uid: Egami.Metafiles.EmfCanvas.OnClear(Egami.Pixels.RgbaF32)
+  name: OnClear(RgbaF32)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnClear_Egami_Pixels_RgbaF32_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnClear(Egami.Pixels.RgbaF32)
+  fullName: Egami.Metafiles.EmfCanvas.OnClear(Egami.Pixels.RgbaF32)
+  nameWithType: EmfCanvas.OnClear(RgbaF32)
+- uid: Egami.Metafiles.EmfCanvas.OnClear*
+  name: OnClear
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnClear_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnClear
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnClear
+  nameWithType: EmfCanvas.OnClear
+- uid: Egami.Metafiles.EmfCanvas.OnClipPath(Egami.Drawing.Path,Egami.Drawing.ClipOp,System.Boolean)
+  name: OnClipPath(Path, ClipOp, bool)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnClipPath_Egami_Drawing_Path_Egami_Drawing_ClipOp_System_Boolean_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnClipPath(Egami.Drawing.Path,Egami.Drawing.ClipOp,System.Boolean)
+  name.vb: OnClipPath(Path, ClipOp, Boolean)
+  fullName: Egami.Metafiles.EmfCanvas.OnClipPath(Egami.Drawing.Path, Egami.Drawing.ClipOp, bool)
+  fullName.vb: Egami.Metafiles.EmfCanvas.OnClipPath(Egami.Drawing.Path, Egami.Drawing.ClipOp, Boolean)
+  nameWithType: EmfCanvas.OnClipPath(Path, ClipOp, bool)
+  nameWithType.vb: EmfCanvas.OnClipPath(Path, ClipOp, Boolean)
+- uid: Egami.Metafiles.EmfCanvas.OnClipPath*
+  name: OnClipPath
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnClipPath_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnClipPath
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnClipPath
+  nameWithType: EmfCanvas.OnClipPath
+- uid: Egami.Metafiles.EmfCanvas.OnClipRect(Egami.Drawing.RectF,Egami.Drawing.ClipOp,System.Boolean)
+  name: OnClipRect(RectF, ClipOp, bool)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnClipRect_Egami_Drawing_RectF_Egami_Drawing_ClipOp_System_Boolean_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnClipRect(Egami.Drawing.RectF,Egami.Drawing.ClipOp,System.Boolean)
+  name.vb: OnClipRect(RectF, ClipOp, Boolean)
+  fullName: Egami.Metafiles.EmfCanvas.OnClipRect(Egami.Drawing.RectF, Egami.Drawing.ClipOp, bool)
+  fullName.vb: Egami.Metafiles.EmfCanvas.OnClipRect(Egami.Drawing.RectF, Egami.Drawing.ClipOp, Boolean)
+  nameWithType: EmfCanvas.OnClipRect(RectF, ClipOp, bool)
+  nameWithType.vb: EmfCanvas.OnClipRect(RectF, ClipOp, Boolean)
+- uid: Egami.Metafiles.EmfCanvas.OnClipRect*
+  name: OnClipRect
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnClipRect_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnClipRect
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnClipRect
+  nameWithType: EmfCanvas.OnClipRect
+- uid: Egami.Metafiles.EmfCanvas.OnClipRoundRect(Egami.Drawing.RoundRect,Egami.Drawing.ClipOp,System.Boolean)
+  name: OnClipRoundRect(RoundRect, ClipOp, bool)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnClipRoundRect_Egami_Drawing_RoundRect_Egami_Drawing_ClipOp_System_Boolean_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnClipRoundRect(Egami.Drawing.RoundRect,Egami.Drawing.ClipOp,System.Boolean)
+  name.vb: OnClipRoundRect(RoundRect, ClipOp, Boolean)
+  fullName: Egami.Metafiles.EmfCanvas.OnClipRoundRect(Egami.Drawing.RoundRect, Egami.Drawing.ClipOp, bool)
+  fullName.vb: Egami.Metafiles.EmfCanvas.OnClipRoundRect(Egami.Drawing.RoundRect, Egami.Drawing.ClipOp, Boolean)
+  nameWithType: EmfCanvas.OnClipRoundRect(RoundRect, ClipOp, bool)
+  nameWithType.vb: EmfCanvas.OnClipRoundRect(RoundRect, ClipOp, Boolean)
+- uid: Egami.Metafiles.EmfCanvas.OnClipRoundRect*
+  name: OnClipRoundRect
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnClipRoundRect_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnClipRoundRect
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnClipRoundRect
+  nameWithType: EmfCanvas.OnClipRoundRect
+- uid: Egami.Metafiles.EmfCanvas.OnDrawImage(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)
+  name: OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint?)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnDrawImage(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)
+  name.vb: OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint)
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawImage(Egami.Raster, Egami.Drawing.RectF, Egami.Drawing.RectF, Egami.Operations.SamplingOptions, Egami.Drawing.Paint?)
+  fullName.vb: Egami.Metafiles.EmfCanvas.OnDrawImage(Egami.Raster, Egami.Drawing.RectF, Egami.Drawing.RectF, Egami.Operations.SamplingOptions, Egami.Drawing.Paint)
+  nameWithType: EmfCanvas.OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint?)
+  nameWithType.vb: EmfCanvas.OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint)
+- uid: Egami.Metafiles.EmfCanvas.OnDrawImage*
+  name: OnDrawImage
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawImage_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnDrawImage
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawImage
+  nameWithType: EmfCanvas.OnDrawImage
+- uid: Egami.Metafiles.EmfCanvas.OnDrawImageMask(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.Paint,Egami.Operations.SamplingOptions)
+  name: OnDrawImageMask(Raster, RectF, Paint, SamplingOptions)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawImageMask_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_Paint_Egami_Operations_SamplingOptions_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnDrawImageMask(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.Paint,Egami.Operations.SamplingOptions)
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawImageMask(Egami.Raster, Egami.Drawing.RectF, Egami.Drawing.Paint, Egami.Operations.SamplingOptions)
+  nameWithType: EmfCanvas.OnDrawImageMask(Raster, RectF, Paint, SamplingOptions)
+- uid: Egami.Metafiles.EmfCanvas.OnDrawImageMask*
+  name: OnDrawImageMask
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawImageMask_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnDrawImageMask
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawImageMask
+  nameWithType: EmfCanvas.OnDrawImageMask
+- uid: Egami.Metafiles.EmfCanvas.OnDrawMesh(Egami.Drawing.Mesh,Egami.Drawing.Paint,Egami.Operations.BlendMode,System.ReadOnlySpan{Egami.Drawing.GradientStop})
+  name: OnDrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan<GradientStop>)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__
+  commentId: M:Egami.Metafiles.EmfCanvas.OnDrawMesh(Egami.Drawing.Mesh,Egami.Drawing.Paint,Egami.Operations.BlendMode,System.ReadOnlySpan{Egami.Drawing.GradientStop})
+  name.vb: OnDrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan(Of GradientStop))
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawMesh(Egami.Drawing.Mesh, Egami.Drawing.Paint, Egami.Operations.BlendMode, System.ReadOnlySpan<Egami.Drawing.GradientStop>)
+  fullName.vb: Egami.Metafiles.EmfCanvas.OnDrawMesh(Egami.Drawing.Mesh, Egami.Drawing.Paint, Egami.Operations.BlendMode, System.ReadOnlySpan(Of Egami.Drawing.GradientStop))
+  nameWithType: EmfCanvas.OnDrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan<GradientStop>)
+  nameWithType.vb: EmfCanvas.OnDrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan(Of GradientStop))
+- uid: Egami.Metafiles.EmfCanvas.OnDrawMesh*
+  name: OnDrawMesh
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawMesh_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnDrawMesh
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawMesh
+  nameWithType: EmfCanvas.OnDrawMesh
+- uid: Egami.Metafiles.EmfCanvas.OnDrawOval(Egami.Drawing.RectF,Egami.Drawing.Stroke,Egami.Drawing.Paint)
+  name: OnDrawOval(RectF, Stroke?, Paint)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawOval_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnDrawOval(Egami.Drawing.RectF,Egami.Drawing.Stroke,Egami.Drawing.Paint)
+  name.vb: OnDrawOval(RectF, Stroke, Paint)
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawOval(Egami.Drawing.RectF, Egami.Drawing.Stroke?, Egami.Drawing.Paint)
+  fullName.vb: Egami.Metafiles.EmfCanvas.OnDrawOval(Egami.Drawing.RectF, Egami.Drawing.Stroke, Egami.Drawing.Paint)
+  nameWithType: EmfCanvas.OnDrawOval(RectF, Stroke?, Paint)
+  nameWithType.vb: EmfCanvas.OnDrawOval(RectF, Stroke, Paint)
+- uid: Egami.Metafiles.EmfCanvas.OnDrawOval*
+  name: OnDrawOval
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawOval_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnDrawOval
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawOval
+  nameWithType: EmfCanvas.OnDrawOval
+- uid: Egami.Metafiles.EmfCanvas.OnDrawPath(Egami.Drawing.Path,Egami.Drawing.Stroke,Egami.Drawing.Paint)
+  name: OnDrawPath(Path, Stroke?, Paint)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawPath_Egami_Drawing_Path_Egami_Drawing_Stroke_Egami_Drawing_Paint_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnDrawPath(Egami.Drawing.Path,Egami.Drawing.Stroke,Egami.Drawing.Paint)
+  name.vb: OnDrawPath(Path, Stroke, Paint)
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawPath(Egami.Drawing.Path, Egami.Drawing.Stroke?, Egami.Drawing.Paint)
+  fullName.vb: Egami.Metafiles.EmfCanvas.OnDrawPath(Egami.Drawing.Path, Egami.Drawing.Stroke, Egami.Drawing.Paint)
+  nameWithType: EmfCanvas.OnDrawPath(Path, Stroke?, Paint)
+  nameWithType.vb: EmfCanvas.OnDrawPath(Path, Stroke, Paint)
+- uid: Egami.Metafiles.EmfCanvas.OnDrawPath*
+  name: OnDrawPath
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawPath_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnDrawPath
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawPath
+  nameWithType: EmfCanvas.OnDrawPath
+- uid: Egami.Metafiles.EmfCanvas.OnDrawRect(Egami.Drawing.RectF,Egami.Drawing.Stroke,Egami.Drawing.Paint)
+  name: OnDrawRect(RectF, Stroke?, Paint)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawRect_Egami_Drawing_RectF_Egami_Drawing_Stroke_Egami_Drawing_Paint_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnDrawRect(Egami.Drawing.RectF,Egami.Drawing.Stroke,Egami.Drawing.Paint)
+  name.vb: OnDrawRect(RectF, Stroke, Paint)
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawRect(Egami.Drawing.RectF, Egami.Drawing.Stroke?, Egami.Drawing.Paint)
+  fullName.vb: Egami.Metafiles.EmfCanvas.OnDrawRect(Egami.Drawing.RectF, Egami.Drawing.Stroke, Egami.Drawing.Paint)
+  nameWithType: EmfCanvas.OnDrawRect(RectF, Stroke?, Paint)
+  nameWithType.vb: EmfCanvas.OnDrawRect(RectF, Stroke, Paint)
+- uid: Egami.Metafiles.EmfCanvas.OnDrawRect*
+  name: OnDrawRect
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnDrawRect_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnDrawRect
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnDrawRect
+  nameWithType: EmfCanvas.OnDrawRect
+- uid: Egami.Metafiles.EmfCanvas.OnRestore
+  name: OnRestore()
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnRestore
+  commentId: M:Egami.Metafiles.EmfCanvas.OnRestore
+  fullName: Egami.Metafiles.EmfCanvas.OnRestore()
+  nameWithType: EmfCanvas.OnRestore()
+- uid: Egami.Metafiles.EmfCanvas.OnRestore*
+  name: OnRestore
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnRestore_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnRestore
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnRestore
+  nameWithType: EmfCanvas.OnRestore
+- uid: Egami.Metafiles.EmfCanvas.OnSave
+  name: OnSave()
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnSave
+  commentId: M:Egami.Metafiles.EmfCanvas.OnSave
+  fullName: Egami.Metafiles.EmfCanvas.OnSave()
+  nameWithType: EmfCanvas.OnSave()
+- uid: Egami.Metafiles.EmfCanvas.OnSave*
+  name: OnSave
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnSave_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnSave
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnSave
+  nameWithType: EmfCanvas.OnSave
+- uid: Egami.Metafiles.EmfCanvas.OnSaveLayer(Egami.Drawing.LayerOptions)
+  name: OnSaveLayer(LayerOptions)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnSaveLayer_Egami_Drawing_LayerOptions_
+  commentId: M:Egami.Metafiles.EmfCanvas.OnSaveLayer(Egami.Drawing.LayerOptions)
+  fullName: Egami.Metafiles.EmfCanvas.OnSaveLayer(Egami.Drawing.LayerOptions)
+  nameWithType: EmfCanvas.OnSaveLayer(LayerOptions)
+- uid: Egami.Metafiles.EmfCanvas.OnSaveLayer*
+  name: OnSaveLayer
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnSaveLayer_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.OnSaveLayer
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.OnSaveLayer
+  nameWithType: EmfCanvas.OnSaveLayer
+- uid: Egami.Metafiles.EmfCanvas.Options
+  name: Options
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_Options
+  commentId: P:Egami.Metafiles.EmfCanvas.Options
+  fullName: Egami.Metafiles.EmfCanvas.Options
+  nameWithType: EmfCanvas.Options
+- uid: Egami.Metafiles.EmfCanvas.Options*
+  name: Options
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_Options_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.Options
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.Options
+  nameWithType: EmfCanvas.Options
+- uid: Egami.Metafiles.EmfCanvas.Warnings
+  name: Warnings
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_Warnings
+  commentId: P:Egami.Metafiles.EmfCanvas.Warnings
+  fullName: Egami.Metafiles.EmfCanvas.Warnings
+  nameWithType: EmfCanvas.Warnings
+- uid: Egami.Metafiles.EmfCanvas.Warnings*
+  name: Warnings
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_Warnings_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.Warnings
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.Warnings
+  nameWithType: EmfCanvas.Warnings
+- uid: Egami.Metafiles.EmfText
+  name: EmfText
+  href: api/Egami.Metafiles.EmfText.html
+  commentId: T:Egami.Metafiles.EmfText
+  fullName: Egami.Metafiles.EmfText
+  nameWithType: EmfText
+- uid: Egami.Metafiles.EmfText.Glyphs
+  name: Glyphs
+  href: api/Egami.Metafiles.EmfText.html#Egami_Metafiles_EmfText_Glyphs
+  commentId: F:Egami.Metafiles.EmfText.Glyphs
+  fullName: Egami.Metafiles.EmfText.Glyphs
+  nameWithType: EmfText.Glyphs
+- uid: Egami.Metafiles.EmfText.Outlines
+  name: Outlines
+  href: api/Egami.Metafiles.EmfText.html#Egami_Metafiles_EmfText_Outlines
+  commentId: F:Egami.Metafiles.EmfText.Outlines
+  fullName: Egami.Metafiles.EmfText.Outlines
+  nameWithType: EmfText.Outlines
+- uid: Egami.Metafiles.EmfWriteOptions
+  name: EmfWriteOptions
+  href: api/Egami.Metafiles.EmfWriteOptions.html
+  commentId: T:Egami.Metafiles.EmfWriteOptions
+  fullName: Egami.Metafiles.EmfWriteOptions
+  nameWithType: EmfWriteOptions
+- uid: Egami.Metafiles.EmfWriteOptions.Compress
+  name: Compress
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Compress
+  commentId: P:Egami.Metafiles.EmfWriteOptions.Compress
+  fullName: Egami.Metafiles.EmfWriteOptions.Compress
+  nameWithType: EmfWriteOptions.Compress
+- uid: Egami.Metafiles.EmfWriteOptions.Compress*
+  name: Compress
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Compress_
+  commentId: Overload:Egami.Metafiles.EmfWriteOptions.Compress
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfWriteOptions.Compress
+  nameWithType: EmfWriteOptions.Compress
+- uid: Egami.Metafiles.EmfWriteOptions.Default
+  name: Default
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Default
+  commentId: P:Egami.Metafiles.EmfWriteOptions.Default
+  fullName: Egami.Metafiles.EmfWriteOptions.Default
+  nameWithType: EmfWriteOptions.Default
+- uid: Egami.Metafiles.EmfWriteOptions.Default*
+  name: Default
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Default_
+  commentId: Overload:Egami.Metafiles.EmfWriteOptions.Default
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfWriteOptions.Default
+  nameWithType: EmfWriteOptions.Default
+- uid: Egami.Metafiles.EmfWriteOptions.Description
+  name: Description
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Description
+  commentId: P:Egami.Metafiles.EmfWriteOptions.Description
+  fullName: Egami.Metafiles.EmfWriteOptions.Description
+  nameWithType: EmfWriteOptions.Description
+- uid: Egami.Metafiles.EmfWriteOptions.Description*
+  name: Description
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Description_
+  commentId: Overload:Egami.Metafiles.EmfWriteOptions.Description
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfWriteOptions.Description
+  nameWithType: EmfWriteOptions.Description
+- uid: Egami.Metafiles.EmfWriteOptions.Dpi
+  name: Dpi
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Dpi
+  commentId: P:Egami.Metafiles.EmfWriteOptions.Dpi
+  fullName: Egami.Metafiles.EmfWriteOptions.Dpi
+  nameWithType: EmfWriteOptions.Dpi
+- uid: Egami.Metafiles.EmfWriteOptions.Dpi*
+  name: Dpi
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Dpi_
+  commentId: Overload:Egami.Metafiles.EmfWriteOptions.Dpi
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfWriteOptions.Dpi
+  nameWithType: EmfWriteOptions.Dpi
+- uid: Egami.Metafiles.EmfWriteOptions.FallbackScale
+  name: FallbackScale
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_FallbackScale
+  commentId: P:Egami.Metafiles.EmfWriteOptions.FallbackScale
+  fullName: Egami.Metafiles.EmfWriteOptions.FallbackScale
+  nameWithType: EmfWriteOptions.FallbackScale
+- uid: Egami.Metafiles.EmfWriteOptions.FallbackScale*
+  name: FallbackScale
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_FallbackScale_
+  commentId: Overload:Egami.Metafiles.EmfWriteOptions.FallbackScale
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfWriteOptions.FallbackScale
+  nameWithType: EmfWriteOptions.FallbackScale
+- uid: Egami.Metafiles.EmfWriteOptions.Kind
+  name: Kind
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Kind
+  commentId: P:Egami.Metafiles.EmfWriteOptions.Kind
+  fullName: Egami.Metafiles.EmfWriteOptions.Kind
+  nameWithType: EmfWriteOptions.Kind
+- uid: Egami.Metafiles.EmfWriteOptions.Kind*
+  name: Kind
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Kind_
+  commentId: Overload:Egami.Metafiles.EmfWriteOptions.Kind
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfWriteOptions.Kind
+  nameWithType: EmfWriteOptions.Kind
+- uid: Egami.Metafiles.EmfWriteOptions.Text
+  name: Text
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Text
+  commentId: P:Egami.Metafiles.EmfWriteOptions.Text
+  fullName: Egami.Metafiles.EmfWriteOptions.Text
+  nameWithType: EmfWriteOptions.Text
+- uid: Egami.Metafiles.EmfWriteOptions.Text*
+  name: Text
+  href: api/Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_Text_
+  commentId: Overload:Egami.Metafiles.EmfWriteOptions.Text
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfWriteOptions.Text
+  nameWithType: EmfWriteOptions.Text
 - uid: Egami.Metafiles.Metafile
   name: Metafile
   href: api/Egami.Metafiles.Metafile.html

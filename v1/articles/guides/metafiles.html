@@ -199,7 +199,35 @@ RasterInfo info = Raster.Probe(path, context); // the size from the header, noth
 
 // MetafileDecodeOptions sets the resolution; Raster.Load then draws at that DPI.
 using Raster sharp = Raster.Load(path, context, new MetafileDecodeOptions { Dpi = 300 });
-</code></pre><h2 id="what-plays-and-how-close-it-is">What plays, and how close it is</h2>
+</code></pre><h2 id="writing-emf">Writing EMF</h2>
+<p><code>EmfCanvas</code> is a <code>Canvas</code> that writes an EMF: anything drawn on it, by your code or by a <code>Picture</code>, becomes a metafile that
+Word, PowerPoint, Windows and Egami.Metafiles play. Disposing it writes the file to the stream, which stays open. Device
+units are pixels at <code>EmfWriteOptions.Dpi</code> (96 by default).</p>
+<pre><code class="lang-csharp">// A dual EMF+ file at 96 DPI, 300 by 200 pixels: Office and GDI+ play the EMF+ records, older programs the GDI ones.
+using (FileStream stream = File.Create(output))
+using (EmfCanvas emf = new(stream, 300, 200, new EmfWriteOptions { Description = &quot;Sales chart&quot; }))
+{
+    emf.FillRect(new RectF(20, 20, 260, 160), new Rgba8(240, 244, 248, 255));
+    emf.DrawLine(new Vector2(40, 160), new Vector2(260, 60), new Stroke(3) { Cap = LineCap.Round }, new Rgba8(0, 102, 204, 255));
+    emf.FillOval(new RectF(250, 50, 20, 20), new Rgba8(204, 51, 0, 255));
+    foreach (EgamiDiagnostic warning in emf.Warnings)
+    {
+        Console.WriteLine(warning.Message); // anything drawn as an image instead
+    }
+}
+
+Metafile written = Metafile.Load(output);
+</code></pre>
+<p><code>EmfWriteOptions.Kind</code> picks what goes in the file: <code>EmfPlusDual</code> (the default) writes EMF+ records and a GDI copy of each
+drawing for programs without GDI+, <code>EmfPlusOnly</code> the EMF+ records alone and <code>Emf</code> the GDI records alone. <code>Compress</code> writes
+EMZ, <code>Description</code> the header's description.</p>
+<p>Paths, rectangles, rounded rectangles, ovals and points with solid paints, every <code>Stroke</code> setting, transforms, save and
+restore, clips and aliased drawing are written as vectors; equal pens, brushes and paths are written once and shared. The
+GDI copy draws colors opaque, since GDI has no alpha. Text is written as outlines; <code>EmfText.Glyphs</code> (<code>EmfWriteOptions.Text</code>)
+is reserved for EMF+ text records and writes outlines too for now. Gradients and other paints, images, meshes
+and layers with opacity, blending, filters or masks are drawn by Egami as an image at <code>FallbackScale</code> times the resolution
+and placed in the file, with one <code>Metafile.FallbackImage</code> warning in <code>Warnings</code> for each kind.</p>
+<h2 id="what-plays-and-how-close-it-is">What plays, and how close it is</h2>
 <p>The GDI records of WMF and EMF play as GDI plays them: map modes, the world transform, pens and brushes (hatches and pattern
 brushes sized from the reference device, so they scale with the picture), paths, clipping regions, bitmaps through Egami's BMP
 reader, and text. Drawn aliased, the synthetic test files match Windows GDI within a mean of one level and 99% of pixels within
