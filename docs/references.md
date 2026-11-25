@@ -60,6 +60,7 @@ Licenses were checked on 2026-10-07 (the HEVC libraries on 2026-10-15, the barco
 | [VTracer](https://github.com/visioncortex/vtracer) | Rust | MIT | Colour tracing options and behaviour (speckle filter, corner threshold, presets); its CLI is a speed gate | 2.6.6 |
 | [ICU4C](https://github.com/unicode-org/icu) (dictionary break engines, `dictbe.cpp`) | C++ | Unicode License v3 | How Thai, Lao, Khmer and Myanmar runs are split into words by maximal matching with look-ahead, as browsers break them; read for behaviour (2.8.5 Q3). A close translation gets a THIRD-PARTY-NOTICES entry. Its word lists (`icu4c/source/data/brkitr/dictionaries`) ship as data under their own licences | 2.8.5 |
 | [ICU4X segmenter](https://github.com/unicode-org/icu4x/tree/main/components/segmenter) | Rust | Unicode License v3 | Dictionary word and line segmentation for the same scripts; read for behaviour (2.8.5 Q3) | 2.8.5 |
+| [Apache Batik](https://xmlgraphics.apache.org/batik/) | Java | Apache 2.0 | Read for behaviour only, never translated: how a complete SVG 1.1 implementation runs SMIL timing (interval lists, syncbase and repeat dependencies, `min` and `max`) and animation values. The only SVG renderer whose source may be read for SVG animation; browser engines (Blink, WebKit, Gecko) and librsvg are never read, and Chromium only runs as a black box for the animation gate | 2.10.1 |
 
 Specifications, textbooks and papers are always fine.
 

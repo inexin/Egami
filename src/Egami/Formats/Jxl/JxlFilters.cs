@@ -2,6 +2,7 @@ using System.Buffers;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Egami.Formats.Jxl;
 
@@ -108,7 +109,7 @@ internal static class JxlFilters
                     {
                         Vector<float> side = new Vector<float>(p, up + x) + new Vector<float>(p, down + x) + new Vector<float>(p, row + x - 1) + new Vector<float>(p, row + x + 1);
                         Vector<float> diag = new Vector<float>(p, up + x - 1) + new Vector<float>(p, up + x + 1) + new Vector<float>(p, down + x - 1) + new Vector<float>(p, down + x + 1);
-                        ((new Vector<float>(p, row + x) + (side * vw0) + (diag * vw1)) * vnorm).CopyTo(output, row + x);
+                        (MulAdd(diag, vw1, MulAdd(side, vw0, new Vector<float>(p, row + x))) * vnorm).CopyTo(output, row + x);
                     }
 
                     GaborishPixel(p, output, 0, up, row, down, width, w0, w1, norm);
@@ -121,7 +122,7 @@ internal static class JxlFilters
                     int r = Mirror(x + 1, width);
                     float side = p[up + x] + p[down + x] + p[row + l] + p[row + r];
                     float diag = p[up + l] + p[up + r] + p[down + l] + p[down + r];
-                    output[row + x] = (p[row + x] + (side * w0) + (diag * w1)) * norm;
+                    output[row + x] = MulAdd(diag, w1, MulAdd(side, w0, p[row + x])) * norm;
                 }
             }, minimumPerThread: 16);
 
@@ -129,13 +130,31 @@ internal static class JxlFilters
         }
     }
 
+    /// <summary>a · b + c, fused where the processor has FMA (as <see cref="MulAdd(Vector{float}, Vector{float}, Vector{float})"/> is), so every filter path agrees.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static float MulAdd(float a, float b, float c) => System.Runtime.Intrinsics.X86.Fma.IsSupported ? MathF.FusedMultiplyAdd(a, b, c) : (a * b) + c;
+
+    /// <summary>a · b + c, fused where the processor has FMA.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector<float> MulAdd(Vector<float> a, Vector<float> b, Vector<float> c) =>
+        System.Runtime.Intrinsics.X86.Fma.IsSupported && Vector<float>.Count == 8
+            ? System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(a.AsVector256(), b.AsVector256(), c.AsVector256()).AsVector()
+            : (a * b) + c;
+
+    /// <summary>max(0, v) as the processor computes it (NaN gives 0, in lanes the callers do not choose).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector<float> MaxZero(Vector<float> v) =>
+        System.Runtime.Intrinsics.X86.Avx.IsSupported && Vector<float>.Count == 8
+            ? System.Runtime.Intrinsics.X86.Avx.Max(v.AsVector256(), System.Runtime.Intrinsics.Vector256<float>.Zero).AsVector()
+            : Vector.Max(Vector<float>.Zero, v);
+
     private static void GaborishPixel(float[] p, float[] output, int x, int up, int row, int down, int width, float w0, float w1, float norm)
     {
         int l = Mirror(x - 1, width);
         int r = Mirror(x + 1, width);
         float side = p[up + x] + p[down + x] + p[row + l] + p[row + r];
         float diag = p[up + l] + p[up + r] + p[down + l] + p[down + r];
-        output[row + x] = (p[row + x] + (side * w0) + (diag * w1)) * norm;
+        output[row + x] = MulAdd(diag, w1, MulAdd(side, w0, p[row + x])) * norm;
     }
 
     /// <summary>
@@ -341,7 +360,7 @@ internal static class JxlFilters
             {
                 int a = rowA + z + tx;
                 int b = rowB + z;
-                Vector<float> d = (v0 * Vector.Abs(Load(ref r0, a) - Load(ref r0, b))) + (v1 * Vector.Abs(Load(ref r1, a) - Load(ref r1, b))) + (v2 * Vector.Abs(Load(ref r2, a) - Load(ref r2, b)));
+                Vector<float> d = MulAdd(v2, Vector.Abs(Load(ref r2, a) - Load(ref r2, b)), MulAdd(v1, Vector.Abs(Load(ref r1, a) - Load(ref r1, b)), v0 * Vector.Abs(Load(ref r0, a) - Load(ref r0, b))));
                 Unsafe.WriteUnaligned(ref Unsafe.As<float, byte>(ref Unsafe.Add(ref wr, z + reachX)), d);
             }
         }
@@ -360,7 +379,7 @@ internal static class JxlFilters
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static float EpfDifference(float[] p0, float[] p1, float[] p2, int a, int b, float k0, float k1, float k2)
     {
-        return (k0 * MathF.Abs(p0[a] - p0[b])) + (k1 * MathF.Abs(p1[a] - p1[b])) + (k2 * MathF.Abs(p2[a] - p2[b]));
+        return MulAdd(k2, MathF.Abs(p2[a] - p2[b]), MulAdd(k1, MathF.Abs(p1[a] - p1[b]), k0 * MathF.Abs(p0[a] - p0[b])));
     }
 
     /// <summary>Filters row <paramref name="y"/>: for each pixel and tap, the patch sum, its weight and the weighted sample, then the mean.</summary>
@@ -418,19 +437,20 @@ internal static class JxlFilters
                         d += Load(ref wr, around[o + i] + x);
                     }
 
-                    Vector<float> weight = Vector.Max(Vector<float>.Zero, Vector<float>.One + (d * f));
+                    Vector<float> weight = MaxZero(MulAdd(d, f, Vector<float>.One));
                     int t = tapRows[k] + x + kernel[2 * k];
                     sumW += weight;
-                    s0 += weight * Load(ref r0, t);
-                    s1 += weight * Load(ref r1, t);
-                    s2 += weight * Load(ref r2, t);
+                    s0 = MulAdd(weight, Load(ref r0, t), s0);
+                    s1 = MulAdd(weight, Load(ref r1, t), s1);
+                    s2 = MulAdd(weight, Load(ref r2, t), s2);
                 }
 
                 // Pixels the filter leaves as they are (a NaN factor) keep their input.
                 Vector<int> filtered = Vector.Equals(f, f);
-                Vector.ConditionalSelect(filtered, s0 / sumW, c0).CopyTo(output[0], at + x);
-                Vector.ConditionalSelect(filtered, s1 / sumW, c1).CopyTo(output[1], at + x);
-                Vector.ConditionalSelect(filtered, s2 / sumW, c2).CopyTo(output[2], at + x);
+                Vector<float> inverse = Vector<float>.One / sumW;
+                Vector.ConditionalSelect(filtered, s0 * inverse, c0).CopyTo(output[0], at + x);
+                Vector.ConditionalSelect(filtered, s1 * inverse, c1).CopyTo(output[1], at + x);
+                Vector.ConditionalSelect(filtered, s2 * inverse, c2).CopyTo(output[2], at + x);
             }
         }
 
@@ -466,17 +486,18 @@ internal static class JxlFilters
                 d += w[around[o + i] + x];
             }
 
-            float weight = MathF.Max(0, 1 + (d * factor));
+            float weight = MathF.Max(0, MulAdd(d, factor, 1));
             int t = tapRows[k] + Mirror(x + kernel[2 * k], width);
             sumW += weight;
-            s0 += weight * p0[t];
-            s1 += weight * p1[t];
-            s2 += weight * p2[t];
+            s0 = MulAdd(weight, p0[t], s0);
+            s1 = MulAdd(weight, p1[t], s1);
+            s2 = MulAdd(weight, p2[t], s2);
         }
 
-        output[0][at + x] = s0 / sumW;
-        output[1][at + x] = s1 / sumW;
-        output[2][at + x] = s2 / sumW;
+        float inverse = 1 / sumW;
+        output[0][at + x] = s0 * inverse;
+        output[1][at + x] = s1 * inverse;
+        output[2][at + x] = s2 * inverse;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -337,6 +337,12 @@ internal static partial class JxlDct
         Span<Vector256<float>> lines = stackalloc Vector256<float>[Math.Max(width, height)];
         Span<Vector256<float>> scratch = stackalloc Vector256<float>[Math.Max(width, height)];
         ref float t = ref MemoryMarshal.GetReference(transposed);
+        if (to.Length < ((height - 1) * stride) + width)
+        {
+            throw new ArgumentOutOfRangeException(nameof(to));
+        }
+
+        ref float d = ref MemoryMarshal.GetReference(to);
         for (int y = 0; y < height; y += 8)
         {
             for (int x = 0; x < width; x++)
@@ -345,16 +351,26 @@ internal static partial class JxlDct
             }
 
             DctVector(lines[..width], scratch, forward);
-            for (int x = 0; x < width; x++)
+
+            // Each eight lines (columns x to x + 7 of rows y to y + 7) turned in registers into the block's rows.
+            for (int x = 0; x < width; x += 8)
             {
-                lines[x].StoreUnsafe(ref t, (nuint)((x * height) + y));
+                Vector256<float> r0 = lines[x], r1 = lines[x + 1], r2 = lines[x + 2], r3 = lines[x + 3];
+                Vector256<float> r4 = lines[x + 4], r5 = lines[x + 5], r6 = lines[x + 6], r7 = lines[x + 7];
+                Transpose(ref r0, ref r1, ref r2, ref r3, ref r4, ref r5, ref r6, ref r7);
+                ref float target = ref Unsafe.Add(ref d, (y * stride) + x);
+                Store(r0, ref target, 0);
+                Store(r1, ref target, stride);
+                Store(r2, ref target, 2 * stride);
+                Store(r3, ref target, 3 * stride);
+                Store(r4, ref target, 4 * stride);
+                Store(r5, ref target, 5 * stride);
+                Store(r6, ref target, 6 * stride);
+                Store(r7, ref target, 7 * stride);
             }
         }
 
-        TransposeBlock(transposed, height, to, stride, width, height);
-
         // Columns, eight at a time.
-        ref float d = ref MemoryMarshal.GetReference(to);
         for (int x = 0; x < width; x += 8)
         {
             for (int y = 0; y < height; y++)

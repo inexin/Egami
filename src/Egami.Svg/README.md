@@ -6,6 +6,8 @@ Egami.Svg reads, edits, saves and draws SVG.
 - Draws through Egami.Drawing's canvas onto rasters, PDF pages or SVG, with styles, text, filters and color fonts.
 - Lets `Raster.Load` read SVG files, safely: nothing outside the file is opened unless you allow it.
 - Saves Egami.Drawing's bitmap traces as SVG.
+- Plays SMIL and CSS animations: draws any moment, renders frames for GIF, APNG, WebP or video, and freezes a moment into a
+  static SVG.
 
 See the [SVG guide](https://inexin.github.io/Egami/v1/articles/guides/svg.html).
 

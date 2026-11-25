@@ -5,6 +5,9 @@ using Egami.Fonts;
 using Egami.Formats;
 using Egami.Pixels;
 using Egami.Svg;
+using Egami.Video;
+using Egami.Video.Codecs;
+using Egami.Video.Containers;
 
 namespace Egami.DocSamples;
 
@@ -530,5 +533,52 @@ public class Svg
         #endregion
         Assert.False(still.Animation.HasAnimations);
         Assert.Equal("50", still.Root.Descendants().First(e => e.Name == "circle").Attributes["cx"]);
+    }
+
+    [Fact]
+    public void SvgToGif()
+    {
+        using SampleFiles files = new();
+        File.WriteAllText("spinner.svg", Bouncing);
+
+        #region svg-to-gif
+        // The SVG's animation as a GIF, 200 pixels wide at 20 frames a second: one loop, or up to its last animation's end.
+        SvgDocument document = SvgDocument.Load("spinner.svg");
+        SvgAnimationOptions options = new() { FrameRate = 20, Render = new SvgRenderOptions { Width = 200 } };
+        using Raster<Rgba8> animation = document.RasterizeAnimation<Rgba8>(options);
+        animation.Save("spinner.gif");
+        #endregion
+
+        Assert.Equal(200, Raster.Probe("spinner.gif").Width);
+        Assert.Equal(40, Raster.Probe("spinner.gif").FrameCount);
+    }
+
+    [Fact]
+    public void SvgToVideo()
+    {
+        using SampleFiles files = new();
+        File.WriteAllText("spinner.svg", Bouncing);
+
+        #region svg-to-video
+        // Four seconds of the SVG's animation as VP8 in WebM, 30 frames a second, each frame drawn 320 pixels wide.
+        SvgDocument document = SvgDocument.Load("spinner.svg");
+        SvgAnimationOptions frames = new()
+        {
+            FrameRate = 30,
+            Length = TimeSpan.FromSeconds(4),
+            MergeDuplicates = false,                   // a frame every 1/30 s, as a video needs
+            Render = new SvgRenderOptions { Width = 320, Background = new RgbaF32(1, 1, 1, 1) },
+        };
+        using (VideoWriter writer = VideoWriter.Create("spinner.webm", new VideoWriterOptions { Codec = VideoCodecs.Vp8, FrameRate = new Rational(30, 1) }))
+        {
+            foreach (SvgFrame<Rgba8> frame in document.RenderFrames<Rgba8>(frames))
+            {
+                using Raster<Rgba8> picture = frame.Raster;
+                writer.WriteFrame(picture);
+            }
+        }
+        #endregion
+
+        Assert.Equal(CodecIds.Vp8, MediaFile.Probe("spinner.webm").Tracks[0].CodecId);
     }
 }

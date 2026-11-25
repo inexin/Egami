@@ -12,8 +12,10 @@ namespace Egami.Formats.Jxl;
 internal static class JxlColor
 {
     // libjxl's TF_SRGB EncodedFromDisplay coefficients, lowest degree first (its EvalRationalPolynomial starts from the last).
-    private static readonly float[] SrgbP = [-5.135152395e-04f, 5.287254571e-03f, 3.903842876e-01f, 1.474205315e+00f, 7.352629620e-01f];
-    private static readonly float[] SrgbQ = [1.004519624e-02f, 3.036675394e-01f, 1.340816930e+00f, 9.258482155e-01f, 2.424867759e-02f];
+    private const float P0 = -5.135152395e-04f, P1 = 5.287254571e-03f, P2 = 3.903842876e-01f, P3 = 1.474205315e+00f, P4 = 7.352629620e-01f;
+    private const float Q0 = 1.004519624e-02f, Q1 = 3.036675394e-01f, Q2 = 1.340816930e+00f, Q3 = 9.258482155e-01f, Q4 = 2.424867759e-02f;
+    private static readonly float[] SrgbP = [P0, P1, P2, P3, P4];
+    private static readonly float[] SrgbQ = [Q0, Q1, Q2, Q3, Q4];
 
     private static readonly float[] DefaultOpsin =
     [
@@ -348,14 +350,15 @@ internal static class JxlColor
         Vector256<float> sign = v & Vector256.Create(-0f);
         Vector256<float> x = Vector256.AndNot(v, Vector256.Create(-0f));
         Vector256<float> r = Vector256.Sqrt(x);
-        Vector256<float> yp = Vector256.Create(SrgbP[4]);
-        Vector256<float> yq = Vector256.Create(SrgbQ[4]);
-        for (int k = 3; k >= 0; k--)
-        {
-            yp = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yp, r, Vector256.Create(SrgbP[k]));
-            yq = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yq, r, Vector256.Create(SrgbQ[k]));
-        }
-
+        // SrgbP and SrgbQ by Horner's rule, unrolled with the coefficients as constants: the scalar loop's operations.
+        Vector256<float> yp = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(Vector256.Create(P4), r, Vector256.Create(P3));
+        Vector256<float> yq = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(Vector256.Create(Q4), r, Vector256.Create(Q3));
+        yp = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yp, r, Vector256.Create(P2));
+        yq = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yq, r, Vector256.Create(Q2));
+        yp = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yp, r, Vector256.Create(P1));
+        yq = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yq, r, Vector256.Create(Q1));
+        yp = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yp, r, Vector256.Create(P0));
+        yq = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yq, r, Vector256.Create(Q0));
         Vector256<float> magnitude = Vector256.ConditionalSelect(Vector256.GreaterThan(x, Vector256.Create(0.0031308f)), yp / yq, x * Vector256.Create(12.92f));
         return magnitude | sign;
     }
@@ -372,20 +375,7 @@ internal static class JxlColor
             ref float start = ref System.Runtime.InteropServices.MemoryMarshal.GetReference(plane);
             for (; i + 8 <= plane.Length; i += 8)
             {
-                Vector256<float> v = Vector256.LoadUnsafe(ref start, (nuint)i);
-                Vector256<float> sign = v & Vector256.Create(-0f);
-                Vector256<float> x = Vector256.AndNot(v, Vector256.Create(-0f));
-                Vector256<float> r = Vector256.Sqrt(x);
-                Vector256<float> yp = Vector256.Create(SrgbP[4]);
-                Vector256<float> yq = Vector256.Create(SrgbQ[4]);
-                for (int k = 3; k >= 0; k--)
-                {
-                    yp = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yp, r, Vector256.Create(SrgbP[k]));
-                    yq = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(yq, r, Vector256.Create(SrgbQ[k]));
-                }
-
-                Vector256<float> magnitude = Vector256.ConditionalSelect(Vector256.GreaterThan(x, Vector256.Create(0.0031308f)), yp / yq, x * Vector256.Create(12.92f));
-                (magnitude | sign).StoreUnsafe(ref start, (nuint)i);
+                EncodeSrgb8(Vector256.LoadUnsafe(ref start, (nuint)i)).StoreUnsafe(ref start, (nuint)i);
             }
         }
 

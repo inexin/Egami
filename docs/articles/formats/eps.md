@@ -6,7 +6,8 @@ not write EPS.
 
 `EpsFormat.Info` is registered in `EgamiContext.Default`. It is detected by the DOS binary header (bytes C5 D0 D3 C6) or a
 `%!PS` first line; plain PostScript is detected too, so it fails with a message saying PostScript is not run rather than as an
-unknown format. The extensions are `.eps`, `.epsf`, `.epsi` and `.ept`, and the MIME types `application/postscript`,
+unknown format. Up to 64 bytes of spaces, tabs or line breaks before `%!PS`, which some old programs and servers wrote and
+PostScript interpreters skip, are skipped too, with an `Eps.LeadingWhitespace` warning. The extensions are `.eps`, `.epsf`, `.epsi` and `.ept`, and the MIME types `application/postscript`,
 `application/eps` and `image/x-eps`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Eps.cs#eps-load)]

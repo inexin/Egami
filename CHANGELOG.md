@@ -20,14 +20,24 @@ EPS previews (roadmap 2.3.14).
   or CMYK; pixel- or line-interleaved; binary, hex or JPEG) comes before any preview, as `Gray8`, `Rgb8` or `Cmyk8`, with
   `EpsPreviewKind.PhotoshopImage`. Lab and damaged data fall back to the preview with a warning. EPS files placed in
   another (`%%BeginDocument`) are passed over, so a drawing with a placed Photoshop image does not load as that image.
+- Up to 64 bytes of spaces, tabs or line breaks before an EPS file's `%!PS` line are skipped, with an
+  `Eps.LeadingWhitespace` warning, as PostScript interpreters do; some old files have them.
 - The EPS format page, a recipe in the formats guide and a fuzz target (`eps`).
 - New diagnostics: `Eps.PreviewLoaded` on every load, and `Eps.*` warnings for damaged headers, sections and previews.
 
+## Egami.Drawing 1.6.0 (unreleased)
+
+- `Path.Warp` sends every point of a path through any function of the plane (a wave, an arch, text bent between two
+  curves): lines and curves are split until the result stays within a tolerance, a line whose image stays straight stays a
+  line, closed contours stay closed (their closing line bends too) and the fill rule is kept. A recipe in the drawing guide
+  bends text into an arch.
+
 ## Egami.Svg and Egami.Css 1.6.0 (unreleased)
 
-SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation element, drawn at a chosen time.
+SVG animation (roadmap 2.10.1): SMIL and CSS animations drawn at any moment, as frames, animated rasters, frozen static copies
+and, through Egami.Video, video. Additive to 1.5.0: without a time every document draws as before.
 
-- `SvgRenderOptions.Time` draws a document as it looks at that moment of its SMIL animations, in `Rasterize`, `Draw` and
+- `SvgRenderOptions.Time` draws a document as it looks at that moment of its SMIL and CSS animations, in `Rasterize`, `Draw` and
   `Draw` by id; `SvgDocument.RenderTreeAt(TimeSpan)` gives the render tree then. With no time set the output is the static
   document, byte for byte the same as 1.5.0.
 - `SvgDocument.Animation` (`SvgAnimationInfo`) says whether a document animates, when its last animation ends, the period
@@ -98,13 +108,12 @@ SVG animation (roadmap 2.10.1): SMIL timing and values, and every SMIL animation
   element no animation touches, and each CSS animation's keyframes when their values do not depend on the element. A
   CSS-animated frame now costs about what a static draw of the same moment does (it was up to 2.4 times as much), with the
   same output byte for byte.
-
-Command line:
-
-- `egami`: every command takes `--animate [fps]`, which loads an animated SVG input with all its frames (30 a second by
-  default), and `--at <time>`, which draws it at one moment. `egami mcp`'s tools take both as `animate` and `at`.
-- `egami-video encode` takes an animated SVG and draws it frame by frame at `--rate`, for `--duration` or the length the
-  document gives, at the size `--size` fits.
+- The SVG guide's Animation section covers drawing at a time, frames and animated rasters, `Raster.Load` with
+  `AnimationFrameRate`, `Freeze`, video, the command line, the limits and the known gaps, with recipes for a GIF and a video
+  from an animated SVG.
+- Known gaps: a keyframe value of `inherit`, or one holding `var()`, is dropped (animating the custom property itself
+  works); `Freeze` writes one set of CSS-animated values for an element that several `use` copies draw with different
+  inherited values; the CSS `d` property in a `style` attribute is not read.
 
 Egami.Css:
 
@@ -113,8 +122,10 @@ Egami.Css:
   among the unknown at-rules must look for the new type.
 - `CssEasingFunction` parses and evaluates CSS Easing 2's easing functions: `linear`, `linear()` with stops, the `ease`
   keywords, `cubic-bezier()`, `step-start`, `step-end` and `steps()` with every jump position, with the before flag.
+  Two functions are equal when their form and parameters are, so `ease` equals `cubic-bezier(0.25, 0.1, 0.25, 1)`.
 - `CssOrigin.Animation` and `CssCascadedStyle.WithAnimationValues` put animated values in the cascade, above every normal
-  declaration and below every important one. A style sheet given the animation origin is refused.
+  declaration and below every important one. A style sheet given the animation origin is refused. Origins are not in
+  cascade order as numbers: an important declaration of any origin wins over the animation origin.
 
 ## Egami.Heic 1.6.0 (unreleased)
 
@@ -215,6 +226,8 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
 
 ## Egami.Video.Cli 1.4.0 (unreleased)
 
+- `egami-video encode` takes an animated SVG and draws it frame by frame at `--rate` (25 by default), for `--duration` or the
+  length the document gives, at the size `--size` fits.
 - `egami-video mcp` serves four resources: `egami-video://schema/info` and `egami-video://schema/metadata` (the JSON schemas of
   `info` and `metadata`), `egami-video://formats` (what `egami-video formats --json` prints) and `egami-video://guide` (the
   agent guide). It offers four prompts, each one message naming the tools to call: `make_clip`, `make_gif`, `web_video` and
@@ -268,8 +281,11 @@ WOFF and WOFF2 writing (roadmap 2.7.7) and Word-style justified lines. Additive 
 
 ## Egami.Cli 1.6.0 (unreleased)
 
-MCP prompts and resources, and a guide for coding agents. Additive to 1.5.0.
+MCP prompts and resources, a guide for coding agents, and animated SVG input. Additive to 1.5.0.
 
+- Every command takes `--animate [fps]`, which loads an animated SVG input with all its frames (30 a second by default), and
+  `--at <time>`, which draws it at one moment (or, with `--animate`, starts the frames there). `egami mcp`'s tools that take
+  files take both as `animate` and `at`.
 - `egami mcp` serves three resources: `egami://schema/workflow` (the workflow schema, byte for byte), `egami://formats` (what
   `egami formats --json` prints) and `egami://guide` (the agent guide). It offers five prompts, each one message naming the
   tools to call: `thumbnails`, `convert_folder`, `web_images`, `strip_metadata` and `make_workflow`. Both are static: no
