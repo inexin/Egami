@@ -18,14 +18,15 @@ internal static partial class LinearDecoder
             return null;
         }
 
-        float total = Sum(runs.Slice(start, 45)), unit = total / 73;
-        if (unit <= 0 || !Module(runs[start], unit) || !Module(runs[start + 43], unit) || !Module(runs[start + 44], unit)
-            || !QuietBefore(runs, start, 0.6f * unit) || !QuietAfter(runs, start + 45, 4 * unit))
+        // Widths from the offsets, which are where the runs start; the cheap tests first.
+        float unit = (offsets[start + 45] - offsets[start]) / 73;
+        if (unit <= 0 || !Module(runs[start], unit) || !QuietBefore(runs, start, 0.6f * unit) || !QuietAfter(runs, start + 45, 4 * unit)
+            || !Module(runs[start + 43], unit) || !Module(runs[start + 44], unit))
         {
             return null;
         }
 
-        float leftWidth = Sum(runs.Slice(start + 1, 14)), checkWidth = Sum(runs.Slice(start + 15, 14)), rightWidth = Sum(runs.Slice(start + 29, 14));
+        float leftWidth = offsets[start + 15] - offsets[start + 1], checkWidth = offsets[start + 29] - offsets[start + 15], rightWidth = offsets[start + 43] - offsets[start + 29];
         if (MathF.Abs((leftWidth / 26) - unit) > 0.12f * unit || MathF.Abs((rightWidth / 26) - unit) > 0.12f * unit || MathF.Abs((checkWidth / 18) - unit) > 0.12f * unit)
         {
             return null;

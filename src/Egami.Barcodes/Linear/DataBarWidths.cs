@@ -8,8 +8,27 @@ namespace Egami.Barcodes.Linear;
 /// </summary>
 internal static class DataBarWidths
 {
+    // Combinations of up to 31 by up to 31, as Calculate gives them: reading takes them often.
+    private static readonly int[] s_combinations = Table();
+
     /// <summary>The number of ways to choose <paramref name="r"/> of <paramref name="n"/>.</summary>
-    public static int Combinations(int n, int r)
+    public static int Combinations(int n, int r) => (uint)n < 32 && (uint)r < 32 ? s_combinations[(n * 32) + r] : Calculate(n, r);
+
+    private static int[] Table()
+    {
+        int[] table = new int[32 * 32];
+        for (int n = 0; n < 32; n++)
+        {
+            for (int r = 0; r < 32; r++)
+            {
+                table[(n * 32) + r] = Calculate(n, r);
+            }
+        }
+
+        return table;
+    }
+
+    private static int Calculate(int n, int r)
     {
         int minDenominator = Math.Min(r, n - r), maxDenominator = Math.Max(r, n - r);
         int value = 1, j = 1;
@@ -86,8 +105,52 @@ internal static class DataBarWidths
         widths[bar] = n;
     }
 
+    // The values of 4 widths of 1 to 8 modules, by the widest allowed and the narrow rule, made when first asked for: reading
+    // takes them often.
+    private static readonly short[]?[] s_values = new short[16][];
+
     /// <summary>The value of <paramref name="widths"/>, or -1 when they are not a pattern of the set.</summary>
     public static int Value(ReadOnlySpan<int> widths, int maxWidth, bool noNarrow)
+    {
+        if (widths.Length != 4 || maxWidth is < 1 or > 8)
+        {
+            return Calculate(widths, maxWidth, noNarrow);
+        }
+
+        int index = 0;
+        foreach (int width in widths)
+        {
+            if (width < 1 || width > maxWidth)
+            {
+                return -1;
+            }
+
+            index = (index * 8) + width - 1;
+        }
+
+        int table = ((maxWidth - 1) * 2) + (noNarrow ? 1 : 0);
+        short[] values = s_values[table] ??= Values(maxWidth, noNarrow);
+        return values[index];
+    }
+
+    private static short[] Values(int maxWidth, bool noNarrow)
+    {
+        short[] values = new short[8 * 8 * 8 * 8];
+        Span<int> widths = stackalloc int[4];
+        for (int index = 0; index < values.Length; index++)
+        {
+            for (int k = 0; k < 4; k++)
+            {
+                widths[k] = ((index >> (3 * (3 - k))) & 7) + 1;
+            }
+
+            values[index] = (short)Calculate(widths, maxWidth, noNarrow);
+        }
+
+        return values;
+    }
+
+    private static int Calculate(ReadOnlySpan<int> widths, int maxWidth, bool noNarrow)
     {
         int n = 0, elements = widths.Length;
         bool narrow = false;

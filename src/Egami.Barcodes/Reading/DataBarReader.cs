@@ -26,7 +26,8 @@ internal static class DataBarReader
         int insideValue = 0;
         for (int i = 9; i + 13 <= runs.Length; i++)
         {
-            float total = runs[i] + runs[i + 1] + runs[i + 2] + runs[i + 3] + runs[i + 4];
+            // Widths from the offsets, which are where the runs start.
+            float total = offsets[i + 5] - offsets[i];
             if (total <= 0)
             {
                 continue;
@@ -34,7 +35,14 @@ internal static class DataBarReader
 
             // Finder: the last two elements are a module each.
             float unit = total / 15;
-            if (runs[i + 3] > 2 * unit || runs[i + 4] > 2 * unit)
+            if (runs[i + 3] + runs[i + 4] > 3 * unit)
+            {
+                continue;
+            }
+
+            // The characters around it are 16 and 15 modules, near the finder's module.
+            float outsideWidth = offsets[i] - offsets[i - 8], insideWidth = offsets[i + 13] - offsets[i + 5];
+            if (MathF.Abs((outsideWidth / 16) - unit) > 0.25f * unit || MathF.Abs((insideWidth / 15) - unit) > 0.25f * unit)
             {
                 continue;
             }
@@ -47,13 +55,6 @@ internal static class DataBarReader
             bool right = i % 2 == 1;
             int value = FinderValue(finder, DataBarTables.OmniFinders, 9, right ? 0 : 1, out float spread);
             if (value < 0)
-            {
-                continue;
-            }
-
-            // The characters around it are 16 and 15 modules, near the finder's module.
-            float outsideWidth = Sum(runs.Slice(i - 8, 8)), insideWidth = Sum(runs.Slice(i + 5, 8));
-            if (MathF.Abs((outsideWidth / 16) - unit) > 0.25f * unit || MathF.Abs((insideWidth / 15) - unit) > 0.25f * unit)
             {
                 continue;
             }
@@ -221,7 +222,7 @@ internal static class DataBarReader
     }
 
     /// <summary>The odd or even elements of a character's widths.</summary>
-    internal static ReadOnlySpan<int> Pick(int[] widths, int parity, Span<int> into)
+    internal static ReadOnlySpan<int> Pick(ReadOnlySpan<int> widths, int parity, Span<int> into)
     {
         int count = widths.Length / 2;
         for (int k = 0; k < count; k++)
@@ -298,17 +299,6 @@ internal static class DataBarReader
     internal static float Corrected(float run, float module, int index, float spread) => (run / module) + (index % 2 == 1 ? -spread : spread);
 
     private static bool Near(float run, float module) => run >= 0.4f * module && run <= 2.2f * module;
-
-    private static float Sum(ReadOnlySpan<float> runs)
-    {
-        float total = 0;
-        foreach (float r in runs)
-        {
-            total += r;
-        }
-
-        return total;
-    }
 }
 
 /// <summary>
@@ -328,7 +318,19 @@ internal sealed class DataBarCollector
     private readonly List<DataBarReader.OmniPair> _pairs = [];
     private readonly List<(DataBarExpandedReader.Block[] Blocks, float Start, float End)> _lineSegments = [];
     private readonly List<(DataBarExpandedReader.Block[] Blocks, Vector2 From, Vector2 To)> _segments = [];
+
+    // The symbols each stored segment is part of, and the segments of the assembly being searched.
+    private readonly List<List<(DecodedData Data, Vector2 From, Vector2 To)>> _symbols = [];
+    private readonly List<(int Segment, List<int> Segments)> _path = [];
+
+    // The places and sums (with whether the required segment is in) from which a search found nothing, by generation.
+    private readonly int[] _dead = new int[11 * 211 * 2];
+    private int _generation;
     private readonly List<DataBarExpandedReader.Block> _assembly = [];
+
+    // Where each finder is in the stored segments, as the block and the segments whose blocks from there on are the same,
+    // since they assemble alike: the first such segment and block, and the segments.
+    private readonly List<(int Segment, int Block, List<int> Segments)>[] _finders = [.. Enumerable.Range(0, 12).Select(_ => new List<(int, int, List<int>)>())];
 
     /// <summary>Reads the pairs and segments on a line and returns each symbol they complete, with the ends of the symbol.</summary>
     public void Add(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, Vector2 origin, Vector2 direction, BarcodeFormat formats, List<(DecodedData Data, Vector2 From, Vector2 To)> found)
@@ -374,8 +376,10 @@ internal sealed class DataBarCollector
     }
 
     /// <summary>
-    /// Adds the line's Expanded segments (a segment read before counts again) and returns the symbols each one completes: a
-    /// one-row symbol alone, a stacked one with the segments of its other rows.
+    /// Adds the line's Expanded segments (a segment read before counts again) and returns the symbols each one makes: a
+    /// one-row symbol alone, a stacked one with the segments of its other rows. A new segment is assembled with the stored
+    /// ones, and each symbol found is kept with every segment it uses, so that a segment read again returns its symbols
+    /// without another search.
     /// </summary>
     private void AddSegments(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, Vector2 origin, Vector2 direction, List<(DecodedData Data, Vector2 From, Vector2 To)> found)
     {
@@ -393,64 +397,117 @@ internal sealed class DataBarCollector
 
                 index = _segments.Count;
                 _segments.Add((blocks, origin + (direction * start), origin + (direction * end)));
+                _symbols.Add([]);
+                for (int o = 0; o < blocks.Length; o++)
+                {
+                    List<(int Segment, int Block, List<int> Segments)> places = _finders[blocks[o].Finder];
+                    int place = places.FindIndex(p => Same(_segments[p.Segment].Blocks.AsSpan(p.Block), blocks.AsSpan(o)));
+                    if (place < 0)
+                    {
+                        places.Add((index, o, [index]));
+                    }
+                    else
+                    {
+                        places[place].Segments.Add(index);
+                    }
+                }
+
+                Assemble(index);
             }
 
-            int budget = 512;
-            _assembly.Clear();
-            Assemble(index, false, -1, -1, ref budget, found);
+            found.AddRange(_symbols[index]);
         }
     }
 
     /// <summary>
-    /// Extends the blocks assembled so far with each stored segment (from any of its blocks) that continues a finder sequence,
-    /// and reports the symbols that use segment <paramref name="required"/>.
+    /// Assembles segment <paramref name="required"/> with the stored segments into each finder sequence, and keeps the symbols
+    /// found with the segments they use.
     /// </summary>
-    private void Assemble(int required, bool used, int first, int last, ref int budget, List<(DecodedData Data, Vector2 From, Vector2 To)> found)
+    private void Assemble(int required)
     {
-        if (--budget < 0)
+        int budget = 512;
+        for (int length = 2; length <= 11; length++)
         {
-            return;
-        }
-
-        int count = _assembly.Count;
-        if (count >= 2 && DataBarExpandedReader.Decode(CollectionsMarshal.AsSpan(_assembly)) is DecodedData data)
-        {
-            if (used)
+            for (int odd = 0; odd < 2; odd++)
             {
-                found.Add((data, _segments[first].From, _segments[last].To));
-            }
-
-            return;
-        }
-
-        if (count > 0 && _assembly[^1].Right < 0)
-        {
-            return;
-        }
-
-        for (int s = 0; s < _segments.Count; s++)
-        {
-            DataBarExpandedReader.Block[] blocks = _segments[s].Blocks;
-            for (int o = 0; o < blocks.Length; o++)
-            {
-                // A symbol starts at A1, which only its first block has.
-                if ((count == 0) != (blocks[o].Finder == 0) || count + blocks.Length - o > 11)
+                int symbolCharacters = (2 * length) - odd;
+                if (symbolCharacters >= 4 && DataBarExpandedReader.Fits(_segments[required].Blocks, DataBarTables.ExpandedFinderSequences.Slice((length - 2) * 11, length)))
                 {
-                    continue;
+                    _generation++;
+                    _assembly.Clear();
+                    _path.Clear();
+                    Extend(required, false, length, symbolCharacters, 0, ref budget);
                 }
-
-                _assembly.AddRange(blocks.AsSpan(o));
-                if (DataBarExpandedReader.Begins(CollectionsMarshal.AsSpan(_assembly)))
-                {
-                    Assemble(required, used || s == required, count == 0 ? s : first, s, ref budget, found);
-                }
-
-                _assembly.RemoveRange(count, _assembly.Count - count);
             }
         }
     }
 
-    private static bool Same(DataBarExpandedReader.Block[] a, DataBarExpandedReader.Block[] b)
+    /// <summary>
+    /// Extends the blocks assembled so far towards a sequence of <paramref name="length"/> finders and
+    /// <paramref name="symbolCharacters"/> characters with each stored segment (from any of its blocks) that continues it, and
+    /// keeps the symbols that use segment <paramref name="required"/>. The check character is a sum mod 211 of the other
+    /// characters' widths, so the search carries the sum so far: from a place and sum where no symbol was found, none is.
+    /// </summary>
+    private bool Extend(int required, bool used, int length, int symbolCharacters, int sum, ref int budget)
+    {
+        int count = _assembly.Count;
+        if (count == length)
+        {
+            if (sum != 0 || !used || DataBarExpandedReader.Decode(CollectionsMarshal.AsSpan(_assembly)) is not DecodedData data)
+            {
+                return false;
+            }
+
+            (DecodedData, Vector2, Vector2) symbol = (data, _segments[_path[0].Segment].From, _segments[_path[^1].Segment].To);
+            foreach ((_, List<int> segments) in _path)
+            {
+                foreach (int segment in segments)
+                {
+                    if (!_symbols[segment].Contains(symbol))
+                    {
+                        _symbols[segment].Add(symbol);
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        int state = (((count * 211) + sum) * 2) + (used ? 1 : 0);
+        if (_dead[state] == _generation || --budget < 0)
+        {
+            return false;
+        }
+
+        bool found = false;
+        ReadOnlySpan<byte> finders = DataBarTables.ExpandedFinderSequences.Slice((length - 2) * 11, length);
+        foreach ((int s, int o, List<int> segments) in _finders[finders[count] - 1])
+        {
+            DataBarExpandedReader.Block[] blocks = _segments[s].Blocks;
+            int end = count + blocks.Length - o;
+            bool uses = used || segments.Contains(required);
+            if (end > length || (!uses && end == length)
+                || DataBarExpandedReader.Sum(blocks.AsSpan(o), count, finders, symbolCharacters, sum) is not int next)
+            {
+                continue;
+            }
+
+            _assembly.AddRange(blocks.AsSpan(o));
+            _path.Add((s, segments));
+            found |= Extend(required, uses, length, symbolCharacters, next, ref budget);
+            _path.RemoveAt(_path.Count - 1);
+            _assembly.RemoveRange(count, _assembly.Count - count);
+        }
+
+        if (!found)
+        {
+            _dead[state] = _generation;
+        }
+
+        return found;
+    }
+
+    private static bool Same(ReadOnlySpan<DataBarExpandedReader.Block> a, ReadOnlySpan<DataBarExpandedReader.Block> b)
     {
         if (a.Length != b.Length)
         {

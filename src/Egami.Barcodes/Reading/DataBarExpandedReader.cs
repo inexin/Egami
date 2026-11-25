@@ -1,3 +1,5 @@
+using System.Numerics;
+using System.Runtime.Intrinsics;
 using System.Text;
 
 using Egami.Barcodes.Linear;
@@ -12,20 +14,36 @@ namespace Egami.Barcodes.Reading;
 /// </summary>
 internal static class DataBarExpandedReader
 {
-    /// <summary>A finder (0 for A1 to 11 for F2) with its characters' values and widths; <see cref="Right"/> is -1 when there is none.</summary>
-    internal readonly record struct Block(int Finder, int Left, int Right, int[] LeftWidths, int[]? RightWidths)
+    /// <summary>
+    /// A finder (0 for A1 to 11 for F2) with its characters' values and widths (4 bits each, the first lowest);
+    /// <see cref="Right"/> is -1 when there is none.
+    /// </summary>
+    internal readonly record struct Block(int Finder, int Left, int Right, int LeftWidths, int RightWidths)
     {
         public bool SameAs(in Block other) => Finder == other.Finder && Left == other.Left && Right == other.Right;
     }
 
+    [ThreadStatic]
+    private static List<Block>? t_chain;
+
     /// <summary>Finds the segments on a line whose runs start light, each read in the line's direction.</summary>
     public static void Segments(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, List<(Block[] Blocks, float Start, float End)> segments)
     {
-        var chain = new List<Block>();
-        float chainStart = 0, chainEnd = 0;
-        for (int i = 8; i + 5 <= runs.Length; i++)
+        if (runs.Length < 13)
         {
-            if (Read(runs, i) is not Block block)
+            return;
+        }
+
+        int words = (runs.Length >> 6) + 1;
+        Span<ulong> places = words <= 256 ? stackalloc ulong[words] : new ulong[words];
+        places.Clear();
+        Places(runs, offsets, places);
+        List<Block> chain = t_chain ??= [];
+        chain.Clear();
+        float chainStart = 0, chainEnd = 0;
+        for (int i = Next(places, 8); i + 5 <= runs.Length; i = Next(places, i + 1))
+        {
+            if (Read(runs, offsets, i) is not Block block)
             {
                 continue;
             }
@@ -34,7 +52,7 @@ internal static class DataBarExpandedReader
             chain.Add(block);
 
             // The next block, 21 elements on, before any finder that a character in between might look like.
-            while (block.Right >= 0 && i + 26 <= runs.Length && Read(runs, i + 21) is Block next)
+            while (block.Right >= 0 && i + 26 <= runs.Length && Read(runs, offsets, i + 21) is Block next)
             {
                 (block, i) = (next, i + 21);
                 chain.Add(block);
@@ -47,17 +65,81 @@ internal static class DataBarExpandedReader
         }
     }
 
-    /// <summary>The block whose finder starts at run <paramref name="i"/>, with the character on its left and any on its right.</summary>
-    private static Block? Read(ReadOnlySpan<float> runs, int i)
+    /// <summary>
+    /// Marks the runs where a finder may start, a bit each: a finder is 15 modules, its middle element 3 to 9 of them and its
+    /// two ends at its narrow side 2 (tested without dividing, and 8 places at a time, as most places are not a finder).
+    /// </summary>
+    private static void Places(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, Span<ulong> places)
     {
-        float total = runs[i] + runs[i + 1] + runs[i + 2] + runs[i + 3] + runs[i + 4];
+        int i = 8;
+        if (Vector256.IsHardwareAccelerated)
+        {
+            // Lanes at even runs (finders A1, B1, ...) test the last two elements, at odd runs the first two.
+            Vector256<float> five = Vector256.Create(5f), even = Vector256.Create(-1, 0, -1, 0, -1, 0, -1, 0).AsSingle();
+            for (; i + 12 <= runs.Length; i += 8)
+            {
+                Vector256<float> total = Vector256.Create(offsets.Slice(i + 5, 8)) - Vector256.Create(offsets.Slice(i, 8));
+                Vector256<float> ends = Vector256.ConditionalSelect(even, Vector256.Create(runs.Slice(i + 3, 8)) + Vector256.Create(runs.Slice(i + 4, 8)),
+                    Vector256.Create(runs.Slice(i, 8)) + Vector256.Create(runs.Slice(i + 1, 8)));
+                Vector256<float> fits = Vector256.LessThanOrEqual(ends * five, total) & Vector256.GreaterThanOrEqual(Vector256.Create(runs.Slice(i + 2, 8)) * five, total);
+                places[i >> 6] |= (ulong)fits.ExtractMostSignificantBits() << (i & 63);
+            }
+        }
+
+        for (; i + 5 <= runs.Length; i++)
+        {
+            float total = offsets[i + 5] - offsets[i], ends = i % 2 == 0 ? runs[i + 3] + runs[i + 4] : runs[i] + runs[i + 1];
+            if (ends * 5 <= total && runs[i + 2] * 5 >= total)
+            {
+                places[i >> 6] |= 1UL << (i & 63);
+            }
+        }
+    }
+
+    /// <summary>The first marked place from <paramref name="i"/> on, or past the end when there is none.</summary>
+    private static int Next(ReadOnlySpan<ulong> places, int i)
+    {
+        int word = i >> 6;
+        if (word >= places.Length)
+        {
+            return int.MaxValue - 64;
+        }
+
+        ulong bits = places[word] & (ulong.MaxValue << (i & 63));
+        while (bits == 0)
+        {
+            if (++word == places.Length)
+            {
+                return int.MaxValue - 64;
+            }
+
+            bits = places[word];
+        }
+
+        return (word << 6) + BitOperations.TrailingZeroCount(bits);
+    }
+
+    /// <summary>The block whose finder starts at run <paramref name="i"/>, with the character on its left and any on its right.</summary>
+    private static Block? Read(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int i)
+    {
+        // Widths from the offsets, which are where the runs start: a finder is 15 modules.
+        float total = offsets[i + 5] - offsets[i];
         if (total <= 0)
         {
             return null;
         }
 
+        // Read in the symbol's order, finders A1, B1, ... (at even runs) end with two single modules and A2, B2, ... (at odd
+        // runs) start with them; the middle element is 4 to 9 modules.
+        float unit = total / 15;
+        float ends = i % 2 == 0 ? runs[i + 3] + runs[i + 4] : runs[i] + runs[i + 1];
+        if (ends > 3 * unit || runs[i + 2] < 3 * unit)
+        {
+            return null;
+        }
+
         // The character on the left is 17 modules, near the finder's module.
-        float unit = total / 15, leftWidth = Sum(runs.Slice(i - 8, 8));
+        float leftWidth = offsets[i] - offsets[i - 8];
         if (MathF.Abs((leftWidth / 17) - unit) > 0.25f * unit)
         {
             return null;
@@ -81,17 +163,15 @@ internal static class DataBarExpandedReader
             elements[k] = DataBarReader.Corrected(runs[i - 8 + k], leftWidth / 17, i - 8 + k, spread);
         }
 
-        int[]? leftWidths = Character(elements, out int left);
-        if (leftWidths is null)
+        int leftWidths = Character(elements, out int left), rightWidths = 0, right = -1;
+        if (leftWidths == 0)
         {
             return null;
         }
 
-        int[]? rightWidths = null;
-        int right = -1;
         if (i + 13 <= runs.Length)
         {
-            float rightWidth = Sum(runs.Slice(i + 5, 8));
+            float rightWidth = offsets[i + 13] - offsets[i + 5];
             if (MathF.Abs((rightWidth / 17) - unit) <= 0.25f * unit)
             {
                 for (int k = 0; k < 8; k++)
@@ -100,21 +180,20 @@ internal static class DataBarExpandedReader
                 }
 
                 rightWidths = Character(elements, out right);
-                right = rightWidths is null ? -1 : right;
             }
         }
 
         return new Block(value, left, right, leftWidths, rightWidths);
     }
 
-    /// <summary>The value of a symbol character from its 8 widths in modules, and its integer widths.</summary>
-    internal static int[]? Character(ReadOnlySpan<float> elements, out int value)
+    /// <summary>The value of a symbol character from its 8 widths in modules, and its integer widths (4 bits each), or 0.</summary>
+    internal static int Character(ReadOnlySpan<float> elements, out int value)
     {
         value = -1;
         float odd = elements[0] + elements[2] + elements[4] + elements[6];
         Span<int> order = [0, 1, 2, 3, 4];
         DataBarReader.SortByDistance(order, odd, DataBarTables.ExpandedModules);
-        int[] widths = new int[8];
+        Span<int> widths = stackalloc int[8];
         Span<float> half = stackalloc float[4];
         Span<int> rounded = stackalloc int[4];
         for (int attempt = 0; attempt < 2; attempt++)
@@ -138,37 +217,99 @@ internal static class DataBarExpandedReader
             value = DataBarTables.ExpandedGroupSum[group] + (oddValue * t) + evenValue;
             if (value < 4096)
             {
-                return widths;
+                int packed = 0;
+                for (int j = 0; j < 8; j++)
+                {
+                    packed |= widths[j] << (4 * j);
+                }
+
+                return packed;
             }
         }
 
         value = -1;
-        return null;
+        return 0;
     }
 
-    /// <summary>Whether the blocks begin some finder sequence of Table 16.</summary>
-    public static bool Begins(ReadOnlySpan<Block> blocks)
+    /// <summary>Whether the blocks, from one of them on, can stand in the finder sequence <paramref name="finders"/>.</summary>
+    public static bool Fits(ReadOnlySpan<Block> blocks, ReadOnlySpan<byte> finders)
     {
-        if (blocks.Length > 11)
+        for (int o = 0; o < blocks.Length; o++)
         {
-            return false;
-        }
-
-        for (int sequence = Math.Max(0, blocks.Length - 2); sequence < 10; sequence++)
-        {
-            bool match = true;
-            for (int b = 0; b < blocks.Length && match; b++)
+            int place = finders.IndexOf((byte)(blocks[o].Finder + 1));
+            if (place < 0 || place + blocks.Length - o > finders.Length)
             {
-                match = blocks[b].Finder == DataBarTables.ExpandedFinderSequences[(sequence * 11) + b] - 1;
+                continue;
             }
 
-            if (match)
+            bool fits = true;
+            for (int k = o + 1; k < blocks.Length && fits; k++)
+            {
+                fits = blocks[k].Finder == finders[place + k - o] - 1;
+            }
+
+            if (fits)
             {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// The check sum mod 211 of a symbol of <paramref name="finders"/> and <paramref name="symbolCharacters"/> characters with
+    /// the blocks placed from <paramref name="place"/> on, from the sum so far; null when they do not fit there. The first
+    /// block's left character, the check character, counts as minus its part mod 211, so that a whole symbol sums to 0.
+    /// </summary>
+    public static int? Sum(ReadOnlySpan<Block> blocks, int place, ReadOnlySpan<byte> finders, int symbolCharacters, int sum)
+    {
+        int dataCharacters = symbolCharacters - 1, rows = ((dataCharacters - 2) / 2) * 21;
+        for (int k = 0; k < blocks.Length; k++, place++)
+        {
+            Block block = blocks[k];
+            bool last = place == finders.Length - 1;
+            if (block.Finder != finders[place] - 1 || (last ? (block.Right < 0) != (symbolCharacters % 2 == 1) : block.Right < 0))
+            {
+                return null;
+            }
+
+            if (place == 0)
+            {
+                int check = block.Left - (211 * (symbolCharacters - 4));
+                if (check is < 0 or >= 211)
+                {
+                    return null;
+                }
+
+                sum += 211 - check;
+            }
+            else
+            {
+                sum += Weighted(block.LeftWidths, DataBarTables.ExpandedWeightRows[rows + (2 * place) - 1]);
+            }
+
+            if (2 * place < dataCharacters)
+            {
+                sum += Weighted(block.RightWidths, DataBarTables.ExpandedWeightRows[rows + (2 * place)]);
+            }
+
+            sum %= 211;
+        }
+
+        return sum;
+    }
+
+    /// <summary>A character's part of the check sum: its widths (4 bits each) by the weights of its row.</summary>
+    private static int Weighted(int widths, int row)
+    {
+        int sum = 0;
+        for (int j = 0; j < 8; j++)
+        {
+            sum += ((widths >> (4 * j)) & 15) * DataBarTables.ExpandedChecksumWeights[(row * 8) + j];
+        }
+
+        return sum;
     }
 
     /// <summary>The symbol the blocks make, when they are a whole finder sequence and the check character holds.</summary>
@@ -201,13 +342,9 @@ internal static class DataBarExpandedReader
         {
             // Data character i is the right of block i / 2 when i is even, the left of block (i + 1) / 2 when odd.
             Block block = blocks[(i + 1) / 2];
-            int[] widths = i % 2 == 1 ? block.LeftWidths : blocks[i / 2].RightWidths!;
+            int widths = i % 2 == 1 ? block.LeftWidths : blocks[i / 2].RightWidths;
             values[i] = i % 2 == 1 ? block.Left : blocks[i / 2].Right;
-            int row = DataBarTables.ExpandedWeightRows[(((dataCharacters - 2) / 2) * 21) + i];
-            for (int j = 0; j < 8; j++)
-            {
-                checksum += widths[j] * DataBarTables.ExpandedChecksumWeights[(row * 8) + j];
-            }
+            checksum += Weighted(widths, DataBarTables.ExpandedWeightRows[(((dataCharacters - 2) / 2) * 21) + i]);
         }
 
         if (blocks[0].Left != (211 * (symbolCharacters - 4)) + (checksum % 211))
