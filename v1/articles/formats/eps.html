@@ -92,7 +92,8 @@ Photoshop's own copy of the image or the preview the writing program saved, not 
 not write EPS.</p>
 <p><code>EpsFormat.Info</code> is registered in <code>EgamiContext.Default</code>. It is detected by the DOS binary header (bytes C5 D0 D3 C6) or a
 <code>%!PS</code> first line; plain PostScript is detected too, so it fails with a message saying PostScript is not run rather than as an
-unknown format. The extensions are <code>.eps</code>, <code>.epsf</code>, <code>.epsi</code> and <code>.ept</code>, and the MIME types <code>application/postscript</code>,
+unknown format. Up to 64 bytes of spaces, tabs or line breaks before <code>%!PS</code>, which some old programs and servers wrote and
+PostScript interpreters skip, are skipped too, with an <code>Eps.LeadingWhitespace</code> warning. The extensions are <code>.eps</code>, <code>.epsf</code>, <code>.epsi</code> and <code>.ept</code>, and the MIME types <code>application/postscript</code>,
 <code>application/eps</code> and <code>image/x-eps</code>.</p>
 <pre><code class="lang-csharp">// Load gives the preview the EPS file carries (here a TIFF); its PostScript is never run.
 using Raster preview = Raster.Load(&quot;logo.eps&quot;);

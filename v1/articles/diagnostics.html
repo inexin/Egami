@@ -515,6 +515,11 @@ each page, a <code>ConvertColorTo</code> load) is one activity. A transcode that
 <td>Photoshop's image data in an EPS file ends before its last row; the missing samples are 0</td>
 </tr>
 <tr>
+<td><code>Eps.LeadingWhitespace</code></td>
+<td>Warning</td>
+<td>An EPS file has up to 64 bytes of spaces, tabs or line breaks before its <code>%!</code> line, which EPS does not allow; they were skipped</td>
+</tr>
+<tr>
 <td><code>Eps.MetafileSkipped</code></td>
 <td>Warning</td>
 <td>An EPS file's metafile preview was not drawn because no format in the context reads metafiles; its EPSI preview was loaded instead</td>
