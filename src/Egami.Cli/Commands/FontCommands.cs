@@ -153,7 +153,7 @@ internal static class FontCommands
         Option<string[]> text = new("--text") { Description = "Characters to keep. Repeat it, and combine it with --text-file and --unicodes; together they say what to keep.", HelpName = "text", AllowMultipleArgumentsPerToken = false };
         Option<string[]> textFile = new("--text-file") { Description = "Files or globs whose characters to keep, read as UTF-8 text (HTML and all: tags add only ASCII).", HelpName = "file", AllowMultipleArgumentsPerToken = false };
         Option<string[]> unicodes = new("--unicodes") { Description = "Code points to keep in CSS unicode-range syntax, such as U+0020-007E,U+00E5,U+4??.", HelpName = "ranges", AllowMultipleArgumentsPerToken = false };
-        Option<bool> noLayout = new("--no-layout") { Description = "Keep only the glyphs the characters map to, without GSUB, GPOS and GDEF, renumbered densely: the smallest file, shaped without ligatures, kerning or contextual forms." };
+        Option<bool> noLayout = new("--no-layout") { Description = "Keep only the glyphs the characters map to, without GSUB, GPOS, GDEF and MATH, renumbered densely: the smallest file, shaped without ligatures, kerning or contextual forms." };
         Option<bool> retainGids = new("--retain-gids") { Description = "Keep every glyph's id, with empty glyphs in the gaps (the default unless --no-layout)." };
         Option<string?> variation = new("--variation") { Description = "Where a variable font is instanced, such as wght=700,wdth=90; the subset is always a static font, by default at the font's default position.", HelpName = "axis=value,..." };
         Option<bool> noHinting = new("--no-hinting") { Description = "Leave out TrueType hinting (fpgm, prep, cvt and glyph instructions); CFF hints stay." };
@@ -549,19 +549,9 @@ internal static class FontCommands
         /// <summary>The glyphs of the characters the face has, the asked characters it lacks, and how many characters the ranges added.</summary>
         public (List<ushort> Glyphs, List<int> Missing, int FromRanges) Map(Typeface face)
         {
-            HashSet<ushort> glyphs = [];
-            List<int> missing = [];
-            foreach (int code in Explicit)
-            {
-                if (face.TryGetGlyph(code, out ushort glyph) && glyph != 0)
-                {
-                    glyphs.Add(glyph);
-                }
-                else
-                {
-                    missing.Add(code);
-                }
-            }
+            // The shaper draws a character the face lacks from its decomposition, and composes base and mark to a character it has.
+            HashSet<ushort> glyphs = [.. FontSubsetter.GlyphsFor(face, Explicit)];
+            List<int> missing = [.. Explicit.Where(code => !face.TryGetGlyph(code, out ushort glyph) || glyph == 0)];
 
             int fromRanges = 0;
             if (Ranges.Count > 0)

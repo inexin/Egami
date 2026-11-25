@@ -263,6 +263,13 @@ WOFF and WOFF2 writing (roadmap 2.7.7) and Word-style justified lines. Additive 
   WOFF2's transformed glyf, loca and hmtx; a WOFF2 collection becomes a TTC. Bounded by `SafetyLimits.MaxTotalBytes`.
 - `SubsetOptions.DropHinting` (false by default) leaves TrueType hinting out of a subset: fpgm, prep, cvt and every glyph's
   instructions, with maxp's hinting limits set to none; gasp stays. CFF hints are kept.
+- `SubsetOptions.LayoutClosure` also keeps the dotted circle (U+25CC) the shaper puts before a mark that starts a run, and
+  copies MATH with the larger variants and assembly parts it gives the kept glyphs, so such text draws as with the full face.
+- `FontSubsetter.GlyphsFor` gives the glyphs that draw characters as the shaper does: each one the face maps, the
+  decomposition of one it lacks when it draws every part (a missing "ὶ" draws as iota and a combining grave) and the
+  precomposed characters it maps whose decomposition the text holds (an "e" and a combining acute compose to "é").
+- A name-keyed CFF subset keeps only the strings its dicts and glyph names use: the String INDEX held every glyph's name, most
+  of a small subset's CFF (a 66-character SourceSans3 subset drops from 28 KB to 6 KB).
 
 ## Egami.Cli 1.6.0 (unreleased)
 

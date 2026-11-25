@@ -53,6 +53,50 @@ public sealed class SubsetLayoutTests
     }
 
     [Fact]
+    public void ItKeepsTheDottedCircleTheShaperInserts()
+    {
+        Typeface face = TestFonts.Load("DejaVuSans.ttf");
+        const string text = "́a";
+        Typeface subset = Subset(face, text, out _);
+
+        Assert.True(subset.TryGetGlyph(0x25CC, out _));
+        AssertSame(Shape(face, text, Script.Latin, TextDirection.LeftToRight), Shape(subset, text, Script.Latin, TextDirection.LeftToRight));
+    }
+
+    [Fact]
+    public void ItKeepsMathAndTheVariantsAndPartsItGives()
+    {
+        Typeface face = TestFonts.Load("DejaVuSans.ttf");
+        ushort paren = face.GetGlyph('(');
+        MathGlyphAssembly? assembly = face.Math!.GetAssembly(paren, MathDirection.Vertical);
+        Assert.NotNull(assembly);
+
+        Typeface subset = Subset(face, "(", out FontSubset written);
+
+        Assert.NotNull(subset.Math);
+        Assert.All(assembly.Parts, p => Assert.True(written.GlyphMap.ContainsKey(p.Glyph)));
+        Assert.All(face.Math.GetVariants(paren, MathDirection.Vertical), v => Assert.True(written.GlyphMap.ContainsKey(v.Glyph)));
+        Assert.Equal(assembly.Parts.Select(p => p.Glyph), subset.Math!.GetAssembly(paren, MathDirection.Vertical)!.Parts.Select(p => p.Glyph));
+    }
+
+    [Fact]
+    public void GlyphsForFollowsTheShapersNormalization()
+    {
+        Typeface face = TestFonts.Load("SourceSerif4-Regular.otf");
+        Assert.False(face.TryGetGlyph(0x1F76, out ushort g) && g != 0, "The face lacks U+1F76 (iota with varia).");
+
+        // U+1F76 decomposes to iota and a combining grave; e and a combining acute compose to é.
+        const string text = "ὶ é";
+        IReadOnlyList<ushort> glyphs = FontSubsetter.GlyphsFor(face, text.EnumerateRunes().Select(r => r.Value));
+        Assert.Contains(face.GetGlyph(0x03B9), glyphs);
+        Assert.Contains(face.GetGlyph(0x0300), glyphs);
+        Assert.Contains(face.GetGlyph(0x00E9), glyphs);
+
+        Typeface subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true }).ToTypeface();
+        AssertSame(Shape(face, text, Script.Greek, TextDirection.LeftToRight), Shape(subset, text, Script.Greek, TextDirection.LeftToRight));
+    }
+
+    [Fact]
     public void ItNeedsRetainedIdsAndSfntOutput()
     {
         Typeface face = TestFonts.Load("SourceSans3-Regular.otf");

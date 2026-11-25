@@ -530,6 +530,23 @@ public class Text
     }
 
     [Fact]
+    public void SubsetText()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+
+        #region subset-text
+        // The glyphs a text needs as the shaper draws it: "e" with a combining acute also keeps the precomposed "é" the shaper
+        // composes them to, and a character the face lacks keeps the glyphs of its decomposition.
+        string text = "résumé";
+        IReadOnlyList<ushort> glyphs = FontSubsetter.GlyphsFor(face, text.EnumerateRunes().Select(r => r.Value));
+        FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+        #endregion
+
+        Assert.Contains(face.GetGlyph('é'), glyphs);
+        Assert.True(subset.GlyphMap.ContainsKey(face.GetGlyph('é')));
+    }
+
+    [Fact]
     public void BareCff()
     {
         Typeface otf = Typeface.FromMemory(FontSubsetter.Subset(Typeface.FromFile(FontFile), [36]).Data);

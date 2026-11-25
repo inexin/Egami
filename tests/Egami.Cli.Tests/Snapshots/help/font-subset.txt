@@ -13,7 +13,7 @@ Options:
   --text <text>                        Characters to keep. Repeat it, and combine it with --text-file and --unicodes; together they say what to keep.
   --text-file <file>                   Files or globs whose characters to keep, read as UTF-8 text (HTML and all: tags add only ASCII).
   --unicodes <ranges>                  Code points to keep in CSS unicode-range syntax, such as U+0020-007E,U+00E5,U+4??.
-  --no-layout                          Keep only the glyphs the characters map to, without GSUB, GPOS and GDEF, renumbered densely: the smallest file, shaped without ligatures, kerning or contextual forms.
+  --no-layout                          Keep only the glyphs the characters map to, without GSUB, GPOS, GDEF and MATH, renumbered densely: the smallest file, shaped without ligatures, kerning or contextual forms.
   --retain-gids                        Keep every glyph's id, with empty glyphs in the gaps (the default unless --no-layout).
   --variation <axis=value,...>         Where a variable font is instanced, such as wght=700,wdth=90; the subset is always a static font, by default at the font's default position.
   --no-hinting                         Leave out TrueType hinting (fpgm, prep, cvt and glyph instructions); CFF hints stay.

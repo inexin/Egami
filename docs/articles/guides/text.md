@@ -300,10 +300,17 @@ the glyph map.
 
 A PDF needs only the glyphs it draws. A subset that is to be shaped again, such as a web font for a known set of pages, sets
 `SubsetOptions.LayoutClosure`: the kept glyphs gain every glyph GSUB can substitute for them (`OpenTypeLayout.GetClosure` with the
-default features), and GSUB, GPOS and GDEF are copied unchanged. The copied tables use the old glyph ids, so it needs
+default features), the dotted circle the shaper puts before a mark that starts a run, and the larger variants and assembly parts
+MATH gives them, and GSUB, GPOS, GDEF and MATH are copied unchanged. The copied tables use the old glyph ids, so it needs
 `RetainGlyphIds`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-layout)]
+
+The shaper draws a character the face lacks from its canonical decomposition, and composes a base and a mark to the precomposed
+character when the face has it, so the glyphs of a text are more than those its characters map to. `FontSubsetter.GlyphsFor`
+gives them all.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-text)]
 
 `SubsetOptions.DropHinting` leaves TrueType hinting out: the fpgm, prep and cvt programs and every glyph's instructions, which
 on a hinted font are a good share of each glyph. Renderers draw such a subset unhinted, as most screens draw web fonts anyway.

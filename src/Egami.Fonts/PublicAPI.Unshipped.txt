@@ -39,3 +39,4 @@ Egami.Fonts.SubsetOptions.DropHinting.get -> bool
 Egami.Fonts.SubsetOptions.DropHinting.init -> void
 Egami.Fonts.WebFontReader
 static Egami.Fonts.WebFontReader.ToSfnt(System.ReadOnlyMemory<byte> data, Egami.EgamiContext? context = null) -> byte[]!
+static Egami.Fonts.FontSubsetter.GlyphsFor(Egami.Fonts.Typeface! face, System.Collections.Generic.IEnumerable<int>! codePoints) -> System.Collections.Generic.IReadOnlyList<ushort>!

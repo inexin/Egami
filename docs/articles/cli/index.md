@@ -260,14 +260,15 @@ every command takes many files, globs and folders with `--recursive` as the imag
   collection, TTC, by `-o`'s extension or `--format`. A collection converts to WOFF2 or TTC only. `--no-transform` stores
   WOFF2's glyf, loca and hmtx untransformed; `--metadata` stores an XML file as the WOFF or WOFF2 metadata block.
 - `font subset` keeps the characters of `--text`, `--text-file` (files or globs, read as UTF-8 text, HTML and all) and
-  `--unicodes` (CSS unicode-range syntax: `U+0020-007E`, `U+00E5`, `U+4??`), which add up. By default the subset keeps
-  GSUB, GPOS and GDEF and every glyph they can substitute for the kept ones, with the glyph ids, so the text shapes as with the
-  full font (ligatures, kerning, contextual forms); `--no-layout` keeps only the mapped glyphs, renumbered, for the smallest
-  file (`--retain-gids` keeps the ids). A variable font becomes a static font at its default position, or at `--variation
-  wght=700,wdth=90`. `--no-hinting` leaves out TrueType hinting, `--name-prefix` prefixes the PostScript name and `--face`
-  picks a font of a collection. It prints one line per font: the glyphs kept of the total, the asked characters the font
-  lacks (characters in `--unicodes` ranges keep whatever the font has) and the sizes, and warns when the subset leaves out
-  color, bitmap, vertical, kern or MATH tables.
+  `--unicodes` (CSS unicode-range syntax: `U+0020-007E`, `U+00E5`, `U+4??`), which add up, with the glyphs the shaper draws
+  them with: the decomposition of a character the font lacks, and the precomposed form of a base and mark. By default it keeps
+  GSUB, GPOS, GDEF and MATH, every glyph they can substitute for the kept ones and the dotted circle, with the glyph ids, so
+  the text shapes as with the full font (ligatures, kerning, contextual forms, math); `--no-layout` keeps only the mapped
+  glyphs, renumbered, for the smallest file (`--retain-gids` keeps the ids). A variable font becomes a static font at its
+  default position, or at `--variation wght=700,wdth=90`. `--no-hinting` leaves out TrueType hinting, `--name-prefix` prefixes
+  the PostScript name and `--face` picks a font of a collection. It prints one line per font: the glyphs kept of the total,
+  the asked characters the font lacks (characters in `--unicodes` ranges keep whatever the font has) and the sizes, and warns
+  when the subset leaves out color, bitmap, vertical, kern or (with `--no-layout`) MATH tables.
 - `font info` prints each font's names, container, outlines, glyph count, units per em, variation axes, embedding rights,
   tables and the Unicode blocks it covers; `--json` adds every name and table and the coverage as a CSS `unicode-range`.
 

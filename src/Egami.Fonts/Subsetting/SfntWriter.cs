@@ -81,7 +81,7 @@ internal sealed class ByteWriter
 /// <summary>Writes an sfnt from tables: a sorted directory, 4-byte aligned tables, checksums and head's checksum adjustment.</summary>
 internal static class SfntWriter
 {
-    private static readonly FontTag[] LayoutTables = [Tags.Gsub, Tags.Gpos, Tags.Gdef];
+    private static readonly FontTag[] LayoutTables = [Tags.Gsub, Tags.Gpos, Tags.Gdef, Tags.Math];
 
     public static byte[] Write(uint version, SortedDictionary<uint, byte[]> tables)
     {

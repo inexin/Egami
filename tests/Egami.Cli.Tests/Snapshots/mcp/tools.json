@@ -2360,7 +2360,7 @@
           },
           "no_layout": {
             "type": "boolean",
-            "description": "Keep only the glyphs the characters map to, without GSUB, GPOS and GDEF, renumbered densely: the smallest file, shaped without ligatures, kerning or contextual forms."
+            "description": "Keep only the glyphs the characters map to, without GSUB, GPOS, GDEF and MATH, renumbered densely: the smallest file, shaped without ligatures, kerning or contextual forms."
           },
           "retain_gids": {
             "type": "boolean",
