@@ -1,1 +1,18 @@
 #nullable enable
+Egami.Barcodes.BarcodeFormat.Codabar = 4096 -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormat.Code93 = 2048 -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.Code93Options
+Egami.Barcodes.Code93Options.<Clone>$() -> Egami.Barcodes.Code93Options!
+Egami.Barcodes.Code93Options.Code93Options() -> void
+Egami.Barcodes.Code93Options.Equals(Egami.Barcodes.Code93Options? other) -> bool
+Egami.Barcodes.Code93Options.FullAscii.get -> bool?
+Egami.Barcodes.Code93Options.FullAscii.init -> void
+Egami.Barcodes.Code93Options.Height.get -> int?
+Egami.Barcodes.Code93Options.Height.init -> void
+override Egami.Barcodes.Code93Options.Equals(object? obj) -> bool
+override Egami.Barcodes.Code93Options.GetHashCode() -> int
+override Egami.Barcodes.Code93Options.ToString() -> string!
+static Egami.Barcodes.Barcode.Code93(string! text, Egami.Barcodes.Code93Options? options = null) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Code93Options.Default.get -> Egami.Barcodes.Code93Options!
+static Egami.Barcodes.Code93Options.operator !=(Egami.Barcodes.Code93Options? left, Egami.Barcodes.Code93Options? right) -> bool
+static Egami.Barcodes.Code93Options.operator ==(Egami.Barcodes.Code93Options? left, Egami.Barcodes.Code93Options? right) -> bool

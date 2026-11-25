@@ -46,6 +46,12 @@ public enum BarcodeFormat
     /// <summary>UPC-E (ISO/IEC 15420), linear; quiet zone 9 modules.</summary>
     UpcE = 1 << 10,
 
+    /// <summary>Code 93 (ANSI/AIM BC5), linear; quiet zone 10 modules.</summary>
+    Code93 = 1 << 11,
+
+    /// <summary>Codabar (EN 798), linear; quiet zone 10 modules.</summary>
+    Codabar = 1 << 12,
+
     /// <summary>The linear symbologies.</summary>
     Linear = Code128 | Code39 | Itf | Ean13 | Ean8 | UpcA | UpcE,
 
