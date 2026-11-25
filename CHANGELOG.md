@@ -20,6 +20,8 @@ EPS previews (roadmap 2.3.14).
   or CMYK; pixel- or line-interleaved; binary, hex or JPEG) comes before any preview, as `Gray8`, `Rgb8` or `Cmyk8`, with
   `EpsPreviewKind.PhotoshopImage`. Lab and damaged data fall back to the preview with a warning. EPS files placed in
   another (`%%BeginDocument`) are passed over, so a drawing with a placed Photoshop image does not load as that image.
+- Up to 64 bytes of spaces, tabs or line breaks before an EPS file's `%!PS` line are skipped, with an
+  `Eps.LeadingWhitespace` warning, as PostScript interpreters do; some old files have them.
 - The EPS format page, a recipe in the formats guide and a fuzz target (`eps`).
 - New diagnostics: `Eps.PreviewLoaded` on every load, and `Eps.*` warnings for damaged headers, sections and previews.
 
