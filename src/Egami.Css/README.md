@@ -6,6 +6,7 @@ Egami.Css parses and applies CSS, with no dependencies.
   and `var()`.
 - Media queries, the box, background, list, table and page properties, `@page` with its margin boxes.
 - Value parsers for colors, lengths, `calc()`, transforms, fonts and page sizes.
+- `@keyframes` rules, CSS Easing's timing functions, and an animation origin in the cascade for animated values.
 
 See the [CSS guide](https://inexin.github.io/Egami/v1/articles/guides/css.html).
 

@@ -17,6 +17,7 @@ egami run "photos/**/*.jpg" --workflow web.json -o web/{dir}/{name}.webp --jobs 
 - `run` chains any of Egami's operations over each image, and JSON workflow files keep a recipe.
 - Every command takes many files and globs, and works on several at once.
 - Reads every format Egami reads, SVG and WMF/EMF included; writes PNG, JPEG, WebP, AVIF, JPEG XL, TIFF, GIF and more.
+  `--animate` reads an animated SVG as all its frames and `--at` draws one moment of it.
 - `egami mcp` serves the commands as tools to AI assistants (Claude, GitHub Copilot, Cursor) over the Model Context Protocol,
   reading and writing only inside the folders you allow.
 - Exit codes 0 (done), 1 (a file failed), 2 (usage) and 3 (a safety limit), with Egami's diagnostics on standard error.
