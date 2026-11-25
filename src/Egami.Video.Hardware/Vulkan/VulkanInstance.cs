@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
-using Egami.Video.Hardware.Vulkan.Native;
+using Vortice.Vulkan;
 
 namespace Egami.Video.Hardware.Vulkan;
 
@@ -12,8 +13,15 @@ internal static class VkCheck
     {
         if (result < 0)
         {
-            throw new HardwareVideoException($"{command} failed: VK_{result} ({(int)result}).", (int)result);
+            throw new HardwareVideoException($"{command} failed: {Name(result)} ({(int)result}).", (int)result);
         }
+    }
+
+    /// <summary>Returns the C name of <paramref name="result"/>, such as <c>VK_ERROR_DEVICE_LOST</c>, or its number.</summary>
+    public static string Name(VkResult result)
+    {
+        string name = result.ToString();
+        return char.IsAsciiLetter(name[0]) ? "VK_" + Regex.Replace(name, "(?<=[a-z0-9])(?=[A-Z])", "_").ToUpperInvariant() : name;
     }
 }
 
@@ -29,7 +37,7 @@ internal sealed unsafe class VulkanInstance : IDisposable
 
     private const string ValidationLayer = "VK_LAYER_KHRONOS_validation";
 
-    private VulkanInstance(VulkanInstanceHandle handle, VkInstanceCommands commands, uint loaderVersion, bool validation)
+    private VulkanInstance(VulkanInstanceHandle handle, VkInstanceApi commands, uint loaderVersion, bool validation)
     {
         Handle = handle;
         Commands = commands;
@@ -41,7 +49,7 @@ internal sealed unsafe class VulkanInstance : IDisposable
     public VulkanInstanceHandle Handle { get; }
 
     /// <summary>Gets the instance-level commands.</summary>
-    public VkInstanceCommands Commands { get; }
+    public VkInstanceApi Commands { get; }
 
     /// <summary>Gets the Vulkan version the loader supports.</summary>
     public uint LoaderVersion { get; }
@@ -55,9 +63,9 @@ internal sealed unsafe class VulkanInstance : IDisposable
     /// <summary>Creates an instance, or explains in <paramref name="reason"/> why Vulkan is not usable here.</summary>
     public static VulkanInstance? TryCreate(out string? reason)
     {
-        if (!VkLoader.IsLoaded)
+        if (!VulkanLoader.IsLoaded)
         {
-            reason = VkLoader.LibraryName is { } name
+            reason = VulkanLoader.LibraryName is { } name
                 ? $"The Vulkan loader ({name}) was not found; it comes with a GPU driver that supports Vulkan."
                 : "Hardware video through Vulkan needs Windows or Linux.";
             if (!Environment.Is64BitProcess)
@@ -68,12 +76,7 @@ internal sealed unsafe class VulkanInstance : IDisposable
             return null;
         }
 
-        VkGlobalCommands global = new(VkLoader.GetInstanceProcAddr, 0);
-        uint loaderVersion = 1u << 22;
-        if (global.vkEnumerateInstanceVersion != null)
-        {
-            global.vkEnumerateInstanceVersion(&loaderVersion);
-        }
+        uint loaderVersion = global::Vortice.Vulkan.Vulkan.vkEnumerateInstanceVersion();
 
         if (loaderVersion < RequiredApiVersion)
         {
@@ -81,31 +84,31 @@ internal sealed unsafe class VulkanInstance : IDisposable
             return null;
         }
 
-        bool validation = Environment.GetEnvironmentVariable("EGAMI_VULKAN_VALIDATION") == "1" && HasLayer(global, ValidationLayer);
+        bool validation = Environment.GetEnvironmentVariable("EGAMI_VULKAN_VALIDATION") == "1" && HasLayer(ValidationLayer);
         VulkanInstanceHandle handle = new();
         nint layerName = validation ? Marshal.StringToHGlobalAnsi(ValidationLayer) : 0;
         try
         {
             fixed (byte* appName = "Egami.Video.Hardware"u8)
             {
-                VkApplicationInfo app = new() { pApplicationName = appName, pEngineName = appName, apiVersion = RequiredApiVersion };
+                VkApplicationInfo app = new() { pApplicationName = appName, pEngineName = appName, apiVersion = new VkVersion(RequiredApiVersion) };
                 VkInstanceCreateInfo info = new()
                 {
                     pApplicationInfo = &app,
                     enabledLayerCount = validation ? 1u : 0u,
                     ppEnabledLayerNames = (byte**)&layerName,
                 };
-                nint instance;
-                VkResult result = global.vkCreateInstance(&info, null, &instance);
+                VkInstance instance;
+                VkResult result = global::Vortice.Vulkan.Vulkan.vkCreateInstance(&info, null, &instance);
                 if (result < 0)
                 {
-                    reason = $"vkCreateInstance failed: VK_{result} ({(int)result}).";
+                    reason = $"vkCreateInstance failed: {VkCheck.Name(result)} ({(int)result}).";
                     handle.Dispose();
                     return null;
                 }
 
-                VkInstanceCommands commands = new(VkLoader.GetInstanceProcAddr, instance);
-                handle.Attach(instance, (delegate* unmanaged<nint, void*, void>)VkLoader.Load(VkLoader.GetInstanceProcAddr, instance, "vkDestroyInstance"u8));
+                VkInstanceApi commands = new(instance);
+                handle.Attach(instance.Handle, (delegate* unmanaged<nint, void*, void>)commands.vkDestroyInstance_ptr.Value);
                 reason = null;
                 return new VulkanInstance(handle, commands, loaderVersion, validation);
             }
@@ -122,13 +125,12 @@ internal sealed unsafe class VulkanInstance : IDisposable
     /// <summary>Lists the physical devices; devices the driver reports but Egami cannot query are left out.</summary>
     public VulkanPhysicalDevice[] EnumeratePhysicalDevices()
     {
-        nint instance = Handle.DangerousGetHandle();
         uint count = 0;
-        VkCheck.ThrowIfFailed(Commands.vkEnumeratePhysicalDevices(instance, &count, null), "vkEnumeratePhysicalDevices");
-        nint[] handles = new nint[count];
-        fixed (nint* p = handles)
+        VkCheck.ThrowIfFailed(Commands.vkEnumeratePhysicalDevices(&count, null), "vkEnumeratePhysicalDevices");
+        VkPhysicalDevice[] handles = new VkPhysicalDevice[count];
+        fixed (VkPhysicalDevice* p = handles)
         {
-            VkCheck.ThrowIfFailed(Commands.vkEnumeratePhysicalDevices(instance, &count, p), "vkEnumeratePhysicalDevices");
+            VkCheck.ThrowIfFailed(Commands.vkEnumeratePhysicalDevices(&count, p), "vkEnumeratePhysicalDevices");
         }
 
         VulkanPhysicalDevice[] devices = new VulkanPhysicalDevice[count];
@@ -143,15 +145,10 @@ internal sealed unsafe class VulkanInstance : IDisposable
     /// <inheritdoc/>
     public void Dispose() => Handle.Dispose();
 
-    private static bool HasLayer(VkGlobalCommands global, string name)
+    private static bool HasLayer(string name)
     {
-        if (global.vkEnumerateInstanceLayerProperties == null)
-        {
-            return false;
-        }
-
         uint count = 0;
-        if (global.vkEnumerateInstanceLayerProperties(&count, null) < 0 || count == 0)
+        if (global::Vortice.Vulkan.Vulkan.vkEnumerateInstanceLayerProperties(&count, null) < 0 || count == 0)
         {
             return false;
         }
@@ -159,7 +156,7 @@ internal sealed unsafe class VulkanInstance : IDisposable
         VkLayerProperties[] layers = new VkLayerProperties[count];
         fixed (VkLayerProperties* p = layers)
         {
-            if (global.vkEnumerateInstanceLayerProperties(&count, p) < 0)
+            if (global::Vortice.Vulkan.Vulkan.vkEnumerateInstanceLayerProperties(&count, p) < 0)
             {
                 return false;
             }
@@ -186,4 +183,48 @@ internal static unsafe class VulkanText
         int length = new ReadOnlySpan<byte>(text, capacity).IndexOf((byte)0);
         return System.Text.Encoding.UTF8.GetString(text, length < 0 ? capacity : length);
     }
+}
+
+/// <summary>
+/// Loads the Vulkan loader the graphics driver installs (<c>vulkan-1.dll</c> on Windows, <c>libvulkan.so.1</c> on Linux) through
+/// Vortice.Vulkan, once per process. Every Vulkan command is a function pointer the loader or driver hands back. Egami ships
+/// no native code: when the driver has no loader, hardware video is not available.
+/// </summary>
+internal static class VulkanLoader
+{
+    private static readonly Lazy<bool> Loaded = new(Load);
+
+    /// <summary>Gets the loader's file name on this operating system, or <see langword="null"/> where Egami does not look for one.</summary>
+    public static string? LibraryName =>
+        OperatingSystem.IsWindows() ? "vulkan-1.dll" : OperatingSystem.IsLinux() ? "libvulkan.so.1" : null;
+
+    /// <summary>Gets a value indicating whether the loader was found and its global commands loaded.</summary>
+    public static bool IsLoaded => Loaded.Value;
+
+    private static bool Load()
+    {
+        // 32-bit processes are left out: non-dispatchable Vulkan handles are 64-bit and Egami keeps them in native ints.
+        if (LibraryName is not { } name || !Environment.Is64BitProcess)
+        {
+            return false;
+        }
+
+        try
+        {
+            // The library stays loaded for the life of the process, as the loader expects.
+            return global::Vortice.Vulkan.Vulkan.vkInitialize(name) == VkResult.Success;
+        }
+        catch (EntryPointNotFoundException)
+        {
+            // A library of that name without vkGetInstanceProcAddr is not a Vulkan loader.
+            return false;
+        }
+    }
+}
+
+/// <summary>Converts to the one-bit <c>uint</c> fields of the Vulkan Video <c>StdVideo*Flags</c> structs.</summary>
+internal static class VulkanBits
+{
+    /// <summary>Returns 1 for <see langword="true"/> and 0 for <see langword="false"/>.</summary>
+    public static uint Of(bool value) => value ? 1u : 0u;
 }

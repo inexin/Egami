@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-using Egami.Video.Hardware.Vulkan.Native;
+using Vortice.Vulkan;
 
 namespace Egami.Video.Hardware.Vulkan;
 
@@ -79,7 +79,7 @@ internal sealed unsafe class VulkanDeviceHandle : SafeHandle
 /// when released. It keeps its device alive until then.
 /// </summary>
 /// <remarks>
-/// The 64-bit handle is kept in the native-sized handle field; <see cref="VkLoader"/> loads Vulkan only in 64-bit processes.
+/// The 64-bit handle is kept in the native-sized handle field; <see cref="VulkanLoader"/> loads Vulkan only in 64-bit processes.
 /// </remarks>
 internal sealed unsafe class VulkanObjectHandle : SafeHandle
 {
@@ -87,13 +87,13 @@ internal sealed unsafe class VulkanObjectHandle : SafeHandle
     private readonly VulkanDeviceHandle device;
 
     /// <summary>Takes ownership of <paramref name="value"/>, which <paramref name="destroyObject"/> destroys on <paramref name="owner"/>.</summary>
-    public VulkanObjectHandle(VulkanDeviceHandle owner, ulong value, delegate* unmanaged<nint, ulong, void*, void> destroyObject)
+    public VulkanObjectHandle(VulkanDeviceHandle owner, ulong value, PFN_vkVoidFunction destroyObject)
         : base(0, ownsHandle: true)
     {
         bool added = false;
         owner.DangerousAddRef(ref added);
         device = owner;
-        destroy = destroyObject;
+        destroy = (delegate* unmanaged<nint, ulong, void*, void>)destroyObject.Value;
         SetHandle((nint)value);
     }
 

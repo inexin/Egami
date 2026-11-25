@@ -1,25 +1,34 @@
-using Egami.Video.Hardware.Vulkan.Native;
+using System.Globalization;
+
+using Vortice.Vulkan;
 
 namespace Egami.Video.Hardware.Vulkan;
 
 /// <summary>Asks every Vulkan device for its video decode and encode capabilities.</summary>
 internal static unsafe class VulkanProbe
 {
+    /// <summary>The levels in the order of <c>StdVideoH264LevelIdc</c>.</summary>
+    internal static readonly string[] H264Levels =
+        ["1.0", "1.1", "1.2", "1.3", "2.0", "2.1", "2.2", "3.0", "3.1", "3.2", "4.0", "4.1", "4.2", "5.0", "5.1", "5.2", "6.0", "6.1", "6.2"];
+
+    /// <summary>The levels in the order of <c>StdVideoH265LevelIdc</c>.</summary>
+    internal static readonly string[] H265Levels = ["1.0", "2.0", "2.1", "3.0", "3.1", "4.0", "4.1", "5.0", "5.1", "5.2", "6.0", "6.1", "6.2"];
+
     /// <summary>A codec profile the probe asks about.</summary>
     private readonly record struct Candidate(
-        VkVideoCodecOperationFlagBitsKHR Operation, string Extension, string CodecId, HardwareDirection Direction, string Profile,
+        VkVideoCodecOperationFlagsKHR Operation, string Extension, string CodecId, HardwareDirection Direction, string Profile,
         int ProfileIdc, int BitDepth);
 
     private static readonly Candidate[] Candidates =
     [
-        new(VkVideoCodecOperationFlagBitsKHR.DECODE_H264_BIT_KHR, "VK_KHR_video_decode_h264", CodecIds.Avc, HardwareDirection.Decode, "High", (int)StdVideoH264ProfileIdc.HIGH, 8),
-        new(VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR, "VK_KHR_video_decode_h265", CodecIds.Hevc, HardwareDirection.Decode, "Main", (int)StdVideoH265ProfileIdc.MAIN, 8),
-        new(VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR, "VK_KHR_video_decode_h265", CodecIds.Hevc, HardwareDirection.Decode, "Main 10", (int)StdVideoH265ProfileIdc.MAIN_10, 10),
-        new(VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR, "VK_KHR_video_encode_h264", CodecIds.Avc, HardwareDirection.Encode, "High", (int)StdVideoH264ProfileIdc.HIGH, 8),
-        new(VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR, "VK_KHR_video_encode_h264", CodecIds.Avc, HardwareDirection.Encode, "Main", (int)StdVideoH264ProfileIdc.MAIN, 8),
-        new(VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR, "VK_KHR_video_encode_h264", CodecIds.Avc, HardwareDirection.Encode, "Baseline", (int)StdVideoH264ProfileIdc.BASELINE, 8),
-        new(VkVideoCodecOperationFlagBitsKHR.ENCODE_H265_BIT_KHR, "VK_KHR_video_encode_h265", CodecIds.Hevc, HardwareDirection.Encode, "Main", (int)StdVideoH265ProfileIdc.MAIN, 8),
-        new(VkVideoCodecOperationFlagBitsKHR.ENCODE_H265_BIT_KHR, "VK_KHR_video_encode_h265", CodecIds.Hevc, HardwareDirection.Encode, "Main 10", (int)StdVideoH265ProfileIdc.MAIN_10, 10),
+        new(VkVideoCodecOperationFlagsKHR.DecodeH264, "VK_KHR_video_decode_h264", CodecIds.Avc, HardwareDirection.Decode, "High", (int)StdVideoH264ProfileIdc.High, 8),
+        new(VkVideoCodecOperationFlagsKHR.DecodeH265, "VK_KHR_video_decode_h265", CodecIds.Hevc, HardwareDirection.Decode, "Main", (int)StdVideoH265ProfileIdc.Main, 8),
+        new(VkVideoCodecOperationFlagsKHR.DecodeH265, "VK_KHR_video_decode_h265", CodecIds.Hevc, HardwareDirection.Decode, "Main 10", (int)StdVideoH265ProfileIdc.Main10, 10),
+        new(VkVideoCodecOperationFlagsKHR.EncodeH264, "VK_KHR_video_encode_h264", CodecIds.Avc, HardwareDirection.Encode, "High", (int)StdVideoH264ProfileIdc.High, 8),
+        new(VkVideoCodecOperationFlagsKHR.EncodeH264, "VK_KHR_video_encode_h264", CodecIds.Avc, HardwareDirection.Encode, "Main", (int)StdVideoH264ProfileIdc.Main, 8),
+        new(VkVideoCodecOperationFlagsKHR.EncodeH264, "VK_KHR_video_encode_h264", CodecIds.Avc, HardwareDirection.Encode, "Baseline", (int)StdVideoH264ProfileIdc.Baseline, 8),
+        new(VkVideoCodecOperationFlagsKHR.EncodeH265, "VK_KHR_video_encode_h265", CodecIds.Hevc, HardwareDirection.Encode, "Main", (int)StdVideoH265ProfileIdc.Main, 8),
+        new(VkVideoCodecOperationFlagsKHR.EncodeH265, "VK_KHR_video_encode_h265", CodecIds.Hevc, HardwareDirection.Encode, "Main 10", (int)StdVideoH265ProfileIdc.Main10, 10),
     ];
 
     /// <summary>Probes every device; never throws.</summary>
@@ -93,10 +102,10 @@ internal static unsafe class VulkanProbe
 
         HardwareDeviceKind kind = physical.Type switch
         {
-            VkPhysicalDeviceType.INTEGRATED_GPU => HardwareDeviceKind.Integrated,
-            VkPhysicalDeviceType.DISCRETE_GPU => HardwareDeviceKind.Discrete,
-            VkPhysicalDeviceType.VIRTUAL_GPU => HardwareDeviceKind.Virtual,
-            VkPhysicalDeviceType.CPU => HardwareDeviceKind.Cpu,
+            VkPhysicalDeviceType.IntegratedGpu => HardwareDeviceKind.Integrated,
+            VkPhysicalDeviceType.DiscreteGpu => HardwareDeviceKind.Discrete,
+            VkPhysicalDeviceType.VirtualGpu => HardwareDeviceKind.Virtual,
+            VkPhysicalDeviceType.Cpu => HardwareDeviceKind.Cpu,
             _ => HardwareDeviceKind.Other,
         };
         return new HardwareVideoDevice(
@@ -117,26 +126,26 @@ internal static unsafe class VulkanProbe
         public VkVideoEncodeH265ProfileInfoKHR EncodeH265;
 
         /// <summary>Fills the chain for <paramref name="operation"/>; <paramref name="self"/> must point at this struct, pinned.</summary>
-        public static void Fill(ProfileChain* self, VkVideoCodecOperationFlagBitsKHR operation, int profileIdc, int bitDepth)
+        public static void Fill(ProfileChain* self, VkVideoCodecOperationFlagsKHR operation, int profileIdc, int bitDepth)
         {
             *self = default;
-            VkVideoComponentBitDepthFlagBitsKHR depth = bitDepth == 10 ? VkVideoComponentBitDepthFlagBitsKHR._10_BIT_KHR : VkVideoComponentBitDepthFlagBitsKHR._8_BIT_KHR;
+            VkVideoComponentBitDepthFlagsKHR depth = bitDepth == 10 ? VkVideoComponentBitDepthFlagsKHR.Depth10 : VkVideoComponentBitDepthFlagsKHR.Depth8;
             void* codec;
             switch (operation)
             {
-                case VkVideoCodecOperationFlagBitsKHR.DECODE_H264_BIT_KHR:
-                    self->DecodeH264 = new() { stdProfileIdc = (StdVideoH264ProfileIdc)profileIdc, pictureLayout = VkVideoDecodeH264PictureLayoutFlagBitsKHR.PROGRESSIVE_KHR };
+                case VkVideoCodecOperationFlagsKHR.DecodeH264:
+                    self->DecodeH264 = new() { stdProfileIdc = (StdVideoH264ProfileIdc)profileIdc, pictureLayout = VkVideoDecodeH264PictureLayoutFlagsKHR.Progressive };
                     codec = &self->DecodeH264;
                     break;
-                case VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR:
+                case VkVideoCodecOperationFlagsKHR.DecodeH265:
                     self->DecodeH265 = new() { stdProfileIdc = (StdVideoH265ProfileIdc)profileIdc };
                     codec = &self->DecodeH265;
                     break;
-                case VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR:
+                case VkVideoCodecOperationFlagsKHR.EncodeH264:
                     self->EncodeH264 = new() { stdProfileIdc = (StdVideoH264ProfileIdc)profileIdc };
                     codec = &self->EncodeH264;
                     break;
-                case VkVideoCodecOperationFlagBitsKHR.ENCODE_H265_BIT_KHR:
+                case VkVideoCodecOperationFlagsKHR.EncodeH265:
                     self->EncodeH265 = new() { stdProfileIdc = (StdVideoH265ProfileIdc)profileIdc };
                     codec = &self->EncodeH265;
                     break;
@@ -148,7 +157,7 @@ internal static unsafe class VulkanProbe
             {
                 pNext = codec,
                 videoCodecOperation = operation,
-                chromaSubsampling = VkVideoChromaSubsamplingFlagBitsKHR._420_BIT_KHR,
+                chromaSubsampling = VkVideoChromaSubsamplingFlagsKHR.Subsampling420,
                 lumaBitDepth = depth,
                 chromaBitDepth = depth,
             };
@@ -157,7 +166,7 @@ internal static unsafe class VulkanProbe
 
     private static HardwareVideoProfile? Query(VulkanPhysicalDevice physical, Candidate candidate)
     {
-        VkInstanceCommands vk = physical.Instance.Commands;
+        VkInstanceApi vk = physical.Instance.Commands;
         ProfileChain chain;
         ProfileChain.Fill(&chain, candidate.Operation, candidate.ProfileIdc, candidate.BitDepth);
 
@@ -172,13 +181,13 @@ internal static unsafe class VulkanProbe
         caps.pNext = isDecode ? &decode : &encode;
         switch (candidate.Operation)
         {
-            case VkVideoCodecOperationFlagBitsKHR.DECODE_H264_BIT_KHR:
+            case VkVideoCodecOperationFlagsKHR.DecodeH264:
                 decode.pNext = &decodeH264;
                 break;
-            case VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR:
+            case VkVideoCodecOperationFlagsKHR.DecodeH265:
                 decode.pNext = &decodeH265;
                 break;
-            case VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR:
+            case VkVideoCodecOperationFlagsKHR.EncodeH264:
                 encode.pNext = &encodeH264;
                 break;
             default:
@@ -192,8 +201,8 @@ internal static unsafe class VulkanProbe
         }
 
         // The picture format the codecs will use must be offered: NV12 for 8-bit, P010 for 10-bit.
-        VkFormat format = candidate.BitDepth == 10 ? VkFormat.G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16 : VkFormat.G8_B8R8_2PLANE_420_UNORM;
-        VkImageUsageFlagBits usage = isDecode ? VkImageUsageFlagBits.VIDEO_DECODE_DST_BIT_KHR : VkImageUsageFlagBits.VIDEO_ENCODE_SRC_BIT_KHR;
+        VkFormat format = candidate.BitDepth == 10 ? VkFormat.G10X6B10X6R10X62Plane420Unorm3Pack16 : VkFormat.G8B8R82Plane420Unorm;
+        VkImageUsageFlags usage = isDecode ? VkImageUsageFlags.VideoDecodeDstKHR : VkImageUsageFlags.VideoEncodeSrcKHR;
         if (!HasFormat(physical, &chain.Profile, usage, format))
         {
             return null;
@@ -201,18 +210,18 @@ internal static unsafe class VulkanProbe
 
         string level = candidate.Operation switch
         {
-            VkVideoCodecOperationFlagBitsKHR.DECODE_H264_BIT_KHR => Level(decodeH264.maxLevelIdc.ToString()),
-            VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR => Level(decodeH265.maxLevelIdc.ToString()),
-            VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR => Level(encodeH264.maxLevelIdc.ToString()),
-            _ => Level(encodeH265.maxLevelIdc.ToString()),
+            VkVideoCodecOperationFlagsKHR.DecodeH264 => Level(H264Levels, (int)decodeH264.maxLevelIdc),
+            VkVideoCodecOperationFlagsKHR.DecodeH265 => Level(H265Levels, (int)decodeH265.maxLevelIdc),
+            VkVideoCodecOperationFlagsKHR.EncodeH264 => Level(H264Levels, (int)encodeH264.maxLevelIdc),
+            _ => Level(H265Levels, (int)encodeH265.maxLevelIdc),
         };
-        bool h264 = candidate.Operation == VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR;
+        bool h264 = candidate.Operation == VkVideoCodecOperationFlagsKHR.EncodeH264;
         HardwareRateControl rateControl = HardwareRateControl.None;
         if (!isDecode)
         {
-            rateControl |= (encode.rateControlModes & VkVideoEncodeRateControlModeFlagBitsKHR.DISABLED_BIT_KHR) != 0 ? HardwareRateControl.ConstantQp : 0;
-            rateControl |= (encode.rateControlModes & VkVideoEncodeRateControlModeFlagBitsKHR.CBR_BIT_KHR) != 0 ? HardwareRateControl.ConstantBitrate : 0;
-            rateControl |= (encode.rateControlModes & VkVideoEncodeRateControlModeFlagBitsKHR.VBR_BIT_KHR) != 0 ? HardwareRateControl.VariableBitrate : 0;
+            rateControl |= (encode.rateControlModes & VkVideoEncodeRateControlModeFlagsKHR.Disabled) != 0 ? HardwareRateControl.ConstantQp : 0;
+            rateControl |= (encode.rateControlModes & VkVideoEncodeRateControlModeFlagsKHR.Cbr) != 0 ? HardwareRateControl.ConstantBitrate : 0;
+            rateControl |= (encode.rateControlModes & VkVideoEncodeRateControlModeFlagsKHR.Vbr) != 0 ? HardwareRateControl.VariableBitrate : 0;
         }
 
         return new HardwareVideoProfile(candidate.CodecId, candidate.Direction, candidate.Profile, candidate.BitDepth)
@@ -232,9 +241,9 @@ internal static unsafe class VulkanProbe
     }
 
     /// <summary>Whether the device offers <paramref name="format"/> for pictures of the profile with <paramref name="usage"/>.</summary>
-    internal static bool HasFormat(VulkanPhysicalDevice physical, VkVideoProfileInfoKHR* profile, VkImageUsageFlagBits usage, VkFormat format)
+    internal static bool HasFormat(VulkanPhysicalDevice physical, VkVideoProfileInfoKHR* profile, VkImageUsageFlags usage, VkFormat format)
     {
-        VkInstanceCommands vk = physical.Instance.Commands;
+        VkInstanceApi vk = physical.Instance.Commands;
         VkVideoProfileListInfoKHR list = new() { profileCount = 1, pProfiles = profile };
         VkPhysicalDeviceVideoFormatInfoKHR info = new() { pNext = &list, imageUsage = usage };
         uint count = 0;
@@ -269,5 +278,6 @@ internal static unsafe class VulkanProbe
     }
 
     /// <summary>Turns a level enum member name such as <c>_5_2</c> into "5.2".</summary>
-    private static string Level(string member) => member.TrimStart('_').Replace('_', '.');
+    private static string Level(string[] levels, int index) =>
+        (uint)index < (uint)levels.Length ? levels[index] : index.ToString(CultureInfo.InvariantCulture);
 }

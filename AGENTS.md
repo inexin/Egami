@@ -19,10 +19,10 @@ adds what an agent tends to get wrong.
 - **The one exception: Egami.Video.Hardware.** Only the package in `src/Egami.Video.Hardware` may call native code, and only the
   Vulkan loader that GPU drivers install (`vulkan-1.dll` on Windows, `libvulkan.so.1` on Linux): it takes the one export
   `vkGetInstanceProcAddr` through `NativeLibrary` and reaches every other Vulkan command through the function pointers that
-  returns. It ships no native binary and references no package outside Egami's own. Its bindings are Egami's own, generated
-  by `tools/video/make-vulkan-bindings.py` from the Khronos registry (Vulkan-Headers, Apache-2.0 or MIT) and checked against
-  the C headers; regenerate them, never edit them by hand. Never read ffmpeg, GStreamer, Mesa or GPU vendors' sample code for
-  it. Every other package, Egami.Video included, stays pure managed, and none may reference Egami.Video.Hardware except
+  returns. It ships no native binary. Its bindings are [Vortice.Vulkan](https://github.com/amerkoleci/Vortice.Vulkan) (MIT,
+  3.4.0 or later), a managed package the maintainer approved by name for this package only: keep every Vortice type internal,
+  out of the public API, and keep the struct layout tests (`VulkanLayoutTests`) passing when you raise its version. No other
+  package may reference Vortice.Vulkan. Never read ffmpeg, GStreamer, Mesa or GPU vendors' sample code for it. Every other package, Egami.Video included, stays pure managed, and none may reference Egami.Video.Hardware except
   through an opt-in an app makes. Tests that need a GPU carry `[Trait("Category", "Gpu")]` and skip where there is none.
 - **Branch and pull request.** Never commit to `main`, push to it or force-push it, and don't merge your own pull request. The
   maintainer reviews and merges.
