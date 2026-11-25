@@ -45,6 +45,9 @@ public class DrawingBenchmarks
     public void StrokeStar() => _canvas.StrokePath(_star, new Stroke(8) { Join = LineJoin.Round }, _ink);
 
     [Benchmark]
+    public void BevelStar() => _canvas.DrawBevel(_star, new Bevel { Width = 12, Height = 8, Material = BevelMaterial.Plastic });
+
+    [Benchmark]
     public void FillSmallShapes()
     {
         foreach (Path path in _small)

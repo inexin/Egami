@@ -27,6 +27,12 @@ EPS previews (roadmap 2.3.14).
 
 ## Egami.Drawing 1.6.0 (unreleased)
 
+- `Canvas.DrawBevel` draws a `Bevel` over a filled shape: DrawingML's twelve bevel profiles (`BevelProfile`) with a width and
+  height, eleven preset materials (`BevelMaterial`) and a `BevelLight` (angle, elevation, intensity; `FromDirection` takes a
+  DrawingML rig's `LightDirection`). It is lit in device pixels from the shape's edge distance, which it shares with the PSD
+  flattener's bevel and emboss, and drawn as an image on every backend. `Canvas.FillBevel` fills the shape with any paint
+  lit as a bevel instead: the paint's own color is lightened and darkened, and a metal's shine takes its hue, closer to
+  DrawingML's metal and clear materials. A section in the drawing guide shows both.
 - `Path.Warp` sends every point of a path through any function of the plane (a wave, an arch, text bent between two
   curves): lines and curves are split until the result stays within a tolerance, a line whose image stays straight stays a
   line, closed contours stay closed (their closing line bends too) and the fill rule is kept. A recipe in the drawing guide
@@ -266,6 +272,12 @@ WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, a
 - Fixed: on a justified line with tabs, stretched or shrunk word spaces before a tab moved the text after it off its tab stop.
   Only the justification opportunities after a line's last tab now stretch or shrink, as Word spreads such lines; lines
   without tabs are unchanged.
+- `WordDictionary` and `WordDictionaries` (roadmap 2.8.5, first part): word lists by script for breaking text written without
+  spaces between words. `WordDictionaries.BuiltIn` holds ICU's word lists for Thai, Lao, Khmer and Myanmar (release 79.1;
+  Unicode License v3, BSD-2 and BSD-3 notices in THIRD-PARTY-NOTICES.md), about 0.7 MB in all, each loaded on first use in
+  about 2 ms or less. A `WordDictionary` comes from a word list (`FromWords`, or `Load` of a UTF-8 list with one word per line),
+  takes user words with `WithWords`, and saves to and loads from Egami's compiled form (`.edict`). Line breaking does not use
+  them yet.
 
 - `WebFontWriter.Write` writes a `Typeface`, a `FontSubset` or sfnt or collection bytes as WOFF2 (the default) or WOFF 1.0
   (`WebFontOptions.Format`), to a byte array or a stream. Every table is kept. WOFF2 stores glyf and loca in the transformed

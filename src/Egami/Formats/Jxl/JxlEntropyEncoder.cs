@@ -1185,6 +1185,9 @@ internal sealed class JxlEntropyCode
         }
     }
 
+    // The values of a cluster counted at a time when its configuration is chosen.
+    private const int PricePiece = 1 << 16;
+
     // Streams are counted on several threads when they hold at least twice this many tokens, in runs of about this many or more.
     private const int ParallelTokens = 1 << 18;
 
@@ -1965,30 +1968,95 @@ internal sealed class JxlEntropyCode
                 max[h] = m;
             });
 
-            // Every cluster and candidate priced on its own, the cheapest kept in candidate order.
+            // Every cluster priced with each candidate whose tokens fit, the cheapest kept in candidate order. A cluster's values
+            // are counted in pieces, each piece for every candidate on a thread of its own, and the pieces are added up after in
+            // order: one cluster often holds most of the values.
             int n = candidates.Length;
+            bool[] fits = new bool[count * n];
+            for (int i = 0; i < fits.Length; i++)
+            {
+                JxlUintConfig cfg = candidates[i % n];
+                (uint maxTok, _, _) = Split(cfg, max[i / n]);
+                maxTok |= (1u << cfg.LsbInToken) - 1;
+                fits[i] = maxTok < 256 && !(_lz77 && maxTok >= Lz77MinSymbol);
+            }
+
+            int[] firstPiece = new int[count + 1];
+            for (int h = 0; h < count; h++)
+            {
+                firstPiece[h + 1] = firstPiece[h] + ((start[h + 1] - start[h] + PricePiece - 1) / PricePiece);
+            }
+
+            int[][] tallies = new int[firstPiece[count]][];
+            long[][] extras = new long[firstPiece[count]][];
+            Each(firstPiece[count], runs > 1 ? p.Parallel : null, k =>
+            {
+                int h = Array.BinarySearch(firstPiece, k);
+                h = h >= 0 ? h : ~h - 1;
+                while (firstPiece[h + 1] <= k)
+                {
+                    // Clusters with no values share their first piece with the next.
+                    h++;
+                }
+
+                int from = start[h] + ((k - firstPiece[h]) * PricePiece);
+                ReadOnlySpan<uint> values = all.AsSpan(from, Math.Min(PricePiece, start[h + 1] - from));
+                int[] tally = tallies[k] = new int[n * 256];
+                long[] extra = extras[k] = new long[n];
+                for (int c = 0; c < n; c++)
+                {
+                    if (!fits[(h * n) + c])
+                    {
+                        continue;
+                    }
+
+                    JxlUintConfig cfg = candidates[c];
+                    Span<int> counts = tally.AsSpan(c * 256, 256);
+                    long bits = 0;
+                    foreach (uint v in values)
+                    {
+                        (uint tok, int nbits, _) = Split(cfg, v);
+                        counts[(int)tok]++;
+                        bits += nbits;
+                    }
+
+                    extra[c] = bits;
+                }
+            });
+
             JxlHistogram?[] histos = new JxlHistogram?[count * n];
             float[] costs = new float[count * n];
             void Price(int i)
             {
-                int h = i / n;
-                JxlUintConfig cfg = candidates[i % n];
-                (uint maxTok, _, _) = Split(cfg, max[h]);
-                maxTok |= (1u << cfg.LsbInToken) - 1;
-                if (maxTok >= 256 || (_lz77 && maxTok >= Lz77MinSymbol))
+                if (!fits[i])
                 {
                     return;
                 }
 
-                JxlHistogram histo = new();
+                int h = i / n;
+                int c = i % n;
+                JxlUintConfig cfg = candidates[c];
+                int[] counts = new int[256];
                 long extra = 0;
-                foreach (uint v in all.AsSpan(start[h], start[h + 1] - start[h]))
+                for (int k = firstPiece[h]; k < firstPiece[h + 1]; k++)
                 {
-                    (uint tok, int nbits, _) = Split(cfg, v);
-                    histo.Add(tok);
-                    extra += nbits;
+                    ReadOnlySpan<int> part = tallies[k].AsSpan(c * 256, 256);
+                    for (int t = 0; t < 256; t++)
+                    {
+                        counts[t] += part[t];
+                    }
+
+                    extra += extras[k][c];
                 }
 
+                // As long as adding the tokens one by one would have grown it: a multiple of 8 past the largest, at least 8.
+                int top = 255;
+                while (top >= 0 && counts[top] == 0)
+                {
+                    top--;
+                }
+
+                JxlHistogram histo = new() { Counts = counts[..Math.Max(8, (top + 8) & ~7)], Total = start[h + 1] - start[h] };
                 costs[i] = histo.AnsPopulationCost() + extra + CeilLog2(cfg.SplitExponent + 1) + CeilLog2(cfg.SplitExponent - cfg.MsbInToken + 1);
                 histos[i] = histo;
             }
