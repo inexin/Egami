@@ -207,7 +207,8 @@ units are pixels at <code>EmfWriteOptions.Dpi</code> (96 by default).</p>
 using (FileStream stream = File.Create(output))
 using (EmfCanvas emf = new(stream, 300, 200, new EmfWriteOptions { Description = &quot;Sales chart&quot; }))
 {
-    emf.FillRect(new RectF(20, 20, 260, 160), new Rgba8(240, 244, 248, 255));
+    // A linear gradient is an EMF+ gradient brush, and GDI gradient fills in the GDI copy.
+    emf.FillRect(new RectF(20, 20, 260, 160), new LinearGradient(new Vector2(0, 20), new Vector2(0, 180), new RgbaF32(1, 1, 1, 1), new RgbaF32(0.86f, 0.91f, 0.96f, 1)));
     emf.DrawLine(new Vector2(40, 160), new Vector2(260, 60), new Stroke(3) { Cap = LineCap.Round }, new Rgba8(0, 102, 204, 255));
     emf.FillOval(new RectF(250, 50, 20, 20), new Rgba8(204, 51, 0, 255));
     foreach (EgamiDiagnostic warning in emf.Warnings)
@@ -221,12 +222,29 @@ Metafile written = Metafile.Load(output);
 <p><code>EmfWriteOptions.Kind</code> picks what goes in the file: <code>EmfPlusDual</code> (the default) writes EMF+ records and a GDI copy of each
 drawing for programs without GDI+, <code>EmfPlusOnly</code> the EMF+ records alone and <code>Emf</code> the GDI records alone. <code>Compress</code> writes
 EMZ, <code>Description</code> the header's description.</p>
-<p>Paths, rectangles, rounded rectangles, ovals and points with solid paints, every <code>Stroke</code> setting, transforms, save and
-restore, clips and aliased drawing are written as vectors; equal pens, brushes and paths are written once and shared. The
-GDI copy draws colors opaque, since GDI has no alpha. Text is written as outlines; <code>EmfText.Glyphs</code> (<code>EmfWriteOptions.Text</code>)
-is reserved for EMF+ text records and writes outlines too for now. Gradients and other paints, images, meshes
-and layers with opacity, blending, filters or masks are drawn by Egami as an image at <code>FallbackScale</code> times the resolution
-and placed in the file, with one <code>Metafile.FallbackImage</code> warning in <code>Warnings</code> for each kind.</p>
+<p>Paths, rectangles, rounded rectangles, ovals and points, every <code>Stroke</code> setting, transforms, save and restore, clips and
+aliased drawing are written as vectors; equal pens, brushes and paths are written once and shared. The GDI copy draws
+colors opaque, since GDI has no alpha. Text is written as outlines; <code>EmfText.Glyphs</code> (<code>EmfWriteOptions.Text</code>) is reserved
+for EMF+ text records and writes outlines too for now.</p>
+<p>Paints are written as EMF+ brushes where one draws the same thing:</p>
+<ul>
+<li>A <code>SolidPaint</code> is a color with its alpha. A <code>ColorMatrixPaint</code> or <code>BlendPaint</code> made only of solid paints is the color
+Egami works out for it.</li>
+<li>A <code>LinearGradient</code> is a linear gradient brush with its stops as preset colors (clamped, repeated or mirrored). When its
+colors are opaque, the GDI copy draws it exactly too, with gradient fills clipped to the shape.</li>
+<li>A <code>RadialGradient</code> is a path gradient brush on a circle around its center (clamped, repeated or mirrored).</li>
+<li>An <code>ImagePaint</code> or <code>PicturePaint</code> is a texture brush that repeats, mirrors or draws one copy; a picture's tile is drawn by
+Egami at <code>FallbackScale</code> times the resolution.</li>
+<li>Gradients mixed in linear light, or between stops of different alpha, get extra stops mixed as Egami mixes them.</li>
+<li>A stroke with any of these paints is written as its outline, filled.</li>
+</ul>
+<p>The GDI copy has no form for radial gradients, translucent gradients or textures, so it gets an image of those calls; the
+EMF+ part stays vector and there is no warning, except in a GDI-only file (<code>Kind = Emf</code>).</p>
+<p>A layer with only an opacity whose shapes cover no pixel in common is written as those shapes with the opacity in each paint.
+Sweep and two-point conical gradients, gradients mixed in other spaces or transparent past their ends, clamped image
+paints, other blend modes, blurs, images, meshes, and any other layer with opacity, blending, filters or masks are drawn by
+Egami as an image at <code>FallbackScale</code> times the resolution and placed in the file, with one <code>Metafile.FallbackImage</code> warning
+in <code>Warnings</code> for each kind.</p>
 <h2 id="what-plays-and-how-close-it-is">What plays, and how close it is</h2>
 <p>The GDI records of WMF and EMF play as GDI plays them: map modes, the world transform, pens and brushes (hatches and pattern
 brushes sized from the reference device, so they scale with the picture), paths, clipping regions, bitmaps through Egami's BMP

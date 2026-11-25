@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class EmfCanvas | Egami ">
       
-      <meta name="description" content="A canvas that writes an EMF file: every drawing call becomes EMF+ records and, beside them, GDI records that draw the same thing, so anything drawn on a  can be saved as vectors that Word, PowerPoint, Excel, LibreOffice, GDI and GDI+ open. Paths, rectangles, round rectangles, ovals and points are filled with solid colors (with alpha in EMF+, opaque in GDI) and stroked with every  setting; transforms, save and restore, and rectangle and path clips carry over. What this version does not write as vectors (paints other than , blend modes, blurs, images, meshes and layers with opacity, blend modes, filters or masks) is drawn by Egami into a bitmap of that area at  and embedded, with one Metafile.FallbackImage warning per kind in . Glyph runs are written as outlines.  The canvas&#39;s units are pixels of a reference device at . The header&#39;s frame covers the canvas in 0.01 mm, inclusive of its last pixel row and column as GDI+ writes it, so GDI+ and Office show the picture at the canvas&#39;s size. Disposing the canvas finishes the file and writes it to the stream, which is left open.">
+      <meta name="description" content="A canvas that writes an EMF file: every drawing call becomes EMF+ records and, beside them, GDI records that draw the same thing, so anything drawn on a  can be saved as vectors that Word, PowerPoint, Excel, LibreOffice, GDI and GDI+ open. Paths, rectangles, round rectangles, ovals and points are filled with solid colors (with alpha in EMF+, opaque in GDI) and stroked with every  setting; transforms, save and restore, and rectangle and path clips carry over. Linear and centered radial gradients, image and picture paints become EMF+ brushes (opaque linear gradients are GDI gradient fills in the GDI part, the rest images there); a color matrix or blend paint over solid colors becomes its color; and a layer with only an opacity is folded into its shapes when they do not overlap. What this version does not write as vectors (sweep and two-point conical gradients, other blend modes, blurs, images, meshes and other layers with opacity, blend modes, filters or masks) is drawn by Egami into a bitmap of that area at  and embedded, with one Metafile.FallbackImage warning per kind in . Glyph runs are written as outlines.  The canvas&#39;s units are pixels of a reference device at . The header&#39;s frame covers the canvas in 0.01 mm, inclusive of its last pixel row and column as GDI+ writes it, so GDI+ and Office show the picture at the canvas&#39;s size. Disposing the canvas finishes the file and writes it to the stream, which is left open.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -101,8 +101,11 @@ Class EmfCanvas  <a class="header-action link-secondary" title="View source" hre
 thing, so anything drawn on a <a class="xref" href="Egami.Drawing.Canvas.html">Canvas</a> can be saved as vectors that Word, PowerPoint, Excel, LibreOffice, GDI and
 GDI+ open. Paths, rectangles, round rectangles, ovals and points are filled with solid colors (with alpha in EMF+, opaque in
 GDI) and stroked with every <a class="xref" href="Egami.Drawing.Stroke.html">Stroke</a> setting; transforms, save and restore, and rectangle and path clips carry over.
-What this version does not write as vectors (paints other than <a class="xref" href="Egami.Drawing.SolidPaint.html">SolidPaint</a>, blend modes, blurs, images, meshes
-and layers with opacity, blend modes, filters or masks) is drawn by Egami into a bitmap of that area at
+Linear and centered radial gradients, image and picture paints become EMF+ brushes (opaque linear gradients are GDI gradient
+fills in the GDI part, the rest images there); a color matrix or blend paint over solid colors becomes its color; and a
+layer with only an opacity is folded into its shapes when they do not overlap.
+What this version does not write as vectors (sweep and two-point conical gradients, other blend modes, blurs, images,
+meshes and other layers with opacity, blend modes, filters or masks) is drawn by Egami into a bitmap of that area at
 <a class="xref" href="Egami.Metafiles.EmfWriteOptions.html#Egami_Metafiles_EmfWriteOptions_FallbackScale">FallbackScale</a> and embedded, with one <code>Metafile.FallbackImage</code> warning per kind in
 <a class="xref" href="Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_Warnings">Warnings</a>. Glyph runs are written as outlines.</p>
 <p>
@@ -387,7 +390,8 @@ canvas's size. Disposing the canvas finishes the file and writes it to the strea
 using (FileStream stream = File.Create(output))
 using (EmfCanvas emf = new(stream, 300, 200, new EmfWriteOptions { Description = "Sales chart" }))
 {
-    emf.FillRect(new RectF(20, 20, 260, 160), new Rgba8(240, 244, 248, 255));
+    // A linear gradient is an EMF+ gradient brush, and GDI gradient fills in the GDI copy.
+    emf.FillRect(new RectF(20, 20, 260, 160), new LinearGradient(new Vector2(0, 20), new Vector2(0, 180), new RgbaF32(1, 1, 1, 1), new RgbaF32(0.86f, 0.91f, 0.96f, 1)));
     emf.DrawLine(new Vector2(40, 160), new Vector2(260, 60), new Stroke(3) { Cap = LineCap.Round }, new Rgba8(0, 102, 204, 255));
     emf.FillOval(new RectF(250, 50, 20, 20), new Rgba8(204, 51, 0, 255));
     foreach (EgamiDiagnostic warning in emf.Warnings)
@@ -409,7 +413,7 @@ Metafile written = Metafile.Load(output);</code></pre>
 
   <h3 id="Egami_Metafiles_EmfCanvas__ctor_System_IO_Stream_System_Single_System_Single_Egami_Metafiles_EmfWriteOptions_" data-uid="Egami.Metafiles.EmfCanvas.#ctor(System.IO.Stream,System.Single,System.Single,Egami.Metafiles.EmfWriteOptions)">
   EmfCanvas(Stream, float, float, EmfWriteOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L59"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Egami.Metafiles.EmfCanvas.html">EmfCanvas</a> class that writes one EMF file to a stream when disposed.</p>
@@ -447,7 +451,8 @@ Metafile written = Metafile.Load(output);</code></pre>
 using (FileStream stream = File.Create(output))
 using (EmfCanvas emf = new(stream, 300, 200, new EmfWriteOptions { Description = "Sales chart" }))
 {
-    emf.FillRect(new RectF(20, 20, 260, 160), new Rgba8(240, 244, 248, 255));
+    // A linear gradient is an EMF+ gradient brush, and GDI gradient fills in the GDI copy.
+    emf.FillRect(new RectF(20, 20, 260, 160), new LinearGradient(new Vector2(0, 20), new Vector2(0, 180), new RgbaF32(1, 1, 1, 1), new RgbaF32(0.86f, 0.91f, 0.96f, 1)));
     emf.DrawLine(new Vector2(40, 160), new Vector2(260, 60), new Stroke(3) { Cap = LineCap.Round }, new Rgba8(0, 102, 204, 255));
     emf.FillOval(new RectF(250, 50, 20, 20), new Rgba8(204, 51, 0, 255));
     foreach (EgamiDiagnostic warning in emf.Warnings)
@@ -483,7 +488,7 @@ Metafile written = Metafile.Load(output);</code></pre>
 
   <h3 id="Egami_Metafiles_EmfCanvas_Options" data-uid="Egami.Metafiles.EmfCanvas.Options">
   Options
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L86"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the options the file is written with.</p>
@@ -515,7 +520,7 @@ Metafile written = Metafile.Load(output);</code></pre>
 
   <h3 id="Egami_Metafiles_EmfCanvas_Warnings" data-uid="Egami.Metafiles.EmfCanvas.Warnings">
   Warnings
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L92"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets what the canvas had to draw as images instead of vectors so far, one <code>Metafile.FallbackImage</code> warning per kind,
@@ -552,7 +557,7 @@ as <a class="xref" href="Egami.Metafiles.Metafile.html#Egami_Metafiles_Metafile_
 
   <h3 id="Egami_Metafiles_EmfCanvas_Dispose_System_Boolean_" data-uid="Egami.Metafiles.EmfCanvas.Dispose(System.Boolean)">
   Dispose(bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L174"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L179"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Releases the backend's resources; called once by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Dispose">Dispose()</a> after every state is restored.</p>
@@ -619,7 +624,7 @@ page; by default it is <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Dra
 
   <h3 id="Egami_Metafiles_EmfCanvas_OnClipPath_Egami_Drawing_Path_Egami_Drawing_ClipOp_System_Boolean_" data-uid="Egami.Metafiles.EmfCanvas.OnClipPath(Egami.Drawing.Path,Egami.Drawing.ClipOp,System.Boolean)">
   OnClipPath(Path, ClipOp, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L161"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L166"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Clips by a path's fill.</p>
@@ -658,7 +663,7 @@ page; by default it is <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Dra
 
   <h3 id="Egami_Metafiles_EmfCanvas_OnClipRect_Egami_Drawing_RectF_Egami_Drawing_ClipOp_System_Boolean_" data-uid="Egami.Metafiles.EmfCanvas.OnClipRect(Egami.Drawing.RectF,Egami.Drawing.ClipOp,System.Boolean)">
   OnClipRect(RectF, ClipOp, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L140"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Clips by a rectangle. By default it goes to <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnClipPath_Egami_Drawing_Path_Egami_Drawing_ClipOp_System_Boolean_">OnClipPath(Path, ClipOp, bool)</a>.</p>
@@ -697,7 +702,7 @@ page; by default it is <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Dra
 
   <h3 id="Egami_Metafiles_EmfCanvas_OnClipRoundRect_Egami_Drawing_RoundRect_Egami_Drawing_ClipOp_System_Boolean_" data-uid="Egami.Metafiles.EmfCanvas.OnClipRoundRect(Egami.Drawing.RoundRect,Egami.Drawing.ClipOp,System.Boolean)">
   OnClipRoundRect(RoundRect, ClipOp, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L148"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L153"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Clips by a round rectangle. By default it goes to <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_OnClipPath_Egami_Drawing_Path_Egami_Drawing_ClipOp_System_Boolean_">OnClipPath(Path, ClipOp, bool)</a>.</p>
@@ -736,7 +741,7 @@ page; by default it is <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Dra
 
   <h3 id="Egami_Metafiles_EmfCanvas_OnDrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_" data-uid="Egami.Metafiles.EmfCanvas.OnDrawImage(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)">
   OnDrawImage(Raster, RectF, RectF, SamplingOptions, Paint?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.Fallback.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.Fallback.cs/#L88"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws part of an image into a local rectangle.</p>
@@ -833,7 +838,7 @@ public sealed class SvgCanvas(float width, float height) : Canvas(width, height)
 
   <h3 id="Egami_Metafiles_EmfCanvas_OnDrawImageMask_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_Paint_Egami_Operations_SamplingOptions_" data-uid="Egami.Metafiles.EmfCanvas.OnDrawImageMask(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.Paint,Egami.Operations.SamplingOptions)">
   OnDrawImageMask(Raster, RectF, Paint, SamplingOptions)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.Fallback.cs/#L75"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.Fallback.cs/#L102"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Paints through an image mask. A PDF backend writes it as a stencil mask. By default the paint fills the rectangle in a layer
@@ -887,7 +892,7 @@ canvas.Restore();</code></pre>
 
   <h3 id="Egami_Metafiles_EmfCanvas_OnDrawMesh_Egami_Drawing_Mesh_Egami_Drawing_Paint_Egami_Operations_BlendMode_System_ReadOnlySpan_Egami_Drawing_GradientStop__" data-uid="Egami.Metafiles.EmfCanvas.OnDrawMesh(Egami.Drawing.Mesh,Egami.Drawing.Paint,Egami.Operations.BlendMode,System.ReadOnlySpan{Egami.Drawing.GradientStop})">
   OnDrawMesh(Mesh, Paint, BlendMode, ReadOnlySpan&lt;GradientStop&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.Fallback.cs/#L88"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.Fallback.cs/#L116"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Draws a mesh with at least one triangle; a mesh with values comes with stops. A PDF backend can write it as a free-form or
@@ -1100,7 +1105,7 @@ public sealed class SvgCanvas(float width, float height) : Canvas(width, height)
 
   <h3 id="Egami_Metafiles_EmfCanvas_OnRestore" data-uid="Egami.Metafiles.EmfCanvas.OnRestore">
   OnRestore()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L123"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Called by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Restore">Restore()</a> after the state is popped; <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Matrix">Matrix</a> and <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DeviceClipBounds">DeviceClipBounds</a> are already the restored ones.</p>
@@ -1127,7 +1132,7 @@ public sealed class SvgCanvas(float width, float height) : Canvas(width, height)
 
   <h3 id="Egami_Metafiles_EmfCanvas_OnSave" data-uid="Egami.Metafiles.EmfCanvas.OnSave">
   OnSave()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L104"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.cs/#L109"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Called by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_Save">Save()</a> after the state is pushed.</p>
@@ -1154,7 +1159,7 @@ public sealed class SvgCanvas(float width, float height) : Canvas(width, height)
 
   <h3 id="Egami_Metafiles_EmfCanvas_OnSaveLayer_Egami_Drawing_LayerOptions_" data-uid="Egami.Metafiles.EmfCanvas.OnSaveLayer(Egami.Drawing.LayerOptions)">
   OnSaveLayer(LayerOptions)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.Fallback.cs/#L19"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Metafiles/EmfCanvas.Fallback.cs/#L27"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Called by <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_SaveLayer_Egami_Drawing_LayerOptions_">SaveLayer(LayerOptions?)</a> after the state is pushed; <a class="xref" href="Egami.Drawing.Canvas.html#Egami_Drawing_Canvas_DeviceClipBounds">DeviceClipBounds</a> is already limited
