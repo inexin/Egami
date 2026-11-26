@@ -248,9 +248,8 @@ internal static class MtxTestEncoder
             ReadOnlySpan<byte> data = glyf.AsSpan(Loca(g), Loca(g + 1) - Loca(g));
             if (data.IsEmpty)
             {
+                // An empty glyph is its contour count alone, as PowerPoint writes it.
                 AddU16(w, 0);
-                w.Add(0);
-                w.Add(0);
                 continue;
             }
 

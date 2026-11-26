@@ -358,6 +358,12 @@ internal static class MtxDecoder
                     w.Bytes(instructions.Written);
                 }
             }
+            else if (contours == 0)
+            {
+                // An empty glyph is its contour count alone, with no instruction counts (as PowerPoint writes it); a glyph with
+                // no contours but instructions would take the 0x7FFF form.
+                continue;
+            }
             else
             {
                 bool hasBox = contours == 0x7FFF;

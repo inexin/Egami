@@ -78,6 +78,52 @@ public class EotTests
     }
 
     [Fact]
+    public void ReadsAFontPowerPointEmbedded()
+    {
+        // PowerPoint's own output: EOT 0x00020002, subset and MicroType Express compressed, with empty glyphs as a bare
+        // contour count. Every glyph of the deck's text draws, hints and measures as the installed font's.
+        byte[] data = TestFonts.Bytes("derived/DejaVuSans-powerpoint.fntdata");
+        Eot.Header header = Eot.ReadHeader(data);
+        Assert.Equal(Eot.Version22, header.Version);
+        Assert.Equal(Eot.FlagSubset | Eot.FlagCompressed, header.Flags);
+        var diagnostics = new List<EgamiDiagnostic>();
+        Typeface embedded = Typeface.FromMemory(data, options: new FontLoadOptions { Context = EgamiContext.Default with { Diagnostics = diagnostics.Add } });
+        Assert.Empty(diagnostics);
+        Typeface installed = TestFonts.Load("DejaVuSans.ttf");
+        Assert.Equal(installed.FullName, embedded.FullName);
+        Assert.Equal(installed.GlyphCount, embedded.GlyphCount);
+        Assert.Equal(installed.Extents, embedded.Extents);
+        foreach (char c in "The quick brown fox jumps over the lazy dog 0123456789".Distinct())
+        {
+            ushort g = installed.GetGlyph(c);
+            Assert.Equal(g, embedded.GetGlyph(c));
+            var expected = new TextSink();
+            var actual = new TextSink();
+            installed.GetGlyphOutline(g, expected);
+            embedded.GetGlyphOutline(g, actual);
+            Assert.Equal(expected.Verbs, actual.Verbs);
+            Assert.Equal(expected.Ops.SelectMany(o => o), actual.Ops.SelectMany(o => o));
+            Assert.Equal(installed.GetAdvance(g), embedded.GetAdvance(g));
+            Assert.Equal(installed.GetLeftSideBearing(g), embedded.GetLeftSideBearing(g));
+            Egami.Fonts.Hinting.HintedGlyph? hinted = installed.GetHintedGlyph(g, 13, TrueTypeTarget.GdiPlus), embeddedHinted = embedded.GetHintedGlyph(g, 13, TrueTypeTarget.GdiPlus);
+            Assert.Equal(hinted is null, embeddedHinted is null);
+            if (hinted is not null)
+            {
+                Assert.Equal(hinted.X, embeddedHinted!.X);
+                Assert.Equal(hinted.Y, embeddedHinted.Y);
+            }
+        }
+
+        // PowerPoint keeps about the ASCII range; a glyph outside it, which the deck does not use, is left out, cmap and all.
+        ushort zhe = installed.GetGlyph(0x416);
+        var dropped = new TextSink();
+        embedded.GetGlyphOutline(zhe, dropped);
+        Assert.NotEqual(0, zhe);
+        Assert.Empty(dropped.Verbs);
+        Assert.Equal(0, embedded.GetGlyph(0x416));
+    }
+
+    [Fact]
     public void EveryHeaderVersionReads()
     {
         byte[] source = TestFonts.Bytes("NotoSans-Regular.ttf");
