@@ -14,15 +14,18 @@ internal static class MicroQrDecoder
 {
     private static readonly int[]?[] s_placements = new int[]?[5];
 
-    /// <summary>Decodes the grid, then its mirror image when the grid itself does not decode.</summary>
-    public static DecodedData? Decode(BarcodeModules grid)
+    /// <summary>
+    /// Decodes the grid, then its mirror image when the grid itself does not decode; a caller that has read the format modules
+    /// already may leave either out.
+    /// </summary>
+    public static DecodedData? Decode(BarcodeModules grid, bool asIs = true, bool mirror = true)
     {
-        if (DecodeOnce(grid) is DecodedData data)
+        if (asIs && DecodeOnce(grid) is DecodedData data)
         {
             return data;
         }
 
-        return DecodeOnce(QrDecoder.Transpose(grid)) is DecodedData mirrored ? mirrored with { Mirrored = true } : null;
+        return mirror && DecodeOnce(QrDecoder.Transpose(grid)) is DecodedData mirrored ? mirrored with { Mirrored = true } : null;
     }
 
     /// <summary>Returns the version (1 to 4) and level (0 L, 1 M, 2 Q) of a symbol number.</summary>

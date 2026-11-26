@@ -80,8 +80,9 @@ internal static class Search
             return jobs;
         }
 
-        // QR Code and Micro QR share the finder patterns, found once.
-        var finders = new Lazy<List<QrDetector.Finder>>(() => QrDetector.FindFinders(local, effort));
+        // QR Code and Micro QR share the finder patterns, found once; Micro QR alone scans every third row (QR Code keeps
+        // every row on small images, where a finder missed on one pass sends its detector to weaker candidates).
+        var finders = new Lazy<List<QrDetector.Finder>>(() => QrDetector.FindFinders(local, effort, sparse: (formats & BarcodeFormat.Qr) == 0));
         if ((formats & BarcodeFormat.Qr) != 0)
         {
             jobs.Add(() => QrDetector.Detect(local, effort, offset, finders.Value));

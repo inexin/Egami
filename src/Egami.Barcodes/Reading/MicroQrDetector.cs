@@ -15,8 +15,11 @@ internal static class MicroQrDetector
     /// <summary>The rays' directions, every 5 degrees.</summary>
     private static readonly Vector2[] Directions = [.. Enumerable.Range(0, Rays).Select(r => new Vector2(MathF.Cos(r * MathF.Tau / Rays), MathF.Sin(r * MathF.Tau / Rays)))];
 
-    /// <summary>The larger of |cos| and |sin| for each whole degree from 0 to 89: a square's edge is its inradius over this.</summary>
-    private static readonly float[] SquareFactor = [.. Enumerable.Range(0, 90).Select(d => MathF.Max(MathF.Abs(MathF.Cos(d * MathF.PI / 180)), MathF.Abs(MathF.Sin(d * MathF.PI / 180))))];
+    /// <summary>
+    /// The larger of |cos| and |sin| for each whole degree from -90 to 359, at index degrees + 90: a square's edge is its
+    /// inradius over this. It repeats every 90 degrees, and the range covers a ray's angle less a turn without a remainder.
+    /// </summary>
+    private static readonly float[] SquareFactor = [.. Enumerable.Range(-90, 450).Select(d => MathF.Max(MathF.Abs(MathF.Cos(d * MathF.PI / 180)), MathF.Abs(MathF.Sin(d * MathF.PI / 180))))];
 
     /// <summary>The points each module is sampled at, in modules from its top left.</summary>
     private static readonly Vector2[] Votes = [new(0.5f, 0.5f), new(0.25f, 0.5f), new(0.75f, 0.5f), new(0.5f, 0.25f), new(0.5f, 0.75f)];
@@ -29,12 +32,15 @@ internal static class MicroQrDetector
         var results = new List<Found>();
         foreach (QrDetector.Finder finder in finders.Take(60))
         {
-            if (results.Any(r => Search.Inside(r.Corners, finder.Center + offset)))
+            // A pattern seen on one row only is noise more often than a finder, which spans three modules of rows.
+            if (finder.Count < 2 || results.Any(r => Search.Inside(r.Corners, finder.Center + offset)))
             {
                 continue;
             }
 
-            if (Read(bits, finder.Center, finder.Module) is Found found)
+            // The rays from a center found on a few rows may meet the ring unevenly: when nothing reads, once more from the
+            // middle of the corners they gave.
+            if ((Read(bits, finder.Center, finder.Module, out Vector2 middle) ?? (middle != finder.Center ? Read(bits, middle, finder.Module, out _) : null)) is Found found)
             {
                 results.Add(found with { Corners = [.. found.Corners.Select(p => p + offset)] });
             }
@@ -43,13 +49,15 @@ internal static class MicroQrDetector
         return results;
     }
 
-    private static Found? Read(BitImage bits, Vector2 center, float module)
+    private static Found? Read(BitImage bits, Vector2 center, float module, out Vector2 middle)
     {
+        middle = center;
         if (Corners(bits, center, module) is not Vector2[] quad)
         {
             return null;
         }
 
+        middle = (quad[0] + quad[1] + quad[2] + quad[3]) / 4;
         for (int corner = 0; corner < 4; corner++)
         {
             var transform = Perspective.QuadToQuad(
@@ -67,7 +75,8 @@ internal static class MicroQrDetector
             foreach (int darks in rowDarks == columnDarks ? [rowDarks] : (ReadOnlySpan<int>)[Math.Max(rowDarks, columnDarks), Math.Min(rowDarks, columnDarks)])
             {
                 int size = 7 + (2 * darks);
-                if (size is < 11 or > 17)
+                int fits = size is < 11 or > 17 ? 0 : FormatFits(bits, transform, size);
+                if (fits == 0)
                 {
                     continue;
                 }
@@ -76,18 +85,14 @@ internal static class MicroQrDetector
                 // length, damaged or run into the background, takes the other's end), with the far corner moved by up to a
                 // module in half-module steps for perspective that the finder's corners cannot show.
                 float row = rowDarks == darks ? rowEnd : columnEnd, column = columnDarks == darks ? columnEnd : rowEnd;
-                if (!FormatFits(bits, transform, size))
-                {
-                    continue;
-                }
-
                 foreach (Vector2 shift in Shifts)
                 {
                     Vector2 far = new Vector2(row, column) + (shift * 0.5f);
                     var sampling = Perspective.QuadToQuad(
                         [new(0, 0), new(size, 0), new(size, size), new(0, size)],
                         [transform.Map(0, 0), transform.Map(row, 0), transform.Map(far.X, far.Y), transform.Map(0, column)]);
-                    if (Sample(bits, sampling, size) is BarcodeModules modules && MicroQrDecoder.Decode(modules) is DecodedData data)
+                    if (Sample(bits, sampling, size) is BarcodeModules modules
+                        && MicroQrDecoder.Decode(modules, asIs: (fits & 1) != 0, mirror: (fits & 2) != 0) is DecodedData data)
                     {
                         return new Found(data, [sampling.Map(0, 0), sampling.Map(size, 0), sampling.Map(size, size), sampling.Map(0, size)]);
                     }
@@ -99,11 +104,11 @@ internal static class MicroQrDetector
     }
 
     /// <summary>
-    /// Whether the format modules next to the finder, as they are or mirrored, are within 3 bits of a format word for a symbol
-    /// of the size: the format area is too near the finder for the far corner's moves to change it, so a corner and size it
-    /// rules out need not be sampled whole.
+    /// Whether the format modules next to the finder, as they are (bit 0) or mirrored (bit 1), are within 3 bits of a format
+    /// word for a symbol of the size: the format area is too near the finder for the far corner's moves to change it, so a
+    /// corner and size it rules out need not be sampled whole, nor a grid decoded in an orientation it rules out.
     /// </summary>
-    private static bool FormatFits(BitImage bits, Perspective transform, int size)
+    private static int FormatFits(BitImage bits, Perspective transform, int size)
     {
         int word = 0, mirrored = 0;
         for (int i = 1; i <= 8; i++)
@@ -118,7 +123,7 @@ internal static class MicroQrDetector
             mirrored = (mirrored << 1) | (Module(bits, transform, i, 8) ? 1 : 0);
         }
 
-        int version = (size - 9) / 2;
+        int version = (size - 9) / 2, fits = 0;
         for (int candidate = 0; candidate < 32; candidate++)
         {
             int number = candidate >> 2;
@@ -128,13 +133,10 @@ internal static class MicroQrDetector
             }
 
             int format = Matrix.MicroQrEncoder.FormatBits(number, candidate & 3);
-            if (BitOperations.PopCount((uint)(format ^ word)) <= 3 || BitOperations.PopCount((uint)(format ^ mirrored)) <= 3)
-            {
-                return true;
-            }
+            fits |= (BitOperations.PopCount((uint)(format ^ word)) <= 3 ? 1 : 0) | (BitOperations.PopCount((uint)(format ^ mirrored)) <= 3 ? 2 : 0);
         }
 
-        return false;
+        return fits;
     }
 
     /// <summary>One module by the majority of its five sample points.</summary>
@@ -157,26 +159,40 @@ internal static class MicroQrDetector
     private static BarcodeModules? Sample(BitImage bits, Perspective transform, int size)
     {
         bool[] cells = new bool[size * size];
-        int outside = 0;
+        int outside = 0, width = bits.Width, height = bits.Height;
+        byte[] data = bits.Bits;
         for (int y = 0; y < size; y++)
         {
+            // Along the centers' row in quarter modules (each module's center and the points a quarter module either side),
+            // and along the rows a quarter module above and below in whole modules from the first center.
+            (Vector3 middle, Vector3 quarter) = transform.Row(y + 0.5f);
+            (Vector3 above, Vector3 step) = transform.Row(y + 0.25f);
+            (Vector3 below, _) = transform.Row(y + 0.75f);
+            quarter *= 0.25f;
+            middle += quarter;
+            above += step * 0.5f;
+            below += step * 0.5f;
             for (int x = 0; x < size; x++)
             {
                 int votes = 0;
-                foreach (Vector2 offset in Votes)
+                foreach (Vector3 h in (ReadOnlySpan<Vector3>)[middle, middle + quarter, middle + (2 * quarter), above, below])
                 {
-                    Vector2 p = transform.Map(x + offset.X, y + offset.Y);
-                    int px = (int)MathF.Floor(p.X), py = (int)MathF.Floor(p.Y);
-                    if ((uint)px >= (uint)bits.Width || (uint)py >= (uint)bits.Height)
+                    // Truncation is the floor for the points inside; those left of or above the image are outside.
+                    float px = h.X / h.Z, py = h.Y / h.Z;
+                    int ix = (int)px, iy = (int)py;
+                    if (px < 0 || py < 0 || (uint)ix >= (uint)width || (uint)iy >= (uint)height)
                     {
                         outside++;
                         continue;
                     }
 
-                    votes += bits[px, py] ? 1 : 0;
+                    votes += data[(iy * width) + ix];
                 }
 
                 cells[(y * size) + x] = votes >= 3;
+                middle += 4 * quarter;
+                above += step;
+                below += step;
             }
         }
 
@@ -264,7 +280,7 @@ internal static class MicroQrDetector
             for (float t = 0; t <= limit; t += step)
             {
                 Vector2 p = center + (direction * t);
-                bool dark = bits.IsDark((int)MathF.Floor(p.X), (int)MathF.Floor(p.Y));
+                bool dark = p.X >= 0 && p.Y >= 0 && bits.IsDark((int)p.X, (int)p.Y);
                 if (dark == (state is 0 or 2))
                 {
                     pending = 0;
@@ -292,29 +308,22 @@ internal static class MicroQrDetector
             return null;
         }
 
-        // The turn: the radius times the larger of |cos| and |sin| from each side's normal is the same on a square's edge.
-        float bestTurn = 0, bestSpread = float.MaxValue;
-        for (int degrees = 0; degrees < 90; degrees++)
+        // The turn: the radius times the larger of |cos| and |sin| from each side's normal is the same on a square's edge. Every
+        // third degree first, then the degrees either side of the best.
+        int bestDegrees = 0;
+        float bestSpread = float.MaxValue;
+        for (int degrees = 0; degrees < 90; degrees += 3)
         {
-            float turn = degrees * MathF.PI / 180, sum = 0, sumSquares = 0;
-            int n = 0;
-            for (int r = 0; r < Rays; r++)
-            {
-                if (radius[r] < 0)
-                {
-                    continue;
-                }
-
-                float q = radius[r] * SquareFactor[(((r * (360 / Rays)) - degrees) % 90 + 90) % 90];
-                (sum, sumSquares, n) = (sum + q, sumSquares + (q * q), n + 1);
-            }
-
-            float spread = (sumSquares / n) - ((sum / n) * (sum / n));
-            if (spread < bestSpread)
-            {
-                (bestTurn, bestSpread) = (turn, spread);
-            }
+            Spread(radius, degrees, ref bestDegrees, ref bestSpread);
         }
+
+        int coarse = bestDegrees;
+        foreach (int d in (ReadOnlySpan<int>)[coarse - 2, coarse - 1, coarse + 1, coarse + 2])
+        {
+            Spread(radius, (d + 90) % 90, ref bestDegrees, ref bestSpread);
+        }
+
+        float bestTurn = bestDegrees * MathF.PI / 180;
 
         // A line through each side's edges, leaving out the rays within 12 degrees of a corner.
         Span<Vector2> points = stackalloc Vector2[Rays];
@@ -351,6 +360,29 @@ internal static class MicroQrDetector
         }
 
         return corners;
+    }
+
+    /// <summary>How far the edges along the rays are from a square turned by whole degrees; keeps the turn with the least.</summary>
+    private static void Spread(ReadOnlySpan<float> radius, int degrees, ref int bestDegrees, ref float bestSpread)
+    {
+        float sum = 0, sumSquares = 0;
+        int n = 0;
+        for (int r = 0; r < radius.Length; r++)
+        {
+            if (radius[r] < 0)
+            {
+                continue;
+            }
+
+            float q = radius[r] * SquareFactor[(r * (360 / Rays)) - degrees + 90];
+            (sum, sumSquares, n) = (sum + q, sumSquares + (q * q), n + 1);
+        }
+
+        float spread = (sumSquares / n) - ((sum / n) * (sum / n));
+        if (spread < bestSpread)
+        {
+            (bestDegrees, bestSpread) = (degrees, spread);
+        }
     }
 
     /// <summary>

@@ -368,25 +368,37 @@ internal static class QrDetector
 
     // ---- Finder patterns ----
 
-    internal static List<Finder> FindFinders(BitImage bits, int effort, float slack = 0.5f)
+    /// <summary>
+    /// Finds the finder patterns along rows: every row below 200 pixels (and at effort 7 or more), else every second or third.
+    /// With <paramref name="sparse"/> (Micro QR alone, whose one finder needs no partners) every third row, which still crosses
+    /// the center run of a finder of a pixel a module, and the rows skipped near a pattern seen on one row only are scanned
+    /// after, so that it is seen on all the rows its center run spans.
+    /// </summary>
+    internal static List<Finder> FindFinders(BitImage bits, int effort, float slack = 0.5f, bool sparse = false)
     {
         var finders = new List<Finder>();
-        int step = effort >= 7 ? 1 : Math.Max(1, Math.Min(3, bits.Height / 200));
+        int step = effort >= 7 ? 1 : sparse ? 3 : Math.Max(1, Math.Min(3, bits.Height / 200));
         int[] runs = new int[bits.Width + 2];
+        int slackTenths = (int)MathF.Ceiling(slack * 10);
         for (int y = step - 1; y < bits.Height; y += step)
         {
-            // Runs start light; windows of five runs from each dark run.
-            int count = Binarizer.IntRuns(bits.Row(y), runs);
-            int at = runs[0];
-            for (int i = 1; i + 4 < count; i += 2)
-            {
-                ReadOnlySpan<int> counts = runs.AsSpan(i, 5);
-                if (Ratio(counts, slack))
-                {
-                    Confirm(bits, counts, at + counts[0] + counts[1] + counts[2] + counts[3] + counts[4], y, finders, slack);
-                }
+            ScanRow(bits, y, runs, slack, slackTenths, finders, 0, bits.Width);
+        }
 
-                at += runs[i] + runs[i + 1];
+        if (sparse && step > 1)
+        {
+            // Across the pattern and a few modules either side only.
+            foreach (Finder f in finders.Where(f => f.Count == 1).ToList())
+            {
+                int from = Math.Max(0, (int)(f.Center.Y - (1.5f * f.Module))), to = Math.Min(bits.Height - 1, (int)(f.Center.Y + (1.5f * f.Module)));
+                int left = Math.Max(0, (int)(f.Center.X - (6 * f.Module))), right = Math.Min(bits.Width, (int)(f.Center.X + (6 * f.Module)) + 1);
+                for (int y = from; y <= to; y++)
+                {
+                    if (y % step != step - 1)
+                    {
+                        ScanRow(bits, y, runs, slack, slackTenths, finders, left, right);
+                    }
+                }
             }
         }
 
@@ -401,30 +413,46 @@ internal static class QrDetector
     }
 
     /// <summary>
+    /// Confirms each window of five runs on a row from <paramref name="left"/> to <paramref name="right"/>, starting at a dark
+    /// run, that is 1:1:3:1:1 within slack.
+    /// </summary>
+    private static void ScanRow(BitImage bits, int y, int[] runs, float slack, int slackTenths, List<Finder> finders, int left, int right)
+    {
+        // Runs start light; windows of five runs from each dark run.
+        int count = Binarizer.IntRuns(bits.Row(y)[left..right], runs);
+        int at = left + runs[0];
+        ReadOnlySpan<int> line = runs.AsSpan(0, count);
+        for (int i = 1; i + 4 < line.Length; i += 2)
+        {
+            // The center run is three modules of the seven, within slack: a test in whole numbers that turns away most windows
+            // before the others.
+            int c2 = line[i + 2], total = line[i] + line[i + 1] + c2 + line[i + 3] + line[i + 4];
+            if (10 * Math.Abs((7 * c2) - (3 * total)) < 3 * slackTenths * total && Ratio(line.Slice(i, 5), slack))
+            {
+                Confirm(bits, line.Slice(i, 5), at + total, y, finders, slack);
+            }
+
+            at += line[i] + line[i + 1];
+        }
+    }
+
+    /// <summary>
     /// Whether five runs are 1:1:3:1:1, each within <paramref name="slack"/> of a module (the center within three times that).
     /// </summary>
     private static bool Ratio(ReadOnlySpan<int> counts, float slack)
     {
-        int total = 0;
-        foreach (int c in counts)
-        {
-            if (c == 0)
-            {
-                return false;
-            }
-
-            total += c;
-        }
-
-        if (total < 7)
+        // In sevenths of a module, so that the common rejections need no division: |7c - total| < 7 · slack · total / 7.
+        int c0 = counts[0], c1 = counts[1], c2 = counts[2], c3 = counts[3], c4 = counts[4];
+        int total = c0 + c1 + c2 + c3 + c4;
+        if (total < 7 || c0 == 0 || c1 == 0 || c2 == 0 || c3 == 0 || c4 == 0)
         {
             return false;
         }
 
-        float module = total / 7f, tolerance = module * slack;
-        return MathF.Abs(module - counts[0]) < tolerance && MathF.Abs(module - counts[1]) < tolerance
-            && MathF.Abs((3 * module) - counts[2]) < 3 * tolerance
-            && MathF.Abs(module - counts[3]) < tolerance && MathF.Abs(module - counts[4]) < tolerance;
+        float tolerance = total * slack;
+        return Math.Abs((7 * c2) - (3 * total)) < 3 * tolerance
+            && Math.Abs((7 * c0) - total) < tolerance && Math.Abs((7 * c1) - total) < tolerance
+            && Math.Abs((7 * c3) - total) < tolerance && Math.Abs((7 * c4) - total) < tolerance;
     }
 
     private static bool Confirm(BitImage bits, ReadOnlySpan<int> counts, int end, int y, List<Finder> finders, float slack)
@@ -461,7 +489,16 @@ internal static class QrDetector
     /// <summary>Checks the 1:1:3:1:1 pattern across a line through a point and returns the refined center along it.</summary>
     private static float? CrossCheck(BitImage bits, int across, int along, int expected, bool vertical, float slack)
     {
-        bool Dark(int i) => vertical ? bits.IsDark(across, i) : bits.IsDark(i, across);
+        // The line as a stride through the bits, walked without bounds tests per pixel beyond the line's own ends.
+        int limit = vertical ? bits.Height : bits.Width;
+        if ((uint)across >= (uint)(vertical ? bits.Width : bits.Height) || (uint)along >= (uint)limit)
+        {
+            return null;
+        }
+
+        byte[] data = bits.Bits;
+        int stride = vertical ? bits.Width : 1, origin = vertical ? across : across * bits.Width;
+        bool Dark(int i) => data[origin + (i * stride)] != 0;
         Span<int> counts = stackalloc int[5];
         int i = along;
         if (!Dark(i))
@@ -469,7 +506,7 @@ internal static class QrDetector
             return null;
         }
 
-        while (Dark(i))
+        while (i >= 0 && Dark(i))
         {
             counts[2]++;
             i--;
@@ -487,7 +524,6 @@ internal static class QrDetector
             i--;
         }
 
-        int limit = vertical ? bits.Height : bits.Width;
         i = along + 1;
         while (i < limit && Dark(i))
         {
