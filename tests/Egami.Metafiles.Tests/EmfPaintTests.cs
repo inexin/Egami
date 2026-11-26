@@ -19,68 +19,9 @@ public class EmfPaintTests(ITestOutputHelper output)
 
     private static readonly GradientStop[] Three = [new(0, Red), new(0.4f, Yellow), new(1, Blue)];
 
-    private static readonly Raster<Rgba8> Checker = MakeChecker();
+    private static readonly Raster<Rgba8> Checker = EmfScenes.Checker;
 
-    /// <summary>Scenes whose paint EMF+ writes as a brush: no fallback image, no warning.</summary>
-    internal static readonly Dictionary<string, Action<Canvas>> Exact = new()
-    {
-        ["linear-clamp"] = c => c.FillRect(new RectF(10, 10, 140, 100), new LinearGradient(new Vector2(40, 0), new Vector2(120, 0), Three)),
-        ["linear-diagonal-transformed"] = c =>
-        {
-            c.Translate(80, 60);
-            c.Rotate(20);
-            c.Scale(1.2f, 0.8f);
-            c.FillOval(new RectF(-60, -50, 120, 100), new LinearGradient(new Vector2(-30, -30), new Vector2(30, 20), Three) { LocalMatrix = Matrix3x2.CreateSkew(0.2f, 0) });
-        },
-        ["linear-repeat"] = c => c.FillRect(new RectF(10, 10, 140, 100), new LinearGradient(new Vector2(30, 30), new Vector2(60, 45), Red, Blue) { Tile = TileMode.Repeat }),
-        ["linear-mirror"] = c => c.FillPath(EmfCanvasTests.Star(new Vector2(80, 60), 55, FillRule.NonZero), new LinearGradient(new Vector2(0, 20), new Vector2(0, 50), Three) { Tile = TileMode.Mirror }),
-        ["linear-alpha"] = c =>
-        {
-            c.FillRect(new RectF(0, 0, 160, 120), new Rgba8(250, 250, 240, 255));
-            c.FillRect(new RectF(10, 10, 140, 100), new LinearGradient(new Vector2(10, 0), new Vector2(150, 0), new RgbaF32(0.9f, 0.1f, 0.1f, 1), new RgbaF32(0.1f, 0.2f, 0.9f, 0.1f)) { Opacity = 0.8f });
-        },
-        ["linear-light"] = c => c.FillRect(new RectF(10, 10, 140, 100), new LinearGradient(new Vector2(10, 0), new Vector2(150, 0), Red, Blue) { Interpolation = GradientInterpolation.LinearSrgb }),
-        ["linear-stroke"] = c => c.StrokePath(EmfCanvasTests.Star(new Vector2(80, 60), 45, FillRule.NonZero), new Stroke(9) { Join = LineJoin.Round }, new LinearGradient(new Vector2(20, 20), new Vector2(140, 100), Three)),
-        ["radial-clamp"] = c => c.FillRect(new RectF(5, 5, 150, 110), new RadialGradient(new Vector2(70, 55), 40, Three)),
-        ["radial-inside"] = c => c.FillOval(new RectF(30, 10, 100, 100), new RadialGradient(new Vector2(80, 60), 50, Yellow, Blue)),
-        ["radial-repeat"] = c => c.FillRect(new RectF(5, 5, 150, 110), new RadialGradient(new Vector2(80, 60), 18, Red, Yellow) { Tile = TileMode.Mirror, LocalMatrix = Matrix3x2.CreateScale(1.5f, 1, new Vector2(80, 60)) }),
-        ["radial-alpha"] = c =>
-        {
-            c.FillRect(new RectF(0, 0, 160, 120), new Rgba8(30, 30, 30, 255));
-            c.FillOval(new RectF(20, 10, 120, 100), new RadialGradient(new Vector2(80, 60), 60, new RgbaF32(1, 1, 1, 1), new RgbaF32(1, 1, 1, 0)));
-        },
-        ["image-repeat"] = c => c.FillRect(new RectF(10, 10, 140, 100), new ImagePaint(Checker, TileMode.Repeat, TileMode.Repeat, new SamplingOptions { Filter = ResampleFilter.Nearest }) { LocalMatrix = Matrix3x2.CreateScale(4) }),
-        ["image-mirror-decal"] = c =>
-        {
-            c.FillRect(new RectF(10, 10, 70, 100), new ImagePaint(Checker, TileMode.Mirror, TileMode.Mirror, new SamplingOptions { Filter = ResampleFilter.Nearest }) { LocalMatrix = Matrix3x2.CreateScale(3) * Matrix3x2.CreateTranslation(10, 10) });
-            c.FillRect(new RectF(85, 10, 70, 100), new ImagePaint(Checker, TileMode.Decal, TileMode.Decal, new SamplingOptions { Filter = ResampleFilter.Nearest }) { LocalMatrix = Matrix3x2.CreateScale(5) * Matrix3x2.CreateTranslation(95, 30), Opacity = 0.6f });
-        },
-        ["picture-pattern"] = c =>
-        {
-            PictureRecorder recorder = new(new RectF(0, 0, 20, 20));
-            recorder.FillRect(new RectF(0, 0, 20, 20), new Rgba8(240, 240, 255, 255));
-            recorder.FillOval(new RectF(3, 3, 14, 14), new Rgba8(200, 40, 40, 255));
-            c.FillRect(new RectF(10, 10, 140, 100), new PicturePaint(recorder.Finish()));
-        },
-        ["color-matrix"] = c => c.FillOval(new RectF(20, 10, 120, 100), new SolidPaint(new Rgba8(200, 120, 40, 255)).WithColorMatrix(ColorMatrix.Sepia().Then(ColorMatrix.HueRotate(90)))),
-        ["blend-paint"] = c => c.FillRect(new RectF(20, 20, 120, 80), new BlendPaint(new SolidPaint(new Rgba8(40, 160, 200, 255)), new SolidPaint(new Rgba8(250, 120, 30, 200)), BlendMode.Multiply)),
-        ["layer-one-shape"] = c =>
-        {
-            c.FillRect(new RectF(0, 0, 160, 120), new Rgba8(255, 255, 255, 255));
-            c.SaveLayer(0.5f);
-            c.StrokePath(EmfCanvasTests.Star(new Vector2(80, 60), 50, FillRule.NonZero), new Stroke(12), new Rgba8(0, 90, 200, 255));
-            c.Restore();
-        },
-        ["layer-apart"] = c =>
-        {
-            c.FillRect(new RectF(0, 0, 160, 120), new Rgba8(255, 255, 255, 255));
-            c.SaveLayer(new LayerOptions { Opacity = 0.4f, Bounds = new RectF(0, 0, 160, 120) });
-            c.FillRect(new RectF(10, 10, 60, 40), new Rgba8(200, 0, 0, 255));
-            c.FillOval(new RectF(90, 10, 60, 50), new LinearGradient(new Vector2(90, 0), new Vector2(150, 0), Red, Blue));
-            c.FillRect(new RectF(10.5f, 70.5f, 140, 40), new Rgba8(0, 120, 0, 255));
-            c.Restore();
-        },
-    };
+    internal static Dictionary<string, Action<Canvas>> Exact => EmfScenes.Paints;
 
     public static TheoryData<string> ExactNames => [.. Exact.Keys.Order(StringComparer.Ordinal)];
 
@@ -330,20 +271,5 @@ public class EmfPaintTests(ITestOutputHelper output)
         }
 
         return c;
-    }
-
-    private static Raster<Rgba8> MakeChecker()
-    {
-        Raster<Rgba8> r = Raster.Create<Rgba8>(4, 4);
-        for (int y = 0; y < 4; y++)
-        {
-            for (int x = 0; x < 4; x++)
-            {
-                r.Row(y)[x] = ((x + y) & 1) == 0 ? new Rgba8(30, 60, 160, 255) : new Rgba8(250, 200, 60, 255);
-            }
-        }
-
-        r.Row(0)[0] = new Rgba8(220, 30, 30, 255);
-        return r;
     }
 }

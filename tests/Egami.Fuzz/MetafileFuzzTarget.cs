@@ -55,6 +55,36 @@ internal static class MetafileFuzzTarget
         metafile.Draw(canvas, new RectF(4, 4, 56, 40), new MetafileRenderOptions { TextAsPaths = true, Context = s_context });
     }
 
+    /// <summary>
+    /// The emf-resave target (EMF writing, stage E): a metafile that loads is drawn onto an <see cref="EmfCanvas"/> of each kind,
+    /// once with text as glyphs, and the written file must load again under the same limits and draw; anything thrown is a
+    /// writer bug.
+    /// </summary>
+    public static void RunResave(byte[] data)
+    {
+        Metafile metafile;
+        try
+        {
+            metafile = Metafile.Load(new MemoryStream(data), new MetafileLoadOptions { Context = s_context });
+        }
+        catch (EgamiException)
+        {
+            return;
+        }
+
+        foreach ((MetafileKind kind, EmfText text) in ((MetafileKind, EmfText)[])[(MetafileKind.EmfPlusDual, EmfText.Outlines), (MetafileKind.EmfPlusOnly, EmfText.Glyphs), (MetafileKind.Emf, EmfText.Glyphs)])
+        {
+            using MemoryStream written = new();
+            using (EmfCanvas emf = new(written, 96, 72, new EmfWriteOptions { Kind = kind, Text = text, FallbackScale = 0.5f }))
+            {
+                metafile.Draw(emf, new RectF(0, 0, 96, 72), new MetafileRenderOptions { Context = s_context });
+            }
+
+            Metafile again = Metafile.Load(written.ToArray());
+            using Raster<Rgba8> raster = again.Rasterize<Rgba8>(new MetafileRenderOptions { Width = 48, Height = 36, Context = s_context });
+        }
+    }
+
     /// <summary>Wraps EMF+ records in an EMF: a header for a 100 by 100 pixel picture, the records in comments of up to 8 KB, EOF.</summary>
     public static void RunPlus(byte[] records)
     {

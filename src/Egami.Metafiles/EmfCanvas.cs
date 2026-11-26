@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 using Egami.Drawing;
 using Egami.Metafiles.Writing;
@@ -38,6 +39,10 @@ public sealed partial class EmfCanvas : Canvas
 
     private readonly Stream _stream;
     private readonly EmfWriter _w = new();
+    private Func<uint, bool>? _selectedCheck;
+
+    /// <summary>Nonzero paths already made into contours that do not overlap, while the path lives.</summary>
+    private static readonly ConditionalWeakTable<Path, Path> Simplified = new();
     private readonly bool _plus, _gdi;
     private readonly List<EgamiDiagnostic> _warnings = [];
     private readonly HashSet<string> _warned = [];
@@ -47,6 +52,9 @@ public sealed partial class EmfCanvas : Canvas
     private RectF _drawn = RectF.Empty;
     private uint _plusSaves;
     private int _quiet;
+
+    /// <summary>Whether the file is finished: the canvas is disposed.</summary>
+    private bool _finished;
 
     /// <summary>Initializes a new instance of the <see cref="EmfCanvas"/> class that writes one EMF file to a stream when disposed.</summary>
     /// <param name="stream">Where the file goes, from its current position; left open.</param>
@@ -186,6 +194,7 @@ public sealed partial class EmfCanvas : Canvas
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
+        _finished = true;
         if (_plus)
         {
             _w.Plus(0x4002, 0, []); // EmfPlusEndOfFile
@@ -349,6 +358,9 @@ public sealed partial class EmfCanvas : Canvas
         }
     }
 
+    /// <summary>Gets <see cref="Selected"/> as a delegate, made once.</summary>
+    private Func<uint, bool> SelectedCheck => _selectedCheck ??= Selected;
+
     /// <summary>Whether a GDI handle is selected now or in a saved state, which RestoreDC would select again.</summary>
     private bool Selected(uint handle)
     {
@@ -442,8 +454,10 @@ public sealed partial class EmfCanvas : Canvas
     // ---- Helpers ----
 
     /// <summary>
-    /// The path to give EMF+, whose paths have no fill rule and fill even-odd: a nonzero path that may overlap itself becomes
-    /// contours that do not, which both rules fill alike.
+    /// The path to give EMF+: a nonzero path that may overlap itself becomes contours that do not, which both fill rules fill
+    /// alike. GDI+ reads a winding flag on EMF+ paths (0x2000, which <see cref="GdiPlus.GdiPlusData.WritePath"/> writes), but other
+    /// readers, LibreOffice among them, fill every EMF+ path even-odd. A path drawn again, such as a symbol at many places, is
+    /// simplified once.
     /// </summary>
     private static Path EvenOdd(Path path)
     {
@@ -452,14 +466,17 @@ public sealed partial class EmfCanvas : Canvas
             return path;
         }
 
-        try
+        return Simplified.GetValue(path, static p =>
         {
-            return path.Simplify();
-        }
-        catch (ArgumentException)
-        {
-            return path;
-        }
+            try
+            {
+                return p.Simplify();
+            }
+            catch (ArgumentException)
+            {
+                return p;
+            }
+        });
     }
 
     private static bool Invertible(Matrix3x2 m)

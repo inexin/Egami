@@ -200,7 +200,7 @@ internal sealed partial class GdiPlayer
             case 57:
                 _dc.ArcClockwise = I32(r, 8) == 2;
                 break;
-            case 58: // EMR_SETMITERLIMIT: GDI writes a float there, the specification an integer
+            case 58: // EMR_SETMITERLIMIT: an integer, as GDI writes it; some writers put a float there
                 {
                     uint raw = U32(r, 8);
                     float f = BitConverter.UInt32BitsToSingle(raw);

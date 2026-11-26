@@ -191,4 +191,54 @@ public class Metafiles
             File.Delete(output);
         }
     }
+
+    [Fact]
+    public void WriteWithFallbacks()
+    {
+        using MemoryStream stream = new();
+        #region emf-fallback
+        // EMF+ records only (no GDI copy), compressed as EMZ, with images of what EMF+ cannot draw at twice the resolution.
+        EmfWriteOptions options = new() { Kind = MetafileKind.EmfPlusOnly, Compress = true, FallbackScale = 2 };
+        using (EmfCanvas emf = new(stream, 200, 200, options))
+        {
+            emf.FillRect(new RectF(10, 10, 180, 80), new Rgba8(0, 102, 204, 255)); // a vector
+            SweepGradient sweep = new(new Vector2(100, 150), new GradientStop(0, new Rgba8(255, 0, 0, 255)), new GradientStop(1, new Rgba8(0, 0, 255, 255)));
+            emf.FillOval(new RectF(60, 110, 80, 80), sweep); // EMF+ has no sweep gradient: an image of the call
+
+            // One Metafile.FallbackImage warning per kind of call drawn as an image.
+            foreach (EgamiDiagnostic warning in emf.Warnings)
+            {
+                Console.WriteLine($"{warning.Id}: {warning.Message}");
+            }
+
+            Assert.Single(emf.Warnings, w => w.Id == "Metafile.FallbackImage");
+        }
+        #endregion
+
+        Assert.Equal(MetafileKind.EmfPlusOnly, Metafile.Load(stream.ToArray()).Kind);
+    }
+
+    [Fact]
+    public void WriteAnImageForGdiPlus()
+    {
+        using MemoryStream stream = new();
+        #region emf-plus-image
+        using Raster<Rgba8> image = Raster.Create(16, 16, new Rgba8(0, 102, 204, 255));
+
+        // For GDI+: a copy with a one-pixel transparent border, its source moved half a pixel, so GDI+ samples it as Egami does.
+        using Raster<Rgba8> bordered = Raster.Create<Rgba8>(18, 18);
+        for (int y = 0; y < image.Height; y++)
+        {
+            image.Row(y).CopyTo(bordered.Row(y + 1)[1..]);
+        }
+
+        using (EmfCanvas emf = new(stream, 64, 64))
+        {
+            // The GDI part draws the image as it is; the EMF+ part draws the bordered copy.
+            emf.DrawImage(image, new RectF(0, 0, 16, 16), new RectF(8, 8, 48, 48), bordered, new RectF(1.5f, 1.5f, 16, 16));
+        }
+        #endregion
+
+        Assert.Equal(MetafileKind.EmfPlusDual, Metafile.Load(stream.ToArray()).Kind);
+    }
 }

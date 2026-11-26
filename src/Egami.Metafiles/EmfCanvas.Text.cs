@@ -151,7 +151,7 @@ public sealed partial class EmfCanvas
         byte[] name = new byte[64];
         Encoding.Unicode.GetBytes(family, name);
         lf.Bytes(name);
-        uint handle = _w.GdiObject(82, lf.Span, Selected); // EMR_EXTCREATEFONTINDIRECTW
+        uint handle = _w.GdiObject(82, lf.Span, SelectedCheck); // EMR_EXTCREATEFONTINDIRECTW
         if (_file.Font != handle)
         {
             _w.Gdi(37, _w.Data().U32(handle).Span); // EMR_SELECTOBJECT

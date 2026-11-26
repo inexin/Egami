@@ -257,6 +257,7 @@ static Action<Stream> Target(string name) => name switch
     "eps" => stream => Egami.Fuzz.EpsFuzzTarget.Run(stream, Context()),
     "wmf" or "emf" => stream => Egami.Fuzz.MetafileFuzzTarget.Run(ReadAll(stream)),
     "emfplus" => stream => Egami.Fuzz.MetafileFuzzTarget.RunPlus(ReadAll(stream)),
+    "emf-resave" => stream => Egami.Fuzz.MetafileFuzzTarget.RunResave(ReadAll(stream)),
     "sysdrawing" => stream => Egami.Fuzz.SystemDrawingFuzzTarget.Run(ReadAll(stream)),
     "barcode-qr" or "barcode-microqr" or "barcode-datamatrix" or "barcode-pdf417" or "barcode-aztec" or "barcode-code128" or "barcode-code39" or "barcode-code93" or "barcode-codabar" or "barcode-itf" or "barcode-eanupc"
         => stream => Egami.Fuzz.BarcodeFuzzTarget.Encode(name["barcode-".Length..], ReadAll(stream)),

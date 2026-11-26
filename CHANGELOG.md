@@ -90,6 +90,24 @@ EMF writing, stage C: images, text and pictures.
 - A picture paint's tile is drawn at the resolution, as Egami draws picture paints on a raster, not at `FallbackScale`.
 - `Metafile.Load(...).Draw(emfCanvas)` writes every WMF, EMF and EMF+ file in the test corpus again with the same playback.
 
+EMF writing, stage E: checked against Windows and Office.
+
+- EMR_SETMITERLIMIT holds a whole number, as GDI's `SetMiterLimit` writes it. GDI did not stroke wide miter-joined pens of
+  written files, since it read the float's bits as the limit.
+- Every EMF+ record's data size counts its padding, as GDI+ writes it. GDI+ skipped `DrawDriverString` records with an odd
+  glyph count, so glyph text lost those runs.
+- Nonzero paths in EMF+ carry GDI+'s winding flag (0x2000), and Egami's player reads it. They are still written as contours
+  that do not overlap, because LibreOffice fills every EMF+ path even-odd. A path drawn again is simplified once.
+- Writing is 2.7 times faster and allocates a third less: 10,000 shapes take about as long as with `SvgCanvas` (33 ms on
+  average against 28). GDI objects leave the table in least recently used order without a scan, object lookups allocate
+  nothing on a hit, and records gather in 64 KiB chunks.
+- `EmfCanvas.DrawImage(image, source, destination, emfPlusImage, emfPlusSource, sampling, paint)` draws one image in the GDI
+  part and another (or another rectangle of it) in the EMF+ part, for files that must sample images as GDI+'s own recordings
+  do. Egami.SystemDrawing uses it.
+- Egami's EMF+ player draws images as GDI+ does without `PixelOffsetModeHalf`: half a pixel back, inside their rectangle.
+- A writer benchmark, `VectorWriterBenchmarks`, compares `EmfCanvas` with `SvgCanvas`.
+- The metafiles guide's "Writing EMF" section covers warnings, `FallbackScale`, EMF+ only files and the gate numbers.
+
 ## Egami.SystemDrawing 1.0.0-preview.4 (unreleased)
 
 EMF writing, stage D (roadmap 2.3.7.1): metafiles are recorded.
@@ -111,6 +129,12 @@ EMF writing, stage D (roadmap 2.3.7.1): metafiles are recorded.
   of a metafile being recorded throws `ArgumentException`; drawing a metafile onto its own recording draws nothing.
 - Tests play GDI+'s recordings of nine scenes (tests/images/metafiles/recorded, written by egami-compare) next to Egami's:
   EMF+ means 0.005 to 5.2.
+
+EMF writing, stage E.
+
+- Recorded images sample as GDI+ samples them without `PixelOffsetModeHalf`, with pixel centers on whole coordinates and
+  edges fading beyond the image. GDI+ now plays the nine recorded scenes within a mean of 0.17 levels of its own recordings
+  of the same calls; images were 13.8 before. The GDI copy keeps the image as it is, as GDI+ writes it.
 
 ## Egami.Svg and Egami.Css 1.6.0 (unreleased)
 
