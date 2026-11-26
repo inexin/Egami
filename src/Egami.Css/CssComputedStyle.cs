@@ -4,8 +4,9 @@ namespace Egami.Css;
 
 /// <summary>
 /// An element's computed style, as far as CSS defines it generically: CSS-wide keywords resolved, inheritance applied, custom
-/// properties and <c>var()</c> substituted. Values stay component values; the consumer parses each property by its type (and
-/// resolves relative units, percentages and <c>currentcolor</c>).
+/// properties and <c>var()</c> substituted. Values stay component values; the typed getters (<see cref="TryGetKeyword"/>,
+/// <see cref="TryResolveLength"/>, <see cref="TryGetColor"/>, <see cref="GetFontSize"/> and the others) read them as one type
+/// each and resolve relative units, percentages and <c>currentcolor</c>.
 /// </summary>
 /// <remarks>
 /// A computed style stores only what its element sets and shares the rest with its parent: inherited properties are looked
@@ -15,7 +16,7 @@ namespace Egami.Css;
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="cascade"/>
 /// </example>
-public sealed class CssComputedStyle : IEnumerable<KeyValuePair<string, IReadOnlyList<CssComponentValue>>>
+public sealed partial class CssComputedStyle : IEnumerable<KeyValuePair<string, IReadOnlyList<CssComponentValue>>>
 {
     // The values this element sets; null means "no value" (a custom property that is invalid at computed-value time).
     private readonly Dictionary<string, IReadOnlyList<CssComponentValue>?> _own;
