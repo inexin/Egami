@@ -4,7 +4,8 @@ Egami.Barcodes writes and reads barcodes. It draws them through Egami.Drawing's 
 or in SVG output, and reads them from rasters. It is fully managed.
 
 It writes and reads QR Code, Micro QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, Code 93,
-Codabar, ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on `Barcode` with typed options; `Barcode.Create` takes a
+Codabar, GS1 DataBar (Omnidirectional, Truncated, Stacked, Stacked Omnidirectional, Limited, Expanded and Expanded Stacked),
+ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on `Barcode` with typed options; `Barcode.Create` takes a
 format chosen at run time with the default options.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-create)]
@@ -121,6 +122,26 @@ and the check character: readers ignore shorter ones.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-codabar)]
 
+### GS1 DataBar
+
+GS1 DataBar (ISO/IEC 24724) holds GS1 data in symbols smaller than EAN's, for fresh foods, small items and coupons.
+`Barcode.DataBar` writes a GTIN-14 as DataBar Omnidirectional: 13 digits get their check digit added, 14 are checked, and
+shorter GTINs take leading zeros. `DataBarOptions.Kind` picks the form: `Omnidirectional` (the default, 33 modules tall, for
+scanners at any angle), `Truncated` (13 modules tall), `Stacked` (the two halves over each other, 5 and 7 modules tall) or
+`StackedOmnidirectional` (the halves each 33 modules tall). `Barcode.DataBarLimited` writes a GTIN-14 that starts with 0 or 1
+in a shorter symbol, 79 modules wide. The human-readable text is the AI and the GTIN-14, such as `(01)09501101530003`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-databar)]
+
+`Barcode.DataBarExpanded` writes GS1 element strings, from `Gs1.Parse` or as text with each AI in parentheses, in up to 74
+digits or 41 letters: a GTIN with a weight, a price, a batch or a date, for variable-measure goods. A GTIN with an indicator
+digit 9 and a weight in kilograms or pounds, or a price, is compressed, as the standard lays out.
+`DataBarExpandedOptions.SegmentsPerRow` set to an even number 2 to 20 writes DataBar Expanded Stacked: the symbol in rows of
+that many symbol characters, which suits narrow labels. The stacked forms are grids of their rows (`Modules.IsLinear` is
+`false`), each row repeated for its height.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-databar-expanded)]
+
 ### ITF and ITF-14
 
 `Barcode.Itf` writes Interleaved 2 of 5 from digits; an odd number of digits gets a leading zero. `Barcode.Itf14` writes a
@@ -190,7 +211,7 @@ font, the text.
 
 A `Barcode` is one symbol: its `BarcodeFormat`, its `Modules`, the `QuietZone` its standard asks for in modules (4 for QR, 2 for
 Micro QR, 1 for Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7
-for EAN-8 and 9 for UPC) and the `HumanReadableText` printed under a linear symbol. `Barcode.FromModules` makes one from
+for EAN-8, 9 for UPC, 1 for GS1 DataBar and DataBar Expanded and 5 for DataBar Limited) and the `HumanReadableText` printed under a linear symbol. `Barcode.FromModules` makes one from
 modules you already have, such as from another encoder.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-from-modules)]

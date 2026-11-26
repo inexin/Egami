@@ -1,7 +1,7 @@
 # Reading barcodes
 
 Egami.Barcodes reads every symbology it writes: QR Code, Micro QR Code, Data Matrix (DMRE too), PDF417 (compact too), Aztec Code (runes too),
-Code 128 and GS1-128, Code 39, Code 93, Codabar, ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E with their add-ons. It reads rendered barcodes,
+Code 128 and GS1-128, Code 39, Code 93, Codabar, GS1 DataBar (every form, stacked and Expanded Stacked too), ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E with their add-ons. It reads rendered barcodes,
 scans and photos: turned, in perspective, blurred, noisy, light on dark or mirrored, several in one image.
 
 ## Reading an image
@@ -45,6 +45,13 @@ Code 93 comes back without its check characters C and K, which are verified, and
 with its start and stop characters, A to D, as zxing-cpp returns it, and with any check character, as a reader cannot tell
 whether a symbol has one; it is read from four characters on, start and stop included, with its quiet zones, as bars in
 noise look like Codabar easily.
+
+GS1 DataBar comes back as GS1 element strings, such as `(01)09501101530003`, with `BarcodeResult.Gs1` set. A DataBar symbol
+is found by its finder patterns, one half or one segment at a time, so the halves of a Stacked symbol and the rows of an
+Expanded Stacked one are read on different scan lines and joined by their checksum and finder sequence. Ink spread is
+measured on the finders and taken off the characters. DataBar Expanded made to the standard's first edition, where the
+alphanumeric mode carries on after an FNC1, reads too; element strings that do not pass GS1's checks come back as they are,
+without `Gs1`, as other readers return them.
 
 QR Codes are found by their three finder patterns, at any rotation and in perspective; from version 2 the alignment pattern
 corrects the perspective (each one near the expected place is tried, nearest first), and a mirrored symbol reads too.

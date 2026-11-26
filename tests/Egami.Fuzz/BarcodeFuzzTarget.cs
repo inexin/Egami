@@ -83,6 +83,19 @@ internal static class BarcodeFuzzTarget
                     barcode = Barcode.Codabar(text, new CodabarOptions { Start = (char)('A' + (o & 3)), Stop = (char)('A' + ((o >> 2) & 3)), CheckDigit = (o & 16) != 0, WideRatio = (o & 32) != 0 ? 3 : null });
                     expected = barcode.HumanReadableText;
                     break;
+                case "databar":
+                    // GS1 DataBar comes back as its element string, the GTIN-14 with its check digit.
+                    barcode = Barcode.DataBar(text, new DataBarOptions { Kind = (DataBarKind)(o & 3) });
+                    expected = barcode.HumanReadableText;
+                    break;
+                case "databar-limited":
+                    barcode = Barcode.DataBarLimited(text);
+                    expected = barcode.HumanReadableText;
+                    break;
+                case "databar-expanded":
+                    barcode = Barcode.DataBarExpanded(text, new DataBarExpandedOptions { SegmentsPerRow = (o & 1) != 0 ? 2 * (1 + ((o >> 1) % 10)) : null });
+                    expected = barcode.HumanReadableText;
+                    break;
                 case "itf":
                     barcode = (o & 1) != 0 ? Barcode.Itf14(text) : Barcode.Itf(text, new ItfOptions { BearerBars = (o & 2) != 0 });
                     expected = null;

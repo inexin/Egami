@@ -78,6 +78,10 @@ internal static class LinearScanner
         public Dictionary<(BarcodeFormat, string), Candidate> Votes { get; } = [];
 
         public List<Found> Results { get; } = [];
+
+        public DataBarCollector DataBar { get; } = new();
+
+        public List<(DecodedData Data, Vector2 From, Vector2 To)> DataBarFound { get; } = [];
     }
 
     /// <summary>Buffers reused from line to line.</summary>
@@ -108,8 +112,8 @@ internal static class LinearScanner
         public Vector2 FirstStart, FirstEnd, LastStart, LastEnd;
         public bool Reported;
 
-        // The scan line of the first read.
-        public Vector2 LineStart, LineStep;
+        // The scan line of the first read, and of the last.
+        public Vector2 LineStart, LineStep, LastLine;
         public int LineLength;
     }
 
@@ -227,6 +231,11 @@ internal static class LinearScanner
             Vote(read, start + (step * read.Start), start + (step * read.End), (start, step, length), reads);
         }
 
+        if ((formats & DataBarCollector.Formats) != 0)
+        {
+            reads.DataBar.Add(runs, offsets, start, step, formats, reads.DataBarFound);
+        }
+
         // Reversed: the runs backwards, light first again; positions measured from the far end.
         int lead = runs.Length % 2 == 0 ? 1 : 0, count = runs.Length + lead;
         Span<float> back = LineBuffers.Grow(ref line.Back, count), backPositions = LineBuffers.Grow(ref line.BackOffsets, count + 1);
@@ -252,6 +261,17 @@ internal static class LinearScanner
         {
             Vote(reversed, start + (step * (length - reversed.Start)), start + (step * (length - reversed.End)), (start, step, length), reads);
         }
+
+        if ((formats & DataBarCollector.Formats) != 0)
+        {
+            reads.DataBar.Add(back, backPositions, start + (step * length), -step, formats, reads.DataBarFound);
+            foreach ((DecodedData data, Vector2 from, Vector2 to) in reads.DataBarFound)
+            {
+                Vote(new LinearRead(data, 0, 0), from, to, (start, step, length), reads);
+            }
+
+            reads.DataBarFound.Clear();
+        }
     }
 
     private static void Vote(LinearRead read, Vector2 from, Vector2 to, (Vector2 Start, Vector2 Step, int Length) line, Reads reads)
@@ -261,9 +281,17 @@ internal static class LinearScanner
         var key = (read.Data.Format, read.Data.Text);
         if (!votes.TryGetValue(key, out Candidate? candidate))
         {
-            votes[key] = new Candidate { Count = 1, Data = read.Data, FirstStart = from, FirstEnd = to, LastStart = from, LastEnd = to, LineStart = line.Start, LineStep = line.Step, LineLength = line.Length };
+            votes[key] = new Candidate { Count = 1, Data = read.Data, FirstStart = from, FirstEnd = to, LastStart = from, LastEnd = to, LineStart = line.Start, LineStep = line.Step, LineLength = line.Length, LastLine = line.Start };
             return;
         }
+
+        // DataBar pairs meet by chance more often than a whole symbol reads, so its votes come from different lines.
+        if ((read.Data.Format & DataBarCollector.Formats) != 0 && line.Start == candidate.LastLine)
+        {
+            return;
+        }
+
+        candidate.LastLine = line.Start;
 
         // A line that also read the add-on wins over one that did not.
         if (candidate.Data.AddOn is null && read.Data.AddOn is not null)

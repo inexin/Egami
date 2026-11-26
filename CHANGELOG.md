@@ -422,7 +422,7 @@ WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, a
 
 ## Egami.Barcodes 1.1.0 (unreleased)
 
-Code 93 and Codabar (roadmap 2.11.2, stage A).
+Code 93 and Codabar (roadmap 2.11.2, stage A) and GS1 DataBar (stage B).
 
 - `Barcode.Code93` and `Code93Options` write Code 93 (ANSI/AIM BC5) with its two check characters, C and K, and Full ASCII
   when the text needs it; `Barcode.Codabar` and `CodabarOptions` write Codabar (EN 798) with a start and stop character A to
@@ -432,6 +432,15 @@ Code 93 and Codabar (roadmap 2.11.2, stage A).
 - `BarcodeFormat.Code93` and `BarcodeFormat.Codabar` are new, and `BarcodeFormat.Linear` and `All` include them, so reads
   with the default options look for them too. A program built against 1.0 that names `Linear` or `All` keeps 1.0's value
   until it is built again, as enum values are compiled into it.
+- `Barcode.DataBar` and `DataBarOptions` write GS1 DataBar Omnidirectional (ISO/IEC 24724) and its Truncated, Stacked and
+  Stacked Omnidirectional forms (`DataBarKind`); `Barcode.DataBarLimited` writes DataBar Limited; `Barcode.DataBarExpanded` and
+  `DataBarExpandedOptions` write DataBar Expanded from GS1 element strings, and Expanded Stacked in rows of 2 to 20 symbol
+  characters. The symbols equal zint's. `Barcode.Create` makes all three, and `Barcode.FromModules` takes the stacked forms'
+  grids.
+- All of them are read, as GS1 element strings with `BarcodeResult.Gs1` set: the halves of stacked symbols and the rows of
+  Expanded Stacked from different scan lines, joined by their checksum and finder sequence. Expanded symbols made to the
+  standard's first edition read too.
+- `BarcodeFormat.DataBar`, `DataBarLimited` and `DataBarExpanded` are new and join `Linear` and `All`.
 
 Micro QR Code (roadmap 2.11.2, stage C).
 

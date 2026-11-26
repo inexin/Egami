@@ -66,6 +66,12 @@ internal static class PureReader
             return pdf;
         }
 
+        if ((formats & DataBarCollector.Formats) != 0 && DataBar(bits, top, height, formats) is (DecodedData dataBar, Vector2 from, Vector2 to))
+        {
+            Vector2 offset = new(image.Left, image.Top);
+            return new Found(dataBar, [from + offset, to + offset]);
+        }
+
         if ((formats & BarcodeFormat.Linear) != 0)
         {
             for (int k = 1; k <= 3; k++)
@@ -249,6 +255,61 @@ internal static class PureReader
         }
 
         return new Found(data, corners);
+    }
+
+    /// <summary>GS1 DataBar from rows across the symbol, each read both ways, so that the pairs of stacked rows meet.</summary>
+    private static (DecodedData, Vector2, Vector2)? DataBar(BitImage bits, int top, int height, BarcodeFormat formats)
+    {
+        var runs = new List<float>();
+        var offsets = new List<float>();
+        var collector = new DataBarCollector();
+        var found = new List<(DecodedData Data, Vector2 From, Vector2 To)>();
+        var seen = new Dictionary<string, int>();
+        int lines = Math.Min(height, 24);
+        for (int k = 0; k < lines; k++)
+        {
+            int y = top + (int)((k + 0.5f) * height / lines);
+            Binarizer.BitRuns(bits.Row(y), runs, offsets);
+            float[] forward = [.. runs], forwardOffsets = [.. offsets];
+            collector.Add(forward, forwardOffsets, new Vector2(0, y), Vector2.UnitX, formats, found);
+            (float[] back, float[] backOffsets) = Reversed(forward, bits.Width);
+            collector.Add(back, backOffsets, new Vector2(bits.Width, y), -Vector2.UnitX, formats, found);
+            // A symbol counts when two rows make it: pairs can meet by chance.
+            foreach ((DecodedData data, Vector2 from, Vector2 to) in found)
+            {
+                if (seen.TryGetValue(data.Text, out int row) && row != k)
+                {
+                    return (data, from, to);
+                }
+
+                seen.TryAdd(data.Text, k);
+            }
+
+            found.Clear();
+        }
+
+        return null;
+    }
+
+    /// <summary>Runs read from the other end, light first again, with their offsets from that end.</summary>
+    internal static (float[] Runs, float[] Offsets) Reversed(ReadOnlySpan<float> runs, int length)
+    {
+        int lead = runs.Length % 2 == 0 ? 1 : 0, count = runs.Length + lead;
+        float[] back = new float[count], positions = new float[count + 1];
+        for (int i = 0; i < runs.Length; i++)
+        {
+            back[lead + i] = runs[runs.Length - 1 - i];
+        }
+
+        float at = 0;
+        for (int i = 0; i < count; i++)
+        {
+            positions[i] = at;
+            at += back[i];
+        }
+
+        positions[count] = length;
+        return (back, positions);
     }
 
     private static LinearRead? Linear(BitImage bits, int y, BarcodeFormat formats)

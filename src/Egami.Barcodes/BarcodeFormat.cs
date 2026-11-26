@@ -52,11 +52,26 @@ public enum BarcodeFormat
     /// <summary>Codabar (EN 798), linear; quiet zone 10 modules.</summary>
     Codabar = 1 << 12,
 
+    /// <summary>
+    /// GS1 DataBar Omnidirectional, Truncated, Stacked and Stacked Omnidirectional (ISO/IEC 24724), linear (the stacked forms
+    /// as grids of their rows); quiet zone 1 module.
+    /// </summary>
+    DataBar = 1 << 13,
+
+    /// <summary>GS1 DataBar Limited (ISO/IEC 24724), linear; quiet zone 5 modules, the space of its right guard.</summary>
+    DataBarLimited = 1 << 14,
+
+    /// <summary>
+    /// GS1 DataBar Expanded and Expanded Stacked (ISO/IEC 24724), linear (Expanded Stacked as a grid of its rows); quiet zone 1
+    /// module.
+    /// </summary>
+    DataBarExpanded = 1 << 15,
+
     /// <summary>Micro QR Code, versions M1 to M4 (ISO/IEC 18004); quiet zone 2 modules.</summary>
     MicroQr = 1 << 16,
 
     /// <summary>The linear symbologies.</summary>
-    Linear = Code128 | Code39 | Code93 | Codabar | Itf | Ean13 | Ean8 | UpcA | UpcE,
+    Linear = Code128 | Code39 | Code93 | Codabar | DataBar | DataBarLimited | DataBarExpanded | Itf | Ean13 | Ean8 | UpcA | UpcE,
 
     /// <summary>The 2D symbologies.</summary>
     Matrix = Qr | MicroQr | DataMatrix | Pdf417 | Aztec,

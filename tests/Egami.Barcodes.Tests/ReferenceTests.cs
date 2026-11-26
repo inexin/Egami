@@ -16,7 +16,7 @@ public class ReferenceTests
         [.. Load("cases.json").GetProperty("cases").EnumerateArray()]);
 
     /// <summary>The factories the cases may name; cases for others are not run yet.</summary>
-    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Code93", "Codabar", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "MicroQr", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune"];
+    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Code93", "Codabar", "DataBar", "DataBarLimited", "DataBarExpanded", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "MicroQr", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune"];
 
     public static TheoryData<string> Cases =>
         [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!)).Select(c => c.GetProperty("name").GetString()!)];
@@ -43,6 +43,25 @@ public class ReferenceTests
             char expectedLevel = asked?[0] ?? "HQM".First(l => versions.GetProperty(l.ToString()).GetInt32() == versions.GetProperty("M").GetInt32());
             Assert.Equal(versions.GetProperty((asked ?? "M")).GetInt32(), version);
             Assert.Equal(expectedLevel, level);
+            return;
+        }
+
+        if (barcode.Format is BarcodeFormat.DataBar or BarcodeFormat.DataBarLimited or BarcodeFormat.DataBarExpanded)
+        {
+            // zint starts a DataBar row with its guard's space (and ends Limited with one), which Egami's linear symbols leave
+            // to the quiet zone; zint's stacked grids give each row once, Egami's repeat each for its height.
+            string[] rows = [.. zint.GetProperty("modules").EnumerateArray().Select(r => r.GetString()!)];
+            if (barcode.Modules.IsLinear)
+            {
+                Assert.Single(rows);
+                Assert.Equal(rows[0].Trim('0'), Row(barcode.Modules));
+            }
+            else
+            {
+                Assert.Equal(zint.GetProperty("width").GetInt32(), barcode.Modules.Width);
+                Assert.Equal(string.Join('\n', rows), string.Join('\n', Collapse(Grid(barcode.Modules).TrimEnd('\n').Split('\n'))));
+            }
+
             return;
         }
 
@@ -108,6 +127,9 @@ public class ReferenceTests
                 CheckDigit = Flag(options, "checkDigit"),
                 WideRatio = Number(options, "wideRatio"),
             }),
+            "DataBar" => Barcode.DataBar(data, new DataBarOptions { Kind = Text(options, "kind") is string kind ? Enum.Parse<DataBarKind>(kind) : default }),
+            "DataBarLimited" => Barcode.DataBarLimited(data),
+            "DataBarExpanded" => Barcode.DataBarExpanded(data, new DataBarExpandedOptions { SegmentsPerRow = Number(options, "segmentsPerRow") }),
             "Itf" => Barcode.Itf(data),
             "Itf14" => Barcode.Itf14(data),
             "Ean13" => Barcode.Ean13(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),
@@ -176,6 +198,9 @@ public class ReferenceTests
 
         return text.ToString();
     }
+
+    /// <summary>The rows with each run of equal rows given once.</summary>
+    private static IEnumerable<string> Collapse(string[] rows) => rows.Where((row, i) => i == 0 || row != rows[i - 1]);
 
     private static string Row(BarcodeModules modules) => Grid(modules).TrimEnd('\n');
 
