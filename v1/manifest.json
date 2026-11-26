@@ -1481,7 +1481,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Css.CssComputedStyle",
-      "Summary": "<p sourcefile=\"api/Egami.Css.CssComputedStyle.yml\" sourcestartlinenumber=\"1\">An element's computed style, as far as CSS defines it generically: CSS-wide keywords resolved, inheritance applied, custom\nproperties and <code>var()</code> substituted. Values stay component values; the consumer parses each property by its type (and\nresolves relative units, percentages and <code>currentcolor</code>).</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Css.CssComputedStyle.yml\" sourcestartlinenumber=\"1\">An element's computed style, as far as CSS defines it generically: CSS-wide keywords resolved, inheritance applied, custom\nproperties and <code>var()</code> substituted. Values stay component values; the typed getters (<xref href=\"Egami.Css.CssComputedStyle.TryGetKeyword(System.String%2cSystem.String%40)\" data-throw-if-not-resolved=\"false\"></xref>,\n<xref href=\"Egami.Css.CssComputedStyle.TryResolveLength(System.String%2cEgami.Css.CssLengthContext%2cSystem.Double%40)\" data-throw-if-not-resolved=\"false\"></xref>, <xref href=\"Egami.Css.CssComputedStyle.TryGetColor(System.String%2cEgami.Css.CssColor%40)\" data-throw-if-not-resolved=\"false\"></xref>, <xref href=\"Egami.Css.CssComputedStyle.GetFontSize(Egami.Css.CssLengthContext)\" data-throw-if-not-resolved=\"false\"></xref> and the others) read them as one type\neach and resolve relative units, percentages and <code>currentcolor</code>.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -1706,6 +1706,20 @@
       "IsMRef": true,
       "Title": "Egami.Css.CssLength",
       "Summary": "<p sourcefile=\"api/Egami.Css.CssLength.yml\" sourcestartlinenumber=\"1\">A length (or percentage, or unitless number) with its unit, such as <code>12px</code> or <code>50%</code>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Css.CssLengthContext.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Css.CssLengthContext.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Css.CssLengthContext",
+      "Summary": "<p sourcefile=\"api/Egami.Css.CssLengthContext.yml\" sourcestartlinenumber=\"1\">What relative lengths are worth where a value is used, in CSS pixels: the element's font size and the root's, the viewport,\nand the reference length percentages take. <xref href=\"Egami.Css.CssComputedStyle.TryResolveLength(System.String%2cEgami.Css.CssLengthContext%2cSystem.Double%40)\" data-throw-if-not-resolved=\"false\"></xref>\nand <xref href=\"Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssLength%2cSystem.Double%40)\" data-throw-if-not-resolved=\"false\"></xref> turn lengths, percentages and <code>calc()</code> into pixels with it.</p>\n"
     },
     {
       "type": "ManagedReference",

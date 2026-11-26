@@ -127,8 +127,9 @@ lists of these. <a class="xref" href="https://learn.microsoft.com/dotnet/api/sys
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Css.CssComputedStyle.html">CssComputedStyle</a></dt>
       <dd><p>An element's computed style, as far as CSS defines it generically: CSS-wide keywords resolved, inheritance applied, custom
-properties and <code>var()</code> substituted. Values stay component values; the consumer parses each property by its type (and
-resolves relative units, percentages and <code>currentcolor</code>).</p>
+properties and <code>var()</code> substituted. Values stay component values; the typed getters (<a class="xref" href="Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetKeyword_System_String_System_String__">TryGetKeyword(string, out string?)</a>,
+<a class="xref" href="Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryResolveLength_System_String_Egami_Css_CssLengthContext_System_Double__">TryResolveLength(string, CssLengthContext, out double)</a>, <a class="xref" href="Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetColor_System_String_Egami_Css_CssColor__">TryGetColor(string, out CssColor)</a>, <a class="xref" href="Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_GetFontSize_Egami_Css_CssLengthContext_">GetFontSize(CssLengthContext)</a> and the others) read them as one type
+each and resolve relative units, percentages and <code>currentcolor</code>.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -394,6 +395,13 @@ or <code>currentcolor</code>.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Css.CssLength.html">CssLength</a></dt>
       <dd><p>A length (or percentage, or unitless number) with its unit, such as <code>12px</code> or <code>50%</code>.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Css.CssLengthContext.html">CssLengthContext</a></dt>
+      <dd><p>What relative lengths are worth where a value is used, in CSS pixels: the element's font size and the root's, the viewport,
+and the reference length percentages take. <a class="xref" href="Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryResolveLength_System_String_Egami_Css_CssLengthContext_System_Double__">TryResolveLength(string, CssLengthContext, out double)</a>
+and <a class="xref" href="Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_TryResolve_Egami_Css_CssLength_System_Double__">TryResolve(CssLength, out double)</a> turn lengths, percentages and <code>calc()</code> into pixels with it.</p>
 </dd>
     </dl>
     <dl class="jumplist">

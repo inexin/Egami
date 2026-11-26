@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class CssComputedStyle | Egami ">
       
-      <meta name="description" content="An element&#39;s computed style, as far as CSS defines it generically: CSS-wide keywords resolved, inheritance applied, custom properties and var() substituted. Values stay component values; the consumer parses each property by its type (and resolves relative units, percentages and currentcolor).">
+      <meta name="description" content="An element&#39;s computed style, as far as CSS defines it generically: CSS-wide keywords resolved, inheritance applied, custom properties and var() substituted. Values stay component values; the typed getters (, , ,  and the others) read them as one type each and resolve relative units, percentages and currentcolor.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Css_CssComputedStyle" data-uid="Egami.Css.CssComputedStyle" class="text-break">
-Class CssComputedStyle  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L18"><i class="bi bi-code-slash"></i></a>
+Class CssComputedStyle  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L6"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -98,8 +98,9 @@ Class CssComputedStyle  <a class="header-action link-secondary" title="View sour
   </div>
 
   <div class="markdown summary"><p>An element's computed style, as far as CSS defines it generically: CSS-wide keywords resolved, inheritance applied, custom
-properties and <code>var()</code> substituted. Values stay component values; the consumer parses each property by its type (and
-resolves relative units, percentages and <code>currentcolor</code>).</p>
+properties and <code>var()</code> substituted. Values stay component values; the typed getters (<a class="xref" href="Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetKeyword_System_String_System_String__">TryGetKeyword(string, out string?)</a>,
+<a class="xref" href="Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryResolveLength_System_String_Egami_Css_CssLengthContext_System_Double__">TryResolveLength(string, CssLengthContext, out double)</a>, <a class="xref" href="Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetColor_System_String_Egami_Css_CssColor__">TryGetColor(string, out CssColor)</a>, <a class="xref" href="Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_GetFontSize_Egami_Css_CssLengthContext_">GetFontSize(CssLengthContext)</a> and the others) read them as one type
+each and resolve relative units, percentages and <code>currentcolor</code>.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -205,7 +206,7 @@ style lists the properties with a value that the element or an ancestor set (not
 
   <h3 id="Egami_Css_CssComputedStyle_Parent" data-uid="Egami.Css.CssComputedStyle.Parent">
   Parent
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L34"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the parent element's computed style, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the root.</p>
@@ -241,7 +242,7 @@ style lists the properties with a value that the element or an ancestor set (not
 
   <h3 id="Egami_Css_CssComputedStyle_Compute_Egami_Css_CssCascadedStyle_Egami_Css_CssComputedStyle_Egami_Css_CssPropertyRegistry_" data-uid="Egami.Css.CssComputedStyle.Compute(Egami.Css.CssCascadedStyle,Egami.Css.CssComputedStyle,Egami.Css.CssPropertyRegistry)">
   Compute(CssCascadedStyle, CssComputedStyle?, CssPropertyRegistry)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L129"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L130"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Computes an element's style: resolves <code>inherit</code>, <code>initial</code>, <code>unset</code>, <code>revert</code> and
@@ -288,7 +289,7 @@ cycle detection. A property whose substitution fails is invalid at computed-valu
 
   <h3 id="Egami_Css_CssComputedStyle_CreateInherited_Egami_Css_CssComputedStyle_Egami_Css_CssPropertyRegistry_" data-uid="Egami.Css.CssComputedStyle.CreateInherited(Egami.Css.CssComputedStyle,Egami.Css.CssPropertyRegistry)">
   CreateInherited(CssComputedStyle?, CssPropertyRegistry)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L115"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates the computed style of an element no declaration applies to.</p>
@@ -330,7 +331,7 @@ cycle detection. A property whose substitution fails is invalid at computed-valu
 
   <h3 id="Egami_Css_CssComputedStyle_GetEnumerator" data-uid="Egami.Css.CssComputedStyle.GetEnumerator">
   GetEnumerator()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L88"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Enumerates the properties with a value that this element or an ancestor set.</p>
@@ -359,11 +360,128 @@ cycle detection. A property whose substitution fails is invalid at computed-valu
 
 
 
+  <a id="Egami_Css_CssComputedStyle_GetFontSize_" data-uid="Egami.Css.CssComputedStyle.GetFontSize*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_GetFontSize_Egami_Css_CssLengthContext_" data-uid="Egami.Css.CssComputedStyle.GetFontSize(Egami.Css.CssLengthContext)">
+  GetFontSize(CssLengthContext)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L236"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the computed <code>font-size</code> in CSS pixels: the absolute-size keywords from <code>medium</code> (16px) with the CSS
+Fonts 4 scaling factors, <code>larger</code> and <code>smaller</code> (the next keyword size when the parent's size is one, else
+1.2 times), and <code>em</code>, <code>ex</code>, <code>ch</code> and percentages of the parent's size.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double GetFontSize(CssLengthContext context)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>context</code> <a class="xref" href="Egami.Css.CssLengthContext.html">CssLengthContext</a></dt>
+    <dd><p>The root's font size (<code>rem</code>) and the viewport. Its <a class="xref" href="Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_FontSize">FontSize</a>,
+<a class="xref" href="Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_PercentBase">PercentBase</a>, <a class="xref" href="Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_XHeight">XHeight</a> and
+<a class="xref" href="Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_ChWidth">ChWidth</a> are not used: on <code>font-size</code> they refer to the parent's font, which this
+computes. On the root element <code>rem</code> is the initial size, 16px.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The size in pixels; 16 when nothing sets it. A value that does not resolve takes the parent's size.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_GetFontWeight_" data-uid="Egami.Css.CssComputedStyle.GetFontWeight*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_GetFontWeight" data-uid="Egami.Css.CssComputedStyle.GetFontWeight">
+  GetFontWeight()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L211"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the computed <code>font-weight</code>, from 1 to 1000: <code>normal</code> is 400 and <code>bold</code> 700, and <code>bolder</code> and
+<code>lighter</code> are resolved against the parent's weight with the CSS Fonts 4 table.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double GetFontWeight()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The weight; 400 when nothing sets it.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_GetKeywords_" data-uid="Egami.Css.CssComputedStyle.GetKeywords*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_GetKeywords_System_String_" data-uid="Egami.Css.CssComputedStyle.GetKeywords(System.String)">
+  GetKeywords(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets every identifier in a property's value, such as <code>underline</code> and <code>overline</code> for <code>text-decoration-line</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;string&gt; GetKeywords(string name)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>The identifiers at the top level of the value, ASCII-lowercased and in order; empty when there are none.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="Egami_Css_CssComputedStyle_GetValueText_" data-uid="Egami.Css.CssComputedStyle.GetValueText*"></a>
 
   <h3 id="Egami_Css_CssComputedStyle_GetValueText_System_String_" data-uid="Egami.Css.CssComputedStyle.GetValueText(System.String)">
   GetValueText(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L50"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets a property's computed value as CSS text, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when it has none.</p>
@@ -402,7 +520,7 @@ cycle detection. A property whose substitution fails is invalid at computed-valu
 
   <h3 id="Egami_Css_CssComputedStyle_IsSetOnElement_System_String_" data-uid="Egami.Css.CssComputedStyle.IsSetOnElement(System.String)">
   IsSetOnElement(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L58"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the element itself sets the property (rather than inheriting it or taking its initial value).</p>
@@ -437,11 +555,309 @@ cycle detection. A property whose substitution fails is invalid at computed-valu
 
 
 
+  <a id="Egami_Css_CssComputedStyle_TryGetColor_" data-uid="Egami.Css.CssComputedStyle.TryGetColor*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_TryGetColor_System_String_Egami_Css_CssColor__" data-uid="Egami.Css.CssComputedStyle.TryGetColor(System.String,Egami.Css.CssColor@)">
+  TryGetColor(string, out CssColor)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L144"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a property's value as a color, with <code>currentcolor</code> resolved to the element's <code>color</code>. On the <code>color</code>
+property itself <code>currentcolor</code> takes the parent's color, as CSS Color 4 says.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetColor(string name, out CssColor color)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name, such as <code>color</code> or <code>text-decoration-color</code>.</p>
+</dd>
+    <dt><code>color</code> <a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd><p>The color; never <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_CurrentColor">CurrentColor</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the value is one color (and, for <code>currentcolor</code>, the element's color resolves).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Css_CssComputedStyle_TryGetColor_System_String_Egami_Css_CssColor___remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p><a class="xref" href="Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetValue_System_String_System_Collections_Generic_IReadOnlyList_Egami_Css_CssComponentValue___">TryGetValue(string, out IReadOnlyList&lt;CssComponentValue&gt;?)</a> with <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_TryParse_System_Collections_Generic_IReadOnlyList_Egami_Css_CssComponentValue__Egami_Css_CssColor__">TryParse(IReadOnlyList&lt;CssComponentValue&gt;, out CssColor)</a> gives the keyword as written.</p>
+</div>
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_TryGetFontFamilies_" data-uid="Egami.Css.CssComputedStyle.TryGetFontFamilies*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_TryGetFontFamilies_Egami_Css_CssFontFamilyList__" data-uid="Egami.Css.CssComputedStyle.TryGetFontFamilies(Egami.Css.CssFontFamilyList@)">
+  TryGetFontFamilies(out CssFontFamilyList?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L200"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the <code>font-family</code> list.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetFontFamilies(out CssFontFamilyList? families)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>families</code> <a class="xref" href="Egami.Css.CssFontFamilyList.html">CssFontFamilyList</a></dt>
+    <dd><p>The families, in order of preference.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the computed <code>font-family</code> is a valid list.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_TryGetInteger_" data-uid="Egami.Css.CssComputedStyle.TryGetInteger*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_TryGetInteger_System_String_System_Int32__" data-uid="Egami.Css.CssComputedStyle.TryGetInteger(System.String,System.Int32@)">
+  TryGetInteger(string, out int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a property's value as an integer, such as <code>z-index</code> or <code>orphans</code>. A <code>calc()</code> of numbers is computed and
+rounded to the nearest integer (halves toward positive infinity), as CSS Values 4 says.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetInteger(string name, out int value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name.</p>
+</dd>
+    <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The integer, clamped to the range of <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the value is one integer or a math function of numbers.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_TryGetKeyword_" data-uid="Egami.Css.CssComputedStyle.TryGetKeyword*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_TryGetKeyword_System_String_System_String__" data-uid="Egami.Css.CssComputedStyle.TryGetKeyword(System.String,System.String@)">
+  TryGetKeyword(string, out string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a property's value as one keyword, such as <code>block</code> for <code>display</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetKeyword(string name, out string? keyword)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name.</p>
+</dd>
+    <dt><code>keyword</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The identifier, ASCII-lowercased.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the value is a single identifier.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_TryGetLength_" data-uid="Egami.Css.CssComputedStyle.TryGetLength*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_TryGetLength_System_String_Egami_Css_CssLength__" data-uid="Egami.Css.CssComputedStyle.TryGetLength(System.String,Egami.Css.CssLength@)">
+  TryGetLength(string, out CssLength)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L115"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a property's value as one length or percentage with its unit, such as <code>2em</code> or <code>50%</code>. A bare <code>0</code>
+reads as <code>0px</code>; other unitless numbers and math functions give false (use
+<a class="xref" href="Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryResolveLength_System_String_Egami_Css_CssLengthContext_System_Double__">TryResolveLength(string, CssLengthContext, out double)</a> for <code>calc()</code>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetLength(string name, out CssLength length)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name.</p>
+</dd>
+    <dt><code>length</code> <a class="xref" href="Egami.Css.CssLength.html">CssLength</a></dt>
+    <dd><p>The length; a percentage has <a class="xref" href="Egami.Css.CssUnit.html#Egami_Css_CssUnit_Percent">Percent</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the value is one length or percentage.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_TryGetNumber_" data-uid="Egami.Css.CssComputedStyle.TryGetNumber*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_TryGetNumber_System_String_System_Double__" data-uid="Egami.Css.CssComputedStyle.TryGetNumber(System.String,System.Double@)">
+  TryGetNumber(string, out double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a property's value as a number, such as <code>1.5</code> for <code>flex-grow</code>; a <code>calc()</code> of numbers is computed.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetNumber(string name, out double number)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name.</p>
+</dd>
+    <dt><code>number</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The number.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the value is one number or a math function of numbers.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssComputedStyle_TryGetUrl_" data-uid="Egami.Css.CssComputedStyle.TryGetUrl*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_TryGetUrl_System_String_Egami_Css_CssUrl__" data-uid="Egami.Css.CssComputedStyle.TryGetUrl(System.String,Egami.Css.CssUrl@)">
+  TryGetUrl(string, out CssUrl)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L191"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a property's value as a URL, such as the one in <code>list-style-image: url(dot.png)</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGetUrl(string name, out CssUrl url)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name.</p>
+</dd>
+    <dt><code>url</code> <a class="xref" href="Egami.Css.CssUrl.html">CssUrl</a></dt>
+    <dd><p>The URL.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the value is one <code>url()</code> or <code>src()</code>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="Egami_Css_CssComputedStyle_TryGetValue_" data-uid="Egami.Css.CssComputedStyle.TryGetValue*"></a>
 
   <h3 id="Egami_Css_CssComputedStyle_TryGetValue_System_String_System_Collections_Generic_IReadOnlyList_Egami_Css_CssComponentValue___" data-uid="Egami.Css.CssComputedStyle.TryGetValue(System.String,System.Collections.Generic.IReadOnlyList{Egami.Css.CssComponentValue}@)">
   TryGetValue(string, out IReadOnlyList&lt;CssComponentValue&gt;?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L40"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets a property's computed value.</p>
@@ -479,11 +895,58 @@ cycle detection. A property whose substitution fails is invalid at computed-valu
 
 
 
+  <a id="Egami_Css_CssComputedStyle_TryResolveLength_" data-uid="Egami.Css.CssComputedStyle.TryResolveLength*"></a>
+
+  <h3 id="Egami_Css_CssComputedStyle_TryResolveLength_System_String_Egami_Css_CssLengthContext_System_Double__" data-uid="Egami.Css.CssComputedStyle.TryResolveLength(System.String,Egami.Css.CssLengthContext,System.Double@)">
+  TryResolveLength(string, CssLengthContext, out double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L131"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a property's value in CSS pixels: a length, a percentage of <a class="xref" href="Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_PercentBase">PercentBase</a>, or a
+<code>calc()</code>, <code>min()</code>, <code>max()</code> or <code>clamp()</code> of them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryResolveLength(string name, CssLengthContext context, out double pixels)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The property name.</p>
+</dd>
+    <dt><code>context</code> <a class="xref" href="Egami.Css.CssLengthContext.html">CssLengthContext</a></dt>
+    <dd><p>What relative units are worth.</p>
+</dd>
+    <dt><code>pixels</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The length in pixels.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the value is a length that resolves in the context; false for keywords, for percentages when the context
+has no <a class="xref" href="Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_PercentBase">PercentBase</a>, and for units the context cannot resolve.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.cs/#L18" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssComputedStyle.Getters.cs/#L6" class="edit-link">Edit this page</a>
         </div>
 
 

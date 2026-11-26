@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Struct CssLengthContext | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Struct CssLengthContext | Egami ">
+      
+      <meta name="description" content="What relative lengths are worth where a value is used, in CSS pixels: the element&#39;s font size and the root&#39;s, the viewport, and the reference length percentages take.  and  turn lengths, percentages and calc() into pixels with it.">
+      <link rel="icon" href="../images/favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/new/main/apiSpec/new?filename=Egami_Css_CssLengthContext.md&amp;value=---%0Auid%3A%20Egami.Css.CssLengthContext%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Egami.Css.CssLengthContext">
+
+
+
+  <h1 id="Egami_Css_CssLengthContext" data-uid="Egami.Css.CssLengthContext" class="text-break">
+Struct CssLengthContext  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Egami.html">Egami</a>.<a class="xref" href="Egami.Css.html">Css</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Egami.Css.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>What relative lengths are worth where a value is used, in CSS pixels: the element's font size and the root's, the viewport,
+and the reference length percentages take. <a class="xref" href="Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryResolveLength_System_String_Egami_Css_CssLengthContext_System_Double__">TryResolveLength(string, CssLengthContext, out double)</a>
+and <a class="xref" href="Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_TryResolve_Egami_Css_CssLength_System_Double__">TryResolve(CssLength, out double)</a> turn lengths, percentages and <code>calc()</code> into pixels with it.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public readonly record struct CssLengthContext : IEquatable&lt;CssLengthContext&gt;</code></pre>
+  </div>
+
+
+
+
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Egami.Css.CssLengthContext.html">CssLengthContext</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.equals">ValueType.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode">ValueType.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetype.tostring">ValueType.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="Egami_Css_CssLengthContext_examples">Examples</h2>
+  <pre><code class="lang-csharp">CssCascade cascade = new([(CssStyleSheet.Parse("""
+    svg { font-size: 20px; color: navy; font-weight: 300 }
+    .layer { font-size: 1.5em; font-weight: bolder; display: inline flex }
+    #r { width: calc(50% - 1em); z-index: 3; text-decoration-color: currentcolor }
+    """), CssOrigin.Author)]);
+CssComputedStyle rootStyle = cascade.Compute(cascade.Cascade(root), null);
+CssComputedStyle groupStyle = cascade.Compute(cascade.Cascade(group), rootStyle);
+CssComputedStyle style = cascade.Compute(cascade.Cascade(rect), groupStyle);
+
+// Font size and weight are resolved through the parent chain: keywords, em, %, bolder and lighter.
+var viewport = new CssLengthContext { RootFontSize = 16, ViewportWidth = 800, ViewportHeight = 600 };
+double rootSize = rootStyle.GetFontSize(viewport);          // 20
+CssLengthContext context = viewport with { RootFontSize = rootSize, FontSize = style.GetFontSize(viewport) };
+double weight = style.GetFontWeight();                     // 400: bolder than 300, inherited from the group
+
+// Lengths in CSS pixels; percentages need the reference length.
+style.TryResolveLength("width", context with { PercentBase = 300 }, out double width);   // 150 - 30 = 120
+style.TryGetInteger("z-index", out int zIndex);                                       // 3
+IReadOnlyList&lt;string&gt; display = groupStyle.GetKeywords("display");                     // inline, flex
+style.TryGetColor("text-decoration-color", out CssColor decoration);                  // navy: currentcolor resolved</code></pre>
+
+
+  <h2 id="Egami_Css_CssLengthContext_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>Without font data, <code>ex</code> and <code>ch</code> are half an <code>em</code> and <code>ic</code> one <code>em</code>, as CSS Values 4 allows;
+<a class="xref" href="Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_XHeight">XHeight</a> and <a class="xref" href="Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_ChWidth">ChWidth</a> give the font's real metrics when the consumer knows them. <code>cap</code>,
+<code>rcap</code> and <code>rlh</code>, <code>lh</code> without <a class="xref" href="Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_LineHeight">LineHeight</a>, and percentages without <a class="xref" href="Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_PercentBase">PercentBase</a>
+do not resolve. The viewport units of the small, large and dynamic viewports, and <code>vi</code> and <code>vb</code>, take the one
+viewport given, in a horizontal writing mode.</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Egami_Css_CssLengthContext__ctor_" data-uid="Egami.Css.CssLengthContext.#ctor*"></a>
+
+  <h3 id="Egami_Css_CssLengthContext__ctor_System_Double_System_Double_System_Double_System_Double_" data-uid="Egami.Css.CssLengthContext.#ctor(System.Double,System.Double,System.Double,System.Double)">
+  CssLengthContext(double, double, double, double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a context.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CssLengthContext(double fontSize, double rootFontSize, double viewportWidth, double viewportHeight)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>fontSize</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The element's font size in pixels (<code>em</code>).</p>
+</dd>
+    <dt><code>rootFontSize</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The root element's font size in pixels (<code>rem</code>).</p>
+</dd>
+    <dt><code>viewportWidth</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The viewport width in pixels (<code>vw</code>).</p>
+</dd>
+    <dt><code>viewportHeight</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The viewport height in pixels (<code>vh</code>).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Egami_Css_CssLengthContext_ChWidth_" data-uid="Egami.Css.CssLengthContext.ChWidth*"></a>
+
+  <h3 id="Egami_Css_CssLengthContext_ChWidth" data-uid="Egami.Css.CssLengthContext.ChWidth">
+  ChWidth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the advance of the font's &quot;0&quot; in pixels (<code>ch</code>), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for half the font size.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double? ChWidth { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLengthContext_FontSize_" data-uid="Egami.Css.CssLengthContext.FontSize*"></a>
+
+  <h3 id="Egami_Css_CssLengthContext_FontSize" data-uid="Egami.Css.CssLengthContext.FontSize">
+  FontSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the element's font size in pixels: what <code>em</code> is worth.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double FontSize { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLengthContext_LineHeight_" data-uid="Egami.Css.CssLengthContext.LineHeight*"></a>
+
+  <h3 id="Egami_Css_CssLengthContext_LineHeight" data-uid="Egami.Css.CssLengthContext.LineHeight">
+  LineHeight
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the element's line height in pixels (<code>lh</code>), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when <code>lh</code> does not resolve.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double? LineHeight { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLengthContext_PercentBase_" data-uid="Egami.Css.CssLengthContext.PercentBase*"></a>
+
+  <h3 id="Egami_Css_CssLengthContext_PercentBase" data-uid="Egami.Css.CssLengthContext.PercentBase">
+  PercentBase
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the reference length a percentage is a percentage of, in pixels (such as the containing block's width), or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when percentages do not resolve.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double? PercentBase { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLengthContext_RootFontSize_" data-uid="Egami.Css.CssLengthContext.RootFontSize*"></a>
+
+  <h3 id="Egami_Css_CssLengthContext_RootFontSize" data-uid="Egami.Css.CssLengthContext.RootFontSize">
+  RootFontSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the root element's font size in pixels: what <code>rem</code> is worth.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double RootFontSize { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLengthContext_ViewportHeight_" data-uid="Egami.Css.CssLengthContext.ViewportHeight*"></a>
+
+  <h3 id="Egami_Css_CssLengthContext_ViewportHeight" data-uid="Egami.Css.CssLengthContext.ViewportHeight">
+  ViewportHeight
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the viewport height in pixels: a hundred <code>vh</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double ViewportHeight { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLengthContext_ViewportWidth_" data-uid="Egami.Css.CssLengthContext.ViewportWidth*"></a>
+
+  <h3 id="Egami_Css_CssLengthContext_ViewportWidth" data-uid="Egami.Css.CssLengthContext.ViewportWidth">
+  ViewportWidth
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the viewport width in pixels: a hundred <code>vw</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double ViewportWidth { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLengthContext_XHeight_" data-uid="Egami.Css.CssLengthContext.XHeight*"></a>
+
+  <h3 id="Egami_Css_CssLengthContext_XHeight" data-uid="Egami.Css.CssLengthContext.XHeight">
+  XHeight
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the font's x-height in pixels (<code>ex</code>), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for half the font size.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double? XHeight { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Egami_Css_CssLengthContext_TryResolve_" data-uid="Egami.Css.CssLengthContext.TryResolve*"></a>
+
+  <h3 id="Egami_Css_CssLengthContext_TryResolve_Egami_Css_CssCalc_System_Double__" data-uid="Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssCalc,System.Double@)">
+  TryResolve(CssCalc, out double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Resolves a length, percentage or math function to pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryResolve(CssCalc calc, out double pixels)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>calc</code> <a class="xref" href="Egami.Css.CssCalc.html">CssCalc</a></dt>
+    <dd><p>The value. A plain number does not resolve, as it is not a length.</p>
+</dd>
+    <dt><code>pixels</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The length in pixels.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when every term resolves in this context.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssLengthContext_TryResolve_" data-uid="Egami.Css.CssLengthContext.TryResolve*"></a>
+
+  <h3 id="Egami_Css_CssLengthContext_TryResolve_Egami_Css_CssLength_System_Double__" data-uid="Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssLength,System.Double@)">
+  TryResolve(CssLength, out double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts a length or percentage to pixels.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryResolve(CssLength length, out double pixels)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>length</code> <a class="xref" href="Egami.Css.CssLength.html">CssLength</a></dt>
+    <dd><p>The length. A unitless number resolves only when it is zero.</p>
+</dd>
+    <dt><code>pixels</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The length in pixels.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True when the unit resolves in this context.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssLengthContext.cs/#L18" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

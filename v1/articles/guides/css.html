@@ -312,6 +312,46 @@ if (style.TryGetValue(&quot;opacity&quot;, out IReadOnlyList&lt;CssComponentValu
 {
     // The consumer parses each property by its type.
 }
+</code></pre><h2 id="typed-values">Typed values</h2>
+<p><code>CssComputedStyle</code> hands out component values, and typed getters read them as one type each. Like <code>TryGetValue</code>, each
+returns false when the property has no value or the value is not of that type, such as a keyword where a length was expected
+or a property whose <code>var()</code> failed.</p>
+<ul>
+<li><code>TryGetKeyword</code> gives one identifier, lowercased; <code>GetKeywords</code> every identifier, as for <code>text-decoration-line</code>.</li>
+<li><code>TryGetNumber</code> and <code>TryGetInteger</code> read numbers and compute a <code>calc()</code> of numbers; integers round as CSS Values 4 says.</li>
+<li><code>TryGetLength</code> gives one length or percentage with its <code>CssUnit</code>; a bare <code>0</code> reads as <code>0px</code>.</li>
+<li><code>TryResolveLength</code> gives CSS pixels for lengths, percentages and <code>calc()</code>, <code>min()</code>, <code>max()</code> and <code>clamp()</code>, with a
+<code>CssLengthContext</code>: the element's and the root's font size, the viewport, and the reference length for percentages. A
+percentage without that reference, and a unit the context cannot resolve, give false. Without font data <code>ex</code> and <code>ch</code> are
+half an <code>em</code>.</li>
+<li><code>TryGetColor</code> resolves <code>currentcolor</code> to the element's <code>color</code>; on <code>color</code> itself it takes the parent's.</li>
+<li><code>TryGetUrl</code> reads one <code>url()</code>, and <code>TryGetFontFamilies</code> the <code>font-family</code> list.</li>
+<li><code>GetFontWeight</code> resolves <code>bolder</code> and <code>lighter</code> against the parent with the CSS Fonts 4 table. <code>GetFontSize</code> resolves the
+absolute-size keywords from 16px <code>medium</code>, <code>larger</code> and <code>smaller</code>, and <code>em</code>, <code>ex</code>, <code>ch</code> and percentages of the parent's
+size. Both cache their result on the style, so a deep tree walks its parents once.</li>
+</ul>
+<p>Plain values allocate nothing; a <code>calc()</code> and a color function are parsed on each call. Points and device pixels stay the
+consumer's job.</p>
+<pre><code class="lang-csharp">CssCascade cascade = new([(CssStyleSheet.Parse(&quot;&quot;&quot;
+    svg { font-size: 20px; color: navy; font-weight: 300 }
+    .layer { font-size: 1.5em; font-weight: bolder; display: inline flex }
+    #r { width: calc(50% - 1em); z-index: 3; text-decoration-color: currentcolor }
+    &quot;&quot;&quot;), CssOrigin.Author)]);
+CssComputedStyle rootStyle = cascade.Compute(cascade.Cascade(root), null);
+CssComputedStyle groupStyle = cascade.Compute(cascade.Cascade(group), rootStyle);
+CssComputedStyle style = cascade.Compute(cascade.Cascade(rect), groupStyle);
+
+// Font size and weight are resolved through the parent chain: keywords, em, %, bolder and lighter.
+var viewport = new CssLengthContext { RootFontSize = 16, ViewportWidth = 800, ViewportHeight = 600 };
+double rootSize = rootStyle.GetFontSize(viewport);          // 20
+CssLengthContext context = viewport with { RootFontSize = rootSize, FontSize = style.GetFontSize(viewport) };
+double weight = style.GetFontWeight();                     // 400: bolder than 300, inherited from the group
+
+// Lengths in CSS pixels; percentages need the reference length.
+style.TryResolveLength(&quot;width&quot;, context with { PercentBase = 300 }, out double width);   // 150 - 30 = 120
+style.TryGetInteger(&quot;z-index&quot;, out int zIndex);                                       // 3
+IReadOnlyList&lt;string&gt; display = groupStyle.GetKeywords(&quot;display&quot;);                     // inline, flex
+style.TryGetColor(&quot;text-decoration-color&quot;, out CssColor decoration);                  // navy: currentcolor resolved
 </code></pre><h2 id="box-list-and-table-properties">Box, list and table properties</h2>
 <p><code>CssPropertyRegistry.CreateDefault</code> also knows the properties a document's boxes need, each with its value grammar, so an
 invalid value is dropped and an earlier valid one wins:</p>

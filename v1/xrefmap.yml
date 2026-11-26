@@ -8955,6 +8955,48 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssComputedStyle.GetEnumerator
   nameWithType: CssComputedStyle.GetEnumerator
+- uid: Egami.Css.CssComputedStyle.GetFontSize(Egami.Css.CssLengthContext)
+  name: GetFontSize(CssLengthContext)
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_GetFontSize_Egami_Css_CssLengthContext_
+  commentId: M:Egami.Css.CssComputedStyle.GetFontSize(Egami.Css.CssLengthContext)
+  fullName: Egami.Css.CssComputedStyle.GetFontSize(Egami.Css.CssLengthContext)
+  nameWithType: CssComputedStyle.GetFontSize(CssLengthContext)
+- uid: Egami.Css.CssComputedStyle.GetFontSize*
+  name: GetFontSize
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_GetFontSize_
+  commentId: Overload:Egami.Css.CssComputedStyle.GetFontSize
+  isSpec: "True"
+  fullName: Egami.Css.CssComputedStyle.GetFontSize
+  nameWithType: CssComputedStyle.GetFontSize
+- uid: Egami.Css.CssComputedStyle.GetFontWeight
+  name: GetFontWeight()
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_GetFontWeight
+  commentId: M:Egami.Css.CssComputedStyle.GetFontWeight
+  fullName: Egami.Css.CssComputedStyle.GetFontWeight()
+  nameWithType: CssComputedStyle.GetFontWeight()
+- uid: Egami.Css.CssComputedStyle.GetFontWeight*
+  name: GetFontWeight
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_GetFontWeight_
+  commentId: Overload:Egami.Css.CssComputedStyle.GetFontWeight
+  isSpec: "True"
+  fullName: Egami.Css.CssComputedStyle.GetFontWeight
+  nameWithType: CssComputedStyle.GetFontWeight
+- uid: Egami.Css.CssComputedStyle.GetKeywords(System.String)
+  name: GetKeywords(string)
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_GetKeywords_System_String_
+  commentId: M:Egami.Css.CssComputedStyle.GetKeywords(System.String)
+  name.vb: GetKeywords(String)
+  fullName: Egami.Css.CssComputedStyle.GetKeywords(string)
+  fullName.vb: Egami.Css.CssComputedStyle.GetKeywords(String)
+  nameWithType: CssComputedStyle.GetKeywords(string)
+  nameWithType.vb: CssComputedStyle.GetKeywords(String)
+- uid: Egami.Css.CssComputedStyle.GetKeywords*
+  name: GetKeywords
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_GetKeywords_
+  commentId: Overload:Egami.Css.CssComputedStyle.GetKeywords
+  isSpec: "True"
+  fullName: Egami.Css.CssComputedStyle.GetKeywords
+  nameWithType: CssComputedStyle.GetKeywords
 - uid: Egami.Css.CssComputedStyle.GetValueText(System.String)
   name: GetValueText(string)
   href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_GetValueText_System_String_
@@ -9000,6 +9042,118 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssComputedStyle.Parent
   nameWithType: CssComputedStyle.Parent
+- uid: Egami.Css.CssComputedStyle.TryGetColor(System.String,Egami.Css.CssColor@)
+  name: TryGetColor(string, out CssColor)
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetColor_System_String_Egami_Css_CssColor__
+  commentId: M:Egami.Css.CssComputedStyle.TryGetColor(System.String,Egami.Css.CssColor@)
+  name.vb: TryGetColor(String, CssColor)
+  fullName: Egami.Css.CssComputedStyle.TryGetColor(string, out Egami.Css.CssColor)
+  fullName.vb: Egami.Css.CssComputedStyle.TryGetColor(String, Egami.Css.CssColor)
+  nameWithType: CssComputedStyle.TryGetColor(string, out CssColor)
+  nameWithType.vb: CssComputedStyle.TryGetColor(String, CssColor)
+- uid: Egami.Css.CssComputedStyle.TryGetColor*
+  name: TryGetColor
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetColor_
+  commentId: Overload:Egami.Css.CssComputedStyle.TryGetColor
+  isSpec: "True"
+  fullName: Egami.Css.CssComputedStyle.TryGetColor
+  nameWithType: CssComputedStyle.TryGetColor
+- uid: Egami.Css.CssComputedStyle.TryGetFontFamilies(Egami.Css.CssFontFamilyList@)
+  name: TryGetFontFamilies(out CssFontFamilyList?)
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetFontFamilies_Egami_Css_CssFontFamilyList__
+  commentId: M:Egami.Css.CssComputedStyle.TryGetFontFamilies(Egami.Css.CssFontFamilyList@)
+  name.vb: TryGetFontFamilies(CssFontFamilyList)
+  fullName: Egami.Css.CssComputedStyle.TryGetFontFamilies(out Egami.Css.CssFontFamilyList?)
+  fullName.vb: Egami.Css.CssComputedStyle.TryGetFontFamilies(Egami.Css.CssFontFamilyList)
+  nameWithType: CssComputedStyle.TryGetFontFamilies(out CssFontFamilyList?)
+  nameWithType.vb: CssComputedStyle.TryGetFontFamilies(CssFontFamilyList)
+- uid: Egami.Css.CssComputedStyle.TryGetFontFamilies*
+  name: TryGetFontFamilies
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetFontFamilies_
+  commentId: Overload:Egami.Css.CssComputedStyle.TryGetFontFamilies
+  isSpec: "True"
+  fullName: Egami.Css.CssComputedStyle.TryGetFontFamilies
+  nameWithType: CssComputedStyle.TryGetFontFamilies
+- uid: Egami.Css.CssComputedStyle.TryGetInteger(System.String,System.Int32@)
+  name: TryGetInteger(string, out int)
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetInteger_System_String_System_Int32__
+  commentId: M:Egami.Css.CssComputedStyle.TryGetInteger(System.String,System.Int32@)
+  name.vb: TryGetInteger(String, Integer)
+  fullName: Egami.Css.CssComputedStyle.TryGetInteger(string, out int)
+  fullName.vb: Egami.Css.CssComputedStyle.TryGetInteger(String, Integer)
+  nameWithType: CssComputedStyle.TryGetInteger(string, out int)
+  nameWithType.vb: CssComputedStyle.TryGetInteger(String, Integer)
+- uid: Egami.Css.CssComputedStyle.TryGetInteger*
+  name: TryGetInteger
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetInteger_
+  commentId: Overload:Egami.Css.CssComputedStyle.TryGetInteger
+  isSpec: "True"
+  fullName: Egami.Css.CssComputedStyle.TryGetInteger
+  nameWithType: CssComputedStyle.TryGetInteger
+- uid: Egami.Css.CssComputedStyle.TryGetKeyword(System.String,System.String@)
+  name: TryGetKeyword(string, out string?)
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetKeyword_System_String_System_String__
+  commentId: M:Egami.Css.CssComputedStyle.TryGetKeyword(System.String,System.String@)
+  name.vb: TryGetKeyword(String, String)
+  fullName: Egami.Css.CssComputedStyle.TryGetKeyword(string, out string?)
+  fullName.vb: Egami.Css.CssComputedStyle.TryGetKeyword(String, String)
+  nameWithType: CssComputedStyle.TryGetKeyword(string, out string?)
+  nameWithType.vb: CssComputedStyle.TryGetKeyword(String, String)
+- uid: Egami.Css.CssComputedStyle.TryGetKeyword*
+  name: TryGetKeyword
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetKeyword_
+  commentId: Overload:Egami.Css.CssComputedStyle.TryGetKeyword
+  isSpec: "True"
+  fullName: Egami.Css.CssComputedStyle.TryGetKeyword
+  nameWithType: CssComputedStyle.TryGetKeyword
+- uid: Egami.Css.CssComputedStyle.TryGetLength(System.String,Egami.Css.CssLength@)
+  name: TryGetLength(string, out CssLength)
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetLength_System_String_Egami_Css_CssLength__
+  commentId: M:Egami.Css.CssComputedStyle.TryGetLength(System.String,Egami.Css.CssLength@)
+  name.vb: TryGetLength(String, CssLength)
+  fullName: Egami.Css.CssComputedStyle.TryGetLength(string, out Egami.Css.CssLength)
+  fullName.vb: Egami.Css.CssComputedStyle.TryGetLength(String, Egami.Css.CssLength)
+  nameWithType: CssComputedStyle.TryGetLength(string, out CssLength)
+  nameWithType.vb: CssComputedStyle.TryGetLength(String, CssLength)
+- uid: Egami.Css.CssComputedStyle.TryGetLength*
+  name: TryGetLength
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetLength_
+  commentId: Overload:Egami.Css.CssComputedStyle.TryGetLength
+  isSpec: "True"
+  fullName: Egami.Css.CssComputedStyle.TryGetLength
+  nameWithType: CssComputedStyle.TryGetLength
+- uid: Egami.Css.CssComputedStyle.TryGetNumber(System.String,System.Double@)
+  name: TryGetNumber(string, out double)
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetNumber_System_String_System_Double__
+  commentId: M:Egami.Css.CssComputedStyle.TryGetNumber(System.String,System.Double@)
+  name.vb: TryGetNumber(String, Double)
+  fullName: Egami.Css.CssComputedStyle.TryGetNumber(string, out double)
+  fullName.vb: Egami.Css.CssComputedStyle.TryGetNumber(String, Double)
+  nameWithType: CssComputedStyle.TryGetNumber(string, out double)
+  nameWithType.vb: CssComputedStyle.TryGetNumber(String, Double)
+- uid: Egami.Css.CssComputedStyle.TryGetNumber*
+  name: TryGetNumber
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetNumber_
+  commentId: Overload:Egami.Css.CssComputedStyle.TryGetNumber
+  isSpec: "True"
+  fullName: Egami.Css.CssComputedStyle.TryGetNumber
+  nameWithType: CssComputedStyle.TryGetNumber
+- uid: Egami.Css.CssComputedStyle.TryGetUrl(System.String,Egami.Css.CssUrl@)
+  name: TryGetUrl(string, out CssUrl)
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetUrl_System_String_Egami_Css_CssUrl__
+  commentId: M:Egami.Css.CssComputedStyle.TryGetUrl(System.String,Egami.Css.CssUrl@)
+  name.vb: TryGetUrl(String, CssUrl)
+  fullName: Egami.Css.CssComputedStyle.TryGetUrl(string, out Egami.Css.CssUrl)
+  fullName.vb: Egami.Css.CssComputedStyle.TryGetUrl(String, Egami.Css.CssUrl)
+  nameWithType: CssComputedStyle.TryGetUrl(string, out CssUrl)
+  nameWithType.vb: CssComputedStyle.TryGetUrl(String, CssUrl)
+- uid: Egami.Css.CssComputedStyle.TryGetUrl*
+  name: TryGetUrl
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetUrl_
+  commentId: Overload:Egami.Css.CssComputedStyle.TryGetUrl
+  isSpec: "True"
+  fullName: Egami.Css.CssComputedStyle.TryGetUrl
+  nameWithType: CssComputedStyle.TryGetUrl
 - uid: Egami.Css.CssComputedStyle.TryGetValue(System.String,System.Collections.Generic.IReadOnlyList{Egami.Css.CssComponentValue}@)
   name: TryGetValue(string, out IReadOnlyList<CssComponentValue>?)
   href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryGetValue_System_String_System_Collections_Generic_IReadOnlyList_Egami_Css_CssComponentValue___
@@ -9016,6 +9170,22 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssComputedStyle.TryGetValue
   nameWithType: CssComputedStyle.TryGetValue
+- uid: Egami.Css.CssComputedStyle.TryResolveLength(System.String,Egami.Css.CssLengthContext,System.Double@)
+  name: TryResolveLength(string, CssLengthContext, out double)
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryResolveLength_System_String_Egami_Css_CssLengthContext_System_Double__
+  commentId: M:Egami.Css.CssComputedStyle.TryResolveLength(System.String,Egami.Css.CssLengthContext,System.Double@)
+  name.vb: TryResolveLength(String, CssLengthContext, Double)
+  fullName: Egami.Css.CssComputedStyle.TryResolveLength(string, Egami.Css.CssLengthContext, out double)
+  fullName.vb: Egami.Css.CssComputedStyle.TryResolveLength(String, Egami.Css.CssLengthContext, Double)
+  nameWithType: CssComputedStyle.TryResolveLength(string, CssLengthContext, out double)
+  nameWithType.vb: CssComputedStyle.TryResolveLength(String, CssLengthContext, Double)
+- uid: Egami.Css.CssComputedStyle.TryResolveLength*
+  name: TryResolveLength
+  href: api/Egami.Css.CssComputedStyle.html#Egami_Css_CssComputedStyle_TryResolveLength_
+  commentId: Overload:Egami.Css.CssComputedStyle.TryResolveLength
+  isSpec: "True"
+  fullName: Egami.Css.CssComputedStyle.TryResolveLength
+  nameWithType: CssComputedStyle.TryResolveLength
 - uid: Egami.Css.CssDeclaration
   name: CssDeclaration
   href: api/Egami.Css.CssDeclaration.html
@@ -10517,6 +10687,160 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssLength.Zero
   nameWithType: CssLength.Zero
+- uid: Egami.Css.CssLengthContext
+  name: CssLengthContext
+  href: api/Egami.Css.CssLengthContext.html
+  commentId: T:Egami.Css.CssLengthContext
+  fullName: Egami.Css.CssLengthContext
+  nameWithType: CssLengthContext
+- uid: Egami.Css.CssLengthContext.#ctor(System.Double,System.Double,System.Double,System.Double)
+  name: CssLengthContext(double, double, double, double)
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext__ctor_System_Double_System_Double_System_Double_System_Double_
+  commentId: M:Egami.Css.CssLengthContext.#ctor(System.Double,System.Double,System.Double,System.Double)
+  name.vb: New(Double, Double, Double, Double)
+  fullName: Egami.Css.CssLengthContext.CssLengthContext(double, double, double, double)
+  fullName.vb: Egami.Css.CssLengthContext.New(Double, Double, Double, Double)
+  nameWithType: CssLengthContext.CssLengthContext(double, double, double, double)
+  nameWithType.vb: CssLengthContext.New(Double, Double, Double, Double)
+- uid: Egami.Css.CssLengthContext.#ctor*
+  name: CssLengthContext
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext__ctor_
+  commentId: Overload:Egami.Css.CssLengthContext.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Css.CssLengthContext.CssLengthContext
+  fullName.vb: Egami.Css.CssLengthContext.New
+  nameWithType: CssLengthContext.CssLengthContext
+  nameWithType.vb: CssLengthContext.New
+- uid: Egami.Css.CssLengthContext.ChWidth
+  name: ChWidth
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_ChWidth
+  commentId: P:Egami.Css.CssLengthContext.ChWidth
+  fullName: Egami.Css.CssLengthContext.ChWidth
+  nameWithType: CssLengthContext.ChWidth
+- uid: Egami.Css.CssLengthContext.ChWidth*
+  name: ChWidth
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_ChWidth_
+  commentId: Overload:Egami.Css.CssLengthContext.ChWidth
+  isSpec: "True"
+  fullName: Egami.Css.CssLengthContext.ChWidth
+  nameWithType: CssLengthContext.ChWidth
+- uid: Egami.Css.CssLengthContext.FontSize
+  name: FontSize
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_FontSize
+  commentId: P:Egami.Css.CssLengthContext.FontSize
+  fullName: Egami.Css.CssLengthContext.FontSize
+  nameWithType: CssLengthContext.FontSize
+- uid: Egami.Css.CssLengthContext.FontSize*
+  name: FontSize
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_FontSize_
+  commentId: Overload:Egami.Css.CssLengthContext.FontSize
+  isSpec: "True"
+  fullName: Egami.Css.CssLengthContext.FontSize
+  nameWithType: CssLengthContext.FontSize
+- uid: Egami.Css.CssLengthContext.LineHeight
+  name: LineHeight
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_LineHeight
+  commentId: P:Egami.Css.CssLengthContext.LineHeight
+  fullName: Egami.Css.CssLengthContext.LineHeight
+  nameWithType: CssLengthContext.LineHeight
+- uid: Egami.Css.CssLengthContext.LineHeight*
+  name: LineHeight
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_LineHeight_
+  commentId: Overload:Egami.Css.CssLengthContext.LineHeight
+  isSpec: "True"
+  fullName: Egami.Css.CssLengthContext.LineHeight
+  nameWithType: CssLengthContext.LineHeight
+- uid: Egami.Css.CssLengthContext.PercentBase
+  name: PercentBase
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_PercentBase
+  commentId: P:Egami.Css.CssLengthContext.PercentBase
+  fullName: Egami.Css.CssLengthContext.PercentBase
+  nameWithType: CssLengthContext.PercentBase
+- uid: Egami.Css.CssLengthContext.PercentBase*
+  name: PercentBase
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_PercentBase_
+  commentId: Overload:Egami.Css.CssLengthContext.PercentBase
+  isSpec: "True"
+  fullName: Egami.Css.CssLengthContext.PercentBase
+  nameWithType: CssLengthContext.PercentBase
+- uid: Egami.Css.CssLengthContext.RootFontSize
+  name: RootFontSize
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_RootFontSize
+  commentId: P:Egami.Css.CssLengthContext.RootFontSize
+  fullName: Egami.Css.CssLengthContext.RootFontSize
+  nameWithType: CssLengthContext.RootFontSize
+- uid: Egami.Css.CssLengthContext.RootFontSize*
+  name: RootFontSize
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_RootFontSize_
+  commentId: Overload:Egami.Css.CssLengthContext.RootFontSize
+  isSpec: "True"
+  fullName: Egami.Css.CssLengthContext.RootFontSize
+  nameWithType: CssLengthContext.RootFontSize
+- uid: Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssCalc,System.Double@)
+  name: TryResolve(CssCalc, out double)
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_TryResolve_Egami_Css_CssCalc_System_Double__
+  commentId: M:Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssCalc,System.Double@)
+  name.vb: TryResolve(CssCalc, Double)
+  fullName: Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssCalc, out double)
+  fullName.vb: Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssCalc, Double)
+  nameWithType: CssLengthContext.TryResolve(CssCalc, out double)
+  nameWithType.vb: CssLengthContext.TryResolve(CssCalc, Double)
+- uid: Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssLength,System.Double@)
+  name: TryResolve(CssLength, out double)
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_TryResolve_Egami_Css_CssLength_System_Double__
+  commentId: M:Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssLength,System.Double@)
+  name.vb: TryResolve(CssLength, Double)
+  fullName: Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssLength, out double)
+  fullName.vb: Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssLength, Double)
+  nameWithType: CssLengthContext.TryResolve(CssLength, out double)
+  nameWithType.vb: CssLengthContext.TryResolve(CssLength, Double)
+- uid: Egami.Css.CssLengthContext.TryResolve*
+  name: TryResolve
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_TryResolve_
+  commentId: Overload:Egami.Css.CssLengthContext.TryResolve
+  isSpec: "True"
+  fullName: Egami.Css.CssLengthContext.TryResolve
+  nameWithType: CssLengthContext.TryResolve
+- uid: Egami.Css.CssLengthContext.ViewportHeight
+  name: ViewportHeight
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_ViewportHeight
+  commentId: P:Egami.Css.CssLengthContext.ViewportHeight
+  fullName: Egami.Css.CssLengthContext.ViewportHeight
+  nameWithType: CssLengthContext.ViewportHeight
+- uid: Egami.Css.CssLengthContext.ViewportHeight*
+  name: ViewportHeight
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_ViewportHeight_
+  commentId: Overload:Egami.Css.CssLengthContext.ViewportHeight
+  isSpec: "True"
+  fullName: Egami.Css.CssLengthContext.ViewportHeight
+  nameWithType: CssLengthContext.ViewportHeight
+- uid: Egami.Css.CssLengthContext.ViewportWidth
+  name: ViewportWidth
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_ViewportWidth
+  commentId: P:Egami.Css.CssLengthContext.ViewportWidth
+  fullName: Egami.Css.CssLengthContext.ViewportWidth
+  nameWithType: CssLengthContext.ViewportWidth
+- uid: Egami.Css.CssLengthContext.ViewportWidth*
+  name: ViewportWidth
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_ViewportWidth_
+  commentId: Overload:Egami.Css.CssLengthContext.ViewportWidth
+  isSpec: "True"
+  fullName: Egami.Css.CssLengthContext.ViewportWidth
+  nameWithType: CssLengthContext.ViewportWidth
+- uid: Egami.Css.CssLengthContext.XHeight
+  name: XHeight
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_XHeight
+  commentId: P:Egami.Css.CssLengthContext.XHeight
+  fullName: Egami.Css.CssLengthContext.XHeight
+  nameWithType: CssLengthContext.XHeight
+- uid: Egami.Css.CssLengthContext.XHeight*
+  name: XHeight
+  href: api/Egami.Css.CssLengthContext.html#Egami_Css_CssLengthContext_XHeight_
+  commentId: Overload:Egami.Css.CssLengthContext.XHeight
+  isSpec: "True"
+  fullName: Egami.Css.CssLengthContext.XHeight
+  nameWithType: CssLengthContext.XHeight
 - uid: Egami.Css.CssMarginBox
   name: CssMarginBox
   href: api/Egami.Css.CssMarginBox.html
