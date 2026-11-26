@@ -20,7 +20,17 @@ public readonly record struct LineBreakOptions(
     WordBreak WordBreak = WordBreak.Normal,
     OverflowWrap OverflowWrap = OverflowWrap.Normal,
     LineBreakStrictness Strictness = LineBreakStrictness.Auto,
-    string? Language = null);
+    string? Language = null)
+{
+    /// <summary>
+    /// Gets the word dictionaries that break Thai, Lao, Khmer, Myanmar and other text written without spaces between words:
+    /// <see langword="null"/>, the default, for <see cref="WordDictionaries.BuiltIn"/>, or <see cref="WordDictionaries.None"/>
+    /// to break such text only at spaces and zero width spaces.
+    /// </summary>
+    /// <remarks>A dictionary applies to runs of its script's complex-context (line breaking class SA) letters.
+    /// <see cref="WordBreak.BreakAll"/> breaks between any two letters, so it needs none.</remarks>
+    public WordDictionaries? Dictionaries { get; init; }
+}
 
 /// <summary>Where breaks may fall inside words (CSS <c>word-break</c>).</summary>
 /// <example>

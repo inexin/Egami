@@ -10,13 +10,19 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsTrimmable>true</IsTrimmable>
     <IsAotCompatible>true</IsAotCompatible>
-    <!-- The Vulkan bindings: structs passed by pointer and function pointers loaded from the driver. -->
+    <!-- Vulkan: structs passed by pointer and function pointers loaded from the driver. -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <!-- Build-time analyzer only; ships nothing. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- The Vulkan bindings (MIT, approved by name for this package only; docs/references.md). Every Vortice type stays internal to
+       the package: none appears in its public API. -->
+  <ItemGroup>
+    <PackageReference Include="Vortice.Vulkan" />
   </ItemGroup>
 
   <ItemGroup>

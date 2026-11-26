@@ -66,6 +66,9 @@ public sealed class WordDictionaries
     /// shared.</summary>
     public bool IsReadOnly => _readOnly;
 
+    /// <summary>Gets whether the set has no dictionary.</summary>
+    internal bool IsEmpty => _byScript.Count == 0;
+
     /// <summary>Adds or replaces the dictionary for a script.</summary>
     /// <param name="script">The script, such as <see cref="Script.Thai"/>.</param>
     /// <param name="dictionary">The dictionary.</param>

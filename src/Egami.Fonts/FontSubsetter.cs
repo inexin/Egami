@@ -1,5 +1,6 @@
 using Egami.Fonts.Shaping;
 using Egami.Fonts.Subsetting;
+using Egami.Fonts.Unicode;
 
 namespace Egami.Fonts;
 
@@ -59,8 +60,9 @@ public sealed record SubsetOptions
 
     /// <summary>
     /// Gets whether the subset can be shaped again as the full face would be: the kept glyphs gain every glyph GSUB can substitute
-    /// for them (<see cref="OpenTypeLayout.GetClosure"/> with <see cref="OpenTypeLayout.DefaultClosureFeatures"/>), and GSUB, GPOS
-    /// and GDEF are copied unchanged. Copied layout tables hold the old glyph ids, so this needs <see cref="RetainGlyphIds"/> and
+    /// for them (<see cref="OpenTypeLayout.GetClosure"/> with <see cref="OpenTypeLayout.DefaultClosureFeatures"/>), the dotted
+    /// circle (U+25CC) the shaper puts before a mark that starts a run, and the larger variants and assembly parts MATH gives them,
+    /// and GSUB, GPOS, GDEF and MATH are copied unchanged. Copied layout tables hold the old glyph ids, so this needs <see cref="RetainGlyphIds"/> and
     /// sfnt output. Defaults to false, as a PDF needs only the glyphs drawn. To follow other features, pass the glyphs of
     /// <see cref="OpenTypeLayout.GetClosure"/> with them, and keep the three tables with <see cref="KeepTables"/>.
     /// </summary>
@@ -72,6 +74,16 @@ public sealed record SubsetOptions
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset-layout"/>
     /// </example>
     public bool LayoutClosure { get; init; }
+
+    /// <summary>
+    /// Gets whether TrueType hinting is left out: the fpgm, prep and cvt tables and every glyph's instructions, with maxp's
+    /// hinting limits set to none, so the subset is smaller and renderers rasterize it unhinted (gasp is kept). Defaults to false.
+    /// TrueType only: the hints of CFF and CFF2 charstrings are kept.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset-unhinted"/>
+    /// </example>
+    public bool DropHinting { get; init; }
 }
 
 /// <summary>A font holding only some glyphs of another, from <see cref="FontSubsetter"/>.</summary>
@@ -121,6 +133,87 @@ public sealed class FontSubset
 /// </example>
 public static class FontSubsetter
 {
+    /// <summary>
+    /// Gets the glyphs that draw characters as the shaper does: the glyph of each one the face maps; for one the face lacks, the
+    /// glyphs of its canonical decomposition when the face draws every part (the shaper draws a missing "é" as "e" and a combining
+    /// acute); and the glyph of each precomposed character the face maps whose decomposition the characters hold (the shaper
+    /// composes "e" and a combining acute to "é"). Characters the face cannot draw add nothing; .notdef is not included.
+    /// </summary>
+    /// <param name="face">The face.</param>
+    /// <param name="codePoints">The characters, as Unicode code points; duplicates are fine.</param>
+    /// <returns>The glyphs, in ascending order, ready for <see cref="Subset"/>.</returns>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset-text"/>
+    /// </example>
+    public static IReadOnlyList<ushort> GlyphsFor(Typeface face, IEnumerable<int> codePoints)
+    {
+        ArgumentNullException.ThrowIfNull(face);
+        ArgumentNullException.ThrowIfNull(codePoints);
+        var codes = new HashSet<int>();
+        foreach (int code in codePoints)
+        {
+            if (codes.Add(code) && !Maps(face, code))
+            {
+                List<int> parts = [];
+                if (Decomposes(face, code, parts))
+                {
+                    codes.UnionWith(parts);
+                }
+            }
+        }
+
+        // Compose to a fixed point: a two-step composition such as U+0390 needs U+03CA, itself a composition.
+        ReadOnlySpan<int> table = UnicodeTables.Compositions;
+        bool grew = true;
+        while (grew)
+        {
+            grew = false;
+            for (int i = 0; i + 2 < table.Length; i += 3)
+            {
+                if (!codes.Contains(table[i + 2]) && codes.Contains(table[i]) && codes.Contains(table[i + 1]) && face.TryGetGlyph(table[i + 2], out ushort composed) && composed != 0)
+                {
+                    codes.Add(table[i + 2]);
+                    grew = true;
+                }
+            }
+        }
+
+        var glyphs = new SortedSet<ushort>();
+        foreach (int code in codes)
+        {
+            if (face.TryGetGlyph(code, out ushort glyph) && glyph != 0)
+            {
+                glyphs.Add(glyph);
+            }
+        }
+
+        return [.. glyphs];
+    }
+
+    private static bool Maps(Typeface face, int code) => face.TryGetGlyph(code, out ushort glyph) && glyph != 0;
+
+    // As the shaper decomposes: only when the mark maps and the base maps or decomposes in turn, else the character stays .notdef.
+    private static bool Decomposes(Typeface face, int code, List<int> parts)
+    {
+        if (!NormalizeContext.DecomposeUnicode(code, out int a, out int b) || (b != 0 && !Maps(face, b)))
+        {
+            return false;
+        }
+
+        if (!Maps(face, a) && !Decomposes(face, a, parts))
+        {
+            return false;
+        }
+
+        parts.Add(a);
+        if (b != 0)
+        {
+            parts.Add(b);
+        }
+
+        return true;
+    }
+
     /// <summary>Writes a subset of a face.</summary>
     /// <param name="face">The face.</param>
     /// <param name="glyphs">The glyphs to keep; duplicates are fine.</param>
@@ -189,12 +282,50 @@ public static class FontSubsetter
 
         if (options.LayoutClosure)
         {
+            // The shaper puts a dotted circle before a mark that starts a run, so the subset keeps it to shape as the face does.
+            if (face.TryGetGlyph(0x25CC, out ushort dottedCircle))
+            {
+                wanted.Add(dottedCircle);
+            }
+
             wanted.UnionWith(face.Layout.GetClosure(wanted));
+            if (face.Math is { } math && AddMathGlyphs(math, wanted, face.GlyphCount))
+            {
+                wanted.UnionWith(face.Layout.GetClosure(wanted));
+            }
         }
 
         return format == SubsetFormat.TrueType
             ? TrueTypeSubsetter.Subset(face, wanted, options)
             : CffSubsetter.Subset(face, wanted, options, format);
+    }
+
+    /// <summary>Adds the larger variants and assembly parts MATH gives the kept glyphs; true when any were added.</summary>
+    private static bool AddMathGlyphs(TypefaceMath math, SortedSet<ushort> wanted, int glyphCount)
+    {
+        var added = new List<ushort>();
+        foreach (ushort glyph in wanted)
+        {
+            foreach (MathDirection direction in (ReadOnlySpan<MathDirection>)[MathDirection.Vertical, MathDirection.Horizontal])
+            {
+                foreach (MathGlyphVariant variant in math.GetVariants(glyph, direction))
+                {
+                    added.Add(variant.Glyph);
+                }
+
+                if (math.GetAssembly(glyph, direction) is { } assembly)
+                {
+                    foreach (MathGlyphPart part in assembly.Parts)
+                    {
+                        added.Add(part.Glyph);
+                    }
+                }
+            }
+        }
+
+        int before = wanted.Count;
+        wanted.UnionWith(added.Where(g => g < glyphCount));
+        return wanted.Count > before;
     }
 
     /// <summary>Gives the kept glyphs their new ids: dense in ascending old order, or the old ids with gaps.</summary>

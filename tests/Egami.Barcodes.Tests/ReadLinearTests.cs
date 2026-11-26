@@ -24,6 +24,14 @@ public class ReadLinearTests
         { "upce", 0, 0 },
         { "ean8", 90, 0 },
         { "upca", 180, 0.1f },
+        { "code93", 0, 0 },
+        { "code93", 180, 0.1f },
+        { "code93", 90, 0.15f },
+        { "code93-full-ascii", 3, 0 },
+        { "codabar", 0, 0 },
+        { "codabar", 180, 0.1f },
+        { "codabar", 270, 0.15f },
+        { "codabar-wide3", 4, 0 },
     };
 
     [Theory]
@@ -78,6 +86,10 @@ public class ReadLinearTests
         "ean13" => (Barcode.Ean13("590123412345"), "5901234123457"),
         "code128" => (Barcode.Code128("Egami-128"), "Egami-128"),
         "code39" => (Barcode.Code39("CODE-39"), "CODE-39"),
+        "code93" => (Barcode.Code93("CODE-93"), "CODE-93"),
+        "code93-full-ascii" => (Barcode.Code93("Egami 93!"), "Egami 93!"),
+        "codabar" => (Barcode.Codabar("40156", new CodabarOptions { Start = 'B', Stop = 'D' }), "B40156D"),
+        "codabar-wide3" => (Barcode.Codabar("A12-34$B", new CodabarOptions { WideRatio = 3, CheckDigit = true }), Barcode.Codabar("A12-34$B", new CodabarOptions { CheckDigit = true }).HumanReadableText!),
         "itf14" => (Barcode.Itf14("1540014128876"), "15400141288763"),
         "upce" => (Barcode.UpcE("123456"), "01234565"),
         "ean8" => (Barcode.Ean8("9638507"), "96385074"),

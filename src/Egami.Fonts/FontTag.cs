@@ -78,6 +78,7 @@ internal static class Tags
     public static readonly FontTag Hvar = new("HVAR");
     public static readonly FontTag Mvar = new("MVAR");
     public static readonly FontTag Gdef = new("GDEF");
+    public static readonly FontTag Math = new("MATH");
     public static readonly FontTag Stat = new("STAT");
     public static readonly FontTag Cvar = new("cvar");
     public static readonly FontTag Cvt = new("cvt ");

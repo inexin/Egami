@@ -29,6 +29,7 @@ and no `Configuration`.
 - `metafile.Rasterize<TPixel>(MetafileRenderOptions)`: a raster at a `Dpi`, or a `Width` or `Height`, over a `Background`.
 - `metafile.Draw(canvas, rect)`: stretched to a box on any canvas, raster or PDF page.
 - `MetafileRenderOptions.Fonts`: the fonts its text is set in.
+- `new EmfCanvas(stream, width, height, EmfWriteOptions)`: a canvas that writes an EMF (dual EMF+ by default) when disposed.
 
 ## Samples
 
@@ -60,6 +61,29 @@ canvas.Clear(new RgbaF32(1, 1, 1, 1));
 picture.Draw(canvas, new RectF(50, 50, 300, 200));
 ```
 
+Write an EMF:
+
+```csharp
+// A dual EMF+ file at 96 DPI, 300 by 200 pixels: Office and GDI+ play the EMF+ records, older programs the GDI ones.
+// Text is written as text (the font's name, glyph indices and positions) rather than outlines.
+Font font = new(Typeface.FromFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSans-Regular.ttf")), 16);
+using (FileStream stream = File.Create(output))
+using (EmfCanvas emf = new(stream, 300, 200, new EmfWriteOptions { Description = "Sales chart", Text = EmfText.Glyphs }))
+{
+    // A linear gradient is an EMF+ gradient brush, and GDI gradient fills in the GDI copy.
+    emf.FillRect(new RectF(20, 20, 260, 160), new LinearGradient(new Vector2(0, 20), new Vector2(0, 180), new RgbaF32(1, 1, 1, 1), new RgbaF32(0.86f, 0.91f, 0.96f, 1)));
+    emf.DrawLine(new Vector2(40, 160), new Vector2(260, 60), new Stroke(3) { Cap = LineCap.Round }, new Rgba8(0, 102, 204, 255));
+    emf.FillOval(new RectF(250, 50, 20, 20), new Rgba8(204, 51, 0, 255));
+    emf.DrawText("Sales", new Vector2(30, 45), font, new SolidPaint(new Rgba8(30, 30, 30, 255)));
+    foreach (EgamiDiagnostic warning in emf.Warnings)
+    {
+        Console.WriteLine(warning.Message); // anything drawn as an image instead
+    }
+}
+
+Metafile written = Metafile.Load(output);
+```
+
 Fonts that are not installed:
 
 ```csharp
@@ -82,6 +106,7 @@ using Raster<Rgba8> image = Metafile.Load(path).Rasterize<Rgba8>(new MetafileRen
 - Rendering on a server and getting the wrong fonts. Text uses the installed fonts by default, and metafiles name Arial, Calibri
   and Times New Roman, which Linux machines lack: add Egami.Fonts.Substitutes as in the sample.
 - Leaving the background transparent and saving JPEG. Set `Background` when the output has no alpha.
+- Forgetting to dispose `EmfCanvas`: the file is written only then.
 - Rasterizing a metafile to put it into a PDF or SVG. `Draw` it on that canvas instead, so it stays vector.
 
 ## More

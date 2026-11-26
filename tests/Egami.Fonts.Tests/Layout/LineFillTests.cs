@@ -9,9 +9,9 @@ public sealed class LineFillTests(ITestOutputHelper output)
     public static TheoryData<string> CorpusCases()
     {
         var data = new TheoryData<string>();
-        // Chromium breaks the "thai" paragraph with its dictionary, which Egami has none of (2.8.2 question 5); "thai-words" is
-        // the same text with a zero width space at each of Chromium's word boundaries.
-        foreach (LayoutReferences.Case c in LayoutReferences.Load("corpus").Cases.Where(c => c.Name != "thai"))
+        // "thai", "lao", "khmer" and "myanmar" break with the word dictionaries (2.8.5); "thai-words" is the Thai text with a
+        // zero width space at each of Chromium's word boundaries.
+        foreach (LayoutReferences.Case c in LayoutReferences.Load("corpus").Cases)
         {
             data.Add(c.Name);
         }
@@ -35,6 +35,16 @@ public sealed class LineFillTests(ITestOutputHelper output)
         // Blink's own table for ASCII line breaks never breaks after a slash before a letter, as in URLs; UAX #14 does.
         ("url", 120),
         ("url", 200),
+
+        // Chromium's ICU breaks Lao with ICU 69's smaller dictionary and Khmer with an abridged one, so it splits compounds the
+        // release-79.1 lists Egami ships keep whole (LineBreakTests.KnownDictionaryDifferences).
+        ("lao", 80),
+        ("lao", 140),
+        ("lao", 220),
+        ("lao", 340),
+        ("lao", 600),
+        ("khmer", 80),
+        ("khmer", 220),
 
         // Egami adds no letter spacing inside cursive scripts (2.8.2 question 11, CSS Text 3); Chromium spaces Arabic letters.
         ("letter-spacing-arabic", 200),
@@ -153,7 +163,7 @@ public sealed class LineFillTests(ITestOutputHelper output)
             {
                 foreach (TextLine line in paragraph.Layout(reference.Width ?? float.PositiveInfinity).Lines)
                 {
-                    unsafeEnds += line.End < c.Text.Length && paragraph.Measures.Unsafe[line.End] ? 1 : 0;
+                    unsafeEnds += line.End < c.Text.Length && (paragraph.Measures.Unsafe[line.End] & AdvanceTable.UnsafeToBreak) != 0 ? 1 : 0;
                 }
             }
         }

@@ -1,11 +1,11 @@
-// Written from the System.Drawing reference surface: the constructors that record or take Windows handles, all throwing.
+// Written from the System.Drawing reference surface: the constructors that record, and those that take Windows handles, which throw.
 using System.ComponentModel;
 
 using Egami.SystemDrawing.Internal;
 
 namespace Egami.SystemDrawing.Imaging;
 
-/// <summary>The recording and handle members, which throw.</summary>
+/// <summary>The recording constructors, and the handle members, which throw.</summary>
 public sealed partial class Metafile
 {
     /// <summary>Not supported: Windows metafile handles. Always throws.</summary>
@@ -29,291 +29,394 @@ public sealed partial class Metafile
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into memory.</summary>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(IntPtr referenceHdc, Rectangle frameRect)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, null, 0, frameRect, MetafileFrameUnit.GdiCompatible, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="emfType">The kind of EMF.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into memory. Without a frame, the frame is the bounds of what is drawn.</summary>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="emfType">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(IntPtr referenceHdc, EmfType emfType)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, null, 0, null, MetafileFrameUnit.GdiCompatible, emfType, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into memory.</summary>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(IntPtr referenceHdc, RectangleF frameRect)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, null, 0, frameRect, MetafileFrameUnit.GdiCompatible, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into memory.</summary>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(IntPtr referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, null, 0, frameRect, frameUnit, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into memory.</summary>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="type">The kind of EMF.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(IntPtr referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, null, 0, frameRect, frameUnit, type, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into memory.</summary>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="type">The kind of EMF.</param>
-    /// <param name="description">The description.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <param name="description">The description stored in the header, or null.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(IntPtr referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, null, 0, frameRect, frameUnit, type, description))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into memory.</summary>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(IntPtr referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, null, 0, frameRect, frameUnit, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into memory.</summary>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="type">The kind of EMF.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(IntPtr referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, null, 0, frameRect, frameUnit, type, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file. Without a frame, the frame is the bounds of what is drawn.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, null, MetafileFrameUnit.GdiCompatible, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="type">The kind of EMF.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file. Without a frame, the frame is the bounds of what is drawn.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc, EmfType type)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, null, MetafileFrameUnit.GdiCompatible, type, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc, RectangleF frameRect)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, frameRect, MetafileFrameUnit.GdiCompatible, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, frameRect, frameUnit, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="type">The kind of EMF.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, frameRect, frameUnit, type, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="desc">The description.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="desc">The description stored in the header, or null.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, string desc)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, frameRect, frameUnit, EmfType.EmfPlusDual, desc))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="type">The kind of EMF.</param>
-    /// <param name="description">The description.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <param name="description">The description stored in the header, or null.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, frameRect, frameUnit, type, description))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc, Rectangle frameRect)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, frameRect, MetafileFrameUnit.GdiCompatible, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, frameRect, frameUnit, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="type">The kind of EMF.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, frameRect, frameUnit, type, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="description">The description.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="description">The description stored in the header, or null.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, string description)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, frameRect, frameUnit, EmfType.EmfPlusDual, description))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="stream">The stream to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a stream. Without a frame, the frame is the bounds of what is drawn.</summary>
+    /// <param name="stream">The stream to write to, from its position when the recording Graphics is disposed; left open.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(Stream stream, IntPtr referenceHdc)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, stream, 2, null, MetafileFrameUnit.GdiCompatible, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="stream">The stream to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="type">The kind of EMF.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a stream. Without a frame, the frame is the bounds of what is drawn.</summary>
+    /// <param name="stream">The stream to write to, from its position when the recording Graphics is disposed; left open.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(Stream stream, IntPtr referenceHdc, EmfType type)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, stream, 2, null, MetafileFrameUnit.GdiCompatible, type, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="stream">The stream to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a stream.</summary>
+    /// <param name="stream">The stream to write to, from its position when the recording Graphics is disposed; left open.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(Stream stream, IntPtr referenceHdc, RectangleF frameRect)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, stream, 2, frameRect, MetafileFrameUnit.GdiCompatible, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="stream">The stream to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a stream.</summary>
+    /// <param name="stream">The stream to write to, from its position when the recording Graphics is disposed; left open.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(Stream stream, IntPtr referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, stream, 2, frameRect, frameUnit, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="stream">The stream to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a stream.</summary>
+    /// <param name="stream">The stream to write to, from its position when the recording Graphics is disposed; left open.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="type">The kind of EMF.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(Stream stream, IntPtr referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, stream, 2, frameRect, frameUnit, type, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="stream">The stream to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a stream.</summary>
+    /// <param name="stream">The stream to write to, from its position when the recording Graphics is disposed; left open.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(Stream stream, IntPtr referenceHdc, Rectangle frameRect)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, stream, 2, frameRect, MetafileFrameUnit.GdiCompatible, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="stream">The stream to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a stream.</summary>
+    /// <param name="stream">The stream to write to, from its position when the recording Graphics is disposed; left open.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(Stream stream, IntPtr referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, stream, 2, frameRect, frameUnit, EmfType.EmfPlusDual, null))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="stream">The stream to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a stream.</summary>
+    /// <param name="stream">The stream to write to, from its position when the recording Graphics is disposed; left open.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="type">The kind of EMF.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(Stream stream, IntPtr referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, stream, 2, frameRect, frameUnit, type, null))
     {
     }
 
@@ -327,86 +430,111 @@ public sealed partial class Metafile
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="emfType">The kind of EMF.</param>
-    /// <param name="description">The description.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into memory. Without a frame, the frame is the bounds of what is drawn.</summary>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="emfType">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <param name="description">The description stored in the header, or null.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(IntPtr referenceHdc, EmfType emfType, string description)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, null, 0, null, MetafileFrameUnit.GdiCompatible, emfType, description))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into memory.</summary>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="type">The kind of EMF.</param>
-    /// <param name="desc">The description.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <param name="desc">The description stored in the header, or null.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(IntPtr referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type, string desc)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, null, 0, frameRect, frameUnit, type, desc))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="type">The kind of EMF.</param>
-    /// <param name="description">The description.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file. Without a frame, the frame is the bounds of what is drawn.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <param name="description">The description stored in the header, or null.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc, EmfType type, string description)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, null, MetafileFrameUnit.GdiCompatible, type, description))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="fileName">The file to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a file.</summary>
+    /// <param name="fileName">The file to write, created at once and written when the recording Graphics is disposed.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="type">The kind of EMF.</param>
-    /// <param name="description">The description.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <param name="description">The description stored in the header, or null.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(string fileName, IntPtr referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(fileName, null, 1, frameRect, frameUnit, type, description))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="stream">The stream to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="type">The kind of EMF.</param>
-    /// <param name="description">The description.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a stream. Without a frame, the frame is the bounds of what is drawn.</summary>
+    /// <param name="stream">The stream to write to, from its position when the recording Graphics is disposed; left open.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <param name="description">The description stored in the header, or null.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(Stream stream, IntPtr referenceHdc, EmfType type, string description)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, stream, 2, null, MetafileFrameUnit.GdiCompatible, type, description))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="stream">The stream to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a stream.</summary>
+    /// <param name="stream">The stream to write to, from its position when the recording Graphics is disposed; left open.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="type">The kind of EMF.</param>
-    /// <param name="description">The description.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <param name="description">The description stored in the header, or null.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(Stream stream, IntPtr referenceHdc, RectangleF frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, stream, 2, frameRect, frameUnit, type, description))
     {
     }
 
-    /// <summary>Not supported: Egami does not record metafiles. Always throws.</summary>
-    /// <param name="stream">The stream to record to.</param>
-    /// <param name="referenceHdc">The reference device context.</param>
-    /// <param name="frameRect">The frame.</param>
+    /// <summary>Initializes a new instance of the <see cref="Metafile"/> class that records into a stream.</summary>
+    /// <param name="stream">The stream to write to, from its position when the recording Graphics is disposed; left open.</param>
+    /// <param name="referenceHdc">Ignored: Egami records for a 96 DPI screen, whatever device context is given, <see cref="IntPtr.Zero"/> included.</param>
+    /// <param name="frameRect">The frame, the part of the drawing the metafile shows; in <see cref="MetafileFrameUnit.GdiCompatible"/> units, 0.01 mm, unless a unit is given.</param>
     /// <param name="frameUnit">The frame's unit.</param>
-    /// <param name="type">The kind of EMF.</param>
-    /// <param name="description">The description.</param>
-    [Obsolete(Internal.Diagnostics.RecordingMessage, DiagnosticId = Internal.Diagnostics.Recording, UrlFormat = Internal.Diagnostics.Url)]
+    /// <param name="type">The kind of EMF: GDI records only, EMF+ records only, or both.</param>
+    /// <param name="description">The description stored in the header, or null.</param>
+    /// <exception cref="ArgumentException">The EMF type or frame unit is not one, as GDI+ reports it.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The frame is negative, or empty in a unit other than GdiCompatible, as GDI+ reports it.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public Metafile(Stream stream, IntPtr referenceHdc, Rectangle frameRect, MetafileFrameUnit frameUnit, EmfType type, string description)
-        : this(Refuse(GdiErrors.Recording()))
+        : this(MetafileRecording.Create(null, stream, 2, frameRect, frameUnit, type, description))
     {
     }
 

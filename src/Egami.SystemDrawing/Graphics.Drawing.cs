@@ -45,12 +45,15 @@ public sealed partial class Graphics
     /// <summary>Device pixels back to world coordinates.</summary>
     private Matrix3x2 ToWorld => Matrix3x2.Invert(ImageTransform, out Matrix3x2 back) ? back : Matrix3x2.Identity;
 
-    /// <summary>The bitmap's area, a pixel wider each way, in world coordinates as shapes are mapped.</summary>
-    private Path DeviceInWorld => Path.Rect(new RectF(-1, -1, _image.Width + 2, _image.Height + 2))
+    /// <summary>The bitmap's or recording canvas's area, a pixel wider each way, in world coordinates as shapes are mapped.</summary>
+    private Path DeviceInWorld => Path.Rect(new RectF(-1, -1, DeviceSize.Width + 2, DeviceSize.Height + 2))
         .Transform(Matrix3x2.Invert(ShapeTransform, out Matrix3x2 back) ? back : Matrix3x2.Identity);
 
-    /// <summary>The bitmap's area in device pixels.</summary>
-    private Path Device => Path.Rect(new RectF(0, 0, _image.Width, _image.Height));
+    /// <summary>The bitmap's area in device pixels, or null for a metafile, which GDI+ does not bound.</summary>
+    private Path? Device => _image is null ? null : Path.Rect(new RectF(0, 0, _image.Width, _image.Height));
+
+    /// <summary>The size of the bitmap, or of the canvas a metafile records on.</summary>
+    private SizeF DeviceSize => _image is null ? _recording!.Size : new SizeF(_image.Width, _image.Height);
 
     /// <summary>Makes the clip another graphics' clip.</summary>
     /// <param name="g">The other graphics.</param>
@@ -188,7 +191,8 @@ public sealed partial class Graphics
         // The pixel the point rounds to, as GDI+ tests it.
         Vector2 d = Vector2.Transform(new Vector2(point.X, point.Y), ImageTransform);
         Vector2 p = new(MathF.Floor(d.X + 0.5f) + 0.5f, MathF.Floor(d.Y + 0.5f) + 0.5f);
-        return p.X >= 0 && p.Y >= 0 && p.X < _image.Width && p.Y < _image.Height && (EffectiveClip is not Path clip || clip.Contains(p));
+        bool inside = _image is null || (p.X >= 0 && p.Y >= 0 && p.X < _image.Width && p.Y < _image.Height);
+        return inside && (EffectiveClip is not Path clip || clip.Contains(p));
     }
 
     /// <summary>Gets whether any of a rectangle is inside the bitmap and the clip.</summary>
@@ -323,6 +327,11 @@ public sealed partial class Graphics
     {
         ArgumentNullException.ThrowIfNull(image);
         Alive();
+        if (Self(image))
+        {
+            return;
+        }
+
         if (image is not (Bitmap or Metafile))
         {
             throw new NotSupportedException("Egami.SystemDrawing draws bitmaps and metafiles.");
@@ -361,10 +370,17 @@ public sealed partial class Graphics
             return;
         }
 
-        // 32-bit and 24-bit bitmaps are sampled in place, no copy, unless attributes change their colors or the bitmap is the one drawn on.
         Bitmap bitmap = (Bitmap)image;
-        bool view = attributes is null && !ReferenceEquals(bitmap, _image) && bitmap.PixelFormat is PixelFormat.Format32bppArgb or PixelFormat.Format32bppPArgb or PixelFormat.Format24bppRgb;
-        using Raster pixels = view ? bitmap.AsRaster() : bitmap.ToRgba8();
+        if (_recording is not null && attributes is not { WrapSet: true })
+        {
+            RecordImage(bitmap, src, full, bounds, attributes);
+            return;
+        }
+
+        // 32-bit and 24-bit bitmaps are sampled in place, no copy, unless attributes change their colors or the bitmap is the one drawn on.
+        // A recording keeps the pixels as they are now, for as long as it may draw them again (a fallback replays what came before).
+        bool view = attributes is null && _recording is null && !ReferenceEquals(bitmap, _image) && bitmap.PixelFormat is PixelFormat.Format32bppArgb or PixelFormat.Format32bppPArgb or PixelFormat.Format24bppRgb;
+        Raster pixels = view ? bitmap.AsRaster() : bitmap.ToRgba8();
         Raster drawn = attributes?.State.Apply((Raster<Rgba8>)pixels, GdiPlusImageAttributes.TypeBitmap) ?? pixels;
         try
         {
@@ -392,11 +408,33 @@ public sealed partial class Graphics
         }
         finally
         {
-            if (!ReferenceEquals(drawn, pixels))
+            if (_recording is null)
             {
-                drawn.Dispose();
+                if (!ReferenceEquals(drawn, pixels))
+                {
+                    drawn.Dispose();
+                }
+
+                pixels.Dispose();
             }
         }
+    }
+
+    /// <summary>
+    /// Records a bitmap as an image record (EMF+ DrawImagePoints, GDI AlphaBlend), as GDI+ records DrawImage: a copy of its pixels
+    /// as they are now, its source rectangle on the destination, sampled with the interpolation mode.
+    /// </summary>
+    private void RecordImage(Bitmap bitmap, RectF src, Matrix3x2 full, RectF bounds, ImageAttributes? attributes)
+    {
+        Raster<Rgba8> pixels = bitmap.ToRgba8();
+        Raster drawn = attributes?.State.Apply(pixels, GdiPlusImageAttributes.TypeBitmap) ?? pixels;
+        SamplingOptions sampling = new() { Filter = Filter };
+        SolidPaint paint = new(new Rgba8(0, 0, 0, 255)) { Antialias = Smooth, BlendMode = Blend };
+        Draw(bounds, canvas =>
+        {
+            canvas.Concat(full);
+            canvas.DrawImage(drawn, src, src, sampling, paint);
+        });
     }
 
     /// <summary>
@@ -428,6 +466,11 @@ public sealed partial class Graphics
     internal void DrawImageAt(Image image, float x, float y, RectangleF? source = null, GraphicsUnit unit = GraphicsUnit.Pixel)
     {
         ArgumentNullException.ThrowIfNull(image);
+        if (Self(image))
+        {
+            return;
+        }
+
         RectangleF src = source ?? WholeSource(image);
         float sx = SourceScale(unit, image.HorizontalResolution), sy = SourceScale(unit, image.VerticalResolution);
         float page = PageFactor;
@@ -439,6 +482,11 @@ public sealed partial class Graphics
     internal void DrawImageRect(Image image, RectangleF dest, RectangleF? source = null, GraphicsUnit unit = GraphicsUnit.Pixel, ImageAttributes? attributes = null, DrawImageAbort? abort = null, IntPtr data = default)
     {
         ArgumentNullException.ThrowIfNull(image);
+        if (Self(image))
+        {
+            return;
+        }
+
         DrawImageCore(image, new PointF(dest.X, dest.Y), new PointF(dest.Right, dest.Y), new PointF(dest.X, dest.Bottom), source ?? WholeSource(image), unit, attributes, abort, data);
     }
 
@@ -451,6 +499,11 @@ public sealed partial class Graphics
             throw GdiErrors.InvalidParameter();
         }
 
+        if (Self(image))
+        {
+            return;
+        }
+
         DrawImageCore(image, points[0], points[1], points[2], source ?? WholeSource(image), unit, attributes, abort, data);
     }
 
@@ -459,6 +512,12 @@ public sealed partial class Graphics
     /// where it lies, which need not start at (0, 0).
     /// </summary>
     private static RectangleF WholeSource(Image image) => image is Metafile metafile ? metafile.FrameBounds : new RectangleF(0, 0, image.Width, image.Height);
+
+    /// <summary>
+    /// Whether the image is the metafile this Graphics records: it has nothing in it yet, so drawing it draws nothing, where GDI+
+    /// records a picture of nothing and does not fail.
+    /// </summary>
+    private bool Self(Image image) => _recorded is not null && ReferenceEquals(image, _recorded);
 
     /// <summary>Pixels per source unit at an image's resolution.</summary>
     private static float SourceScale(GraphicsUnit unit, float dpi) => unit switch

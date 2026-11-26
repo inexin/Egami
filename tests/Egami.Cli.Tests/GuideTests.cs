@@ -19,6 +19,9 @@ public sealed partial class GuideTests
         tool.Copy("jpeg/duck-420.jpg", "photos/a.jpg");
         tool.Copy("jpeg/duck-420.jpg", "photos/b.jpg");
         tool.Copy("pngsuite/basn6a08.png", "logo.png");
+        tool.Copy("../fonts/NotoSans-Regular.ttf", "fonts/NotoSans-Regular.ttf");
+        Directory.CreateDirectory(tool.PathOf("pages"));
+        File.WriteAllText(tool.PathOf("pages/index.html"), "<html><body><h1>Fonts for the web</h1></body></html>");
         string markdown = File.ReadAllText(Guide).ReplaceLineEndings("\n");
         int count = 0;
         foreach (string line in CommandLines(markdown))

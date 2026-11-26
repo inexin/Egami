@@ -97,6 +97,10 @@ public sealed class WordDictionary
     /// <returns>The number of lengths written.</returns>
     internal int MatchPrefixes(ReadOnlySpan<char> text, Span<int> lengths) => Graph.MatchPrefixes(text, lengths);
 
+    /// <summary>Walks the words <paramref name="text"/> starts with, as the segmenter does; see
+    /// <see cref="WordGraph.Match"/>.</summary>
+    internal int Match(ReadOnlySpan<char> text, Span<int> lengths, out int prefix) => Graph.Match(text, lengths, out prefix);
+
     /// <summary>Lists the words, in ordinal order.</summary>
     internal IEnumerable<string> Words() => Graph.Words();
 

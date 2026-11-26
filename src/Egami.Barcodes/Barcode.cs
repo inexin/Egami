@@ -33,7 +33,7 @@ public sealed partial class Barcode
 
     /// <summary>
     /// Gets the width of the clear margin readers need around the symbol, in modules: 4 for QR, 1 for Data Matrix, 2 for PDF417
-    /// and 0 for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39 and ITF, 11 for EAN-13, 7 for EAN-8 and 9 for
+    /// and 0 for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7 for EAN-8 and 9 for
     /// UPC-A and UPC-E.
     /// </summary>
     public int QuietZone { get; }
@@ -57,16 +57,17 @@ public sealed partial class Barcode
         int quietZone = format switch
         {
             BarcodeFormat.Qr => 4,
+            BarcodeFormat.MicroQr => 2,
             BarcodeFormat.DataMatrix => 1,
             BarcodeFormat.Pdf417 => 2,
             BarcodeFormat.Aztec => 0,
-            BarcodeFormat.Code128 or BarcodeFormat.Code39 or BarcodeFormat.Itf => 10,
+            BarcodeFormat.Code128 or BarcodeFormat.Code39 or BarcodeFormat.Itf or BarcodeFormat.Code93 or BarcodeFormat.Codabar => 10,
             BarcodeFormat.Ean13 => 11,
             BarcodeFormat.Ean8 => 7,
             BarcodeFormat.UpcA or BarcodeFormat.UpcE => 9,
             _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
         };
-        if (modules.IsLinear != format is not (BarcodeFormat.Qr or BarcodeFormat.DataMatrix or BarcodeFormat.Pdf417 or BarcodeFormat.Aztec))
+        if (modules.IsLinear != format is not (BarcodeFormat.Qr or BarcodeFormat.MicroQr or BarcodeFormat.DataMatrix or BarcodeFormat.Pdf417 or BarcodeFormat.Aztec))
         {
             throw new ArgumentException(modules.IsLinear ? $"{format} is a 2D format; the modules are linear." : $"{format} is a linear format; the modules are a 2D grid.", nameof(modules));
         }

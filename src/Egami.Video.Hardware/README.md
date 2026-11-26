@@ -22,8 +22,9 @@ Egami.Video's software codecs stay the default: hardware is used only when an ap
 ## Native code
 
 This is Egami's one package that calls native code, and only the Vulkan loader that the GPU driver installs (`vulkan-1.dll` on
-Windows, `libvulkan.so.1` on Linux). It ships no native binary and has no third-party dependencies: its Vulkan bindings are
-generated from the Khronos registry (Apache-2.0 or MIT). It is trimming and Native AOT clean.
+Windows, `libvulkan.so.1` on Linux). It ships no native binary. Its Vulkan bindings come from
+[Vortice.Vulkan](https://github.com/amerkoleci/Vortice.Vulkan) (MIT, managed, no dependencies of its own), used internally:
+none of its types is in this package's API. It is trimming and Native AOT clean.
 
 ## Patents
 

@@ -7,8 +7,9 @@ Placeholder fields (each at a U+FFFC in the text) and "queries" what to record b
 Egami's member names; tools/layoutref/layout.py maps them to CSS, and the tests map them to ParagraphStyle.
 
 Groups:
-  corpus    one paragraph per script at five widths: line breaks, line boxes and glyph positions; "thai" breaks with
-            Chromium's dictionary, "thai-words" has a zero width space at each of its word boundaries
+  corpus    one paragraph per script at five widths: line breaks, line boxes and glyph positions; "thai", "lao", "khmer" and
+            "myanmar" break with Chromium's dictionaries (2.8.5), "thai-words" has a zero width space at each of Thai's word
+            boundaries
   features  one or more samples per layout feature (question 23's "each have cases")
 """
 import os
@@ -19,6 +20,9 @@ ARABIC = ["NotoSans-Regular.ttf", "shaping/NotoSansArabic-Regular.ttf"]
 HEBREW = ["NotoSans-Regular.ttf", "shaping/NotoSansHebrew-Regular.ttf"]
 DEVANAGARI = ["NotoSans-Regular.ttf", "shaping/NotoSansDevanagari-Regular.ttf"]
 THAI = ["NotoSans-Regular.ttf", "shaping/NotoSansThai-Regular.ttf"]
+LAO = ["NotoSans-Regular.ttf", "shaping/NotoSansLao-Regular.ttf"]
+KHMER = ["NotoSans-Regular.ttf", "shaping/NotoSansKhmer-Regular.ttf"]
+MYANMAR = ["NotoSans-Regular.ttf", "shaping/NotoSansMyanmar-Regular.ttf"]
 CJK = ["derived/NotoSansCJK-layout-subset.otf"]
 BIDI = ["NotoSans-Regular.ttf", "shaping/NotoSansHebrew-Regular.ttf", "shaping/NotoSansArabic-Regular.ttf"]
 EMOJI = ["NotoSans-Regular.ttf", "derived/Twemoji-COLRv0-subset.ttf"]
@@ -81,6 +85,9 @@ def corpus(root):
         case("devanagari", DEVANAGARI, udhr(root, "hindi")),
         case("thai", THAI, udhr(root, "thai")),
         case("thai-words", THAI, udhr(root, "thai"), segment="th"),
+        case("lao", LAO, udhr(root, "lao")),
+        case("khmer", KHMER, udhr(root, "khmer")),
+        case("myanmar", MYANMAR, udhr(root, "burmese")),
         case("chinese", CJK, udhr(root, "chinese")),
         case("japanese", CJK, udhr(root, "japanese")),
         case("korean", CJK, udhr(root, "korean"), style={"language": "ko"}),
@@ -97,6 +104,9 @@ def features(root):
         case("word-break-break-all", LATIN, english, widths=[90, 170], style={"wordBreak": "BreakAll"}),
         case("word-break-keep-all", CJK, KOREAN, widths=[90, 170], style={"wordBreak": "KeepAll", "language": "ko"}),
         case("word-break-keep-all-chinese", CJK, CHINESE, widths=[90, 170], style={"wordBreak": "KeepAll"}),
+        case("word-break-break-all-thai", THAI, udhr(root, "thai"), widths=[90, 170], style={"wordBreak": "BreakAll"}),
+        case("word-break-keep-all-thai", THAI, udhr(root, "thai"), widths=[90, 170], style={"wordBreak": "KeepAll"}),
+        case("line-break-strict-thai", THAI, udhr(root, "thai"), widths=[90, 170], style={"lineBreak": "Strict"}),
         case("overflow-wrap-normal", LATIN, LONG_WORD, widths=[120, 200]),
         case("overflow-wrap-anywhere", LATIN, LONG_WORD, widths=[120, 200], style={"overflowWrap": "Anywhere"}),
         case("overflow-wrap-break-word", LATIN, LONG_WORD, widths=[120, 200], style={"overflowWrap": "BreakWord"}),

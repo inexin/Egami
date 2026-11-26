@@ -95,14 +95,16 @@ jobs:
         run: |
           # Only build-time analyzers are allowed, plus the approved packages in docs/references.md: System.CommandLine and the
           # MCP SDK (ModelContextProtocol.Core, for egami mcp, with the three abstractions packages it brings) in the egami and
-          # egami-video tools (apps, not libraries). The tool's source generator runs at build time only and is never packed.
-          # Anything else would ship as a dependency.
+          # egami-video tools (apps, not libraries), and Vortice.Vulkan in Egami.Video.Hardware and the egami-video tool that uses
+          # it. The tool's source generator runs at build time only and is never packed. Anything else would ship as a dependency.
           allowed='Microsoft.CodeAnalysis.PublicApiAnalyzers'
           status=0
           for proj in $(find src -name '*.csproj'); do
             case "$proj" in
               src/Egami.Cli.Generators/*) continue ;;
-              src/Egami.Cli/*|src/Egami.Video.Cli/*) extra=$'System.CommandLine\nModelContextProtocol.Core\nMicrosoft.Extensions.AI.Abstractions\nMicrosoft.Extensions.DependencyInjection.Abstractions\nMicrosoft.Extensions.Logging.Abstractions' ;;
+              src/Egami.Video.Hardware/*) extra='Vortice.Vulkan' ;;
+              src/Egami.Cli/*) extra=$'System.CommandLine\nModelContextProtocol.Core\nMicrosoft.Extensions.AI.Abstractions\nMicrosoft.Extensions.DependencyInjection.Abstractions\nMicrosoft.Extensions.Logging.Abstractions' ;;
+              src/Egami.Video.Cli/*) extra=$'System.CommandLine\nModelContextProtocol.Core\nMicrosoft.Extensions.AI.Abstractions\nMicrosoft.Extensions.DependencyInjection.Abstractions\nMicrosoft.Extensions.Logging.Abstractions\nVortice.Vulkan' ;;
               *) extra='' ;;
             esac
             for pkg in $(dotnet list "$proj" package --include-transitive --format json \

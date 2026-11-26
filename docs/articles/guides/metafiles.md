@@ -73,6 +73,59 @@ sets another resolution.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#metafile-format)]
 
+## Writing EMF
+
+`EmfCanvas` is a `Canvas` that writes an EMF: anything drawn on it, by your code or by a `Picture`, becomes a metafile that
+Word, PowerPoint, Windows and Egami.Metafiles play. Disposing it writes the file to the stream, which stays open. Device
+units are pixels at `EmfWriteOptions.Dpi` (96 by default).
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#emf-canvas)]
+
+`EmfWriteOptions.Kind` picks what goes in the file: `EmfPlusDual` (the default) writes EMF+ records and a GDI copy of each
+drawing for programs without GDI+, `EmfPlusOnly` the EMF+ records alone and `Emf` the GDI records alone. `Compress` writes
+EMZ, `Description` the header's description.
+
+Paths, rectangles, rounded rectangles, ovals and points, every `Stroke` setting, transforms, save and restore, clips and
+aliased drawing are written as vectors; equal pens, brushes and paths are written once and shared. The GDI copy draws
+colors opaque, since GDI has no alpha.
+
+Paints are written as EMF+ brushes where one draws the same thing:
+
+- A `SolidPaint` is a color with its alpha. A `ColorMatrixPaint` or `BlendPaint` made only of solid paints is the color
+  Egami works out for it.
+- A `LinearGradient` is a linear gradient brush with its stops as preset colors (clamped, repeated or mirrored). When its
+  colors are opaque, the GDI copy draws it exactly too, with gradient fills clipped to the shape.
+- A `RadialGradient` is a path gradient brush on a circle around its center (clamped, repeated or mirrored).
+- An `ImagePaint` or `PicturePaint` is a texture brush that repeats, mirrors or draws one copy; a picture's tile is drawn by
+  Egami at the resolution, as Egami draws picture paints on a raster.
+- Gradients mixed in linear light, or between stops of different alpha, get extra stops mixed as Egami mixes them.
+- A stroke with any of these paints is written as its outline, filled.
+
+The GDI copy has no form for radial gradients, translucent gradients or textures, so it gets an image of those calls; the
+EMF+ part stays vector and there is no warning, except in a GDI-only file (`Kind = Emf`).
+
+A layer with only an opacity whose shapes cover no pixel in common is written as those shapes with the opacity in each paint.
+Sweep and two-point conical gradients, gradients mixed in other spaces or transparent past their ends, clamped image
+paints, other blend modes, blurs, meshes, and any other layer with opacity, blending, filters or masks are drawn by Egami
+as an image at `FallbackScale` times the resolution and placed in the file, with one `Metafile.FallbackImage` warning in
+`Warnings` for each kind. A call that blends with what is beneath it (a blend mode, a backdrop filter) is drawn over
+everything drawn before it, and its image replaces those pixels.
+
+Images are written as EMF+ images drawn with their source rectangle and sampling, and in the GDI copy as `AlphaBlend`
+bitmaps of the pixels they use. A PNG, or a baseline or progressive JPEG, drawn as an `EncodedImage` keeps its bytes as they
+are; other images are written as PNG. A paint's opacity is baked into the image. GDI cannot turn or mirror a bitmap, so a
+turned or mirrored image is an image of the call in the GDI copy. Lattices and atlases are drawn as their images, and
+pictures are played inline, so they stay vectors.
+
+Text is written as outlines by default, so it looks the same where the font is missing. With `EmfText.Glyphs`
+(`EmfWriteOptions.Text`) a glyph run is written as text: an EMF+ font with `DrawDriverString` (glyph indices and positions)
+and a GDI font with `ExtTextOutW` (glyph indices and advances), smaller, but drawn with wrong glyphs by a reader without
+the font. A run stays outlines when its face has no family name GDI can hold (31 characters), is synthesized, emboldened
+or a variable instance, when its glyphs are turned or scaled one by one, when the transform mirrors it, or when its paint
+is not one color. Color glyphs are drawn as their layers (COLR) or images (CBDT, sbix) in both modes.
+
+`Metafile.Load(...).Draw(emfCanvas)` writes any WMF, EMF or EMF+ file again as an EMF, which plays as the original does.
+
 ## What plays, and how close it is
 
 The GDI records of WMF and EMF play as GDI plays them: map modes, the world transform, pens and brushes (hatches and pattern

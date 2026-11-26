@@ -199,12 +199,34 @@ internal static class CffSubsetter
             localSubrs[fd] = local is null ? [] : Subrs(local.Value, localMaps[fd], i => new CharStringId(CharStringKind.Local, fd, i), usage, globalMap, localMaps[fd], cff, fd, renumber);
         }
 
-        // Strings: the original ones, plus Adobe and Identity for a font made CID-keyed.
+        // Strings: only those the kept dicts and glyph names use, renumbered (a name-keyed font's String INDEX holds every glyph's
+        // name, most of a small subset's CFF), plus Adobe and Identity for a font made CID-keyed.
         var strings = new List<byte[]>();
-        for (int i = 0; i < cff.Strings.Count; i++)
+        var sidMap = new Dictionary<int, int>();
+        int Sid(double old)
         {
-            strings.Add(cff.Strings[i].ToArray());
+            int sid = (int)old;
+            if (sid < CffStandard.StandardStringCount)
+            {
+                return sid;
+            }
+
+            if (!sidMap.TryGetValue(sid, out int now))
+            {
+                int item = sid - CffStandard.StandardStringCount;
+                now = CffStandard.StandardStringCount + strings.Count;
+                strings.Add(item < cff.Strings.Count ? cff.Strings[item].ToArray() : []);
+                sidMap[sid] = now;
+            }
+
+            return now;
         }
+
+        double[] WithSids(int op, double[] operands) => op switch
+        {
+            >= 0 and <= 4 or 1200 or 1221 or 1222 or CffFont.OpFontName when operands.Length == 1 => [Sid(operands[0])],
+            _ => operands,
+        };
 
         int adobeSid = -1, identitySid = -1;
         if (cid)
@@ -215,11 +237,37 @@ internal static class CffSubsetter
             strings.Add("Identity"u8.ToArray());
         }
 
+        var topCopied = new List<(int, double[])>();
+        foreach ((int op, double[] operands) in cff.Top.Entries)
+        {
+            if (!s_topReplaced.Contains(op))
+            {
+                topCopied.Add((op, WithSids(op, operands)));
+            }
+        }
+
+        var fdCopied = new List<(int, double[])>[fds.Length];
+        for (int i = 0; i < fds.Length; i++)
+        {
+            fdCopied[i] = [];
+            if (cff.Privates[fds[i]].FontDict is { } source)
+            {
+                foreach ((int op, double[] operands) in source.Entries)
+                {
+                    if (op != CffFont.OpPrivate)
+                    {
+                        fdCopied[i].Add((op, WithSids(op, operands)));
+                    }
+                }
+            }
+        }
+
+        byte[] charset = Charset(cff, oldIds, cid, Sid);
+
         byte[] nameIndex = CffEncoding.Index([System.Text.Encoding.Latin1.GetBytes((options.FontNamePrefix ?? string.Empty) + cff.Name)]);
         byte[] stringIndex = CffEncoding.Index(strings);
         byte[] globalIndex = CffEncoding.Index(globalSubrs);
         byte[] charStringIndex = CffEncoding.Index(charStrings);
-        byte[] charset = Charset(cff, oldIds, cid);
         byte[]? fdSelect = cid ? FdSelect(cff, oldIds, fdMap) : null;
 
         // Private DICTs, each followed by its local subroutines.
@@ -251,13 +299,7 @@ internal static class CffSubsetter
                 entries.Add((CffFont.OpRos, [adobeSid, identitySid, 0]));
             }
 
-            foreach ((int op, double[] operands) in cff.Top.Entries)
-            {
-                if (!s_topReplaced.Contains(op))
-                {
-                    entries.Add((op, operands));
-                }
-            }
+            entries.AddRange(topCopied);
 
             entries.Add((CffFont.OpCharset, [charsetAt]));
             entries.Add((CffFont.OpCharStrings, [charStringsAt]));
@@ -291,19 +333,7 @@ internal static class CffSubsetter
             int p = privateStart;
             for (int i = 0; i < fds.Length; i++)
             {
-                var entries = new List<(int, double[])>();
-                CffDict? source = cff.Privates[fds[i]].FontDict;
-                if (source is not null)
-                {
-                    foreach ((int op, double[] operands) in source.Entries)
-                    {
-                        if (op != CffFont.OpPrivate)
-                        {
-                            entries.Add((op, operands));
-                        }
-                    }
-                }
-
+                var entries = new List<(int, double[])>(fdCopied[i]);
                 entries.Add((CffFont.OpPrivate, [privates[i].Dict.Length, p]));
                 dicts.Add(CffEncoding.Dict(entries, s_offsets));
                 p += privates[i].Dict.Length + privates[i].Subrs.Length;
@@ -408,7 +438,7 @@ internal static class CffSubsetter
     }
 
 
-    private static byte[] Charset(CffFont cff, ushort[] oldIds, bool cid)
+    private static byte[] Charset(CffFont cff, ushort[] oldIds, bool cid, Func<double, int> sid)
     {
         var w = new ByteWriter();
         if (cid)
@@ -427,7 +457,7 @@ internal static class CffSubsetter
         w.U8(0);
         for (int i = 1; i < oldIds.Length; i++)
         {
-            w.U16(cff.Charset[oldIds[i]]);
+            w.U16(sid(cff.Charset[oldIds[i]]));
         }
 
         return w.ToArray();

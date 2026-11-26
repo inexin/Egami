@@ -38,6 +38,80 @@ EPS previews (roadmap 2.3.14).
   line, closed contours stay closed (their closing line bends too) and the fill rule is kept. A recipe in the drawing guide
   bends text into an arch.
 
+## Egami.Metafiles 1.1.0 (unreleased)
+
+EMF writing, stage A (roadmap 2.3.7.1).
+
+- `EmfCanvas` is a `Canvas` that writes an EMF to a stream when disposed, leaving the stream open: dual EMF+ by default, or
+  EMF+ only or plain EMF (`EmfWriteOptions.Kind`), at a DPI, with a description, or gzipped as EMZ (`Compress`). Paths,
+  rectangles, rounded rectangles, ovals and points with solid paints (alpha kept in EMF+), strokes with every `Stroke`
+  setting (a hairline as GDI+'s one-pixel pen), transforms, save and restore, rectangle and path clips (intersect and
+  difference), the antialias flag, `Clear` and `DrawPaint` are written as EMF+ records and as GDI records (paths,
+  `ExtCreatePen`, solid brushes, the world transform, `SaveDC`, clip regions and clip paths). Equal pens, brushes and paths
+  are written once; the EMF+ and GDI object tables reuse their slots.
+- Other paints (on shapes and text), images, meshes and layers with opacity, blending, filters or masks are drawn by
+  Egami as an image at `EmfWriteOptions.FallbackScale` and written as an EMF+ image and a GDI `AlphaBlend`, with one new
+  `Metafile.FallbackImage` warning per kind in `EmfCanvas.Warnings`. Text is written as outlines.
+- A "Writing EMF" section in the metafiles guide.
+
+EMF writing, stage B: paints as brushes.
+
+- Linear gradients become EMF+ linear gradient brushes with preset colors and the wrap mode for repeat and mirror. A clamped
+  gradient gets a brush wide enough to cover the shape. Opaque ones are drawn in the GDI copy exactly too, as
+  `EMR_GRADIENTFILL` triangles clipped to the shape.
+- Centered radial gradients become EMF+ path gradient brushes on a circle large enough to hold the shape. Repeating and
+  mirrored ones are unrolled into stops.
+- `ImagePaint` and `PicturePaint` become EMF+ texture brushes with the paint's matrix, its wrap mode and the matching
+  interpolation mode. A picture's tile is drawn at `FallbackScale`.
+- Gradients mixed in linear light, or with stops of different alpha, get extra stops so EMF+ readers mix them as Egami does.
+- Strokes with these paints are written as their filled outlines.
+- In a dual file, the GDI copy of what GDI cannot draw is an image without a warning.
+- Exact vectors are written instead of images where they exist:
+  - A layer with only an opacity is folded into its shapes' paints when it holds one shape, or shapes whose pixels do not meet.
+  - A `ColorMatrixPaint` or `BlendPaint` over solid paints becomes the color it draws.
+- Sweep and two-point conical gradients, and overlapping shapes in a layer with opacity, still fall back to images.
+- Egami's EMF+ player now draws path gradients with preset colors from their own colors. Before, it mixed them from the
+  surrounding and center colors.
+
+EMF writing, stage C: images, text and pictures.
+
+- Images are EMF+ images drawn with `DrawImagePoints`, their source rectangle and interpolation mode, and GDI `AlphaBlend`
+  bitmaps of the pixels they use (premultiplied, 32-bit). An `EncodedImage` that is a PNG, or a baseline or progressive
+  JPEG, keeps its bytes as they are; other images are written as PNG, with a paint's opacity baked in. `EmfPlusOnly` files
+  have no bitmap copy. In the GDI copy, a turned or mirrored image is an image of the call.
+- Lattices and atlases are drawn as their images; pictures are played inline, `cacheAsImage` or not.
+- `EmfText.Glyphs` writes glyph runs as text: an EMF+ font (the face's family name, the em size, bold and italic) with
+  `DrawDriverString`, and a GDI font with `ExtTextOutW` and glyph indices. Synthesized, emboldened and variable faces,
+  turned glyphs, mirrored text and paints other than one color stay outlines. Color glyphs are drawn as their layers or
+  images in both modes.
+- A call that blends with what is beneath it (a blend mode, a backdrop filter) is drawn by Egami over everything drawn before
+  it, and its image replaces those pixels (`CompositingModeSourceCopy`), so raster operations and compositing modes keep
+  their look.
+- A picture paint's tile is drawn at the resolution, as Egami draws picture paints on a raster, not at `FallbackScale`.
+- `Metafile.Load(...).Draw(emfCanvas)` writes every WMF, EMF and EMF+ file in the test corpus again with the same playback.
+
+## Egami.SystemDrawing 1.0.0-preview.4 (unreleased)
+
+EMF writing, stage D (roadmap 2.3.7.1): metafiles are recorded.
+
+- The `Metafile` constructors that take a reference device context no longer throw. They record into memory, a file or a
+  stream, for a 96 DPI screen whatever handle is given (`IntPtr.Zero` too). `EmfType` chooses EMF+ dual, EMF+ only or GDI
+  only, and the description goes into the header. The EGSD0004 warning is gone. The handle constructors and
+  `GetHenhmetafile` still throw.
+- `Graphics.FromImage` on a recording metafile returns a Graphics that writes every call through Egami.Metafiles'
+  `EmfCanvas`: shapes, pens, brushes, images (as image records of the pixels at that moment), clips, transforms, containers
+  and compositing, with GDI+'s settings in effect, and text as glyph records. Measuring works as on a bitmap.
+- Disposing that Graphics writes the file (a file is created empty by the constructor, as GDI+ does; a stream is written
+  from its position and left open). The metafile is then the recorded file: `Size`, `GetMetafileHeader`, `DrawImage`,
+  `EnumerateMetafile`, `Clone` and `Save` (PNG) work as for a loaded one.
+- Frames are written as GDI+ writes them, measured with System.Drawing: in 0.01 mm, inclusive of the last device pixel in
+  the pixel, point, inch, document and millimeter units, as given in `GdiCompatible`. Empty frames in other units and
+  negative frames throw `ExternalException`; without a frame, the frame is the bounds of what was drawn.
+- As GDI+: a second `FromImage`, or one on a loaded or recorded metafile, throws `ExternalException` (0x8000FFFF); the size
+  of a metafile being recorded throws `ArgumentException`; drawing a metafile onto its own recording draws nothing.
+- Tests play GDI+'s recordings of nine scenes (tests/images/metafiles/recorded, written by egami-compare) next to Egami's:
+  EMF+ means 0.005 to 5.2.
+
 ## Egami.Svg and Egami.Css 1.6.0 (unreleased)
 
 SVG animation (roadmap 2.10.1): SMIL and CSS animations drawn at any moment, as frames, animated rasters, frozen static copies
@@ -149,8 +223,11 @@ of five). This first preview finds the hardware, decodes and encodes H.264 and H
   references, and for encoders `HardwareRateControl`, quality levels, bit rate and P/B reference counts.
   `HardwareVideoCodecs.UnavailableReason` says why the list is empty. `HardwareVideoException` carries the driver's result.
 - The package is the one exception to Egami's no-native-code rule (AGENTS.md, CONTRIBUTING.md): it calls only the Vulkan
-  loader the driver installs, through `vkGetInstanceProcAddr`. Its bindings are generated by
-  `tools/video/make-vulkan-bindings.py` from the Khronos registry (Vulkan-Headers 1.4.309) and checked against the C headers.
+  loader the driver installs, through `vkGetInstanceProcAddr`. Its Vulkan bindings are the Vortice.Vulkan package (MIT,
+  3.4.0), used internally and kept out of the public API, in place of the bindings Egami generated from the Khronos registry
+  before (`tools/video/make-vulkan-bindings.py` is gone). Tests check the sizes and field offsets of the 186 structs it
+  passes to the driver and the bit positions of the `StdVideo*Flags` bit-fields against the C headers (Vulkan-Headers
+  1.4.309). Decoded frames, encoded streams and speed are the same as with the generated bindings.
 - `HardwareVideoCodecs.H264` encodes H.264 on the GPU (PR B): a `VideoCodec` that takes the software encoder's
   `VideoEncoderOptions` and `H264EncoderOptions`, for `VideoWriter` or `CreateEncoder`. 8-bit 4:2:0 in Constrained Baseline,
   Main and High; constant QP from `Quality` or `Quantizer`, the driver's constant and variable bitrate, keyframe interval and
@@ -276,8 +353,21 @@ WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, a
   spaces between words. `WordDictionaries.BuiltIn` holds ICU's word lists for Thai, Lao, Khmer and Myanmar (release 79.1;
   Unicode License v3, BSD-2 and BSD-3 notices in THIRD-PARTY-NOTICES.md), about 0.7 MB in all, each loaded on first use in
   about 2 ms or less. A `WordDictionary` comes from a word list (`FromWords`, or `Load` of a UTF-8 list with one word per line),
-  takes user words with `WithWords`, and saves to and loads from Egami's compiled form (`.edict`). Line breaking does not use
-  them yet.
+  takes user words with `WithWords`, and saves to and loads from Egami's compiled form (`.edict`).
+- Dictionary line breaking (roadmap 2.8.5, second part): `LineBreaks` and `Paragraph` break Thai, Lao, Khmer and Myanmar
+  between dictionary words, on by default. `LineBreakOptions.Dictionaries` picks the set (null for `WordDictionaries.BuiltIn`,
+  `WordDictionaries.None` to break only at spaces as before). The segmenter follows ICU's dictionary break engines and gives
+  ICU's word boundaries on the UDHR texts of all four scripts; it also never splits a grapheme cluster (ICU does, after a
+  Khmer coeng or Myanmar virama) and keeps ໆ and ຯ with the word before them. Thai and Myanmar line starts equal Chromium
+  129's; Chromium breaks Lao and Khmer with older, smaller lists, so it splits some compounds Egami keeps whole. Breaking
+  stays allocation-free, and the dictionaries load the first time text of their script is broken.
+- Dictionary word boundaries (roadmap 2.8.5, third part): `TextSegmenter.Words(text, dictionaries)` returns a
+  `DictionaryWordEnumerator` that splits Thai, Lao, Khmer and Myanmar runs into words, counting their letters as ALetter as
+  ICU's word rules do; the old `Words(text)` keeps plain UAX #29. `TextLayout.GetWordBoundary` and `CaretMove.NextWord` and `PreviousWord` use the paragraph's
+  `LineBreaking.Dictionaries`. Word boundaries equal Chromium 129's `Intl.Segmenter` on the Thai UDHR text and on Myanmar
+  apart from ICU's splits inside a grapheme cluster; Lao and Khmer differ where Chromium's older lists do.
+- Fixed: a line ending inside a run whose shaping is unsafe to break measured a lone mark, such as a Myanmar asat, with a
+  dotted circle when the window shaped again began inside a glyph cluster.
 
 - `WebFontWriter.Write` writes a `Typeface`, a `FontSubset` or sfnt or collection bytes as WOFF2 (the default) or WOFF 1.0
   (`WebFontOptions.Format`), to a byte array or a stream. Every table is kept. WOFF2 stores glyf and loca in the transformed
@@ -294,11 +384,55 @@ WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, a
   fontTools' at zlib level 9, on the test fonts.
 - A glyf table the writer cannot read is stored untransformed with the new `Font.TransformSkipped` warning. A bare CFF font
   throws `ArgumentException`. Input and output are bounded by the context's `SafetyLimits.MaxTotalBytes`.
+- `WebFontReader.ToSfnt` (2.7.8) turns a WOFF or WOFF2 file back into the TrueType or OpenType font it holds, rebuilding
+  WOFF2's transformed glyf, loca and hmtx; a WOFF2 collection becomes a TTC. Bounded by `SafetyLimits.MaxTotalBytes`.
+- `SubsetOptions.DropHinting` (false by default) leaves TrueType hinting out of a subset: fpgm, prep, cvt and every glyph's
+  instructions, with maxp's hinting limits set to none; gasp stays. CFF hints are kept.
+- `SubsetOptions.LayoutClosure` also keeps the dotted circle (U+25CC) the shaper puts before a mark that starts a run, and
+  copies MATH with the larger variants and assembly parts it gives the kept glyphs, so such text draws as with the full face.
+- `FontSubsetter.GlyphsFor` gives the glyphs that draw characters as the shaper does: each one the face maps, the
+  decomposition of one it lacks when it draws every part (a missing "ὶ" draws as iota and a combining grave) and the
+  precomposed characters it maps whose decomposition the text holds (an "e" and a combining acute compose to "é").
+- A name-keyed CFF subset keeps only the strings its dicts and glyph names use: the String INDEX held every glyph's name, most
+  of a small subset's CFF (a 66-character SourceSans3 subset drops from 28 KB to 6 KB).
+
+## Egami.Barcodes 1.1.0 (unreleased)
+
+Code 93 and Codabar (roadmap 2.11.2, stage A).
+
+- `Barcode.Code93` and `Code93Options` write Code 93 (ANSI/AIM BC5) with its two check characters, C and K, and Full ASCII
+  when the text needs it; `Barcode.Codabar` and `CodabarOptions` write Codabar (EN 798) with a start and stop character A to
+  D, an optional modulo 16 check character and a wide ratio of 2 or 3. `Barcode.Create` makes both.
+- Both are read: Code 93 without its check characters and with Full ASCII decoded, Codabar with its start and stop
+  characters, as zxing-cpp returns it.
+- `BarcodeFormat.Code93` and `BarcodeFormat.Codabar` are new, and `BarcodeFormat.Linear` and `All` include them, so reads
+  with the default options look for them too. A program built against 1.0 that names `Linear` or `All` keeps 1.0's value
+  until it is built again, as enum values are compiled into it.
+
+Micro QR Code (roadmap 2.11.2, stage C).
+
+- `Barcode.MicroQr` and `MicroQrOptions` write Micro QR Code (ISO/IEC 18004), versions M1 to M4: the smallest version that
+  holds the text at level L (or the level and smallest version asked for), with the level raised while the version holds.
+  Segments are numeric, alphanumeric, byte and Kanji as each version allows; there is no ECI. The symbols equal zint's.
+  `Barcode.Create` and `Barcode.FromModules` take `BarcodeFormat.MicroQr`, with a quiet zone of 2 modules.
+- Micro QR is read at any rotation, in some perspective, mirrored and light on dark, with errors corrected (M1 only detects
+  them). The search finds the finder patterns once for QR and Micro QR.
+- `BarcodeFormat.MicroQr` is new, and `BarcodeFormat.Matrix` and `All` include it, so reads with the default options look for
+  it too.
 
 ## Egami.Cli 1.6.0 (unreleased)
 
-MCP prompts and resources, a guide for coding agents, and animated SVG input. Additive to 1.5.0.
+MCP prompts and resources, a guide for coding agents, animated SVG input and font commands. Additive to 1.5.0.
 
+- `egami font convert` (2.7.8) writes fonts losslessly as WOFF2 (the default) or WOFF, or WOFF and WOFF2 back to TTF, OTF or
+  TTC, by `-o`'s extension or `--format`; collections convert to WOFF2 or TTC only. `--no-transform` and `--metadata`.
+- `egami font subset` keeps the characters of `--text`, `--text-file` and `--unicodes` (CSS unicode-range syntax). By default
+  it keeps the layout tables and the glyphs they reach, with the glyph ids, so the subset shapes as the full font; `--no-layout`
+  gives the smallest file. Variable fonts become static, at `--variation` or the default position. `--no-hinting`,
+  `--retain-gids`, `--name-prefix`, `--face`. It prints the glyphs kept, the missing characters and the sizes, and warns about
+  tables it leaves out.
+- `egami font info` describes fonts: names, container, outlines, glyphs, units per em, axes, embedding rights, tables and Unicode
+  blocks covered; `--json` adds the coverage as a CSS unicode-range. The three are MCP tools (`font_info` read-only).
 - Every command takes `--animate [fps]`, which loads an animated SVG input with all its frames (30 a second by default), and
   `--at <time>`, which draws it at one moment (or, with `--animate`, starts the frames there). `egami mcp`'s tools that take
   files take both as `animate` and `at`.

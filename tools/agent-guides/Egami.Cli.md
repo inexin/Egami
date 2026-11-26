@@ -12,6 +12,8 @@ It reads and writes every format of Egami, Egami.Svg, Egami.Metafiles and Egami.
 - `run`: a chain of steps (`resize 800x + sharpen 0.5 + save out.webp`), or a JSON workflow file with `--workflow`.
 - `compare`, `stats`: differences and channel statistics; `compare` exits 1 when the images differ.
 - `frames split`, `frames join`, `layers`, `metadata show|strip|copy`, `color`, `text`, `overlay`, `montage`, `trace`, `ocr`.
+- `font convert|subset|info`: fonts (TTF, OTF, TTC, WOFF, WOFF2) to WOFF2, WOFF or back to TTF/OTF/TTC; subsets for the web;
+  names, tables and Unicode coverage.
 - `formats` lists the formats; `formats <format>` lists a writer's settings for `--set fmt.key=value`.
 - `mcp` serves the commands to an AI assistant (see below).
 
@@ -81,6 +83,16 @@ egami convert logo.png -o logo-small.png --set png.compression-level=9
 egami compare logo.png logo-small.png
 ```
 
+Fonts for the web: WOFF2 of a whole font, a subset with only the characters of some pages (shaped as the full font shapes
+them), a description:
+
+```sh
+egami font convert fonts/NotoSans-Regular.ttf -o web/
+egami font subset fonts/NotoSans-Regular.ttf --text-file "pages/*.html" -o web/NotoSans-subset.woff2
+egami font subset fonts/NotoSans-Regular.ttf --unicodes U+0020-007E --no-layout -o web/ascii.woff2
+egami font info fonts/NotoSans-Regular.ttf --json
+```
+
 ## The MCP server
 
 `egami mcp` serves every command as a tool to an AI assistant over the Model Context Protocol, on standard input and output.
@@ -103,6 +115,8 @@ each returns one message naming the tools to call.
 - Treating exit code 1 from `compare` as an error: it means the images differ.
 - Reading stdout for messages: they go to standard error; stdout carries only results.
 - Calling `run` steps with option names: steps take the step's words (`resize 800x`), or the JSON workflow's properties.
+- Calling `font subset` with no `--text`, `--text-file` or `--unicodes`: it needs to know what to keep (exit code 2). Its
+  default keeps the layout tables whole, so pass `--no-layout` when the smallest file matters more than ligatures and kerning.
 
 ## More
 

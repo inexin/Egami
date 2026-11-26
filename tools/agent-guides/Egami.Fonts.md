@@ -19,7 +19,9 @@ draw.
   `canvas.DrawTextLayout` draw them.
 - `TextShaper.Shape(text, font, ShapingOptions)`: shaped runs with bidi and fallback, for your own layout.
 - `FontSubsetter.Subset(face, glyphs, SubsetOptions)`: a font with only some glyphs; `WebFontWriter.Write(face or subset)`
-  writes WOFF2 (or WOFF with `WebFontOptions.Format`).
+  writes WOFF2 (or WOFF with `WebFontOptions.Format`); `WebFontReader.ToSfnt(data)` turns WOFF or WOFF2 back into TTF, OTF
+  or TTC. `SubsetOptions.DropHinting` leaves TrueType hinting out of a subset.
+  `FontSubsetter.GlyphsFor(face, codePoints)` gives the glyphs a text needs as the shaper draws it (decompositions, composed forms).
 - Egami.Fonts.Substitutes: bundled metric-compatible stand-ins for Arial, Times New Roman, Courier New, Calibri and Cambria.
 
 ## Samples

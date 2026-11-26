@@ -547,6 +547,10 @@ public class ParagraphLayout
     [Fact]
     public void BuiltInAndOwnWordLists()
     {
+        string folder = System.IO.Path.Combine(AppContext.BaseDirectory, "fonts");
+        FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(folder, "NotoSansThai-Regular.ttf"));
+        fonts.TryGetFamily("Noto Sans Thai", out FontFamily thaiFamily);
         #region word-dictionaries
         // The built-in lists load on first use; copy the set to add your own words or a script Egami ships no list for.
         WordDictionaries.BuiltIn.TryGet(Script.Thai, out WordDictionary? thai);
@@ -560,11 +564,31 @@ public class ParagraphLayout
         withNames.Save(compiled);                                       // the compiled .edict form, far faster to load than a list
         compiled.Position = 0;
         WordDictionary back = WordDictionary.Load(compiled);
+
+        // Line breaking uses the built-in set unless the options name another; WordDictionaries.None breaks only at spaces.
+        LineBreakOptions options = new() { Dictionaries = dictionaries };   // or ParagraphStyle.LineBreaking
+        List<int> breaks = [];
+        foreach (LineBreak b in LineBreaks.Enumerate("ภาษาไทยง่าย", options))
+        {
+            breaks.Add(b.Index);                                        // 4, 7 and 11: ภาษา|ไทย|ง่าย
+        }
+
+        // Double-click and Ctrl+arrow select and step by the same words, with the paragraph's dictionaries.
+        TextLayout layout = Paragraph.Create("ภาษาไทยง่าย", new ParagraphStyle
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [thaiFamily] },
+            LineBreaking = options,
+        }).Layout(400);
+        Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(5);                 // 4 and 3: ไทย
+        TextPosition next = layout.MoveCaret(new TextPosition(4), CaretMove.NextWord); // 7
         #endregion
 
         Assert.True(known);
         Assert.Equal(thai.Count + 1, back.Count);
         Assert.True(dictionaries.TryGet(Script.Thai, out WordDictionary? found) && found.Contains("อีกามิ"));
+        Assert.Equal([4, 7, 11], breaks);
+        Assert.Equal(new Egami.Fonts.Unicode.TextSegment(4, 3), word);
+        Assert.Equal(7, next.Index);
     }
 
     [Fact]

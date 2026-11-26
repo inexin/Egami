@@ -1,5 +1,6 @@
 using Egami.Video.Hardware.Vulkan;
-using Egami.Video.Hardware.Vulkan.Native;
+
+using Vortice.Vulkan;
 
 namespace Egami.Video.Hardware.Tests;
 
@@ -31,8 +32,8 @@ public sealed unsafe class GpuDeviceTests : IDisposable
     {
         using VulkanDevice device = OpenDevice();
         VulkanQueue queue = device.DecodeQueue ?? device.EncodeQueue!;
-        using VulkanBuffer source = device.CreateBuffer(4096, VkBufferUsageFlagBits.TRANSFER_SRC_BIT, VkMemoryPropertyFlagBits.HOST_VISIBLE_BIT);
-        using VulkanBuffer target = device.CreateBuffer(4096, VkBufferUsageFlagBits.TRANSFER_DST_BIT, VkMemoryPropertyFlagBits.HOST_VISIBLE_BIT);
+        using VulkanBuffer source = device.CreateBuffer(4096, VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible);
+        using VulkanBuffer target = device.CreateBuffer(4096, VkBufferUsageFlags.TransferDst, VkMemoryPropertyFlags.HostVisible);
         for (int i = 0; i < source.Span.Length; i++)
         {
             source.Span[i] = (byte)(i * 7);
@@ -59,12 +60,12 @@ public sealed unsafe class GpuDeviceTests : IDisposable
     {
         using VulkanDevice device = OpenDevice();
         int made = 0;
-        foreach ((VkVideoCodecOperationFlagBitsKHR operation, int profileIdc, VulkanQueue? queue) in new[]
+        foreach ((VkVideoCodecOperationFlagsKHR operation, int profileIdc, VulkanQueue? queue) in new[]
         {
-            (VkVideoCodecOperationFlagBitsKHR.DECODE_H264_BIT_KHR, (int)StdVideoH264ProfileIdc.HIGH, device.DecodeQueue),
-            (VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR, (int)StdVideoH264ProfileIdc.HIGH, device.EncodeQueue),
-            (VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR, (int)StdVideoH265ProfileIdc.MAIN, device.DecodeQueue),
-            (VkVideoCodecOperationFlagBitsKHR.ENCODE_H265_BIT_KHR, (int)StdVideoH265ProfileIdc.MAIN, device.EncodeQueue),
+            (VkVideoCodecOperationFlagsKHR.DecodeH264, (int)StdVideoH264ProfileIdc.High, device.DecodeQueue),
+            (VkVideoCodecOperationFlagsKHR.EncodeH264, (int)StdVideoH264ProfileIdc.High, device.EncodeQueue),
+            (VkVideoCodecOperationFlagsKHR.DecodeH265, (int)StdVideoH265ProfileIdc.Main, device.DecodeQueue),
+            (VkVideoCodecOperationFlagsKHR.EncodeH265, (int)StdVideoH265ProfileIdc.Main, device.EncodeQueue),
         })
         {
             if (queue is null || (physical!.QueueFamilies[queue.Family].VideoOperations & operation) == 0)
@@ -75,25 +76,25 @@ public sealed unsafe class GpuDeviceTests : IDisposable
             VulkanProbe.ProfileChain chain;
             VulkanProbe.ProfileChain.Fill(&chain, operation, profileIdc, 8);
             VkVideoCapabilitiesKHR caps = Capabilities(&chain, operation);
-            bool decode = operation is VkVideoCodecOperationFlagBitsKHR.DECODE_H264_BIT_KHR or VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR;
+            bool decode = operation is VkVideoCodecOperationFlagsKHR.DecodeH264 or VkVideoCodecOperationFlagsKHR.DecodeH265;
             uint width = Math.Min(1920u, caps.maxCodedExtent.width), height = Math.Min(1088u, caps.maxCodedExtent.height);
 
             VkVideoProfileListInfoKHR list = new() { profileCount = 1, pProfiles = &chain.Profile };
             VkImageCreateInfo imageInfo = new()
             {
                 pNext = &list,
-                imageType = VkImageType._2D,
-                format = VkFormat.G8_B8R8_2PLANE_420_UNORM,
+                imageType = VkImageType.Image2D,
+                format = VkFormat.G8B8R82Plane420Unorm,
                 extent = new VkExtent3D { width = width, height = height, depth = 1 },
                 mipLevels = 1,
                 arrayLayers = 1,
-                samples = VkSampleCountFlagBits._1_BIT,
-                tiling = VkImageTiling.OPTIMAL,
+                samples = VkSampleCountFlags.Count1,
+                tiling = VkImageTiling.Optimal,
                 usage = decode
-                    ? VkImageUsageFlagBits.VIDEO_DECODE_DST_BIT_KHR | VkImageUsageFlagBits.VIDEO_DECODE_DPB_BIT_KHR | VkImageUsageFlagBits.TRANSFER_SRC_BIT
-                    : VkImageUsageFlagBits.VIDEO_ENCODE_SRC_BIT_KHR | VkImageUsageFlagBits.TRANSFER_DST_BIT,
-                sharingMode = VkSharingMode.EXCLUSIVE,
-                initialLayout = VkImageLayout.UNDEFINED,
+                    ? VkImageUsageFlags.VideoDecodeDstKHR | VkImageUsageFlags.VideoDecodeDpbKHR | VkImageUsageFlags.TransferSrc
+                    : VkImageUsageFlags.VideoEncodeSrcKHR | VkImageUsageFlags.TransferDst,
+                sharingMode = VkSharingMode.Exclusive,
+                initialLayout = VkImageLayout.Undefined,
             };
             using VulkanImage image = device.CreateImage(imageInfo);
             Assert.NotEqual(0ul, image.Handle);
@@ -104,9 +105,9 @@ public sealed unsafe class GpuDeviceTests : IDisposable
             {
                 queueFamilyIndex = (uint)queue.Family,
                 pVideoProfile = &chain.Profile,
-                pictureFormat = VkFormat.G8_B8R8_2PLANE_420_UNORM,
+                pictureFormat = VkFormat.G8B8R82Plane420Unorm,
                 maxCodedExtent = new VkExtent2D { width = width, height = height },
-                referencePictureFormat = VkFormat.G8_B8R8_2PLANE_420_UNORM,
+                referencePictureFormat = VkFormat.G8B8R82Plane420Unorm,
                 maxDpbSlots = Math.Min(caps.maxDpbSlots, 4u),
                 maxActiveReferencePictures = Math.Min(caps.maxActiveReferencePictures, 3u),
                 pStdHeaderVersion = &header,
@@ -123,7 +124,7 @@ public sealed unsafe class GpuDeviceTests : IDisposable
     public void ObjectsKeepTheirDeviceAliveUntilDisposed()
     {
         VulkanDevice device = OpenDevice();
-        VulkanBuffer buffer = device.CreateBuffer(256, VkBufferUsageFlagBits.TRANSFER_SRC_BIT, VkMemoryPropertyFlagBits.HOST_VISIBLE_BIT);
+        VulkanBuffer buffer = device.CreateBuffer(256, VkBufferUsageFlags.TransferSrc, VkMemoryPropertyFlags.HostVisible);
         // The device is closed for new use, but vkDestroyDevice waits until the buffer, which holds a reference, is released.
         device.Dispose();
         Assert.False(device.Handle.IsClosed);
@@ -137,12 +138,12 @@ public sealed unsafe class GpuDeviceTests : IDisposable
     private VulkanDevice OpenDevice()
     {
         Assert.SkipWhen(physical is null, "No GPU with Vulkan Video: " + HardwareVideoCodecs.UnavailableReason);
-        const VkVideoCodecOperationFlagBitsKHR decode = VkVideoCodecOperationFlagBitsKHR.DECODE_H264_BIT_KHR | VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR;
-        const VkVideoCodecOperationFlagBitsKHR encode = VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR | VkVideoCodecOperationFlagBitsKHR.ENCODE_H265_BIT_KHR;
+        const VkVideoCodecOperationFlagsKHR decode = VkVideoCodecOperationFlagsKHR.DecodeH264 | VkVideoCodecOperationFlagsKHR.DecodeH265;
+        const VkVideoCodecOperationFlagsKHR encode = VkVideoCodecOperationFlagsKHR.EncodeH264 | VkVideoCodecOperationFlagsKHR.EncodeH265;
         return VulkanDevice.Create(physical!, decode, encode);
     }
 
-    private VkVideoCapabilitiesKHR Capabilities(VulkanProbe.ProfileChain* chain, VkVideoCodecOperationFlagBitsKHR operation)
+    private VkVideoCapabilitiesKHR Capabilities(VulkanProbe.ProfileChain* chain, VkVideoCodecOperationFlagsKHR operation)
     {
         VkVideoDecodeH264CapabilitiesKHR decodeH264 = new();
         VkVideoDecodeH265CapabilitiesKHR decodeH265 = new();
@@ -153,15 +154,15 @@ public sealed unsafe class GpuDeviceTests : IDisposable
         VkVideoCapabilitiesKHR caps = new();
         switch (operation)
         {
-            case VkVideoCodecOperationFlagBitsKHR.DECODE_H264_BIT_KHR:
+            case VkVideoCodecOperationFlagsKHR.DecodeH264:
                 caps.pNext = &decode;
                 decode.pNext = &decodeH264;
                 break;
-            case VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR:
+            case VkVideoCodecOperationFlagsKHR.DecodeH265:
                 caps.pNext = &decode;
                 decode.pNext = &decodeH265;
                 break;
-            case VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR:
+            case VkVideoCodecOperationFlagsKHR.EncodeH264:
                 caps.pNext = &encode;
                 encode.pNext = &encodeH264;
                 break;

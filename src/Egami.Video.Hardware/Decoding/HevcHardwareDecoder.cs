@@ -7,7 +7,8 @@ using Egami.Nal;
 using Egami.Pixels;
 using Egami.Video.Codecs;
 using Egami.Video.Hardware.Vulkan;
-using Egami.Video.Hardware.Vulkan.Native;
+
+using Vortice.Vulkan;
 
 namespace Egami.Video.Hardware.Decoding;
 
@@ -98,9 +99,9 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
         _egami = context.Egami;
         _errors = options.Errors;
         _hdr = track.Hdr;
-        _device = VulkanVideoContext.GetDevice(VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR, "Main");
+        _device = VulkanVideoContext.GetDevice(VkVideoCodecOperationFlagsKHR.DecodeH265, "Main");
         _queue = _device.DecodeQueue ?? throw new HardwareVideoException($"{_device.Physical.Name} has no video decode queue.");
-        if ((_device.Physical.QueueFamilies[_queue.Family].Flags & VkQueueFlagBits.TRANSFER_BIT) == 0)
+        if ((_device.Physical.QueueFamilies[_queue.Family].Flags & VkQueueFlags.Transfer) == 0)
         {
             throw new HardwareVideoException($"{_device.Physical.Name}'s decode queue cannot copy pictures out (no transfer support).");
         }
@@ -111,7 +112,7 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
             ProfileBlock.Fill(&_profiles[0], 8);
             ProfileBlock.Fill(&_profiles[1], 10);
             Capabilities caps = CapabilitiesFor(8) ?? throw new HardwareVideoException($"{_device.Physical.Name} does not decode HEVC Main.");
-            if ((caps.Decode.flags & VkVideoDecodeCapabilityFlagBitsKHR.DPB_AND_OUTPUT_COINCIDE_BIT_KHR) == 0)
+            if ((caps.Decode.flags & VkVideoDecodeCapabilityFlagsKHR.DpbAndOutputCoincide) == 0)
             {
                 throw new HardwareVideoException($"{_device.Physical.Name} decodes HEVC only into separate output pictures, which Egami does not use yet.");
             }
@@ -212,7 +213,7 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
     public bool TryReceive([NotNullWhen(true)] out YuvVideoFrame? frame)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        while (_submitted.Count > 0 && _device.Commands.vkGetFenceStatus(_device.Raw, _jobs[_submitted.Peek()].Fence.Value) == VkResult.SUCCESS)
+        while (_submitted.Count > 0 && _device.Commands.vkGetFenceStatus(_jobs[_submitted.Peek()].Fence.Value) == VkResult.Success)
         {
             Collect(_submitted.Dequeue());
         }
@@ -928,7 +929,7 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
             throw HevcErrors.Beyond($"{_device.Physical.Name} keeps {caps.maxDpbSlots} pictures; the stream needs {SlotsFor(sps)}.");
         }
 
-        VkFormat format = bitDepth == 8 ? VkFormat.G8_B8R8_2PLANE_420_UNORM : VkFormat.G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
+        VkFormat format = bitDepth == 8 ? VkFormat.G8B8R82Plane420Unorm : VkFormat.G10X6B10X6R10X62Plane420Unorm3Pack16;
         // A picture smaller than the GPU's smallest is decoded into pictures of the smallest size: the SPS gives the decoder its size.
         _codedWidth = AlignUp(Math.Max(width, caps.minCodedExtent.width), Math.Max(1u, caps.pictureAccessGranularity.width));
         _codedHeight = AlignUp(Math.Max(height, caps.minCodedExtent.height), Math.Max(1u, caps.pictureAccessGranularity.height));
@@ -945,10 +946,10 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
             pStdHeaderVersion = &header,
         };
         _session = _device.CreateVideoSession(info);
-        VkQueryPoolCreateInfo queryInfo = new() { pNext = &profile->Profile, queryType = VkQueryType.RESULT_STATUS_ONLY_KHR, queryCount = InFlight };
-        ulong queryPool;
-        VkCheck.ThrowIfFailed(_device.Commands.vkCreateQueryPool(_device.Raw, &queryInfo, null, &queryPool), "vkCreateQueryPool");
-        _queryPool = new VulkanObjectHandle(_device.Handle, queryPool, _device.Commands.vkDestroyQueryPool);
+        VkQueryPoolCreateInfo queryInfo = new() { pNext = &profile->Profile, queryType = VkQueryType.ResultStatusOnlyKHR, queryCount = InFlight };
+        VkQueryPool queryPool;
+        VkCheck.ThrowIfFailed(_device.Commands.vkCreateQueryPool(&queryInfo, null, &queryPool), "vkCreateQueryPool");
+        _queryPool = new VulkanObjectHandle(_device.Handle, queryPool, _device.Commands.vkDestroyQueryPool_ptr);
         _slots = new VulkanImage[slots];
         for (int i = 0; i < slots; i++)
         {
@@ -959,7 +960,7 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
         ulong frameBytes = (ulong)_codedWidth * _codedHeight * 3 / 2 * (ulong)sampleBytes;
         foreach (Job job in _jobs)
         {
-            job.Readback = _device.CreateBuffer(frameBytes, VkBufferUsageFlagBits.TRANSFER_DST_BIT, VkMemoryPropertyFlagBits.HOST_VISIBLE_BIT);
+            job.Readback = _device.CreateBuffer(frameBytes, VkBufferUsageFlags.TransferDst, VkMemoryPropertyFlags.HostVisible);
         }
 
         _alignment = Math.Max(Math.Max(caps.minBitstreamBufferOffsetAlignment, caps.minBitstreamBufferSizeAlignment), 1);
@@ -977,7 +978,7 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
         _bitstream?.Dispose();
         _bitstream = null;
         _regionSize = regionSize;
-        _bitstream = _device.CreateBuffer(_regionSize * InFlight, VkBufferUsageFlagBits.VIDEO_DECODE_SRC_BIT_KHR, VkMemoryPropertyFlagBits.HOST_VISIBLE_BIT, &profile->List);
+        _bitstream = _device.CreateBuffer(_regionSize * InFlight, VkBufferUsageFlags.VideoDecodeSrcKHR, VkMemoryPropertyFlags.HostVisible, &profile->List);
     }
 
     private VulkanImage CreatePicture(ProfileBlock* profile, VkFormat format)
@@ -985,16 +986,16 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
         VkImageCreateInfo info = new()
         {
             pNext = &profile->List,
-            imageType = VkImageType._2D,
+            imageType = VkImageType.Image2D,
             format = format,
             extent = new VkExtent3D { width = _codedWidth, height = _codedHeight, depth = 1 },
             mipLevels = 1,
             arrayLayers = 1,
-            samples = VkSampleCountFlagBits._1_BIT,
-            tiling = VkImageTiling.OPTIMAL,
-            usage = VkImageUsageFlagBits.VIDEO_DECODE_DPB_BIT_KHR | VkImageUsageFlagBits.VIDEO_DECODE_DST_BIT_KHR | VkImageUsageFlagBits.TRANSFER_SRC_BIT,
-            sharingMode = VkSharingMode.EXCLUSIVE,
-            initialLayout = VkImageLayout.UNDEFINED,
+            samples = VkSampleCountFlags.Count1,
+            tiling = VkImageTiling.Optimal,
+            usage = VkImageUsageFlags.VideoDecodeDpbKHR | VkImageUsageFlags.VideoDecodeDstKHR | VkImageUsageFlags.TransferSrc,
+            sharingMode = VkSharingMode.Exclusive,
+            initialLayout = VkImageLayout.Undefined,
         };
         return _device.CreateImage(info);
     }
@@ -1018,12 +1019,12 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
         StdVideoH265ProfileTierLevel ptl = new()
         {
             general_profile_idc = sps.ProfileTierLevel.ProfileIdc is 1 or 2 ? (StdVideoH265ProfileIdc)sps.ProfileTierLevel.ProfileIdc
-                : sps.BitDepthLuma == 8 ? StdVideoH265ProfileIdc.MAIN : StdVideoH265ProfileIdc.MAIN_10,
+                : sps.BitDepthLuma == 8 ? StdVideoH265ProfileIdc.Main : StdVideoH265ProfileIdc.Main10,
             general_level_idc = (StdVideoH265LevelIdc)Math.Min(LevelIndex(sps.ProfileTierLevel.LevelIdc), (int)CapabilitiesFor(sps.BitDepthLuma)!.Value.H265.maxLevelIdc),
         };
-        ptl.flags.general_tier_flag = sps.ProfileTierLevel.Tier;
-        ptl.flags.general_progressive_source_flag = true;
-        ptl.flags.general_frame_only_constraint_flag = true;
+        ptl.flags.general_tier_flag = VulkanBits.Of(sps.ProfileTierLevel.Tier);
+        ptl.flags.general_progressive_source_flag = VulkanBits.Of(true);
+        ptl.flags.general_frame_only_constraint_flag = VulkanBits.Of(true);
         StdVideoH265DecPicBufMgr dpb = default;
         for (int i = 0; i < 7; i++)
         {
@@ -1039,8 +1040,8 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
             pDecPicBufMgr = &dpb,
             pProfileTierLevel = &ptl,
         };
-        stdVps.flags.vps_temporal_id_nesting_flag = vps?.TemporalIdNesting ?? sps.TemporalIdNesting;
-        stdVps.flags.vps_sub_layer_ordering_info_present_flag = true;
+        stdVps.flags.vps_temporal_id_nesting_flag = VulkanBits.Of(vps?.TemporalIdNesting ?? sps.TemporalIdNesting);
+        stdVps.flags.vps_sub_layer_ordering_info_present_flag = VulkanBits.Of(true);
 
         int setCount = sps.ShortTermRps.Count;
         StdVideoH265ShortTermRefPicSet* sets = stackalloc StdVideoH265ShortTermRefPicSet[Math.Max(setCount, 1)];
@@ -1096,18 +1097,18 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
             pShortTermRefPicSet = setCount > 0 ? sets : null,
             pLongTermRefPicsSps = sps.LongTermRefsPresent ? &longTerm : null,
         };
-        stdSps.flags.sps_temporal_id_nesting_flag = sps.TemporalIdNesting;
-        stdSps.flags.conformance_window_flag = (sps.Conformance.Left | sps.Conformance.Right | sps.Conformance.Top | sps.Conformance.Bottom) != 0;
-        stdSps.flags.sps_sub_layer_ordering_info_present_flag = true;
-        stdSps.flags.scaling_list_enabled_flag = sps.ScalingListEnabled;
-        stdSps.flags.sps_scaling_list_data_present_flag = spsListData;
-        stdSps.flags.amp_enabled_flag = sps.AmpEnabled;
-        stdSps.flags.sample_adaptive_offset_enabled_flag = sps.SaoEnabled;
-        stdSps.flags.pcm_enabled_flag = sps.PcmEnabled;
-        stdSps.flags.pcm_loop_filter_disabled_flag = sps.PcmLoopFilterDisabled;
-        stdSps.flags.long_term_ref_pics_present_flag = sps.LongTermRefsPresent;
-        stdSps.flags.sps_temporal_mvp_enabled_flag = sps.TemporalMvpEnabled;
-        stdSps.flags.strong_intra_smoothing_enabled_flag = sps.StrongIntraSmoothing;
+        stdSps.flags.sps_temporal_id_nesting_flag = VulkanBits.Of(sps.TemporalIdNesting);
+        stdSps.flags.conformance_window_flag = VulkanBits.Of((sps.Conformance.Left | sps.Conformance.Right | sps.Conformance.Top | sps.Conformance.Bottom) != 0);
+        stdSps.flags.sps_sub_layer_ordering_info_present_flag = VulkanBits.Of(true);
+        stdSps.flags.scaling_list_enabled_flag = VulkanBits.Of(sps.ScalingListEnabled);
+        stdSps.flags.sps_scaling_list_data_present_flag = VulkanBits.Of(spsListData);
+        stdSps.flags.amp_enabled_flag = VulkanBits.Of(sps.AmpEnabled);
+        stdSps.flags.sample_adaptive_offset_enabled_flag = VulkanBits.Of(sps.SaoEnabled);
+        stdSps.flags.pcm_enabled_flag = VulkanBits.Of(sps.PcmEnabled);
+        stdSps.flags.pcm_loop_filter_disabled_flag = VulkanBits.Of(sps.PcmLoopFilterDisabled);
+        stdSps.flags.long_term_ref_pics_present_flag = VulkanBits.Of(sps.LongTermRefsPresent);
+        stdSps.flags.sps_temporal_mvp_enabled_flag = VulkanBits.Of(sps.TemporalMvpEnabled);
+        stdSps.flags.strong_intra_smoothing_enabled_flag = VulkanBits.Of(sps.StrongIntraSmoothing);
 
         if (pps.ScalingList is { } ppsList)
         {
@@ -1144,28 +1145,28 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
             stdPps.row_height_minus1[i] = (ushort)(pps.RowHeights[i] - 1);
         }
 
-        stdPps.flags.dependent_slice_segments_enabled_flag = pps.DependentSliceSegmentsEnabled;
-        stdPps.flags.output_flag_present_flag = pps.OutputFlagPresent;
-        stdPps.flags.sign_data_hiding_enabled_flag = pps.SignDataHiding;
-        stdPps.flags.cabac_init_present_flag = pps.CabacInitPresent;
-        stdPps.flags.constrained_intra_pred_flag = pps.ConstrainedIntraPred;
-        stdPps.flags.transform_skip_enabled_flag = pps.TransformSkipEnabled;
-        stdPps.flags.cu_qp_delta_enabled_flag = pps.CuQpDeltaEnabled;
-        stdPps.flags.pps_slice_chroma_qp_offsets_present_flag = pps.SliceChromaQpOffsetsPresent;
-        stdPps.flags.weighted_pred_flag = pps.WeightedPred;
-        stdPps.flags.weighted_bipred_flag = pps.WeightedBipred;
-        stdPps.flags.transquant_bypass_enabled_flag = pps.TransquantBypassEnabled;
-        stdPps.flags.tiles_enabled_flag = pps.TilesEnabled;
-        stdPps.flags.entropy_coding_sync_enabled_flag = pps.EntropyCodingSync;
-        stdPps.flags.uniform_spacing_flag = pps.UniformSpacing;
-        stdPps.flags.loop_filter_across_tiles_enabled_flag = pps.LoopFilterAcrossTiles;
-        stdPps.flags.pps_loop_filter_across_slices_enabled_flag = pps.LoopFilterAcrossSlices;
-        stdPps.flags.deblocking_filter_control_present_flag = pps.DeblockingControlPresent;
-        stdPps.flags.deblocking_filter_override_enabled_flag = pps.DeblockingOverrideEnabled;
-        stdPps.flags.pps_deblocking_filter_disabled_flag = pps.DeblockingDisabled;
-        stdPps.flags.pps_scaling_list_data_present_flag = pps.ScalingList is not null;
-        stdPps.flags.lists_modification_present_flag = pps.ListsModificationPresent;
-        stdPps.flags.slice_segment_header_extension_present_flag = pps.SliceHeaderExtensionPresent;
+        stdPps.flags.dependent_slice_segments_enabled_flag = VulkanBits.Of(pps.DependentSliceSegmentsEnabled);
+        stdPps.flags.output_flag_present_flag = VulkanBits.Of(pps.OutputFlagPresent);
+        stdPps.flags.sign_data_hiding_enabled_flag = VulkanBits.Of(pps.SignDataHiding);
+        stdPps.flags.cabac_init_present_flag = VulkanBits.Of(pps.CabacInitPresent);
+        stdPps.flags.constrained_intra_pred_flag = VulkanBits.Of(pps.ConstrainedIntraPred);
+        stdPps.flags.transform_skip_enabled_flag = VulkanBits.Of(pps.TransformSkipEnabled);
+        stdPps.flags.cu_qp_delta_enabled_flag = VulkanBits.Of(pps.CuQpDeltaEnabled);
+        stdPps.flags.pps_slice_chroma_qp_offsets_present_flag = VulkanBits.Of(pps.SliceChromaQpOffsetsPresent);
+        stdPps.flags.weighted_pred_flag = VulkanBits.Of(pps.WeightedPred);
+        stdPps.flags.weighted_bipred_flag = VulkanBits.Of(pps.WeightedBipred);
+        stdPps.flags.transquant_bypass_enabled_flag = VulkanBits.Of(pps.TransquantBypassEnabled);
+        stdPps.flags.tiles_enabled_flag = VulkanBits.Of(pps.TilesEnabled);
+        stdPps.flags.entropy_coding_sync_enabled_flag = VulkanBits.Of(pps.EntropyCodingSync);
+        stdPps.flags.uniform_spacing_flag = VulkanBits.Of(pps.UniformSpacing);
+        stdPps.flags.loop_filter_across_tiles_enabled_flag = VulkanBits.Of(pps.LoopFilterAcrossTiles);
+        stdPps.flags.pps_loop_filter_across_slices_enabled_flag = VulkanBits.Of(pps.LoopFilterAcrossSlices);
+        stdPps.flags.deblocking_filter_control_present_flag = VulkanBits.Of(pps.DeblockingControlPresent);
+        stdPps.flags.deblocking_filter_override_enabled_flag = VulkanBits.Of(pps.DeblockingOverrideEnabled);
+        stdPps.flags.pps_deblocking_filter_disabled_flag = VulkanBits.Of(pps.DeblockingDisabled);
+        stdPps.flags.pps_scaling_list_data_present_flag = VulkanBits.Of(pps.ScalingList is not null);
+        stdPps.flags.lists_modification_present_flag = VulkanBits.Of(pps.ListsModificationPresent);
+        stdPps.flags.slice_segment_header_extension_present_flag = VulkanBits.Of(pps.SliceHeaderExtensionPresent);
 
         VkVideoDecodeH265SessionParametersAddInfoKHR add = new()
         {
@@ -1178,9 +1179,9 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
         };
         VkVideoDecodeH265SessionParametersCreateInfoKHR h265Info = new() { maxStdVPSCount = 1, maxStdSPSCount = 1, maxStdPPSCount = 1, pParametersAddInfo = &add };
         VkVideoSessionParametersCreateInfoKHR info = new() { pNext = &h265Info, videoSession = _session!.Handle };
-        ulong raw;
-        VkCheck.ThrowIfFailed(_device.Commands.vkCreateVideoSessionParametersKHR(_device.Raw, &info, null, &raw), "vkCreateVideoSessionParametersKHR");
-        _parameters[pps] = (sps, vps, new VulkanObjectHandle(_device.Handle, raw, _device.Commands.vkDestroyVideoSessionParametersKHR));
+        VkVideoSessionParametersKHR raw;
+        VkCheck.ThrowIfFailed(_device.Commands.vkCreateVideoSessionParametersKHR(&info, null, &raw), "vkCreateVideoSessionParametersKHR");
+        _parameters[pps] = (sps, vps, new VulkanObjectHandle(_device.Handle, raw, _device.Commands.vkDestroyVideoSessionParametersKHR_ptr));
         return raw;
     }
 
@@ -1197,8 +1198,8 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
         };
         if (rps.Predicted)
         {
-            set.flags.inter_ref_pic_set_prediction_flag = true;
-            set.flags.delta_rps_sign = rps.DeltaRpsSign;
+            set.flags.inter_ref_pic_set_prediction_flag = VulkanBits.Of(true);
+            set.flags.delta_rps_sign = VulkanBits.Of(rps.DeltaRpsSign);
             set.delta_idx_minus1 = (uint)rps.DeltaIdxMinus1;
             set.abs_delta_rps_minus1 = (ushort)rps.AbsDeltaRpsMinus1;
             set.used_by_curr_pic_flag = (ushort)rps.UsedByCurrPicFlags;
@@ -1316,8 +1317,8 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
             }
         }
 
-        VkDeviceCommands vk = _device.Commands;
-        nint cb = job.Commands;
+        VkDeviceApi vk = _device.Commands;
+        VkCommandBuffer cb = job.Commands;
         _pool.Begin(cb);
         vk.vkCmdResetQueryPool(cb, _queryPool!.Value, (uint)jobIndex, 1);
         int slotCount = _slots.Length;
@@ -1328,17 +1329,17 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
             _slotsReady = true;
             for (int i = 0; i < slotCount; i++)
             {
-                barriers[barrierCount++] = Barrier(_slots[i].Handle, VkImageLayout.UNDEFINED, VkImageLayout.VIDEO_DECODE_DPB_KHR, VkPipelineStageFlagBits2.NONE, 0, VkPipelineStageFlagBits2.VIDEO_DECODE_BIT_KHR, VkAccessFlagBits2.VIDEO_DECODE_READ_BIT_KHR | VkAccessFlagBits2.VIDEO_DECODE_WRITE_BIT_KHR);
+                barriers[barrierCount++] = Barrier(_slots[i].Handle, VkImageLayout.Undefined, VkImageLayout.VideoDecodeDpbKHR, VkPipelineStageFlags2.None, 0, VkPipelineStageFlags2.VideoDecodeKHR, VkAccessFlags2.VideoDecodeReadKHR | VkAccessFlags2.VideoDecodeWriteKHR);
             }
         }
 
         // The pictures decoded before this one wrote the references it reads.
         VkMemoryBarrier2 dpbHazard = new()
         {
-            srcStageMask = VkPipelineStageFlagBits2.VIDEO_DECODE_BIT_KHR,
-            srcAccessMask = VkAccessFlagBits2.VIDEO_DECODE_WRITE_BIT_KHR,
-            dstStageMask = VkPipelineStageFlagBits2.VIDEO_DECODE_BIT_KHR,
-            dstAccessMask = VkAccessFlagBits2.VIDEO_DECODE_READ_BIT_KHR | VkAccessFlagBits2.VIDEO_DECODE_WRITE_BIT_KHR,
+            srcStageMask = VkPipelineStageFlags2.VideoDecodeKHR,
+            srcAccessMask = VkAccessFlags2.VideoDecodeWriteKHR,
+            dstStageMask = VkPipelineStageFlags2.VideoDecodeKHR,
+            dstAccessMask = VkAccessFlags2.VideoDecodeReadKHR | VkAccessFlags2.VideoDecodeWriteKHR,
         };
         PipelineBarrier(cb, barriers, barrierCount, &dpbHazard);
 
@@ -1355,7 +1356,7 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
             Picture p = setup ? pic : refs[i];
             resources[i] = new VkVideoPictureResourceInfoKHR { codedExtent = extent, imageViewBinding = _slots[p.Slot].View };
             refInfos[i] = new StdVideoDecodeH265ReferenceInfo { PicOrderCntVal = p.Poc };
-            refInfos[i].flags.used_for_long_term_reference = !setup && p.Marking == Picture.LongTerm;
+            refInfos[i].flags.used_for_long_term_reference = VulkanBits.Of(!setup && p.Marking == Picture.LongTerm);
             slotInfos[i] = new VkVideoDecodeH265DpbSlotInfoKHR { pStdReferenceInfo = &refInfos[i] };
             slots[i] = new VkVideoReferenceSlotInfoKHR { pNext = &slotInfos[i], slotIndex = p.Slot, pPictureResource = &resources[i] };
             beginSlots[i] = slots[i];
@@ -1375,7 +1376,7 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
         if (_needsReset)
         {
             _needsReset = false;
-            VkVideoCodingControlInfoKHR control = new() { flags = VkVideoCodingControlFlagBitsKHR.RESET_BIT_KHR };
+            VkVideoCodingControlInfoKHR control = new() { flags = VkVideoCodingControlFlagsKHR.Reset };
             vk.vkCmdControlVideoCodingKHR(cb, &control);
         }
 
@@ -1388,10 +1389,10 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
             PicOrderCntVal = pic.Poc,
             NumBitsForSTRefPicSetInSlice = (ushort)(h.ShortTermRpsFromSps ? 0 : h.ShortTermRpsBits),
         };
-        std.flags.IrapPicFlag = nal.IsIrap;
-        std.flags.IdrPicFlag = nal.IsIdr;
-        std.flags.IsReference = true;
-        std.flags.short_term_ref_pic_set_sps_flag = h.ShortTermRpsFromSps;
+        std.flags.IrapPicFlag = VulkanBits.Of(nal.IsIrap);
+        std.flags.IdrPicFlag = VulkanBits.Of(nal.IsIdr);
+        std.flags.IsReference = VulkanBits.Of(true);
+        std.flags.short_term_ref_pic_set_sps_flag = VulkanBits.Of(h.ShortTermRpsFromSps);
         new Span<byte>(std.RefPicSetStCurrBefore, 8).Fill(0xFF);
         new Span<byte>(std.RefPicSetStCurrAfter, 8).Fill(0xFF);
         new Span<byte>(std.RefPicSetLtCurr, 8).Fill(0xFF);
@@ -1430,29 +1431,29 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
 
         // The decoded picture out to host memory, its slot back to the DPB layout for the pictures after.
         ulong image = _slots[pic.Slot].Handle;
-        barriers[0] = Barrier(image, VkImageLayout.VIDEO_DECODE_DPB_KHR, VkImageLayout.TRANSFER_SRC_OPTIMAL, VkPipelineStageFlagBits2.VIDEO_DECODE_BIT_KHR, VkAccessFlagBits2.VIDEO_DECODE_WRITE_BIT_KHR, VkPipelineStageFlagBits2.ALL_TRANSFER_BIT, VkAccessFlagBits2.TRANSFER_READ_BIT);
+        barriers[0] = Barrier(image, VkImageLayout.VideoDecodeDpbKHR, VkImageLayout.TransferSrcOptimal, VkPipelineStageFlags2.VideoDecodeKHR, VkAccessFlags2.VideoDecodeWriteKHR, VkPipelineStageFlags2.AllTransfer, VkAccessFlags2.TransferRead);
         PipelineBarrier(cb, barriers, 1, null);
         ulong sampleBytes = _sessionBitDepth == 8 ? 1u : 2u;
         VkBufferImageCopy* regions = stackalloc VkBufferImageCopy[2];
         regions[0] = new VkBufferImageCopy
         {
-            imageSubresource = new VkImageSubresourceLayers { aspectMask = VkImageAspectFlagBits.PLANE_0_BIT, layerCount = 1 },
+            imageSubresource = new VkImageSubresourceLayers { aspectMask = VkImageAspectFlags.Plane0, layerCount = 1 },
             imageExtent = new VkExtent3D { width = _codedWidth, height = _codedHeight, depth = 1 },
         };
         regions[1] = new VkBufferImageCopy
         {
             bufferOffset = (ulong)_codedWidth * _codedHeight * sampleBytes,
-            imageSubresource = new VkImageSubresourceLayers { aspectMask = VkImageAspectFlagBits.PLANE_1_BIT, layerCount = 1 },
+            imageSubresource = new VkImageSubresourceLayers { aspectMask = VkImageAspectFlags.Plane1, layerCount = 1 },
             imageExtent = new VkExtent3D { width = _codedWidth / 2, height = _codedHeight / 2, depth = 1 },
         };
-        vk.vkCmdCopyImageToBuffer(cb, image, VkImageLayout.TRANSFER_SRC_OPTIMAL, job.Readback!.Handle, 2, regions);
-        barriers[0] = Barrier(image, VkImageLayout.TRANSFER_SRC_OPTIMAL, VkImageLayout.VIDEO_DECODE_DPB_KHR, VkPipelineStageFlagBits2.ALL_TRANSFER_BIT, VkAccessFlagBits2.TRANSFER_READ_BIT, VkPipelineStageFlagBits2.VIDEO_DECODE_BIT_KHR, VkAccessFlagBits2.VIDEO_DECODE_READ_BIT_KHR | VkAccessFlagBits2.VIDEO_DECODE_WRITE_BIT_KHR);
+        vk.vkCmdCopyImageToBuffer(cb, image, VkImageLayout.TransferSrcOptimal, job.Readback!.Handle, 2, regions);
+        barriers[0] = Barrier(image, VkImageLayout.TransferSrcOptimal, VkImageLayout.VideoDecodeDpbKHR, VkPipelineStageFlags2.AllTransfer, VkAccessFlags2.TransferRead, VkPipelineStageFlags2.VideoDecodeKHR, VkAccessFlags2.VideoDecodeReadKHR | VkAccessFlags2.VideoDecodeWriteKHR);
         VkMemoryBarrier2 toHost = new()
         {
-            srcStageMask = VkPipelineStageFlagBits2.ALL_TRANSFER_BIT,
-            srcAccessMask = VkAccessFlagBits2.TRANSFER_WRITE_BIT,
-            dstStageMask = VkPipelineStageFlagBits2.HOST_BIT,
-            dstAccessMask = VkAccessFlagBits2.HOST_READ_BIT,
+            srcStageMask = VkPipelineStageFlags2.AllTransfer,
+            srcAccessMask = VkAccessFlags2.TransferWrite,
+            dstStageMask = VkPipelineStageFlags2.Host,
+            dstAccessMask = VkAccessFlags2.HostRead,
         };
         PipelineBarrier(cb, barriers, 1, &toHost);
         _pool.End(cb);
@@ -1474,8 +1475,8 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
 
         // The fence has signalled, so the status is there unless the driver gave up on the picture (a broken stream can make it
         // time out): a status that is not ready is a failed decode, where waiting for it would never end.
-        VkResult queried = _device.Commands.vkGetQueryPoolResults(_device.Raw, _queryPool!.Value, (uint)jobIndex, 1, 8, &status, 8, VkQueryResultFlagBits.WITH_STATUS_BIT_KHR | VkQueryResultFlagBits._64_BIT);
-        if (queried != VkResult.NOT_READY)
+        VkResult queried = _device.Commands.vkGetQueryPoolResults(_queryPool!.Value, (uint)jobIndex, 1, 8, &status, 8, VkQueryResultFlags.WithStatusKHR | VkQueryResultFlags.Bit64);
+        if (queried != VkResult.NotReady)
         {
             VkCheck.ThrowIfFailed(queried, "vkGetQueryPoolResults");
         }
@@ -1606,7 +1607,7 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
     }
 
     private static VkImageMemoryBarrier2 Barrier(
-        ulong image, VkImageLayout from, VkImageLayout to, VkPipelineStageFlagBits2 srcStage, VkAccessFlagBits2 srcAccess, VkPipelineStageFlagBits2 dstStage, VkAccessFlagBits2 dstAccess) => new()
+        ulong image, VkImageLayout from, VkImageLayout to, VkPipelineStageFlags2 srcStage, VkAccessFlags2 srcAccess, VkPipelineStageFlags2 dstStage, VkAccessFlags2 dstAccess) => new()
         {
             srcStageMask = srcStage,
             srcAccessMask = srcAccess,
@@ -1617,7 +1618,7 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
             srcQueueFamilyIndex = uint.MaxValue,
             dstQueueFamilyIndex = uint.MaxValue,
             image = image,
-            subresourceRange = new VkImageSubresourceRange { aspectMask = VkImageAspectFlagBits.COLOR_BIT, levelCount = 1, layerCount = 1 },
+            subresourceRange = new VkImageSubresourceRange { aspectMask = VkImageAspectFlags.Color, levelCount = 1, layerCount = 1 },
         };
 
     private void PipelineBarrier(nint cb, VkImageMemoryBarrier2* images, int imageCount, VkMemoryBarrier2* memory)
@@ -1744,18 +1745,18 @@ internal sealed unsafe class HevcHardwareDecoder : IVideoDecoder
 
         public static void Fill(ProfileBlock* self, int bitDepth)
         {
-            VkVideoComponentBitDepthFlagBitsKHR depth = bitDepth == 8 ? VkVideoComponentBitDepthFlagBitsKHR._8_BIT_KHR : VkVideoComponentBitDepthFlagBitsKHR._10_BIT_KHR;
-            self->Usage = new VkVideoDecodeUsageInfoKHR { videoUsageHints = VkVideoDecodeUsageFlagBitsKHR.TRANSCODING_BIT_KHR };
+            VkVideoComponentBitDepthFlagsKHR depth = bitDepth == 8 ? VkVideoComponentBitDepthFlagsKHR.Depth8 : VkVideoComponentBitDepthFlagsKHR.Depth10;
+            self->Usage = new VkVideoDecodeUsageInfoKHR { videoUsageHints = VkVideoDecodeUsageFlagsKHR.Transcoding };
             self->H265 = new VkVideoDecodeH265ProfileInfoKHR
             {
                 pNext = &self->Usage,
-                stdProfileIdc = bitDepth == 8 ? StdVideoH265ProfileIdc.MAIN : StdVideoH265ProfileIdc.MAIN_10,
+                stdProfileIdc = bitDepth == 8 ? StdVideoH265ProfileIdc.Main : StdVideoH265ProfileIdc.Main10,
             };
             self->Profile = new VkVideoProfileInfoKHR
             {
                 pNext = &self->H265,
-                videoCodecOperation = VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR,
-                chromaSubsampling = VkVideoChromaSubsamplingFlagBitsKHR._420_BIT_KHR,
+                videoCodecOperation = VkVideoCodecOperationFlagsKHR.DecodeH265,
+                chromaSubsampling = VkVideoChromaSubsamplingFlagsKHR.Subsampling420,
                 lumaBitDepth = depth,
                 chromaBitDepth = depth,
             };

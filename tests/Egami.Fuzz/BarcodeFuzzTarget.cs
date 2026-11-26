@@ -31,6 +31,14 @@ internal static class BarcodeFuzzTarget
                 case "qr":
                     barcode = Barcode.Qr(text, new QrOptions { ErrorCorrection = (QrErrorCorrection)(o & 3), Version = (o & 4) != 0 ? 1 + (o >> 3) : null });
                     break;
+                case "microqr":
+                    barcode = Barcode.MicroQr(text, new MicroQrOptions
+                    {
+                        ErrorCorrection = (QrErrorCorrection)((o & 3) % 3),
+                        MinVersion = (o & 4) != 0 ? 1 + ((o >> 3) & 3) : null,
+                        RaiseErrorCorrection = (o & 32) == 0,
+                    });
+                    break;
                 case "datamatrix":
                     barcode = (o & 8) != 0
                         ? Barcode.DataMatrix(Gs1.Parse(text), new DataMatrixOptions { Shape = (DataMatrixShape)(o % 3) })
@@ -66,6 +74,14 @@ internal static class BarcodeFuzzTarget
                     // Without Full ASCII forced, a text with $, %, / or + pairs reads back as the characters they stand for.
                     barcode = Barcode.Code39(text, new Code39Options { CheckDigit = (o & 1) != 0, FullAscii = (o & 2) != 0 ? true : null });
                     expected = null;
+                    break;
+                case "code93":
+                    barcode = Barcode.Code93(text, new Code93Options { FullAscii = (o & 1) != 0 ? false : null });
+                    break;
+                case "codabar":
+                    // Codabar comes back with its start and stop characters and any check character, as written.
+                    barcode = Barcode.Codabar(text, new CodabarOptions { Start = (char)('A' + (o & 3)), Stop = (char)('A' + ((o >> 2) & 3)), CheckDigit = (o & 16) != 0, WideRatio = (o & 32) != 0 ? 3 : null });
+                    expected = barcode.HumanReadableText;
                     break;
                 case "itf":
                     barcode = (o & 1) != 0 ? Barcode.Itf14(text) : Barcode.Itf(text, new ItfOptions { BearerBars = (o & 2) != 0 });

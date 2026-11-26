@@ -17,7 +17,7 @@ stay the default: hardware is used only when an app asks for it.
 - A 64-bit process on Windows or Linux.
 - Nothing to install with the app. Egami ships no native code: the package calls the Vulkan loader the graphics driver
   installs (`vulkan-1.dll` on Windows, `libvulkan.so.1` on Linux) through one exported function and the function pointers it
-  hands back. On a machine without that loader, such as a server without a GPU or a CI runner, hardware video is simply not
+  hands back, with the managed Vortice.Vulkan bindings that NuGet brings along. On a machine without that loader, such as a server without a GPU or a CI runner, hardware video is simply not
   available.
 
 ## Is hardware video available?

@@ -16,8 +16,7 @@ public sealed class LineBoxTests(ITestOutputHelper output)
         foreach (LayoutReferences.Case c in LayoutReferences.AllCases())
         {
             // Line limits have their own gate (LineLimitTests).
-            if (!c.Style.TryGetProperty("maxLines", out _) && c.Name != "thai"
-                && !LineFillTests.KnownPositionDifferences.Contains(c.Name))
+            if (!c.Style.TryGetProperty("maxLines", out _) && !LineFillTests.KnownPositionDifferences.Contains(c.Name))
             {
                 data.Add(c.Name);
             }

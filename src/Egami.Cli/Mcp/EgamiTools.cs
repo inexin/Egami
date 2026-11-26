@@ -45,7 +45,7 @@ internal static class EgamiTools
             Failure = CliSession.FailureOf,
 
             // Commands that only read.
-            ReadOnly = new HashSet<string>(StringComparer.Ordinal) { "info", "formats", "stats", "metadata_show" },
+            ReadOnly = new HashSet<string>(StringComparer.Ordinal) { "info", "formats", "stats", "metadata_show", "font_info" },
 
             // Arguments a command can't run without, though its tree calls them optional (tool review R3).
             Needed = new HashSet<(string, string)> { ("rotate", "angle"), ("flip", "direction"), ("text", "text"), ("overlay", "image") },

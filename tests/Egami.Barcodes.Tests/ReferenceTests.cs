@@ -16,7 +16,7 @@ public class ReferenceTests
         [.. Load("cases.json").GetProperty("cases").EnumerateArray()]);
 
     /// <summary>The factories the cases may name; cases for others are not run yet.</summary>
-    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune"];
+    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Code93", "Codabar", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "MicroQr", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune"];
 
     public static TheoryData<string> Cases =>
         [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!)).Select(c => c.GetProperty("name").GetString()!)];
@@ -46,14 +46,17 @@ public class ReferenceTests
             return;
         }
 
-        Assert.Equal(zint.GetProperty("width").GetInt32(), barcode.Modules.Width);
+        // zint ends a Codabar symbol with the narrow gap that follows each character; Egami's linear symbols end with a bar.
+        int trailing = barcode.Format == BarcodeFormat.Codabar ? 1 : 0;
+        Assert.Equal(zint.GetProperty("width").GetInt32() - trailing, barcode.Modules.Width);
         if (!barcode.Modules.IsLinear)
         {
             Assert.Equal(string.Join('\n', zint.GetProperty("modules").EnumerateArray().Select(r => r.GetString())), Grid(barcode.Modules).TrimEnd('\n'));
             return;
         }
 
-        Assert.Equal(zint.GetProperty("modules")[0].GetString(), Row(barcode.Modules));
+        string row = zint.GetProperty("modules")[0].GetString()!;
+        Assert.Equal(row[..^trailing], Row(barcode.Modules));
     }
 
     [Theory]
@@ -97,6 +100,14 @@ public class ReferenceTests
             "Code128" => Barcode.Code128(data),
             "Gs1_128" => Barcode.Gs1Code128(data),
             "Code39" => Barcode.Code39(data, new Code39Options { CheckDigit = Flag(options, "checkDigit") }),
+            "Code93" => Barcode.Code93(data, new Code93Options { FullAscii = Flag(options, "fullAscii") ? true : null }),
+            "Codabar" => Barcode.Codabar(data, new CodabarOptions
+            {
+                Start = Text(options, "start")?[0] ?? 'A',
+                Stop = Text(options, "stop")?[0] ?? 'A',
+                CheckDigit = Flag(options, "checkDigit"),
+                WideRatio = Number(options, "wideRatio"),
+            }),
             "Itf" => Barcode.Itf(data),
             "Itf14" => Barcode.Itf14(data),
             "Ean13" => Barcode.Ean13(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),
@@ -105,6 +116,12 @@ public class ReferenceTests
             "UpcE" => Barcode.UpcE(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),
             "Qr" => Barcode.Qr(data, new QrOptions { ErrorCorrection = Text(options, "level") is string level ? Enum.Parse<QrErrorCorrection>(level) : null }),
             "QrGs1" => Barcode.Qr(Gs1.Parse(data)),
+            "MicroQr" => Barcode.MicroQr(data, new MicroQrOptions
+            {
+                ErrorCorrection = Text(options, "level") is string microLevel ? Enum.Parse<QrErrorCorrection>(microLevel) : QrErrorCorrection.L,
+                MinVersion = Number(options, "minVersion"),
+                RaiseErrorCorrection = options.ValueKind != JsonValueKind.Object || !options.TryGetProperty("raise", out JsonElement raise) || raise.GetBoolean(),
+            }),
             "DataMatrix" => Barcode.DataMatrix(data, Text(options, "shape") switch
             {
                 "Any" => new DataMatrixOptions { Shape = DataMatrixShape.Any },

@@ -69,6 +69,116 @@
   "grid": "3b2a7db66ea08f10",
   "text": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac \u2192 OK"
  },
+ "codabar-all": {
+  "format": "Codabar",
+  "grid": "2ecb8de20abcdfe5",
+  "text": "B-$:/.+0123456789B"
+ },
+ "codabar-check": {
+  "format": "Codabar",
+  "grid": "8796a94398bbc300",
+  "text": "A12346A"
+ },
+ "codabar-check-given": {
+  "format": "Codabar",
+  "grid": "83525503b0237071",
+  "text": "A40156+B"
+ },
+ "codabar-check-long": {
+  "format": "Codabar",
+  "grid": "ab9c2485646817d7",
+  "text": "B311170132063756B"
+ },
+ "codabar-check-symbols": {
+  "format": "Codabar",
+  "grid": "5ed981b076fae842",
+  "text": "C-$:/.+0D"
+ },
+ "codabar-check-zero": {
+  "format": "Codabar",
+  "grid": "3331c6bb77060e90",
+  "text": "A00A"
+ },
+ "codabar-classic": {
+  "format": "Codabar",
+  "grid": "3dac84327c95efd7",
+  "text": "A40156B"
+ },
+ "codabar-dd": {
+  "format": "Codabar",
+  "grid": "307deccdde9958cf",
+  "text": "D01D"
+ },
+ "codabar-default": {
+  "format": "Codabar",
+  "grid": "87e261e45e3edb88",
+  "text": "A1234A"
+ },
+ "codabar-given": {
+  "format": "Codabar",
+  "grid": "7e560d0e8efeb825",
+  "text": "A1234B"
+ },
+ "codabar-given-wins": {
+  "format": "Codabar",
+  "grid": "5fec3d1869638c1c",
+  "text": "C12D"
+ },
+ "codabar-library": {
+  "format": "Codabar",
+  "grid": "16182bb1f6c35c08",
+  "text": "C31117013206375D"
+ },
+ "codabar-long": {
+  "format": "Codabar",
+  "grid": "40efdd01605f30dc",
+  "text": "A12345678901234567890123456789012345678901234567890A"
+ },
+ "codabar-money": {
+  "format": "Codabar",
+  "grid": "48e0fdbd244717ae",
+  "text": "A$12.50A"
+ },
+ "codabar-plus": {
+  "format": "Codabar",
+  "grid": "eae06ab9ec6a96d9",
+  "text": "A+1-555-0100A"
+ },
+ "codabar-start-stop": {
+  "format": "Codabar",
+  "grid": "6834bb3780f95add",
+  "text": "B5678C"
+ },
+ "codabar-start-stop-d": {
+  "format": "Codabar",
+  "grid": "1dd389d8d967efa3",
+  "text": "D98B"
+ },
+ "codabar-symbols": {
+  "format": "Codabar",
+  "grid": "bb768e05c95782cb",
+  "text": "A-$:/.+A"
+ },
+ "codabar-time": {
+  "format": "Codabar",
+  "grid": "10f99ec27f20b019",
+  "text": "A12:30/45A"
+ },
+ "codabar-two": {
+  "format": "Codabar",
+  "grid": "3331c6bb77060e90",
+  "text": "A00A"
+ },
+ "codabar-wide3": {
+  "format": "Codabar",
+  "grid": "8e0f3ed43a45930f",
+  "text": "A1234A"
+ },
+ "codabar-wide3-check": {
+  "format": "Codabar",
+  "grid": "f285408ef3329e76",
+  "text": "B-$:/.+3B"
+ },
  "code128-control": {
   "format": "Code128",
   "grid": "c641b6ae73bd0da3",
@@ -148,6 +258,121 @@
   "format": "Code39",
   "grid": "12b707e56c50164a",
   "text": "HELLO WORLD-1.$/+%"
+ },
+ "code93-alphabet": {
+  "format": "Code93",
+  "grid": "68d9b88bb0170f6e",
+  "text": "abcdefghijklmnopqrstuvwxyz"
+ },
+ "code93-alternating": {
+  "format": "Code93",
+  "grid": "e130af5e283102cd",
+  "text": "a1B2c3"
+ },
+ "code93-control": {
+  "format": "Code93",
+  "grid": "8cf3a7099d9e4ffa",
+  "text": "AB\tCD\r\n"
+ },
+ "code93-digits": {
+  "format": "Code93",
+  "grid": "cad6c621b7effffe",
+  "text": "1234567890"
+ },
+ "code93-full-ascii-on": {
+  "format": "Code93",
+  "grid": "be125c7758378a69",
+  "text": "ABC123"
+ },
+ "code93-full-ascii-on-lower": {
+  "format": "Code93",
+  "grid": "b355afd0a8432007",
+  "text": "abc"
+ },
+ "code93-hello": {
+  "format": "Code93",
+  "grid": "945c309f3360f188",
+  "text": "Hello, World!"
+ },
+ "code93-long": {
+  "format": "Code93",
+  "grid": "928338c03d4c81f2",
+  "text": "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG 0123456789-.$/+%"
+ },
+ "code93-long-lower": {
+  "format": "Code93",
+  "grid": "88ab2d0724630d82",
+  "text": "the quick brown fox jumps over the lazy dog, 42 times!"
+ },
+ "code93-lower": {
+  "format": "Code93",
+  "grid": "3c03475ae3ca1128",
+  "text": "code93"
+ },
+ "code93-mixed": {
+  "format": "Code93",
+  "grid": "9d01f0242763c88a",
+  "text": "Code 93!"
+ },
+ "code93-natives": {
+  "format": "Code93",
+  "grid": "8619ffc48dfb539e",
+  "text": "$%+/"
+ },
+ "code93-nul-del": {
+  "format": "Code93",
+  "grid": "82e66de74d8308e2",
+  "text": "X\u0000Y\u007fZ"
+ },
+ "code93-one": {
+  "format": "Code93",
+  "grid": "bbcfe59130d56766",
+  "text": "A"
+ },
+ "code93-printable-high": {
+  "format": "Code93",
+  "grid": "7e2e9343df0395ce",
+  "text": "PQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+ },
+ "code93-printable-low": {
+  "format": "Code93",
+  "grid": "e1c4d819bf20cbed",
+  "text": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNO"
+ },
+ "code93-punctuation": {
+  "format": "Code93",
+  "grid": "091e4bfc93bce03b",
+  "text": "!\"#&'()*,:;<=>?@[\\]^_`{|}~"
+ },
+ "code93-symbols": {
+  "format": "Code93",
+  "grid": "71cb6451a7f57678",
+  "text": "A-B.C $/+%"
+ },
+ "code93-test93": {
+  "format": "Code93",
+  "grid": "6d709d8dcf342c11",
+  "text": "TEST93"
+ },
+ "code93-wikipedia": {
+  "format": "Code93",
+  "grid": "5f62eaed382caa70",
+  "text": "WIKIPEDIA"
+ },
+ "code93-word": {
+  "format": "Code93",
+  "grid": "641eff5dc57c8efe",
+  "text": "CODE93"
+ },
+ "code93-zeds": {
+  "format": "Code93",
+  "grid": "13b5303db77b8f64",
+  "text": "ZZZZZZZZZZ"
+ },
+ "code93-zero": {
+  "format": "Code93",
+  "grid": "fed8472c8092012b",
+  "text": "0"
  },
  "dm-144": {
   "format": "DataMatrix",
@@ -328,6 +553,131 @@
   "format": "ITF",
   "grid": "b60c137c0c7b0212",
   "text": "15400141288763"
+ },
+ "microqr-kanji-and-latin": {
+  "format": "MicroQRCode",
+  "grid": "009ec1ae2ccc5eea",
+  "text": "ab\u6f22\u5b5712"
+ },
+ "microqr-latin1": {
+  "format": "MicroQRCode",
+  "grid": "394fb8b82d9c19df",
+  "text": "Gr\u00fc\u00dfe"
+ },
+ "microqr-level-l-no-raise": {
+  "format": "MicroQRCode",
+  "grid": "7ade86053ee513f2",
+  "text": "123456"
+ },
+ "microqr-level-m": {
+  "format": "MicroQRCode",
+  "grid": "0bff160fbd90023b",
+  "text": "12345"
+ },
+ "microqr-level-q": {
+  "format": "MicroQRCode",
+  "grid": "2b54a47bbf9aa7ac",
+  "text": "HELLO"
+ },
+ "microqr-m1-digit": {
+  "format": "MicroQRCode",
+  "grid": "a6330596dabcff60",
+  "text": "1"
+ },
+ "microqr-m1-five-digits": {
+  "format": "MicroQRCode",
+  "grid": "c2be85d8e1aba743",
+  "text": "12345"
+ },
+ "microqr-m2-alphanumeric": {
+  "format": "MicroQRCode",
+  "grid": "f85a84ebc4835f93",
+  "text": "ABC"
+ },
+ "microqr-m2-alphanumeric-six": {
+  "format": "MicroQRCode",
+  "grid": "962fc1d9ee95c568",
+  "text": "AB-12 "
+ },
+ "microqr-m2-numeric": {
+  "format": "MicroQRCode",
+  "grid": "051234ef6f022879",
+  "text": "123456"
+ },
+ "microqr-m2-numeric-ten": {
+  "format": "MicroQRCode",
+  "grid": "358a20e9c486f9a1",
+  "text": "1234567890"
+ },
+ "microqr-m3-alphanumeric": {
+  "format": "MicroQRCode",
+  "grid": "038711bd8ac98713",
+  "text": "MICRO QR CODE1"
+ },
+ "microqr-m3-byte": {
+  "format": "MicroQRCode",
+  "grid": "806a4010d8e35e70",
+  "text": "hello"
+ },
+ "microqr-m3-byte-nine": {
+  "format": "MicroQRCode",
+  "grid": "a73d78c9393f18b5",
+  "text": "Hello, wo"
+ },
+ "microqr-m3-kanji": {
+  "format": "MicroQRCode",
+  "grid": "96fc3d5b9b4fa916",
+  "text": "\u6f22\u5b57"
+ },
+ "microqr-m3-numeric": {
+  "format": "MicroQRCode",
+  "grid": "001034e76f9a13e4",
+  "text": "12345678901234567890"
+ },
+ "microqr-m4-alphanumeric": {
+  "format": "MicroQRCode",
+  "grid": "4c097ed09c279806",
+  "text": "HTTPS://EGAMI.DEV/ABC"
+ },
+ "microqr-m4-byte": {
+  "format": "MicroQRCode",
+  "grid": "478736ebb9648e7f",
+  "text": "Hello, world!!!"
+ },
+ "microqr-m4-kanji": {
+  "format": "MicroQRCode",
+  "grid": "40aded270442105e",
+  "text": "\u65e5\u672c\u8a9e\u306e\u30c6\u30ad\u30b9\u30c8"
+ },
+ "microqr-m4-numeric": {
+  "format": "MicroQRCode",
+  "grid": "e9e2abc5966c6d40",
+  "text": "12345678901234567890123456789012345"
+ },
+ "microqr-min-version-2-level-m": {
+  "format": "MicroQRCode",
+  "grid": "7b4f25db00991b7e",
+  "text": "42"
+ },
+ "microqr-min-version-3": {
+  "format": "MicroQRCode",
+  "grid": "df898ff1440dc4f9",
+  "text": "1"
+ },
+ "microqr-min-version-4": {
+  "format": "MicroQRCode",
+  "grid": "1949ac28b00a6a69",
+  "text": "ABC"
+ },
+ "microqr-mixed-segments": {
+  "format": "MicroQRCode",
+  "grid": "4d89847d80e25510",
+  "text": "ABC123456789def"
+ },
+ "microqr-numeric-then-letters": {
+  "format": "MicroQRCode",
+  "grid": "05238122d61afad9",
+  "text": "12345678ABC"
  },
  "pdf417-byte-shift": {
   "format": "PDF417",

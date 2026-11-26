@@ -84,16 +84,27 @@ internal sealed class CliSession : CliHostSession
     /// <summary>Loads an image named on the command line, such as an overlay or a displacement map.</summary>
     public Raster LoadImage(string path) => Raster.Load(ResolvePath(path), Context);
 
-    /// <inheritdoc/>
-    public override string InputNoun => "image";
+    /// <summary>Gets the extensions of the font files <c>egami font</c> takes from folders.</summary>
+    internal static HashSet<string> FontExtensions { get; } = new(StringComparer.Ordinal) { "ttf", "otf", "ttc", "otc", "woff", "woff2" };
+
+    /// <summary>Gets or sets whether the inputs are fonts (<c>egami font</c>) rather than images, for folders given with <c>--recursive</c>.</summary>
+    public bool FontInputs { get; set; }
 
     /// <inheritdoc/>
-    public override string PatternExample => "*.jpg";
+    public override string InputNoun => FontInputs ? "font" : "image";
+
+    /// <inheritdoc/>
+    public override string PatternExample => FontInputs ? "*.ttf" : "*.jpg";
 
     /// <inheritdoc/>
     public override bool IsInput(string path)
     {
         string extension = Path.GetExtension(path).TrimStart('.');
+        if (FontInputs)
+        {
+            return FontExtensions.Contains(extension.ToLowerInvariant());
+        }
+
         return extension.Length > 0 && Formats.Any(f => f.Reader is not null && f.Extensions.Any(e => e.Equals(extension, StringComparison.OrdinalIgnoreCase)));
     }
 
