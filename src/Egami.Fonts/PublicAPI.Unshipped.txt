@@ -58,3 +58,10 @@ static Egami.Fonts.Layout.WordDictionary.FromWords(System.Collections.Generic.IE
 static Egami.Fonts.Layout.WordDictionary.Load(System.IO.Stream! stream) -> Egami.Fonts.Layout.WordDictionary!
 Egami.Fonts.Layout.LineBreakOptions.Dictionaries.get -> Egami.Fonts.Layout.WordDictionaries?
 Egami.Fonts.Layout.LineBreakOptions.Dictionaries.init -> void
+static Egami.Fonts.Unicode.TextSegmenter.Words(System.ReadOnlySpan<char> text, Egami.Fonts.Layout.WordDictionaries? dictionaries) -> Egami.Fonts.Unicode.DictionaryWordEnumerator
+Egami.Fonts.Unicode.DictionaryWordEnumerator
+Egami.Fonts.Unicode.DictionaryWordEnumerator.Current.get -> Egami.Fonts.Unicode.TextSegment
+Egami.Fonts.Unicode.DictionaryWordEnumerator.DictionaryWordEnumerator() -> void
+Egami.Fonts.Unicode.DictionaryWordEnumerator.GetEnumerator() -> Egami.Fonts.Unicode.DictionaryWordEnumerator
+Egami.Fonts.Unicode.DictionaryWordEnumerator.MoveNext() -> bool
+Egami.Fonts.Unicode.DictionaryWordEnumerator.Dispose() -> void

@@ -58,6 +58,7 @@ public sealed partial class Barcode
         int quietZone = format switch
         {
             BarcodeFormat.Qr => 4,
+            BarcodeFormat.MicroQr => 2,
             BarcodeFormat.DataMatrix => 1,
             BarcodeFormat.Pdf417 => 2,
             BarcodeFormat.Aztec => 0,
@@ -69,7 +70,7 @@ public sealed partial class Barcode
             BarcodeFormat.DataBarLimited => 5,
             _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
         };
-        if (format is not (BarcodeFormat.DataBar or BarcodeFormat.DataBarExpanded) && modules.IsLinear != format is not (BarcodeFormat.Qr or BarcodeFormat.DataMatrix or BarcodeFormat.Pdf417 or BarcodeFormat.Aztec))
+        if (format is not (BarcodeFormat.DataBar or BarcodeFormat.DataBarExpanded) && modules.IsLinear != format is not (BarcodeFormat.Qr or BarcodeFormat.MicroQr or BarcodeFormat.DataMatrix or BarcodeFormat.Pdf417 or BarcodeFormat.Aztec))
         {
             throw new ArgumentException(modules.IsLinear ? $"{format} is a 2D format; the modules are linear." : $"{format} is a linear format; the modules are a 2D grid.", nameof(modules));
         }

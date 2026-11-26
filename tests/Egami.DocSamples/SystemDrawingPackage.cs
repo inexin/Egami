@@ -410,6 +410,30 @@ public class SystemDrawingPackage
     }
 
     [Fact]
+    public void Recording()
+    {
+        #region recording
+        // A recording metafile: what a Graphics from FromImage draws is written as EMF+ with a GDI copy, text as glyph records.
+        using MemoryStream file = new();
+        using Metafile metafile = new(file, IntPtr.Zero, new RectangleF(0, 0, 300, 200), MetafileFrameUnit.Pixel, EmfType.EmfPlusDual, "Chart");
+        using (Graphics g = Graphics.FromImage(metafile))
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.FillEllipse(Brushes.SteelBlue, 20, 20, 160, 120);
+            using Font font = new("Arial", 16);
+            g.DrawString("Egami", font, Brushes.Black, 190, 80);
+        }
+
+        // Disposing the Graphics wrote the EMF to the stream; the metafile is now that file, to draw, walk or save as PNG.
+        using MemoryStream png = new();
+        metafile.Save(png, ImageFormat.Png);
+        #endregion
+
+        Assert.Equal(new System.Drawing.Size(300, 200), metafile.Size);
+        Assert.Equal(file.Length, metafile.GetMetafileHeader().MetafileSize);
+    }
+
+    [Fact]
     public void Effects()
     {
         #region effects

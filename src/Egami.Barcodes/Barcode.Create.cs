@@ -34,6 +34,7 @@ public sealed partial class Barcode
         BarcodeFormat.DataBar => DataBar(text),
         BarcodeFormat.DataBarLimited => DataBarLimited(text),
         BarcodeFormat.DataBarExpanded => DataBarExpanded(text),
+        BarcodeFormat.MicroQr => MicroQr(text),
         _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
     };
 }

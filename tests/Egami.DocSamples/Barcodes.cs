@@ -249,6 +249,23 @@ public class Barcodes
     }
 
     [Fact]
+    public void MakeMicroQr()
+    {
+        #region barcode-micro-qr
+        // The smallest version that holds the text, M1 (11 x 11 modules) to M4 (17 x 17), at level L raised while it fits.
+        Barcode part = Barcode.MicroQr("PART-0042");
+
+        // Level M from version M3 on, for a mark that may get scuffed.
+        Barcode serial = Barcode.MicroQr("SN 4711", new MicroQrOptions { ErrorCorrection = QrErrorCorrection.M, MinVersion = 3 });
+
+        using Raster<Gray8> image = part.ToRaster(pixelsPerModule: 6);
+        #endregion
+        Assert.Equal(15, part.Modules.Width);
+        Assert.Equal(15, serial.Modules.Width);
+        Assert.Equal(2, part.QuietZone);
+    }
+
+    [Fact]
     public void MakeQr()
     {
         #region barcode-qr

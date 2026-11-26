@@ -1,4 +1,4 @@
-using Egami.Video.Hardware.Vulkan.Native;
+using Vortice.Vulkan;
 
 namespace Egami.Video.Hardware.Vulkan;
 
@@ -9,7 +9,7 @@ namespace Egami.Video.Hardware.Vulkan;
 /// <param name="VideoOperations">The video codec operations its queues run; none for a family without video.</param>
 /// <param name="ResultStatusQueries">Whether its queues report a video operation's result status through a query.</param>
 internal readonly record struct VulkanQueueFamily(
-    int Index, VkQueueFlagBits Flags, int QueueCount, VkVideoCodecOperationFlagBitsKHR VideoOperations, bool ResultStatusQueries);
+    int Index, VkQueueFlags Flags, int QueueCount, VkVideoCodecOperationFlagsKHR VideoOperations, bool ResultStatusQueries);
 
 /// <summary>A GPU (or a software device) as Vulkan reports it, before a logical device is made on it.</summary>
 internal sealed unsafe class VulkanPhysicalDevice
@@ -17,11 +17,11 @@ internal sealed unsafe class VulkanPhysicalDevice
     private readonly HashSet<string> extensions = new(StringComparer.Ordinal);
     private VkPhysicalDeviceMemoryProperties memory;
 
-    internal VulkanPhysicalDevice(VulkanInstance instance, nint handle)
+    internal VulkanPhysicalDevice(VulkanInstance instance, VkPhysicalDevice handle)
     {
         Instance = instance;
         Handle = handle;
-        VkInstanceCommands vk = instance.Commands;
+        VkInstanceApi vk = instance.Commands;
 
         VkPhysicalDeviceDriverProperties driver = new();
         VkPhysicalDeviceProperties2 properties = new() { pNext = &driver };
@@ -65,7 +65,7 @@ internal sealed unsafe class VulkanPhysicalDevice
             {
                 VkQueueFamilyProperties p = f[i].queueFamilyProperties;
                 QueueFamilies[i] = new VulkanQueueFamily(
-                    i, p.queueFlags, (int)p.queueCount, hasVideo ? v[i].videoCodecOperations : 0, hasVideo && s[i].queryResultStatusSupport != 0);
+                    i, p.queueFlags, (int)p.queueCount, hasVideo ? v[i].videoCodecOperations : 0, hasVideo && s[i].queryResultStatusSupport);
             }
         }
 
@@ -78,7 +78,7 @@ internal sealed unsafe class VulkanPhysicalDevice
     public VulkanInstance Instance { get; }
 
     /// <summary>Gets the <c>VkPhysicalDevice</c> handle, valid as long as the instance.</summary>
-    public nint Handle { get; }
+    public VkPhysicalDevice Handle { get; }
 
     /// <summary>Gets the device's name.</summary>
     public string Name { get; }
@@ -114,7 +114,7 @@ internal sealed unsafe class VulkanPhysicalDevice
     public bool HasExtension(string name) => extensions.Contains(name);
 
     /// <summary>Returns the first queue family whose queues run <paramref name="operation"/>, or -1.</summary>
-    public int FindVideoQueueFamily(VkVideoCodecOperationFlagBitsKHR operation)
+    public int FindVideoQueueFamily(VkVideoCodecOperationFlagsKHR operation)
     {
         foreach (VulkanQueueFamily family in QueueFamilies)
         {
@@ -128,7 +128,7 @@ internal sealed unsafe class VulkanPhysicalDevice
     }
 
     /// <summary>Returns the index of a memory type in <paramref name="typeBits"/> with all of <paramref name="required"/>, or -1.</summary>
-    public int FindMemoryType(uint typeBits, VkMemoryPropertyFlagBits required)
+    public int FindMemoryType(uint typeBits, VkMemoryPropertyFlags required)
     {
         for (int i = 0; i < memory.memoryTypeCount; i++)
         {
@@ -141,7 +141,7 @@ internal sealed unsafe class VulkanPhysicalDevice
         return -1;
     }
 
-    private void ReadExtensions(VkInstanceCommands vk)
+    private void ReadExtensions(VkInstanceApi vk)
     {
         if (extensions.Count > 0)
         {

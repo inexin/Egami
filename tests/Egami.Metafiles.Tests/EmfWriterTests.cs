@@ -436,14 +436,14 @@ public class EmfWriterTests
     }
 
     [Fact]
-    public void ImagesFallBackForNow()
+    public void ImagesAreImageRecords()
     {
         Raster<Rgba8> image = Raster.Create<Rgba8>(4, 4);
         image.Row(1)[2] = new Rgba8(255, 0, 0, 255);
         (Metafile m, EmfCanvas canvas, _) = WriteWithCanvas(c => c.DrawImage(image, new RectF(20, 20, 80, 80)));
-        Assert.Single(canvas.Warnings);
-        Assert.Contains("image", canvas.Warnings[0].Message, StringComparison.Ordinal);
-        Assert.Single(m.Content.PlusRecords, r => r.Type == 0x401A);
+        Assert.Empty(canvas.Warnings);
+        Assert.Single(m.Content.PlusRecords, r => r.Type == 0x401B); // DrawImagePoints
+        Assert.Single(m.Content.Records, r => r.Type == 114); // EMR_ALPHABLEND
     }
 
     private static (Metafile Metafile, EmfCanvas Canvas, byte[] File) WriteWithCanvas(Action<Canvas> draw, EmfWriteOptions? options = null)

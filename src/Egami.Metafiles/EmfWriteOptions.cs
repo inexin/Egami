@@ -10,9 +10,11 @@ public enum EmfText
     Outlines,
 
     /// <summary>
-    /// The font's name with glyph indices and positions, smaller and kept as text, but drawn with wrong glyphs by a reader that
-    /// lacks the exact font. Egami.Metafiles 1.1 writes glyph runs as outlines with this setting too until glyph records are
-    /// written.
+    /// The font's name with glyph indices and positions (EMF+ DrawDriverString, and GDI ExtTextOutW with glyph indices): smaller
+    /// and kept as text, but drawn with wrong glyphs by a reader that lacks the exact font. A run is still written as outlines
+    /// when its face has no family name GDI can hold, is synthesized bold or italic, emboldened or a variable instance, when its
+    /// glyphs are turned or scaled one by one, when the transform mirrors it, or when its paint is not one color. Color glyphs
+    /// are drawn as their layers and images in either mode.
     /// </summary>
     Glyphs,
 }
@@ -61,8 +63,8 @@ public sealed record class EmfWriteOptions
     }
 
     /// <summary>
-    /// Gets the resolution of fallback images (calls EMF cannot express, drawn by Egami and embedded as bitmaps) and of picture
-    /// paints' tiles, in image pixels per device unit. Defaults to 2.
+    /// Gets the resolution of fallback images (calls EMF cannot express, drawn by Egami and embedded as bitmaps), in image pixels
+    /// per device unit. Defaults to 2.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">The value is not positive and finite.</exception>
     public float FallbackScale

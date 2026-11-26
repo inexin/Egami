@@ -2,7 +2,8 @@ using Egami.Colors;
 using Egami.Pixels;
 using Egami.Video.Codecs;
 using Egami.Video.Hardware.Encoding;
-using Egami.Video.Hardware.Vulkan.Native;
+
+using Vortice.Vulkan;
 
 namespace Egami.Video.Hardware.Tests;
 

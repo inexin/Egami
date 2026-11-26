@@ -360,7 +360,10 @@ public sealed partial class TextLayout
         return Vertical ? [.. rects.Select(r => new TextBounds(r.Top, r.Left, r.Bottom, r.Right))] : rects;
     }
 
-    /// <summary>Gets the word (UAX #29 segment) holding an index: a word, or the spaces or punctuation between words.</summary>
+    /// <summary>Gets the word (UAX #29 segment) holding an index: a word, or the spaces or punctuation between words. Thai,
+    /// Lao, Khmer and Myanmar words come from the paragraph's word dictionaries (<see cref="LineBreakOptions.Dictionaries"/> of
+    /// <see cref="ParagraphStyle.LineBreaking"/>), as <see cref="TextSegmenter.Words(ReadOnlySpan{char}, WordDictionaries)"/>
+    /// finds them.</summary>
     /// <param name="index">A UTF-16 index; the end of the text gives the last segment.</param>
     /// <returns>The segment.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is negative or past the end of the text.</exception>
@@ -373,7 +376,7 @@ public sealed partial class TextLayout
         ArgumentOutOfRangeException.ThrowIfNegative(index);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(index, text.Length);
         TextSegment last = new(0, 0);
-        foreach (TextSegment word in TextSegmenter.Words(text))
+        foreach (TextSegment word in TextSegmenter.Words(text, Paragraph.Style.LineBreaking.Dictionaries))
         {
             if (index < word.End)
             {

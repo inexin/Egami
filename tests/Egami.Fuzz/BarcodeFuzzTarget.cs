@@ -31,6 +31,14 @@ internal static class BarcodeFuzzTarget
                 case "qr":
                     barcode = Barcode.Qr(text, new QrOptions { ErrorCorrection = (QrErrorCorrection)(o & 3), Version = (o & 4) != 0 ? 1 + (o >> 3) : null });
                     break;
+                case "microqr":
+                    barcode = Barcode.MicroQr(text, new MicroQrOptions
+                    {
+                        ErrorCorrection = (QrErrorCorrection)((o & 3) % 3),
+                        MinVersion = (o & 4) != 0 ? 1 + ((o >> 3) & 3) : null,
+                        RaiseErrorCorrection = (o & 32) == 0,
+                    });
+                    break;
                 case "datamatrix":
                     barcode = (o & 8) != 0
                         ? Barcode.DataMatrix(Gs1.Parse(text), new DataMatrixOptions { Shape = (DataMatrixShape)(o % 3) })

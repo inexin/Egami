@@ -78,4 +78,29 @@ public class Unicode
         Assert.Contains("can't", words);
         Assert.False(inside);
     }
+
+    [Fact]
+    public void DictionaryWords()
+    {
+        #region dictionary-words
+        // Thai leaves no spaces between words: the dictionary overload finds them (null means WordDictionaries.BuiltIn).
+        string text = "ภาษาไทยง่ายนิดเดียว";
+        var words = new List<string>();
+        foreach (TextSegment word in TextSegmenter.Words(text, dictionaries: null))
+        {
+            words.Add(text.Substring(word.Start, word.Length)); // ภาษา, ไทย, ง่าย, นิด, เดียว
+        }
+
+        // Unicode's default rules alone split between Thai letters (keeping marks with them); WordDictionaries.None keeps the
+        // run whole.
+        int pieces = 0;
+        foreach (TextSegment _ in TextSegmenter.Words(text))
+        {
+            pieces++;
+        }
+        #endregion
+
+        Assert.Equal(["ภาษา", "ไทย", "ง่าย", "นิด", "เดียว"], words);
+        Assert.Equal(16, pieces);
+    }
 }

@@ -1,4 +1,4 @@
-using Egami.Video.Hardware.Vulkan.Native;
+using Vortice.Vulkan;
 
 namespace Egami.Video.Hardware.Vulkan;
 
@@ -8,11 +8,11 @@ namespace Egami.Video.Hardware.Vulkan;
 /// </summary>
 internal static class VulkanVideoContext
 {
-    private const VkVideoCodecOperationFlagBitsKHR DecodeOperations =
-        VkVideoCodecOperationFlagBitsKHR.DECODE_H264_BIT_KHR | VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR;
+    private const VkVideoCodecOperationFlagsKHR DecodeOperations =
+        VkVideoCodecOperationFlagsKHR.DecodeH264 | VkVideoCodecOperationFlagsKHR.DecodeH265;
 
-    private const VkVideoCodecOperationFlagBitsKHR EncodeOperations =
-        VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR | VkVideoCodecOperationFlagBitsKHR.ENCODE_H265_BIT_KHR;
+    private const VkVideoCodecOperationFlagsKHR EncodeOperations =
+        VkVideoCodecOperationFlagsKHR.EncodeH264 | VkVideoCodecOperationFlagsKHR.EncodeH265;
 
     private static readonly Lock Gate = new();
     private static readonly Dictionary<nint, VulkanDevice> Devices = [];
@@ -26,7 +26,7 @@ internal static class VulkanVideoContext
     /// <param name="operation">The decode or encode operation.</param>
     /// <param name="profile">The codec profile the device must support, as the probe names it ("High", "Main 10").</param>
     /// <exception cref="HardwareVideoException">No GPU has the operation, or the driver refused the device.</exception>
-    public static VulkanDevice GetDevice(VkVideoCodecOperationFlagBitsKHR operation, string profile)
+    public static VulkanDevice GetDevice(VkVideoCodecOperationFlagsKHR operation, string profile)
     {
         lock (Gate)
         {
@@ -47,13 +47,13 @@ internal static class VulkanVideoContext
 
             (string codecId, HardwareDirection direction) = operation switch
             {
-                VkVideoCodecOperationFlagBitsKHR.DECODE_H264_BIT_KHR => (CodecIds.Avc, HardwareDirection.Decode),
-                VkVideoCodecOperationFlagBitsKHR.ENCODE_H264_BIT_KHR => (CodecIds.Avc, HardwareDirection.Encode),
-                VkVideoCodecOperationFlagBitsKHR.DECODE_H265_BIT_KHR => (CodecIds.Hevc, HardwareDirection.Decode),
+                VkVideoCodecOperationFlagsKHR.DecodeH264 => (CodecIds.Avc, HardwareDirection.Decode),
+                VkVideoCodecOperationFlagsKHR.EncodeH264 => (CodecIds.Avc, HardwareDirection.Encode),
+                VkVideoCodecOperationFlagsKHR.DecodeH265 => (CodecIds.Hevc, HardwareDirection.Decode),
                 _ => (CodecIds.Hevc, HardwareDirection.Encode),
             };
             VulkanPhysicalDevice[] physicals = _instance.EnumeratePhysicalDevices();
-            foreach (VulkanPhysicalDevice physical in physicals.OrderBy(p => p.Type == VkPhysicalDeviceType.DISCRETE_GPU ? 0 : 1))
+            foreach (VulkanPhysicalDevice physical in physicals.OrderBy(p => p.Type == VkPhysicalDeviceType.DiscreteGpu ? 0 : 1))
             {
                 if (physical.FindVideoQueueFamily(operation) < 0
                     || !VulkanProbe.Describe(physical, out _).Profiles.Any(p => p.CodecId == codecId && p.Direction == direction && p.Profile == profile))

@@ -17,14 +17,17 @@ using Size = System.Drawing.Size;
 /// <summary>
 /// Draws on a bitmap, as System.Drawing's Graphics: shapes with pens and brushes, images, clipping, transforms and the page
 /// unit, with GDI+'s defaults: aliased shapes (<see cref="SmoothingMode.None"/>), pixel centers on whole coordinates, bilinear
-/// image sampling without prefiltering, transforms prepended. Get one with <see cref="FromImage(Image)"/>.
+/// image sampling without prefiltering, transforms prepended. Get one with <see cref="FromImage(Image)"/>. A Graphics from a
+/// recording <see cref="Metafile"/> draws the same calls into the metafile, as vectors in pixels of a 96 DPI screen.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="graphics"/>
 /// </example>
 public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceContext
 {
-    private readonly Bitmap _image;
+    private readonly Bitmap? _image;
+    private readonly Metafile? _recorded;
+    private readonly MetafileRecording? _recording;
     private readonly List<(int Id, Settings State, bool Container)> _stack = [];
     private Settings _state = new();
     private int _nextId = 1;
@@ -35,6 +38,13 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
     private Graphics(Bitmap image)
     {
         _image = image;
+        _argbDrawing = SystemDrawingOptions.ArgbDrawing;
+    }
+
+    private Graphics(Metafile metafile, MetafileRecording recording)
+    {
+        _recorded = metafile;
+        _recording = recording;
         _argbDrawing = SystemDrawingOptions.ArgbDrawing;
     }
 
@@ -111,11 +121,11 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
         }
     }
 
-    /// <summary>Gets the horizontal resolution of the bitmap drawn on.</summary>
-    public float DpiX => Alive()._image.HorizontalResolution;
+    /// <summary>Gets the horizontal resolution of the bitmap drawn on, or 96 for a metafile.</summary>
+    public float DpiX => Alive()._image?.HorizontalResolution ?? MetafileRecording.Dpi;
 
-    /// <summary>Gets the vertical resolution of the bitmap drawn on.</summary>
-    public float DpiY => Alive()._image.VerticalResolution;
+    /// <summary>Gets the vertical resolution of the bitmap drawn on, or 96 for a metafile.</summary>
+    public float DpiY => Alive()._image?.VerticalResolution ?? MetafileRecording.Dpi;
 
     /// <summary>Gets or sets whether shapes are antialiased; <see cref="SmoothingMode.None"/> by default. As in GDI+, Default and HighSpeed read back as None, HighQuality as AntiAlias.</summary>
     public SmoothingMode SmoothingMode
@@ -186,17 +196,25 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
     /// <summary>Gets the state settings and transforms act on.</summary>
     private Settings State => Alive()._state;
 
-    /// <summary>A graphics that draws on a bitmap.</summary>
-    /// <param name="image">The bitmap.</param>
+    /// <summary>A graphics that draws on a bitmap, or records into a metafile made with a recording constructor.</summary>
+    /// <param name="image">The bitmap or metafile.</param>
     /// <returns>The graphics.</returns>
     /// <exception cref="ArgumentException">The bitmap is indexed.</exception>
-    /// <exception cref="System.Runtime.InteropServices.ExternalException">The bitmap is 16-bit gray or 16-bit ARGB 1555, which GDI+ cannot draw on either.</exception>
+    /// <exception cref="System.Runtime.InteropServices.ExternalException">The bitmap is 16-bit gray or 16-bit ARGB 1555, which GDI+
+    /// cannot draw on either; or the metafile was loaded, is being recorded by another Graphics, or was recorded.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/SystemDrawingPackage.cs" region="recording"/>
+    /// </example>
     public static Graphics FromImage(Image image)
     {
         ArgumentNullException.ThrowIfNull(image);
+        if (image is Metafile metafile)
+        {
+            return new Graphics(metafile, metafile.BeginRecording());
+        }
+
         if (image is not Bitmap bitmap)
         {
-            // GDI+ would record into a metafile; Egami does not record, so it fails as GDI+ does for a metafile it cannot record to.
             throw GdiErrors.Generic();
         }
 
@@ -309,13 +327,23 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
     [Obsolete(Internal.Diagnostics.ScreenMessage, DiagnosticId = Internal.Diagnostics.Screen, UrlFormat = Internal.Diagnostics.Url)]
     public void CopyFromScreen(int sourceX, int sourceY, int destinationX, int destinationY, Size blockRegionSize, CopyPixelOperation copyPixelOperation) => throw GdiErrors.WindowsOnly("Graphics.CopyFromScreen", "There is no screen to copy from.");
 
-    /// <summary>Releases the graphics; the bitmap keeps what was drawn.</summary>
+    /// <summary>Releases the graphics; the bitmap keeps what was drawn. A recording ends: the metafile's file is written, to its file or stream too.</summary>
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         _disposed = true;
-        _canvas?.Dispose();
+        if (_recording is null)
+        {
+            _canvas?.Dispose();
+        }
+
         _inPlace?.Dispose();
         _inPlace = null;
+        _recorded?.EndRecording();
     }
 
     /// <summary>Does nothing: Egami draws each call at once.</summary>
@@ -335,13 +363,20 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
     /// <param name="color">The color.</param>
     public void Clear(Color color)
     {
+        if (_recording is not null)
+        {
+            // An EMF+ Clear record, as GDI+ records it.
+            Draw(null, canvas => canvas.Clear(SolidBrush.Rgba(color)));
+            return;
+        }
+
         Draw(null, canvas => canvas.DrawPaint(new SolidPaint(SolidBrush.Rgba(color)) { BlendMode = BlendMode.Source, Antialias = false }));
     }
 
     /// <summary>The nearest color GDI+ reports for the bitmap's pixel format: the 16-bit formats cut the low bits; the others keep the color.</summary>
     /// <param name="color">The color.</param>
     /// <returns>The nearest color.</returns>
-    public Color GetNearestColor(Color color) => Alive()._image.PixelFormat switch
+    public Color GetNearestColor(Color color) => Alive()._image?.PixelFormat switch
     {
         // GDI+ cuts the low bits and drops the alpha, without the bit replication the pixels themselves get.
         PixelFormat.Format16bppRgb555 => Color.FromArgb(255, color.R & 0xF8, color.G & 0xF8, color.B & 0xF8),
@@ -538,8 +573,14 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
             area = area is RectF a ? Intersect(a, c) : c;
         }
 
+        if (_recording is not null)
+        {
+            _recording.Draw(area, clip, draw);
+            return;
+        }
+
         Surface.Draw(
-            _image.Current,
+            _image!.Current,
             area,
             CanvasOptionsFor(Smooth, State.CompositingQuality),
             canvas =>
@@ -628,7 +669,7 @@ public sealed partial class Graphics : MarshalByRefObject, IDisposable, IDeviceC
             throw GdiErrors.InvalidParameter();
         }
 
-        _image.CheckAlive();
+        _image?.CheckAlive();
         return this;
     }
 

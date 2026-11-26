@@ -12,11 +12,14 @@ namespace Egami.Metafiles;
 /// GDI) and stroked with every <see cref="Stroke"/> setting; transforms, save and restore, and rectangle and path clips carry over.
 /// Linear and centered radial gradients, image and picture paints become EMF+ brushes (opaque linear gradients are GDI gradient
 /// fills in the GDI part, the rest images there); a color matrix or blend paint over solid colors becomes its color; and a
-/// layer with only an opacity is folded into its shapes when they do not overlap.
-/// What this version does not write as vectors (sweep and two-point conical gradients, other blend modes, blurs, images,
-/// meshes and other layers with opacity, blend modes, filters or masks) is drawn by Egami into a bitmap of that area at
+/// layer with only an opacity is folded into its shapes when they do not overlap. Images are EMF+ images (PNG and JPEG files
+/// kept as they are) and GDI AlphaBlend bitmaps; pictures are played inline. Glyph runs are written as outlines, or as text
+/// with <see cref="EmfText.Glyphs"/>.
+/// What this version does not write as vectors (sweep and two-point conical gradients, other blend modes, blurs, meshes and
+/// other layers with opacity, blend modes, filters or masks) is drawn by Egami into a bitmap of that area at
 /// <see cref="EmfWriteOptions.FallbackScale"/> and embedded, with one <c>Metafile.FallbackImage</c> warning per kind in
-/// <see cref="Warnings"/>. Glyph runs are written as outlines.
+/// <see cref="Warnings"/>; a call that blends with what is beneath it is drawn over everything before it, and its bitmap
+/// replaces those pixels.
 /// <para>
 /// The canvas's units are pixels of a reference device at <see cref="EmfWriteOptions.Dpi"/>. The header's frame covers the
 /// canvas in 0.01 mm, inclusive of its last pixel row and column as GDI+ writes it, so GDI+ and Office show the picture at the
@@ -78,6 +81,7 @@ public sealed partial class EmfCanvas : Canvas
             Brush = WhiteBrush,
             FillMode = 1,
             Miter = 10,
+            TextColor = uint.MaxValue,
         };
         Prologue();
     }
@@ -103,6 +107,10 @@ public sealed partial class EmfCanvas : Canvas
         public float Miter;
         public uint PlusSave;
         public int Interpolation;
+        public int TextHint;
+        public uint Font;
+        public uint TextColor;
+        public int TextAlign;
     }
 
     /// <inheritdoc/>
@@ -222,6 +230,7 @@ public sealed partial class EmfCanvas : Canvas
     {
         _file.PlusSave = ++_plusSaves;
         _saved.Add(_file);
+        _history.Add((c, _) => c.Save());
         if (_plus)
         {
             _w.Plus(0x4025, 0, _w.Data().U32(_file.PlusSave).Span);
@@ -242,6 +251,7 @@ public sealed partial class EmfCanvas : Canvas
 
         FileState saved = _saved[^1];
         _saved.RemoveAt(_saved.Count - 1);
+        _history.Add((c, _) => c.Restore());
         if (_plus)
         {
             _w.Plus(0x4026, 0, _w.Data().U32(saved.PlusSave).Span);
@@ -298,6 +308,7 @@ public sealed partial class EmfCanvas : Canvas
         _gdiSaved.RemoveAt(_gdiSaved.Count - 1);
         _w.Gdi(34, _w.Data().I32(-1).Span); // EMR_RESTOREDC
         (_file.GdiWorld, _file.Pen, _file.Brush, _file.FillMode, _file.Miter) = (s.GdiWorld, s.Pen, s.Brush, s.FillMode, s.Miter);
+        (_file.Font, _file.TextColor, _file.TextAlign) = (s.Font, s.TextColor, s.TextAlign);
     }
 
     /// <summary>SetAntiAliasMode: SmoothingModeAntiAlias (4) with the antialias bit, or SmoothingModeNone (3).</summary>
@@ -341,14 +352,14 @@ public sealed partial class EmfCanvas : Canvas
     /// <summary>Whether a GDI handle is selected now or in a saved state, which RestoreDC would select again.</summary>
     private bool Selected(uint handle)
     {
-        if (_file.Pen == handle || _file.Brush == handle)
+        if (_file.Pen == handle || _file.Brush == handle || _file.Font == handle)
         {
             return true;
         }
 
         foreach (FileState s in _saved.Concat(_gdiSaved))
         {
-            if (s.Pen == handle || s.Brush == handle)
+            if (s.Pen == handle || s.Brush == handle || s.Font == handle)
             {
                 return true;
             }
@@ -361,6 +372,7 @@ public sealed partial class EmfCanvas : Canvas
 
     private void WriteClip(Path path, RectF? rect, ClipOp op, bool antialias)
     {
+        Remember(c => c.ClipPath(path, op, antialias));
         Matrix3x2 m = Matrix;
         if (op == ClipOp.Difference && path.IsEmpty)
         {

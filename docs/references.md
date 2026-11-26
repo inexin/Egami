@@ -170,14 +170,14 @@ references. CFITSIO and astropy (BSD-3) are not read; ImageMagick runs only as a
 and speed.
 
 For Egami.Video.Hardware, the Vulkan 1.4 specification (Khronos, with its video coding, decode and encode chapters and the
-H.264 and H.265 codec extensions), ITU-T H.264 and H.265 are the references, and the Khronos Vulkan registry is the source of
-the bindings: `registry/vk.xml` and `registry/video.xml` of [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers)
-(Apache-2.0 OR MIT, used under MIT; notice in THIRD-PARTY-NOTICES.md), from which `tools/video/make-vulkan-bindings.py`
-generates the structs, enums and function pointer tables, and whose C headers check the struct layouts. The package calls one
-system library, under the package-scoped exception to the no-native-code rule (maintainer's decisions of 2026-11-14 and
-2026-11-21): the Vulkan loader the GPU driver installs, `vulkan-1.dll` on Windows and `libvulkan.so.1` on Linux, from which it
-takes only `vkGetInstanceProcAddr`. No native binary is shipped and no binding package is used. FFmpeg, GStreamer, Mesa and
-the GPU vendors' video samples (NVIDIA's Vulkan video samples among them) are never read.
+H.264 and H.265 codec extensions), ITU-T H.264 and H.265 are the references. Its Vulkan bindings are the approved package
+Vortice.Vulkan (see Approved packages), used internally; the struct sizes, field offsets and `StdVideo*Flags` bit positions its
+tests check come from the C headers of [Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers) (Apache-2.0 OR MIT,
+used under MIT; notice in THIRD-PARTY-NOTICES.md). The package calls one system library, under the package-scoped exception
+to the no-native-code rule (maintainer's decisions of 2026-11-14 and 2026-11-21): the Vulkan loader the GPU driver installs,
+`vulkan-1.dll` on Windows and `libvulkan.so.1` on Linux, which Vortice.Vulkan loads and from which it takes only
+`vkGetInstanceProcAddr`. No native binary is shipped. FFmpeg, GStreamer, Mesa and the GPU vendors' video samples (NVIDIA's
+Vulkan video samples among them) are never read.
 
 For EPS (2.3.14), Adobe's *Encapsulated PostScript File Format Specification* 3.0 (Technical Note 5002; Adobe's link is
 gone, so it was read from a mirror of Adobe's PDF at opennet.ru/docs/formats/ps3.pdf), the *PostScript Language Document Structuring Conventions Specification* 3.0
@@ -201,6 +201,7 @@ licence and minimum version, set in `Directory.Packages.props`. Raise a minimum 
 | System.CommandLine | MIT (.NET Foundation) | 2.0.13 | Egami.Cli and Egami.Video.Cli, the egami and egami-video tools (apps, not libraries): argument parsing, help, response files | CLI design Q3, 2026-10-16; Video CLI design Q2, 2026-10-22 |
 | ModelContextProtocol.Core | Apache-2.0 (Model Context Protocol project; brings Microsoft.Extensions.AI.Abstractions, Microsoft.Extensions.DependencyInjection.Abstractions and Microsoft.Extensions.Logging.Abstractions, all MIT) | 2.3.0 | Egami.Cli's `egami mcp` and Egami.Video.Cli's `egami-video mcp` modes: the MCP protocol over standard input and output | MCP design Q1, 2026-10-22; Video CLI design Q10, 2026-10-22 |
 | Microsoft.CodeAnalysis.CSharp | MIT (.NET Foundation) | 4.14.0 | Egami.Cli's build-time source generator only; ships nothing | Follows from Q3 and Q15 (no reflection) |
+| Vortice.Vulkan | MIT (Amer Koleci and contributors; no dependencies) | 3.4.0 | Egami.Video.Hardware only, internally: the Vulkan bindings (structs, enums, function pointer tables, loader). 3.4.0 is the first version whose `StdVideo*Flags` structs pack their bit-fields as the C headers do | By name, for Egami.Video.Hardware only, 2026-11-22; adopted 2026-11-25 |
 
 Egap's format add-ons follow the same rule and keep their own list in Egap's docs/references.md.
 

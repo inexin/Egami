@@ -46,7 +46,8 @@ words as ICU's dictionary break engines do: it prefers the word that two more wo
 to where the next word can begin, keeps combining marks and the repetition and abbreviation marks (ๆ, ฯ, ໆ, ຯ) with the word
 before them, and never breaks inside a grapheme cluster. UAX #14 still decides at the run's edges, and `WordBreak.BreakAll`
 breaks between any two letters without a dictionary. Chromium breaks Lao and Khmer with older, smaller lists than ICU's
-current ones, so it splits some compounds Egami keeps whole.
+current ones, so it splits some compounds Egami keeps whole. `GetWordBoundary` and the `CaretMove.NextWord` and
+`PreviousWord` moves use the paragraph's dictionaries too, so a double-click selects one Thai word.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#word-dictionaries)]
 

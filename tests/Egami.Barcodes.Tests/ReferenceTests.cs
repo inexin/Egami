@@ -16,7 +16,7 @@ public class ReferenceTests
         [.. Load("cases.json").GetProperty("cases").EnumerateArray()]);
 
     /// <summary>The factories the cases may name; cases for others are not run yet.</summary>
-    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Code93", "Codabar", "DataBar", "DataBarLimited", "DataBarExpanded", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune"];
+    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Code93", "Codabar", "DataBar", "DataBarLimited", "DataBarExpanded", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "MicroQr", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune"];
 
     public static TheoryData<string> Cases =>
         [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!)).Select(c => c.GetProperty("name").GetString()!)];
@@ -138,6 +138,12 @@ public class ReferenceTests
             "UpcE" => Barcode.UpcE(data, new EanUpcOptions { AddOn = Text(options, "addOn") }),
             "Qr" => Barcode.Qr(data, new QrOptions { ErrorCorrection = Text(options, "level") is string level ? Enum.Parse<QrErrorCorrection>(level) : null }),
             "QrGs1" => Barcode.Qr(Gs1.Parse(data)),
+            "MicroQr" => Barcode.MicroQr(data, new MicroQrOptions
+            {
+                ErrorCorrection = Text(options, "level") is string microLevel ? Enum.Parse<QrErrorCorrection>(microLevel) : QrErrorCorrection.L,
+                MinVersion = Number(options, "minVersion"),
+                RaiseErrorCorrection = options.ValueKind != JsonValueKind.Object || !options.TryGetProperty("raise", out JsonElement raise) || raise.GetBoolean(),
+            }),
             "DataMatrix" => Barcode.DataMatrix(data, Text(options, "shape") switch
             {
                 "Any" => new DataMatrixOptions { Shape = DataMatrixShape.Any },
