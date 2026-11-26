@@ -8,7 +8,7 @@ public sealed partial class Barcode
     /// <see cref="Ean13(string, EanUpcOptions?)"/>.
     /// </summary>
     /// <param name="format">The symbology.</param>
-    /// <param name="text">The text or digits; for <see cref="BarcodeFormat.DataBarExpanded"/>, element strings with each AI in parentheses.</param>
+    /// <param name="text">The text or digits; for <see cref="BarcodeFormat.DataBarExpanded"/>, element strings with each AI in parentheses; for <see cref="BarcodeFormat.JapanPost"/>, the postal code and address number.</param>
     /// <returns>The barcode.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="format"/> is not a <see cref="BarcodeFormat"/>.</exception>
     /// <exception cref="ArgumentException">The text does not suit the format or does not fit in a symbol.</exception>
@@ -35,6 +35,7 @@ public sealed partial class Barcode
         BarcodeFormat.DataBarLimited => DataBarLimited(text),
         BarcodeFormat.DataBarExpanded => DataBarExpanded(text),
         BarcodeFormat.MicroQr => MicroQr(text),
+        BarcodeFormat.JapanPost => JapanPost(text),
         _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
     };
 }
