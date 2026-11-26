@@ -493,8 +493,6 @@ Faster linear reading (roadmap 2.11.2 follow-up).
 
 - The scan lines are cut into runs sixteen samples at a time, each decoder tests the quiet zone before its start pattern, and
   DataBar Limited tests its check character's last two elements before reading its characters: the same reads, faster.
-- Up to effort 5 the columns are scanned only when no row has read a linear symbol, so an image with a horizontal and a
-  vertical linear symbol needs effort 6 to return both.
 - A linear read allocates less: no DataBar tables unless DataBar is asked for, and no inverted local threshold without 2D
   formats.
 - On one thread against zxing-cpp 3.1.1 (egami-compare's speed gate): Codabar 1.06x to 0.72x, Code 93 1.39x to 0.83x,

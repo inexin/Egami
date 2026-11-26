@@ -79,7 +79,8 @@ internal static class LinearScanner
 
         public List<Found> Results { get; } = [];
 
-        public DataBarCollector DataBar { get; } = new();
+        /// <summary>Gets the DataBar pairs and segments seen so far, made when first needed (its tables are large).</summary>
+        public DataBarCollector DataBar => field ??= new();
 
         public List<(DecodedData Data, Vector2 From, Vector2 To)> DataBarFound { get; } = [];
     }
