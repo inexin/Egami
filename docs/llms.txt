@@ -162,7 +162,7 @@ settings, safety limits and registered formats a call uses.
 ## Egami.Barcodes
 
 - [Barcodes](https://inexin.github.io/Egami/v1/articles/guides/barcodes.html): Egami.Barcodes writes and reads barcodes.
-- [Reading barcodes](https://inexin.github.io/Egami/v1/articles/guides/barcode-reading.html): Egami.Barcodes reads every symbology it writes.
+- [Reading barcodes](https://inexin.github.io/Egami/v1/articles/guides/barcode-reading.html): Egami.Barcodes reads every symbology it writes but the postal ones (Japan Post).
 
 ## Egami.Cli
 
