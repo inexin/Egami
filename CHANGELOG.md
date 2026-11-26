@@ -489,6 +489,18 @@ Japan Post customer barcode (roadmap 2.11.3, stage A).
 - `BarcodeFormat.JapanPost` and the group `BarcodeFormat.Postal` are new. Postal barcodes are written, not read, so
   `Postal` is not in `All` and reads with the default options are unchanged.
 
+Faster linear reading (roadmap 2.11.2 follow-up).
+
+- The scan lines are cut into runs sixteen samples at a time, each decoder tests the quiet zone before its start pattern, and
+  DataBar Limited tests its check character's last two elements before reading its characters: the same reads, faster.
+- Up to effort 5 the columns are scanned only when no row has read a linear symbol, so an image with a horizontal and a
+  vertical linear symbol needs effort 6 to return both.
+- A linear read allocates less: no DataBar tables unless DataBar is asked for, and no inverted local threshold without 2D
+  formats.
+- On one thread against zxing-cpp 3.1.1 (egami-compare's speed gate): Codabar 1.07x to 0.70x, Code 93 1.43x to 0.83x,
+  Code 128 0.95x to 0.55x, Code 39 0.69x to 0.42x, ITF 1.57x to 0.75x, EAN and UPC 0.94x to 0.60x, DataBar Limited 2.57x to
+  1.9x; a default read of the blackbox and zint images takes 0.95x of 1.1.0's earlier time.
+
 ## Egami.Cli 1.6.0 (unreleased)
 
 MCP prompts and resources, a guide for coding agents, animated SVG input and font commands. Additive to 1.5.0.
