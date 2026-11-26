@@ -91,7 +91,8 @@
 or in SVG output, and reads them from rasters. It is fully managed.</p>
 <p>It writes and reads QR Code, Micro QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, Code 93,
 Codabar, GS1 DataBar (Omnidirectional, Truncated, Stacked, Stacked Omnidirectional, Limited, Expanded and Expanded Stacked),
-ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on <code>Barcode</code> with typed options; <code>Barcode.Create</code> takes a
+ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. It also writes the Japan Post customer barcode, a 4-state postal code, which
+it does not read. Each has its own factory on <code>Barcode</code> with typed options; <code>Barcode.Create</code> takes a
 format chosen at run time with the default options.</p>
 <pre><code class="lang-csharp">// Labels from a table that stores each barcode's format with its data.
 (BarcodeFormat Format, string Data)[] rows =
@@ -294,6 +295,26 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = label.CreateCanvas())
 
 // A UPC-A number written in its short UPC-E form.
 Barcode small = Barcode.UpcE(&quot;042100005264&quot;);
+</code></pre><h2 id="postal-barcodes">Postal barcodes</h2>
+<p>Postal barcodes are 4-state codes: each bar is a tracker, the short middle third, or reaches up, down or both ways from it.
+Egami writes them as grids of 6 rows, two per third, with a light column between bars, so they draw, render and turn into
+paths like any 2D symbol. It does not read them: <code>BarcodeFormat.Postal</code> holds them, and <code>BarcodeFormat.All</code> leaves them out.</p>
+<h3 id="japan-post">Japan Post</h3>
+<p><code>Barcode.JapanPost</code> writes the Japan Post customer barcode (カスタマバーコード) that mailers print under the address for a
+discount. It takes prepared data, not an address: the 7-digit postal code, with or without its hyphen, then the address number
+that the rules of Japan Post's postal code manual extract from the address (<code>1-3-2-503</code> from 1丁目3番2号 郵便プラザ503室).
+Spaces or one hyphen between the two are dropped, and lowercase letters are made uppercase. The symbol holds 20 characters:
+the postal code takes 7, a digit or hyphen 1, and a letter 2 (a control code and a digit); CC4 pads the rest, and a check
+character follows. An address number that does not fit loses its end, as the manual says, a letter cut in two keeping its
+control code; <code>JapanPostOptions.TruncateAddress</code> set to <code>false</code> throws instead. The human-readable text is the postal code and
+the whole address number. At the manual's module of 0.6 mm (<code>moduleSize: 0.6f</code> in millimetres) the symbol is 79.8 by 3.6 mm,
+and its quiet zone of 4 modules gives the 2 mm the manual asks for around it.</p>
+<pre><code class="lang-csharp">// The postal code and the address number the manual's rules extract from the address, here 1-3-2-503.
+Barcode mail = Barcode.JapanPost(&quot;100-0013 1-3-2-503&quot;);
+
+// Drawn at the manual's 0.6 mm module (here in millimetres): 79.8 by 3.6 mm, in a 2.4 mm quiet zone.
+Path bars = mail.ToPath(moduleSize: 0.6f);
+Console.WriteLine(mail.HumanReadableText); // 100-0013 1-3-2-503
 </code></pre><h2 id="reading-barcodes">Reading barcodes</h2>
 <p><code>raster.ReadBarcodes()</code> finds every barcode in an image and <code>raster.ReadBarcode()</code> the first. <a href="barcode-reading.html">Reading barcodes</a>
 covers the options, photos, camera frames, GS1 data and speed.</p>
@@ -348,7 +369,7 @@ using Raster&lt;Gray8&gt; image = qr.ToRaster(pixelsPerModule: 4);
 </code></pre><h2 id="barcodes-from-modules">Barcodes from modules</h2>
 <p>A <code>Barcode</code> is one symbol: its <code>BarcodeFormat</code>, its <code>Modules</code>, the <code>QuietZone</code> its standard asks for in modules (4 for QR, 2 for
 Micro QR, 1 for Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7
-for EAN-8, 9 for UPC, 1 for GS1 DataBar and DataBar Expanded and 5 for DataBar Limited) and the <code>HumanReadableText</code> printed under a linear symbol. <code>Barcode.FromModules</code> makes one from
+for EAN-8, 9 for UPC, 1 for GS1 DataBar and DataBar Expanded and 5 for DataBar Limited; 4 around a Japan Post barcode) and the <code>HumanReadableText</code> printed under a linear symbol. <code>Barcode.FromModules</code> makes one from
 modules you already have, such as from another encoder.</p>
 <pre><code class="lang-csharp">// Modules from another encoder become a barcode with the quiet zone of their standard: 4 modules for QR.
 Barcode qr = Barcode.FromModules(BarcodeFormat.Qr, modules);

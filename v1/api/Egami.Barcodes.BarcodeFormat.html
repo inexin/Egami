@@ -121,7 +121,7 @@ public enum BarcodeFormat</code></pre>
   <dl class="parameters">
     <dt id="Egami_Barcodes_BarcodeFormat_All"><code>All = Linear | Matrix</code></dt>
   
-  <dd><p>Every symbology.</p>
+  <dd><p>Every symbology Egami reads: <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Linear">Linear</a> and <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Matrix">Matrix</a>, without <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Postal">Postal</a>.</p>
 </dd>
     <dt id="Egami_Barcodes_BarcodeFormat_Aztec"><code>Aztec = 8</code></dt>
   
@@ -173,6 +173,11 @@ module.</p>
   
   <dd><p>Interleaved 2 of 5 and ITF-14 (ISO/IEC 16390), linear; quiet zone 10 modules.</p>
 </dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_JapanPost"><code>JapanPost = 131072</code></dt>
+  
+  <dd><p>The Japan Post customer barcode (カスタマバーコード), a 4-state postal code written as a grid of 6 rows; quiet zone 4
+modules. Egami writes it but does not read it, so it is in <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Postal">Postal</a> only, not in <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_All">All</a>.</p>
+</dd>
     <dt id="Egami_Barcodes_BarcodeFormat_Linear"><code>Linear = Code128 | Code39 | Itf | Ean13 | Ean8 | UpcA | UpcE | Code93 | Codabar | DataBar | DataBarLimited | DataBarExpanded</code></dt>
   
   <dd><p>The linear symbologies.</p>
@@ -192,6 +197,11 @@ module.</p>
     <dt id="Egami_Barcodes_BarcodeFormat_Pdf417"><code>Pdf417 = 4</code></dt>
   
   <dd><p>PDF417 (ISO/IEC 15438); quiet zone 2 modules.</p>
+</dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_Postal"><code>Postal = 131072</code></dt>
+  
+  <dd><p>The 4-state postal symbologies, which Egami writes but does not read; they are not in <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_All">All</a>, so reads with the
+default options are not slowed or misled by them.</p>
 </dd>
     <dt id="Egami_Barcodes_BarcodeFormat_Qr"><code>Qr = 1</code></dt>
   

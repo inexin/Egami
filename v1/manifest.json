@@ -701,6 +701,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.JapanPostOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.JapanPostOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.JapanPostOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.JapanPostOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.JapanPost(System.String%2cEgami.Barcodes.JapanPostOptions)\" data-throw-if-not-resolved=\"false\"></xref> makes a symbol.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Barcodes.MicroQrOptions.yml",
       "output": {
         ".html": {

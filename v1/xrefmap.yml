@@ -1369,6 +1369,22 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.Barcode.Itf14
   nameWithType: Barcode.Itf14
+- uid: Egami.Barcodes.Barcode.JapanPost(System.String,Egami.Barcodes.JapanPostOptions)
+  name: JapanPost(string, JapanPostOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_JapanPost_System_String_Egami_Barcodes_JapanPostOptions_
+  commentId: M:Egami.Barcodes.Barcode.JapanPost(System.String,Egami.Barcodes.JapanPostOptions)
+  name.vb: JapanPost(String, JapanPostOptions)
+  fullName: Egami.Barcodes.Barcode.JapanPost(string, Egami.Barcodes.JapanPostOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.JapanPost(String, Egami.Barcodes.JapanPostOptions)
+  nameWithType: Barcode.JapanPost(string, JapanPostOptions?)
+  nameWithType.vb: Barcode.JapanPost(String, JapanPostOptions)
+- uid: Egami.Barcodes.Barcode.JapanPost*
+  name: JapanPost
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_JapanPost_
+  commentId: Overload:Egami.Barcodes.Barcode.JapanPost
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.JapanPost
+  nameWithType: Barcode.JapanPost
 - uid: Egami.Barcodes.Barcode.MicroQr(System.String,Egami.Barcodes.MicroQrOptions)
   name: MicroQr(string, MicroQrOptions?)
   href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_MicroQr_System_String_Egami_Barcodes_MicroQrOptions_
@@ -1676,6 +1692,12 @@ references:
   commentId: F:Egami.Barcodes.BarcodeFormat.Itf
   fullName: Egami.Barcodes.BarcodeFormat.Itf
   nameWithType: BarcodeFormat.Itf
+- uid: Egami.Barcodes.BarcodeFormat.JapanPost
+  name: JapanPost
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_JapanPost
+  commentId: F:Egami.Barcodes.BarcodeFormat.JapanPost
+  fullName: Egami.Barcodes.BarcodeFormat.JapanPost
+  nameWithType: BarcodeFormat.JapanPost
 - uid: Egami.Barcodes.BarcodeFormat.Linear
   name: Linear
   href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Linear
@@ -1706,6 +1728,12 @@ references:
   commentId: F:Egami.Barcodes.BarcodeFormat.Pdf417
   fullName: Egami.Barcodes.BarcodeFormat.Pdf417
   nameWithType: BarcodeFormat.Pdf417
+- uid: Egami.Barcodes.BarcodeFormat.Postal
+  name: Postal
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Postal
+  commentId: F:Egami.Barcodes.BarcodeFormat.Postal
+  fullName: Egami.Barcodes.BarcodeFormat.Postal
+  nameWithType: BarcodeFormat.Postal
 - uid: Egami.Barcodes.BarcodeFormat.Qr
   name: Qr
   href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Qr
@@ -2814,6 +2842,38 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.ItfOptions.WideRatio
   nameWithType: ItfOptions.WideRatio
+- uid: Egami.Barcodes.JapanPostOptions
+  name: JapanPostOptions
+  href: api/Egami.Barcodes.JapanPostOptions.html
+  commentId: T:Egami.Barcodes.JapanPostOptions
+  fullName: Egami.Barcodes.JapanPostOptions
+  nameWithType: JapanPostOptions
+- uid: Egami.Barcodes.JapanPostOptions.Default
+  name: Default
+  href: api/Egami.Barcodes.JapanPostOptions.html#Egami_Barcodes_JapanPostOptions_Default
+  commentId: P:Egami.Barcodes.JapanPostOptions.Default
+  fullName: Egami.Barcodes.JapanPostOptions.Default
+  nameWithType: JapanPostOptions.Default
+- uid: Egami.Barcodes.JapanPostOptions.Default*
+  name: Default
+  href: api/Egami.Barcodes.JapanPostOptions.html#Egami_Barcodes_JapanPostOptions_Default_
+  commentId: Overload:Egami.Barcodes.JapanPostOptions.Default
+  isSpec: "True"
+  fullName: Egami.Barcodes.JapanPostOptions.Default
+  nameWithType: JapanPostOptions.Default
+- uid: Egami.Barcodes.JapanPostOptions.TruncateAddress
+  name: TruncateAddress
+  href: api/Egami.Barcodes.JapanPostOptions.html#Egami_Barcodes_JapanPostOptions_TruncateAddress
+  commentId: P:Egami.Barcodes.JapanPostOptions.TruncateAddress
+  fullName: Egami.Barcodes.JapanPostOptions.TruncateAddress
+  nameWithType: JapanPostOptions.TruncateAddress
+- uid: Egami.Barcodes.JapanPostOptions.TruncateAddress*
+  name: TruncateAddress
+  href: api/Egami.Barcodes.JapanPostOptions.html#Egami_Barcodes_JapanPostOptions_TruncateAddress_
+  commentId: Overload:Egami.Barcodes.JapanPostOptions.TruncateAddress
+  isSpec: "True"
+  fullName: Egami.Barcodes.JapanPostOptions.TruncateAddress
+  nameWithType: JapanPostOptions.TruncateAddress
 - uid: Egami.Barcodes.MicroQrOptions
   name: MicroQrOptions
   href: api/Egami.Barcodes.MicroQrOptions.html
