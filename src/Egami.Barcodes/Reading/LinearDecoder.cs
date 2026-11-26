@@ -96,6 +96,23 @@ internal static partial class LinearDecoder
         return sum / total;
     }
 
+    /// <summary>Sorts a few values in place, ascending: the character tests sort 3 to 9 runs, too few for the general sort.</summary>
+    private static void SortSmall(Span<float> values)
+    {
+        for (int i = 1; i < values.Length; i++)
+        {
+            float value = values[i];
+            int j = i - 1;
+            while (j >= 0 && values[j] > value)
+            {
+                values[j + 1] = values[j];
+                j--;
+            }
+
+            values[j + 1] = value;
+        }
+    }
+
     private static float Sum(ReadOnlySpan<float> runs)
     {
         float total = 0;
@@ -144,8 +161,14 @@ internal static partial class LinearDecoder
             return null;
         }
 
+        // The quiet zone first: most positions on a line fail it, and it costs least.
+        if (!QuietBefore(runs, start, Sum(runs.Slice(start, 6)) / 2f))
+        {
+            return null;
+        }
+
         int startCode = Best(runs.Slice(start, 6), 103, 106, 0.25f);
-        if (startCode < 0 || !QuietBefore(runs, start, Sum(runs.Slice(start, 6)) / 2f))
+        if (startCode < 0)
         {
             return null;
         }
@@ -419,7 +442,7 @@ internal static partial class LinearDecoder
     {
         Span<float> sorted = stackalloc float[9];
         runs.CopyTo(sorted);
-        sorted.Sort();
+        SortSmall(sorted);
         float narrowMax = sorted[5], wideMin = sorted[6];
         if (sorted[8] > sorted[0] * 5)
         {
@@ -440,8 +463,8 @@ internal static partial class LinearDecoder
 
         Span<float> bars = [runs[0], runs[2], runs[4], runs[6], runs[8]];
         Span<float> spaces = [runs[1], runs[3], runs[5], runs[7]];
-        bars.Sort();
-        spaces.Sort();
+        SortSmall(bars);
+        SortSmall(spaces);
 
         // Two wide bars and one wide space, or no wide bar and three wide spaces; each split needs a clear gap.
         float barsWide = bars[3] >= bars[2] * 1.5f ? bars[3] : float.MaxValue, spacesWide = float.MaxValue;
@@ -526,13 +549,13 @@ internal static partial class LinearDecoder
 
     private static LinearRead? Itf(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start)
     {
-        if (start + 4 > runs.Length || Variance(runs.Slice(start, 4), [1, 1, 1, 1], 0.5f) > 0.3f)
+        if (start + 4 > runs.Length)
         {
             return null;
         }
 
         float narrow = Sum(runs.Slice(start, 4)) / 4f;
-        if (!QuietBefore(runs, start, narrow * 8))
+        if (!QuietBefore(runs, start, narrow * 8) || Variance(runs.Slice(start, 4), [1, 1, 1, 1], 0.5f) > 0.3f)
         {
             return null;
         }
@@ -579,7 +602,7 @@ internal static partial class LinearDecoder
     {
         Span<float> sorted = stackalloc float[5];
         elements.CopyTo(sorted);
-        sorted.Sort();
+        SortSmall(sorted);
         if (sorted[3] < sorted[2] * 1.5f)
         {
             return -1;
@@ -636,13 +659,13 @@ internal static partial class LinearDecoder
 
     private static LinearRead? EanUpc(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, BarcodeFormat formats)
     {
-        if (start + 3 + 24 > runs.Length || Variance(runs.Slice(start, 3), [1, 1, 1], 0.75f) > 0.48f)
+        if (start + 3 + 24 > runs.Length)
         {
             return null;
         }
 
         float module = Sum(runs.Slice(start, 3)) / 3f;
-        if (!QuietBefore(runs, start, module * 3))
+        if (!QuietBefore(runs, start, module * 3) || Variance(runs.Slice(start, 3), [1, 1, 1], 0.75f) > 0.48f)
         {
             return null;
         }
