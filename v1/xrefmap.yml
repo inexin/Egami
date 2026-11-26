@@ -1312,6 +1312,22 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.Barcode.Itf14
   nameWithType: Barcode.Itf14
+- uid: Egami.Barcodes.Barcode.MicroQr(System.String,Egami.Barcodes.MicroQrOptions)
+  name: MicroQr(string, MicroQrOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_MicroQr_System_String_Egami_Barcodes_MicroQrOptions_
+  commentId: M:Egami.Barcodes.Barcode.MicroQr(System.String,Egami.Barcodes.MicroQrOptions)
+  name.vb: MicroQr(String, MicroQrOptions)
+  fullName: Egami.Barcodes.Barcode.MicroQr(string, Egami.Barcodes.MicroQrOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.MicroQr(String, Egami.Barcodes.MicroQrOptions)
+  nameWithType: Barcode.MicroQr(string, MicroQrOptions?)
+  nameWithType.vb: Barcode.MicroQr(String, MicroQrOptions)
+- uid: Egami.Barcodes.Barcode.MicroQr*
+  name: MicroQr
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_MicroQr_
+  commentId: Overload:Egami.Barcodes.Barcode.MicroQr
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.MicroQr
+  nameWithType: Barcode.MicroQr
 - uid: Egami.Barcodes.Barcode.Modules
   name: Modules
   href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Modules
@@ -1597,6 +1613,12 @@ references:
   commentId: F:Egami.Barcodes.BarcodeFormat.Matrix
   fullName: Egami.Barcodes.BarcodeFormat.Matrix
   nameWithType: BarcodeFormat.Matrix
+- uid: Egami.Barcodes.BarcodeFormat.MicroQr
+  name: MicroQr
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_MicroQr
+  commentId: F:Egami.Barcodes.BarcodeFormat.MicroQr
+  fullName: Egami.Barcodes.BarcodeFormat.MicroQr
+  nameWithType: BarcodeFormat.MicroQr
 - uid: Egami.Barcodes.BarcodeFormat.None
   name: None
   href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_None
@@ -2623,6 +2645,64 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.ItfOptions.WideRatio
   nameWithType: ItfOptions.WideRatio
+- uid: Egami.Barcodes.MicroQrOptions
+  name: MicroQrOptions
+  href: api/Egami.Barcodes.MicroQrOptions.html
+  commentId: T:Egami.Barcodes.MicroQrOptions
+  fullName: Egami.Barcodes.MicroQrOptions
+  nameWithType: MicroQrOptions
+- uid: Egami.Barcodes.MicroQrOptions.Default
+  name: Default
+  href: api/Egami.Barcodes.MicroQrOptions.html#Egami_Barcodes_MicroQrOptions_Default
+  commentId: P:Egami.Barcodes.MicroQrOptions.Default
+  fullName: Egami.Barcodes.MicroQrOptions.Default
+  nameWithType: MicroQrOptions.Default
+- uid: Egami.Barcodes.MicroQrOptions.Default*
+  name: Default
+  href: api/Egami.Barcodes.MicroQrOptions.html#Egami_Barcodes_MicroQrOptions_Default_
+  commentId: Overload:Egami.Barcodes.MicroQrOptions.Default
+  isSpec: "True"
+  fullName: Egami.Barcodes.MicroQrOptions.Default
+  nameWithType: MicroQrOptions.Default
+- uid: Egami.Barcodes.MicroQrOptions.ErrorCorrection
+  name: ErrorCorrection
+  href: api/Egami.Barcodes.MicroQrOptions.html#Egami_Barcodes_MicroQrOptions_ErrorCorrection
+  commentId: P:Egami.Barcodes.MicroQrOptions.ErrorCorrection
+  fullName: Egami.Barcodes.MicroQrOptions.ErrorCorrection
+  nameWithType: MicroQrOptions.ErrorCorrection
+- uid: Egami.Barcodes.MicroQrOptions.ErrorCorrection*
+  name: ErrorCorrection
+  href: api/Egami.Barcodes.MicroQrOptions.html#Egami_Barcodes_MicroQrOptions_ErrorCorrection_
+  commentId: Overload:Egami.Barcodes.MicroQrOptions.ErrorCorrection
+  isSpec: "True"
+  fullName: Egami.Barcodes.MicroQrOptions.ErrorCorrection
+  nameWithType: MicroQrOptions.ErrorCorrection
+- uid: Egami.Barcodes.MicroQrOptions.MinVersion
+  name: MinVersion
+  href: api/Egami.Barcodes.MicroQrOptions.html#Egami_Barcodes_MicroQrOptions_MinVersion
+  commentId: P:Egami.Barcodes.MicroQrOptions.MinVersion
+  fullName: Egami.Barcodes.MicroQrOptions.MinVersion
+  nameWithType: MicroQrOptions.MinVersion
+- uid: Egami.Barcodes.MicroQrOptions.MinVersion*
+  name: MinVersion
+  href: api/Egami.Barcodes.MicroQrOptions.html#Egami_Barcodes_MicroQrOptions_MinVersion_
+  commentId: Overload:Egami.Barcodes.MicroQrOptions.MinVersion
+  isSpec: "True"
+  fullName: Egami.Barcodes.MicroQrOptions.MinVersion
+  nameWithType: MicroQrOptions.MinVersion
+- uid: Egami.Barcodes.MicroQrOptions.RaiseErrorCorrection
+  name: RaiseErrorCorrection
+  href: api/Egami.Barcodes.MicroQrOptions.html#Egami_Barcodes_MicroQrOptions_RaiseErrorCorrection
+  commentId: P:Egami.Barcodes.MicroQrOptions.RaiseErrorCorrection
+  fullName: Egami.Barcodes.MicroQrOptions.RaiseErrorCorrection
+  nameWithType: MicroQrOptions.RaiseErrorCorrection
+- uid: Egami.Barcodes.MicroQrOptions.RaiseErrorCorrection*
+  name: RaiseErrorCorrection
+  href: api/Egami.Barcodes.MicroQrOptions.html#Egami_Barcodes_MicroQrOptions_RaiseErrorCorrection_
+  commentId: Overload:Egami.Barcodes.MicroQrOptions.RaiseErrorCorrection
+  isSpec: "True"
+  fullName: Egami.Barcodes.MicroQrOptions.RaiseErrorCorrection
+  nameWithType: MicroQrOptions.RaiseErrorCorrection
 - uid: Egami.Barcodes.Pdf417Options
   name: Pdf417Options
   href: api/Egami.Barcodes.Pdf417Options.html

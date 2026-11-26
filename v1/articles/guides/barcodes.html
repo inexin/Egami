@@ -89,7 +89,7 @@
 
 <p>Egami.Barcodes writes and reads barcodes. It draws them through Egami.Drawing's canvas, so a barcode stays vector on a PDF page
 or in SVG output, and reads them from rasters. It is fully managed.</p>
-<p>It writes and reads QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, Code 93,
+<p>It writes and reads QR Code, Micro QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, Code 93,
 Codabar, ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on <code>Barcode</code> with typed options; <code>Barcode.Create</code> takes a
 format chosen at run time with the default options.</p>
 <pre><code class="lang-csharp">// Labels from a table that stores each barcode's format with its data.
@@ -123,6 +123,21 @@ Barcode bytes = Barcode.Qr([0x45, 0x67, 0x61, 0x6D, 0x69]);
 Barcode gs1 = Barcode.Qr(Gs1.Parse(&quot;(01)09501101530003(10)AB12&quot;));
 
 using Raster&lt;Gray8&gt; image = link.ToRaster(pixelsPerModule: 4);
+</code></pre><h3 id="micro-qr-code">Micro QR Code</h3>
+<p><code>Barcode.MicroQr</code> writes a Micro QR Code, the small form of QR Code with one finder pattern: versions M1 to M4, 11 x 11 to
+17 x 17 modules, for marks on parts and small labels. It holds at most 35 digits, 21 alphanumeric characters or 15 bytes (M4
+at level L). Segments are chosen as for QR Code, as far as the version has the mode: M1 holds digits only, M2 adds
+alphanumeric, M3 and M4 bytes and Kanji. Micro QR has no ECI, so the text must be ISO 8859-1 or what Shift JIS holds.</p>
+<p>By default the symbol is the smallest version that holds the data at level L, and the level is raised to M and then Q while
+the symbol stays the same version. <code>MicroQrOptions</code> sets the level (L, M from M2, Q in M4 only; M1 only detects errors), the
+smallest version and whether the level is raised. The quiet zone is 2 modules.</p>
+<pre><code class="lang-csharp">// The smallest version that holds the text, M1 (11 x 11 modules) to M4 (17 x 17), at level L raised while it fits.
+Barcode part = Barcode.MicroQr(&quot;PART-0042&quot;);
+
+// Level M from version M3 on, for a mark that may get scuffed.
+Barcode serial = Barcode.MicroQr(&quot;SN 4711&quot;, new MicroQrOptions { ErrorCorrection = QrErrorCorrection.M, MinVersion = 3 });
+
+using Raster&lt;Gray8&gt; image = part.ToRaster(pixelsPerModule: 6);
 </code></pre><h2 id="data-matrix">Data Matrix</h2>
 <p><code>Barcode.DataMatrix</code> writes Data Matrix ECC 200 from text, bytes or GS1 element strings. The six encodation modes (ASCII,
 C40, Text, X12, EDIFACT and Base 256) are switched for the fewest codewords, and the symbol is the smallest that holds them.
@@ -308,8 +323,8 @@ font, the text.</p>
 <pre><code class="lang-csharp">// Black on white, 4 pixels a module, quiet zone included.
 using Raster&lt;Gray8&gt; image = qr.ToRaster(pixelsPerModule: 4);
 </code></pre><h2 id="barcodes-from-modules">Barcodes from modules</h2>
-<p>A <code>Barcode</code> is one symbol: its <code>BarcodeFormat</code>, its <code>Modules</code>, the <code>QuietZone</code> its standard asks for in modules (4 for QR, 1 for
-Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7
+<p>A <code>Barcode</code> is one symbol: its <code>BarcodeFormat</code>, its <code>Modules</code>, the <code>QuietZone</code> its standard asks for in modules (4 for QR, 2 for
+Micro QR, 1 for Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7
 for EAN-8 and 9 for UPC) and the <code>HumanReadableText</code> printed under a linear symbol. <code>Barcode.FromModules</code> makes one from
 modules you already have, such as from another encoder.</p>
 <pre><code class="lang-csharp">// Modules from another encoder become a barcode with the quiet zone of their standard: 4 modules for QR.

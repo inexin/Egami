@@ -119,7 +119,7 @@ public enum BarcodeFormat</code></pre>
   <h2 id="fields">Fields
 </h2>
   <dl class="parameters">
-    <dt id="Egami_Barcodes_BarcodeFormat_All"><code>All = Matrix | Linear</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_All"><code>All = Linear | Matrix</code></dt>
   
   <dd><p>Every symbology.</p>
 </dd>
@@ -163,9 +163,13 @@ public enum BarcodeFormat</code></pre>
   
   <dd><p>The linear symbologies.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_Matrix"><code>Matrix = Qr | DataMatrix | Pdf417 | Aztec</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_Matrix"><code>Matrix = Qr | DataMatrix | Pdf417 | Aztec | MicroQr</code></dt>
   
   <dd><p>The 2D symbologies.</p>
+</dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_MicroQr"><code>MicroQr = 65536</code></dt>
+  
+  <dd><p>Micro QR Code, versions M1 to M4 (ISO/IEC 18004); quiet zone 2 modules.</p>
 </dd>
     <dt id="Egami_Barcodes_BarcodeFormat_None"><code>None = 0</code></dt>
   

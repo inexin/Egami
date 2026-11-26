@@ -659,6 +659,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.MicroQrOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.MicroQrOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.MicroQrOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.MicroQrOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.MicroQr(System.String%2cEgami.Barcodes.MicroQrOptions)\" data-throw-if-not-resolved=\"false\"></xref> makes a symbol.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Barcodes.Pdf417Options.yml",
       "output": {
         ".html": {
