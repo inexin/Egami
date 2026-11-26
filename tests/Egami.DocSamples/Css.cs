@@ -291,6 +291,38 @@ public class Css
     }
 
     [Fact]
+    public void WideGamut()
+    {
+        #region widegamut
+        // The color keeps the space it was written in, unclipped; R, G and B are the clipped sRGB.
+        bool isColor = CssColor.TryParse("color(display-p3 1 0.5 0)", out CssColor orange);
+        CssColorSpace space = orange.Space;                       // DisplayP3
+        double red = orange.C0;                                   // 1
+        bool inSrgb = orange.IsInSrgbGamut;                       // false: sRGB cannot show it
+
+        // Convert to any CSS Color 4 space, or build one in code.
+        (double l, double c, double h) = orange.ToColorSpace(CssColorSpace.Oklch);
+        CssColor lab = CssColor.FromColorSpace(CssColorSpace.Lab, 60, 40, 70, alpha: 0.5);
+
+        // CSS Color 4 gamut mapping lowers chroma until it fits, instead of clipping each channel.
+        CssColor mapped = orange.ToSrgbGamutMapped();
+        string text = orange.ToString(keepSpace: true);           // "color(display-p3 1 0.5 0)"
+        string legacy = orange.ToString();                        // "rgb(255, 117, 0)": clipped sRGB, as before
+        #endregion
+
+        Assert.True(isColor);
+        Assert.Equal(CssColorSpace.DisplayP3, space);
+        Assert.Equal(1, red);
+        Assert.False(inSrgb);
+        Assert.InRange(l, 0.7, 0.8);
+        Assert.True(c > 0.2 && h > 40 && h < 70);
+        Assert.Equal("lab(60 40 70 / 0.5)", lab.ToString(true));
+        Assert.True(mapped.IsInSrgbGamut);
+        Assert.Equal("color(display-p3 1 0.5 0)", text);
+        Assert.StartsWith("rgb(255, ", legacy);
+    }
+
+    [Fact]
     public void Lengths()
     {
         #region lengths

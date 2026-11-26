@@ -221,6 +221,15 @@ and, through Egami.Video, video. Additive to 1.5.0: without a time every documen
 
 Egami.Css:
 
+- Wide-gamut colors (roadmap 2.10.2): a `CssColor` keeps the space it was written in as a `CssColorSpace` (`Space`, one of
+  CSS Color 4's twelve, `Srgb` for hex, named colors, `rgb()`, `hsl()` and `hwb()`) and its components there, unclipped
+  (`C0`, `C1`, `C2`). `ToColorSpace` converts them to any other space, `CssColor.FromColorSpace` builds a color from them,
+  `IsInSrgbGamut` says whether sRGB can show it, and `ToSrgbGamutMapped` maps it into sRGB with CSS Color 4's OkLCh chroma
+  reduction (deltaEOK 0.02). `ToString(keepSpace: true)` writes `color(display-p3 ...)`, `lab()`, `lch()`, `oklab()` or
+  `oklch()`. `R`, `G`, `B`, `A`, `Level` and `ToString()` are unchanged, so Egami.Svg draws as before.
+- Behavior change: `CssColor` equality compares the color space and the unclipped components, so `color(display-p3 1 0 0)`
+  no longer equals `rgb(255 0 0)`, and two colors outside the sRGB gamut that clip alike are no longer equal. Colors written
+  in sRGB syntaxes inside its gamut compare as before. `CssColor` grows from 20 to 48 bytes.
 - `@keyframes` and `@-webkit-keyframes` now parse into a `CssKeyframesRule` (its `Name` and `CssKeyframe`s, each with its
   `Offsets` and `Declarations`, `!important` ones dropped) instead of a `CssUnknownAtRule`. Code that looked for keyframes
   among the unknown at-rules must look for the new type.
