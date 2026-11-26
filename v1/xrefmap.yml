@@ -69511,6 +69511,22 @@ references:
   isSpec: "True"
   fullName: Egami.Metafiles.EmfCanvas.Dispose
   nameWithType: EmfCanvas.Dispose
+- uid: Egami.Metafiles.EmfCanvas.DrawImage(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.RectF,Egami.Raster,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)
+  name: DrawImage(Raster, RectF, RectF, Raster, RectF, SamplingOptions?, Paint?)
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_DrawImage_Egami_Raster_Egami_Drawing_RectF_Egami_Drawing_RectF_Egami_Raster_Egami_Drawing_RectF_Egami_Operations_SamplingOptions_Egami_Drawing_Paint_
+  commentId: M:Egami.Metafiles.EmfCanvas.DrawImage(Egami.Raster,Egami.Drawing.RectF,Egami.Drawing.RectF,Egami.Raster,Egami.Drawing.RectF,Egami.Operations.SamplingOptions,Egami.Drawing.Paint)
+  name.vb: DrawImage(Raster, RectF, RectF, Raster, RectF, SamplingOptions, Paint)
+  fullName: Egami.Metafiles.EmfCanvas.DrawImage(Egami.Raster, Egami.Drawing.RectF, Egami.Drawing.RectF, Egami.Raster, Egami.Drawing.RectF, Egami.Operations.SamplingOptions?, Egami.Drawing.Paint?)
+  fullName.vb: Egami.Metafiles.EmfCanvas.DrawImage(Egami.Raster, Egami.Drawing.RectF, Egami.Drawing.RectF, Egami.Raster, Egami.Drawing.RectF, Egami.Operations.SamplingOptions, Egami.Drawing.Paint)
+  nameWithType: EmfCanvas.DrawImage(Raster, RectF, RectF, Raster, RectF, SamplingOptions?, Paint?)
+  nameWithType.vb: EmfCanvas.DrawImage(Raster, RectF, RectF, Raster, RectF, SamplingOptions, Paint)
+- uid: Egami.Metafiles.EmfCanvas.DrawImage*
+  name: DrawImage
+  href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_DrawImage_
+  commentId: Overload:Egami.Metafiles.EmfCanvas.DrawImage
+  isSpec: "True"
+  fullName: Egami.Metafiles.EmfCanvas.DrawImage
+  nameWithType: EmfCanvas.DrawImage
 - uid: Egami.Metafiles.EmfCanvas.OnClear(Egami.Pixels.RgbaF32)
   name: OnClear(RgbaF32)
   href: api/Egami.Metafiles.EmfCanvas.html#Egami_Metafiles_EmfCanvas_OnClear_Egami_Pixels_RgbaF32_
