@@ -164,7 +164,16 @@ List&lt;int&gt; breaks = [];
 foreach (LineBreak b in LineBreaks.Enumerate("ภาษาไทยง่าย", options))
 {
     breaks.Add(b.Index);                                        // 4, 7 and 11: ภาษา|ไทย|ง่าย
-}</code></pre>
+}
+
+// Double-click and Ctrl+arrow select and step by the same words, with the paragraph's dictionaries.
+TextLayout layout = Paragraph.Create("ภาษาไทยง่าย", new ParagraphStyle
+{
+    DefaultStyle = new TextStyle { FontFamilies = [thaiFamily] },
+    LineBreaking = options,
+}).Layout(400);
+Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(5);                 // 4 and 3: ไทย
+TextPosition next = layout.MoveCaret(new TextPosition(4), CaretMove.NextWord); // 7</code></pre>
 
 
   <h2 id="Egami_Fonts_Layout_WordDictionary_remarks">Remarks</h2>

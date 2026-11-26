@@ -140,8 +140,10 @@ paragraph's level, as rule L1 asks.</li>
 <h2 id="graphemes-and-words">Graphemes and words</h2>
 <p><code>TextSegmenter.Graphemes</code> walks extended grapheme clusters (UAX #29): what a reader sees as one character, such as a letter with
 its accents, a Hangul syllable, a Devanagari conjunct or an emoji sequence. <code>TextSegmenter.Words</code> walks the segments between word
-boundaries with Unicode's default rules. Both return a <code>TextSegment</code> per segment through a <code>GraphemeEnumerator</code> or
-<code>WordEnumerator</code> that allocates nothing; <code>IsGraphemeBoundary</code> checks one index.</p>
+boundaries with Unicode's default rules. All return a <code>TextSegment</code> per segment through a <code>GraphemeEnumerator</code>,
+<code>WordEnumerator</code> or <code>DictionaryWordEnumerator</code> that allocates nothing; <code>IsGraphemeBoundary</code> checks one index.
+<code>TextSegmenter.Words(text, dictionaries)</code> also splits runs of Thai, Lao, Khmer and Myanmar letters into words with
+<code>WordDictionaries</code> (null means <code>WordDictionaries.BuiltIn</code>, <code>None</code> keeps each run whole), as ICU and browsers do.</p>
 <pre><code class="lang-csharp">// A family emoji is one grapheme cluster of eight UTF-16 units; &quot;can't&quot; is one word.
 string text = &quot;\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67 can't stop&quot;;
 var graphemes = new List&lt;TextSegment&gt;();
@@ -157,9 +159,27 @@ foreach (TextSegment word in TextSegmenter.Words(text))
 }
 
 bool inside = TextSegmenter.IsGraphemeBoundary(text, 2); // false: inside the family
+</code></pre><pre><code class="lang-csharp">// Thai leaves no spaces between words: the dictionary overload finds them (null means WordDictionaries.BuiltIn).
+string text = &quot;ภาษาไทยง่ายนิดเดียว&quot;;
+var words = new List&lt;string&gt;();
+foreach (TextSegment word in TextSegmenter.Words(text, dictionaries: null))
+{
+    words.Add(text.Substring(word.Start, word.Length)); // ภาษา, ไทย, ง่าย, นิด, เดียว
+}
+
+// Unicode's default rules alone split between Thai letters (keeping marks with them); WordDictionaries.None keeps the
+// run whole.
+int pieces = 0;
+foreach (TextSegment _ in TextSegmenter.Words(text))
+{
+    pieces++;
+}
 </code></pre>
 <ul>
-<li>Words use no dictionary, so Thai, Lao, Khmer and CJK text without spaces is not split into words.</li>
+<li>The dictionary overload counts Thai, Lao, Khmer and Myanmar letters as letters, as ICU's word rules do, so a word joins
+digits and Latin letters next to it (ไทย123). It gives the boundaries of Chromium's <code>Intl.Segmenter</code> on the Thai and
+Myanmar UDHR texts, except that it never splits a grapheme cluster; Chromium splits Lao and Khmer with older lists.</li>
+<li>CJK text without spaces is not split into words.</li>
 <li>Line breaking (UAX #14) arrives with paragraph layout in 2.8.2.</li>
 <li>Unicode's GraphemeBreakTest.txt and WordBreakTest.txt pass in full.</li>
 </ul>

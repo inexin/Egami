@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class TextSegmenter | Egami ">
       
-      <meta name="description" content="Text boundaries from UAX #29: extended grapheme clusters (what a reader sees as one character) and words, with Unicode&#39;s default rules and no dictionaries.">
+      <meta name="description" content="Text boundaries from UAX #29: extended grapheme clusters (what a reader sees as one character) and words, with Unicode&#39;s default rules, or for words optionally with word dictionaries for Thai, Lao, Khmer and Myanmar.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Fonts_Unicode_TextSegmenter" data-uid="Egami.Fonts.Unicode.TextSegmenter" class="text-break">
-Class TextSegmenter  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/TextSegmenter.cs/#L25"><i class="bi bi-code-slash"></i></a>
+Class TextSegmenter  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/TextSegmenter.cs/#L29"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -98,7 +98,7 @@ Class TextSegmenter  <a class="header-action link-secondary" title="View source"
   </div>
 
   <div class="markdown summary"><p>Text boundaries from UAX #29: extended grapheme clusters (what a reader sees as one character) and words, with Unicode's default
-rules and no dictionaries.</p>
+rules, or for words optionally with word dictionaries for Thai, Lao, Khmer and Myanmar.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -178,7 +178,7 @@ bool inside = TextSegmenter.IsGraphemeBoundary(text, 2); // false: inside the fa
 
   <h3 id="Egami_Fonts_Unicode_TextSegmenter_Graphemes_System_ReadOnlySpan_System_Char__" data-uid="Egami.Fonts.Unicode.TextSegmenter.Graphemes(System.ReadOnlySpan{System.Char})">
   Graphemes(ReadOnlySpan&lt;char&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/TextSegmenter.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/TextSegmenter.cs/#L34"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Enumerates the extended grapheme clusters of a text.</p>
@@ -217,7 +217,7 @@ bool inside = TextSegmenter.IsGraphemeBoundary(text, 2); // false: inside the fa
 
   <h3 id="Egami_Fonts_Unicode_TextSegmenter_IsGraphemeBoundary_System_ReadOnlySpan_System_Char__System_Int32_" data-uid="Egami.Fonts.Unicode.TextSegmenter.IsGraphemeBoundary(System.ReadOnlySpan{System.Char},System.Int32)">
   IsGraphemeBoundary(ReadOnlySpan&lt;char&gt;, int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/TextSegmenter.cs/#L45"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/TextSegmenter.cs/#L70"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether an index is an extended grapheme cluster boundary.</p>
@@ -265,7 +265,7 @@ bool inside = TextSegmenter.IsGraphemeBoundary(text, 2); // false: inside the fa
 
   <h3 id="Egami_Fonts_Unicode_TextSegmenter_Words_System_ReadOnlySpan_System_Char__" data-uid="Egami.Fonts.Unicode.TextSegmenter.Words(System.ReadOnlySpan{System.Char})">
   Words(ReadOnlySpan&lt;char&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/TextSegmenter.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/TextSegmenter.cs/#L42"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Enumerates the segments between word boundaries: words, and the spaces, punctuation and symbols between them, each as its
@@ -301,11 +301,75 @@ own segment.</p>
 
 
 
+  <a id="Egami_Fonts_Unicode_TextSegmenter_Words_" data-uid="Egami.Fonts.Unicode.TextSegmenter.Words*"></a>
+
+  <h3 id="Egami_Fonts_Unicode_TextSegmenter_Words_System_ReadOnlySpan_System_Char__Egami_Fonts_Layout_WordDictionaries_" data-uid="Egami.Fonts.Unicode.TextSegmenter.Words(System.ReadOnlySpan{System.Char},Egami.Fonts.Layout.WordDictionaries)">
+  Words(ReadOnlySpan&lt;char&gt;, WordDictionaries?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/TextSegmenter.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Enumerates the segments between word boundaries as <a class="xref" href="Egami.Fonts.Unicode.TextSegmenter.html#Egami_Fonts_Unicode_TextSegmenter_Words_System_ReadOnlySpan_System_Char__">Words(ReadOnlySpan&lt;char&gt;)</a> does, except inside a run of
+complex-context (line breaking class SA) letters of one script, such as Thai, Lao, Khmer or Myanmar, which has no
+spaces between words: there a boundary falls only where the script's dictionary finds a word end, as ICU and browsers
+segment words. As in ICU's word rules these letters count as letters, so a word joins the digits and other letters
+next to it. A run of a script with no dictionary is one segment.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static DictionaryWordEnumerator Words(ReadOnlySpan&lt;char&gt; text, WordDictionaries? dictionaries)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.char">char</a>&gt;</dt>
+    <dd><p>The text.</p>
+</dd>
+    <dt><code>dictionaries</code> <a class="xref" href="Egami.Fonts.Layout.WordDictionaries.html">WordDictionaries</a></dt>
+    <dd><p>The word dictionaries: <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_BuiltIn">BuiltIn</a>, or
+<a class="xref" href="Egami.Fonts.Layout.WordDictionaries.html#Egami_Fonts_Layout_WordDictionaries_None">None</a> to keep each run whole.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Unicode.DictionaryWordEnumerator.html">DictionaryWordEnumerator</a></dt>
+    <dd><p>An enumerator of the segments in order.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Unicode_TextSegmenter_Words_System_ReadOnlySpan_System_Char__Egami_Fonts_Layout_WordDictionaries__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Thai leaves no spaces between words: the dictionary overload finds them (null means WordDictionaries.BuiltIn).
+string text = "ภาษาไทยง่ายนิดเดียว";
+var words = new List&lt;string&gt;();
+foreach (TextSegment word in TextSegmenter.Words(text, dictionaries: null))
+{
+    words.Add(text.Substring(word.Start, word.Length)); // ภาษา, ไทย, ง่าย, นิด, เดียว
+}
+
+// Unicode's default rules alone split between Thai letters (keeping marks with them); WordDictionaries.None keeps the
+// run whole.
+int pieces = 0;
+foreach (TextSegment _ in TextSegmenter.Words(text))
+{
+    pieces++;
+}</code></pre>
+
+
+
+
+
+
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/TextSegmenter.cs/#L25" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Unicode/TextSegmenter.cs/#L29" class="edit-link">Edit this page</a>
         </div>
 
 

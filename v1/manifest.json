@@ -5881,6 +5881,20 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Unicode.DictionaryWordEnumerator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Unicode.DictionaryWordEnumerator.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Unicode.DictionaryWordEnumerator",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Unicode.DictionaryWordEnumerator.yml\" sourcestartlinenumber=\"1\">Enumerates word segments with word dictionaries; get one from\n<xref href=\"Egami.Fonts.Unicode.TextSegmenter.Words(System.ReadOnlySpan%7bSystem.Char%7d%2cEgami.Fonts.Layout.WordDictionaries)\" data-throw-if-not-resolved=\"false\"></xref>. Complex-context letters walk as ALetter, as in ICU's\nword rules, so their runs stay whole, and the dictionaries split them at word ends; a word end before the rule boundary\nleaves the rule walk ahead, to resume from there.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Fonts.Unicode.EastAsianWidth.yml",
       "output": {
         ".html": {
@@ -6003,7 +6017,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Fonts.Unicode.TextSegmenter",
-      "Summary": "<p sourcefile=\"api/Egami.Fonts.Unicode.TextSegmenter.yml\" sourcestartlinenumber=\"1\">Text boundaries from UAX #29: extended grapheme clusters (what a reader sees as one character) and words, with Unicode's default\nrules and no dictionaries.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Unicode.TextSegmenter.yml\" sourcestartlinenumber=\"1\">Text boundaries from UAX #29: extended grapheme clusters (what a reader sees as one character) and words, with Unicode's default\nrules, or for words optionally with word dictionaries for Thai, Lao, Khmer and Myanmar.</p>\n"
     },
     {
       "type": "ManagedReference",

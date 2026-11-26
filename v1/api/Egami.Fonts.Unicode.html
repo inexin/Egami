@@ -109,7 +109,7 @@ and the visual order of any line. Dispose it to return its arrays to the pool.</
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Fonts.Unicode.TextSegmenter.html">TextSegmenter</a></dt>
       <dd><p>Text boundaries from UAX #29: extended grapheme clusters (what a reader sees as one character) and words, with Unicode's default
-rules and no dictionaries.</p>
+rules, or for words optionally with word dictionaries for Thai, Lao, Khmer and Myanmar.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -124,6 +124,14 @@ Structs
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Fonts.Unicode.BidiRun.html">BidiRun</a></dt>
       <dd><p>A run of UTF-16 units at one embedding level.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Unicode.DictionaryWordEnumerator.html">DictionaryWordEnumerator</a></dt>
+      <dd><p>Enumerates word segments with word dictionaries; get one from
+<a class="xref" href="Egami.Fonts.Unicode.TextSegmenter.html#Egami_Fonts_Unicode_TextSegmenter_Words_System_ReadOnlySpan_System_Char__Egami_Fonts_Layout_WordDictionaries_">Words(ReadOnlySpan&lt;char&gt;, WordDictionaries?)</a>. Complex-context letters walk as ALetter, as in ICU's
+word rules, so their runs stay whole, and the dictionaries split them at word ends; a word end before the rule boundary
+leaves the rule walk ahead, to resume from there.</p>
 </dd>
     </dl>
     <dl class="jumplist">

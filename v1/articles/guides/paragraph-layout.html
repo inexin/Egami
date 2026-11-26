@@ -140,7 +140,8 @@ words as ICU's dictionary break engines do: it prefers the word that two more wo
 to where the next word can begin, keeps combining marks and the repetition and abbreviation marks (ๆ, ฯ, ໆ, ຯ) with the word
 before them, and never breaks inside a grapheme cluster. UAX #14 still decides at the run's edges, and <code>WordBreak.BreakAll</code>
 breaks between any two letters without a dictionary. Chromium breaks Lao and Khmer with older, smaller lists than ICU's
-current ones, so it splits some compounds Egami keeps whole.</p>
+current ones, so it splits some compounds Egami keeps whole. <code>GetWordBoundary</code> and the <code>CaretMove.NextWord</code> and
+<code>PreviousWord</code> moves use the paragraph's dictionaries too, so a double-click selects one Thai word.</p>
 <pre><code class="lang-csharp">// The built-in lists load on first use; copy the set to add your own words or a script Egami ships no list for.
 WordDictionaries.BuiltIn.TryGet(Script.Thai, out WordDictionary? thai);
 bool known = thai!.Contains(&quot;ภาษา&quot;);                            // true: &quot;language&quot; is in ICU's Thai list
@@ -161,6 +162,15 @@ foreach (LineBreak b in LineBreaks.Enumerate(&quot;ภาษาไทยง่�
 {
     breaks.Add(b.Index);                                        // 4, 7 and 11: ภาษา|ไทย|ง่าย
 }
+
+// Double-click and Ctrl+arrow select and step by the same words, with the paragraph's dictionaries.
+TextLayout layout = Paragraph.Create(&quot;ภาษาไทยง่าย&quot;, new ParagraphStyle
+{
+    DefaultStyle = new TextStyle { FontFamilies = [thaiFamily] },
+    LineBreaking = options,
+}).Layout(400);
+Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(5);                 // 4 and 3: ไทย
+TextPosition next = layout.MoveCaret(new TextPosition(4), CaretMove.NextWord); // 7
 </code></pre><h3 id="hyphenation-points">Hyphenation points</h3>
 <p>A <code>Hyphenator</code> finds where a word may break with a hyphen, by Liang's pattern algorithm as TeX, LibreOffice and browsers use
 it. <code>Hyphenator.Load</code> (with a <code>HyphenationFormat</code>, or <code>Auto</code> to tell it from the data) reads hyph-utf8's <code>hyph-xx.tex</code> files

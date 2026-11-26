@@ -805,7 +805,7 @@ Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(position.Index); /
 
   <h3 id="Egami_Fonts_Layout_TextLayout_GetLineBoundary_System_Int32_" data-uid="Egami.Fonts.Layout.TextLayout.GetLineBoundary(System.Int32)">
   GetLineBoundary(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Interaction.cs/#L396"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Interaction.cs/#L399"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the line holding an index, as a range: its text, trailing spaces and hard break.</p>
@@ -929,10 +929,13 @@ Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(position.Index); /
 
   <h3 id="Egami_Fonts_Layout_TextLayout_GetWordBoundary_System_Int32_" data-uid="Egami.Fonts.Layout.TextLayout.GetWordBoundary(System.Int32)">
   GetWordBoundary(int)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Interaction.cs/#L370"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.Interaction.cs/#L373"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the word (UAX #29 segment) holding an index: a word, or the spaces or punctuation between words.</p>
+  <div class="markdown level1 summary"><p>Gets the word (UAX #29 segment) holding an index: a word, or the spaces or punctuation between words. Thai,
+Lao, Khmer and Myanmar words come from the paragraph's word dictionaries (<a class="xref" href="Egami.Fonts.Layout.LineBreakOptions.html#Egami_Fonts_Layout_LineBreakOptions_Dictionaries">Dictionaries</a> of
+<a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_LineBreaking">LineBreaking</a>), as <a class="xref" href="Egami.Fonts.Unicode.TextSegmenter.html#Egami_Fonts_Unicode_TextSegmenter_Words_System_ReadOnlySpan_System_Char__Egami_Fonts_Layout_WordDictionaries_">Words(ReadOnlySpan&lt;char&gt;, WordDictionaries?)</a>
+finds them.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 

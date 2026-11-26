@@ -37211,6 +37211,64 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Unicode.BidiRun.Start
   nameWithType: BidiRun.Start
+- uid: Egami.Fonts.Unicode.DictionaryWordEnumerator
+  name: DictionaryWordEnumerator
+  href: api/Egami.Fonts.Unicode.DictionaryWordEnumerator.html
+  commentId: T:Egami.Fonts.Unicode.DictionaryWordEnumerator
+  fullName: Egami.Fonts.Unicode.DictionaryWordEnumerator
+  nameWithType: DictionaryWordEnumerator
+- uid: Egami.Fonts.Unicode.DictionaryWordEnumerator.Current
+  name: Current
+  href: api/Egami.Fonts.Unicode.DictionaryWordEnumerator.html#Egami_Fonts_Unicode_DictionaryWordEnumerator_Current
+  commentId: P:Egami.Fonts.Unicode.DictionaryWordEnumerator.Current
+  fullName: Egami.Fonts.Unicode.DictionaryWordEnumerator.Current
+  nameWithType: DictionaryWordEnumerator.Current
+- uid: Egami.Fonts.Unicode.DictionaryWordEnumerator.Current*
+  name: Current
+  href: api/Egami.Fonts.Unicode.DictionaryWordEnumerator.html#Egami_Fonts_Unicode_DictionaryWordEnumerator_Current_
+  commentId: Overload:Egami.Fonts.Unicode.DictionaryWordEnumerator.Current
+  isSpec: "True"
+  fullName: Egami.Fonts.Unicode.DictionaryWordEnumerator.Current
+  nameWithType: DictionaryWordEnumerator.Current
+- uid: Egami.Fonts.Unicode.DictionaryWordEnumerator.Dispose
+  name: Dispose()
+  href: api/Egami.Fonts.Unicode.DictionaryWordEnumerator.html#Egami_Fonts_Unicode_DictionaryWordEnumerator_Dispose
+  commentId: M:Egami.Fonts.Unicode.DictionaryWordEnumerator.Dispose
+  fullName: Egami.Fonts.Unicode.DictionaryWordEnumerator.Dispose()
+  nameWithType: DictionaryWordEnumerator.Dispose()
+- uid: Egami.Fonts.Unicode.DictionaryWordEnumerator.Dispose*
+  name: Dispose
+  href: api/Egami.Fonts.Unicode.DictionaryWordEnumerator.html#Egami_Fonts_Unicode_DictionaryWordEnumerator_Dispose_
+  commentId: Overload:Egami.Fonts.Unicode.DictionaryWordEnumerator.Dispose
+  isSpec: "True"
+  fullName: Egami.Fonts.Unicode.DictionaryWordEnumerator.Dispose
+  nameWithType: DictionaryWordEnumerator.Dispose
+- uid: Egami.Fonts.Unicode.DictionaryWordEnumerator.GetEnumerator
+  name: GetEnumerator()
+  href: api/Egami.Fonts.Unicode.DictionaryWordEnumerator.html#Egami_Fonts_Unicode_DictionaryWordEnumerator_GetEnumerator
+  commentId: M:Egami.Fonts.Unicode.DictionaryWordEnumerator.GetEnumerator
+  fullName: Egami.Fonts.Unicode.DictionaryWordEnumerator.GetEnumerator()
+  nameWithType: DictionaryWordEnumerator.GetEnumerator()
+- uid: Egami.Fonts.Unicode.DictionaryWordEnumerator.GetEnumerator*
+  name: GetEnumerator
+  href: api/Egami.Fonts.Unicode.DictionaryWordEnumerator.html#Egami_Fonts_Unicode_DictionaryWordEnumerator_GetEnumerator_
+  commentId: Overload:Egami.Fonts.Unicode.DictionaryWordEnumerator.GetEnumerator
+  isSpec: "True"
+  fullName: Egami.Fonts.Unicode.DictionaryWordEnumerator.GetEnumerator
+  nameWithType: DictionaryWordEnumerator.GetEnumerator
+- uid: Egami.Fonts.Unicode.DictionaryWordEnumerator.MoveNext
+  name: MoveNext()
+  href: api/Egami.Fonts.Unicode.DictionaryWordEnumerator.html#Egami_Fonts_Unicode_DictionaryWordEnumerator_MoveNext
+  commentId: M:Egami.Fonts.Unicode.DictionaryWordEnumerator.MoveNext
+  fullName: Egami.Fonts.Unicode.DictionaryWordEnumerator.MoveNext()
+  nameWithType: DictionaryWordEnumerator.MoveNext()
+- uid: Egami.Fonts.Unicode.DictionaryWordEnumerator.MoveNext*
+  name: MoveNext
+  href: api/Egami.Fonts.Unicode.DictionaryWordEnumerator.html#Egami_Fonts_Unicode_DictionaryWordEnumerator_MoveNext_
+  commentId: Overload:Egami.Fonts.Unicode.DictionaryWordEnumerator.MoveNext
+  isSpec: "True"
+  fullName: Egami.Fonts.Unicode.DictionaryWordEnumerator.MoveNext
+  nameWithType: DictionaryWordEnumerator.MoveNext
 - uid: Egami.Fonts.Unicode.EastAsianWidth
   name: EastAsianWidth
   href: api/Egami.Fonts.Unicode.EastAsianWidth.html
@@ -40798,6 +40856,15 @@ references:
   fullName.vb: Egami.Fonts.Unicode.TextSegmenter.Words(System.ReadOnlySpan(Of Char))
   nameWithType: TextSegmenter.Words(ReadOnlySpan<char>)
   nameWithType.vb: TextSegmenter.Words(ReadOnlySpan(Of Char))
+- uid: Egami.Fonts.Unicode.TextSegmenter.Words(System.ReadOnlySpan{System.Char},Egami.Fonts.Layout.WordDictionaries)
+  name: Words(ReadOnlySpan<char>, WordDictionaries?)
+  href: api/Egami.Fonts.Unicode.TextSegmenter.html#Egami_Fonts_Unicode_TextSegmenter_Words_System_ReadOnlySpan_System_Char__Egami_Fonts_Layout_WordDictionaries_
+  commentId: M:Egami.Fonts.Unicode.TextSegmenter.Words(System.ReadOnlySpan{System.Char},Egami.Fonts.Layout.WordDictionaries)
+  name.vb: Words(ReadOnlySpan(Of Char), WordDictionaries)
+  fullName: Egami.Fonts.Unicode.TextSegmenter.Words(System.ReadOnlySpan<char>, Egami.Fonts.Layout.WordDictionaries?)
+  fullName.vb: Egami.Fonts.Unicode.TextSegmenter.Words(System.ReadOnlySpan(Of Char), Egami.Fonts.Layout.WordDictionaries)
+  nameWithType: TextSegmenter.Words(ReadOnlySpan<char>, WordDictionaries?)
+  nameWithType.vb: TextSegmenter.Words(ReadOnlySpan(Of Char), WordDictionaries)
 - uid: Egami.Fonts.Unicode.TextSegmenter.Words*
   name: Words
   href: api/Egami.Fonts.Unicode.TextSegmenter.html#Egami_Fonts_Unicode_TextSegmenter_Words_
