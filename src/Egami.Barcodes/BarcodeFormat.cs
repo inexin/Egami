@@ -70,12 +70,24 @@ public enum BarcodeFormat
     /// <summary>Micro QR Code, versions M1 to M4 (ISO/IEC 18004); quiet zone 2 modules.</summary>
     MicroQr = 1 << 16,
 
+    /// <summary>
+    /// The Japan Post customer barcode (カスタマバーコード), a 4-state postal code written as a grid of 6 rows; quiet zone 4
+    /// modules. Egami writes it but does not read it, so it is in <see cref="Postal"/> only, not in <see cref="All"/>.
+    /// </summary>
+    JapanPost = 1 << 17,
+
     /// <summary>The linear symbologies.</summary>
     Linear = Code128 | Code39 | Code93 | Codabar | DataBar | DataBarLimited | DataBarExpanded | Itf | Ean13 | Ean8 | UpcA | UpcE,
 
     /// <summary>The 2D symbologies.</summary>
     Matrix = Qr | MicroQr | DataMatrix | Pdf417 | Aztec,
 
-    /// <summary>Every symbology.</summary>
+    /// <summary>
+    /// The 4-state postal symbologies, which Egami writes but does not read; they are not in <see cref="All"/>, so reads with the
+    /// default options are not slowed or misled by them.
+    /// </summary>
+    Postal = JapanPost,
+
+    /// <summary>Every symbology Egami reads: <see cref="Linear"/> and <see cref="Matrix"/>, without <see cref="Postal"/>.</summary>
     All = Linear | Matrix,
 }

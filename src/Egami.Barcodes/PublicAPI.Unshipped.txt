@@ -97,3 +97,5 @@ static Egami.Barcodes.DataBarOptions.operator ==(Egami.Barcodes.DataBarOptions? 
 static Egami.Barcodes.MicroQrOptions.Default.get -> Egami.Barcodes.MicroQrOptions!
 static Egami.Barcodes.MicroQrOptions.operator !=(Egami.Barcodes.MicroQrOptions? left, Egami.Barcodes.MicroQrOptions? right) -> bool
 static Egami.Barcodes.MicroQrOptions.operator ==(Egami.Barcodes.MicroQrOptions? left, Egami.Barcodes.MicroQrOptions? right) -> bool
+Egami.Barcodes.BarcodeFormat.JapanPost = 131072 -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormat.Postal = 131072 -> Egami.Barcodes.BarcodeFormat

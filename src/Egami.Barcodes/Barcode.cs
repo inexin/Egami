@@ -35,7 +35,7 @@ public sealed partial class Barcode
     /// Gets the width of the clear margin readers need around the symbol, in modules: 4 for QR, 1 for Data Matrix, 2 for PDF417
     /// and 0 for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7 for EAN-8, 9 for
     /// UPC-A and UPC-E, and 1 for GS1 DataBar, whose guard patterns hold their own space (5 for DataBar Limited, the space of its
-    /// right guard).
+    /// right guard); 4 around a Japan Post barcode, the manual's 2 mm at its 0.6 mm module.
     /// </summary>
     public int QuietZone { get; }
 
@@ -47,7 +47,7 @@ public sealed partial class Barcode
 
     /// <summary>Makes a barcode from modules you already have, with the quiet zone of its format's standard.</summary>
     /// <param name="format">The symbology the modules are.</param>
-    /// <param name="modules">The modules: a linear symbol for the linear formats, a 2D grid for the others; GS1 DataBar and DataBar Expanded take either, for their stacked forms.</param>
+    /// <param name="modules">The modules: a linear symbol for the linear formats, a 2D grid for the others (a Japan Post barcode is a grid of 6 rows); GS1 DataBar and DataBar Expanded take either, for their stacked forms.</param>
     /// <param name="humanReadableText">The text to print under the symbol, or <see langword="null"/>.</param>
     /// <returns>The barcode.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="format"/> is not a <see cref="BarcodeFormat"/>.</exception>
@@ -68,9 +68,10 @@ public sealed partial class Barcode
             BarcodeFormat.UpcA or BarcodeFormat.UpcE => 9,
             BarcodeFormat.DataBar or BarcodeFormat.DataBarExpanded => 1,
             BarcodeFormat.DataBarLimited => 5,
+            BarcodeFormat.JapanPost => 4,
             _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
         };
-        if (format is not (BarcodeFormat.DataBar or BarcodeFormat.DataBarExpanded) && modules.IsLinear != format is not (BarcodeFormat.Qr or BarcodeFormat.MicroQr or BarcodeFormat.DataMatrix or BarcodeFormat.Pdf417 or BarcodeFormat.Aztec))
+        if (format is not (BarcodeFormat.DataBar or BarcodeFormat.DataBarExpanded) && modules.IsLinear != format is not (BarcodeFormat.Qr or BarcodeFormat.MicroQr or BarcodeFormat.DataMatrix or BarcodeFormat.Pdf417 or BarcodeFormat.Aztec or BarcodeFormat.JapanPost))
         {
             throw new ArgumentException(modules.IsLinear ? $"{format} is a 2D format; the modules are linear." : $"{format} is a linear format; the modules are a 2D grid.", nameof(modules));
         }
