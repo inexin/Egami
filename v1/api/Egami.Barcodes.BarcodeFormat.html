@@ -143,6 +143,20 @@ public enum BarcodeFormat</code></pre>
   
   <dd><p>Code 93 (ANSI/AIM BC5), linear; quiet zone 10 modules.</p>
 </dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_DataBar"><code>DataBar = 8192</code></dt>
+  
+  <dd><p>GS1 DataBar Omnidirectional, Truncated, Stacked and Stacked Omnidirectional (ISO/IEC 24724), linear (the stacked forms
+as grids of their rows); quiet zone 1 module.</p>
+</dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_DataBarExpanded"><code>DataBarExpanded = 32768</code></dt>
+  
+  <dd><p>GS1 DataBar Expanded and Expanded Stacked (ISO/IEC 24724), linear (Expanded Stacked as a grid of its rows); quiet zone 1
+module.</p>
+</dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_DataBarLimited"><code>DataBarLimited = 16384</code></dt>
+  
+  <dd><p>GS1 DataBar Limited (ISO/IEC 24724), linear; quiet zone 5 modules, the space of its right guard.</p>
+</dd>
     <dt id="Egami_Barcodes_BarcodeFormat_DataMatrix"><code>DataMatrix = 2</code></dt>
   
   <dd><p>Data Matrix ECC 200 (ISO/IEC 16022); quiet zone 1 module.</p>
@@ -159,7 +173,7 @@ public enum BarcodeFormat</code></pre>
   
   <dd><p>Interleaved 2 of 5 and ITF-14 (ISO/IEC 16390), linear; quiet zone 10 modules.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_Linear"><code>Linear = Code128 | Code39 | Itf | Ean13 | Ean8 | UpcA | UpcE | Code93 | Codabar</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_Linear"><code>Linear = Code128 | Code39 | Itf | Ean13 | Ean8 | UpcA | UpcE | Code93 | Codabar | DataBar | DataBarLimited | DataBarExpanded</code></dt>
   
   <dd><p>The linear symbologies.</p>
 </dd>

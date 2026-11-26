@@ -575,6 +575,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.DataBarExpandedOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.DataBarExpandedOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.DataBarExpandedOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.DataBarExpandedOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.DataBarExpanded(System.String%2cEgami.Barcodes.DataBarExpandedOptions)\" data-throw-if-not-resolved=\"false\"></xref> makes a symbol.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.DataBarKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.DataBarKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.DataBarKind",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.DataBarKind.yml\" sourcestartlinenumber=\"1\">The forms of GS1 DataBar Omnidirectional that <xref href=\"Egami.Barcodes.Barcode.DataBar(System.String%2cEgami.Barcodes.DataBarOptions)\" data-throw-if-not-resolved=\"false\"></xref> makes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.DataBarOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.DataBarOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.DataBarOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.DataBarOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.DataBar(System.String%2cEgami.Barcodes.DataBarOptions)\" data-throw-if-not-resolved=\"false\"></xref> makes a symbol.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Barcodes.DataMatrixOptions.yml",
       "output": {
         ".html": {

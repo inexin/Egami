@@ -1147,6 +1147,63 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.Barcode.Create
   nameWithType: Barcode.Create
+- uid: Egami.Barcodes.Barcode.DataBar(System.String,Egami.Barcodes.DataBarOptions)
+  name: DataBar(string, DataBarOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_DataBar_System_String_Egami_Barcodes_DataBarOptions_
+  commentId: M:Egami.Barcodes.Barcode.DataBar(System.String,Egami.Barcodes.DataBarOptions)
+  name.vb: DataBar(String, DataBarOptions)
+  fullName: Egami.Barcodes.Barcode.DataBar(string, Egami.Barcodes.DataBarOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.DataBar(String, Egami.Barcodes.DataBarOptions)
+  nameWithType: Barcode.DataBar(string, DataBarOptions?)
+  nameWithType.vb: Barcode.DataBar(String, DataBarOptions)
+- uid: Egami.Barcodes.Barcode.DataBar*
+  name: DataBar
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_DataBar_
+  commentId: Overload:Egami.Barcodes.Barcode.DataBar
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.DataBar
+  nameWithType: Barcode.DataBar
+- uid: Egami.Barcodes.Barcode.DataBarExpanded(System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString},Egami.Barcodes.DataBarExpandedOptions)
+  name: DataBarExpanded(IReadOnlyList<Gs1ElementString>, DataBarExpandedOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_DataBarExpanded_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_DataBarExpandedOptions_
+  commentId: M:Egami.Barcodes.Barcode.DataBarExpanded(System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString},Egami.Barcodes.DataBarExpandedOptions)
+  name.vb: DataBarExpanded(IReadOnlyList(Of Gs1ElementString), DataBarExpandedOptions)
+  fullName: Egami.Barcodes.Barcode.DataBarExpanded(System.Collections.Generic.IReadOnlyList<Egami.Barcodes.Gs1ElementString>, Egami.Barcodes.DataBarExpandedOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.DataBarExpanded(System.Collections.Generic.IReadOnlyList(Of Egami.Barcodes.Gs1ElementString), Egami.Barcodes.DataBarExpandedOptions)
+  nameWithType: Barcode.DataBarExpanded(IReadOnlyList<Gs1ElementString>, DataBarExpandedOptions?)
+  nameWithType.vb: Barcode.DataBarExpanded(IReadOnlyList(Of Gs1ElementString), DataBarExpandedOptions)
+- uid: Egami.Barcodes.Barcode.DataBarExpanded(System.String,Egami.Barcodes.DataBarExpandedOptions)
+  name: DataBarExpanded(string, DataBarExpandedOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_DataBarExpanded_System_String_Egami_Barcodes_DataBarExpandedOptions_
+  commentId: M:Egami.Barcodes.Barcode.DataBarExpanded(System.String,Egami.Barcodes.DataBarExpandedOptions)
+  name.vb: DataBarExpanded(String, DataBarExpandedOptions)
+  fullName: Egami.Barcodes.Barcode.DataBarExpanded(string, Egami.Barcodes.DataBarExpandedOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.DataBarExpanded(String, Egami.Barcodes.DataBarExpandedOptions)
+  nameWithType: Barcode.DataBarExpanded(string, DataBarExpandedOptions?)
+  nameWithType.vb: Barcode.DataBarExpanded(String, DataBarExpandedOptions)
+- uid: Egami.Barcodes.Barcode.DataBarExpanded*
+  name: DataBarExpanded
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_DataBarExpanded_
+  commentId: Overload:Egami.Barcodes.Barcode.DataBarExpanded
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.DataBarExpanded
+  nameWithType: Barcode.DataBarExpanded
+- uid: Egami.Barcodes.Barcode.DataBarLimited(System.String)
+  name: DataBarLimited(string)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_DataBarLimited_System_String_
+  commentId: M:Egami.Barcodes.Barcode.DataBarLimited(System.String)
+  name.vb: DataBarLimited(String)
+  fullName: Egami.Barcodes.Barcode.DataBarLimited(string)
+  fullName.vb: Egami.Barcodes.Barcode.DataBarLimited(String)
+  nameWithType: Barcode.DataBarLimited(string)
+  nameWithType.vb: Barcode.DataBarLimited(String)
+- uid: Egami.Barcodes.Barcode.DataBarLimited*
+  name: DataBarLimited
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_DataBarLimited_
+  commentId: Overload:Egami.Barcodes.Barcode.DataBarLimited
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.DataBarLimited
+  nameWithType: Barcode.DataBarLimited
 - uid: Egami.Barcodes.Barcode.DataMatrix(System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString},Egami.Barcodes.DataMatrixOptions)
   name: DataMatrix(IReadOnlyList<Gs1ElementString>, DataMatrixOptions?)
   href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_DataMatrix_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_DataMatrixOptions_
@@ -1577,6 +1634,24 @@ references:
   commentId: F:Egami.Barcodes.BarcodeFormat.Code93
   fullName: Egami.Barcodes.BarcodeFormat.Code93
   nameWithType: BarcodeFormat.Code93
+- uid: Egami.Barcodes.BarcodeFormat.DataBar
+  name: DataBar
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_DataBar
+  commentId: F:Egami.Barcodes.BarcodeFormat.DataBar
+  fullName: Egami.Barcodes.BarcodeFormat.DataBar
+  nameWithType: BarcodeFormat.DataBar
+- uid: Egami.Barcodes.BarcodeFormat.DataBarExpanded
+  name: DataBarExpanded
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_DataBarExpanded
+  commentId: F:Egami.Barcodes.BarcodeFormat.DataBarExpanded
+  fullName: Egami.Barcodes.BarcodeFormat.DataBarExpanded
+  nameWithType: BarcodeFormat.DataBarExpanded
+- uid: Egami.Barcodes.BarcodeFormat.DataBarLimited
+  name: DataBarLimited
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_DataBarLimited
+  commentId: F:Egami.Barcodes.BarcodeFormat.DataBarLimited
+  fullName: Egami.Barcodes.BarcodeFormat.DataBarLimited
+  nameWithType: BarcodeFormat.DataBarLimited
 - uid: Egami.Barcodes.BarcodeFormat.DataMatrix
   name: DataMatrix
   href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_DataMatrix
@@ -2323,6 +2398,100 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.Code93Options.Height
   nameWithType: Code93Options.Height
+- uid: Egami.Barcodes.DataBarExpandedOptions
+  name: DataBarExpandedOptions
+  href: api/Egami.Barcodes.DataBarExpandedOptions.html
+  commentId: T:Egami.Barcodes.DataBarExpandedOptions
+  fullName: Egami.Barcodes.DataBarExpandedOptions
+  nameWithType: DataBarExpandedOptions
+- uid: Egami.Barcodes.DataBarExpandedOptions.Default
+  name: Default
+  href: api/Egami.Barcodes.DataBarExpandedOptions.html#Egami_Barcodes_DataBarExpandedOptions_Default
+  commentId: P:Egami.Barcodes.DataBarExpandedOptions.Default
+  fullName: Egami.Barcodes.DataBarExpandedOptions.Default
+  nameWithType: DataBarExpandedOptions.Default
+- uid: Egami.Barcodes.DataBarExpandedOptions.Default*
+  name: Default
+  href: api/Egami.Barcodes.DataBarExpandedOptions.html#Egami_Barcodes_DataBarExpandedOptions_Default_
+  commentId: Overload:Egami.Barcodes.DataBarExpandedOptions.Default
+  isSpec: "True"
+  fullName: Egami.Barcodes.DataBarExpandedOptions.Default
+  nameWithType: DataBarExpandedOptions.Default
+- uid: Egami.Barcodes.DataBarExpandedOptions.SegmentsPerRow
+  name: SegmentsPerRow
+  href: api/Egami.Barcodes.DataBarExpandedOptions.html#Egami_Barcodes_DataBarExpandedOptions_SegmentsPerRow
+  commentId: P:Egami.Barcodes.DataBarExpandedOptions.SegmentsPerRow
+  fullName: Egami.Barcodes.DataBarExpandedOptions.SegmentsPerRow
+  nameWithType: DataBarExpandedOptions.SegmentsPerRow
+- uid: Egami.Barcodes.DataBarExpandedOptions.SegmentsPerRow*
+  name: SegmentsPerRow
+  href: api/Egami.Barcodes.DataBarExpandedOptions.html#Egami_Barcodes_DataBarExpandedOptions_SegmentsPerRow_
+  commentId: Overload:Egami.Barcodes.DataBarExpandedOptions.SegmentsPerRow
+  isSpec: "True"
+  fullName: Egami.Barcodes.DataBarExpandedOptions.SegmentsPerRow
+  nameWithType: DataBarExpandedOptions.SegmentsPerRow
+- uid: Egami.Barcodes.DataBarKind
+  name: DataBarKind
+  href: api/Egami.Barcodes.DataBarKind.html
+  commentId: T:Egami.Barcodes.DataBarKind
+  fullName: Egami.Barcodes.DataBarKind
+  nameWithType: DataBarKind
+- uid: Egami.Barcodes.DataBarKind.Omnidirectional
+  name: Omnidirectional
+  href: api/Egami.Barcodes.DataBarKind.html#Egami_Barcodes_DataBarKind_Omnidirectional
+  commentId: F:Egami.Barcodes.DataBarKind.Omnidirectional
+  fullName: Egami.Barcodes.DataBarKind.Omnidirectional
+  nameWithType: DataBarKind.Omnidirectional
+- uid: Egami.Barcodes.DataBarKind.Stacked
+  name: Stacked
+  href: api/Egami.Barcodes.DataBarKind.html#Egami_Barcodes_DataBarKind_Stacked
+  commentId: F:Egami.Barcodes.DataBarKind.Stacked
+  fullName: Egami.Barcodes.DataBarKind.Stacked
+  nameWithType: DataBarKind.Stacked
+- uid: Egami.Barcodes.DataBarKind.StackedOmnidirectional
+  name: StackedOmnidirectional
+  href: api/Egami.Barcodes.DataBarKind.html#Egami_Barcodes_DataBarKind_StackedOmnidirectional
+  commentId: F:Egami.Barcodes.DataBarKind.StackedOmnidirectional
+  fullName: Egami.Barcodes.DataBarKind.StackedOmnidirectional
+  nameWithType: DataBarKind.StackedOmnidirectional
+- uid: Egami.Barcodes.DataBarKind.Truncated
+  name: Truncated
+  href: api/Egami.Barcodes.DataBarKind.html#Egami_Barcodes_DataBarKind_Truncated
+  commentId: F:Egami.Barcodes.DataBarKind.Truncated
+  fullName: Egami.Barcodes.DataBarKind.Truncated
+  nameWithType: DataBarKind.Truncated
+- uid: Egami.Barcodes.DataBarOptions
+  name: DataBarOptions
+  href: api/Egami.Barcodes.DataBarOptions.html
+  commentId: T:Egami.Barcodes.DataBarOptions
+  fullName: Egami.Barcodes.DataBarOptions
+  nameWithType: DataBarOptions
+- uid: Egami.Barcodes.DataBarOptions.Default
+  name: Default
+  href: api/Egami.Barcodes.DataBarOptions.html#Egami_Barcodes_DataBarOptions_Default
+  commentId: P:Egami.Barcodes.DataBarOptions.Default
+  fullName: Egami.Barcodes.DataBarOptions.Default
+  nameWithType: DataBarOptions.Default
+- uid: Egami.Barcodes.DataBarOptions.Default*
+  name: Default
+  href: api/Egami.Barcodes.DataBarOptions.html#Egami_Barcodes_DataBarOptions_Default_
+  commentId: Overload:Egami.Barcodes.DataBarOptions.Default
+  isSpec: "True"
+  fullName: Egami.Barcodes.DataBarOptions.Default
+  nameWithType: DataBarOptions.Default
+- uid: Egami.Barcodes.DataBarOptions.Kind
+  name: Kind
+  href: api/Egami.Barcodes.DataBarOptions.html#Egami_Barcodes_DataBarOptions_Kind
+  commentId: P:Egami.Barcodes.DataBarOptions.Kind
+  fullName: Egami.Barcodes.DataBarOptions.Kind
+  nameWithType: DataBarOptions.Kind
+- uid: Egami.Barcodes.DataBarOptions.Kind*
+  name: Kind
+  href: api/Egami.Barcodes.DataBarOptions.html#Egami_Barcodes_DataBarOptions_Kind_
+  commentId: Overload:Egami.Barcodes.DataBarOptions.Kind
+  isSpec: "True"
+  fullName: Egami.Barcodes.DataBarOptions.Kind
+  nameWithType: DataBarOptions.Kind
 - uid: Egami.Barcodes.DataMatrixOptions
   name: DataMatrixOptions
   href: api/Egami.Barcodes.DataMatrixOptions.html

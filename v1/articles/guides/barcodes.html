@@ -90,7 +90,8 @@
 <p>Egami.Barcodes writes and reads barcodes. It draws them through Egami.Drawing's canvas, so a barcode stays vector on a PDF page
 or in SVG output, and reads them from rasters. It is fully managed.</p>
 <p>It writes and reads QR Code, Micro QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, Code 93,
-Codabar, ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on <code>Barcode</code> with typed options; <code>Barcode.Create</code> takes a
+Codabar, GS1 DataBar (Omnidirectional, Truncated, Stacked, Stacked Omnidirectional, Limited, Expanded and Expanded Stacked),
+ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on <code>Barcode</code> with typed options; <code>Barcode.Create</code> takes a
 format chosen at run time with the default options.</p>
 <pre><code class="lang-csharp">// Labels from a table that stores each barcode's format with its data.
 (BarcodeFormat Format, string Data)[] rows =
@@ -241,6 +242,28 @@ Barcode card = Barcode.Codabar(&quot;A31117013206375B&quot;);
 // Start and stop characters from the options, and a modulo 16 check character.
 Barcode checkedCode = Barcode.Codabar(&quot;40156&quot;, new CodabarOptions { Start = 'C', Stop = 'D', CheckDigit = true });
 Console.WriteLine(checkedCode.HumanReadableText); // C40156, its check character, D
+</code></pre><h3 id="gs1-databar">GS1 DataBar</h3>
+<p>GS1 DataBar (ISO/IEC 24724) holds GS1 data in symbols smaller than EAN's, for fresh foods, small items and coupons.
+<code>Barcode.DataBar</code> writes a GTIN-14 as DataBar Omnidirectional: 13 digits get their check digit added, 14 are checked, and
+shorter GTINs take leading zeros. <code>DataBarOptions.Kind</code> picks the form: <code>Omnidirectional</code> (the default, 33 modules tall, for
+scanners at any angle), <code>Truncated</code> (13 modules tall), <code>Stacked</code> (the two halves over each other, 5 and 7 modules tall) or
+<code>StackedOmnidirectional</code> (the halves each 33 modules tall). <code>Barcode.DataBarLimited</code> writes a GTIN-14 that starts with 0 or 1
+in a shorter symbol, 79 modules wide. The human-readable text is the AI and the GTIN-14, such as <code>(01)09501101530003</code>.</p>
+<pre><code class="lang-csharp">// A GTIN-14 for a retail item, in the full-height form and stacked for a small pack.
+Barcode item = Barcode.DataBar(&quot;0950110153000&quot;);
+Barcode stacked = Barcode.DataBar(&quot;09501101530003&quot;, new DataBarOptions { Kind = DataBarKind.Stacked });
+Barcode limited = Barcode.DataBarLimited(&quot;09501101530003&quot;);
+Console.WriteLine(item.HumanReadableText); // (01)09501101530003
+</code></pre>
+<p><code>Barcode.DataBarExpanded</code> writes GS1 element strings, from <code>Gs1.Parse</code> or as text with each AI in parentheses, in up to 74
+digits or 41 letters: a GTIN with a weight, a price, a batch or a date, for variable-measure goods. A GTIN with an indicator
+digit 9 and a weight in kilograms or pounds, or a price, is compressed, as the standard lays out.
+<code>DataBarExpandedOptions.SegmentsPerRow</code> set to an even number 2 to 20 writes DataBar Expanded Stacked: the symbol in rows of
+that many symbol characters, which suits narrow labels. The stacked forms are grids of their rows (<code>Modules.IsLinear</code> is
+<code>false</code>), each row repeated for its height.</p>
+<pre><code class="lang-csharp">// A GTIN with a net weight of 1.750 kg and a best-before date, in one row and in rows of four characters.
+Barcode weighed = Barcode.DataBarExpanded(&quot;(01)99501101530006(3103)001750(15)261231&quot;);
+Barcode narrow = Barcode.DataBarExpanded(&quot;(01)99501101530006(3103)001750(15)261231&quot;, new DataBarExpandedOptions { SegmentsPerRow = 4 });
 </code></pre><h3 id="itf-and-itf-14">ITF and ITF-14</h3>
 <p><code>Barcode.Itf</code> writes Interleaved 2 of 5 from digits; an odd number of digits gets a leading zero. <code>Barcode.Itf14</code> writes a
 GTIN-14 for cartons: 13 digits get their check digit added, 14 are checked, and bearer bars 5 modules thick frame the symbol
@@ -325,7 +348,7 @@ using Raster&lt;Gray8&gt; image = qr.ToRaster(pixelsPerModule: 4);
 </code></pre><h2 id="barcodes-from-modules">Barcodes from modules</h2>
 <p>A <code>Barcode</code> is one symbol: its <code>BarcodeFormat</code>, its <code>Modules</code>, the <code>QuietZone</code> its standard asks for in modules (4 for QR, 2 for
 Micro QR, 1 for Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7
-for EAN-8 and 9 for UPC) and the <code>HumanReadableText</code> printed under a linear symbol. <code>Barcode.FromModules</code> makes one from
+for EAN-8, 9 for UPC, 1 for GS1 DataBar and DataBar Expanded and 5 for DataBar Limited) and the <code>HumanReadableText</code> printed under a linear symbol. <code>Barcode.FromModules</code> makes one from
 modules you already have, such as from another encoder.</p>
 <pre><code class="lang-csharp">// Modules from another encoder become a barcode with the quiet zone of their standard: 4 modules for QR.
 Barcode qr = Barcode.FromModules(BarcodeFormat.Qr, modules);

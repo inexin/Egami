@@ -193,7 +193,7 @@ Console.WriteLine($"{qr.Format}: {qr.Modules.Width} modules plus {qr.QuietZone} 
 
   <h3 id="Egami_Barcodes_Barcode_HumanReadableText" data-uid="Egami.Barcodes.Barcode.HumanReadableText">
   HumanReadableText
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L43"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the text printed under a linear symbol, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>; it is drawn when <a class="xref" href="Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_Font">Font</a> is set.</p>
@@ -257,12 +257,13 @@ Console.WriteLine($"{qr.Format}: {qr.Modules.Width} modules plus {qr.QuietZone} 
 
   <h3 id="Egami_Barcodes_Barcode_QuietZone" data-uid="Egami.Barcodes.Barcode.QuietZone">
   QuietZone
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L40"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the width of the clear margin readers need around the symbol, in modules: 4 for QR, 1 for Data Matrix, 2 for PDF417
-and 0 for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7 for EAN-8 and 9 for
-UPC-A and UPC-E.</p>
+and 0 for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7 for EAN-8, 9 for
+UPC-A and UPC-E, and 1 for GS1 DataBar, whose guard patterns hold their own space (5 for DataBar Limited, the space of its
+right guard).</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -684,7 +685,7 @@ Console.WriteLine(part.HumanReadableText); // PART-0042</code></pre>
 
   <h3 id="Egami_Barcodes_Barcode_Create_Egami_Barcodes_BarcodeFormat_System_String_" data-uid="Egami.Barcodes.Barcode.Create(Egami.Barcodes.BarcodeFormat,System.String)">
   Create(BarcodeFormat, string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Create.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Create.cs/#L19"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes a barcode of a format chosen at run time, with that format's default options, for callers that store the format
@@ -703,7 +704,7 @@ with the data. It calls the format's own factory, such as <a class="xref" href="
     <dd><p>The symbology.</p>
 </dd>
     <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The text or digits.</p>
+    <dd><p>The text or digits; for <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_DataBarExpanded">DataBarExpanded</a>, element strings with each AI in parentheses.</p>
 </dd>
   </dl>
 
@@ -743,6 +744,229 @@ foreach ((BarcodeFormat format, string data) in rows)
 </dd>
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
     <dd><p>The text does not suit the format or does not fit in a symbol.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.formatexception">FormatException</a></dt>
+    <dd><p>The format is <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_DataBarExpanded">DataBarExpanded</a> and the text is not valid element strings.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_DataBar_" data-uid="Egami.Barcodes.Barcode.DataBar*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_DataBar_System_String_Egami_Barcodes_DataBarOptions_" data-uid="Egami.Barcodes.Barcode.DataBar(System.String,Egami.Barcodes.DataBarOptions)">
+  DataBar(string, DataBarOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.DataBar.cs/#L18"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a GS1 DataBar Omnidirectional barcode (ISO/IEC 24724), or its Truncated, Stacked or Stacked Omnidirectional form:
+a GTIN-14 in a small symbol for retail items and fresh foods. Stacked forms are 2D grids of their rows.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode DataBar(string gtin, DataBarOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>gtin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The GTIN: 13 digits, and the check digit is added, or 14 with the check digit, which is checked. Shorter GTINs (GTIN-8, -12 and -13) take leading zeros.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.DataBarOptions.html">DataBarOptions</a></dt>
+    <dd><p>The form, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.DataBarOptions.html#Egami_Barcodes_DataBarOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the AI and GTIN-14, such as <code>(01)09501101530003</code>, as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_DataBar_System_String_Egami_Barcodes_DataBarOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A GTIN-14 for a retail item, in the full-height form and stacked for a small pack.
+Barcode item = Barcode.DataBar("0950110153000");
+Barcode stacked = Barcode.DataBar("09501101530003", new DataBarOptions { Kind = DataBarKind.Stacked });
+Barcode limited = Barcode.DataBarLimited("09501101530003");
+Console.WriteLine(item.HumanReadableText); // (01)09501101530003</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The GTIN is not 13 or 14 digits, or its check digit is wrong.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_DataBarExpanded_" data-uid="Egami.Barcodes.Barcode.DataBarExpanded*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_DataBarExpanded_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_DataBarExpandedOptions_" data-uid="Egami.Barcodes.Barcode.DataBarExpanded(System.Collections.Generic.IReadOnlyList{Egami.Barcodes.Gs1ElementString},Egami.Barcodes.DataBarExpandedOptions)">
+  DataBarExpanded(IReadOnlyList&lt;Gs1ElementString&gt;, DataBarExpandedOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.DataBarExpanded.cs/#L21"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a GS1 DataBar Expanded barcode (ISO/IEC 24724), or Expanded Stacked when <a class="xref" href="Egami.Barcodes.DataBarExpandedOptions.html#Egami_Barcodes_DataBarExpandedOptions_SegmentsPerRow">SegmentsPerRow</a>
+is set: GS1 element strings, such as a GTIN with a weight, price, batch or date, in up to 74 digits or 41 letters, for
+variable-measure and fresh goods and coupons. Expanded Stacked is a 2D grid of its rows.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode DataBarExpanded(IReadOnlyList&lt;Gs1ElementString&gt; elements, DataBarExpandedOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>elements</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Barcodes.Gs1ElementString.html">Gs1ElementString</a>&gt;</dt>
+    <dd><p>The element strings, from <a class="xref" href="Egami.Barcodes.Gs1.html#Egami_Barcodes_Gs1_Parse_System_String_">Parse(string)</a> or <a class="xref" href="Egami.Barcodes.Gs1ElementString.html#Egami_Barcodes_Gs1ElementString_Create_System_String_System_String_">Create(string, string)</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.DataBarExpandedOptions.html">DataBarExpandedOptions</a></dt>
+    <dd><p>The rows, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.DataBarExpandedOptions.html#Egami_Barcodes_DataBarExpandedOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the element strings, each AI in parentheses, as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_DataBarExpanded_System_Collections_Generic_IReadOnlyList_Egami_Barcodes_Gs1ElementString__Egami_Barcodes_DataBarExpandedOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A GTIN with a net weight of 1.750 kg and a best-before date, in one row and in rows of four characters.
+Barcode weighed = Barcode.DataBarExpanded("(01)99501101530006(3103)001750(15)261231");
+Barcode narrow = Barcode.DataBarExpanded("(01)99501101530006(3103)001750(15)261231", new DataBarExpandedOptions { SegmentsPerRow = 4 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>There are no element strings, one has a character DataBar Expanded cannot hold, or they need more than 21 data characters.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_DataBarExpanded_" data-uid="Egami.Barcodes.Barcode.DataBarExpanded*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_DataBarExpanded_System_String_Egami_Barcodes_DataBarExpandedOptions_" data-uid="Egami.Barcodes.Barcode.DataBarExpanded(System.String,Egami.Barcodes.DataBarExpandedOptions)">
+  DataBarExpanded(string, DataBarExpandedOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.DataBarExpanded.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a GS1 DataBar Expanded barcode, or Expanded Stacked, from element strings written with each AI in parentheses.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode DataBarExpanded(string gs1, DataBarExpandedOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>gs1</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The element strings, such as <code>(01)09501101530003(3103)000123</code>; see <a class="xref" href="Egami.Barcodes.Gs1.html#Egami_Barcodes_Gs1_Parse_System_String_">Parse(string)</a>.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.DataBarExpandedOptions.html">DataBarExpandedOptions</a></dt>
+    <dd><p>The rows, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <a class="xref" href="Egami.Barcodes.DataBarExpandedOptions.html#Egami_Barcodes_DataBarExpandedOptions_Default">Default</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the element strings as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_DataBarExpanded_System_String_Egami_Barcodes_DataBarExpandedOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A GTIN with a net weight of 1.750 kg and a best-before date, in one row and in rows of four characters.
+Barcode weighed = Barcode.DataBarExpanded("(01)99501101530006(3103)001750(15)261231");
+Barcode narrow = Barcode.DataBarExpanded("(01)99501101530006(3103)001750(15)261231", new DataBarExpandedOptions { SegmentsPerRow = 4 });</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.formatexception">FormatException</a></dt>
+    <dd><p>The text is not valid element strings.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>An element string has a character DataBar Expanded cannot hold, or they need more than 21 data characters.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_DataBarLimited_" data-uid="Egami.Barcodes.Barcode.DataBarLimited*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_DataBarLimited_System_String_" data-uid="Egami.Barcodes.Barcode.DataBarLimited(System.String)">
+  DataBarLimited(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.DataBarLimited.cs/#L17"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a GS1 DataBar Limited barcode (ISO/IEC 24724): a GTIN-14 that starts with 0 or 1 in a short symbol, 79 modules
+wide, for small items that are not scanned at the point of sale at any angle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode DataBarLimited(string gtin)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>gtin</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The GTIN: 13 digits, and the check digit is added, or 14 with the check digit, which is checked; it must start with 0 or 1. Shorter GTINs take leading zeros.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the AI and GTIN-14, such as <code>(01)09501101530003</code>, as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_DataBarLimited_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A GTIN-14 for a retail item, in the full-height form and stacked for a small pack.
+Barcode item = Barcode.DataBar("0950110153000");
+Barcode stacked = Barcode.DataBar("09501101530003", new DataBarOptions { Kind = DataBarKind.Stacked });
+Barcode limited = Barcode.DataBarLimited("09501101530003");
+Console.WriteLine(item.HumanReadableText); // (01)09501101530003</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The GTIN is not 13 or 14 digits, starts with a digit other than 0 or 1, or its check digit is wrong.</p>
 </dd>
   </dl>
 
@@ -1065,7 +1289,7 @@ Barcode small = Barcode.UpcE("042100005264");</code></pre>
 
   <h3 id="Egami_Barcodes_Barcode_FromModules_Egami_Barcodes_BarcodeFormat_Egami_Barcodes_BarcodeModules_System_String_" data-uid="Egami.Barcodes.Barcode.FromModules(Egami.Barcodes.BarcodeFormat,Egami.Barcodes.BarcodeModules,System.String)">
   FromModules(BarcodeFormat, BarcodeModules, string?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L55"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes a barcode from modules you already have, with the quiet zone of its format's standard.</p>
@@ -1082,7 +1306,7 @@ Barcode small = Barcode.UpcE("042100005264");</code></pre>
     <dd><p>The symbology the modules are.</p>
 </dd>
     <dt><code>modules</code> <a class="xref" href="Egami.Barcodes.BarcodeModules.html">BarcodeModules</a></dt>
-    <dd><p>The modules: a linear symbol for the linear formats, a 2D grid for the others.</p>
+    <dd><p>The modules: a linear symbol for the linear formats, a 2D grid for the others; GS1 DataBar and DataBar Expanded take either, for their stacked forms.</p>
 </dd>
     <dt><code>humanReadableText</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd><p>The text to print under the symbol, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
@@ -1713,7 +1937,7 @@ using Raster&lt;Gray8&gt; image = link.ToRaster(pixelsPerModule: 4);</code></pre
 
   <h3 id="Egami_Barcodes_Barcode_ToPath_System_Single_Egami_Barcodes_BarcodeDrawOptions_" data-uid="Egami.Barcodes.Barcode.ToPath(System.Single,Egami.Barcodes.BarcodeDrawOptions)">
   ToPath(float, BarcodeDrawOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L90"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L93"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the symbol as one path: a rectangle per run of dark modules in a row, all filled with the nonzero rule. The quiet
@@ -1768,7 +1992,7 @@ string svg = path.ToSvg();</code></pre>
 
   <h3 id="Egami_Barcodes_Barcode_ToRaster_System_Int32_Egami_Barcodes_BarcodeDrawOptions_" data-uid="Egami.Barcodes.Barcode.ToRaster(System.Int32,Egami.Barcodes.BarcodeDrawOptions)">
   ToRaster(int, BarcodeDrawOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L113"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L116"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Renders the symbol black on white, each module a square of whole pixels, with the quiet zone around it and, when
