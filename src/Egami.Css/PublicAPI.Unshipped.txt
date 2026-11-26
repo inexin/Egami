@@ -23,3 +23,41 @@ static Egami.Css.CssEasingFunction.TryParse(string! text, out Egami.Css.CssEasin
 static Egami.Css.CssEasingFunction.TryParse(System.Collections.Generic.IReadOnlyList<Egami.Css.CssComponentValue!>! values, out Egami.Css.CssEasingFunction? easing) -> bool
 Egami.Css.CssCascadedStyle.WithAnimationValues(System.Collections.Generic.IEnumerable<Egami.Css.CssDeclaration!>! declarations) -> Egami.Css.CssCascadedStyle!
 Egami.Css.CssOrigin.Animation = 3 -> Egami.Css.CssOrigin
+Egami.Css.CssComputedStyle.GetFontSize(Egami.Css.CssLengthContext context) -> double
+Egami.Css.CssComputedStyle.GetFontWeight() -> double
+Egami.Css.CssComputedStyle.GetKeywords(string! name) -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Css.CssComputedStyle.TryGetColor(string! name, out Egami.Css.CssColor color) -> bool
+Egami.Css.CssComputedStyle.TryGetFontFamilies(out Egami.Css.CssFontFamilyList? families) -> bool
+Egami.Css.CssComputedStyle.TryGetInteger(string! name, out int value) -> bool
+Egami.Css.CssComputedStyle.TryGetKeyword(string! name, out string? keyword) -> bool
+Egami.Css.CssComputedStyle.TryGetLength(string! name, out Egami.Css.CssLength length) -> bool
+Egami.Css.CssComputedStyle.TryGetNumber(string! name, out double number) -> bool
+Egami.Css.CssComputedStyle.TryGetUrl(string! name, out Egami.Css.CssUrl url) -> bool
+Egami.Css.CssComputedStyle.TryResolveLength(string! name, Egami.Css.CssLengthContext context, out double pixels) -> bool
+Egami.Css.CssLengthContext
+Egami.Css.CssLengthContext.ChWidth.get -> double?
+Egami.Css.CssLengthContext.ChWidth.init -> void
+Egami.Css.CssLengthContext.CssLengthContext() -> void
+Egami.Css.CssLengthContext.CssLengthContext(double fontSize, double rootFontSize, double viewportWidth, double viewportHeight) -> void
+Egami.Css.CssLengthContext.Equals(Egami.Css.CssLengthContext other) -> bool
+Egami.Css.CssLengthContext.FontSize.get -> double
+Egami.Css.CssLengthContext.FontSize.init -> void
+Egami.Css.CssLengthContext.LineHeight.get -> double?
+Egami.Css.CssLengthContext.LineHeight.init -> void
+Egami.Css.CssLengthContext.PercentBase.get -> double?
+Egami.Css.CssLengthContext.PercentBase.init -> void
+Egami.Css.CssLengthContext.RootFontSize.get -> double
+Egami.Css.CssLengthContext.RootFontSize.init -> void
+Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssCalc! calc, out double pixels) -> bool
+Egami.Css.CssLengthContext.TryResolve(Egami.Css.CssLength length, out double pixels) -> bool
+Egami.Css.CssLengthContext.ViewportHeight.get -> double
+Egami.Css.CssLengthContext.ViewportHeight.init -> void
+Egami.Css.CssLengthContext.ViewportWidth.get -> double
+Egami.Css.CssLengthContext.ViewportWidth.init -> void
+Egami.Css.CssLengthContext.XHeight.get -> double?
+Egami.Css.CssLengthContext.XHeight.init -> void
+override Egami.Css.CssLengthContext.GetHashCode() -> int
+static Egami.Css.CssLengthContext.operator !=(Egami.Css.CssLengthContext left, Egami.Css.CssLengthContext right) -> bool
+static Egami.Css.CssLengthContext.operator ==(Egami.Css.CssLengthContext left, Egami.Css.CssLengthContext right) -> bool
+~override Egami.Css.CssLengthContext.Equals(object obj) -> bool
+~override Egami.Css.CssLengthContext.ToString() -> string

@@ -324,6 +324,9 @@ transcribed through zint's backend library (zint 2.16.0, BSD-3), whose frontends
 - GS1 DataBar character groups, finder patterns, checksum weights, Limited check character patterns and Expanded finder
   sequences (ISO/IEC 24724 Tables 1, 2, 4 to 8, 14 to 16 and Annex C; zint `backend/rss.h`), in
   `src/Egami.Barcodes/Linear/DataBarTables.cs`.
+- Japan Post customer barcode bar patterns: the three bars of each digit, hyphen and control code CC1 to CC8, and the start
+  and stop codes (Japan Post's postal code manual, which prints them only as a picture; zint `backend/postal.c`), in
+  `src/Egami.Barcodes/Postal/JapanPostEncoder.cs`.
 
 Egami's Data Matrix encodation (`src/Egami.Barcodes/Matrix/DataMatrixEncoder.cs`) is translated from zint's minimal
 encodation in `backend/dmatrix.c` (itself based on Alex Geller's algorithm), with its end-of-data rules, padding, block
