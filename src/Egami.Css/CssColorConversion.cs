@@ -1,8 +1,8 @@
 namespace Egami.Css;
 
 /// <summary>
-/// Conversions between the CSS Color 4 color spaces, written from the equations and primaries in CSS Color 4 sections 10
-/// and 11 and the Oklab definition. Every space reaches CIE XYZ (D65); the inverse matrices are computed from the forward ones,
+/// Conversions between the CSS Color 4 color spaces, written from the equations, primaries and white points in CSS Color 4
+/// and the Oklab definition. Every space reaches CIE XYZ (D65); the inverse matrices are computed from the forward ones,
 /// so a round trip through any two spaces returns the components it started with.
 /// </summary>
 internal static class CssColorConversion
