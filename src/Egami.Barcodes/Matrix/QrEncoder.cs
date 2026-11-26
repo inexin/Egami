@@ -64,17 +64,44 @@ internal static class QrEncoder
     /// <summary>Returns 0 for versions 1 to 9, 1 for 10 to 26 and 2 for 27 to 40.</summary>
     private static int Range(int version) => version <= 9 ? 0 : version <= 26 ? 1 : 2;
 
-    private static int CountBits(int mode, int range) => mode switch
-    {
-        Numeric => 10 + (2 * range),
-        Alphanumeric => 9 + (2 * range),
-        Byte => range == 0 ? 8 : 16,
-        _ => 8 + (2 * range),
-    };
+    /// <summary>
+    /// The bits of a segment's character count for a range of QR versions, or for Micro QR version M1 to M4 when
+    /// <paramref name="micro"/> is 1 to 4 (then 0 for a mode the version does not have).
+    /// </summary>
+    internal static int CountBits(int mode, int range, int micro = 0) => micro > 0
+        ? mode switch
+        {
+            Numeric => micro + 2,
+            Alphanumeric => micro >= 2 ? micro + 1 : 0,
+            Byte => micro >= 3 ? micro + 1 : 0,
+            _ => micro >= 3 ? micro : 0,
+        }
+        : mode switch
+        {
+            Numeric => 10 + (2 * range),
+            Alphanumeric => 9 + (2 * range),
+            Byte => range == 0 ? 8 : 16,
+            _ => 8 + (2 * range),
+        };
+
+    /// <summary>The bits of a mode indicator: 4 in QR, 0 to 3 in Micro QR M1 to M4.</summary>
+    private static int ModeBits(int micro) => micro > 0 ? micro - 1 : 4;
 
     /// <summary>Builds the data bits with the fewest segments' bits for a range of versions, without terminator or padding.</summary>
-    internal static BitBuffer Bits(Input input, int range)
+    internal static BitBuffer Bits(Input input, int range) => Bits(input, range, 0)!;
+
+    /// <summary>
+    /// Builds the data bits with the fewest segments' bits for a range of QR versions, or for Micro QR version
+    /// <paramref name="micro"/> (1 to 4), without terminator or padding; <see langword="null"/> when the version's modes cannot
+    /// hold the data.
+    /// </summary>
+    internal static BitBuffer? Bits(Input input, int range, int micro)
     {
+        if (micro > 0 && (input.Eci > 0 || input.Gs1))
+        {
+            return null;
+        }
+
         var bits = new BitBuffer();
         if (input.Eci > 0)
         {
@@ -98,9 +125,14 @@ internal static class QrEncoder
             bits.Append(0b0101, 4);
         }
 
-        foreach ((int mode, int start, int end) in Segments(input, range))
+        if (Segments(input, range, micro) is not List<(int Mode, int Start, int End)> segments)
         {
-            AppendSegment(bits, input, mode, start, end, range);
+            return null;
+        }
+
+        foreach ((int mode, int start, int end) in segments)
+        {
+            AppendSegment(bits, input, mode, start, end, range, micro);
         }
 
         return bits;
@@ -110,7 +142,7 @@ internal static class QrEncoder
     /// Splits the bytes into segments by dynamic programming over byte positions, in sixths of a bit so that numeric (10 bits per
     /// 3 digits) and alphanumeric (11 bits per 2 characters) cost whole units, with a segment header for each change of mode.
     /// </summary>
-    private static List<(int Mode, int Start, int End)> Segments(Input input, int range)
+    private static List<(int Mode, int Start, int End)>? Segments(Input input, int range, int micro)
     {
         byte[] data = input.Bytes;
         int n = data.Length;
@@ -146,14 +178,14 @@ internal static class QrEncoder
             for (int m = 0; m < 4; m++)
             {
                 (int unit, int step) = Unit(input, m, i);
-                if (unit == 0)
+                if (unit == 0 || (micro > 0 && CountBits(m, range, micro) == 0) || (i > 0 && best == Infinite))
                 {
                     continue;
                 }
 
                 // Continue the segment in this mode, or start a new one here (the header in sixths of a bit).
                 int keep = cost[i, m] + unit;
-                int fresh = best + ((4 + CountBits(m, range)) * 6) + unit;
+                int fresh = best + ((ModeBits(micro) + CountBits(m, range, micro)) * 6) + unit;
                 int target = i + step;
                 int value = keep <= fresh ? keep : fresh;
                 if (value < cost[target, m])
@@ -171,6 +203,11 @@ internal static class QrEncoder
             {
                 mode = m;
             }
+        }
+
+        if (cost[n, mode] >= Infinite)
+        {
+            return null;
         }
 
         // Walk back, closing a segment wherever one was started.
@@ -222,17 +259,24 @@ internal static class QrEncoder
         return second is >= 0x40 and not 0x7F and <= 0xFC && (code is >= 0x8140 and <= 0x9FFC or >= 0xE040 and <= 0xEBBF);
     }
 
-    private static void AppendSegment(BitBuffer bits, Input input, int mode, int start, int end, int range)
+    private static void AppendSegment(BitBuffer bits, Input input, int mode, int start, int end, int range, int micro)
     {
-        int countBits = CountBits(mode, range), maxCount = (1 << countBits) - 1;
+        int countBits = CountBits(mode, range, micro), maxCount = (1 << countBits) - 1;
+
+        // The mode indicator: one bit of four in QR, the mode's number in Micro QR.
+        void Header(int count)
+        {
+            bits.Append(micro > 0 ? mode : 1 << mode, ModeBits(micro));
+            bits.Append(count, countBits);
+        }
+
         switch (mode)
         {
             case Numeric:
                 for (int at = start; at < end; at += maxCount)
                 {
                     int count = Math.Min(maxCount, end - at);
-                    bits.Append(0b0001, 4);
-                    bits.Append(count, countBits);
+                    Header(count);
                     for (int i = 0; i < count; i += 3)
                     {
                         int digits = Math.Min(3, count - i), value = 0;
@@ -270,8 +314,7 @@ internal static class QrEncoder
                 for (int at = 0; at < chars.Count; at += maxCount)
                 {
                     int count = Math.Min(maxCount, chars.Count - at);
-                    bits.Append(0b0010, 4);
-                    bits.Append(count, countBits);
+                    Header(count);
                     for (int i = 0; i + 1 < count; i += 2)
                     {
                         bits.Append((chars[at + i] * 45) + chars[at + i + 1], 11);
@@ -288,8 +331,7 @@ internal static class QrEncoder
                 for (int at = start; at < end; at += maxCount)
                 {
                     int count = Math.Min(maxCount, end - at);
-                    bits.Append(0b0100, 4);
-                    bits.Append(count, countBits);
+                    Header(count);
                     for (int i = 0; i < count; i++)
                     {
                         bits.Append(input.Bytes[at + i], 8);
@@ -301,8 +343,7 @@ internal static class QrEncoder
                 for (int at = start; at < end; at += maxCount * 2)
                 {
                     int count = Math.Min(maxCount, (end - at) / 2);
-                    bits.Append(0b1000, 4);
-                    bits.Append(count, countBits);
+                    Header(count);
                     for (int i = 0; i < count; i++)
                     {
                         int code = (input.Bytes[at + (2 * i)] << 8) | input.Bytes[at + (2 * i) + 1];

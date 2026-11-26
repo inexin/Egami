@@ -1,8 +1,13 @@
 #nullable enable
+*REMOVED*Egami.Barcodes.BarcodeFormat.All = Egami.Barcodes.BarcodeFormat.Matrix | Egami.Barcodes.BarcodeFormat.Linear -> Egami.Barcodes.BarcodeFormat
 *REMOVED*Egami.Barcodes.BarcodeFormat.Linear = Egami.Barcodes.BarcodeFormat.Code128 | Egami.Barcodes.BarcodeFormat.Code39 | Egami.Barcodes.BarcodeFormat.Itf | Egami.Barcodes.BarcodeFormat.Ean13 | Egami.Barcodes.BarcodeFormat.Ean8 | Egami.Barcodes.BarcodeFormat.UpcA | Egami.Barcodes.BarcodeFormat.UpcE -> Egami.Barcodes.BarcodeFormat
+*REMOVED*Egami.Barcodes.BarcodeFormat.Matrix = Egami.Barcodes.BarcodeFormat.Qr | Egami.Barcodes.BarcodeFormat.DataMatrix | Egami.Barcodes.BarcodeFormat.Pdf417 | Egami.Barcodes.BarcodeFormat.Aztec -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormat.All = Egami.Barcodes.BarcodeFormat.Linear | Egami.Barcodes.BarcodeFormat.Matrix -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.BarcodeFormat.Codabar = 4096 -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.BarcodeFormat.Code93 = 2048 -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.BarcodeFormat.Linear = Egami.Barcodes.BarcodeFormat.Code128 | Egami.Barcodes.BarcodeFormat.Code39 | Egami.Barcodes.BarcodeFormat.Itf | Egami.Barcodes.BarcodeFormat.Ean13 | Egami.Barcodes.BarcodeFormat.Ean8 | Egami.Barcodes.BarcodeFormat.UpcA | Egami.Barcodes.BarcodeFormat.UpcE | Egami.Barcodes.BarcodeFormat.Code93 | Egami.Barcodes.BarcodeFormat.Codabar -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormat.Matrix = Egami.Barcodes.BarcodeFormat.Qr | Egami.Barcodes.BarcodeFormat.DataMatrix | Egami.Barcodes.BarcodeFormat.Pdf417 | Egami.Barcodes.BarcodeFormat.Aztec | Egami.Barcodes.BarcodeFormat.MicroQr -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormat.MicroQr = 65536 -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.CodabarOptions
 Egami.Barcodes.CodabarOptions.<Clone>$() -> Egami.Barcodes.CodabarOptions!
 Egami.Barcodes.CodabarOptions.CheckDigit.get -> bool
@@ -25,17 +30,34 @@ Egami.Barcodes.Code93Options.FullAscii.get -> bool?
 Egami.Barcodes.Code93Options.FullAscii.init -> void
 Egami.Barcodes.Code93Options.Height.get -> int?
 Egami.Barcodes.Code93Options.Height.init -> void
+Egami.Barcodes.MicroQrOptions
+Egami.Barcodes.MicroQrOptions.<Clone>$() -> Egami.Barcodes.MicroQrOptions!
+Egami.Barcodes.MicroQrOptions.Equals(Egami.Barcodes.MicroQrOptions? other) -> bool
+Egami.Barcodes.MicroQrOptions.ErrorCorrection.get -> Egami.Barcodes.QrErrorCorrection
+Egami.Barcodes.MicroQrOptions.ErrorCorrection.init -> void
+Egami.Barcodes.MicroQrOptions.MicroQrOptions() -> void
+Egami.Barcodes.MicroQrOptions.MinVersion.get -> int?
+Egami.Barcodes.MicroQrOptions.MinVersion.init -> void
+Egami.Barcodes.MicroQrOptions.RaiseErrorCorrection.get -> bool
+Egami.Barcodes.MicroQrOptions.RaiseErrorCorrection.init -> void
 override Egami.Barcodes.CodabarOptions.Equals(object? obj) -> bool
 override Egami.Barcodes.CodabarOptions.GetHashCode() -> int
 override Egami.Barcodes.CodabarOptions.ToString() -> string!
 override Egami.Barcodes.Code93Options.Equals(object? obj) -> bool
 override Egami.Barcodes.Code93Options.GetHashCode() -> int
 override Egami.Barcodes.Code93Options.ToString() -> string!
+override Egami.Barcodes.MicroQrOptions.Equals(object? obj) -> bool
+override Egami.Barcodes.MicroQrOptions.GetHashCode() -> int
+override Egami.Barcodes.MicroQrOptions.ToString() -> string!
 static Egami.Barcodes.Barcode.Codabar(string! text, Egami.Barcodes.CodabarOptions? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Code93(string! text, Egami.Barcodes.Code93Options? options = null) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.MicroQr(string! text, Egami.Barcodes.MicroQrOptions? options = null) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.CodabarOptions.Default.get -> Egami.Barcodes.CodabarOptions!
 static Egami.Barcodes.CodabarOptions.operator !=(Egami.Barcodes.CodabarOptions? left, Egami.Barcodes.CodabarOptions? right) -> bool
 static Egami.Barcodes.CodabarOptions.operator ==(Egami.Barcodes.CodabarOptions? left, Egami.Barcodes.CodabarOptions? right) -> bool
 static Egami.Barcodes.Code93Options.Default.get -> Egami.Barcodes.Code93Options!
 static Egami.Barcodes.Code93Options.operator !=(Egami.Barcodes.Code93Options? left, Egami.Barcodes.Code93Options? right) -> bool
 static Egami.Barcodes.Code93Options.operator ==(Egami.Barcodes.Code93Options? left, Egami.Barcodes.Code93Options? right) -> bool
+static Egami.Barcodes.MicroQrOptions.Default.get -> Egami.Barcodes.MicroQrOptions!
+static Egami.Barcodes.MicroQrOptions.operator !=(Egami.Barcodes.MicroQrOptions? left, Egami.Barcodes.MicroQrOptions? right) -> bool
+static Egami.Barcodes.MicroQrOptions.operator ==(Egami.Barcodes.MicroQrOptions? left, Egami.Barcodes.MicroQrOptions? right) -> bool

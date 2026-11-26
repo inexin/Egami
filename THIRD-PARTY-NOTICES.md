@@ -324,6 +324,10 @@ Egami's Data Matrix encodation (`src/Egami.Barcodes/Matrix/DataMatrixEncoder.cs`
 encodation in `backend/dmatrix.c` (itself based on Alex Geller's algorithm), with its end-of-data rules, padding, block
 interleaving and 144 x 144 placement, so that Egami's symbols equal zint's.
 
+Egami's Micro QR encoder (`src/Egami.Barcodes/Matrix/MicroQrEncoder.cs`) follows zint's Micro QR code in `backend/qr.c` for
+the version and level it picks, the terminator and padding at the end of the data, and the mask it chooses, so that Egami's
+symbols equal zint's.
+
 zint's backend is distributed under the BSD 3-clause license:
 
     libzint - the open source barcode library

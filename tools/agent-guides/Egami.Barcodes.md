@@ -1,6 +1,6 @@
 # Egami.Barcodes: guide for coding agents
 
-Egami.Barcodes writes and reads barcodes: 1D (Code 128, GS1-128, Code 39, Code 93, Codabar, ITF, EAN and UPC) and 2D (QR, Data
+Egami.Barcodes writes and reads barcodes: 1D (Code 128, GS1-128, Code 39, Code 93, Codabar, ITF, EAN and UPC) and 2D (QR, Micro QR, Data
 Matrix, PDF417, Aztec). It draws them onto Egami.Drawing's canvas, so they stay vectors in PDF and SVG output, or onto rasters,
 and reads them from rasters.
 
@@ -26,6 +26,10 @@ From a table of formats and data:
 QR codes:
 
 {{sample Barcodes.cs#barcode-qr}}
+
+Micro QR codes, for small marks:
+
+{{sample Barcodes.cs#barcode-micro-qr}}
 
 On a canvas:
 

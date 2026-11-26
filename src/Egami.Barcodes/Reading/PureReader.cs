@@ -31,6 +31,11 @@ internal static class PureReader
             return new Found(qr, corners);
         }
 
+        if ((formats & BarcodeFormat.MicroQr) != 0 && MicroQr(bits, left, top, width, height) is DecodedData microQr)
+        {
+            return new Found(microQr, corners);
+        }
+
         if ((formats & BarcodeFormat.DataMatrix) != 0 && DataMatrix(bits, left, top, width, height) is DecodedData dm)
         {
             return new Found(dm, corners);
@@ -138,6 +143,25 @@ internal static class PureReader
         }
 
         return QrDecoder.Decode(Sample(bits, left, top, width, height, size, size));
+    }
+
+    private static DecodedData? MicroQr(BitImage bits, int left, int top, int width, int height)
+    {
+        // The finder's top edge is 7 modules of dark; the symbol is 11 to 17 modules square.
+        int run = 0;
+        while (run < width && bits[left + run, top])
+        {
+            run++;
+        }
+
+        float module = run / 7f;
+        int size = (int)MathF.Round(width / module) | 1;
+        if (module < 1 || size is < 11 or > 17 || MathF.Abs((height / module) - size) > 1.5f)
+        {
+            return null;
+        }
+
+        return MicroQrDecoder.Decode(Sample(bits, left, top, width, height, size, size));
     }
 
     private static DecodedData? DataMatrix(BitImage bits, int left, int top, int width, int height)

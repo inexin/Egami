@@ -227,17 +227,43 @@ internal static class QrDecoder
         return best;
     }
 
-    /// <summary>Parses the segments: numeric, alphanumeric, byte, Kanji, ECI, FNC1 and Structured Append headers.</summary>
-    private static DecodedData? Parse(byte[] data, int version, bool assumeShiftJis = false)
+    /// <summary>
+    /// Parses the segments: numeric, alphanumeric, byte, Kanji, ECI, FNC1 and Structured Append headers. For Micro QR version
+    /// <paramref name="micro"/> (1 to 4) the mode indicators are 0 to 3 bits and there are only the four data modes, and the data
+    /// ends with a terminator of 3 to 9 zero bits or at <paramref name="length"/> bits.
+    /// </summary>
+    internal static DecodedData? Parse(byte[] data, int version, bool assumeShiftJis = false, int micro = 0, int length = -1)
     {
         var reader = new BitReader(data);
         var text = new TextBuilder { Fallback = assumeShiftJis ? TextBuilder.EncodingFor(20) : null };
         bool bytesBeforeKanji = false;
-        int range = version <= 9 ? 0 : version <= 26 ? 1 : 2;
+        int range = micro > 0 ? 0 : version <= 9 ? 0 : version <= 26 ? 1 : 2;
+        int slack = length < 0 ? 0 : (data.Length * 8) - length;
         bool kanjiSeen = false;
-        while (reader.Available >= 4)
+        while (reader.Available - slack >= (micro > 0 ? (2 * micro) + 1 : 4))
         {
-            int mode = reader.Read(4);
+            int mode;
+            if (micro > 0)
+            {
+                // A terminator (3 to 9 zero bits) ends the data; mode indicators 0 to 3 are numeric, alphanumeric, byte, Kanji.
+                if (reader.Peek((2 * micro) + 1) == 0)
+                {
+                    break;
+                }
+
+                int index = reader.Read(micro - 1);
+                if (index > 3)
+                {
+                    return null;
+                }
+
+                mode = 1 << index;
+            }
+            else
+            {
+                mode = reader.Read(4);
+            }
+
             switch (mode)
             {
                 case 0:
@@ -261,22 +287,22 @@ internal static class QrDecoder
                     reader.Read(16);
                     break;
                 case 0b0001:
-                    if (!Numeric(reader, reader.Read(10 + (2 * range)), text))
+                    if (!Numeric(reader, reader.Read(QrEncoder.CountBits(0, range, micro)), text))
                     {
                         return null;
                     }
 
                     break;
                 case 0b0010:
-                    if (!AlphanumericSegment(reader, reader.Read(9 + (2 * range)), text))
+                    if (!AlphanumericSegment(reader, reader.Read(QrEncoder.CountBits(1, range, micro)), text))
                     {
                         return null;
                     }
 
                     break;
                 case 0b0100:
-                    int count = reader.Read(range == 0 ? 8 : 16);
-                    if (reader.Available < count * 8)
+                    int count = reader.Read(QrEncoder.CountBits(2, range, micro));
+                    if (reader.Available - slack < count * 8)
                     {
                         return null;
                     }
@@ -290,8 +316,8 @@ internal static class QrDecoder
 
                     break;
                 case 0b1000:
-                    int characters = reader.Read(8 + (2 * range));
-                    if (reader.Available < characters * 13)
+                    int characters = reader.Read(QrEncoder.CountBits(3, range, micro));
+                    if (reader.Available - slack < characters * 13)
                     {
                         return null;
                     }
@@ -311,7 +337,7 @@ internal static class QrDecoder
                         // Kanji mode means Shift JIS: bytes read before it are Shift JIS too, so read them again.
                         if (bytesBeforeKanji && !assumeShiftJis)
                         {
-                            return Parse(data, version, assumeShiftJis: true);
+                            return Parse(data, version, assumeShiftJis: true, micro, length);
                         }
 
                         text.Fallback = TextBuilder.EncodingFor(20);
@@ -325,8 +351,13 @@ internal static class QrDecoder
             }
         }
 
+        if (reader.Available < slack)
+        {
+            return null;
+        }
+
         (string result, IReadOnlyList<Gs1ElementString>? elements) = text.Result();
-        return new DecodedData(BarcodeFormat.Qr, result, text.Bytes) { Eci = text.Eci, Gs1 = elements };
+        return new DecodedData(micro > 0 ? BarcodeFormat.MicroQr : BarcodeFormat.Qr, result, text.Bytes) { Eci = text.Eci, Gs1 = elements };
     }
 
     internal static int? ReadEci(BitReader reader)
@@ -418,6 +449,14 @@ internal sealed class BitReader(byte[] bytes)
             value = (value << 1) | bit;
         }
 
+        return value;
+    }
+
+    /// <summary>Returns the next bits without moving past them.</summary>
+    public int Peek(int count)
+    {
+        int position = _position, value = Read(count);
+        _position = position;
         return value;
     }
 

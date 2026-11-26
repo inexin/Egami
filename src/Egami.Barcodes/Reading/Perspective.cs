@@ -43,6 +43,14 @@ internal readonly struct Perspective
     }
 
     /// <summary>
+    /// The homogeneous image point (x · w, y · w, w) of (0, <paramref name="y"/>) and its change per unit of x along that row,
+    /// so that a caller can step along a row with additions and one division a point.
+    /// </summary>
+    public (Vector3 Start, Vector3 Step) Row(float y) => (
+        new Vector3((float)((_a21 * y) + _a31), (float)((_a22 * y) + _a32), (float)((_a23 * y) + _a33)),
+        new Vector3((float)_a11, (float)_a12, (float)_a13));
+
+    /// <summary>
     /// Maps the points (x, <paramref name="y"/>) for each x, as <see cref="Map"/> does one by one, with the same arithmetic in
     /// the same order, four at a time where vectors are fast.
     /// </summary>
