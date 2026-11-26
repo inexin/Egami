@@ -36,8 +36,7 @@ The Y plane is read where it is, so a frame from a camera API needs no conversio
 
 ## How each symbology is found
 
-Linear barcodes are found along scan lines: rows, columns from effort 3 (up to effort 5 only when no row has read a linear
-symbol, so an image with a horizontal and a vertical symbol needs effort 6) and diagonals from effort 7, each read in both
+Linear barcodes are found along scan lines: rows, columns from effort 3 and diagonals from effort 7, each read in both
 directions with its edges placed between pixels, so low-resolution and blurred photos read. From effort 5 rows are also read
 through the local threshold, which keeps bars under glare apart. A linear barcode counts once two scan lines agree on it.
 ITF, whose check is weakest, is read from 4 digits on.
