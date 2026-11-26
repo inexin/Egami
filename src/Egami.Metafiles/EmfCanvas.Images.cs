@@ -46,21 +46,70 @@ public sealed partial class EmfCanvas
     }
 
     /// <summary>
-    /// Draws an image whose EMF+ part takes another image and source rectangle than its GDI part, for Egami.SystemDrawing's
-    /// recordings: GDI+ samples an image half a pixel apart from Egami and fades its edges, which a moved source on a bordered copy
-    /// gives GDI+, while GDI's AlphaBlend takes whole pixels and needs the image as it is. Drawn on another canvas (a fallback, a
-    /// layer), it is the plain image. Egami.SystemDrawing calls it, so it keeps this signature.
+    /// Draws an image whose EMF+ part takes another image and source rectangle than its GDI part. GDI+ samples an image half a
+    /// pixel apart from Egami (unless PixelOffsetModeHalf is set) and fades its edges, while GDI's AlphaBlend takes whole pixels.
+    /// Egami.SystemDrawing records <c>Graphics.DrawImage</c> this way: a bordered copy with a moved source rectangle for GDI+, and
+    /// the image as it is for GDI, so both players draw what Windows' own recordings draw. Use it when a file must match GDI+'s
+    /// own recordings; <see cref="Canvas.DrawImage(Raster, RectF, RectF, SamplingOptions?, Paint?)"/> is right otherwise.
+    /// Drawn on another canvas (a fallback image, a layer), the call is the plain image.
     /// </summary>
-    internal void DrawImage(Raster image, RectF source, RectF destination, SamplingOptions sampling, Paint? paint, Raster plusImage, RectF plusSource)
+    /// <param name="image">The image the GDI part draws, and the fallbacks.</param>
+    /// <param name="source">The rectangle of <paramref name="image"/> to draw, in its pixels.</param>
+    /// <param name="destination">Where the image goes, in local coordinates.</param>
+    /// <param name="emfPlusImage">The image the EMF+ part draws.</param>
+    /// <param name="emfPlusSource">
+    /// The rectangle of <paramref name="emfPlusImage"/> the EMF+ part draws into <paramref name="destination"/>. Where
+    /// <paramref name="source"/> reaches past <paramref name="image"/>, it is cut in the same proportion.
+    /// </param>
+    /// <param name="sampling">How the image is sampled; Egami's default sampling when <see langword="null"/>.</param>
+    /// <param name="paint">The blend mode, opacity and antialiasing; its color is not used.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="image"/> or <paramref name="emfPlusImage"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">A rectangle is not finite.</exception>
+    /// <exception cref="ObjectDisposedException">The canvas is disposed.</exception>
+    /// <example>
+    /// <code source="../../tests/Egami.DocSamples/Metafiles.cs" region="emf-plus-image" language="csharp"/>
+    /// </example>
+    public void DrawImage(Raster image, RectF source, RectF destination, Raster emfPlusImage, RectF emfPlusSource, SamplingOptions? sampling = null, Paint? paint = null)
     {
+        ArgumentNullException.ThrowIfNull(image);
+        ArgumentNullException.ThrowIfNull(emfPlusImage);
+        ObjectDisposedException.ThrowIf(_finished, this);
+        Finite(source, nameof(source));
+        Finite(destination, nameof(destination));
+        Finite(emfPlusSource, nameof(emfPlusSource));
+
+        RectF clipped = source.Intersect(new RectF(0, 0, image.Width, image.Height));
+        if (clipped.IsEmpty || destination.IsEmpty || emfPlusSource.IsEmpty)
+        {
+            return;
+        }
+
+        // Clipping the source shrinks the destination and the EMF+ source in proportion.
+        if (clipped != source)
+        {
+            float sx = destination.Width / source.Width, sy = destination.Height / source.Height;
+            float px = emfPlusSource.Width / source.Width, py = emfPlusSource.Height / source.Height;
+            destination = new RectF(destination.X + ((clipped.X - source.X) * sx), destination.Y + ((clipped.Y - source.Y) * sy), clipped.Width * sx, clipped.Height * sy);
+            emfPlusSource = new RectF(emfPlusSource.X + ((clipped.X - source.X) * px), emfPlusSource.Y + ((clipped.Y - source.Y) * py), clipped.Width * px, clipped.Height * py);
+        }
+
+        SamplingOptions how = sampling ?? new SamplingOptions();
         if (Recording())
         {
-            _recorder!.DrawImage(image, source, destination, sampling, paint);
+            _recorder!.DrawImage(image, clipped, destination, how, paint);
             _foldable = false;
         }
         else if (_quiet == 0)
         {
-            DrawBitmap(image, null, source, destination, sampling, paint, (plusImage, plusSource));
+            DrawBitmap(image, null, clipped, destination, how, paint, (emfPlusImage, emfPlusSource));
+        }
+    }
+
+    private static void Finite(RectF rect, string name)
+    {
+        if (!rect.IsFinite)
+        {
+            throw new ArgumentException("The rectangle must be finite.", name);
         }
     }
 

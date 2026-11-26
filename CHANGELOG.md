@@ -101,6 +101,9 @@ EMF writing, stage E: checked against Windows and Office.
 - Writing is 2.7 times faster and allocates a third less: 10,000 shapes take about as long as with `SvgCanvas` (33 ms on
   average against 28). GDI objects leave the table in least recently used order without a scan, object lookups allocate
   nothing on a hit, and records gather in 64 KiB chunks.
+- `EmfCanvas.DrawImage(image, source, destination, emfPlusImage, emfPlusSource, sampling, paint)` draws one image in the GDI
+  part and another (or another rectangle of it) in the EMF+ part, for files that must sample images as GDI+'s own recordings
+  do. Egami.SystemDrawing uses it.
 - Egami's EMF+ player draws images as GDI+ does without `PixelOffsetModeHalf`: half a pixel back, inside their rectangle.
 - A writer benchmark, `VectorWriterBenchmarks`, compares `EmfCanvas` with `SvgCanvas`.
 - The metafiles guide's "Writing EMF" section covers warnings, `FallbackScale`, EMF+ only files and the gate numbers.

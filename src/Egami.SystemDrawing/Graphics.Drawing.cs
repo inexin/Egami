@@ -450,7 +450,7 @@ public sealed partial class Graphics
             canvas.Concat(full);
             if (canvas is Egami.Metafiles.EmfCanvas emf)
             {
-                emf.DrawImage(drawn, src, src, sampling, paint, plus, from);
+                emf.DrawImage(drawn, src, src, plus, from, sampling, paint);
             }
             else
             {

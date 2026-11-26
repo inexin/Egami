@@ -53,6 +53,9 @@ public sealed partial class EmfCanvas : Canvas
     private uint _plusSaves;
     private int _quiet;
 
+    /// <summary>Whether the file is finished: the canvas is disposed.</summary>
+    private bool _finished;
+
     /// <summary>Initializes a new instance of the <see cref="EmfCanvas"/> class that writes one EMF file to a stream when disposed.</summary>
     /// <param name="stream">Where the file goes, from its current position; left open.</param>
     /// <param name="width">The picture's width in device units, pixels at <see cref="EmfWriteOptions.Dpi"/>.</param>
@@ -191,6 +194,7 @@ public sealed partial class EmfCanvas : Canvas
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
+        _finished = true;
         if (_plus)
         {
             _w.Plus(0x4002, 0, []); // EmfPlusEndOfFile

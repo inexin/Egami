@@ -139,6 +139,12 @@ opens every file. Writing takes about as long as writing SVG: 10,000 shapes take
 (`VectorWriterBenchmarks`), SVG 28 ms, and the fastest runs are 17 to 19 ms against SVG's 19 to 33. GDI+ draws texture brushes bilinear whatever the interpolation mode, so a repeated or mirrored `ImagePaint` with
 nearest sampling plays smoothed in GDI+.
 
+GDI+ samples an image half a pixel apart from Egami unless the file asks for PixelOffsetModeHalf, and GDI's copy takes whole
+pixels. When a file must match GDI+'s own recordings, as Egami.SystemDrawing's do, `EmfCanvas.DrawImage` takes a second image
+and source rectangle for the EMF+ part, while the GDI part draws the first:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#emf-plus-image)]
+
 ## What plays, and how close it is
 
 The GDI records of WMF and EMF play as GDI plays them: map modes, the world transform, pens and brushes (hatches and pattern

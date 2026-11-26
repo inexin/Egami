@@ -1,5 +1,6 @@
 #nullable enable
 Egami.Metafiles.EmfCanvas
+Egami.Metafiles.EmfCanvas.DrawImage(Egami.Raster! image, Egami.Drawing.RectF source, Egami.Drawing.RectF destination, Egami.Raster! emfPlusImage, Egami.Drawing.RectF emfPlusSource, Egami.Operations.SamplingOptions? sampling = null, Egami.Drawing.Paint? paint = null) -> void
 Egami.Metafiles.EmfCanvas.EmfCanvas(System.IO.Stream! stream, float width, float height, Egami.Metafiles.EmfWriteOptions? options = null) -> void
 Egami.Metafiles.EmfCanvas.Options.get -> Egami.Metafiles.EmfWriteOptions!
 Egami.Metafiles.EmfCanvas.Warnings.get -> System.Collections.Generic.IReadOnlyList<Egami.EgamiDiagnostic>!
