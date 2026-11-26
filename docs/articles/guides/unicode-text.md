@@ -41,12 +41,20 @@ its first strong character; `LeftToRight` and `RightToLeft` force it.
 
 `TextSegmenter.Graphemes` walks extended grapheme clusters (UAX #29): what a reader sees as one character, such as a letter with
 its accents, a Hangul syllable, a Devanagari conjunct or an emoji sequence. `TextSegmenter.Words` walks the segments between word
-boundaries with Unicode's default rules. Both return a `TextSegment` per segment through a `GraphemeEnumerator` or
-`WordEnumerator` that allocates nothing; `IsGraphemeBoundary` checks one index.
+boundaries with Unicode's default rules. All return a `TextSegment` per segment through a `GraphemeEnumerator`,
+`WordEnumerator` or `DictionaryWordEnumerator` that allocates nothing; `IsGraphemeBoundary` checks one index.
+`TextSegmenter.Words(text, dictionaries)` also splits runs of Thai, Lao, Khmer and Myanmar letters into words with
+`WordDictionaries` (null means `WordDictionaries.BuiltIn`, `None` keeps each run whole), as ICU and browsers do.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Unicode.cs#segments)]
 
-- Words use no dictionary, so Thai, Lao, Khmer and CJK text without spaces is not split into words.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Unicode.cs#dictionary-words)]
+
+- The dictionary overload counts Thai, Lao, Khmer and Myanmar letters as letters, as ICU's word rules do, so a word joins
+  digits and Latin letters next to it (ไทย123). It gives the boundaries of Chromium's `Intl.Segmenter` on the Thai and
+  Myanmar UDHR texts, except that it never splits a grapheme cluster; Chromium splits Lao and Khmer with older lists.
+- CJK text without spaces is not split into words.
 - Line breaking (UAX #14) arrives with paragraph layout in 2.8.2.
 - Unicode's GraphemeBreakTest.txt and WordBreakTest.txt pass in full.
 

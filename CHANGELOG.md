@@ -351,6 +351,11 @@ WOFF and WOFF2 writing (roadmap 2.7.7) and Word-style justified lines. Additive 
   Khmer coeng or Myanmar virama) and keeps ໆ and ຯ with the word before them. Thai and Myanmar line starts equal Chromium
   129's; Chromium breaks Lao and Khmer with older, smaller lists, so it splits some compounds Egami keeps whole. Breaking
   stays allocation-free, and the dictionaries load the first time text of their script is broken.
+- Dictionary word boundaries (roadmap 2.8.5, third part): `TextSegmenter.Words(text, dictionaries)` returns a
+  `DictionaryWordEnumerator` that splits Thai, Lao, Khmer and Myanmar runs into words, counting their letters as ALetter as
+  ICU's word rules do; the old `Words(text)` keeps plain UAX #29. `TextLayout.GetWordBoundary` and `CaretMove.NextWord` and `PreviousWord` use the paragraph's
+  `LineBreaking.Dictionaries`. Word boundaries equal Chromium 129's `Intl.Segmenter` on the Thai UDHR text and on Myanmar
+  apart from ICU's splits inside a grapheme cluster; Lao and Khmer differ where Chromium's older lists do.
 - Fixed: a line ending inside a run whose shaping is unsafe to break measured a lone mark, such as a Myanmar asat, with a
   dotted circle when the window shaped again began inside a glyph cluster.
 
