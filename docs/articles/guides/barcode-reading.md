@@ -1,6 +1,6 @@
 # Reading barcodes
 
-Egami.Barcodes reads every symbology it writes: QR Code, Micro QR Code, Data Matrix (DMRE too), PDF417 (compact too), Aztec Code (runes too),
+Egami.Barcodes reads every symbology it writes but the postal ones (Japan Post): QR Code, Micro QR Code, Data Matrix (DMRE too), PDF417 (compact too), Aztec Code (runes too),
 Code 128 and GS1-128, Code 39, Code 93, Codabar, GS1 DataBar (every form, stacked and Expanded Stacked too), ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E with their add-ons. It reads rendered barcodes,
 scans and photos: turned, in perspective, blurred, noisy, light on dark or mirrored, several in one image.
 

@@ -5,7 +5,8 @@ or in SVG output, and reads them from rasters. It is fully managed.
 
 It writes and reads QR Code, Micro QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, Code 93,
 Codabar, GS1 DataBar (Omnidirectional, Truncated, Stacked, Stacked Omnidirectional, Limited, Expanded and Expanded Stacked),
-ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. Each has its own factory on `Barcode` with typed options; `Barcode.Create` takes a
+ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. It also writes the Japan Post customer barcode, a 4-state postal code, which
+it does not read. Each has its own factory on `Barcode` with typed options; `Barcode.Create` takes a
 format chosen at run time with the default options.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-create)]
@@ -163,6 +164,26 @@ nominal heights.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-ean)]
 
+## Postal barcodes
+
+Postal barcodes are 4-state codes: each bar is a tracker, the short middle third, or reaches up, down or both ways from it.
+Egami writes them as grids of 6 rows, two per third, with a light column between bars, so they draw, render and turn into
+paths like any 2D symbol. It does not read them: `BarcodeFormat.Postal` holds them, and `BarcodeFormat.All` leaves them out.
+
+### Japan Post
+
+`Barcode.JapanPost` writes the Japan Post customer barcode (カスタマバーコード) that mailers print under the address for a
+discount. It takes prepared data, not an address: the 7-digit postal code, with or without its hyphen, then the address number
+that the rules of Japan Post's postal code manual extract from the address (`1-3-2-503` from 1丁目3番2号 郵便プラザ503室).
+Spaces or one hyphen between the two are dropped, and lowercase letters are made uppercase. The symbol holds 20 characters:
+the postal code takes 7, a digit or hyphen 1, and a letter 2 (a control code and a digit); CC4 pads the rest, and a check
+character follows. An address number that does not fit loses its end, as the manual says, a letter cut in two keeping its
+control code; `JapanPostOptions.TruncateAddress` set to `false` throws instead. The human-readable text is the postal code and
+the whole address number. At the manual's module of 0.6 mm (`moduleSize: 0.6f` in millimetres) the symbol is 79.8 by 3.6 mm,
+and its quiet zone of 4 modules gives the 2 mm the manual asks for around it.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-japan-post)]
+
 ## Reading barcodes
 
 `raster.ReadBarcodes()` finds every barcode in an image and `raster.ReadBarcode()` the first. [Reading barcodes](barcode-reading.md)
@@ -211,7 +232,7 @@ font, the text.
 
 A `Barcode` is one symbol: its `BarcodeFormat`, its `Modules`, the `QuietZone` its standard asks for in modules (4 for QR, 2 for
 Micro QR, 1 for Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7
-for EAN-8, 9 for UPC, 1 for GS1 DataBar and DataBar Expanded and 5 for DataBar Limited) and the `HumanReadableText` printed under a linear symbol. `Barcode.FromModules` makes one from
+for EAN-8, 9 for UPC, 1 for GS1 DataBar and DataBar Expanded and 5 for DataBar Limited; 4 around a Japan Post barcode) and the `HumanReadableText` printed under a linear symbol. `Barcode.FromModules` makes one from
 modules you already have, such as from another encoder.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-from-modules)]

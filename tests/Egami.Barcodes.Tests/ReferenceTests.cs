@@ -16,10 +16,10 @@ public class ReferenceTests
         [.. Load("cases.json").GetProperty("cases").EnumerateArray()]);
 
     /// <summary>The factories the cases may name; cases for others are not run yet.</summary>
-    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Code93", "Codabar", "DataBar", "DataBarLimited", "DataBarExpanded", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "MicroQr", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune"];
+    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Code93", "Codabar", "DataBar", "DataBarLimited", "DataBarExpanded", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "MicroQr", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune", "JapanPost"];
 
     public static TheoryData<string> Cases =>
-        [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!)).Select(c => c.GetProperty("name").GetString()!)];
+        [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!) && ReadBack(c)).Select(c => c.GetProperty("name").GetString()!)];
 
     /// <summary>The cases zint encodes too; for the others only the read-back is checked.</summary>
     public static TheoryData<string> ZintCases =>
@@ -65,6 +65,17 @@ public class ReferenceTests
             return;
         }
 
+        if (barcode.Format == BarcodeFormat.JapanPost)
+        {
+            // zint's grid has a row per third (ascender, tracker, descender); Egami's has two.
+            string[] egami = Grid(barcode.Modules).TrimEnd('\n').Split('\n');
+            Assert.Equal(zint.GetProperty("width").GetInt32(), barcode.Modules.Width);
+            Assert.Equal(string.Join('\n', zint.GetProperty("modules").EnumerateArray().Select(r => r.GetString())), string.Join('\n', egami[0], egami[2], egami[4]));
+            Assert.Equal([egami[0], egami[2], egami[4]], [egami[1], egami[3], egami[5]]);
+            Assert.Equal(test.GetProperty("text").GetString(), barcode.HumanReadableText);
+            return;
+        }
+
         // zint ends a Codabar symbol with the narrow gap that follows each character; Egami's linear symbols end with a bar.
         int trailing = barcode.Format == BarcodeFormat.Codabar ? 1 : 0;
         Assert.Equal(zint.GetProperty("width").GetInt32() - trailing, barcode.Modules.Width);
@@ -99,7 +110,7 @@ public class ReferenceTests
             return;
         }
 
-        foreach (JsonElement test in s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!)))
+        foreach (JsonElement test in s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!) && ReadBack(c)))
         {
             string name = test.GetProperty("name").GetString()!;
             Barcode barcode = Make(test);
@@ -163,6 +174,7 @@ public class ReferenceTests
                 Layers = Number(options, "layers"),
                 ErrorCorrectionPercent = Number(options, "percent"),
             }),
+            "JapanPost" => Barcode.JapanPost(data),
             "AztecRune" => Barcode.AztecRune(int.Parse(data, System.Globalization.CultureInfo.InvariantCulture)),
             string call => throw new NotSupportedException(call),
             _ => throw new NotSupportedException(),
@@ -180,6 +192,9 @@ public class ReferenceTests
 
         return ((modules.Width - 17) / 4, "MLHQ"[((bits ^ 0x5412) >> 13) & 3]);
     }
+
+    /// <summary>Gets whether zxing-cpp reads a case back: not when it says <c>"readBack": false</c> (Japan Post).</summary>
+    private static bool ReadBack(JsonElement test) => !test.TryGetProperty("readBack", out JsonElement r) || r.GetBoolean();
 
     internal static JsonElement Case(string name) => s_cases.Value.Single(c => c.GetProperty("name").GetString() == name);
 
