@@ -10,6 +10,7 @@ package. fontTools' reading of each is in tests/reference/fonts, written by `pyt
 | SourceSerif4-Regular.otf | adobe-fonts/source-serif, release branch | SIL OFL 1.1 (LICENSES/SourceSerif4-OFL.md) |
 | Roboto-Regular.ttf | googlefonts/roboto-2, src/hinted | Apache 2.0 (LICENSES/Roboto-Apache-2.0.txt) |
 | DejaVuSans.ttf, DejaVuSansMono.ttf | dejavu-fonts 2.37 | Bitstream Vera and Arev licenses (LICENSES/DejaVu-LICENSE.txt) |
+| derived/DejaVuSans-powerpoint.fntdata | DejaVuSans.ttf as Microsoft PowerPoint 16 embeds it (EOT 0x00020002, MicroType Express, subset to the text of a one-slide deck), from egap-compare tools/powerpoint.ps1 | Bitstream Vera and Arev licenses (LICENSES/DejaVu-LICENSE.txt) |
 | shaping/NotoSans{Arabic,Hebrew,Devanagari,Bengali,Tamil,Thai,Lao,Khmer,Myanmar,Sinhala}-Regular.ttf | notofonts releases, unhinted TrueType | SIL OFL 1.1 (LICENSES/Noto-OFL.txt) |
 | shaping/Amiri-Regular.ttf | aliftype/amiri 1.003 | SIL OFL 1.1 (LICENSES/Amiri-OFL.txt) |
 | shaping/ScheherazadeNew-Regular.ttf | silnrsi/font-scheherazade 4.500 | SIL OFL 1.1 (LICENSES/ScheherazadeNew-OFL.txt) |

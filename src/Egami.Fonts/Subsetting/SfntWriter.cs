@@ -63,6 +63,8 @@ internal sealed class ByteWriter
         }
     }
 
+    public void Clear() => Length = 0;
+
     public void PatchU8(int at, int value) => _buffer[at] = (byte)value;
 
     public void PatchU16(int at, int value) => BinaryPrimitives.WriteUInt16BigEndian(_buffer.AsSpan(at), (ushort)value);

@@ -35,6 +35,12 @@ Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks.get -> bool
 Egami.Fonts.Layout.ParagraphStyle.JustifyLineBreaks.init -> void
 Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces.get -> bool
 Egami.Fonts.Layout.ParagraphStyle.StretchNoBreakSpaces.init -> void
+Egami.Fonts.FontFileKind.Eot = 6 -> Egami.Fonts.FontFileKind
+Egami.Fonts.WebFontFormat.Eot = 2 -> Egami.Fonts.WebFontFormat
+Egami.Fonts.WebFontOptions.RootString.get -> string?
+Egami.Fonts.WebFontOptions.RootString.init -> void
+Egami.Fonts.WebFontOptions.XorFontData.get -> bool
+Egami.Fonts.WebFontOptions.XorFontData.init -> void
 Egami.Fonts.SubsetOptions.DropHinting.get -> bool
 Egami.Fonts.SubsetOptions.DropHinting.init -> void
 Egami.Fonts.WebFontReader

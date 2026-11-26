@@ -180,7 +180,7 @@ public class WebFontWriterTests
         byte[] sourceBytes = TestFonts.Bytes("derived/NotoSans-Regular.woff");
         string metadata = source.GetWoffMetadata()!;
         byte[] priv = source.GetWoffPrivateData().ToArray();
-        foreach (WebFontFormat format in Enum.GetValues<WebFontFormat>())
+        foreach (WebFontFormat format in new[] { WebFontFormat.Woff, WebFontFormat.Woff2 })
         {
             var options = new WebFontOptions { Format = format };
             Typeface kept = Typeface.FromMemory(WebFontWriter.Write(source, options));
@@ -395,7 +395,7 @@ public class WebFontWriterTests
 
     // A glyph as WOFF2 keeps it: the header, contour ends, instructions, each point's on-curve and (first) overlap flags and its
     // coordinates; a composite's bytes up to its end. Flag encodings and padding may differ.
-    private static byte[] CanonicalGlyph(Typeface face, int glyph)
+    internal static byte[] CanonicalGlyph(Typeface face, int glyph)
     {
         ReadOnlySpan<byte> data = face.Glyf!.GetGlyphData(glyph, out _);
         if (data.Length < 10 || BinaryPrimitives.ReadInt16BigEndian(data) == 0)

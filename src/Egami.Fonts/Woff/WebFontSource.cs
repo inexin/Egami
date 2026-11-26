@@ -64,6 +64,7 @@ internal sealed class WebFontSource
         {
             case FontFileKind.Woff:
             case FontFileKind.Woff2:
+            case FontFileKind.Eot:
                 DecodedFont decoded = WebFontDecoder.Decode(data, new FontLoadOptions { Context = context });
                 WebFontSource inner = FromSfnt(decoded.Data, context, limit);
                 return new WebFontSource(inner.Tables, inner.Faces, inner.CollectionVersion)

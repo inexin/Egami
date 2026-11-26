@@ -136,6 +136,11 @@ never committed.
 For barcodes, ZBar (LGPL) is never used, and of zint only the backend library (BSD-3) may be studied: its frontends and GUI are
 under the GPL and are never used.
 
+For Embedded OpenType, the W3C member submissions *Embedded OpenType (EOT) File Format* and *MicroType Express (MTX) Font
+Format* (both 2008, w3.org/submissions/EOT and w3.org/submissions/MTX, with the MTX submission's LZCOMP description and sample
+code) are the references. libeot (MPL-2.0) and LibreOffice are not read; PowerPoint runs only as a black box to save decks with
+embedded fonts.
+
 For kashida justification (2.8.3), the W3C Arabic Layout Requirements, Microsoft's public notes on Arabic justification and
 ECMA-376 (Word's three kashida levels) are the references; HarfBuzz gives the safe-to-insert-tatweel flag. LibreOffice
 (MPL-2.0) is not read.

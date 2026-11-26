@@ -345,7 +345,17 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
 
 ## Egami.Fonts 1.6.0 (unreleased)
 
-WOFF and WOFF2 writing (roadmap 2.7.7) and Word-style justified lines. Additive to 1.5.0.
+WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, and Word-style justified lines. Additive to 1.5.0.
+
+- Embedded OpenType: `Typeface.FromMemory`, `FromFile`, `FromStream` and `FontLoader.LoadAll` read EOT files (versions
+  0x00010000, 0x00020001 and 0x00020002), as old Internet Explorer loads them and PowerPoint embeds fonts (.fntdata), with XOR-ed
+  data and MicroType Express compression (W3C submission: LZCOMP, then the compact glyf, cvt, hdmx and VDMX tables, loca rebuilt).
+  `FontLoader.Probe` reports the new `FontFileKind.Eot`, as does `Typeface.Container`, and font folders index .eot files. Every
+  table but glyf and loca comes back as it was; glyphs come back as they were, their push instructions written anew and without
+  overlap flags, which MicroType Express does not keep. The root string and embedding bits are not enforced; a root string whose
+  checksum is wrong gets a `Font.BadContainer` warning.
+- `WebFontFormat.Eot` writes EOT 0x00020001 with the font uncompressed, its header from the OS/2, head and name tables;
+  `WebFontOptions.XorFontData` XORs the font data and `WebFontOptions.RootString` sets the root string.
 
 - `ParagraphStyle.SpaceShrink` (0 to 1, 0 by default) lets justified lines fit the next word by shrinking their word spaces,
   as Word fills justified paragraphs: by at most that share of the spaces in all, and each space by at most half of what it
