@@ -304,12 +304,26 @@ the glyph map.
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset)]
 
 A PDF needs only the glyphs it draws. A subset that is to be shaped again, such as a web font for a known set of pages, sets
-`SubsetOptions.LayoutClosure`: the kept glyphs gain every glyph GSUB can substitute for them (`OpenTypeLayout.GetClosure` with the
-default features), the dotted circle the shaper puts before a mark that starts a run, and the larger variants and assembly parts
-MATH gives them, and GSUB, GPOS, GDEF and MATH are copied unchanged. The copied tables use the old glyph ids, so it needs
-`RetainGlyphIds`.
+`SubsetOptions.LayoutClosure`: the kept glyphs gain every glyph GSUB can substitute for them (`OpenTypeLayout.GetClosure`), the
+dotted circle the shaper puts before a mark that starts a run, and the larger variants and assembly parts MATH gives them. GSUB,
+GPOS and GDEF are written cut down to those glyphs, as hb-subset and fontTools write them: every script and language system stays,
+with the kept features; each feature keeps the lookups that still apply to a kept glyph; each lookup keeps the entries for kept
+glyphs, with glyph ids, glyph classes and lookup indexes renumbered. The subset shapes the text as the full face does, with the
+new glyph ids, and its layout tables are a fraction of the full face's. Kerning, mark positioning, ligatures and contextual forms
+are all kept.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-layout)]
+
+The features kept, and followed by the glyph closure, are `OpenTypeLayout.DefaultClosureFeatures` (hb-subset's default list: the
+ones the shapers apply, such as `ccmp`, `liga`, `calt`, `kern`, `mark` and the Arabic and Indic forms). `SubsetOptions.LayoutFeatures`
+sets another list; to keep discretionary features such as small capitals, old-style figures or a stylistic set, pass the default
+list with their tags.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-layout-features)]
+
+With `RetainGlyphIds` the layout tables are cut down in the same way without renumbering, and MATH is copied unchanged; a subset
+with dense ids has no MATH table. A layout table the shaper would leave out as damaged makes `Subset` throw
+`CorruptDataException`. GSUB and GPOS lookups that no longer fit 16-bit offsets are written as extension lookups.
 
 The shaper draws a character the face lacks from its canonical decomposition, and composes a base and a mark to the precomposed
 character when the face has it, so the glyphs of a text are more than those its characters map to. `FontSubsetter.GlyphsFor`

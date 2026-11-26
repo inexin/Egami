@@ -73,7 +73,7 @@ internal static class CffSubsetter
         }
 
         SfntWriter.CopyTable(face, Tags.OS2, tables);
-        SfntWriter.KeepTables(face, options, tables);
+        SfntWriter.KeepTables(face, map, options, tables);
         return new FontSubset(SfntWriter.Write(SfntDirectory.OpenTypeVersion, tables), format, oldIds, map);
     }
 
@@ -122,7 +122,7 @@ internal static class CffSubsetter
             tables[Tags.OS2.Value] = os2;
         }
 
-        SfntWriter.KeepTables(face, options, tables);
+        SfntWriter.KeepTables(face, map, options, tables);
         return new FontSubset(SfntWriter.Write(SfntDirectory.OpenTypeVersion, tables), format, oldIds, map);
     }
 

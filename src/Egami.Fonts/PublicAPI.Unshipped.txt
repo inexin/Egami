@@ -71,3 +71,5 @@ Egami.Fonts.Unicode.DictionaryWordEnumerator.DictionaryWordEnumerator() -> void
 Egami.Fonts.Unicode.DictionaryWordEnumerator.GetEnumerator() -> Egami.Fonts.Unicode.DictionaryWordEnumerator
 Egami.Fonts.Unicode.DictionaryWordEnumerator.MoveNext() -> bool
 Egami.Fonts.Unicode.DictionaryWordEnumerator.Dispose() -> void
+Egami.Fonts.SubsetOptions.LayoutFeatures.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontTag>?
+Egami.Fonts.SubsetOptions.LayoutFeatures.init -> void

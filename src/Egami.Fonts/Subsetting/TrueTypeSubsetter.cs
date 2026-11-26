@@ -126,7 +126,7 @@ internal static class TrueTypeSubsetter
             tables[Tags.OS2.Value] = os2;
         }
 
-        SfntWriter.KeepTables(face, options, tables);
+        SfntWriter.KeepTables(face, map, options, tables);
         if (options.DropHinting)
         {
             // KeepTables may name them; dropped hinting drops them all the same.

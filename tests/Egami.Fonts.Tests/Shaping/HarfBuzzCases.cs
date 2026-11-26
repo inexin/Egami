@@ -32,7 +32,50 @@ internal static class HarfBuzzCases
 
     public static Result Run(Case c)
     {
-        RunRequest request = new();
+        if (!TryPrepare(c, out Typeface face, out RunRequest request, out int[] codePoints, out Display display, out string? skipped))
+        {
+            return new Result(c, false, skipped, null);
+        }
+
+        (bool noPositions, bool noClusters, bool showFlags) = display;
+        int[] clusters = [.. Enumerable.Range(0, codePoints.Length)];
+        LayoutBuffer buffer = new();
+        RunShaper.Shape(face, codePoints, clusters, request, buffer);
+
+        ShapingReferences.Glyph[] expected = ShapingReferences.Glyphs(c.Glyphs);
+        List<string> actual = [];
+        List<string> wanted = [];
+        for (int i = 0; i < buffer.Len; i++)
+        {
+            GlyphInfo info = buffer.Info[i];
+            GlyphPos pos = buffer.Pos[i];
+            actual.Add(Format((int)info.Codepoint, info.Cluster, (int)(info.Mask & (1u | (request.ProduceUnsafeToConcat ? 2u : 0u) | (request.ProduceSafeToInsertTatweel ? 4u : 0u))), pos.XAdvance, pos.YAdvance, pos.XOffset, pos.YOffset, noPositions, noClusters, showFlags));
+        }
+
+        foreach (ShapingReferences.Glyph g in expected)
+        {
+            wanted.Add(Format(g.Id, g.Cluster, g.Flags, g.XAdvance, g.YAdvance, g.XOffset, g.YOffset, noPositions, noClusters, showFlags));
+        }
+
+        if (actual.SequenceEqual(wanted))
+        {
+            return new Result(c, true, null, null);
+        }
+
+        return new Result(c, false, null, $"got [{string.Join('|', actual)}] expected [{string.Join('|', wanted)}]");
+    }
+
+    /// <summary>What hb-shape's output options leave out.</summary>
+    public readonly record struct Display(bool NoPositions, bool NoClusters, bool ShowFlags);
+
+    /// <summary>The face (at the case's variations), request and code points of a case; false with the reason for one Egami skips.</summary>
+    public static bool TryPrepare(Case c, out Typeface face, out RunRequest request, out int[] codePoints, out Display display, out string? skipped)
+    {
+        face = null!;
+        codePoints = [];
+        display = default;
+        skipped = null;
+        request = new();
         bool noPositions = false, noClusters = false, showFlags = true;
         int faceIndex = 0;
         List<FontVariation> variations = [];
@@ -62,7 +105,8 @@ internal static class HarfBuzzCases
                     }
                     catch (FormatException)
                     {
-                        return new Result(c, false, "feature syntax " + value, null);
+                        skipped = "feature syntax " + value;
+                        return false;
                     }
 
                     break;
@@ -83,7 +127,8 @@ internal static class HarfBuzzCases
                     }
                     else
                     {
-                        return new Result(c, false, "script " + value, null);
+                        skipped = "script " + value;
+                        return false;
                     }
 
                     break;
@@ -158,7 +203,8 @@ internal static class HarfBuzzCases
                     request.PostContext = [.. ParseUnicodes(value).Take(5)];
                     break;
                 case "--shapers" or "--shaper" when value != "ot":
-                    return new Result(c, false, "shaper " + value, null);
+                    skipped = "shaper " + value;
+                    return false;
                 case "--no-glyph-names":
                 case "--font-funcs":
                 case "--shapers":
@@ -169,11 +215,11 @@ internal static class HarfBuzzCases
                 case "--verify":
                     break;
                 default:
-                    return new Result(c, false, "option " + option, null);
+                    skipped = "option " + option;
+                    return false;
             }
         }
 
-        Typeface face;
         try
         {
             if (!s_faces.TryGetValue((c.Font, faceIndex), out face!))
@@ -184,7 +230,8 @@ internal static class HarfBuzzCases
         }
         catch (Exception e) when (e is CorruptDataException or NotSupportedException or ArgumentException or UnsupportedFormatException)
         {
-            return new Result(c, false, "font " + e.Message, null);
+            skipped = "font " + e.Message;
+            return false;
         }
 
         if (variations.Count > 0)
@@ -192,32 +239,9 @@ internal static class HarfBuzzCases
             face = face.WithVariations([.. variations]);
         }
 
-        int[] codePoints = ParseUnicodes(c.Unicodes);
-        int[] clusters = [.. Enumerable.Range(0, codePoints.Length)];
-        LayoutBuffer buffer = new();
-        RunShaper.Shape(face, codePoints, clusters, request, buffer);
-
-        ShapingReferences.Glyph[] expected = ShapingReferences.Glyphs(c.Glyphs);
-        List<string> actual = [];
-        List<string> wanted = [];
-        for (int i = 0; i < buffer.Len; i++)
-        {
-            GlyphInfo info = buffer.Info[i];
-            GlyphPos pos = buffer.Pos[i];
-            actual.Add(Format((int)info.Codepoint, info.Cluster, (int)(info.Mask & (1u | (request.ProduceUnsafeToConcat ? 2u : 0u) | (request.ProduceSafeToInsertTatweel ? 4u : 0u))), pos.XAdvance, pos.YAdvance, pos.XOffset, pos.YOffset, noPositions, noClusters, showFlags));
-        }
-
-        foreach (ShapingReferences.Glyph g in expected)
-        {
-            wanted.Add(Format(g.Id, g.Cluster, g.Flags, g.XAdvance, g.YAdvance, g.XOffset, g.YOffset, noPositions, noClusters, showFlags));
-        }
-
-        if (actual.SequenceEqual(wanted))
-        {
-            return new Result(c, true, null, null);
-        }
-
-        return new Result(c, false, null, $"got [{string.Join('|', actual)}] expected [{string.Join('|', wanted)}]");
+        codePoints = ParseUnicodes(c.Unicodes);
+        display = new Display(noPositions, noClusters, showFlags);
+        return true;
     }
 
     private static int[] ParseUnicodes(string text) =>

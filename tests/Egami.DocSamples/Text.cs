@@ -2,6 +2,7 @@ using System.Numerics;
 
 using Egami.Drawing;
 using Egami.Fonts;
+using Egami.Fonts.Shaping;
 using Egami.Fonts.Substitutes;
 using Egami.Pixels;
 
@@ -439,14 +440,33 @@ public class Text
         Typeface face = Typeface.FromFile(FontFile);
 
         #region subset-layout
-        // Keep what the text's characters can become (ligatures, contextual forms) and the layout tables, so the subset shapes
-        // the text as the full face does; the copied tables use the old glyph ids, so the ids are kept.
+        // Keep what the text's characters can become (ligatures, contextual forms) and GSUB, GPOS and GDEF cut down to those
+        // glyphs, so the subset shapes the text as the full face does, with the new glyph ids.
         ushort[] glyphs = [.. "office".Select(c => face.GetGlyph(c))];
-        FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+        FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { LayoutClosure = true });
         GlyphRun shaped = new Font(subset.ToTypeface(), 12).Shape("office");
         #endregion
 
-        Assert.Equal(new Font(face, 12).Shape("office").Glyphs.ToArray(), shaped.Glyphs.ToArray());
+        ushort[] expected = [.. new Font(face, 12).Shape("office").Glyphs.ToArray().Select(g => subset.GlyphMap[g])];
+        Assert.Equal(expected, shaped.Glyphs.ToArray());
+    }
+
+    [Fact]
+    public void SubsetLayoutFeatures()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+
+        #region subset-layout-features
+        // The default features, plus small capitals: the subset keeps the small-cap glyphs and the smcp lookups that make them.
+        ushort[] glyphs = [.. "Caps".Select(c => face.GetGlyph(c))];
+        FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions
+        {
+            LayoutClosure = true,
+            LayoutFeatures = [.. OpenTypeLayout.DefaultClosureFeatures, new FontTag("smcp")],
+        });
+        #endregion
+
+        Assert.Contains(new FontTag("smcp"), subset.ToTypeface().Layout.Features);
     }
 
     [Fact]
@@ -487,16 +507,17 @@ public class Text
 
         #region webfont-subset
         // A web font with only the characters a page uses, shaped as the full face shapes them: subset with the layout closure,
-        // then write WOFF2. The subset keeps the glyph ids, so the layout tables need no rewriting.
+        // then write WOFF2.
         string page = "Egami: managed imaging for .NET";
-        ushort[] glyphs = [.. page.EnumerateRunes().Select(r => face.GetGlyph(r.Value)).Distinct()];
-        FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+        IReadOnlyList<ushort> glyphs = FontSubsetter.GlyphsFor(face, page.EnumerateRunes().Select(r => r.Value));
+        FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { LayoutClosure = true });
         byte[] woff2 = WebFontWriter.Write(subset);
         #endregion
 
-        Assert.True(woff2.Length < 40_000, $"{woff2.Length} bytes");
+        Assert.True(woff2.Length < 20_000, $"{woff2.Length} bytes");
         Typeface back = Typeface.FromMemory(woff2);
-        Assert.Equal(new Font(face, 12).Shape(page).Glyphs.ToArray(), new Font(back, 12).Shape(page).Glyphs.ToArray());
+        ushort[] expected = [.. new Font(face, 12).Shape(page).Glyphs.ToArray().Select(g => subset.GlyphMap[g])];
+        Assert.Equal(expected, new Font(back, 12).Shape(page).Glyphs.ToArray());
     }
 
     [Fact]

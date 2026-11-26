@@ -2579,9 +2579,17 @@ static void SubsetFont(Stream stream)
         return;
     }
 
+    if (face.Outlines == Egami.Fonts.FontOutlines.None)
+    {
+        // Documented: a face without outlines has none to subset (ArgumentException).
+        return;
+    }
+
     int hash = data.Length > 0 ? data[^1] : 0;
     ushort[] glyphs = [.. Enumerable.Range(0, Math.Min(face.GlyphCount, 40)).Where(g => ((g + hash) % 3) != 0).Select(g => (ushort)g)];
-    var options = new Egami.Fonts.SubsetOptions { RetainGlyphIds = (hash & 1) != 0, KeepCmap = (hash & 2) != 0, FontNamePrefix = "FUZZED+" };
+    // Every other input also writes the layout tables cut down to the kept glyphs (roadmap 2.7.9).
+    bool layout = (hash & 4) != 0 && !face.IsBareCff;
+    var options = new Egami.Fonts.SubsetOptions { RetainGlyphIds = (hash & 1) != 0, KeepCmap = (hash & 2) != 0, FontNamePrefix = "FUZZED+", LayoutClosure = layout };
     Egami.Fonts.FontSubset subset;
     try
     {
@@ -2603,6 +2611,22 @@ static void SubsetFont(Stream stream)
         {
             throw new InvalidOperationException($"Glyph {old} changed in the subset.");
         }
+    }
+
+    if (layout)
+    {
+        // The written layout tables must pass the checks the shaper makes, and shape.
+        foreach ((string tag, bool gpos) in new[] { ("GSUB", false), ("GPOS", true), ("GDEF", false) })
+        {
+            if (again.TryGetTable(new Egami.Fonts.FontTag(tag), out ReadOnlyMemory<byte> table) &&
+                !(tag == "GDEF" ? Egami.Fonts.Shaping.LayoutSanitizer.SanitizeGdef(table.Span) : Egami.Fonts.Shaping.LayoutSanitizer.SanitizeLayout(table.Span, gpos)))
+            {
+                throw new InvalidOperationException($"The subset's {tag} table is damaged.");
+            }
+        }
+
+        string text = "office AV الله क्ष";
+        _ = new Egami.Fonts.Font(again, 16).Shape(text);
     }
 }
 
