@@ -221,6 +221,14 @@ and, through Egami.Video, video. Additive to 1.5.0: without a time every documen
 
 Egami.Css:
 
+- Typed getters on `CssComputedStyle` (roadmap 2.10.2): `TryGetKeyword`, `GetKeywords`, `TryGetNumber`, `TryGetInteger`,
+  `TryGetLength`, `TryResolveLength`, `TryGetColor`, `TryGetUrl`, `TryGetFontFamilies`, `GetFontWeight` and `GetFontSize`.
+  Each reads one property's computed value as a type and gives false when the value is not of that type. `TryGetColor`
+  resolves `currentcolor`, on `color` itself through the parent. `GetFontWeight` resolves `bolder` and `lighter` with the CSS
+  Fonts 4 table, and `GetFontSize` the absolute-size keywords (16px `medium`), `larger`, `smaller`, `em` and percentages of
+  the parent; both cache their result on the style. Plain values allocate nothing.
+- `CssLengthContext` says what relative lengths are worth (font sizes, viewport, the reference length for percentages, and
+  optional line height, x-height and `ch` width) and resolves a `CssLength` or a `CssCalc` to CSS pixels with `TryResolve`.
 - Wide-gamut colors (roadmap 2.10.2): a `CssColor` keeps the space it was written in as a `CssColorSpace` (`Space`, one of
   CSS Color 4's twelve, `Srgb` for hex, named colors, `rgb()`, `hsl()` and `hwb()`) and its components there, unclipped
   (`C0`, `C1`, `C2`). `ToColorSpace` converts them to any other space, `CssColor.FromColorSpace` builds a color from them,
@@ -461,6 +469,17 @@ Micro QR Code (roadmap 2.11.2, stage C).
   them). The search finds the finder patterns once for QR and Micro QR.
 - `BarcodeFormat.MicroQr` is new, and `BarcodeFormat.Matrix` and `All` include it, so reads with the default options look for
   it too.
+
+Japan Post customer barcode (roadmap 2.11.3, stage A).
+
+- `Barcode.JapanPost` and `JapanPostOptions` write the Japan Post customer barcode (カスタマバーコード) from prepared data: the
+  7-digit postal code and the address number, letters A to Z as a control code and a digit, padded with CC4 to 20 characters,
+  with its modulo 19 check character. An address number too long for the symbol loses its end, as Japan Post's manual says,
+  unless `TruncateAddress` is off. The modules are a grid of 6 rows, one dark column per bar; drawn at 0.6 mm per module the
+  symbol has the manual's size, 79.8 by 3.6 mm. The symbols equal zint's. `Barcode.Create` and `Barcode.FromModules` take
+  `BarcodeFormat.JapanPost`, with a quiet zone of 4 modules (2 mm or more).
+- `BarcodeFormat.JapanPost` and the group `BarcodeFormat.Postal` are new. Postal barcodes are written, not read, so
+  `Postal` is not in `All` and reads with the default options are unchanged.
 
 ## Egami.Cli 1.6.0 (unreleased)
 

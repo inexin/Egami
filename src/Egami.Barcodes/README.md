@@ -2,9 +2,9 @@
 
 Egami.Barcodes writes and reads barcodes.
 
-- Writes 1D and 2D barcodes and draws them onto Egami.Drawing's canvas, so they stay vectors in PDF and SVG output, or onto
+- Writes 1D, 2D and postal (Japan Post) barcodes and draws them onto Egami.Drawing's canvas, so they stay vectors in PDF and SVG output, or onto
   rasters.
-- Reads barcodes from rasters.
+- Reads 1D and 2D barcodes from rasters.
 
 See the [barcodes guide](https://inexin.github.io/Egami/v1/articles/guides/barcodes.html), and the
 [reading guide](https://inexin.github.io/Egami/v1/articles/guides/barcode-reading.html).

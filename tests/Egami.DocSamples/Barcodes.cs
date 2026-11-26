@@ -185,6 +185,21 @@ public class Barcodes
     }
 
     [Fact]
+    public void MakeJapanPost()
+    {
+        #region barcode-japan-post
+        // The postal code and the address number the manual's rules extract from the address, here 1-3-2-503.
+        Barcode mail = Barcode.JapanPost("100-0013 1-3-2-503");
+
+        // Drawn at the manual's 0.6 mm module (here in millimetres): 79.8 by 3.6 mm, in a 2.4 mm quiet zone.
+        Path bars = mail.ToPath(moduleSize: 0.6f);
+        Console.WriteLine(mail.HumanReadableText); // 100-0013 1-3-2-503
+        #endregion
+        Assert.Equal("100-0013 1-3-2-503", mail.HumanReadableText);
+        Assert.Equal(79.8f, bars.Bounds.Width, 3);
+    }
+
+    [Fact]
     public void MakeDataBar()
     {
         #region barcode-databar
