@@ -87,14 +87,14 @@
         <article data-uid="">
 <h1 id="fonts-and-text">Fonts and text</h1>
 
-<p>Egami.Fonts is a separate package that reads TrueType, OpenType, WOFF, WOFF2 and variable fonts in managed code: faces, glyph
+<p>Egami.Fonts is a separate package that reads TrueType, OpenType, WOFF, WOFF2, EOT and variable fonts in managed code: faces, glyph
 outlines, metrics, kerning, installed fonts and subsets. Egami.Drawing uses it to draw and measure a line of text on a canvas. Egami.Drawing and Egami.Fonts are at
 1.0 and their APIs are frozen. Egami.Fonts ships no font: text needs a face from a file, a stream,
 memory or the installed fonts, or from the opt-in <a href="#substitute-fonts">substitute fonts</a> package.</p>
 <h2 id="faces">Faces</h2>
 <p>A <code>Typeface</code> is one face, immutable and shared by every thread. <code>Typeface.FromFile</code>, <code>FromStream</code> and <code>FromMemory</code> read TrueType
 (.ttf), OpenType CFF and CFF2 (.otf), collections (.ttc, .otc, with a face index), WOFF and WOFF2 (.woff, .woff2, collections
-too) and bare CFF; <code>FromCff</code> reads a bare CFF stream as PDF
+too), Embedded OpenType (.eot, and the .fntdata files PowerPoint embeds) and bare CFF; <code>FromCff</code> reads a bare CFF stream as PDF
 embeds it, with <code>CffOptions</code> for the units per em and widths it lacks. <code>FontLoader.Probe</code> tells a <code>FontProbe</code> (its <code>FontFileKind</code>,
 face count and <code>FontOutlines</code>) from the header, and <code>FontLoader.LoadAll</code> loads every face of a collection.</p>
 <pre><code class="lang-csharp">// One face from a file; a collection takes an index. The bytes are read once and every table is parsed when first needed.
@@ -118,6 +118,11 @@ readable glyph data throws <code>CorruptDataException</code>. <code>FontLoadOpti
 <li>A WOFF or WOFF2 file is unwrapped once into an ordinary font in new memory (zlib, and Brotli through .NET's own decoder, with
 WOFF2's glyf, loca and hmtx transforms); the compressed bytes are not kept. <code>Container</code> says where a face came from, and
 <code>GetWoffMetadata</code> and <code>GetWoffPrivateData</code> return the file's own blocks. Every decoded table equals the reference decoders'.</li>
+<li>An EOT file (versions 0x00010000, 0x00020001 and 0x00020002) is unwrapped the same way: XOR-ed data is restored and
+MicroType Express compression undone (LZCOMP, then the compact glyf, cvt, hdmx and VDMX tables, with loca rebuilt). Every
+table but glyf and loca comes back as it was; glyphs come back as they were, written in the compact form WOFF2 decoders use,
+their push instructions written anew and without overlap flags, which MicroType Express does not keep. The root string and
+the embedding bits are not enforced; a root string whose checksum is wrong gets a <code>Font.BadContainer</code> warning.</li>
 <li><code>GetNames</code> returns every <code>FontNameRecord</code>; <code>TryGetTable</code> returns any table's bytes by <code>FontTag</code>. <code>Embedding</code> reports the
 <code>FontEmbedding</code> permissions, which Egami never enforces.</li>
 </ul>
@@ -598,7 +603,7 @@ ushort[] glyphs = [.. &quot;Hello&quot;.Select(c =&gt; face.GetGlyph(c))];
 FontSubset hinted = FontSubsetter.Subset(face, glyphs);
 FontSubset unhinted = FontSubsetter.Subset(face, glyphs, new SubsetOptions { DropHinting = true });
 </code></pre><h2 id="web-fonts">Web fonts</h2>
-<p><code>WebFontWriter.Write</code> writes a face, a subset or font data as a web font: WOFF2 by default, WOFF 1.0 with
+<p><code>WebFontWriter.Write</code> writes a face, a subset or font data as a web font: WOFF2 by default, WOFF 1.0 or EOT with
 <code>WebFontOptions.Format</code>. Both keep every table, so the file reads back as the font it came from; WOFF2 stores glyf and loca in its
 compact transformed form and leaves out the hmtx bearings each glyph's bounding box gives (<code>TransformGlyf</code>, <code>TransformHmtx</code>), and
 its glyphs read back the same, laid out as WOFF2 decoders lay them out. A collection (TTC or OTC) becomes a WOFF2 collection whose
@@ -618,6 +623,14 @@ File.WriteAllBytes(System.IO.Path.Combine(folder, &quot;NotoSans-Regular.woff&qu
 <p>The metadata and private data blocks of a WOFF or WOFF2 source are kept unless <code>Metadata</code> or <code>PrivateData</code> replace them; an empty
 value writes none. A glyf table the writer cannot read is stored untransformed, with a <code>Font.TransformSkipped</code> warning. A bare CFF
 font has no sfnt tables and throws <code>ArgumentException</code>; subset it to OpenType CFF first.</p>
+<p>EOT is written as version 0x00020001 with the font uncompressed (Egami does not write MicroType Express), its header filled
+from the font's OS/2, head and name tables. <code>XorFontData</code> XORs the font data with 0x50 and <code>RootString</code> names the pages that may
+use it (none by default, which lets any page). EOT holds a single font and no metadata or private data.</p>
+<pre><code class="lang-csharp">// An Embedded OpenType file, as PowerPoint embeds fonts (.fntdata) and old Internet Explorer loads them: the font after a
+// header with its names, XOR-ed here. Reading one, MicroType Express compressed or not, is just loading it.
+byte[] eot = WebFontWriter.Write(face, new WebFontOptions { Format = WebFontFormat.Eot, XorFontData = true });
+Typeface back = Typeface.FromMemory(eot);
+</code></pre>
 <p><code>WebFontReader.ToSfnt</code> goes the other way: a WOFF or WOFF2 file becomes the TrueType or OpenType font it holds, with WOFF2's glyf,
 loca and hmtx rebuilt, and a WOFF2 collection a TTC. The <code>egami font</code> commands of <a href="../cli/index.html#fonts">the egami command</a> do
 all of this from a shell.</p>

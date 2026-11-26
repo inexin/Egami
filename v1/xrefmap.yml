@@ -27036,6 +27036,12 @@ references:
   commentId: F:Egami.Fonts.FontFileKind.Collection
   fullName: Egami.Fonts.FontFileKind.Collection
   nameWithType: FontFileKind.Collection
+- uid: Egami.Fonts.FontFileKind.Eot
+  name: Eot
+  href: api/Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Eot
+  commentId: F:Egami.Fonts.FontFileKind.Eot
+  fullName: Egami.Fonts.FontFileKind.Eot
+  nameWithType: FontFileKind.Eot
 - uid: Egami.Fonts.FontFileKind.Sfnt
   name: Sfnt
   href: api/Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Sfnt
@@ -41539,6 +41545,12 @@ references:
   commentId: T:Egami.Fonts.WebFontFormat
   fullName: Egami.Fonts.WebFontFormat
   nameWithType: WebFontFormat
+- uid: Egami.Fonts.WebFontFormat.Eot
+  name: Eot
+  href: api/Egami.Fonts.WebFontFormat.html#Egami_Fonts_WebFontFormat_Eot
+  commentId: F:Egami.Fonts.WebFontFormat.Eot
+  fullName: Egami.Fonts.WebFontFormat.Eot
+  nameWithType: WebFontFormat.Eot
 - uid: Egami.Fonts.WebFontFormat.Woff
   name: Woff
   href: api/Egami.Fonts.WebFontFormat.html#Egami_Fonts_WebFontFormat_Woff
@@ -41622,6 +41634,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.WebFontOptions.PrivateData
   nameWithType: WebFontOptions.PrivateData
+- uid: Egami.Fonts.WebFontOptions.RootString
+  name: RootString
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_RootString
+  commentId: P:Egami.Fonts.WebFontOptions.RootString
+  fullName: Egami.Fonts.WebFontOptions.RootString
+  nameWithType: WebFontOptions.RootString
+- uid: Egami.Fonts.WebFontOptions.RootString*
+  name: RootString
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_RootString_
+  commentId: Overload:Egami.Fonts.WebFontOptions.RootString
+  isSpec: "True"
+  fullName: Egami.Fonts.WebFontOptions.RootString
+  nameWithType: WebFontOptions.RootString
 - uid: Egami.Fonts.WebFontOptions.TransformGlyf
   name: TransformGlyf
   href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_TransformGlyf
@@ -41648,6 +41673,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.WebFontOptions.TransformHmtx
   nameWithType: WebFontOptions.TransformHmtx
+- uid: Egami.Fonts.WebFontOptions.XorFontData
+  name: XorFontData
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_XorFontData
+  commentId: P:Egami.Fonts.WebFontOptions.XorFontData
+  fullName: Egami.Fonts.WebFontOptions.XorFontData
+  nameWithType: WebFontOptions.XorFontData
+- uid: Egami.Fonts.WebFontOptions.XorFontData*
+  name: XorFontData
+  href: api/Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_XorFontData_
+  commentId: Overload:Egami.Fonts.WebFontOptions.XorFontData
+  isSpec: "True"
+  fullName: Egami.Fonts.WebFontOptions.XorFontData
+  nameWithType: WebFontOptions.XorFontData
 - uid: Egami.Fonts.WebFontReader
   name: WebFontReader
   href: api/Egami.Fonts.WebFontReader.html

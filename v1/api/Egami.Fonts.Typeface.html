@@ -333,7 +333,7 @@ Adobe-Identity-0; null for every other font.</p>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the container the face was read from: <a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Sfnt">Sfnt</a>, <a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Collection">Collection</a>,
-<a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Cff">Cff</a>, or <a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Woff">Woff</a> and <a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Woff2">Woff2</a> for a web font, whose
+<a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Cff">Cff</a>, or <a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Woff">Woff</a>, <a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Woff2">Woff2</a> and <a class="xref" href="Egami.Fonts.FontFileKind.html#Egami_Fonts_FontFileKind_Eot">Eot</a> for a web font, whose
 tables <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_TryGetTable_Egami_Fonts_FontTag_System_ReadOnlyMemory_System_Byte___">TryGetTable(FontTag, out ReadOnlyMemory&lt;byte&gt;)</a> returns decoded.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -1180,7 +1180,7 @@ for a static font.</p>
 
   <h3 id="Egami_Fonts_Typeface_FromCff_System_ReadOnlyMemory_System_Byte__Egami_Fonts_CffOptions_" data-uid="Egami.Fonts.Typeface.FromCff(System.ReadOnlyMemory{System.Byte},Egami.Fonts.CffOptions)">
   FromCff(ReadOnlyMemory&lt;byte&gt;, CffOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L283"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L284"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Loads a bare CFF stream as PDF embeds it (FontFile3 with subtype Type1C or CIDFontType0C). The face has no character map:
@@ -1254,7 +1254,7 @@ float width = embedded.GetAdvance(1);</code></pre>
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The file: .ttf, .otf, .ttc, .otc, .woff, .woff2 or a bare CFF stream.</p>
+    <dd><p>The file: .ttf, .otf, .ttc, .otc, .woff, .woff2, .eot or a bare CFF stream.</p>
 </dd>
     <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
     <dd><p>The face to load from a collection; 0 for a single font.</p>
@@ -1317,7 +1317,7 @@ Typeface lenient = Typeface.FromMemory(File.ReadAllBytes(FontFile), 0, options);
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L212"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Loads one face from memory, which is kept, not copied, and must not change afterwards. A WOFF or WOFF2 file is unwrapped
+  <div class="markdown level1 summary"><p>Loads one face from memory, which is kept, not copied, and must not change afterwards. A WOFF, WOFF2 or EOT file is unwrapped
 into an sfnt in new memory once, and the compressed input is not kept.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -1329,7 +1329,7 @@ into an sfnt in new memory once, and the compressed input is not kept.</p>
   <h4 class="section">Parameters</h4>
   <dl class="parameters">
     <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlymemory-1">ReadOnlyMemory</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>&gt;</dt>
-    <dd><p>The font data: an sfnt, a collection, a WOFF or WOFF2 file, or a bare CFF stream.</p>
+    <dd><p>The font data: an sfnt, a collection, a WOFF, WOFF2 or EOT file, or a bare CFF stream.</p>
 </dd>
     <dt><code>index</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
     <dd><p>The face to load from a collection; 0 for a single font.</p>
@@ -1837,7 +1837,7 @@ past <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GlyphC
 
   <h3 id="Egami_Fonts_Typeface_GetNames" data-uid="Egami.Fonts.Typeface.GetNames">
   GetNames()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L293"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L294"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets every decoded string of the naming table, in every language present.</p>
@@ -1870,7 +1870,7 @@ past <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GlyphC
 
   <h3 id="Egami_Fonts_Typeface_GetWoffMetadata" data-uid="Egami.Fonts.Typeface.GetWoffMetadata">
   GetWoffMetadata()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L264"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L265"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the extended metadata block of a WOFF or WOFF2 file, decompressed: XML in UTF-8, as the W3C WOFF specifications define it.</p>
@@ -1903,7 +1903,7 @@ past <a class="xref" href="Egami.Fonts.Typeface.html#Egami_Fonts_Typeface_GlyphC
 
   <h3 id="Egami_Fonts_Typeface_GetWoffPrivateData" data-uid="Egami.Fonts.Typeface.GetWoffPrivateData">
   GetWoffPrivateData()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L268"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L269"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the private data block of a WOFF or WOFF2 file, whose meaning only its vendor knows.</p>
@@ -2024,7 +2024,7 @@ it instead of adding one.</p>
 
   <h3 id="Egami_Fonts_Typeface_ToString" data-uid="Egami.Fonts.Typeface.ToString">
   ToString()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L316"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L317"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the full name, such as &quot;Noto Sans Bold&quot;.</p>
@@ -2325,7 +2325,7 @@ emoji.TryGetColorGlyph(emoji.GetGlyph(0x1F680), darkMode.Palette, out ColorGlyph
 
   <h3 id="Egami_Fonts_Typeface_TryGetTable_Egami_Fonts_FontTag_System_ReadOnlyMemory_System_Byte___" data-uid="Egami.Fonts.Typeface.TryGetTable(Egami.Fonts.FontTag,System.ReadOnlyMemory{System.Byte}@)">
   TryGetTable(FontTag, out ReadOnlyMemory&lt;byte&gt;)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L299"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Typeface.cs/#L300"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets a table's bytes as stored in the font, without parsing them.</p>

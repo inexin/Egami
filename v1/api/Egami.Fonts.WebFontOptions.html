@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Fonts_WebFontOptions" data-uid="Egami.Fonts.WebFontOptions" class="text-break">
-Class WebFontOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L23"><i class="bi bi-code-slash"></i></a>
+Class WebFontOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L29"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -172,7 +172,7 @@ File.WriteAllBytes(System.IO.Path.Combine(folder, "NotoSans-Regular.woff"), woff
 
   <h3 id="Egami_Fonts_WebFontOptions_Context" data-uid="Egami.Fonts.WebFontOptions.Context">
   Context
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L75"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the context whose <a class="xref" href="Egami.SafetyLimits.html#Egami_SafetyLimits_MaxTotalBytes">MaxTotalBytes</a> bounds the input and output and which receives diagnostics,
@@ -205,7 +205,7 @@ or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keyword
 
   <h3 id="Egami_Fonts_WebFontOptions_Default" data-uid="Egami.Fonts.WebFontOptions.Default">
   Default
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L26"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L32"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the default options: WOFF2 with the glyf, loca and hmtx transforms, keeping the source's metadata and private data.</p>
@@ -237,7 +237,7 @@ or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keyword
 
   <h3 id="Egami_Fonts_WebFontOptions_Format" data-uid="Egami.Fonts.WebFontOptions.Format">
   Format
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L29"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L35"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the container to write. Defaults to <a class="xref" href="Egami.Fonts.WebFontFormat.html#Egami_Fonts_WebFontFormat_Woff2">Woff2</a>.</p>
@@ -269,7 +269,7 @@ or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keyword
 
   <h3 id="Egami_Fonts_WebFontOptions_Metadata" data-uid="Egami.Fonts.WebFontOptions.Metadata">
   Metadata
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L48"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L54"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the extended metadata block (XML, written in UTF-8 and compressed), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to keep the
@@ -302,7 +302,7 @@ source's: the block of the WOFF or WOFF2 file the face or data came from, none f
 
   <h3 id="Egami_Fonts_WebFontOptions_PrivateData" data-uid="Egami.Fonts.WebFontOptions.PrivateData">
   PrivateData
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L60"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the private data block, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) to keep the source's, as for <a class="xref" href="Egami.Fonts.WebFontOptions.html#Egami_Fonts_WebFontOptions_Metadata">Metadata</a>.
@@ -331,16 +331,49 @@ Empty memory writes none.</p>
 
 
 
+  <a id="Egami_Fonts_WebFontOptions_RootString_" data-uid="Egami.Fonts.WebFontOptions.RootString*"></a>
+
+  <h3 id="Egami_Fonts_WebFontOptions_RootString" data-uid="Egami.Fonts.WebFontOptions.RootString">
+  RootString
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the EOT root string: the URLs, separated by NUL characters, of the pages that may use the font, or
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for none, which lets any page use it. Ignored for WOFF and WOFF2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? RootString { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Fonts_WebFontOptions_TransformGlyf_" data-uid="Egami.Fonts.WebFontOptions.TransformGlyf*"></a>
 
   <h3 id="Egami_Fonts_WebFontOptions_TransformGlyf" data-uid="Egami.Fonts.WebFontOptions.TransformGlyf">
   TransformGlyf
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L42"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether WOFF2 stores glyf and loca in the transformed form (WOFF 2.0, section 5.1), which compresses TrueType outlines
 by about a third more. Defaults to true. A glyf table that cannot be read is stored as it is, with a
-<code>Font.TransformSkipped</code> diagnostic. Ignored for WOFF 1.0.</p>
+<code>Font.TransformSkipped</code> diagnostic. Ignored for WOFF 1.0 and EOT.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -369,11 +402,11 @@ by about a third more. Defaults to true. A glyf table that cannot be read is sto
 
   <h3 id="Egami_Fonts_WebFontOptions_TransformHmtx" data-uid="Egami.Fonts.WebFontOptions.TransformHmtx">
   TransformHmtx
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L48"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether WOFF2 leaves out the left side bearings of hmtx that equal each glyph's xMin (WOFF 2.0, section 5.4), when glyf
-is transformed too. Defaults to true. Ignored for WOFF 1.0.</p>
+is transformed too. Defaults to true. Ignored for WOFF 1.0 and EOT.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -398,11 +431,43 @@ is transformed too. Defaults to true. Ignored for WOFF 1.0.</p>
 
 
 
+  <a id="Egami_Fonts_WebFontOptions_XorFontData_" data-uid="Egami.Fonts.WebFontOptions.XorFontData*"></a>
+
+  <h3 id="Egami_Fonts_WebFontOptions_XorFontData" data-uid="Egami.Fonts.WebFontOptions.XorFontData">
+  XorFontData
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L69"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether EOT font data is XOR-ed with 0x50 (TTEMBED_XORENCRYPTDATA). Defaults to false. Ignored for WOFF and WOFF2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool XorFontData { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L23" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/WebFontWriter.cs/#L29" class="edit-link">Edit this page</a>
         </div>
 
 

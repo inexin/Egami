@@ -6171,7 +6171,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Fonts.WebFontWriter",
-      "Summary": "<p sourcefile=\"api/Egami.Fonts.WebFontWriter.yml\" sourcestartlinenumber=\"1\">Writes fonts as WOFF 1.0 and WOFF 2.0 files for the web, losslessly: every table of the font is kept, and a WOFF2 file read\nback gives the same tables but glyf and loca, whose glyphs read the same but may be laid out more compactly, and head, whose\nflags gain bit 11 (the font has been through a lossless modifying transform), as the reference encoder sets it.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.WebFontWriter.yml\" sourcestartlinenumber=\"1\">Writes fonts as WOFF 1.0, WOFF 2.0 and EOT files for the web, losslessly: every table of the font is kept, and a WOFF2 file read\nback gives the same tables but glyf and loca, whose glyphs read the same but may be laid out more compactly, and head, whose\nflags gain bit 11 (the font has been through a lossless modifying transform), as the reference encoder sets it.</p>\n"
     },
     {
       "type": "ManagedReference",
