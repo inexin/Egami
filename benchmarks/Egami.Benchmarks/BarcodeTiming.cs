@@ -26,6 +26,7 @@ internal static class BarcodeTiming
         ["ean13"] = (BarcodeFormat.Ean13 | BarcodeFormat.UpcA, "EAN and UPC"),
         ["ean8"] = (BarcodeFormat.Ean8, "EAN and UPC"),
         ["itf"] = (BarcodeFormat.Itf, "ITF"),
+        ["microqr"] = (BarcodeFormat.MicroQr, "Micro QR"),
         ["pdf417"] = (BarcodeFormat.Pdf417, "PDF417"),
         ["qrcode"] = (BarcodeFormat.Qr, "QR"),
         ["upca"] = (BarcodeFormat.UpcA, "EAN and UPC"),

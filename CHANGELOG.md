@@ -394,6 +394,17 @@ Code 93 and Codabar (roadmap 2.11.2, stage A).
   with the default options look for them too. A program built against 1.0 that names `Linear` or `All` keeps 1.0's value
   until it is built again, as enum values are compiled into it.
 
+Micro QR Code (roadmap 2.11.2, stage C).
+
+- `Barcode.MicroQr` and `MicroQrOptions` write Micro QR Code (ISO/IEC 18004), versions M1 to M4: the smallest version that
+  holds the text at level L (or the level and smallest version asked for), with the level raised while the version holds.
+  Segments are numeric, alphanumeric, byte and Kanji as each version allows; there is no ECI. The symbols equal zint's.
+  `Barcode.Create` and `Barcode.FromModules` take `BarcodeFormat.MicroQr`, with a quiet zone of 2 modules.
+- Micro QR is read at any rotation, in some perspective, mirrored and light on dark, with errors corrected (M1 only detects
+  them). The search finds the finder patterns once for QR and Micro QR.
+- `BarcodeFormat.MicroQr` is new, and `BarcodeFormat.Matrix` and `All` include it, so reads with the default options look for
+  it too.
+
 ## Egami.Cli 1.6.0 (unreleased)
 
 MCP prompts and resources, a guide for coding agents, animated SVG input and font commands. Additive to 1.5.0.
