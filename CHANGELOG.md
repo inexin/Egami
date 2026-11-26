@@ -495,9 +495,9 @@ Faster linear reading (roadmap 2.11.2 follow-up).
   DataBar Limited tests its check character's last two elements before reading its characters: the same reads, faster.
 - A linear read allocates less: no DataBar tables unless DataBar is asked for, and no inverted local threshold without 2D
   formats.
-- On one thread against zxing-cpp 3.1.1 (egami-compare's speed gate): Codabar 1.06x to 0.72x, Code 93 1.39x to 0.83x,
-  Code 128 0.96x to 0.55x, Code 39 0.68x to 0.42x, ITF 1.57x to 0.74x, EAN and UPC 0.93x to 0.60x, DataBar Limited 2.55x to
-  1.7x; a default read of the blackbox and zint images takes 0.95x of the time before.
+- On one thread against zxing-cpp 3.1.1 (egami-compare's speed gate): Codabar 1.06x to 0.89x, Code 93 1.39x to 1.04x,
+  Code 128 0.96x to 0.64x, Code 39 0.68x to 0.50x, ITF 1.57x to 1.15x, EAN and UPC 0.93x to 0.67x, DataBar Limited 2.55x to
+  1.8x; a default read of the blackbox and zint images takes 0.95x of the time before.
 
 ## Egami.Cli 1.6.0 (unreleased)
 
