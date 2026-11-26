@@ -2,9 +2,9 @@
 
 Egami.Fonts reads fonts and lays out text in managed code.
 
-- TrueType, OpenType (CFF), WOFF, WOFF2, variable and color fonts: faces, glyph outlines, metrics, kerning, installed fonts
-  and subsetting.
-- WOFF and WOFF2 writing, with the WOFF2 glyf, loca and hmtx transforms and collections, and back to TTF, OTF and TTC.
+- TrueType, OpenType (CFF), WOFF, WOFF2, EOT (MicroType Express too), variable and color fonts: faces, glyph outlines,
+  metrics, kerning, installed fonts and subsetting.
+- WOFF, WOFF2 and EOT writing, with the WOFF2 glyf, loca and hmtx transforms and collections, and back to TTF, OTF and TTC.
 - OpenType text shaping, bidi, and paragraph layout with wrapping, alignment and hit testing.
 - Thai, Lao, Khmer and Myanmar line breaking and word selection with ICU's word dictionaries.
 - Automatic hyphenation with built-in patterns for 35 languages, and optimal (Knuth-Plass) line breaking.

@@ -7,6 +7,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Egami.Drawing\Egami.Drawing.csproj" />
+    <!-- VectorWriterBenchmarks: EmfCanvas against SvgCanvas. -->
+    <ProjectReference Include="..\..\src\Egami.Metafiles\Egami.Metafiles.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Svg\Egami.Svg.csproj" />
     <!-- The Phase 2.2 peak-memory harness, shared with Egami's tests. -->
     <Compile Include="..\..\tests\Egami.Tests\Memory\PeakMemory.cs" Link="PeakMemory.cs" />
   </ItemGroup>

@@ -45,6 +45,74 @@ public sealed partial class EmfCanvas
         }
     }
 
+    /// <summary>
+    /// Draws an image whose EMF+ part takes another image and source rectangle than its GDI part. GDI+ samples an image half a
+    /// pixel apart from Egami (unless PixelOffsetModeHalf is set) and fades its edges, while GDI's AlphaBlend takes whole pixels.
+    /// Egami.SystemDrawing records <c>Graphics.DrawImage</c> this way: a bordered copy with a moved source rectangle for GDI+, and
+    /// the image as it is for GDI, so both players draw what Windows' own recordings draw. Use it when a file must match GDI+'s
+    /// own recordings; <see cref="Canvas.DrawImage(Raster, RectF, RectF, SamplingOptions?, Paint?)"/> is right otherwise.
+    /// Drawn on another canvas (a fallback image, a layer), the call is the plain image.
+    /// </summary>
+    /// <param name="image">The image the GDI part draws, and the fallbacks.</param>
+    /// <param name="source">The rectangle of <paramref name="image"/> to draw, in its pixels.</param>
+    /// <param name="destination">Where the image goes, in local coordinates.</param>
+    /// <param name="emfPlusImage">The image the EMF+ part draws.</param>
+    /// <param name="emfPlusSource">
+    /// The rectangle of <paramref name="emfPlusImage"/> the EMF+ part draws into <paramref name="destination"/>. Where
+    /// <paramref name="source"/> reaches past <paramref name="image"/>, it is cut in the same proportion.
+    /// </param>
+    /// <param name="sampling">How the image is sampled; Egami's default sampling when <see langword="null"/>.</param>
+    /// <param name="paint">The blend mode, opacity and antialiasing; its color is not used.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="image"/> or <paramref name="emfPlusImage"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">A rectangle is not finite.</exception>
+    /// <exception cref="ObjectDisposedException">The canvas is disposed.</exception>
+    /// <example>
+    /// <code source="../../tests/Egami.DocSamples/Metafiles.cs" region="emf-plus-image" language="csharp"/>
+    /// </example>
+    public void DrawImage(Raster image, RectF source, RectF destination, Raster emfPlusImage, RectF emfPlusSource, SamplingOptions? sampling = null, Paint? paint = null)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        ArgumentNullException.ThrowIfNull(emfPlusImage);
+        ObjectDisposedException.ThrowIf(_finished, this);
+        Finite(source, nameof(source));
+        Finite(destination, nameof(destination));
+        Finite(emfPlusSource, nameof(emfPlusSource));
+
+        RectF clipped = source.Intersect(new RectF(0, 0, image.Width, image.Height));
+        if (clipped.IsEmpty || destination.IsEmpty || emfPlusSource.IsEmpty)
+        {
+            return;
+        }
+
+        // Clipping the source shrinks the destination and the EMF+ source in proportion.
+        if (clipped != source)
+        {
+            float sx = destination.Width / source.Width, sy = destination.Height / source.Height;
+            float px = emfPlusSource.Width / source.Width, py = emfPlusSource.Height / source.Height;
+            destination = new RectF(destination.X + ((clipped.X - source.X) * sx), destination.Y + ((clipped.Y - source.Y) * sy), clipped.Width * sx, clipped.Height * sy);
+            emfPlusSource = new RectF(emfPlusSource.X + ((clipped.X - source.X) * px), emfPlusSource.Y + ((clipped.Y - source.Y) * py), clipped.Width * px, clipped.Height * py);
+        }
+
+        SamplingOptions how = sampling ?? new SamplingOptions();
+        if (Recording())
+        {
+            _recorder!.DrawImage(image, clipped, destination, how, paint);
+            _foldable = false;
+        }
+        else if (_quiet == 0)
+        {
+            DrawBitmap(image, null, clipped, destination, how, paint, (emfPlusImage, emfPlusSource));
+        }
+    }
+
+    private static void Finite(RectF rect, string name)
+    {
+        if (!rect.IsFinite)
+        {
+            throw new ArgumentException("The rectangle must be finite.", name);
+        }
+    }
+
     /// <inheritdoc/>
     protected override void OnDrawPicture(Picture picture, Matrix3x2 matrix, Paint? paint, bool cacheAsImage)
         => base.OnDrawPicture(picture, matrix, paint, cacheAsImage: false); // played inline, so it stays vectors at any scale
@@ -55,7 +123,7 @@ public sealed partial class EmfCanvas
     /// the GDI part, an AlphaBlend of a premultiplied 32-bit DIB of the source's pixels. A paint's opacity is baked into the
     /// pixels; other blend modes and blurs fall back to an image of the call, and so does the GDI part of a turned or mirrored one.
     /// </summary>
-    private void DrawBitmap(Raster? raster, EncodedImage? encoded, RectF source, RectF destination, SamplingOptions sampling, Paint? paint)
+    private void DrawBitmap(Raster? raster, EncodedImage? encoded, RectF source, RectF destination, SamplingOptions sampling, Paint? paint, (Raster Image, RectF Source)? plus = null)
     {
         if (paint?.BlendMode == BlendMode.Destination)
         {
@@ -91,7 +159,8 @@ public sealed partial class EmfCanvas
         Touch(destination, 1);
         if (_plus)
         {
-            byte[] image = (opacity >= 1 && encoded is not null ? Passthrough(encoded) : null) ?? BitmapObject(raster ?? encoded!.Decode(), opacity);
+            byte[] image = plus is ({ } plusImage, _) ? BitmapObject(plusImage, opacity) : (opacity >= 1 && encoded is not null ? Passthrough(encoded) : null) ?? BitmapObject(raster ?? encoded!.Decode(), opacity);
+            RectF plusSource = plus?.Source ?? source;
             int id = _w.PlusObject(5, image);
 
             // Image attributes that mirror at the image's edges, so GDI+ does not fade them toward transparent black.
@@ -100,7 +169,7 @@ public sealed partial class EmfCanvas
             SetSmooth(paint?.Antialias ?? true);
             SetInterpolation(Interpolation(sampling.Filter));
             RecordBuffer b = _w.Data().U32((uint)attributes).I32(2); // UnitPixel
-            b.F32(source.X).F32(source.Y).F32(source.Width).F32(source.Height).I32(3);
+            b.F32(plusSource.X).F32(plusSource.Y).F32(plusSource.Width).F32(plusSource.Height).I32(3);
             b.F32(destination.Left).F32(destination.Top).F32(destination.Right).F32(destination.Top).F32(destination.Left).F32(destination.Bottom);
             _w.Plus(0x401B, (ushort)id, b.Span); // DrawImagePoints: the source's top-left, top-right and bottom-left corners
         }

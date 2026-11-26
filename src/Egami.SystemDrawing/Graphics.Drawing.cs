@@ -430,11 +430,45 @@ public sealed partial class Graphics
         Raster drawn = attributes?.State.Apply(pixels, GdiPlusImageAttributes.TypeBitmap) ?? pixels;
         SamplingOptions sampling = new() { Filter = Filter };
         SolidPaint paint = new(new Rgba8(0, 0, 0, 255)) { Antialias = Smooth, BlendMode = Blend };
+
+        // As on a bitmap: without the half-pixel offset GDI+ puts source pixel centers on whole coordinates, so the source is
+        // sampled half a pixel on; without a wrap mode it samples transparency beyond the image, which a transparent border
+        // gives the recorded image (the writer mirrors an image's own edge pixels beyond it, as Egami samples). Scaled by a whole
+        // or half number, device pixel centers then fall on source pixel edges, where GDI+ takes the pixel after the edge; the
+        // source is moved on by a further 1/512 pixel so every player's float rounding takes that pixel too. That is the EMF+
+        // part's image; the GDI part, whose AlphaBlend takes whole pixels, gets the image as it is, as GDI+ writes it.
+        RectF from = Offset ? src : src.Offset(new Vector2(0.5f + (1f / 512), 0.5f + (1f / 512)));
+        Raster plus = drawn;
+        if (attributes is not { WrapSet: true } && drawn is Raster<Rgba8> rgba)
+        {
+            plus = Bordered(rgba);
+            from = from.Offset(Vector2.One);
+        }
+
         Draw(bounds, canvas =>
         {
             canvas.Concat(full);
-            canvas.DrawImage(drawn, src, src, sampling, paint);
+            if (canvas is Egami.Metafiles.EmfCanvas emf)
+            {
+                emf.DrawImage(drawn, src, src, plus, from, sampling, paint);
+            }
+            else
+            {
+                canvas.DrawImage(drawn, src, src, sampling, paint);
+            }
         });
+    }
+
+    /// <summary>A copy with a one-pixel transparent border.</summary>
+    private static Raster<Rgba8> Bordered(Raster<Rgba8> image)
+    {
+        Raster<Rgba8> b = Raster.Create<Rgba8>(image.Width + 2, image.Height + 2);
+        for (int y = 0; y < image.Height; y++)
+        {
+            image.Row(y).CopyTo(b.Row(y + 1)[1..]);
+        }
+
+        return b;
     }
 
     /// <summary>

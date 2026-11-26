@@ -126,6 +126,25 @@ is not one color. Color glyphs are drawn as their layers (COLR) or images (CBDT,
 
 `Metafile.Load(...).Draw(emfCanvas)` writes any WMF, EMF or EMF+ file again as an EMF, which plays as the original does.
 
+`Warnings` lists what had to become an image, one `Metafile.FallbackImage` warning for each kind of call, so a program can
+tell its users or draw those parts another way. `FallbackScale` sets how sharp those images are, and `Kind = EmfPlusOnly`
+leaves the GDI copy out, which makes the file smaller when every reader has GDI+ (Office and Windows do):
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#emf-fallback)]
+
+How close the files are, measured on Windows over the drawing suite of the writer's tests (egami-compare's EMF writer gates): GDI+ plays them
+within a mean of 1.2 levels of Egami's own drawing; GDI plays the GDI copy of opaque drawings within 1.7 levels of Egami's drawing at half coverage; and
+the same System.Drawing calls recorded by GDI+ and by Egami.SystemDrawing play alike in GDI+ (0.2 levels). LibreOffice
+opens every file. Writing takes about as long as writing SVG: 10,000 shapes take 33 ms on average on the test machine
+(`VectorWriterBenchmarks`), SVG 28 ms, and the fastest runs are 17 to 19 ms against SVG's 19 to 33. GDI+ draws texture brushes bilinear whatever the interpolation mode, so a repeated or mirrored `ImagePaint` with
+nearest sampling plays smoothed in GDI+.
+
+GDI+ samples an image half a pixel apart from Egami unless the file asks for PixelOffsetModeHalf, and GDI's copy takes whole
+pixels. When a file must match GDI+'s own recordings, as Egami.SystemDrawing's do, `EmfCanvas.DrawImage` takes a second image
+and source rectangle for the EMF+ part, while the GDI part draws the first:
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Metafiles.cs#emf-plus-image)]
+
 ## What plays, and how close it is
 
 The GDI records of WMF and EMF play as GDI plays them: map modes, the world transform, pens and brushes (hatches and pattern

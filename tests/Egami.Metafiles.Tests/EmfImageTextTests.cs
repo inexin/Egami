@@ -24,7 +24,7 @@ public class EmfImageTextTests(ITestOutputHelper output)
     private static readonly byte[] PhotoJpeg = Encode(Photo, png: false);
 
     private static readonly string FontsRoot = System.IO.Path.Combine(TestFiles.Root, "tests", "fonts");
-    private static readonly Typeface Noto = Typeface.FromFile(System.IO.Path.Combine(FontsRoot, "NotoSans-Regular.ttf"));
+    internal static readonly Typeface Noto = Typeface.FromFile(System.IO.Path.Combine(FontsRoot, "NotoSans-Regular.ttf"));
     private static readonly Typeface NotoBold = Typeface.FromFile(System.IO.Path.Combine(FontsRoot, "NotoSans-Bold.ttf"));
 
     /// <summary>Image scenes, each drawn directly and through an EMF file.</summary>
@@ -137,6 +137,46 @@ public class EmfImageTextTests(ITestOutputHelper output)
         byte[] b = Body(content, Assert.Single(content.Records, r => r.Type == 114));
         Assert.Equal(2u, U32(b, 92)); // cxSrc, as offsets from the record's data
         Assert.Equal(4u, U32(b, 96));
+    }
+
+    [Fact]
+    public void EmfPlusPartDrawsItsOwnImage()
+    {
+        using Raster<Rgba8> bordered = Raster.Create<Rgba8>(6, 5);
+
+        // The source reaches one pixel left of the image, so the destination and the EMF+ source are cut by a quarter.
+        (byte[] file, _) = Write(c => ((EmfCanvas)c).DrawImage(Checker, new RectF(-1, 0, 4, 4), new RectF(0, 20, 40, 80), bordered, new RectF(1.5f, 1.5f, 4, 4)));
+        MetafileContent content = Metafile.Load(file).Content;
+        PlusRecord image = Assert.Single(content.PlusRecords, r => r.Type == 0x4008 && (r.Flags >> 8 & 0x7F) == 5);
+        Assert.Equal([6u, 5u], [U32(image.Data.ToArray(), 8), U32(image.Data.ToArray(), 12)]); // the EMF+ image
+        ReadOnlySpan<byte> d = Assert.Single(content.PlusRecords, r => r.Type == 0x401B).Data.Span;
+        Assert.Equal([2.5f, 1.5f, 3, 4], [F32(d, 8), F32(d, 12), F32(d, 16), F32(d, 20)]);
+        Assert.Equal([10f, 20, 40, 20, 10, 100], [F32(d, 28), F32(d, 32), F32(d, 36), F32(d, 40), F32(d, 44), F32(d, 48)]);
+
+        // The GDI copy holds the plain image's 3 x 4 pixels.
+        byte[] b = Body(content, Assert.Single(content.Records, r => r.Type == 114));
+        Assert.Equal(3u, U32(b, 92));
+        Assert.Equal(4u, U32(b, 96));
+    }
+
+    [Fact]
+    public void EmfPlusImageArgumentsAreChecked()
+    {
+        using MemoryStream ms = new();
+        EmfCanvas canvas = new(ms, W, H);
+        RectF r = new(0, 0, 4, 4);
+        Assert.Throws<ArgumentNullException>("image", () => canvas.DrawImage(null!, r, r, Checker, r));
+        Assert.Throws<ArgumentNullException>("emfPlusImage", () => canvas.DrawImage(Checker, r, r, null!, r));
+        Assert.Throws<ArgumentException>("source", () => canvas.DrawImage(Checker, new RectF(float.NaN, 0, 4, 4), r, Checker, r));
+        Assert.Throws<ArgumentException>("destination", () => canvas.DrawImage(Checker, r, new RectF(0, 0, float.PositiveInfinity, 4), Checker, r));
+        Assert.Throws<ArgumentException>("emfPlusSource", () => canvas.DrawImage(Checker, r, r, Checker, new RectF(0, float.NaN, 4, 4)));
+
+        // Empty rectangles draw nothing.
+        canvas.DrawImage(Checker, r, RectF.Empty, Checker, r);
+        canvas.DrawImage(Checker, r, r, Checker, RectF.Empty);
+        canvas.Dispose();
+        Assert.DoesNotContain(Metafile.Load(ms.ToArray()).Content.PlusRecords, p => p.Type == 0x401B);
+        Assert.Throws<ObjectDisposedException>(() => canvas.DrawImage(Checker, r, r, Checker, r));
     }
 
     [Fact]

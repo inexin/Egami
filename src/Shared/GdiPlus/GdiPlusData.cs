@@ -34,8 +34,8 @@ internal static class GdiPlusData
     public static float F32(ReadOnlySpan<byte> s, int at) => BinaryPrimitives.ReadSingleLittleEndian(s[at..]);
 
     /// <summary>
-    /// EmfPlusPath: version, count, flags (C: 16-bit points, R: run-length point types, P: relative points), the points, the
-    /// types (start 0, line 1, Bezier 3; close-subpath 0x80).
+    /// EmfPlusPath: version, count, flags (C: 16-bit points, R: run-length point types, P: relative points; 0x2000, which GDI+
+    /// writes for a path that fills nonzero), the points, the types (start 0, line 1, Bezier 3; close-subpath 0x80).
     /// </summary>
     public static Path PathData(ReadOnlySpan<byte> d, ref int at)
     {
@@ -70,7 +70,7 @@ internal static class GdiPlusData
         }
 
         at = (at + 3) & ~3;
-        return BuildPath(points, types);
+        return BuildPath(points, types, (flags & Winding) != 0 ? FillRule.NonZero : FillRule.EvenOdd);
     }
 
     /// <summary>Builds a path from GDI+ points and point types.</summary>
@@ -112,59 +112,72 @@ internal static class GdiPlusData
     /// </summary>
     public static (Vector2[] Points, byte[] Types) ToPointsAndTypes(Path path)
     {
-        List<Vector2> points = [];
-        List<byte> types = [];
         ReadOnlySpan<Vector2> p = path.Points;
-        int at = 0;
-        foreach (PathVerb verb in path.Verbs)
+        ReadOnlySpan<PathVerb> verbs = path.Verbs;
+        int count = p.Length;
+        foreach (PathVerb verb in verbs)
+        {
+            count += verb == PathVerb.Quad ? 1 : 0; // a quadratic's two points become a cubic's three
+        }
+
+        Vector2[] points = new Vector2[count];
+        byte[] types = new byte[count];
+        int at = 0, n = 0;
+        foreach (PathVerb verb in verbs)
         {
             switch (verb)
             {
                 case PathVerb.Move:
-                    points.Add(p[at++]);
-                    types.Add(PointStart);
+                    points[n] = p[at++];
+                    types[n++] = PointStart;
                     break;
                 case PathVerb.Line:
-                    points.Add(p[at++]);
-                    types.Add(PointLine);
+                    points[n] = p[at++];
+                    types[n++] = PointLine;
                     break;
                 case PathVerb.Quad:
                     {
-                        Vector2 a = points.Count > 0 ? points[^1] : p[at];
+                        Vector2 a = n > 0 ? points[n - 1] : p[at];
                         Vector2 c = p[at], e = p[at + 1];
-                        points.Add(a + ((c - a) * (2f / 3)));
-                        points.Add(e + ((c - e) * (2f / 3)));
-                        points.Add(e);
-                        types.AddRange([PointBezier, PointBezier, PointBezier]);
+                        points[n] = a + ((c - a) * (2f / 3));
+                        points[n + 1] = e + ((c - e) * (2f / 3));
+                        points[n + 2] = e;
+                        types.AsSpan(n, 3).Fill(PointBezier);
+                        n += 3;
                         at += 2;
                         break;
                     }
 
                 case PathVerb.Cubic:
-                    points.AddRange([p[at], p[at + 1], p[at + 2]]);
-                    types.AddRange([PointBezier, PointBezier, PointBezier]);
+                    p.Slice(at, 3).CopyTo(points.AsSpan(n));
+                    types.AsSpan(n, 3).Fill(PointBezier);
+                    n += 3;
                     at += 3;
                     break;
                 case PathVerb.Close:
-                    if (types.Count > 0)
+                    if (n > 0)
                     {
-                        types[^1] |= PointClose;
+                        types[n - 1] |= PointClose;
                     }
 
                     break;
             }
         }
 
-        return ([.. points], [.. types]);
+        return n == count ? (points, types) : (points[..n], types[..n]);
     }
 
-    /// <summary>Writes an EmfPlusPath: version, count, flags 0 (float points, plain types), the points, the types, padded to 4 bytes.</summary>
+    /// <summary>
+    /// Writes an EmfPlusPath: version, count, flags (float points, plain types; 0x2000 for a nonzero path, as GDI+ writes a
+    /// winding path), the points, the types, padded to 4 bytes.
+    /// </summary>
     public static byte[] WritePath(Path path)
     {
         (Vector2[] points, byte[] types) = ToPointsAndTypes(path);
         byte[] data = new byte[12 + (points.Length * 8) + ((types.Length + 3) & ~3)];
         BinaryPrimitives.WriteUInt32LittleEndian(data, Version);
         BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan(4), points.Length);
+        BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan(8), path.FillRule == FillRule.NonZero ? Winding : 0);
         for (int i = 0; i < points.Length; i++)
         {
             BinaryPrimitives.WriteSingleLittleEndian(data.AsSpan(12 + (i * 8)), points[i].X);
@@ -174,6 +187,9 @@ internal static class GdiPlusData
         types.CopyTo(data.AsSpan(12 + (points.Length * 8)));
         return data;
     }
+
+    /// <summary>The EmfPlusPath flag GDI+ sets on a path that fills nonzero (FillModeWinding).</summary>
+    public const int Winding = 0x2000;
 
     /// <summary>The EMF+ object version GDI+ writes, 0xDBC01002.</summary>
     public const uint Version = 0xDBC01002;

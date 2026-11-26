@@ -251,15 +251,17 @@ internal static class FaceIndexer
     {
         using SafeFileHandle handle = File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.Read, FileOptions.RandomAccess);
         long length = RandomAccess.GetLength(handle);
-        Span<byte> header = stackalloc byte[12];
-        if (length < 12 || RandomAccess.Read(handle, header, 0) < 12)
+        // 36 bytes reach an EOT header's magic number; an sfnt needs 12.
+        Span<byte> header = stackalloc byte[36];
+        int read = RandomAccess.Read(handle, header, 0);
+        if (length < 12 || read < 12)
         {
             throw FontErrors.Truncated(0);
         }
 
         var source = new FontFileSource(path);
         uint magic = BigEndian.UInt32(header, 0);
-        if (magic is SfntDirectory.WoffTag or SfntDirectory.Woff2Tag)
+        if (magic is SfntDirectory.WoffTag or SfntDirectory.Woff2Tag || Woff.Eot.IsEot(header[..read]))
         {
             // Web fonts are compressed: their names are only reachable by decoding, so the faces load now.
             foreach (Typeface face in FontLoader.LoadAll(path, options))

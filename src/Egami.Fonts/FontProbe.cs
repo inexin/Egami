@@ -23,6 +23,12 @@ public enum FontFileKind
 
     /// <summary>A WOFF2 file, which Egami reads from 2.7.2 on.</summary>
     Woff2,
+
+    /// <summary>
+    /// An Embedded OpenType file (.eot, and the .fntdata PowerPoint embeds), plain, XOR-ed or MicroType Express compressed, which
+    /// Egami reads from 1.6 on.
+    /// </summary>
+    Eot,
 }
 
 /// <summary>The result of <see cref="FontLoader.Probe(ReadOnlySpan{byte})"/>.</summary>

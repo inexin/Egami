@@ -47,6 +47,13 @@ internal static class SfntDirectory
                 return Woff.Woff2Decoder.Probe(data);
         }
 
+        // EOT has no magic at the start: its little-endian header has a version at 8 and 0x504C at 34. Checked before bare CFF,
+        // whose test a header's size field can pass.
+        if (data.Length >= 36 && data[35] == 0x50 && data[34] == 0x4C && Woff.Eot.IsEot(data))
+        {
+            return Woff.Eot.Probe(data);
+        }
+
         // Bare CFF: major 1, a header size of at least 4 and an offset size of 1 to 4.
         if (data[0] == 1 && data[2] >= 4 && data[3] is >= 1 and <= 4)
         {
