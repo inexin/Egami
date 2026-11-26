@@ -68,7 +68,7 @@ internal static class QrEncoder
     /// The bits of a segment's character count for a range of QR versions, or for Micro QR version M1 to M4 when
     /// <paramref name="micro"/> is 1 to 4 (then 0 for a mode the version does not have).
     /// </summary>
-    private static int CountBits(int mode, int range, int micro = 0) => micro > 0
+    internal static int CountBits(int mode, int range, int micro = 0) => micro > 0
         ? mode switch
         {
             Numeric => micro + 2,
