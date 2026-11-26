@@ -29,6 +29,12 @@ internal static class LinearScanner
         int[] angles = effort < 3 ? [0] : effort < 7 ? [0, 90] : [0, 90, 45, 135];
         foreach (int angle in angles)
         {
+            // Up to effort 5 the columns are for symbols the rows missed: once a row has read one, they are left out.
+            if (angle != 0 && effort < 6 && (normal.Results.Count > 0 || swapped?.Results.Count > 0))
+            {
+                break;
+            }
+
             foreach ((Vector2 start, Vector2 step, int length) in Lines(image.Width, image.Height, angle, effort))
             {
                 ReadOnlySpan<byte> samples = Sample(image, start, step, length, line);
@@ -79,7 +85,8 @@ internal static class LinearScanner
 
         public List<Found> Results { get; } = [];
 
-        public DataBarCollector DataBar { get; } = new();
+        /// <summary>Gets the DataBar pairs and segments seen so far, made when first needed (its tables are large).</summary>
+        public DataBarCollector DataBar => field ??= new();
 
         public List<(DecodedData Data, Vector2 From, Vector2 To)> DataBarFound { get; } = [];
     }
