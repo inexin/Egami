@@ -1,6 +1,8 @@
-using System.Text;
+using System.Numerics;
 
 using Egami.Barcodes.Matrix;
+using Egami.Drawing;
+using Egami.Pixels;
 
 namespace Egami.Barcodes.Tests;
 
@@ -104,6 +106,95 @@ public class MicroQrTests
                 Assert.True(VersionAndLevel(Barcode.MicroQr(new string('7', digits + 1), options).Modules).Version > version);
             }
         }
+    }
+
+    public static TheoryData<string, float, float> PhotoCases => new()
+    {
+        { "12345", 0, 0 },
+        { "12345", 37, 0.1f },
+        { "MICRO", 90, 0 },
+        { "Hello Micro", 135, 0.15f },
+        { "12345678901234567890123456789012345", 200, 0.1f },
+        { "HTTPS://EGAMI.DEV/ABC", 290, 0.2f },
+    };
+
+    [Theory]
+    [MemberData(nameof(PhotoCases))]
+    public void ReadsPhotos(string text, float degrees, float tilt)
+    {
+        Barcode barcode = Barcode.MicroQr(text);
+        using Raster<Gray8> photo = Photos.Render(barcode, 480, 480, Photos.Quad(new Vector2(240, 240), 220, 220, degrees, tilt), seed: (int)degrees);
+        Assert.Contains(photo.ReadBarcodes(), r => r.Format == BarcodeFormat.MicroQr && r.Text == text);
+    }
+
+    [Fact]
+    public void MirroredReads()
+    {
+        Vector2[] quad = Photos.Quad(new Vector2(240, 240), 200, 200, 20);
+        (quad[0], quad[1], quad[2], quad[3]) = (quad[1], quad[0], quad[3], quad[2]);
+        using Raster<Gray8> photo = Photos.Render(Barcode.MicroQr("Mirror"), 480, 480, quad);
+        BarcodeResult? result = photo.ReadBarcode(new BarcodeReaderOptions { Formats = BarcodeFormat.MicroQr });
+        Assert.Equal("Mirror", result?.Text);
+        Assert.True(result?.Mirrored);
+    }
+
+    [Fact]
+    public void LightOnDarkReadsInverted()
+    {
+        using Raster<Gray8> image = Raster.Create(300, 300, new Gray8(20));
+        using (RasterCanvas<Gray8> canvas = image.CreateCanvas())
+        {
+            canvas.DrawBarcode(Barcode.MicroQr("Inverted"), new RectF(60, 60, 180, 180), Rgba8.White);
+        }
+
+        BarcodeResult? result = image.ReadBarcode();
+        Assert.Equal("Inverted", result?.Text);
+        Assert.Equal(BarcodeFormat.MicroQr, result?.Format);
+        Assert.True(result?.Inverted);
+    }
+
+    [Fact]
+    public void DamagedModulesAreCorrected()
+    {
+        // M4-L corrects 3 codewords (ISO/IEC 18004 Table 9): flip modules in two of them.
+        Barcode barcode = Barcode.MicroQr("Damaged", new MicroQrOptions { MinVersion = 4, RaiseErrorCorrection = false });
+        bool[] modules = new bool[17 * 17];
+        for (int y = 0; y < 17; y++)
+        {
+            for (int x = 0; x < 17; x++)
+            {
+                modules[(y * 17) + x] = barcode.Modules[x, y] ^ ((x, y) is (16, 16) or (15, 15) or (12, 3));
+            }
+        }
+
+        Barcode damaged = Barcode.FromModules(BarcodeFormat.MicroQr, BarcodeModules.Create(17, 17, modules));
+        using Raster<Gray8> image = damaged.ToRaster(4);
+        BarcodeResult? result = image.ReadBarcode(new BarcodeReaderOptions { Formats = BarcodeFormat.MicroQr });
+        Assert.Equal("Damaged", result?.Text);
+        Assert.True(result?.ErrorsCorrected > 0);
+    }
+
+    [Fact]
+    public void SeveralAreAllFound()
+    {
+        using Raster<Gray8> image = Raster.Create(700, 240, new Gray8(255));
+        using (RasterCanvas<Gray8> canvas = image.CreateCanvas())
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                canvas.DrawBarcode(Barcode.MicroQr($"M{i}"), new RectF(20 + (i * 230), 30, 180, 180), Rgba8.Black);
+            }
+        }
+
+        Assert.Equal(["M0", "M1", "M2"], image.ReadBarcodes(new BarcodeReaderOptions { Formats = BarcodeFormat.MicroQr }).Select(r => r.Text));
+    }
+
+    [Fact]
+    public void QrCodesAreNotReadAsMicroQr()
+    {
+        using Raster<Gray8> image = Barcode.Qr("Not micro").ToRaster(4);
+        Assert.Empty(image.ReadBarcodes(new BarcodeReaderOptions { Formats = BarcodeFormat.MicroQr }));
+        Assert.Equal(BarcodeFormat.Qr, image.ReadBarcode()?.Format);
     }
 
     /// <summary>Reads a Micro QR Code's version from its size and its level from the format word.</summary>

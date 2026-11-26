@@ -18,10 +18,11 @@ internal static class QrDetector
         public bool Used;
     }
 
-    public static List<Found> Detect(BitImage bits, int effort, Vector2 offset)
+    /// <summary>Finds and reads the QR Codes; <paramref name="finders"/> are the finder patterns when already found.</summary>
+    public static List<Found> Detect(BitImage bits, int effort, Vector2 offset, List<Finder>? finders = null)
     {
         var results = new List<Found>();
-        List<Finder> finders = FindFinders(bits, effort);
+        finders ??= FindFinders(bits, effort);
         if (finders.Count < 3)
         {
             // Fewer than three: once more allowing each run 0.6 of a module off instead of half (glare can thin a finder's

@@ -35,7 +35,7 @@ internal static class Search
         int effort = options.Effort;
         int threads = (long)image.Width * image.Height < 256 * 1024 ? 1 : Math.Max(1, (options.Context ?? EgamiContext.Default).MaxParallelism);
         // The local threshold serves the 2D detectors and, from effort 6, the linear scan; the global one the pure reader.
-        bool matrix = (formats & (BarcodeFormat.Qr | BarcodeFormat.DataMatrix | BarcodeFormat.Aztec | BarcodeFormat.Pdf417)) != 0;
+        bool matrix = (formats & BarcodeFormat.Matrix) != 0;
         BitImage? local = matrix || effort >= 5 ? Binarizer.Local(image, threads) : null;
         BitImage global = local is not null && (image.Width < 40 || image.Height < 40) ? local : Binarizer.Global(image);
         List<Found> linearInverted = [];
@@ -80,9 +80,16 @@ internal static class Search
             return jobs;
         }
 
+        // QR Code and Micro QR share the finder patterns, found once.
+        var finders = new Lazy<List<QrDetector.Finder>>(() => QrDetector.FindFinders(local, effort));
         if ((formats & BarcodeFormat.Qr) != 0)
         {
-            jobs.Add(() => QrDetector.Detect(local, effort, offset));
+            jobs.Add(() => QrDetector.Detect(local, effort, offset, finders.Value));
+        }
+
+        if ((formats & BarcodeFormat.MicroQr) != 0)
+        {
+            jobs.Add(() => MicroQrDetector.Detect(local, finders.Value, offset));
         }
 
         if ((formats & BarcodeFormat.DataMatrix) != 0)
@@ -147,7 +154,7 @@ internal static class Search
         return [.. kept.OrderBy(f => MathF.Round(Center(f.Corners).Y / 32)).ThenBy(f => Center(f.Corners).X)];
     }
 
-    private static bool IsMatrix(BarcodeFormat format) => format is BarcodeFormat.Qr or BarcodeFormat.DataMatrix or BarcodeFormat.Pdf417 or BarcodeFormat.Aztec;
+    private static bool IsMatrix(BarcodeFormat format) => (format & BarcodeFormat.Matrix) != 0;
 
     /// <summary>Whether a point is inside a convex quadrilateral.</summary>
     internal static bool Inside(Vector2[] quad, Vector2 point)
