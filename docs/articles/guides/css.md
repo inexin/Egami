@@ -85,6 +85,30 @@ common text properties of CSS. Consumers add their own with a `CssPropertyDefini
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Css.cs#cascade)]
 
+## Typed values
+
+`CssComputedStyle` hands out component values, and typed getters read them as one type each. Like `TryGetValue`, each
+returns false when the property has no value or the value is not of that type, such as a keyword where a length was expected
+or a property whose `var()` failed.
+
+- `TryGetKeyword` gives one identifier, lowercased; `GetKeywords` every identifier, as for `text-decoration-line`.
+- `TryGetNumber` and `TryGetInteger` read numbers and compute a `calc()` of numbers; integers round as CSS Values 4 says.
+- `TryGetLength` gives one length or percentage with its `CssUnit`; a bare `0` reads as `0px`.
+- `TryResolveLength` gives CSS pixels for lengths, percentages and `calc()`, `min()`, `max()` and `clamp()`, with a
+  `CssLengthContext`: the element's and the root's font size, the viewport, and the reference length for percentages. A
+  percentage without that reference, and a unit the context cannot resolve, give false. Without font data `ex` and `ch` are
+  half an `em`.
+- `TryGetColor` resolves `currentcolor` to the element's `color`; on `color` itself it takes the parent's.
+- `TryGetUrl` reads one `url()`, and `TryGetFontFamilies` the `font-family` list.
+- `GetFontWeight` resolves `bolder` and `lighter` against the parent with the CSS Fonts 4 table. `GetFontSize` resolves the
+  absolute-size keywords from 16px `medium`, `larger` and `smaller`, and `em`, `ex`, `ch` and percentages of the parent's
+  size. Both cache their result on the style, so a deep tree walks its parents once.
+
+Plain values allocate nothing; a `calc()` and a color function are parsed on each call. Points and device pixels stay the
+consumer's job.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Css.cs#getters)]
+
 ## Box, list and table properties
 
 `CssPropertyRegistry.CreateDefault` also knows the properties a document's boxes need, each with its value grammar, so an

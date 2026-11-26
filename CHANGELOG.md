@@ -221,6 +221,14 @@ and, through Egami.Video, video. Additive to 1.5.0: without a time every documen
 
 Egami.Css:
 
+- Typed getters on `CssComputedStyle` (roadmap 2.10.2): `TryGetKeyword`, `GetKeywords`, `TryGetNumber`, `TryGetInteger`,
+  `TryGetLength`, `TryResolveLength`, `TryGetColor`, `TryGetUrl`, `TryGetFontFamilies`, `GetFontWeight` and `GetFontSize`.
+  Each reads one property's computed value as a type and gives false when the value is not of that type. `TryGetColor`
+  resolves `currentcolor`, on `color` itself through the parent. `GetFontWeight` resolves `bolder` and `lighter` with the CSS
+  Fonts 4 table, and `GetFontSize` the absolute-size keywords (16px `medium`), `larger`, `smaller`, `em` and percentages of
+  the parent; both cache their result on the style. Plain values allocate nothing.
+- `CssLengthContext` says what relative lengths are worth (font sizes, viewport, the reference length for percentages, and
+  optional line height, x-height and `ch` width) and resolves a `CssLength` or a `CssCalc` to CSS pixels with `TryResolve`.
 - `@keyframes` and `@-webkit-keyframes` now parse into a `CssKeyframesRule` (its `Name` and `CssKeyframe`s, each with its
   `Offsets` and `Declarations`, `!important` ones dropped) instead of a `CssUnknownAtRule`. Code that looked for keyframes
   among the unknown at-rules must look for the new type.

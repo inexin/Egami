@@ -251,6 +251,43 @@ public class Css
     }
 
     [Fact]
+    public void Getters()
+    {
+        (Element root, Element group, Element rect) = Tree();
+
+        #region getters
+        CssCascade cascade = new([(CssStyleSheet.Parse("""
+            svg { font-size: 20px; color: navy; font-weight: 300 }
+            .layer { font-size: 1.5em; font-weight: bolder; display: inline flex }
+            #r { width: calc(50% - 1em); z-index: 3; text-decoration-color: currentcolor }
+            """), CssOrigin.Author)]);
+        CssComputedStyle rootStyle = cascade.Compute(cascade.Cascade(root), null);
+        CssComputedStyle groupStyle = cascade.Compute(cascade.Cascade(group), rootStyle);
+        CssComputedStyle style = cascade.Compute(cascade.Cascade(rect), groupStyle);
+
+        // Font size and weight are resolved through the parent chain: keywords, em, %, bolder and lighter.
+        var viewport = new CssLengthContext { RootFontSize = 16, ViewportWidth = 800, ViewportHeight = 600 };
+        double rootSize = rootStyle.GetFontSize(viewport);          // 20
+        CssLengthContext context = viewport with { RootFontSize = rootSize, FontSize = style.GetFontSize(viewport) };
+        double weight = style.GetFontWeight();                     // 400: bolder than 300, inherited from the group
+
+        // Lengths in CSS pixels; percentages need the reference length.
+        style.TryResolveLength("width", context with { PercentBase = 300 }, out double width);   // 150 - 30 = 120
+        style.TryGetInteger("z-index", out int zIndex);                                       // 3
+        IReadOnlyList<string> display = groupStyle.GetKeywords("display");                     // inline, flex
+        style.TryGetColor("text-decoration-color", out CssColor decoration);                  // navy: currentcolor resolved
+        #endregion
+
+        Assert.Equal(20, rootSize);
+        Assert.Equal(30, context.FontSize);
+        Assert.Equal(400, weight);
+        Assert.Equal(120, width);
+        Assert.Equal(3, zIndex);
+        Assert.Equal(["inline", "flex"], display);
+        Assert.Equal((0, 0, 128, 255), decoration.ToRgba8());
+    }
+
+    [Fact]
     public void Media()
     {
         #region media

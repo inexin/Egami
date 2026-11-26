@@ -280,6 +280,9 @@ public sealed class CssFont
         "ultra-condensed", "extra-condensed", "condensed", "semi-condensed", "semi-expanded", "expanded", "extra-expanded", "ultra-expanded",
     };
 
+    // The absolute-size keywords, smallest first.
+    internal static readonly string[] AbsoluteSizeKeywords = ["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large", "xxx-large"];
+
     internal static readonly HashSet<string> SizeKeywords = new(StringComparer.Ordinal)
     {
         "xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large", "xxx-large", "larger", "smaller",
