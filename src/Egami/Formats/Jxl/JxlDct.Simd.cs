@@ -8,16 +8,30 @@ namespace Egami.Formats.Jxl;
 /// <content>
 /// The 8×8 inverse DCT with AVX: the eight rows as eight vectors, transposed so each butterfly of the 1D transform runs on all
 /// eight rows at once, then transposed back for the columns. The operations are the scalar ones in the same order, so the
-/// samples are the same bit for bit.
+/// samples are the same bit for bit. Without AVX2 (Arm64, and x86 without it) the kernels run in 128-bit vectors instead
+/// (JxlDct.Simd128.cs), with the same operations.
 /// </content>
 internal static partial class JxlDct
 {
     /// <summary>Gets whether <see cref="Idct8x8"/> runs with vectors.</summary>
-    internal static bool Idct8x8Vectorized => Avx.IsSupported;
+    internal static bool Idct8x8Vectorized => Wide || Lanes4.Supported;
+
+    /// <summary>
+    /// Gets whether the kernels run in 256-bit vectors: with AVX, unless the runtime prefers 128-bit vectors on an AVX2
+    /// machine (<c>DOTNET_PreferredVectorBitWidth=128</c>, which also runs the Arm64 paths on x86); otherwise they run in
+    /// 128-bit vectors where there are.
+    /// </summary>
+    private static bool Wide => Avx.IsSupported && (Vector256.IsHardwareAccelerated || !Avx2.IsSupported);
 
     /// <summary>Runs the inverse 8×8 DCT in place on the block at <paramref name="offset"/>: rows, then columns, as Dct2D does.</summary>
     internal static void Idct8x8(Span<float> data, int offset, int stride)
     {
+        if (!Wide)
+        {
+            Lanes4.Idct8x8(data, offset, stride);
+            return;
+        }
+
         ref float origin = ref Unsafe.Add(ref MemoryMarshal.GetReference(data), offset);
         if (offset + (7 * stride) + 8 > data.Length)
         {
@@ -106,7 +120,12 @@ internal static partial class JxlDct
     /// </summary>
     private static bool Dct2DSmall(Span<float> data, int offset, int stride, int width, int height, bool forward)
     {
-        if (!Avx.IsSupported || width is not (4 or 8) || height is not (4 or 8) || (width == 8 && height == 8))
+        if (!Wide)
+        {
+            return Lanes4.Supported && Lanes4.Dct2DSmall(data, offset, stride, width, height, forward);
+        }
+
+        if (width is not (4 or 8) || height is not (4 or 8) || (width == 8 && height == 8))
         {
             return false;
         }
@@ -277,7 +296,12 @@ internal static partial class JxlDct
     [System.Runtime.CompilerServices.SkipLocalsInit]
     private static bool Dct2DVector(ReadOnlySpan<float> from, int fromStride, Span<float> to, int stride, int width, int height, bool forward)
     {
-        if (!Avx.IsSupported || width < 8 || height < 8 || width % 8 != 0 || height % 8 != 0)
+        if (!Wide)
+        {
+            return Lanes4.Supported && Lanes4.Dct2DVector(from, fromStride, to, stride, width, height, forward);
+        }
+
+        if (width < 8 || height < 8 || width % 8 != 0 || height % 8 != 0)
         {
             return false;
         }
@@ -316,7 +340,12 @@ internal static partial class JxlDct
     /// </summary>
     internal static bool InverseTransposed(Span<float> columns, Span<float> to, int stride, int width, int height)
     {
-        if (!Avx.IsSupported || width < 8 || height < 8 || width % 8 != 0 || height % 8 != 0 || (width == 8 && height == 8))
+        if (!Wide)
+        {
+            return Lanes4.Supported && Lanes4.InverseTransposed(columns, to, stride, width, height);
+        }
+
+        if (width < 8 || height < 8 || width % 8 != 0 || height % 8 != 0 || (width == 8 && height == 8))
         {
             return false;
         }
@@ -389,6 +418,12 @@ internal static partial class JxlDct
     /// <summary>Writes the <paramref name="rows"/>×<paramref name="columns"/> block at <paramref name="from"/> transposed to <paramref name="to"/>, by 8×8 tiles.</summary>
     internal static void TransposeBlock(ReadOnlySpan<float> from, int fromStride, Span<float> to, int toStride, int rows, int columns)
     {
+        if (!Wide && Lanes4.Supported)
+        {
+            Lanes4.TransposeBlock(from, fromStride, to, toStride, rows, columns);
+            return;
+        }
+
         ref float f = ref MemoryMarshal.GetReference(from);
         ref float o = ref MemoryMarshal.GetReference(to);
         if (from.Length < ((rows - 1) * fromStride) + columns || to.Length < ((columns - 1) * toStride) + rows)

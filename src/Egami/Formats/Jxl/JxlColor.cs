@@ -11,6 +11,15 @@ namespace Egami.Formats.Jxl;
 /// </summary>
 internal static class JxlColor
 {
+    /// <summary>
+    /// Gets whether the 128-bit kernels that need fused multiply-adds run: where FMA is in hardware (Arm64) and the AVX2 ones do
+    /// not run (on x86 only with <c>DOTNET_PreferredVectorBitWidth=128</c>, which runs the Arm64 paths there).
+    /// </summary>
+    internal static bool Fused128 => Vector128.IsHardwareAccelerated && (System.Runtime.Intrinsics.Arm.AdvSimd.Arm64.IsSupported || System.Runtime.Intrinsics.X86.Fma.IsSupported) && !Fused256;
+
+    /// <summary>Gets whether the 256-bit kernels that need FMA run.</summary>
+    internal static bool Fused256 => System.Runtime.Intrinsics.X86.Fma.IsSupported && Vector256.IsHardwareAccelerated;
+
     // libjxl's TF_SRGB EncodedFromDisplay coefficients, lowest degree first (its EvalRationalPolynomial starts from the last).
     private const float P0 = -5.135152395e-04f, P1 = 5.287254571e-03f, P2 = 3.903842876e-01f, P3 = 1.474205315e+00f, P4 = 7.352629620e-01f;
     private const float Q0 = 1.004519624e-02f, Q1 = 3.036675394e-01f, Q2 = 1.340816930e+00f, Q3 = 9.258482155e-01f, Q4 = 2.424867759e-02f;
@@ -52,7 +61,11 @@ internal static class JxlColor
         float[] y = planes[1];
         float[] b = planes[2];
         int i = start;
-        if (System.Runtime.Intrinsics.X86.Fma.IsSupported)
+        if (Fused128)
+        {
+            i = XybToLinear128(x, y, b, start, end, m, c0, c1, c2, scale);
+        }
+        else if (Fused256)
         {
             // The same operations as below, eight samples at a time.
             Vector256<float> vc0 = Vector256.Create(c0);
@@ -91,6 +104,22 @@ internal static class JxlColor
             y[i] = (m[3] * l) + (m[4] * mm) + (m[5] * s);
             b[i] = (m[6] * l) + (m[7] * mm) + (m[8] * s);
         }
+    }
+
+    /// <summary>The loop of <see cref="XybToLinear(float[][], int, int, float[], float)"/> four samples at a time (needs FMA); returns where it stopped.</summary>
+    internal static int XybToLinear128(float[] x, float[] y, float[] b, int start, int end, float[] m, float c0, float c1, float c2, float scale)
+    {
+        JxlXyb4 xyb = new(m, c0, c1, c2, scale);
+        int i = start;
+        for (; i + 4 <= end; i += 4)
+        {
+            (Vector128<float> r, Vector128<float> g, Vector128<float> bl) = xyb.ToLinear(Vector128.Create(x.AsSpan(i, 4)), Vector128.Create(y.AsSpan(i, 4)), Vector128.Create(b.AsSpan(i, 4)));
+            r.CopyTo(x.AsSpan(i, 4));
+            g.CopyTo(y.AsSpan(i, 4));
+            bl.CopyTo(b.AsSpan(i, 4));
+        }
+
+        return i;
     }
 
     /// <summary>
@@ -363,6 +392,25 @@ internal static class JxlColor
         return magnitude | sign;
     }
 
+    /// <summary><see cref="EncodeSrgb8"/> on four samples (needs FMA).</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<float> EncodeSrgb4(Vector128<float> v)
+    {
+        Vector128<float> sign = v & Vector128.Create(-0f);
+        Vector128<float> x = Vector128.AndNot(v, Vector128.Create(-0f));
+        Vector128<float> r = Vector128.Sqrt(x);
+        Vector128<float> yp = Vector128.FusedMultiplyAdd(Vector128.Create(P4), r, Vector128.Create(P3));
+        Vector128<float> yq = Vector128.FusedMultiplyAdd(Vector128.Create(Q4), r, Vector128.Create(Q3));
+        yp = Vector128.FusedMultiplyAdd(yp, r, Vector128.Create(P2));
+        yq = Vector128.FusedMultiplyAdd(yq, r, Vector128.Create(Q2));
+        yp = Vector128.FusedMultiplyAdd(yp, r, Vector128.Create(P1));
+        yq = Vector128.FusedMultiplyAdd(yq, r, Vector128.Create(Q1));
+        yp = Vector128.FusedMultiplyAdd(yp, r, Vector128.Create(P0));
+        yq = Vector128.FusedMultiplyAdd(yq, r, Vector128.Create(Q0));
+        Vector128<float> magnitude = Vector128.ConditionalSelect(Vector128.GreaterThan(x, Vector128.Create(0.0031308f)), yp / yq, x * Vector128.Create(12.92f));
+        return magnitude | sign;
+    }
+
     /// <summary>
     /// The sRGB curve as libjxl's high-precision TF_SRGB computes it: a rational polynomial in √x above 0.0031308 (error about
     /// 5e-7), 12.92·x below, sign kept. Several samples at a time with AVX and FMA, the rest with the same operations.
@@ -370,7 +418,15 @@ internal static class JxlColor
     private static void EncodeSrgb(Span<float> plane)
     {
         int i = 0;
-        if (System.Runtime.Intrinsics.X86.Fma.IsSupported)
+        if (Fused128)
+        {
+            ref float start = ref System.Runtime.InteropServices.MemoryMarshal.GetReference(plane);
+            for (; i + 4 <= plane.Length; i += 4)
+            {
+                EncodeSrgb4(Vector128.LoadUnsafe(ref start, (nuint)i)).StoreUnsafe(ref start, (nuint)i);
+            }
+        }
+        else if (Fused256)
         {
             ref float start = ref System.Runtime.InteropServices.MemoryMarshal.GetReference(plane);
             for (; i + 8 <= plane.Length; i += 8)
@@ -431,6 +487,49 @@ internal readonly struct JxlXyb8
         Vector256<float> l = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(gl * gl, gl, _b0) * _scale;
         Vector256<float> mm = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(gm * gm, gm, _b1) * _scale;
         Vector256<float> ss = System.Runtime.Intrinsics.X86.Fma.MultiplyAdd(gs * gs, gs, _b2) * _scale;
+        return ((_m0 * l) + (_m1 * mm) + (_m2 * ss), (_m3 * l) + (_m4 * mm) + (_m5 * ss), (_m6 * l) + (_m7 * mm) + (_m8 * ss));
+    }
+}
+
+/// <summary>
+/// XYB to linear sRGB for four samples at a time in 128-bit vectors (Arm64, needs FMA): <see cref="JxlXyb8"/>'s arithmetic.
+/// </summary>
+internal readonly struct JxlXyb4
+{
+    private readonly Vector128<float> _c0, _c1, _c2, _b0, _b1, _b2, _scale;
+    private readonly Vector128<float> _m0, _m1, _m2, _m3, _m4, _m5, _m6, _m7, _m8;
+
+    /// <summary>Initializes a new instance of the <see cref="JxlXyb4"/> struct from the opsin inverse <paramref name="m"/> (12 values) and the intensity target.</summary>
+    internal JxlXyb4(float[] m, float intensityTarget)
+        : this(m, MathF.Cbrt(m[9]), MathF.Cbrt(m[10]), MathF.Cbrt(m[11]), 255 / intensityTarget)
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="JxlXyb4"/> struct from the opsin inverse, the cube roots of its biases and the scale.</summary>
+    internal JxlXyb4(float[] m, float c0, float c1, float c2, float scale)
+    {
+        _b0 = Vector128.Create(m[9]);
+        _b1 = Vector128.Create(m[10]);
+        _b2 = Vector128.Create(m[11]);
+        _c0 = Vector128.Create(c0);
+        _c1 = Vector128.Create(c1);
+        _c2 = Vector128.Create(c2);
+        _scale = Vector128.Create(scale);
+        (_m0, _m1, _m2) = (Vector128.Create(m[0]), Vector128.Create(m[1]), Vector128.Create(m[2]));
+        (_m3, _m4, _m5) = (Vector128.Create(m[3]), Vector128.Create(m[4]), Vector128.Create(m[5]));
+        (_m6, _m7, _m8) = (Vector128.Create(m[6]), Vector128.Create(m[7]), Vector128.Create(m[8]));
+    }
+
+    /// <summary>Converts X, Y and B to linear R, G and B.</summary>
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    internal (Vector128<float> R, Vector128<float> G, Vector128<float> B) ToLinear(Vector128<float> vx, Vector128<float> vy, Vector128<float> vb)
+    {
+        Vector128<float> gl = vy + vx - _c0;
+        Vector128<float> gm = vy - vx - _c1;
+        Vector128<float> gs = vb - _c2;
+        Vector128<float> l = Vector128.FusedMultiplyAdd(gl * gl, gl, _b0) * _scale;
+        Vector128<float> mm = Vector128.FusedMultiplyAdd(gm * gm, gm, _b1) * _scale;
+        Vector128<float> ss = Vector128.FusedMultiplyAdd(gs * gs, gs, _b2) * _scale;
         return ((_m0 * l) + (_m1 * mm) + (_m2 * ss), (_m3 * l) + (_m4 * mm) + (_m5 * ss), (_m6 * l) + (_m7 * mm) + (_m8 * ss));
     }
 }
