@@ -116,6 +116,14 @@ public sealed class SubsetShapingCasesTests
             }
         }
 
+        // A face whose HVAR and gvar phantom points disagree: the shaper takes HVAR's advances, as HarfBuzz does, and the static
+        // subset gvar's, as fontTools' instancer does.
+        if (face.IsVariable && face.TryGetTable(new FontTag("HVAR"), out _) && face.TryGetTable(new FontTag("gvar"), out _) &&
+            subset.GlyphMap.Any(p => MathF.Round(face.GetAdvance(p.Key)) != cut.GetAdvance(p.Value)))
+        {
+            return "HVAR and gvar give different advances (the subset follows gvar, as fontTools' instancer does)";
+        }
+
         foreach ((string tag, bool gpos) in (ReadOnlySpan<(string, bool)>)[("GSUB", false), ("GPOS", true), ("GDEF", false)])
         {
             if (cut.TryGetTable(new FontTag(tag), out ReadOnlyMemory<byte> table) &&

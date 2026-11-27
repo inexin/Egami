@@ -387,7 +387,10 @@ WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, a
   carets and MATH values take their rounded deltas and lose their variation device tables, the feature variations that hold
   there replace their features, GDEF drops its variation store, and vertical advances and origins are written varied. The
   subset's cmap keeps the variation sequences of the kept characters and glyphs in format 14, and `FontSubsetter.GlyphsFor`
-  adds the glyphs of the variation sequences the characters make. SUBSET_RESULT
+  adds the glyphs of the variation sequences the characters make. Subsets of 5,229 HarfBuzz shaping test cases (1,406 more
+  than before: variable faces, legacy kern, vertical metrics and variation sequences) shape exactly as the full face; one
+  variable case is left out, as its HVAR and gvar give different advances and the subset follows gvar as fontTools' instancer
+  does. A GDEF, GSUB or GPOS table whose major version is not 1, which the shaper reads as empty, is left out of the subset.
 
 - `ParagraphStyle.SpaceShrink` (0 to 1, 0 by default) lets justified lines fit the next word by shrinking their word spaces,
   as Word fills justified paragraphs: by at most that share of the spaces in all, and each space by at most half of what it
