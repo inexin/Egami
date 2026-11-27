@@ -379,6 +379,37 @@ Line breaks equal headless Chromium's on a corpus of eleven scripts at five widt
 differences are Chromium's own (its older quotation mark rule, no break at U+2028, no break after a slash in URLs, letter
 spacing in Arabic).
 
+### Ruby
+
+Ruby annotations set a small reading beside its base text, as furigana over kanji or bopomofo beside Chinese, following W3C's
+Requirements for Japanese Text Layout and CSS Ruby Layout. A `RubyAnnotation` names its base by UTF-16 start and length in
+the rich text and gives the ruby text; add it with `RichTextBuilder.AddRuby` or the `RichText` constructor. Annotations never
+overlap, and their bases never split a surrogate pair.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#ruby)]
+
+- **Placement.** `Position` puts ruby `Over` the base (right of it in vertical lines), `Under` it (left in vertical lines) or
+  `InterCharacter`, in a column right of a horizontal base as Taiwanese bopomofo stands, and over it in vertical lines.
+  The ruby's ideographic em box stands on its base's, as JLREQ and CSS Ruby place it: each font's em box comes from its BASE
+  table's `ideo` and `idtp` baselines, else it is centred between the ascent and descent, and in vertical lines it is
+  centred on the central baseline. `Offset` moves ruby further from its base. Lines grow to hold ruby unless their line
+  height already does.
+- **Width.** A base never breaks across lines. When ruby is wider than its base, the base spreads (1:2:1 between and around
+  its characters, nothing at a line edge) and, with `RubyOverhang.Auto`, ruby may hang up to half a ruby character over kana
+  or punctuation beside it, never over kanji or other ruby. When ruby is narrower, `Align` (a `RubyAlign`) spreads it over
+  the base: `SpaceAround` (1:2:1, the default), `SpaceBetween`, `Center`, `Start` or `End`.
+- **Jukugo.** Adjacent annotations on the same side form jukugo ruby. `RubyMerge.Separate` (the default) keeps each over its
+  own base; `Auto` joins them into one group when any reading is wider than its base, and still lets the line break between
+  them, each part keeping its own reading; `Collapse` always joins them and never breaks.
+- **Style.** Ruby takes its base's style at `RubyOptions.SizeRatio` (half) of its size; an annotation's `Style` sets its own
+  fields. Backgrounds, decorations, spacing and baseline shifts stay with the base.
+- **Results.** Each line's `AnnotationRuns` holds `LayoutRunKind.Ruby` runs: their glyphs, the base's range, the annotation's
+  index and the ruby style's index for `Paragraph.GetStyle`. `TextLayout.GetRubyBounds` gives an annotation's box. Hit
+  testing, carets and selections work on the base text alone. `DrawTextLayout`, `ToPath`, pictures and SVG output draw ruby.
+
+Ruby text is shaped left to right on its own; a base inside right-to-left text keeps its characters together in one run, at
+the level of its first character.
+
 ## Recipes
 
 Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.

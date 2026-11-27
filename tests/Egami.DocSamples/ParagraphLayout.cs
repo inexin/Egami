@@ -652,6 +652,47 @@ public class ParagraphLayout
         Assert.All(lines.Skip(1), l => Assert.True(l.Width <= 160.001f));
     }
 
+    [Fact]
+    public void Ruby()
+    {
+        FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSansCJK-layout-subset.otf"));
+        #region ruby
+        // 国際 (kokusai) with its reading as group ruby, and 価値 (kachi) as jukugo ruby: one annotation per character.
+        RichText text = new RichTextBuilder()
+            .Append("国際の価値")
+            .AddRuby(0, 2, "こくさい")
+            .AddRuby(3, 1, "か")
+            .AddRuby(4, 1, "ち")
+            .ToRichText();
+
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 20, Language = "ja" },
+            Ruby = new RubyOptions { Merge = RubyMerge.Auto },  // jukugo: per character, joined when a reading is too wide
+        };
+        TextLayout layout = Paragraph.Create(text, style).Layout(300);
+
+        // The ruby text: runs beside the line's text, at half the base's size, and the box each annotation took.
+        foreach (LayoutRun run in layout.Lines[0].AnnotationRuns)
+        {
+            TextBounds box = layout.GetRubyBounds(run.Annotation);
+        }
+
+        // An annotation of its own: under the base, in red, a little away from it.
+        RubyAnnotation under = new(0, 2, "kokusai")
+        {
+            Position = RubyPosition.Under,
+            Offset = 2,
+            Style = new TextStyle { Color = new Rgba8(200, 0, 0, 255) },
+        };
+        #endregion
+
+        Assert.Equal(3, layout.Lines[0].AnnotationRuns.Count);
+        Assert.True(layout.Lines[0].Ascent > 20);
+        Assert.Equal(2, under.End);
+    }
+
     private sealed class PathRecorder : IGlyphOutlineSink
     {
         public int Count { get; private set; }

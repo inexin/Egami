@@ -75,3 +75,71 @@ Egami.Fonts.Unicode.DictionaryWordEnumerator.MoveNext() -> bool
 Egami.Fonts.Unicode.DictionaryWordEnumerator.Dispose() -> void
 Egami.Fonts.SubsetOptions.LayoutFeatures.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.FontTag>?
 Egami.Fonts.SubsetOptions.LayoutFeatures.init -> void
+Egami.Fonts.Layout.LayoutRun.Annotation.get -> int
+Egami.Fonts.Layout.LayoutRunKind.Ruby = 4 -> Egami.Fonts.Layout.LayoutRunKind
+Egami.Fonts.Layout.ParagraphStyle.Ruby.get -> Egami.Fonts.Layout.RubyOptions!
+Egami.Fonts.Layout.ParagraphStyle.Ruby.init -> void
+Egami.Fonts.Layout.RichText.RichText(string! text, System.Collections.Generic.IEnumerable<Egami.Fonts.Layout.StyleSpan>? spans, System.Collections.Generic.IEnumerable<Egami.Fonts.Layout.Placeholder>? placeholders, System.Collections.Generic.IEnumerable<Egami.Fonts.Layout.RubyAnnotation!>? ruby) -> void
+Egami.Fonts.Layout.RichText.Ruby.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Layout.RubyAnnotation!>!
+Egami.Fonts.Layout.RichTextBuilder.AddRuby(Egami.Fonts.Layout.RubyAnnotation! annotation) -> Egami.Fonts.Layout.RichTextBuilder!
+Egami.Fonts.Layout.RichTextBuilder.AddRuby(int start, int length, string! text) -> Egami.Fonts.Layout.RichTextBuilder!
+Egami.Fonts.Layout.RubyAlign
+Egami.Fonts.Layout.RubyAlign.Center = 1 -> Egami.Fonts.Layout.RubyAlign
+Egami.Fonts.Layout.RubyAlign.End = 3 -> Egami.Fonts.Layout.RubyAlign
+Egami.Fonts.Layout.RubyAlign.SpaceAround = 0 -> Egami.Fonts.Layout.RubyAlign
+Egami.Fonts.Layout.RubyAlign.SpaceBetween = 4 -> Egami.Fonts.Layout.RubyAlign
+Egami.Fonts.Layout.RubyAlign.Start = 2 -> Egami.Fonts.Layout.RubyAlign
+Egami.Fonts.Layout.RubyAnnotation
+Egami.Fonts.Layout.RubyAnnotation.<Clone>$() -> Egami.Fonts.Layout.RubyAnnotation!
+Egami.Fonts.Layout.RubyAnnotation.Align.get -> Egami.Fonts.Layout.RubyAlign
+Egami.Fonts.Layout.RubyAnnotation.Align.init -> void
+Egami.Fonts.Layout.RubyAnnotation.Deconstruct(out int Start, out int Length, out string! Text) -> void
+Egami.Fonts.Layout.RubyAnnotation.End.get -> int
+Egami.Fonts.Layout.RubyAnnotation.Equals(Egami.Fonts.Layout.RubyAnnotation? other) -> bool
+Egami.Fonts.Layout.RubyAnnotation.Length.get -> int
+Egami.Fonts.Layout.RubyAnnotation.Length.init -> void
+Egami.Fonts.Layout.RubyAnnotation.Offset.get -> float?
+Egami.Fonts.Layout.RubyAnnotation.Offset.init -> void
+Egami.Fonts.Layout.RubyAnnotation.Position.get -> Egami.Fonts.Layout.RubyPosition
+Egami.Fonts.Layout.RubyAnnotation.Position.init -> void
+Egami.Fonts.Layout.RubyAnnotation.RubyAnnotation(int Start, int Length, string! Text) -> void
+Egami.Fonts.Layout.RubyAnnotation.Start.get -> int
+Egami.Fonts.Layout.RubyAnnotation.Start.init -> void
+Egami.Fonts.Layout.RubyAnnotation.Style.get -> Egami.Fonts.Layout.TextStyle?
+Egami.Fonts.Layout.RubyAnnotation.Style.init -> void
+Egami.Fonts.Layout.RubyAnnotation.Text.get -> string!
+Egami.Fonts.Layout.RubyAnnotation.Text.init -> void
+Egami.Fonts.Layout.RubyMerge
+Egami.Fonts.Layout.RubyMerge.Auto = 2 -> Egami.Fonts.Layout.RubyMerge
+Egami.Fonts.Layout.RubyMerge.Collapse = 1 -> Egami.Fonts.Layout.RubyMerge
+Egami.Fonts.Layout.RubyMerge.Separate = 0 -> Egami.Fonts.Layout.RubyMerge
+Egami.Fonts.Layout.RubyOptions
+Egami.Fonts.Layout.RubyOptions.<Clone>$() -> Egami.Fonts.Layout.RubyOptions!
+Egami.Fonts.Layout.RubyOptions.Equals(Egami.Fonts.Layout.RubyOptions? other) -> bool
+Egami.Fonts.Layout.RubyOptions.Merge.get -> Egami.Fonts.Layout.RubyMerge
+Egami.Fonts.Layout.RubyOptions.Merge.init -> void
+Egami.Fonts.Layout.RubyOptions.Overhang.get -> Egami.Fonts.Layout.RubyOverhang
+Egami.Fonts.Layout.RubyOptions.Overhang.init -> void
+Egami.Fonts.Layout.RubyOptions.RubyOptions() -> void
+Egami.Fonts.Layout.RubyOptions.SizeRatio.get -> float
+Egami.Fonts.Layout.RubyOptions.SizeRatio.init -> void
+Egami.Fonts.Layout.RubyOverhang
+Egami.Fonts.Layout.RubyOverhang.Auto = 0 -> Egami.Fonts.Layout.RubyOverhang
+Egami.Fonts.Layout.RubyOverhang.None = 1 -> Egami.Fonts.Layout.RubyOverhang
+Egami.Fonts.Layout.RubyPosition
+Egami.Fonts.Layout.RubyPosition.InterCharacter = 2 -> Egami.Fonts.Layout.RubyPosition
+Egami.Fonts.Layout.RubyPosition.Over = 0 -> Egami.Fonts.Layout.RubyPosition
+Egami.Fonts.Layout.RubyPosition.Under = 1 -> Egami.Fonts.Layout.RubyPosition
+Egami.Fonts.Layout.TextLayout.GetRubyBounds(int annotationIndex) -> Egami.Fonts.TextBounds
+Egami.Fonts.Layout.TextLine.AnnotationRuns.get -> System.Collections.Generic.IReadOnlyList<Egami.Fonts.Layout.LayoutRun!>!
+override Egami.Fonts.Layout.RubyAnnotation.Equals(object? obj) -> bool
+override Egami.Fonts.Layout.RubyAnnotation.GetHashCode() -> int
+override Egami.Fonts.Layout.RubyAnnotation.ToString() -> string!
+override Egami.Fonts.Layout.RubyOptions.Equals(object? obj) -> bool
+override Egami.Fonts.Layout.RubyOptions.GetHashCode() -> int
+override Egami.Fonts.Layout.RubyOptions.ToString() -> string!
+static Egami.Fonts.Layout.RubyAnnotation.operator !=(Egami.Fonts.Layout.RubyAnnotation? left, Egami.Fonts.Layout.RubyAnnotation? right) -> bool
+static Egami.Fonts.Layout.RubyAnnotation.operator ==(Egami.Fonts.Layout.RubyAnnotation? left, Egami.Fonts.Layout.RubyAnnotation? right) -> bool
+static Egami.Fonts.Layout.RubyOptions.Default.get -> Egami.Fonts.Layout.RubyOptions!
+static Egami.Fonts.Layout.RubyOptions.operator !=(Egami.Fonts.Layout.RubyOptions? left, Egami.Fonts.Layout.RubyOptions? right) -> bool
+static Egami.Fonts.Layout.RubyOptions.operator ==(Egami.Fonts.Layout.RubyOptions? left, Egami.Fonts.Layout.RubyOptions? right) -> bool

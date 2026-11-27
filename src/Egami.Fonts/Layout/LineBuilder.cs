@@ -182,6 +182,9 @@ internal sealed class LineDraft
 
     /// <summary>Whether the line ends inside a word at an automatic hyphenation point, with a hyphen.</summary>
     public bool AutoHyphen { get; init; }
+
+    /// <summary>The line's ruby boxes, in logical order, or null for none.</summary>
+    public List<DraftRuby>? Rubies => (Runs as RubyPieces)?.Rubies;
 }
 
 /// <summary>A run of a draft line: glyphs (with spacing in their advances) or a glyphless box, at an x from the line's start.</summary>
@@ -207,7 +210,8 @@ internal sealed class DraftRun
 
     public required Vector2[] Offsets { get; init; }
 
-    public required float Advance { get; init; }
+    /// <summary>The piece's advance; ruby spacing adds to it.</summary>
+    public required float Advance { get; set; }
 
     public required int Placeholder { get; init; }
 
@@ -230,6 +234,7 @@ internal sealed partial class LineBuilder
     private readonly Paragraph _paragraph;
     private readonly string _text;
     private readonly AdvanceTable _m;
+    private readonly RubyTable? _ruby;
     private readonly Dictionary<(int, int), GlyphBuffer> _reshaped = [];
     private readonly Dictionary<Font, (GlyphBuffer Ltr, GlyphBuffer Rtl)?> _hyphens = [];
     private List<int>? _order;
@@ -241,6 +246,7 @@ internal sealed partial class LineBuilder
         _paragraph = paragraph;
         _text = paragraph.Text;
         _m = paragraph.Measures;
+        _ruby = paragraph.Ruby;
         if (paragraph.Style.SpaceShrink > 0)
         {
             // The sums of shrinkable spaces ride on the lazy state, so paragraphs without shrinking keep it as small as before.
@@ -318,7 +324,7 @@ internal sealed partial class LineBuilder
             {
                 // overflow-wrap: the piece is too wide, so break it between grapheme clusters, at least one per line.
                 int fit = -1;
-                int g = TextSegmenter.NextGraphemeBoundary(_text, start);
+                int g = NextBreakableGrapheme(start);
                 while (g < first.Index)
                 {
                     float w = Measure(start, g);
@@ -328,12 +334,12 @@ internal sealed partial class LineBuilder
                     }
 
                     fit = g;
-                    g = TextSegmenter.NextGraphemeBoundary(_text, g);
+                    g = NextBreakableGrapheme(g);
                 }
 
                 if (g < first.Index || fit >= 0)
                 {
-                    end = fit >= 0 ? fit : TextSegmenter.NextGraphemeBoundary(_text, start);
+                    end = fit >= 0 ? fit : NextBreakableGrapheme(start);
                     hard = false;
                     hyphen = false;
                 }
@@ -346,6 +352,18 @@ internal sealed partial class LineBuilder
         }
 
         return Build(start, end, hard, hyphen);
+    }
+
+    /// <summary>The next grapheme cluster boundary after <paramref name="index"/> that is not inside a ruby base.</summary>
+    private int NextBreakableGrapheme(int index)
+    {
+        int g = TextSegmenter.NextGraphemeBoundary(_text, index);
+        while (_ruby is not null && g < _text.Length && _ruby.SplitsUnit(g))
+        {
+            g = TextSegmenter.NextGraphemeBoundary(_text, g);
+        }
+
+        return g;
     }
 
     /// <summary>The width of the line from <paramref name="start"/> to a break: content and a soft hyphen's hyphen.</summary>
@@ -572,6 +590,11 @@ internal sealed partial class LineBuilder
             for (int p = 0; p < count; p++)
             {
                 int point = wordStart + found[p];
+                if (_ruby is not null && _ruby.SplitsUnit(point))
+                {
+                    continue;
+                }
+
                 if (!IsClusterStart(point))
                 {
                     // A break inside a glyph cluster (a ligature) shapes both pieces again.
@@ -939,6 +962,11 @@ internal sealed partial class LineBuilder
             }
         }
 
+        if (_ruby is not null)
+        {
+            width += _ruby.Extra(start, end);
+        }
+
         return width;
     }
 
@@ -1139,13 +1167,53 @@ internal sealed partial class LineBuilder
         }
 
         int contentEnd = ContentEnd(start, end);
-        List<DraftRun> pieces = [];
+        List<RubyBox>? boxes = null;
+        if (_ruby is not null)
+        {
+            boxes = [];
+            _ruby.Boxes(start, contentEnd, boxes);
+            if (boxes.Count == 0)
+            {
+                boxes = null;
+            }
+            else
+            {
+                // A ruby base stays in one bidi run: the level of its first character.
+                foreach (RubyBox box in boxes)
+                {
+                    levels.AsSpan(box.Start - start, box.End - box.Start).Fill(levels[box.Start - start]);
+                }
+            }
+        }
+
+        List<DraftRuby>? rubies = boxes is null ? null : new(boxes.Count);
+        List<DraftRun> pieces = rubies is null ? [] : new RubyPieces(rubies);
         float pen = 0;
         int i = start;
+        int nextBox = 0, boxFirst = 0;
+        bool cutBefore = false;
         while (i < end)
         {
             ParagraphRun run = _paragraph.Runs[_m.RunOf[i]];
             int pieceEnd = Math.Min(run.End, end);
+            bool cut = false;
+            if (boxes is not null && nextBox < boxes.Count)
+            {
+                // Pieces end at ruby bases' edges, without shaping again there, so each base has pieces of its own.
+                RubyBox box = boxes[nextBox];
+                if (i == box.Start)
+                {
+                    boxFirst = pieces.Count;
+                }
+
+                int edge = i < box.Start ? box.Start : box.End;
+                if (edge < pieceEnd)
+                {
+                    pieceEnd = edge;
+                    cut = true;
+                }
+            }
+
             byte level = levels[i - start];
             int j = i + 1;
             while (j < pieceEnd && levels[j - start] == level)
@@ -1153,9 +1221,16 @@ internal sealed partial class LineBuilder
                 j++;
             }
 
+            cut &= j == pieceEnd;
             pieceEnd = j;
-            AddPieces(pieces, run, i, pieceEnd, level, ref pen, hyphen && pieceEnd == end && run.Kind == RunKind.Text ? HyphenGlyphs(end) : null, end);
+            AddPieces(pieces, run, i, pieceEnd, level, ref pen, hyphen && pieceEnd == end && run.Kind == RunKind.Text ? HyphenGlyphs(end) : null, end, cutBefore, cut);
+            cutBefore = cut;
             i = pieceEnd;
+            if (boxes is not null && nextBox < boxes.Count && i == boxes[nextBox].End)
+            {
+                rubies!.Add(SpaceBase(boxes[nextBox], pieces, boxFirst, ref pen, start, contentEnd, paragraphLevel));
+                nextBox++;
+            }
         }
 
         // UAX #9 L2: reverse each sequence at or above each odd level, highest first.
@@ -1192,7 +1267,7 @@ internal sealed partial class LineBuilder
         }
 
         float content = Measure(start, contentEnd) + (hyphen ? HyphenWidth(end) : 0);
-        (float ascent, float descent) = LineMetrics(pieces, start);
+        (float ascent, float descent) = LineMetrics(pieces, start, rubies);
         return new LineDraft
         {
             Start = start,
@@ -1210,12 +1285,120 @@ internal sealed partial class LineBuilder
     }
 
     /// <summary>
+    /// Spreads a ruby base, whose pieces are <paramref name="first"/> to the last of <paramref name="pieces"/>, to its box's width
+    /// by the annotation's alignment: the gap right of each grapheme cluster on that cluster's visually last glyph, the gap at
+    /// the box's left edge before the leftmost piece's first glyph. An inter-character column's room goes right of the base.
+    /// </summary>
+    private DraftRuby SpaceBase(RubyBox box, List<DraftRun> pieces, int first, ref float pen, int lineStart, int contentEnd, int paragraphLevel)
+    {
+        RubyTable ruby = _ruby!;
+        int last = pieces.Count - 1;
+        int level = pieces[first].Level;
+        bool rtl = (level & 1) != 0;
+        bool lineRtl = (paragraphLevel & 1) != 0;
+        bool atStart = box.Start == lineStart, atEnd = box.End == contentEnd;
+        bool atLeft = lineRtl ? atEnd : atStart, atRight = lineRtl ? atStart : atEnd;
+        DraftRun anchor = rtl ? pieces[last] : pieces[first];
+        float free = box.Width - box.Base;
+        if (free > Epsilon)
+        {
+            List<int> starts = _order ??= [];
+            starts.Clear();
+            for (int g = box.Start; g < box.End; g = TextSegmenter.NextGraphemeBoundary(_text, g))
+            {
+                starts.Add(g);
+            }
+
+            int n = starts.Count;
+            Span<float> gaps = n < 32 ? stackalloc float[n + 1] : new float[n + 1];
+            if (ruby.Entries[box.First].Column)
+            {
+                gaps.Clear();
+                gaps[n] = free;
+            }
+            else
+            {
+                RubyTable.Gaps(gaps, n, free, ruby.Annotations[box.First].Align, atLeft, atRight);
+            }
+
+            for (int k = 0; k < n; k++)
+            {
+                float gap = gaps[(rtl ? n - 1 - k : k) + 1];
+                if (gap != 0)
+                {
+                    AddAfterCluster(pieces, first, last, starts[k], k + 1 < n ? starts[k + 1] : box.End, gap);
+                }
+            }
+
+            if (gaps[0] != 0)
+            {
+                float lead = gaps[0];
+                if (anchor.Glyphs.Length > 0)
+                {
+                    anchor.Advances[0] += lead;
+                    if (anchor.Upright)
+                    {
+                        anchor.Offsets[0].Y -= lead;
+                    }
+                    else
+                    {
+                        anchor.Offsets[0].X += lead;
+                    }
+                }
+
+                anchor.Advance += lead;
+            }
+
+            pen += free;
+        }
+
+        return new DraftRuby { Box = box, Anchor = anchor, Level = level, AtLeft = atLeft, AtRight = atRight };
+    }
+
+    /// <summary>Adds space right of the grapheme cluster <c>[start, end)</c>: to its visually last glyph in the piece holding it
+    /// (the ligature's glyph when it has none of its own), or to a glyphless piece's advance.</summary>
+    private static void AddAfterCluster(List<DraftRun> pieces, int first, int last, int start, int end, float gap)
+    {
+        for (int p = first; p <= last; p++)
+        {
+            DraftRun piece = pieces[p];
+            if (start < piece.Start || start >= piece.Start + piece.Length)
+            {
+                continue;
+            }
+
+            int glyph = -1, ligature = -1, ligatureCluster = int.MinValue;
+            for (int g = 0; g < piece.Clusters.Length; g++)
+            {
+                int c = piece.Clusters[g];
+                if (c >= start && c < end)
+                {
+                    glyph = g;
+                }
+                else if (c < start && c >= ligatureCluster)
+                {
+                    (ligature, ligatureCluster) = (g, c);
+                }
+            }
+
+            glyph = glyph >= 0 ? glyph : ligature;
+            if (glyph >= 0)
+            {
+                piece.Advances[glyph] += gap;
+            }
+
+            piece.Advance += gap;
+            return;
+        }
+    }
+
+    /// <summary>
     /// Adds the pieces of the segment <c>[start, end)</c> of a run (one line, one bidi level) in logical order: one piece, or for
     /// a text run whose style changes inside the segment, one piece per style. The segment is shaped as one, so kerning and
     /// ligatures carry across a color change; a glyph cluster that crosses a style change (a ligature) takes the style of its
     /// first character. The hyphen goes on the last piece.
     /// </summary>
-    private void AddPieces(List<DraftRun> pieces, ParagraphRun run, int start, int end, int level, ref float pen, GlyphBuffer? hyphen, int lineEnd)
+    private void AddPieces(List<DraftRun> pieces, ParagraphRun run, int start, int end, int level, ref float pen, GlyphBuffer? hyphen, int lineEnd, bool keepStart = false, bool keepEnd = false)
     {
         if (run.Kind != RunKind.Text)
         {
@@ -1230,7 +1413,8 @@ internal sealed partial class LineBuilder
             return;
         }
 
-        bool again = (start > run.Start && UnsafeAt(start)) || (end < run.End && UnsafeAt(end));
+        // A ruby base's edge cuts the run's glyphs as they are (keepStart, keepEnd), as Measure measures them.
+        bool again = (start > run.Start && !keepStart && UnsafeAt(start)) || (end < run.End && !keepEnd && UnsafeAt(end));
         GlyphBuffer buffer = again ? Reshape(start, end) : run.Glyphs!;
         bool rtl = (run.Level & 1) != 0;
 
@@ -1485,10 +1669,10 @@ internal sealed partial class LineBuilder
     /// <summary>
     /// The line box above and below the baseline (CSS Inline Layout 3): the root inline box (the paragraph's default style, the
     /// strut CSS gives every line), the <see cref="ParagraphStyle.Strut"/>, and each run's inline box, moved by its baseline
-    /// shift; placeholders by their alignment, those aligned to the line box's top or bottom stretching it last. With
-    /// <see cref="Strut.Force"/> the strut alone sets the line box.
+    /// shift; placeholders by their alignment, those aligned to the line box's top or bottom stretching it last; ruby where
+    /// it reaches past them. With <see cref="Strut.Force"/> the strut alone sets the line box.
     /// </summary>
-    private (float Ascent, float Descent) LineMetrics(List<DraftRun> pieces, int start)
+    private (float Ascent, float Descent) LineMetrics(List<DraftRun> pieces, int start, List<DraftRuby>? rubies)
     {
         float top, bottom;
         (top, bottom) = RootBox();
@@ -1528,6 +1712,20 @@ internal sealed partial class LineBuilder
             b += style.BaselineShift;
             top = Math.Min(top, t);
             bottom = Math.Max(bottom, b);
+        }
+
+        if (rubies is not null)
+        {
+            // The line grows for ruby its box does not already hold.
+            foreach (DraftRuby ruby in rubies)
+            {
+                for (int a = ruby.Box.First; a <= ruby.Box.Last; a++)
+                {
+                    RubyTable.Entry e = _ruby!.Entries[a];
+                    top = Math.Min(top, e.Top);
+                    bottom = Math.Max(bottom, e.Bottom);
+                }
+            }
         }
 
         float ascent = -top, descent = bottom;
@@ -1621,9 +1819,9 @@ internal sealed partial class LineBuilder
         {
             if (anywhere)
             {
-                for (int g = start; g < b.Index; g = TextSegmenter.NextGraphemeBoundary(_text, g))
+                for (int g = start; g < b.Index; g = NextBreakableGrapheme(g))
                 {
-                    int next = TextSegmenter.NextGraphemeBoundary(_text, g);
+                    int next = NextBreakableGrapheme(g);
                     min = Math.Max(min, Measure(g, ContentEnd(g, next)));
                 }
             }
@@ -1743,11 +1941,22 @@ internal sealed partial class LineBuilder
         // Hanging spaces sit past the content's end: right of it in left-to-right paragraphs, left of it in right-to-left ones.
         float origin = rtl ? left - draft.HangWidth : left;
         float baseline = top + lineAscent;
-        List<LayoutRun> runs = new(draft.Runs.Count);
+        List<LayoutRun> runs = draft.Rubies is null ? new List<LayoutRun>(draft.Runs.Count) : new RubyLineRuns(draft.Runs.Count);
         float stretch = 0;
         foreach (DraftRun piece in draft.Runs)
         {
             float x = origin + piece.X + stretch;
+            if (draft.Rubies is { } anchors)
+            {
+                foreach (DraftRuby ruby in anchors)
+                {
+                    if (ReferenceEquals(ruby.Anchor, piece))
+                    {
+                        ruby.X = x;
+                    }
+                }
+            }
+
             float[] advances = piece.Advances;
             ushort[] ids = piece.Glyphs;
             int[] clusters = piece.Clusters;
@@ -1817,6 +2026,11 @@ internal sealed partial class LineBuilder
             });
         }
 
+        if (draft.Rubies is { } rubies)
+        {
+            RubyRuns((RubyLineRuns)runs, rubies, top, baseline, lineAscent + lineDescent, blockSize);
+        }
+
         if (Vertical)
         {
             // In vertical lines the block axis is x: the line's over side is its right edge, its under side its left.
@@ -1831,6 +2045,183 @@ internal sealed partial class LineBuilder
         {
             AutoHyphen = draft.AutoHyphen,
         };
+    }
+
+    /// <summary>
+    /// The ruby runs of a placed line: each box's ruby spread over its extent (the box and its overhang) by the alignment, one run
+    /// per annotation and segment, beside the base on its side; an inter-character column right of its base, centred on the
+    /// base's em box.
+    /// </summary>
+    private void RubyRuns(RubyLineRuns runs, List<DraftRuby> rubies, float top, float baseline, float thickness, float blockSize)
+    {
+        RubyTable table = _ruby!;
+        foreach (DraftRuby ruby in rubies)
+        {
+            RubyBox box = ruby.Box;
+            float x = ruby.X;
+            bool rtl = (ruby.Level & 1) != 0;
+            RubyTable.Entry first = table.Entries[box.First];
+            if (first.Column)
+            {
+                ColumnRuns(runs, box, ruby.Level, x, baseline);
+                continue;
+            }
+
+            int count = 0;
+            for (int a = box.First; a <= box.Last; a++)
+            {
+                count += table.Entries[a].Clusters.Length - 1;
+            }
+
+            float extent = box.Width + box.HangStart + box.HangEnd;
+            float[] gaps = new float[count + 1];
+
+            // Short ruby spreads over its base the same at a line edge: only a spread base keeps to the edge.
+            RubyTable.Gaps(gaps, count, extent - box.Ruby, table.Annotations[box.First].Align, false, false);
+            float pen = x - (rtl ? box.HangEnd : box.HangStart) + gaps[0];
+            int k = 0, firstCluster = 0;
+            for (int a = box.First; a <= box.Last; a++)
+            {
+                RubyTable.Entry e = table.Entries[a];
+                float block = baseline + e.Anchor;
+                float across = Vertical ? ToPhysical(block, top, thickness, blockSize) : block;
+                foreach (RubySegment segment in e.Segments)
+                {
+                    (LayoutRun run, TextBounds bounds) = RubySegmentRun(a, e, segment, ruby.Level, across, gaps, firstCluster, ref k, ref pen);
+                    runs.Annotations.Add(run);
+                    runs.Boxes.Add(bounds);
+                }
+
+                firstCluster += e.Clusters.Length - 1;
+            }
+        }
+    }
+
+    /// <summary>One ruby segment's run: its glyphs from <paramref name="pen"/> along the line, the gaps of the box's clusters and
+    /// the ruby style's letter spacing between its grapheme clusters, at <paramref name="across"/> across the line (the ruby's
+    /// baseline, or in vertical lines its physical x).</summary>
+    private (LayoutRun Run, TextBounds Box) RubySegmentRun(int annotation, RubyTable.Entry e, RubySegment segment, int level, float across, float[] gaps, int firstCluster, ref int k, ref float pen)
+    {
+        RubyAnnotation a = _ruby!.Annotations[annotation];
+        GlyphBuffer buffer = segment.Glyphs;
+        int n = buffer.Count;
+        ushort[] ids = buffer.GlyphIds.ToArray();
+        int[] clusters = buffer.Clusters.ToArray();
+        float[] advances = new float[n];
+        Vector2[] points = new Vector2[n];
+        GlyphTransform[]? transforms = Vertical && !segment.Upright ? new GlyphTransform[n] : null;
+        (float ra, float rd, _) = Rounded(segment.Font);
+        float alphabetic = Central ? across - ((ra - rd) / 2) : across;
+        float runStart = float.NaN;
+        for (int g = 0; g < n; g++)
+        {
+            // Crossing into a later grapheme cluster adds the gaps (and letter spacing inside the annotation) before it.
+            int cluster = firstCluster + ClusterIndex(e.Clusters, clusters[g]);
+            while (k < cluster)
+            {
+                pen += gaps[k + 1] + (k + 1 > firstCluster ? e.Spacing : 0);
+                k++;
+            }
+
+            if (float.IsNaN(runStart))
+            {
+                runStart = pen;
+            }
+
+            GlyphPosition p = buffer.Positions[g];
+            float advance = segment.Upright ? -p.YAdvance : p.XAdvance;
+            if (!Vertical)
+            {
+                points[g] = new Vector2(pen + p.XOffset, across - p.YOffset);
+            }
+            else if (segment.Upright)
+            {
+                points[g] = new Vector2(across + p.XOffset, pen - p.YOffset);
+            }
+            else
+            {
+                points[g] = new Vector2(alphabetic + p.YOffset, pen + p.XOffset);
+                transforms![g] = GlyphTransform.FromRotationScale(1, 90, points[g]);
+            }
+
+            advances[g] = advance;
+            pen += advance;
+        }
+
+        runStart = float.IsNaN(runStart) ? pen : runStart;
+        float width = pen - runStart;
+        TextBounds bounds = !Vertical
+            ? new TextBounds(runStart, across - e.Ascent, pen, across + e.Descent)
+            : Central
+                ? new TextBounds(across - ((e.Ascent + e.Descent) / 2), runStart, across + ((e.Ascent + e.Descent) / 2), pen)
+                : new TextBounds(across - e.Descent, runStart, across + e.Ascent, pen);
+        GlyphRun glyphs = new(segment.Font, ids, points, a.Text, clusters, transforms, advances)
+        {
+            Language = _paragraph.Styles[e.Style].Language,
+        };
+        return (new LayoutRun(LayoutRunKind.Ruby, a.Start, a.Length, level, e.Style, runStart, width, glyphs, annotation), bounds);
+    }
+
+    /// <summary>The grapheme cluster of a ruby text holding a UTF-16 index: the last start at or before it.</summary>
+    private static int ClusterIndex(int[] starts, int index)
+    {
+        int lo = 0, hi = starts.Length - 2;
+        while (lo < hi)
+        {
+            int mid = (lo + hi + 1) >>> 1;
+            if (starts[mid] <= index)
+            {
+                lo = mid;
+            }
+            else
+            {
+                hi = mid - 1;
+            }
+        }
+
+        return Math.Max(0, lo);
+    }
+
+    /// <summary>An inter-character column's runs: upright glyphs down the column right of the base, centred on the base's em box.</summary>
+    private void ColumnRuns(RubyLineRuns runs, RubyBox box, int level, float x, float baseline)
+    {
+        RubyTable.Entry e = _ruby!.Entries[box.First];
+        RubyAnnotation a = _ruby.Annotations[box.First];
+        float shift = _paragraph.Styles[e.BaseStyle].BaselineShift;
+        float centre = x + box.Base + (e.Advance / 2);
+        float pen = baseline + shift - e.BaseAscent + ((e.BaseAscent + e.BaseDescent - e.ColumnLength) / 2);
+        int k = 0;
+        foreach (RubySegment segment in e.Segments)
+        {
+            GlyphBuffer buffer = segment.Glyphs;
+            int n = buffer.Count;
+            ushort[] ids = buffer.GlyphIds.ToArray();
+            int[] clusters = buffer.Clusters.ToArray();
+            float[] advances = new float[n];
+            Vector2[] points = new Vector2[n];
+            float runStart = pen;
+            for (int g = 0; g < n; g++)
+            {
+                int cluster = ClusterIndex(e.Clusters, clusters[g]);
+                while (k < cluster)
+                {
+                    pen += e.Spacing;
+                    k++;
+                }
+
+                GlyphPosition p = buffer.Positions[g];
+                points[g] = new Vector2(centre + p.XOffset, pen - p.YOffset);
+                advances[g] = -p.YAdvance;
+                pen -= p.YAdvance;
+            }
+
+            GlyphRun glyphs = new(segment.Font, ids, points, a.Text, clusters, null, advances)
+            {
+                Language = _paragraph.Styles[e.Style].Language,
+            };
+            runs.Annotations.Add(new LayoutRun(LayoutRunKind.Ruby, a.Start, a.Length, level, e.Style, centre - (e.Advance / 2), e.Advance, glyphs, box.First));
+            runs.Boxes.Add(new TextBounds(centre - (e.Advance / 2), runStart, centre + (e.Advance / 2), pen));
+        }
     }
 
     /// <summary>
@@ -1940,7 +2331,8 @@ internal sealed partial class LineBuilder
             Script = Script.Common,
             Language = _paragraph.Styles[styleIndex].Language,
         };
-        List<DraftRun> runs = [.. kept.Runs];
+        List<DraftRun> runs = kept.Rubies is { } rubies ? new RubyPieces(rubies) : new List<DraftRun>(kept.Runs.Count + 1);
+        runs.AddRange(kept.Runs);
         runs.Insert(rtl ? 0 : runs.Count, ellipsis);
         float x = 0;
         foreach (DraftRun run in runs)
@@ -1949,7 +2341,7 @@ internal sealed partial class LineBuilder
             x += run.Advance;
         }
 
-        (float ascent, float descent) = LineMetrics(runs, line.Start);
+        (float ascent, float descent) = LineMetrics(runs, line.Start, kept.Rubies);
         return new LineDraft
         {
             Start = line.Start,
@@ -2078,7 +2470,7 @@ internal sealed partial class LineBuilder
                 TextJustify.InterCharacter => separator || (!AdvanceTable.IsCursive(clusters[i].Piece.Script) && !AdvanceTable.IsCursive(clusters[i + 1].Piece.Script)),
                 _ => separator || IsCjk(cp) || IsCjk(next),
             };
-            if (opportunity && (cp != 0xA0 || stretchNoBreak))
+            if (opportunity && (cp != 0xA0 || stretchNoBreak) && !InsideRuby(draft, clusters[i].Cluster, clusters[i + 1].Cluster))
             {
                 opportunities.Add((clusters[i].Piece, clusters[i].Glyph));
             }
@@ -2123,6 +2515,23 @@ internal sealed partial class LineBuilder
         }
 
         return result;
+    }
+
+    /// <summary>Whether two clusters are inside one ruby box, which justification leaves as it is.</summary>
+    private static bool InsideRuby(LineDraft draft, int cluster, int next)
+    {
+        if (draft.Rubies is { } rubies)
+        {
+            foreach (DraftRuby ruby in rubies)
+            {
+                if (ruby.Box.Start <= cluster && next < ruby.Box.End)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

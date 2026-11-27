@@ -71,7 +71,7 @@ public sealed partial class TextLayout
     /// <summary>Gets the last line's baseline; 0 when there are no lines.</summary>
     public float LastBaseline => Lines.Count == 0 ? 0 : Lines[^1].Baseline;
 
-    /// <summary>Gets the union of the glyphs' ink and the placeholders' boxes, which may reach past the layout box.</summary>
+    /// <summary>Gets the union of the glyphs' ink (ruby included) and the placeholders' boxes, which may reach past the layout box.</summary>
     public TextBounds InkBounds => _ink ??= ComputeInk();
 
     /// <summary>Gets one box per placeholder of the rich text, in order; an empty box for one hidden by a line limit.</summary>
@@ -147,6 +147,14 @@ public sealed partial class TextLayout
                     ink = ink.Union(glyphs.Bounds);
                 }
             }
+
+            foreach (LayoutRun run in line.AnnotationRuns)
+            {
+                if (run.Glyphs is GlyphRun glyphs)
+                {
+                    ink = ink.Union(glyphs.Bounds);
+                }
+            }
         }
 
         foreach (TextBounds box in PlaceholderRects)
@@ -172,6 +180,41 @@ public sealed partial class TextLayout
         }
 
         return boxes;
+    }
+
+    /// <summary>
+    /// Gets the box a ruby annotation's text was laid out in: from the line's over (or under) edge of its ruby to the base side,
+    /// along the ruby's advance, in layout coordinates. Annotations whose base a line limit hid, or whose ruby text is empty,
+    /// get an empty box.
+    /// </summary>
+    /// <param name="annotationIndex">The annotation's index in <see cref="RichText.Ruby"/>.</param>
+    /// <returns>The box.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="annotationIndex"/> is not an annotation of the text.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="ruby"/>
+    /// </example>
+    public TextBounds GetRubyBounds(int annotationIndex)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(annotationIndex);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(annotationIndex, Paragraph.RichText.Ruby.Count);
+        TextBounds box = TextBounds.Empty;
+        int start = Paragraph.RichText.Ruby[annotationIndex].Start;
+        int line = GetLineAt(start);
+        for (int l = Math.Max(0, line); l < Lines.Count && l <= line + 1; l++)
+        {
+            if (Lines[l].Runs is RubyLineRuns ruby)
+            {
+                for (int k = 0; k < ruby.Annotations.Count; k++)
+                {
+                    if (ruby.Annotations[k].Annotation == annotationIndex)
+                    {
+                        box = box.Union(ruby.Boxes[k]);
+                    }
+                }
+            }
+        }
+
+        return box;
     }
 
     /// <summary>Gets whether <see cref="ParagraphStyle.MaxLines"/> or <see cref="ParagraphStyle.MaxHeight"/> cut text off.</summary>
@@ -246,6 +289,13 @@ public sealed class TextLine
     /// <summary>Gets the runs in visual order, left to right.</summary>
     public IReadOnlyList<LayoutRun> Runs { get; }
 
+    /// <summary>Gets the runs set beside the line's text, which hold no text of the paragraph: <see cref="LayoutRunKind.Ruby"/>
+    /// runs, in the order of their annotations. Empty for a line without ruby.</summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="ruby"/>
+    /// </example>
+    public IReadOnlyList<LayoutRun> AnnotationRuns => Runs is RubyLineRuns ruby ? ruby.Annotations : [];
+
     /// <summary>Whether the line ends inside a word at an automatic hyphenation point, with a hyphen that stands for no text.</summary>
     internal bool AutoHyphen { get; init; }
 }
@@ -267,6 +317,13 @@ public enum LayoutRunKind
 
     /// <summary>A hard break or another control character, which takes no space.</summary>
     Control = 3,
+
+    /// <summary>
+    /// Ruby text: glyphs of a <see cref="RubyAnnotation"/>'s text in one font, in <see cref="TextLine.AnnotationRuns"/>. Its
+    /// <see cref="LayoutRun.Start"/> and <see cref="LayoutRun.Length"/> are its base's, <see cref="LayoutRun.Annotation"/> names
+    /// the annotation, and <see cref="LayoutRun.StyleIndex"/> its ruby style; its glyph run's clusters index the ruby text.
+    /// </summary>
+    Ruby = 4,
 }
 
 /// <summary>A piece of a line: glyphs of one font, bidi level and style, or a placeholder, tab or break.</summary>
@@ -275,7 +332,7 @@ public enum LayoutRunKind
 /// </example>
 public sealed class LayoutRun
 {
-    internal LayoutRun(LayoutRunKind kind, int start, int length, int bidiLevel, int styleIndex, float x, float advance, GlyphRun? glyphs, int placeholder)
+    internal LayoutRun(LayoutRunKind kind, int start, int length, int bidiLevel, int styleIndex, float x, float advance, GlyphRun? glyphs, int index)
     {
         Kind = kind;
         Start = start;
@@ -285,7 +342,7 @@ public sealed class LayoutRun
         X = x;
         Advance = advance;
         Glyphs = glyphs;
-        Placeholder = placeholder;
+        _index = index;
     }
 
     /// <summary>Gets what the run holds.</summary>
@@ -315,10 +372,26 @@ public sealed class LayoutRun
     public GlyphRun? Glyphs { get; }
 
     /// <summary>Gets the index of the rich text's placeholder, for <see cref="LayoutRunKind.Placeholder"/> runs; otherwise -1.</summary>
-    public int Placeholder { get; }
+    public int Placeholder => Kind == LayoutRunKind.Placeholder ? _index : -1;
+
+    /// <summary>Gets the index of the rich text's ruby annotation, for <see cref="LayoutRunKind.Ruby"/> runs; otherwise -1.</summary>
+    public int Annotation => Kind == LayoutRunKind.Ruby ? _index : -1;
 
     /// <summary>The top of a placeholder's box, in layout coordinates.</summary>
     internal float BoxTop { get; init; }
+
+    /// <summary>The placeholder's or the annotation's index, by <see cref="Kind"/>: one field keeps runs small.</summary>
+    private readonly int _index;
+}
+
+/// <summary>A line's runs when it has ruby: the ruby runs and their boxes ride along, so lines without ruby carry nothing.</summary>
+internal sealed class RubyLineRuns(int capacity) : List<LayoutRun>(capacity)
+{
+    /// <summary>The ruby runs, in the order of their annotations.</summary>
+    public List<LayoutRun> Annotations { get; } = [];
+
+    /// <summary>Each ruby run's box in layout coordinates: along its advance, from its ruby's ascent to its descent.</summary>
+    public List<TextBounds> Boxes { get; } = [];
 }
 
 /// <summary>

@@ -22,10 +22,11 @@ public sealed class Paragraph
     /// <summary>Egami's default font size, as CSS's.</summary>
     internal const float DefaultSize = 16;
 
-    private Paragraph(RichText text, ParagraphStyle style, ResolvedStyle[] styles, ParagraphRun[] runs, LineBreak[] breaks, BidiData bidi, (Font, GlyphBuffer)[]? ellipses)
+    private Paragraph(RichText text, ParagraphStyle style, ResolvedStyle[] styles, ParagraphRun[] runs, LineBreak[] breaks, BidiData bidi, (Font, GlyphBuffer)[]? ellipses, AdvanceTable measures, RubyTable? ruby)
     {
         Ellipses = ellipses;
-        Measures = new AdvanceTable(text, styles, runs);
+        Measures = measures;
+        Ruby = ruby;
         RichText = text;
         Style = style;
         Styles = styles;
@@ -57,6 +58,9 @@ public sealed class Paragraph
 
     /// <summary>The advance and spacing of every character, for measuring lines.</summary>
     internal AdvanceTable Measures { get; }
+
+    /// <summary>The ruby annotations' shaping and measures, or null when the text has none.</summary>
+    internal RubyTable? Ruby { get; }
 
     /// <summary>CSS's min-content and max-content widths, found once.</summary>
     internal (float Min, float Max) IntrinsicWidths => (_intrinsic ??= new Lazy<(float, float)>(() => new LineBuilder(this).IntrinsicWidths())).Value;
@@ -163,9 +167,11 @@ public sealed class Paragraph
     /// <summary>
     /// Gets the text style a run with <see cref="LayoutRun.StyleIndex"/> (or a decoration with
     /// <see cref="DecorationShape.StyleIndex"/>) was laid out in: the default style for 0, else that span's style with the
-    /// default's values filled in where it sets none.
+    /// default's values filled in where it sets none; past the spans, a ruby annotation's style
+    /// (<see cref="LayoutRunKind.Ruby"/> runs), its unset fields from its base's.
     /// </summary>
-    /// <param name="styleIndex">0 for the default style, else 1 plus the span's index in <see cref="RichText.Spans"/>.</param>
+    /// <param name="styleIndex">0 for the default style, 1 plus the span's index in <see cref="RichText.Spans"/>, or 1 plus the
+    /// number of spans plus the annotation's index in <see cref="RichText.Ruby"/>.</param>
     /// <returns>The style.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="styleIndex"/> is not a style of this paragraph.</exception>
     public TextStyle GetStyle(int styleIndex)
@@ -218,6 +224,19 @@ public sealed class Paragraph
             throw new ArgumentException("Text outside the spans has no font families: set ParagraphStyle.DefaultStyle.FontFamilies.", nameof(style));
         }
 
+        int spanStyles = styles.Length;
+        if (text.Ruby.Count > 0)
+        {
+            // Each annotation's ruby style follows the spans' styles, so runs and decorations look it up the same way.
+            Array.Resize(ref styles, spanStyles + text.Ruby.Count);
+            for (int i = 0; i < text.Ruby.Count; i++)
+            {
+                RubyAnnotation a = text.Ruby[i];
+                ResolvedStyle based = styles[text.SpanAt(a.Start) + 1];
+                styles[spanStyles + i] = ResolvedStyle.Resolve(RubyTable.StyleOf(a, based.Style, style.Ruby.SizeRatio), styles[0], true, fonts);
+            }
+        }
+
         ShapingGroups.Assign(styles);
 
         string s = text.Text;
@@ -227,7 +246,17 @@ public sealed class Paragraph
         (Font, GlyphBuffer)[]? ellipses = !string.IsNullOrEmpty(style.Ellipsis) && (style.MaxLines is not null || style.MaxHeight is not null) && styles.All(st => st.Primary is not null)
             ? [.. styles.Select(st => Itemizer.ShapeAlone(style.Ellipsis, st, style.Fallback, fonts))]
             : null;
-        return new Paragraph(text, style, styles, runs, breaks, bidi, ellipses);
+        AdvanceTable measures = new(text, styles, runs);
+        RubyTable? ruby = null;
+        if (text.Ruby.Count > 0)
+        {
+            ruby = RubyTable.Create(text, style, styles, spanStyles, measures, fonts);
+
+            // A ruby base never breaks.
+            breaks = [.. breaks.Where(b => b.IsMandatory || !ruby.SplitsUnit(b.Index))];
+        }
+
+        return new Paragraph(text, style, styles, runs, breaks, bidi, ellipses, measures, ruby);
     }
 
     private static bool CoversOutsideSpans(RichText text)
@@ -503,7 +532,7 @@ internal static class Itemizer
     /// <see cref="TextOrientation.Mixed"/> (U, Tu and Tr upright, as browsers set Tr with vertical alternates), always with
     /// <see cref="TextOrientation.Upright"/>, never with <see cref="TextOrientation.Sideways"/> or in horizontal lines.
     /// </summary>
-    private static bool IsUpright(ParagraphStyle paragraph, int cp) => paragraph.WritingMode != WritingMode.HorizontalTb && paragraph.TextOrientation switch
+    internal static bool IsUpright(ParagraphStyle paragraph, int cp) => paragraph.WritingMode != WritingMode.HorizontalTb && paragraph.TextOrientation switch
     {
         TextOrientation.Upright => true,
         TextOrientation.Sideways => false,
@@ -618,7 +647,7 @@ internal static class Itemizer
     /// font, which draws .notdef. Spaces and punctuation take the first family that has them, as browsers do, not the font of
     /// the text around them.
     /// </summary>
-    private static Font ChooseFont(ReadOnlySpan<char> cluster, ResolvedStyle style, FontFallback fallback, Script script, FontCache fonts)
+    internal static Font ChooseFont(ReadOnlySpan<char> cluster, ResolvedStyle style, FontFallback fallback, Script script, FontCache fonts)
     {
         Font primary = style.Primary!.Value;
 

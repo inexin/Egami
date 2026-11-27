@@ -106,8 +106,8 @@ public static partial class FontExtensions
     public static RectF ToRectF(this TextBounds bounds) => RectF.FromEdges(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
 
     /// <summary>
-    /// Gets a laid-out paragraph as one path: every glyph run's outline with its font's synthetic bold and italic, then every
-    /// decoration, the layout's top-left corner at <paramref name="origin"/>.
+    /// Gets a laid-out paragraph as one path: every glyph run's outline (ruby included) with its font's synthetic bold and italic,
+    /// then every decoration, the layout's top-left corner at <paramref name="origin"/>.
     /// </summary>
     /// <param name="layout">The layout.</param>
     /// <param name="origin">Where the layout's top-left corner goes.</param>
@@ -122,6 +122,14 @@ public static partial class FontExtensions
         foreach (TextLine line in layout.Lines)
         {
             foreach (LayoutRun run in line.Runs)
+            {
+                if (run.Glyphs is GlyphRun glyphs && glyphs.Count > 0)
+                {
+                    builder.AddPath(glyphs.ToPath(origin));
+                }
+            }
+
+            foreach (LayoutRun run in line.AnnotationRuns)
             {
                 if (run.Glyphs is GlyphRun glyphs && glyphs.Count > 0)
                 {
