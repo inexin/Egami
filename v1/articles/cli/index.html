@@ -353,9 +353,10 @@ WOFF2's glyf, loca and hmtx untransformed; <code>--metadata</code> stores an XML
 <li><code>font subset</code> keeps the characters of <code>--text</code>, <code>--text-file</code> (files or globs, read as UTF-8 text, HTML and all) and
 <code>--unicodes</code> (CSS unicode-range syntax: <code>U+0020-007E</code>, <code>U+00E5</code>, <code>U+4??</code>), which add up, with the glyphs the shaper draws
 them with: the decomposition of a character the font lacks, and the precomposed form of a base and mark. By default it keeps
-GSUB, GPOS, GDEF and MATH, every glyph they can substitute for the kept ones and the dotted circle, with the glyph ids, so
-the text shapes as with the full font (ligatures, kerning, contextual forms, math); <code>--no-layout</code> keeps only the mapped
-glyphs, renumbered, for the smallest file (<code>--retain-gids</code> keeps the ids). A variable font becomes a static font at its
+every glyph GSUB can substitute for the kept ones and the dotted circle, and GSUB, GPOS, GDEF and MATH cut down to the kept
+glyphs, which are renumbered from 0, so the text shapes as with the full font (ligatures, kerning, contextual forms, math);
+<code>--no-layout</code> keeps only the mapped glyphs, without those tables, for the smallest file. <code>--retain-gids</code> keeps every glyph's
+id, with empty glyphs in the gaps, for a tool that refers to glyphs by id. A variable font becomes a static font at its
 default position, or at <code>--variation wght=700,wdth=90</code>. <code>--no-hinting</code> leaves out TrueType hinting, <code>--name-prefix</code> prefixes
 the PostScript name and <code>--face</code> picks a font of a collection. It prints one line per font: the glyphs kept of the total,
 the asked characters the font lacks (characters in <code>--unicodes</code> ranges keep whatever the font has) and the sizes, and warns

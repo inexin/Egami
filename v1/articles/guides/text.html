@@ -171,7 +171,8 @@ opsz equal to the size in canvas units; <code>Font.EffectiveTypeface</code> is t
 <li><code>SubsetOptions.Variations</code> (by default the face's own position) makes the subset a static font at that position, written as an
 instancer would: the varied outlines rounded to whole units, metrics, OS/2 and post at the position, CFF2 written as CFF and the
 variation tables left out. Its outlines, advances and bearings equal fontTools' instancer's, so a PDF shows the position.</li>
-<li>A variable font's GSUB feature variations (glyph swaps by position) arrive with shaping in 2.8.</li>
+<li>The shaper applies a variable font's feature variations (glyph swaps by position), and a layout-closure subset bakes in those
+that hold at its position, with its GPOS, GDEF and MATH deltas.</li>
 </ul>
 <h2 id="glyphs-and-metrics">Glyphs and metrics</h2>
 <p>Everything a face returns is in font units with y up. <code>GetGlyph</code> maps a code point (with a variation selector, through cmap format
@@ -601,12 +602,19 @@ FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions
     LayoutFeatures = [.. OpenTypeLayout.DefaultClosureFeatures, new FontTag(&quot;smcp&quot;)],
 });
 </code></pre>
-<p>With <code>RetainGlyphIds</code> the layout tables are cut down in the same way without renumbering, and MATH is copied unchanged; a subset
-with dense ids has no MATH table. A layout table the shaper would leave out as damaged makes <code>Subset</code> throw
+<p>The layout closure also cuts down and renumbers what else the shaper and a math layout read: MATH (constants, italics corrections,
+accent attachments, math kerning, and the variants and assemblies of kept glyphs), the legacy <code>kern</code> table (format 0 pairs of kept
+glyphs; its other formats only with <code>RetainGlyphIds</code>), and the vertical metrics in vhea, vmtx and VORG. With <code>RetainGlyphIds</code> the
+tables are cut down in the same way without renumbering. A layout table the shaper would leave out as damaged makes <code>Subset</code> throw
 <code>CorruptDataException</code>. GSUB and GPOS lookups that no longer fit 16-bit offsets are written as extension lookups.</p>
+<p>A variable face's subset is a static font at the face's position (or <code>SubsetOptions.Variations</code>), and its layout tables are
+too: each GPOS value and anchor, each GDEF caret and each MATH value takes its variation delta, rounded, and loses its variation
+device table; the feature variations that hold at the position replace the features they substitute; and GDEF drops its
+variation store. Vertical advances and origins are written varied as well, so the subset shapes as the face did at that position.</p>
 <p>The shaper draws a character the face lacks from its canonical decomposition, and composes a base and a mark to the precomposed
 character when the face has it, so the glyphs of a text are more than those its characters map to. <code>FontSubsetter.GlyphsFor</code>
-gives them all.</p>
+gives them all, with the shaper's other stand-ins (split vowels, mirrored brackets, the space for default ignorables) and the
+glyphs of the variation sequences the characters make; the subset's cmap keeps those sequences in format 14.</p>
 <pre><code class="lang-csharp">// The glyphs a text needs as the shaper draws it: &quot;e&quot; with a combining acute also keeps the precomposed &quot;é&quot; the shaper
 // composes them to, and a character the face lacks keeps the glyphs of its decomposition.
 string text = &quot;résumé&quot;;
