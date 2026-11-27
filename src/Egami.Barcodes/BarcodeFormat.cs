@@ -76,6 +76,30 @@ public enum BarcodeFormat
     /// </summary>
     JapanPost = 1 << 17,
 
+    /// <summary>
+    /// The USPS Intelligent Mail barcode (USPS-B-3200), 65 bars of a 4-state code written as a grid of 6 rows; quiet zone 6
+    /// modules. Written, not read: in <see cref="Postal"/> only.
+    /// </summary>
+    IntelligentMail = 1 << 18,
+
+    /// <summary>
+    /// The Royal Mail 4-State Customer Code (RM4SCC), written as a grid of 8 rows; quiet zone 4 modules. Written, not read: in
+    /// <see cref="Postal"/> only.
+    /// </summary>
+    RoyalMail = 1 << 19,
+
+    /// <summary>
+    /// PostNL's KIX code, RM4SCC's characters without start, stop or check, written as a grid of 8 rows; quiet zone 4 modules.
+    /// Written, not read: in <see cref="Postal"/> only.
+    /// </summary>
+    Kix = 1 << 20,
+
+    /// <summary>
+    /// The Australia Post customer barcode, written as a grid of 8 rows; quiet zone 11 modules. Written, not read: in
+    /// <see cref="Postal"/> only.
+    /// </summary>
+    AustraliaPost = 1 << 21,
+
     /// <summary>The linear symbologies.</summary>
     Linear = Code128 | Code39 | Code93 | Codabar | DataBar | DataBarLimited | DataBarExpanded | Itf | Ean13 | Ean8 | UpcA | UpcE,
 
@@ -86,7 +110,7 @@ public enum BarcodeFormat
     /// The 4-state postal symbologies, which Egami writes but does not read; they are not in <see cref="All"/>, so reads with the
     /// default options are not slowed or misled by them.
     /// </summary>
-    Postal = JapanPost,
+    Postal = JapanPost | IntelligentMail | RoyalMail | Kix | AustraliaPost,
 
     /// <summary>Every symbology Egami reads: <see cref="Linear"/> and <see cref="Matrix"/>, without <see cref="Postal"/>.</summary>
     All = Linear | Matrix,

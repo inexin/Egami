@@ -390,7 +390,10 @@ overlap, and their bases never split a surrogate pair.
 
 - **Placement.** `Position` puts ruby `Over` the base (right of it in vertical lines), `Under` it (left in vertical lines) or
   `InterCharacter`, in a column right of a horizontal base as Taiwanese bopomofo stands, and over it in vertical lines.
-  `Offset` moves ruby further from its base. Lines grow to hold ruby unless their line height already does.
+  The ruby's ideographic em box stands on its base's, as JLREQ and CSS Ruby place it: each font's em box comes from its BASE
+  table's `ideo` and `idtp` baselines, else it is centred between the ascent and descent, and in vertical lines it is
+  centred on the central baseline. `Offset` moves ruby further from its base. Lines grow to hold ruby unless their line
+  height already does.
 - **Width.** A base never breaks across lines. When ruby is wider than its base, the base spreads (1:2:1 between and around
   its characters, nothing at a line edge) and, with `RubyOverhang.Auto`, ruby may hang up to half a ruby character over kana
   or punctuation beside it, never over kanji or other ruby. When ruby is narrower, `Align` (a `RubyAlign`) spreads it over

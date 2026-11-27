@@ -28,10 +28,24 @@ if (args is ["--time-filters", .. string[] names])
     return;
 }
 
-// Time the 2.4.8 image scenarios (JPEG, PNG, resize, compose, YUV, blur): -- --time-image [--one-thread|--threads=N] [--runs=N] [--list] [name...]
+// Time the 2.4.8 image scenarios (JPEG, PNG, resize, compose, YUV, blur): -- --time-image [--one-thread|--threads=N] [--runs=N] [--warmup=N] [--median] [--list] [name...]
 if (args is ["--time-image", .. string[] imageArgs])
 {
     ImageTiming.Run(imageArgs);
+    return;
+}
+
+// Write the roadmap 2.4.13 SIMD decode corpus (tools/time-simd.py): -- --write-simd-corpus <dir> [--skip=avif,heic]
+if (args is ["--write-simd-corpus", string simdDirectory, .. string[] simdArgs])
+{
+    SimdCorpus.Write(simdDirectory, simdArgs);
+    return;
+}
+
+// Print the instruction sets the runtime uses (tools/time-simd.py): -- --simd-info
+if (args is ["--simd-info"])
+{
+    SimdCorpus.Info();
     return;
 }
 
@@ -111,7 +125,7 @@ if (args is ["--time-barcodes", .. string[] barcodeArgs])
     return;
 }
 
-// Time JPEG XL decoding (Phase 2.9.3 speed gate) at one thread and all cores: -- --time-jxl [--one-thread] [--runs=N] <file.jxl>...
+// Time JPEG XL decoding (Phase 2.9.3 speed gate) at one thread and all cores: -- --time-jxl [--one-thread] [--runs=N] [--warmup=N] [--median] <file.jxl>...
 if (args is ["--time-jxl", .. string[] jxls])
 {
     JxlTiming.Run(jxls);

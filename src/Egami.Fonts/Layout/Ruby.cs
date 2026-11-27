@@ -279,8 +279,13 @@ internal sealed class RubyTable
             float shift = based.BaselineShift;
             float offset = a.Offset ?? 0;
             float thickness = ra + rd;
-            float over = central ? MathF.Floor((ba + bd) / 2) : ba;
-            float under = central ? ba + bd - over : bd;
+
+            // JLREQ 3.3 and CSS Ruby 1: the ruby's ideographic em box stands on its base's, the offset beyond. Each em box is
+            // the font's (BASE ideo and idtp in horizontal lines, else centred between ascent and descent), or centred on the
+            // central baseline in vertical lines.
+            float baseSize = based.Primary is Font bs ? bs.Size : 0, rubySize = ruby.Primary is Font rs ? rs.Size : 0;
+            (float over, float under) = central || based.Primary is not Font bem ? (baseSize / 2, baseSize / 2) : IdeographicEmBox.Edges(bem);
+            (float rubyOver, float rubyUnder) = central || ruby.Primary is not Font rem ? (rubySize / 2, rubySize / 2) : IdeographicEmBox.Edges(rem);
             float anchor, top = float.PositiveInfinity, bottom = float.NegativeInfinity;
             if (column)
             {
@@ -288,13 +293,13 @@ internal sealed class RubyTable
             }
             else if (position == RubyPosition.Over)
             {
-                top = shift - over - offset - thickness;
-                anchor = central ? top + (thickness / 2) : top + ra;
+                anchor = shift - over - offset - rubyUnder;
+                top = central ? anchor - (thickness / 2) : anchor - ra;
             }
             else
             {
-                bottom = shift + under + offset + thickness;
-                anchor = central ? bottom - (thickness / 2) : bottom - rd;
+                anchor = shift + under + offset + rubyOver;
+                bottom = central ? anchor + (thickness / 2) : anchor + rd;
             }
 
             entries[i] = new Entry

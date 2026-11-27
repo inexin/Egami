@@ -31,6 +31,12 @@
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
   </ItemGroup>
 
+  <!-- The 128-bit SIMD helper the x86 and Arm64 kernels share (roadmap 2.4.13). Packages that see Egami's internals use this
+       copy rather than linking their own. -->
+  <ItemGroup>
+    <Compile Include="..\Shared\Simd\*.cs" Link="Shared\Simd\%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <!-- ColorProfile.Fogra39: the CTAN colorprofiles copy, unchanged (see THIRD-PARTY-NOTICES.md). -->
   <ItemGroup>
     <EmbeddedResource Include="Colors/Profiles/FOGRA39L_coated.icc" LogicalName="Egami.Colors.FOGRA39L_coated.icc" />
