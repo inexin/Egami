@@ -132,6 +132,17 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
                 sum.CopyTo(v[start..]);
             }
         }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            Vector128<float> two = Vector128.Create(2f);
+            for (; start <= w - Vector128<float>.Count; start += Vector128<float>.Count)
+            {
+                Vector128<float> sum = two * Vector128.Create(center[start..]);
+                sum = hasUp ? sum + Vector128.Create(up[start..]) : sum;
+                sum = hasDown ? sum + Vector128.Create(down[start..]) : sum;
+                sum.CopyTo(v[start..]);
+            }
+        }
 
         for (int x = start; x < w; x++)
         {
@@ -159,9 +170,19 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
             float inner = -scale / weights, edge = -2 * scale / weights;
             nx[0] = edge * (v[1] - v[0]);
             int x = 1;
-            for (Vector256<float> factor = Vector256.Create(inner); x + 8 < w; x += 8)
+            if (Vector256.IsHardwareAccelerated || !Vector128.IsHardwareAccelerated)
             {
-                (factor * (Vector256.Create(v[(x + 1)..]) - Vector256.Create(v[(x - 1)..]))).CopyTo(nx[x..]);
+                for (Vector256<float> factor = Vector256.Create(inner); x + 8 < w; x += 8)
+                {
+                    (factor * (Vector256.Create(v[(x + 1)..]) - Vector256.Create(v[(x - 1)..]))).CopyTo(nx[x..]);
+                }
+            }
+            else
+            {
+                for (Vector128<float> factor = Vector128.Create(inner); x + 4 < w; x += 4)
+                {
+                    (factor * (Vector128.Create(v[(x + 1)..]) - Vector128.Create(v[(x - 1)..]))).CopyTo(nx[x..]);
+                }
             }
 
             for (; x < w - 1; x++)
@@ -190,6 +211,13 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
                 (Vector256.Create(lower[start..]) - Vector256.Create(upper[start..])).CopyTo(d[start..]);
             }
         }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            for (; start <= w - Vector128<float>.Count; start += Vector128<float>.Count)
+            {
+                (Vector128.Create(lower[start..]) - Vector128.Create(upper[start..])).CopyTo(d[start..]);
+            }
+        }
 
         for (int x = start; x < w; x++)
         {
@@ -205,9 +233,19 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
         float middle = -2 * scale / (rows * 4), side = -2 * scale / (rows * 3);
         ny[0] = side * ((2 * d[0]) + d[1]);
         int i = 1;
-        for (Vector256<float> factor = Vector256.Create(middle), two = Vector256.Create(2f); i + 8 < w; i += 8)
+        if (Vector256.IsHardwareAccelerated || !Vector128.IsHardwareAccelerated)
         {
-            (factor * (Vector256.Create(d[(i - 1)..]) + (two * Vector256.Create(d[i..])) + Vector256.Create(d[(i + 1)..]))).CopyTo(ny[i..]);
+            for (Vector256<float> factor = Vector256.Create(middle), two = Vector256.Create(2f); i + 8 < w; i += 8)
+            {
+                (factor * (Vector256.Create(d[(i - 1)..]) + (two * Vector256.Create(d[i..])) + Vector256.Create(d[(i + 1)..]))).CopyTo(ny[i..]);
+            }
+        }
+        else
+        {
+            for (Vector128<float> factor = Vector128.Create(middle), two = Vector128.Create(2f); i + 4 < w; i += 4)
+            {
+                (factor * (Vector128.Create(d[(i - 1)..]) + (two * Vector128.Create(d[i..])) + Vector128.Create(d[(i + 1)..]))).CopyTo(ny[i..]);
+            }
         }
 
         for (int x = i; x < w - 1; x++)
@@ -261,6 +299,16 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
                             for (; x <= width - Vector256<uint>.Count; x += Vector256<uint>.Count)
                             {
                                 (Vector256.ConvertToSingle(((Vector256.Create(pixels[x..]) >>> (at * 8)) & low).AsInt32()) * unit).CopyTo(target[x..]);
+                            }
+                        }
+                        else if (stride == 4 && Vector128.IsHardwareAccelerated)
+                        {
+                            ReadOnlySpan<uint> pixels = MemoryMarshal.Cast<byte, uint>(bytes);
+                            Vector128<uint> low = Vector128.Create(0xFFu);
+                            Vector128<float> unit = Vector128.Create(1f / 255);
+                            for (; x <= width - Vector128<uint>.Count; x += Vector128<uint>.Count)
+                            {
+                                (Vector128.ConvertToSingle(((Vector128.Create(pixels[x..]) >>> (at * 8)) & low).AsInt32()) * unit).CopyTo(target[x..]);
                             }
                         }
 
@@ -362,6 +410,12 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
     /// </summary>
     private unsafe void Shade(int y, ReadOnlySpan<float> heights, ReadOnlySpan<float> nxRow, ReadOnlySpan<float> nyRow, Span<float> map, Span<byte> bytes, bool bgr, float* spotPower, float* shinePower)
     {
+        if (!Vector256.IsHardwareAccelerated && Vector128.IsHardwareAccelerated)
+        {
+            Shade4(y, heights, nxRow, nyRow, map, bytes, bgr, spotPower, shinePower);
+            return;
+        }
+
         int width = map.Length / 4;
         Vector256<float> one = Vector256<float>.One, zero = Vector256<float>.Zero;
         Vector256<float> iota = Vector256.Create(0.5f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f, 6.5f, 7.5f);
@@ -452,7 +506,7 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
     }
 
     /// <summary>
-    /// Returns x^<paramref name="e"/> at 4,096 even steps of x from 0 to 1, and a guard entry, for <see cref="Power"/>: 0^e is 0
+    /// Returns x^<paramref name="e"/> at 4,096 even steps of x from 0 to 1, and a guard entry, for <see cref="Power(Vector256{float}, float*)"/>: 0^e is 0
     /// (1 when e is 0), as the light's cone and shine have it.
     /// </summary>
     internal static float[] PowerTable(float e)
@@ -565,6 +619,179 @@ internal sealed class LightingOperation : IRasterOperation, INeedsNewPlane, Scop
         {
             Vector256<float> v = Vector256.ConditionalSelect(positive, Vector256.Min(Vector256.Max(c * inverse, Vector256<float>.Zero), Vector256<float>.One), Vector256<float>.Zero);
             return Vector256.ConvertToInt32((v * Vector256.Create(255f)) + Vector256.Create(0.5f));
+        }
+    }
+
+    /// <summary><see cref="Shade(int, ReadOnlySpan{float}, ReadOnlySpan{float}, ReadOnlySpan{float}, Span{float}, Span{byte}, bool, float*, float*)"/> four pixels at a time, for Arm64 and x86 without AVX2: the same arithmetic in each lane.</summary>
+    private unsafe void Shade4(int y, ReadOnlySpan<float> heights, ReadOnlySpan<float> nxRow, ReadOnlySpan<float> nyRow, Span<float> map, Span<byte> bytes, bool bgr, float* spotPower, float* shinePower)
+    {
+        int width = map.Length / 4;
+        Vector128<float> one = Vector128<float>.One, zero = Vector128<float>.Zero;
+        Vector128<float> iota = Vector128.Create(0.5f, 1.5f, 2.5f, 3.5f);
+        Vector128<float> py = Vector128.Create(y + 0.5f);
+        Vector128<float> scale = Vector128.Create(_scale);
+        Vector128<float> colorR = Vector128.Create(_color.X), colorG = Vector128.Create(_color.Y), colorB = Vector128.Create(_color.Z);
+        Span<float> lanes = stackalloc float[16];
+        for (int x0 = 0; x0 < width; x0 += 4)
+        {
+            Vector128<float> nX = Vector128.Create(nxRow.Slice(x0, 4)), nY = Vector128.Create(nyRow.Slice(x0, 4));
+            Vector128<float> inverse = InverseRoot((nX * nX) + (nY * nY) + one);
+            nX *= inverse;
+            nY *= inverse;
+            Vector128<float> nZ = inverse;
+
+            Vector128<float> lx, ly, lz;
+            if (_kind == LightKind.Distant)
+            {
+                lx = Vector128.Create(_direction.X);
+                ly = Vector128.Create(_direction.Y);
+                lz = Vector128.Create(_direction.Z);
+            }
+            else
+            {
+                Vector128<float> z = scale * Vector128.Create(heights.Slice(x0, 4));
+                lx = Vector128.Create(_position.X) - (iota + Vector128.Create((float)x0));
+                ly = Vector128.Create(_position.Y) - py;
+                lz = Vector128.Create(_position.Z) - z;
+                Vector128<float> squared = (lx * lx) + (ly * ly) + (lz * lz);
+                Vector128<float> unit = Vector128.ConditionalSelect(Vector128.GreaterThan(squared, zero), InverseRoot(squared), zero);
+                lx *= unit;
+                ly *= unit;
+                lz *= unit;
+            }
+
+            Vector128<float> r = colorR, g = colorG, b = colorB;
+            if (_kind == LightKind.Spot)
+            {
+                Vector128<float> cosAngle = -((lx * _direction.X) + (ly * _direction.Y) + (lz * _direction.Z));
+                Vector128<float> cone = Vector128.Create(_cosCone);
+                Vector128<float> spot = Power(cosAngle, spotPower);
+                Vector128<float> soft = (cosAngle - cone) * (1 / ConeSoftness);
+                spot = Vector128.ConditionalSelect(Vector128.LessThan(cosAngle, cone + Vector128.Create(ConeSoftness)), spot * soft, spot);
+                spot = Vector128.ConditionalSelect(Vector128.LessThan(cosAngle, cone), zero, spot);
+                r *= spot;
+                g *= spot;
+                b *= spot;
+            }
+
+            Vector128<float> coefficient;
+            if (_specular)
+            {
+                Vector128<float> hz = lz + one;
+                Vector128<float> squared = (lx * lx) + (ly * ly) + (hz * hz);
+                Vector128<float> unit = Vector128.ConditionalSelect(Vector128.GreaterThan(squared, zero), InverseRoot(squared), zero);
+                Vector128<float> dot = ((nX * lx) + (nY * ly) + (nZ * hz)) * unit;
+                coefficient = Power(Vector128.Max(dot, zero), shinePower);
+            }
+            else
+            {
+                coefficient = (nX * lx) + (nY * ly) + (nZ * lz);
+            }
+
+            r = Vector128.Min(Vector128.Max(coefficient * r, zero), one);
+            g = Vector128.Min(Vector128.Max(coefficient * g, zero), one);
+            b = Vector128.Min(Vector128.Max(coefficient * b, zero), one);
+            Vector128<float> a = _specular ? Vector128.Max(Vector128.Max(r, g), b) : one;
+            if (!bytes.IsEmpty)
+            {
+                StoreBytes(bytes, x0, Math.Min(4, width - x0), bgr ? b : r, g, bgr ? r : b, a, !_specular);
+                continue;
+            }
+
+            r.CopyTo(lanes);
+            g.CopyTo(lanes[4..]);
+            b.CopyTo(lanes[8..]);
+            a.CopyTo(lanes[12..]);
+            int count = Math.Min(4, width - x0);
+            Span<float> target = map.Slice(x0 * 4, count * 4);
+            for (int i = 0; i < count; i++)
+            {
+                target[i * 4] = lanes[i];
+                target[(i * 4) + 1] = lanes[4 + i];
+                target[(i * 4) + 2] = lanes[8 + i];
+                target[(i * 4) + 3] = lanes[12 + i];
+            }
+        }
+    }
+
+    /// <summary>x^e for each lane through a <see cref="PowerTable"/>, x clamped to 0..1, interpolated linearly between steps.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static unsafe Vector128<float> Power(Vector128<float> x, float* table)
+    {
+        Vector128<float> at = Vector128.Min(Vector128.Max(x, Vector128<float>.Zero), Vector128<float>.One) * PowerSteps;
+        Vector128<int> i = Vector128.ConvertToInt32(at);
+        Vector128<float> f = at - Vector128.ConvertToSingle(i), low, high;
+        if (Avx2.IsSupported)
+        {
+            low = Avx2.GatherVector128(table, i, 4);
+            high = Avx2.GatherVector128(table + 1, i, 4);
+        }
+        else
+        {
+            low = Vector128.Create(table[i[0]], table[i[1]], table[i[2]], table[i[3]]);
+            high = Vector128.Create(table[i[0] + 1], table[i[1] + 1], table[i[2] + 1], table[i[3] + 1]);
+        }
+
+        return low + (f * (high - low));
+    }
+
+    /// <summary>1 / √x for each lane: the hardware's estimate refined by one Newton step where there is one, else exactly.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<float> InverseRoot(Vector128<float> x)
+    {
+        if (!Avx.IsSupported)
+        {
+            return Vector128<float>.One / Vector128.Sqrt(x);
+        }
+
+        // The 128-bit form of the same estimate, so each lane matches the 256-bit kernel's.
+        Vector128<float> r = Sse.ReciprocalSqrt(x);
+        return r * (Vector128.Create(1.5f) - (Vector128.Create(0.5f) * x * r * r));
+    }
+
+    /// <summary>
+    /// Stores <paramref name="count"/> lit pixels from column <paramref name="x0"/> as four-byte pixels, the channels in the order
+    /// given: premultiplied channels divided by alpha (a diffuse map's alpha is 1), clamped and rounded as the float store does.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void StoreBytes(Span<byte> bytes, int x0, int count, Vector128<float> c0, Vector128<float> c1, Vector128<float> c2, Vector128<float> a, bool opaque)
+    {
+        Vector128<float> zero = Vector128<float>.Zero, one = Vector128<float>.One, scale = Vector128.Create(255f), half = Vector128.Create(0.5f);
+        Vector128<int> pixel;
+        if (opaque)
+        {
+            // A diffuse map is opaque: its colors are stored as they are, clamped.
+            pixel = Vector128.Create(255 << 24);
+            pixel |= Vector128.ConvertToInt32((Vector128.Min(Vector128.Max(c0, zero), one) * scale) + half);
+            pixel |= Vector128.ConvertToInt32((Vector128.Min(Vector128.Max(c1, zero), one) * scale) + half) << 8;
+            pixel |= Vector128.ConvertToInt32((Vector128.Min(Vector128.Max(c2, zero), one) * scale) + half) << 16;
+        }
+        else
+        {
+            // One division for the three colors.
+            Vector128<float> positive = Vector128.GreaterThan(a, zero), inverse = one / a;
+            pixel = Vector128.ConvertToInt32((Vector128.Min(Vector128.Max(a, zero), one) * scale) + half) << 24;
+            pixel |= Channel(c0, inverse, positive);
+            pixel |= Channel(c1, inverse, positive) << 8;
+            pixel |= Channel(c2, inverse, positive) << 16;
+        }
+
+        Span<uint> to = MemoryMarshal.Cast<byte, uint>(bytes).Slice(x0, count);
+        if (count == 4)
+        {
+            pixel.AsUInt32().CopyTo(to);
+            return;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            to[i] = pixel.AsUInt32()[i];
+        }
+
+        static Vector128<int> Channel(Vector128<float> c, Vector128<float> inverse, Vector128<float> positive)
+        {
+            Vector128<float> v = Vector128.ConditionalSelect(positive, Vector128.Min(Vector128.Max(c * inverse, Vector128<float>.Zero), Vector128<float>.One), Vector128<float>.Zero);
+            return Vector128.ConvertToInt32((v * Vector128.Create(255f)) + Vector128.Create(0.5f));
         }
     }
 }

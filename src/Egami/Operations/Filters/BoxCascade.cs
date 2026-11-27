@@ -358,6 +358,13 @@ internal sealed class BoxCascade
                     (Vector256.Create(sum[i..]) + Vector256.Create(row[i..])).CopyTo(sum[i..]);
                 }
             }
+            else if (Vector128.IsHardwareAccelerated)
+            {
+                for (; i <= sum.Length - Vector128<float>.Count; i += Vector128<float>.Count)
+                {
+                    (Vector128.Create(sum[i..]) + Vector128.Create(row[i..])).CopyTo(sum[i..]);
+                }
+            }
 
             for (; i < sum.Length; i++)
             {
@@ -398,6 +405,17 @@ internal sealed class BoxCascade
                         (next * vn).StoreUnsafe(ref t, at);
                     }
                 }
+                else if (Vector128.IsHardwareAccelerated)
+                {
+                    Vector128<float> vn = Vector128.Create(norm);
+                    for (; i <= length - Vector128<float>.Count; i += Vector128<float>.Count)
+                    {
+                        nuint at = (nuint)i;
+                        Vector128<float> next = Vector128.LoadUnsafe(ref s, at) + (Vector128.LoadUnsafe(ref a, at) - Vector128.LoadUnsafe(ref d, at));
+                        next.StoreUnsafe(ref s, at);
+                        (next * vn).StoreUnsafe(ref t, at);
+                    }
+                }
 
                 for (; i < length; i++)
                 {
@@ -418,6 +436,17 @@ internal sealed class BoxCascade
                     Vector256<float> next = Vector256.LoadUnsafe(ref s, at) + (Vector256.LoadUnsafe(ref a, at) - Vector256.LoadUnsafe(ref d, at));
                     next.StoreUnsafe(ref s, at);
                     ((next + ((Vector256.LoadUnsafe(ref u, at) + Vector256.LoadUnsafe(ref b, at)) * va)) * vn).StoreUnsafe(ref t, at);
+                }
+            }
+            else if (Vector128.IsHardwareAccelerated)
+            {
+                Vector128<float> va = Vector128.Create(alpha), vn = Vector128.Create(norm);
+                for (; i <= length - Vector128<float>.Count; i += Vector128<float>.Count)
+                {
+                    nuint at = (nuint)i;
+                    Vector128<float> next = Vector128.LoadUnsafe(ref s, at) + (Vector128.LoadUnsafe(ref a, at) - Vector128.LoadUnsafe(ref d, at));
+                    next.StoreUnsafe(ref s, at);
+                    ((next + ((Vector128.LoadUnsafe(ref u, at) + Vector128.LoadUnsafe(ref b, at)) * va)) * vn).StoreUnsafe(ref t, at);
                 }
             }
 

@@ -107,6 +107,14 @@ internal static class ShadowBytes
                     ((va * Vector256.Create(lower[i..])) + (vb * Vector256.Create(upper[i..]))).CopyTo(target[i..]);
                 }
             }
+            else if (Vector128.IsHardwareAccelerated)
+            {
+                Vector128<float> va = Vector128.Create(a), vb = Vector128.Create(b);
+                for (; i <= target.Length - Vector128<float>.Count; i += Vector128<float>.Count)
+                {
+                    ((va * Vector128.Create(lower[i..])) + (vb * Vector128.Create(upper[i..]))).CopyTo(target[i..]);
+                }
+            }
 
             for (; i < target.Length; i++)
             {
@@ -124,6 +132,14 @@ internal static class ShadowBytes
             for (; i <= target.Length - Vector256<float>.Count; i += Vector256<float>.Count)
             {
                 ((vw * Vector256.Create(one[i..])) + Vector256<float>.Zero).CopyTo(target[i..]);
+            }
+        }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            Vector128<float> vw = Vector128.Create(w);
+            for (; i <= target.Length - Vector128<float>.Count; i += Vector128<float>.Count)
+            {
+                ((vw * Vector128.Create(one[i..])) + Vector128<float>.Zero).CopyTo(target[i..]);
             }
         }
 
@@ -154,6 +170,21 @@ internal static class ShadowBytes
                 Vector256<float> before = Vector256.Create(previous, a[0], a[1], a[2], a[3], a[4], a[5], a[6]);
                 ((vk * a) + (vf * before)).CopyTo(moved[i..]);
                 previous = a[7];
+            }
+        }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            Vector128<uint> low = Vector128.Create(0xFFu);
+            Vector128<float> unit = Vector128.Create(1f / 255), vk = Vector128.Create(keep), vf = Vector128.Create(fx);
+            float previous = 0;
+            for (; i <= width - Vector128<uint>.Count; i += Vector128<uint>.Count)
+            {
+                Vector128<float> a = Vector128.ConvertToSingle(((Vector128.Create(pixels[i..]) >>> at) & low).AsInt32()) * unit;
+
+                // Each value's left neighbour: the vector moved up a lane, the last one of the vector before coming in.
+                Vector128<float> before = Vector128.Create(previous, a[0], a[1], a[2]);
+                ((vk * a) + (vf * before)).CopyTo(moved[i..]);
+                previous = a[3];
             }
         }
 
@@ -229,6 +260,19 @@ internal static class ShadowBytes
                 ((color & has) | bytes).CopyTo(row[i..]);
             }
         }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            Vector128<float> vca = Vector128.Create(ca), zero = Vector128<float>.Zero, one = Vector128<float>.One;
+            Vector128<float> scale = Vector128.Create(255f), half = Vector128.Create(0.5f);
+            Vector128<uint> color = Vector128.Create(rgb);
+            for (; i <= row.Length - Vector128<uint>.Count; i += Vector128<uint>.Count)
+            {
+                Vector128<float> a = Vector128.Min(Vector128.Max(Vector128.Create(shadow[i..]), zero), one) * vca;
+                Vector128<uint> bytes = Vector128.ConvertToInt32((Vector128.Min(a, one) * scale) + half).AsUInt32() << shift;
+                Vector128<uint> has = Vector128.GreaterThan(a, zero).AsUInt32();
+                ((color & has) | bytes).CopyTo(row[i..]);
+            }
+        }
 
         for (; i < row.Length; i++)
         {
@@ -265,6 +309,27 @@ internal static class ShadowBytes
                 }
             }
         }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            Vector128<uint> m = Vector128.Create(mask);
+            for (; i <= row.Length - Vector128<uint>.Count; i += Vector128<uint>.Count)
+            {
+                Vector128<uint> pixels = Vector128.Create(image[i..]);
+                Vector128<uint> alpha = pixels & m;
+                if (alpha == m)
+                {
+                    pixels.CopyTo(row[i..]);
+                }
+                else if (alpha == Vector128<uint>.Zero)
+                {
+                    Shadow(shadow.Slice(i, Vector128<uint>.Count), row.Slice(i, Vector128<uint>.Count), rgb, ca, alphaAt);
+                }
+                else
+                {
+                    Blend(pixels, Vector128.Create(shadow[i..]), straight, ca, shift).CopyTo(row[i..]);
+                }
+            }
+        }
 
         Blend(image[i..], shadow[i..], row[i..], straight, ca, alphaAt);
     }
@@ -297,6 +362,39 @@ internal static class ShadowBytes
             }
 
             result |= Vector256.ConvertToInt32((Vector256.Min(Vector256.Max(value, zero), one) * scale) + half).AsUInt32() << bits;
+        }
+
+        return result;
+    }
+
+    /// <summary><see cref="Blend(ReadOnlySpan{uint}, ReadOnlySpan{float}, Span{uint}, float[], float, int)"/> on four pixels, with the same arithmetic.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<uint> Blend(Vector128<uint> pixels, Vector128<float> shadow, float[] straight, float ca, int shift)
+    {
+        Vector128<uint> low = Vector128.Create(0xFFu);
+        Vector128<float> unit = Vector128.Create(1f / 255), zero = Vector128<float>.Zero, one = Vector128<float>.One;
+        Vector128<float> scale = Vector128.Create(255f), half = Vector128.Create(0.5f), vca = Vector128.Create(ca);
+        Vector128<float> sa = Vector128.ConvertToSingle(((pixels >>> shift) & low).AsInt32()) * unit;
+        Vector128<float> s = Vector128.Min(Vector128.Max(shadow, zero), one), rest = one - sa;
+        Vector128<float> a = sa + ((s * vca) * rest);
+        Vector128<float> positive = Vector128.GreaterThan(a, zero);
+        Vector128<uint> result = Vector128<uint>.Zero;
+        for (int k = 0; k < 4; k++)
+        {
+            int bits = k * 8;
+            Vector128<float> value;
+            if (bits == shift)
+            {
+                value = a;
+            }
+            else
+            {
+                Vector128<float> c = Vector128.ConvertToSingle(((pixels >>> bits) & low).AsInt32());
+                Vector128<float> premultiplied = ((c * unit) * sa) + (((Vector128.Create(straight[k]) * vca) * s) * rest);
+                value = Vector128.ConditionalSelect(positive, premultiplied / a, zero);
+            }
+
+            result |= Vector128.ConvertToInt32((Vector128.Min(Vector128.Max(value, zero), one) * scale) + half).AsUInt32() << bits;
         }
 
         return result;

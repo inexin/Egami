@@ -121,7 +121,8 @@ internal sealed class MedianOperation : IRasterOperation, INeedsNewPlane, Scopes
             byte[] scalars = ArrayPool<byte>.Shared.Rent(side * side);
             try
             {
-                Span<Vector256<byte>> values = stackalloc Vector256<byte>[side * side];
+                Span<Vector256<byte>> values = Vector256.IsHardwareAccelerated ? stackalloc Vector256<byte>[side * side] : default;
+                Span<Vector128<byte>> values128 = !Vector256.IsHardwareAccelerated && Vector128.IsHardwareAccelerated ? stackalloc Vector128<byte>[side * side] : default;
                 for (int v = start - r; v < start + r; v++)
                 {
                     LoadBytes(source, v, r, ring.AsSpan(Slot(v, side) * padded, padded));
@@ -151,6 +152,29 @@ internal sealed class MedianOperation : IRasterOperation, INeedsNewPlane, Scopes
                             network.Run(values);
                             values[side * side / 2].StoreUnsafe(ref MemoryMarshal.GetReference(output), (nuint)o);
                             if (o == rowBytes - Vector256<byte>.Count)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    else if (!values128.IsEmpty && rowBytes >= Vector128<byte>.Count)
+                    {
+                        for (; ; o += Vector128<byte>.Count)
+                        {
+                            o = Math.Min(o, rowBytes - Vector128<byte>.Count);
+                            int k = 0;
+                            for (int dy = -r; dy <= r; dy++)
+                            {
+                                ref byte row = ref ring[Slot(y + dy, side) * padded];
+                                for (int dx = 0; dx < side; dx++)
+                                {
+                                    values128[k++] = Vector128.LoadUnsafe(ref row, (nuint)(o + (dx * bpp)));
+                                }
+                            }
+
+                            network.Run(values128);
+                            values128[side * side / 2].StoreUnsafe(ref MemoryMarshal.GetReference(output), (nuint)o);
+                            if (o == rowBytes - Vector128<byte>.Count)
                             {
                                 break;
                             }
@@ -362,6 +386,13 @@ internal sealed class MedianOperation : IRasterOperation, INeedsNewPlane, Scopes
                     (Vector256.Create(window[i..]) + Vector256.Create(column[i..])).CopyTo(window[i..]);
                 }
             }
+            else if (Vector128.IsHardwareAccelerated)
+            {
+                for (; i + Vector128<ushort>.Count <= window.Length; i += Vector128<ushort>.Count)
+                {
+                    (Vector128.Create(window[i..]) + Vector128.Create(column[i..])).CopyTo(window[i..]);
+                }
+            }
 
             for (; i < window.Length; i++)
             {
@@ -380,6 +411,13 @@ internal sealed class MedianOperation : IRasterOperation, INeedsNewPlane, Scopes
                 for (; i < window.Length; i += Vector256<ushort>.Count)
                 {
                     (Vector256.LoadUnsafe(ref w, (nuint)i) + (Vector256.LoadUnsafe(ref a, (nuint)i) - Vector256.LoadUnsafe(ref d, (nuint)i))).StoreUnsafe(ref w, (nuint)i);
+                }
+            }
+            else if (Vector128.IsHardwareAccelerated && added.Length >= window.Length && removed.Length >= window.Length)
+            {
+                for (; i + Vector128<ushort>.Count <= window.Length; i += Vector128<ushort>.Count)
+                {
+                    (Vector128.LoadUnsafe(ref w, (nuint)i) + (Vector128.LoadUnsafe(ref a, (nuint)i) - Vector128.LoadUnsafe(ref d, (nuint)i))).StoreUnsafe(ref w, (nuint)i);
                 }
             }
 

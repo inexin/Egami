@@ -5,6 +5,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
 using Egami.Pixels;
+using Egami.Simd;
 
 namespace Egami.Operations.Resampling;
 
@@ -55,7 +56,49 @@ internal static class ResizeKernels
             return;
         }
 
+        if (Vector128.IsHardwareAccelerated)
+        {
+            Horizontal128(source, first, pairCount, pairs, pairStride, xLow, destination);
+            return;
+        }
+
         HorizontalScalar(source, first, pairCount, pairs, pairStride, xLow, destination);
+    }
+
+    /// <summary><see cref="Horizontal"/> in 128-bit vectors (Arm64, and x86 without AVX2): a pixel a vector, even and odd taps summed apart.</summary>
+    internal static void Horizontal128(ReadOnlySpan<float> source, ReadOnlySpan<int> first, ReadOnlySpan<int> pairCount, ReadOnlySpan<float> pairs, int pairStride, int xLow, Span<float> destination)
+    {
+        ref float src = ref MemoryMarshal.GetReference(source);
+        ref float w = ref MemoryMarshal.GetReference(pairs);
+        ref float dst = ref MemoryMarshal.GetReference(destination);
+        int width = destination.Length / 4;
+        if (pairs.Length < width * pairStride * 8 || first.Length < width || pairCount.Length < width)
+        {
+            throw new ArgumentException("The weight tables are too short.");
+        }
+
+        for (int x = 0; x < width; x++)
+        {
+            int start = (first[x] - xLow) * 4;
+            int n = pairCount[x];
+            if ((uint)(start + (n * 8)) > (uint)source.Length)
+            {
+                throw new ArgumentException("The source row is too short.");
+            }
+
+            nuint wi = (nuint)(x * pairStride * 8);
+            Vector128<float> even = Vector128<float>.Zero;
+            Vector128<float> odd = Vector128<float>.Zero;
+            for (int p = 0; p < n; p++)
+            {
+                nuint at = (nuint)(start + (p * 8));
+                nuint wp = wi + (nuint)(p * 8);
+                even += Vector128.LoadUnsafe(ref src, at) * Vector128.LoadUnsafe(ref w, wp);
+                odd += Vector128.LoadUnsafe(ref src, at + 4) * Vector128.LoadUnsafe(ref w, wp + 4);
+            }
+
+            (even + odd).StoreUnsafe(ref dst, (nuint)(x * 4));
+        }
     }
 
     /// <summary>The fixed-point weight scale: weights are 1.14 integers, and each output position's weights sum to exactly this.</summary>
@@ -105,7 +148,50 @@ internal static class ResizeKernels
             return;
         }
 
+        if (Simd128.IsSupported)
+        {
+            HorizontalFixed8For128(source, first, groupCount, weights, groupStride, xLow, destination);
+            return;
+        }
+
         HorizontalFixed8Scalar(source, first, groupCount, weights, groupStride, xLow, destination);
+    }
+
+    /// <summary><see cref="HorizontalFixed8"/> in 128-bit vectors (Arm64, and x86 without AVX2): the AVX2 kernel's 16-lane steps as two of eight.</summary>
+    internal static void HorizontalFixed8For128(ReadOnlySpan<byte> source, ReadOnlySpan<int> first, ReadOnlySpan<int> groupCount, ReadOnlySpan<short> weights, int groupStride, int xLow, Span<float> destination)
+    {
+        int width = destination.Length / 4;
+        if (weights.Length < width * groupStride * 16 || first.Length < width || groupCount.Length < width)
+        {
+            throw new ArgumentException("The weight tables are too short.");
+        }
+
+        ref byte src = ref MemoryMarshal.GetReference(source);
+        ref short w = ref MemoryMarshal.GetReference(weights);
+        ref float dst = ref MemoryMarshal.GetReference(destination);
+        Vector128<byte> interleave = Vector128.Create((byte)0, 4, 1, 5, 2, 6, 3, 7, 8, 12, 9, 13, 10, 14, 11, 15);
+        Vector128<float> scale = Vector128.Create(1f / (255f * FixedOne));
+        for (int x = 0; x < width; x++)
+        {
+            int start = (first[x] - xLow) * 4;
+            int n = groupCount[x];
+            if ((uint)(start + (n * 16)) > (uint)source.Length)
+            {
+                throw new ArgumentException("The source row is too short.");
+            }
+
+            nuint wi = (nuint)(x * groupStride * 16);
+            Vector128<int> sum = Vector128<int>.Zero;
+            for (int g = 0; g < n; g++)
+            {
+                Vector128<byte> pixels = Simd128.Shuffle(Vector128.LoadUnsafe(ref src, (nuint)(start + (g * 16))), interleave);
+                (Vector128<ushort> low, Vector128<ushort> high) = Vector128.Widen(pixels);
+                sum += Simd128.MultiplyAddAdjacent(low.AsInt16(), Vector128.LoadUnsafe(ref w, wi + (nuint)(g * 16)))
+                    + Simd128.MultiplyAddAdjacent(high.AsInt16(), Vector128.LoadUnsafe(ref w, wi + (nuint)(g * 16) + 8));
+            }
+
+            (Vector128.ConvertToSingle(sum) * scale).StoreUnsafe(ref dst, (nuint)(x * 4));
+        }
     }
 
     /// <summary>The reference for <see cref="HorizontalFixed8"/>. Integer sums are exact, so any order gives the same result.</summary>
@@ -194,6 +280,27 @@ internal static class ResizeKernels
                 sum.StoreUnsafe(ref d, (nuint)i);
             }
         }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            ref float r = ref MemoryMarshal.GetReference(ring);
+            ref float d = ref MemoryMarshal.GetReference(destination);
+            Span<nuint> rows = stackalloc nuint[weights.Length];
+            for (int k = 0; k < rows.Length; k++)
+            {
+                rows[k] = (nuint)((first + k) % ringRows * rowLength);
+            }
+
+            for (; i <= rowLength - Vector128<float>.Count; i += Vector128<float>.Count)
+            {
+                Vector128<float> sum = Vector128.LoadUnsafe(ref r, rows[0] + (nuint)i) * weights[0];
+                for (int k = 1; k < rows.Length; k++)
+                {
+                    sum += Vector128.LoadUnsafe(ref r, rows[k] + (nuint)i) * weights[k];
+                }
+
+                sum.StoreUnsafe(ref d, (nuint)i);
+            }
+        }
 
         VerticalScalar(ring, rowLength, ringRows, first, weights, destination, i);
     }
@@ -247,6 +354,10 @@ internal static class ResizeKernels
                 fb.StoreUnsafe(ref dst, (nuint)(i + 8));
             }
         }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            i = Load128(source, destination, opaque);
+        }
 
         Load8Scalar(source[i..], destination[i..], opaque);
         return opaque;
@@ -274,8 +385,50 @@ internal static class ResizeKernels
                 (Vector256.ConvertToSingle(b.AsInt32()) * scale).StoreUnsafe(ref dst, (nuint)(i + 8));
             }
         }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            i = Load128(source, destination, opaque: true);
+        }
 
         Load8Scalar(source[i..], destination[i..], opaque: true);
+    }
+
+    /// <summary>The 128-bit loop of <see cref="Load8"/> and <see cref="LoadRaw8"/>: 16 bytes at a time; returns where it stopped.</summary>
+    private static int Load128(ReadOnlySpan<byte> source, Span<float> destination, bool opaque)
+    {
+        ref byte src = ref MemoryMarshal.GetReference(source);
+        ref float dst = ref MemoryMarshal.GetReference(destination);
+        if (destination.Length < source.Length)
+        {
+            throw new ArgumentException("The destination is too short.");
+        }
+
+        Vector128<float> scale = Vector128.Create(1f / 255f);
+        int i = 0;
+        for (; i <= source.Length - 16; i += 16)
+        {
+            (Vector128<ushort> lo, Vector128<ushort> hi) = Vector128.Widen(Vector128.LoadUnsafe(ref src, (nuint)i));
+            (Vector128<uint> a, Vector128<uint> b) = Vector128.Widen(lo);
+            (Vector128<uint> c, Vector128<uint> d) = Vector128.Widen(hi);
+            Vector128<float> fa = Vector128.ConvertToSingle(a.AsInt32()) * scale;
+            Vector128<float> fb = Vector128.ConvertToSingle(b.AsInt32()) * scale;
+            Vector128<float> fc = Vector128.ConvertToSingle(c.AsInt32()) * scale;
+            Vector128<float> fd = Vector128.ConvertToSingle(d.AsInt32()) * scale;
+            if (!opaque)
+            {
+                fa = Premultiply(fa);
+                fb = Premultiply(fb);
+                fc = Premultiply(fc);
+                fd = Premultiply(fd);
+            }
+
+            fa.StoreUnsafe(ref dst, (nuint)i);
+            fb.StoreUnsafe(ref dst, (nuint)(i + 4));
+            fc.StoreUnsafe(ref dst, (nuint)(i + 8));
+            fd.StoreUnsafe(ref dst, (nuint)(i + 12));
+        }
+
+        return i;
     }
 
     /// <summary>
@@ -304,8 +457,38 @@ internal static class ResizeKernels
                 Vector256.Narrow(words, words).GetLower().StoreUnsafe(ref dst, (nuint)i);
             }
         }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            if (source.Length < destination.Length)
+            {
+                throw new ArgumentException("The source is too short.");
+            }
+
+            ref float src = ref MemoryMarshal.GetReference(source);
+            ref byte dst = ref MemoryMarshal.GetReference(destination);
+            for (; i <= destination.Length - 16; i += 16)
+            {
+                Vector128<int> a = Vector128.ConvertToInt32(Clamp128(Vector128.LoadUnsafe(ref src, (nuint)i)));
+                Vector128<int> b = Vector128.ConvertToInt32(Clamp128(Vector128.LoadUnsafe(ref src, (nuint)(i + 4))));
+                Vector128<int> c = Vector128.ConvertToInt32(Clamp128(Vector128.LoadUnsafe(ref src, (nuint)(i + 8))));
+                Vector128<int> d = Vector128.ConvertToInt32(Clamp128(Vector128.LoadUnsafe(ref src, (nuint)(i + 12))));
+                Vector128.Narrow(Vector128.Narrow(a.AsUInt32(), b.AsUInt32()), Vector128.Narrow(c.AsUInt32(), d.AsUInt32())).StoreUnsafe(ref dst, (nuint)i);
+            }
+        }
 
         StoreRaw8Scalar(source[i..], destination[i..]);
+
+        static Vector128<float> Clamp128(Vector128<float> v)
+        {
+            Vector128<float> raw = Alpha(v);
+            Vector128<float> clamped = Vector128.Min(Vector128.Max(v, Vector128<float>.Zero), Vector128.Max(raw, Vector128<float>.Zero));
+            if (Vector128.GreaterThanAny(raw, Vector128<float>.One))
+            {
+                clamped /= Vector128.Max(raw, Vector128<float>.One);
+            }
+
+            return Vector128.Floor((clamped * 255f) + Vector128.Create(0.5f));
+        }
 
         static Vector256<float> Clamp(Vector256<float> v, Vector256<int> alphaLanes)
         {
@@ -395,6 +578,14 @@ internal static class ResizeKernels
                 Premultiply(Vector256.LoadUnsafe(ref p, (nuint)j)).StoreUnsafe(ref p, (nuint)j);
             }
         }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            ref float p = ref MemoryMarshal.GetReference(pixels);
+            for (; j <= pixels.Length - 4; j += 4)
+            {
+                Premultiply(Vector128.LoadUnsafe(ref p, (nuint)j)).StoreUnsafe(ref p, (nuint)j);
+            }
+        }
 
         PremultiplyScalar(pixels, j);
         return false;
@@ -436,6 +627,24 @@ internal static class ResizeKernels
                 Vector256.Narrow(words, words).GetLower().StoreUnsafe(ref dst, (nuint)i);
             }
         }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            if (source.Length < destination.Length)
+            {
+                throw new ArgumentException("The source is too short.");
+            }
+
+            ref float src = ref MemoryMarshal.GetReference(source);
+            ref byte dst = ref MemoryMarshal.GetReference(destination);
+            for (; i <= destination.Length - 16; i += 16)
+            {
+                Vector128<int> a = Vector128.ConvertToInt32(Straighten(Vector128.LoadUnsafe(ref src, (nuint)i), opaque));
+                Vector128<int> b = Vector128.ConvertToInt32(Straighten(Vector128.LoadUnsafe(ref src, (nuint)(i + 4)), opaque));
+                Vector128<int> c = Vector128.ConvertToInt32(Straighten(Vector128.LoadUnsafe(ref src, (nuint)(i + 8)), opaque));
+                Vector128<int> d = Vector128.ConvertToInt32(Straighten(Vector128.LoadUnsafe(ref src, (nuint)(i + 12)), opaque));
+                Vector128.Narrow(Vector128.Narrow(a.AsUInt32(), b.AsUInt32()), Vector128.Narrow(c.AsUInt32(), d.AsUInt32())).StoreUnsafe(ref dst, (nuint)i);
+            }
+        }
 
         Store8Scalar(source[i..], destination[i..], opaque);
     }
@@ -466,6 +675,14 @@ internal static class ResizeKernels
             for (; i <= pixels.Length - 8; i += 8)
             {
                 Straight01(Vector256.LoadUnsafe(ref p, (nuint)i), opaque).StoreUnsafe(ref p, (nuint)i);
+            }
+        }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            ref float p = ref MemoryMarshal.GetReference(pixels);
+            for (; i <= pixels.Length - 4; i += 4)
+            {
+                Straight01(Vector128.LoadUnsafe(ref p, (nuint)i), opaque).StoreUnsafe(ref p, (nuint)i);
             }
         }
 
@@ -499,6 +716,17 @@ internal static class ResizeKernels
             for (; i <= pixels.Length - 8; i += 8)
             {
                 if ((Vector256.LoadUnsafe(ref MemoryMarshal.GetReference(pixels), (nuint)i) & mask) != mask)
+                {
+                    return false;
+                }
+            }
+        }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            Vector128<uint> mask = Vector128.Create(alpha);
+            for (; i <= pixels.Length - 4; i += 4)
+            {
+                if ((Vector128.LoadUnsafe(ref MemoryMarshal.GetReference(pixels), (nuint)i) & mask) != mask)
                 {
                     return false;
                 }
@@ -549,6 +777,37 @@ internal static class ResizeKernels
         Vector256<float> color = Vector256.ConditionalSelect(Vector256.GreaterThan(alpha, Vector256<float>.Zero), Clamp01(v / alpha), Vector256<float>.Zero);
         return Vector256.ConditionalSelect(AlphaLanes, Clamp01(alpha), color);
     }
+
+    /// <summary>Multiplies the color lanes of a pixel by its alpha.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<float> Premultiply(Vector128<float> v) => v * Vector128.ConditionalSelect(AlphaLanes128, Vector128<float>.One, Alpha(v));
+
+    /// <summary><see cref="Straighten(Vector256{float}, bool)"/> on one pixel.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<float> Straighten(Vector128<float> v, bool opaque) => (Straight01(v, opaque) * 255f) + Vector128.Create(0.5f);
+
+    /// <summary><see cref="Straight01(Vector256{float}, bool)"/> on one pixel.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<float> Straight01(Vector128<float> v, bool opaque)
+    {
+        if (opaque)
+        {
+            return Vector128.ConditionalSelect(AlphaLanes128, Vector128<float>.One, Clamp01(v));
+        }
+
+        Vector128<float> alpha = Alpha(v);
+        Vector128<float> color = Vector128.ConditionalSelect(Vector128.GreaterThan(alpha, Vector128<float>.Zero), Clamp01(v / alpha), Vector128<float>.Zero);
+        return Vector128.ConditionalSelect(AlphaLanes128, Clamp01(alpha), color);
+    }
+
+    /// <summary>The pixel's alpha in all four lanes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<float> Alpha(Vector128<float> v) => Vector128.Shuffle(v, Vector128.Create(3));
+
+    private static Vector128<float> AlphaLanes128 => Vector128.Create(0, 0, 0, -1).AsSingle();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<float> Clamp01(Vector128<float> v) => Vector128.MinNative(Vector128.MaxNative(v, Vector128<float>.Zero), Vector128<float>.One);
 
     private static Vector256<float> AlphaLanes => Vector256.Create(0, 0, 0, -1, 0, 0, 0, -1).AsSingle();
 
