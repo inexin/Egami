@@ -282,6 +282,23 @@ public sealed class FontCommandTests : IDisposable
         Assert.Contains("(color glyphs)", run.Error, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("DejaVuSans.ttf", "(x+y)", "MATH (math layout)")]
+    [InlineData("derived/NotoSans-kern.ttf", "Hi", "kern (legacy kerning)")]
+    public void SubsetWarnsAboutLayoutTablesOnlyWithoutLayout(string file, string text, string warning)
+    {
+        // With the layout closure the subset keeps MATH, kern and vertical metrics, cut down (a kern table with no pair of the
+        // kept glyphs goes, losing nothing); --no-layout leaves them out and says so.
+        Font(file);
+        string name = Path.GetFileName(file);
+        ToolRun run = _tool.Run("font", "subset", name, "--text", text, "-o", "a.ttf");
+        Expect(0, run);
+        Assert.DoesNotContain("leaves out", run.Error, StringComparison.Ordinal);
+        run = _tool.Run("font", "subset", name, "--text", text, "--no-layout", "-o", "b.ttf");
+        Expect(0, run);
+        Assert.Contains("leaves out " + warning, run.Error, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void InfoDescribesFontsAsTextAndJson()
     {

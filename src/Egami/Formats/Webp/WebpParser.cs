@@ -627,10 +627,13 @@ internal sealed class WebpParser
         }
     }
 
-    /// <summary>Returns the resolution EXIF gives (XResolution, YResolution and ResolutionUnit), or <see langword="null"/>.</summary>
+    /// <summary>
+    /// Returns the resolution EXIF gives (XResolution, YResolution and ResolutionUnit), or <see langword="null"/>. Entries with no
+    /// values, text or an unknown type count as missing.
+    /// </summary>
     internal static Resolution? ResolutionFrom(ExifData exif)
     {
-        if (!exif.TryGet(ExifKey.XResolution, out ExifEntry? x) || !exif.TryGet(ExifKey.YResolution, out ExifEntry? y))
+        if (!exif.TryGet(ExifKey.XResolution, out ExifEntry? x) || !exif.TryGet(ExifKey.YResolution, out ExifEntry? y) || !IsNumber(x) || !IsNumber(y))
         {
             return null;
         }
@@ -642,7 +645,11 @@ internal sealed class WebpParser
             return null;
         }
 
-        long unit = exif.TryGet(ExifKey.ResolutionUnit, out ExifEntry? u) ? u.AsInteger() : 2;
+        long unit = exif.TryGet(ExifKey.ResolutionUnit, out ExifEntry? u) && u.Count > 0
+            && u.Type is ExifType.Byte or ExifType.SByte or ExifType.Short or ExifType.SShort or ExifType.Long or ExifType.SLong or ExifType.Undefined
+            ? u.AsInteger() : 2;
         return new Resolution(rx, ry, unit switch { 3 => ResolutionUnit.PerCentimeter, 1 => ResolutionUnit.None, _ => ResolutionUnit.PerInch });
+
+        static bool IsNumber(ExifEntry entry) => entry.Count > 0 && entry.Type != ExifType.Ascii && ExifEntry.Size(entry.Type) > 0;
     }
 }

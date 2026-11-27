@@ -118,6 +118,12 @@ public class ColorMetadataTests
         exif.Set(new ExifKey(0x0001, ExifIfd.Interoperability), "R03");
         Assert.Same(ColorProfile.AdobeRgb, new RasterMetadata { Exif = exif }.GetColorProfile());
         Assert.Same(ColorProfile.Srgb, new RasterMetadata().GetColorProfile());
+
+        // A ColorSpace tag holding text or no values says nothing.
+        exif.Set(ExifKey.ColorSpace, "65535");
+        Assert.Same(ColorProfile.Srgb, new RasterMetadata { Exif = exif }.GetColorProfile());
+        exif.Set(ExifKey.ColorSpace, ExifType.Short, []);
+        Assert.Same(ColorProfile.Srgb, new RasterMetadata { Exif = exif }.GetColorProfile());
     }
 
     [Fact]

@@ -31,6 +31,9 @@ EPS previews (roadmap 2.3.14).
   chroma from luma, XYB to sRGB and the 8-bit output have 128-bit SIMD paths for x86 and Arm64. Pixels are identical to the
   scalar path's; the FMA kernels run where the CPU has FMA, as Arm64 does. 1.4 times as fast as before on x64 with AVX turned
   off.
+- Fixed: a WebP file whose EXIF XResolution or YResolution entry holds no values or text threw `ArgumentOutOfRangeException`
+  from `Raster.Probe` and `Raster.Load`; such entries now count as missing. An EXIF ColorSpace tag holding text no longer throws
+  from `RasterMetadata.GetColorProfile`.
 - Faster JPEG encoding where AVX2 is missing, Arm64 among them (roadmap 2.4.13): RGB and RGBA to YCbCr, chroma
   downsampling, CMYK inks, the forward DCT and quantization, and the nonzero-coefficient masks have 128-bit SIMD paths; files
   are byte-identical to before; baseline encodes 3.7 to 4.8 times as fast as the scalar path on x64 with AVX2 turned off.
