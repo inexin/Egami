@@ -505,9 +505,9 @@ MCP prompts and resources, a guide for coding agents, animated SVG input and fon
 - `egami font convert` (2.7.8) writes fonts losslessly as WOFF2 (the default) or WOFF, or WOFF and WOFF2 back to TTF, OTF or
   TTC, by `-o`'s extension or `--format`; collections convert to WOFF2 or TTC only. `--no-transform` and `--metadata`.
 - `egami font subset` keeps the characters of `--text`, `--text-file` and `--unicodes` (CSS unicode-range syntax). By default
-  it keeps the layout tables and the glyphs they reach, with the glyph ids, so the subset shapes as the full font; `--no-layout`
-  gives the smallest file. Variable fonts become static, at `--variation` or the default position. `--no-hinting`,
-  `--retain-gids`, `--name-prefix`, `--face`. It prints the glyphs kept, the missing characters and the sizes, and warns about
+  it keeps the glyphs the layout tables reach and those tables cut down to the kept glyphs, renumbered from 0 (roadmap 2.7.9),
+  so the subset shapes as the full font; `--retain-gids` keeps the glyph ids and `--no-layout` gives the smallest file.
+  Variable fonts become static, at `--variation` or the default position. `--no-hinting`, `--name-prefix`, `--face`. It prints the glyphs kept, the missing characters and the sizes, and warns about
   tables it leaves out.
 - `egami font info` describes fonts: names, container, outlines, glyphs, units per em, axes, embedding rights, tables and Unicode
   blocks covered; `--json` adds the coverage as a CSS unicode-range. The three are MCP tools (`font_info` read-only).
