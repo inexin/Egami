@@ -31,6 +31,6 @@ Options:
 
 Commands:
   convert <inputs>  Convert fonts losslessly: to WOFF2 (the default) or WOFF for the web, or from WOFF and WOFF2 back to TTF, OTF or a TTC collection. Collections convert to WOFF2 or TTC only.
-  subset <inputs>   Subset fonts to the characters a page uses and write WOFF2 (the default), WOFF, TTF or OTF. By default the subset keeps the layout tables and every glyph they can substitute, so it shapes the text as the full font does; prints the glyphs kept, the characters the font lacks and the sizes.
+  subset <inputs>   Subset fonts to the characters a page uses and write WOFF2 (the default), WOFF, TTF or OTF. By default the subset keeps every glyph the layout tables can substitute and those tables cut down to the kept glyphs, renumbered from 0, so it shapes the text as the full font does; prints the glyphs kept, the characters the font lacks and the sizes.
   info <inputs>     Describe fonts: names, container, outlines, glyphs, units per em, variation axes, embedding rights, tables and the Unicode blocks covered.
 

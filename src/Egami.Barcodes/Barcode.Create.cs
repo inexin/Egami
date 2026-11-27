@@ -8,7 +8,7 @@ public sealed partial class Barcode
     /// <see cref="Ean13(string, EanUpcOptions?)"/>.
     /// </summary>
     /// <param name="format">The symbology.</param>
-    /// <param name="text">The text or digits; for <see cref="BarcodeFormat.DataBarExpanded"/>, element strings with each AI in parentheses; for <see cref="BarcodeFormat.JapanPost"/>, the postal code and address number.</param>
+    /// <param name="text">The text or digits; for <see cref="BarcodeFormat.DataBarExpanded"/>, element strings with each AI in parentheses; for <see cref="BarcodeFormat.JapanPost"/>, the postal code and address number; for <see cref="BarcodeFormat.IntelligentMail"/>, the tracking code and then the routing code, after a space or hyphen or none.</param>
     /// <returns>The barcode.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="format"/> is not a <see cref="BarcodeFormat"/>.</exception>
     /// <exception cref="ArgumentException">The text does not suit the format or does not fit in a symbol.</exception>
@@ -36,6 +36,10 @@ public sealed partial class Barcode
         BarcodeFormat.DataBarExpanded => DataBarExpanded(text),
         BarcodeFormat.MicroQr => MicroQr(text),
         BarcodeFormat.JapanPost => JapanPost(text),
+        BarcodeFormat.RoyalMail => RoyalMail(text),
+        BarcodeFormat.Kix => Kix(text),
+        BarcodeFormat.AustraliaPost => AustraliaPost(text),
+        BarcodeFormat.IntelligentMail => IntelligentMail(text.Length > 20 ? text[..20] : text, text.Length > 20 ? text[(text[20] is '-' or ' ' ? 21 : 20)..] : null),
         _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
     };
 }

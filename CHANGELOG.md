@@ -24,6 +24,9 @@ EPS previews (roadmap 2.3.14).
   `Eps.LeadingWhitespace` warning, as PostScript interpreters do; some old files have them.
 - The EPS format page, a recipe in the formats guide and a fuzz target (`eps`).
 - New diagnostics: `Eps.PreviewLoaded` on every load, and `Eps.*` warnings for damaged headers, sections and previews.
+- Faster JPEG decoding where AVX2 is missing, Arm64 among them (roadmap 2.4.13): the inverse DCT, chroma upsampling and
+  YCbCr to RGB conversion have 128-bit SIMD paths for x86 and Arm64, giving the same bytes as before; 1.6 to 2.7 times as fast
+  as the scalar path on x64 with AVX2 turned off.
 
 ## Egami.Drawing 1.6.0 (unreleased)
 
@@ -392,17 +395,27 @@ to 1.5.0.
   hb-subset writes them: every script and language system stays with the kept features, each feature keeps the lookups that
   still apply to a kept glyph, and each lookup keeps the entries for kept glyphs (coverages and class definitions in their
   smaller format, classes and lookup indexes renumbered, feature variations kept). Lookups that no longer fit 16-bit offsets
-  become extension lookups. With `RetainGlyphIds` the same cutting runs without renumbering, so those subsets are smaller too;
-  MATH is still copied there, and left out with dense ids. The new `SubsetOptions.LayoutFeatures` sets the features kept and
+  become extension lookups. With `RetainGlyphIds` the same cutting runs without renumbering, so those subsets are smaller too.
+  The new `SubsetOptions.LayoutFeatures` sets the features kept and
   followed by the closure (`OpenTypeLayout.DefaultClosureFeatures` by default). A damaged GDEF, GSUB or GPOS table now makes a
-  layout-closure subset throw `CorruptDataException`. Subsets of the 3,823 HarfBuzz shaping test cases a subset can hold
-  now (not yet those of variable faces, legacy kern, vertical metrics or variation selectors) and of Egami's test fonts in
+  layout-closure subset throw `CorruptDataException`. Subsets of the HarfBuzz shaping test cases and of Egami's test fonts in
   Latin, Arabic, Hebrew, Indic, Southeast Asian, CJK and emoji text shape exactly as the full face.
 - `FontSubsetter.GlyphsFor` also adds the shaper's other stand-ins, so a subset shapes text as the full face: the decompositions
   that Indic, Khmer, Myanmar and Universal Shaping Engine scripts make even of characters the face maps (split vowels, Thai and
   Lao sara am), mirrored brackets for right-to-left text, vertical forms for a face without vert, the space for default
   ignorables and for spaces the face lacks, U+2010 for a missing U+2011, and the Arabic presentation forms for a face without
   an Arabic GSUB.
+- Layout-closure subsets, second part (roadmap 2.7.9): MATH is cut down and renumbered with dense ids too (it was left out),
+  and with retained ids it is cut down rather than copied. The legacy kern table keeps the format 0 pairs of kept glyphs,
+  renumbered and sorted (other formats only with `RetainGlyphIds`), and vhea, vmtx and VORG keep the kept glyphs' vertical
+  metrics. A variable face's static subset bakes its layout variations in at its position: GPOS values and anchors, GDEF
+  carets and MATH values take their rounded deltas and lose their variation device tables, the feature variations that hold
+  there replace their features, GDEF drops its variation store, and vertical advances and origins are written varied. The
+  subset's cmap keeps the variation sequences of the kept characters and glyphs in format 14, and `FontSubsetter.GlyphsFor`
+  adds the glyphs of the variation sequences the characters make. Subsets of 5,229 HarfBuzz shaping test cases (1,406 more
+  than before: variable faces, legacy kern, vertical metrics and variation sequences) shape exactly as the full face; one
+  variable case is left out, as its HVAR and gvar give different advances and the subset follows gvar as fontTools' instancer
+  does. A GDEF, GSUB or GPOS table whose major version is not 1, which the shaper reads as empty, is left out of the subset.
 
 - `ParagraphStyle.SpaceShrink` (0 to 1, 0 by default) lets justified lines fit the next word by shrinking their word spaces,
   as Word fills justified paragraphs: by at most that share of the spaces in all, and each space by at most half of what it
@@ -511,6 +524,23 @@ Japan Post customer barcode (roadmap 2.11.3, stage A).
 - `BarcodeFormat.JapanPost` and the group `BarcodeFormat.Postal` are new. Postal barcodes are written, not read, so
   `Postal` is not in `All` and reads with the default options are unchanged.
 
+Intelligent Mail, Royal Mail, KIX and Australia Post barcodes (roadmap 2.11.3, stage B).
+
+- `Barcode.IntelligentMail` writes the USPS Intelligent Mail barcode (USPS-B-3200) from the 20-digit tracking code and a
+  routing code of 0, 5, 9 or 11 digits: 65 bars with an 11-bit frame check, a grid of 6 rows that gives bars 0.136 inch tall
+  at 22 per inch at a 1/44 inch module, with a quiet zone of 6 modules. The spec's examples pass.
+- `Barcode.RoyalMail` writes RM4SCC, digits and letters A to Z with start and stop bars and a modulo 6 check character, and
+  `Barcode.Kix` PostNL's KIX code, the same characters without them: grids of 8 rows that give Royal Mail's sizes at a 0.6
+  mm module, with a quiet zone of 4 modules.
+- `Barcode.AustraliaPost` and `AustraliaPostOptions` write the Australia Post 4-State Customer Barcode: the eight-digit DPID
+  and, in Customer Barcodes 2 and 3, customer information in the N or C table, with filler bars and four Reed-Solomon check
+  symbols over GF(64). `AustraliaPostFormat` names the formats by their FCC (11, 59, 62 and the internal 45, 87 and 92),
+  `AustraliaPostEncoding` the tables. The human-readable text is the spec's text representation. A grid of 8 rows gives
+  Australia Post's sizes at a 0.55 mm module, with a quiet zone of 11 modules (6 mm). The spec's examples pass.
+- The symbols equal zint's. `Barcode.Create` and `Barcode.FromModules` take the four formats.
+- `BarcodeFormat.IntelligentMail`, `RoyalMail`, `Kix` and `AustraliaPost` are new and in `Postal`, which stays out of `All`,
+  so reads with the default options are unchanged.
+
 ## Egami.Cli 1.6.0 (unreleased)
 
 MCP prompts and resources, a guide for coding agents, animated SVG input and font commands. Additive to 1.5.0.
@@ -518,9 +548,9 @@ MCP prompts and resources, a guide for coding agents, animated SVG input and fon
 - `egami font convert` (2.7.8) writes fonts losslessly as WOFF2 (the default) or WOFF, or WOFF and WOFF2 back to TTF, OTF or
   TTC, by `-o`'s extension or `--format`; collections convert to WOFF2 or TTC only. `--no-transform` and `--metadata`.
 - `egami font subset` keeps the characters of `--text`, `--text-file` and `--unicodes` (CSS unicode-range syntax). By default
-  it keeps the layout tables and the glyphs they reach, with the glyph ids, so the subset shapes as the full font; `--no-layout`
-  gives the smallest file. Variable fonts become static, at `--variation` or the default position. `--no-hinting`,
-  `--retain-gids`, `--name-prefix`, `--face`. It prints the glyphs kept, the missing characters and the sizes, and warns about
+  it keeps the glyphs the layout tables reach and those tables cut down to the kept glyphs, renumbered from 0 (roadmap 2.7.9),
+  so the subset shapes as the full font; `--retain-gids` keeps the glyph ids and `--no-layout` gives the smallest file.
+  Variable fonts become static, at `--variation` or the default position. `--no-hinting`, `--name-prefix`, `--face`. It prints the glyphs kept, the missing characters and the sizes, and warns about
   tables it leaves out.
 - `egami font info` describes fonts: names, container, outlines, glyphs, units per em, axes, embedding rights, tables and Unicode
   blocks covered; `--json` adds the coverage as a CSS unicode-range. The three are MCP tools (`font_info` read-only).

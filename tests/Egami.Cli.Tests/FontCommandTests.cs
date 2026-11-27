@@ -130,9 +130,13 @@ public sealed class FontCommandTests : IDisposable
             Assert.True(subset.TryGetGlyph(c, out _), c.ToString());
         }
 
-        // Layout is kept by default, with the glyph ids, so the subset shapes as the full font does (the fi ligature included).
+        // Layout is kept by default, cut down and renumbered, so the subset shapes as the full font does (the fi ligature included).
         Assert.True(subset.TryGetTable(new FontTag("GSUB"), out _));
-        Assert.Equal(new Egami.Fonts.Font(full, 20).Shape("office").Glyphs.ToArray(), new Egami.Fonts.Font(subset, 20).Shape("office").Glyphs.ToArray());
+        Assert.True(subset.GlyphCount < 40, $"{subset.GlyphCount} glyphs.");
+        GlyphRun before = new Egami.Fonts.Font(full, 20).Shape("office"), after = new Egami.Fonts.Font(subset, 20).Shape("office");
+        Assert.Equal(before.Count, after.Count);
+        Assert.Equal(before.Positions.ToArray(), after.Positions.ToArray());
+        Assert.True(after.Count < "office".Length, "A ligature forms.");
 
         // --no-layout: no layout tables, dense ids, a smaller file.
         Expect(0, _tool.Run("font", "subset", "NotoSans-Regular.ttf", "--text", "Hello, office", "--no-layout", "-o", "small.woff2"));
@@ -141,11 +145,19 @@ public sealed class FontCommandTests : IDisposable
         Assert.True(small.GlyphCount < 20);
         Assert.True(new FileInfo(_tool.PathOf("small.woff2")).Length < new FileInfo(_tool.PathOf("out/NotoSans-Regular.woff2")).Length);
 
-        // --retain-gids keeps the ids without layout.
-        Expect(0, _tool.Run("font", "subset", "NotoSans-Regular.ttf", "--text", "e", "--no-layout", "--retain-gids", "-o", "ids.ttf"));
-        Typeface ids = Typeface.FromFile(_tool.PathOf("ids.ttf"));
-        Assert.Equal(full.GetGlyph('e'), ids.GetGlyph('e'));
-        Assert.Equal(FontFileKind.Sfnt, ids.Container);
+        // --retain-gids keeps the ids, with layout or without.
+        foreach (string[] extra in (string[][])[[], ["--no-layout"]])
+        {
+            Expect(0, _tool.Run(["font", "subset", "NotoSans-Regular.ttf", "--text", "office", .. extra, "--retain-gids", "-o", "ids.ttf"]));
+            Typeface ids = Typeface.FromFile(_tool.PathOf("ids.ttf"));
+            Assert.Equal(full.GetGlyph('e'), ids.GetGlyph('e'));
+            Assert.Equal(FontFileKind.Sfnt, ids.Container);
+            Assert.Equal(extra.Length == 0, ids.TryGetTable(new FontTag("GSUB"), out _));
+            if (extra.Length == 0)
+            {
+                Assert.Equal(new Egami.Fonts.Font(full, 20).Shape("office").Glyphs.ToArray(), new Egami.Fonts.Font(ids, 20).Shape("office").Glyphs.ToArray());
+            }
+        }
     }
 
     [Fact]

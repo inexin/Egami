@@ -69,12 +69,14 @@ public sealed record SubsetOptions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// With <see cref="RetainGlyphIds"/> the tables are cut down in the same way, without renumbering, and MATH is copied unchanged;
-    /// with dense ids the subset has no MATH table.
+    /// MATH is cut down to the kept glyphs and renumbered the same way, the legacy kern table keeps the format 0 pairs of kept
+    /// glyphs (its other formats only with <see cref="RetainGlyphIds"/>), and vhea, vmtx and VORG keep the kept glyphs' vertical
+    /// metrics. With <see cref="RetainGlyphIds"/> the tables are cut down without renumbering.
     /// </para>
     /// <para>
-    /// The layout tables of a variable face keep their variation data, so in the static subset GPOS positions and feature
-    /// variations are those of the default instance, whatever <see cref="Variations"/> says.
+    /// A variable face's subset is static, so its layout is baked in at the position written: GPOS values and anchors, GDEF caret
+    /// positions and MATH values take their rounded variation deltas, the feature variations that hold there replace their
+    /// features, and vertical advances and origins are those of the position.
     /// </para>
     /// </remarks>
     /// <example>
@@ -160,8 +162,9 @@ public static class FontSubsetter
     /// composes "e" and a combining acute to "é"). The shaper's other stand-ins are added too: the decompositions that Indic,
     /// Khmer, Myanmar and Universal Shaping Engine scripts always make (split vowels, Thai and Lao sara am), mirrored brackets for
     /// right-to-left text, vertical forms when the face has no vert feature, the space for default-ignorable characters and for
-    /// spaces the face lacks, U+2010 for a missing U+2011, and the Arabic presentation forms when the face has no Arabic GSUB.
-    /// Characters the face cannot draw add nothing; .notdef is not included.
+    /// spaces the face lacks, U+2010 for a missing U+2011, the Arabic presentation forms when the face has no Arabic GSUB, and
+    /// the glyphs cmap format 14 gives the variation sequences the characters can make. Characters the face cannot draw add
+    /// nothing; .notdef is not included.
     /// </summary>
     /// <param name="face">The face.</param>
     /// <param name="codePoints">The characters, as Unicode code points; duplicates are fine.</param>
@@ -213,6 +216,22 @@ public static class FontSubsetter
             if (face.TryGetGlyph(code, out ushort glyph) && glyph != 0)
             {
                 glyphs.Add(glyph);
+            }
+        }
+
+        // The glyphs cmap format 14 gives a character followed by a variation selector the characters hold.
+        if (face.Cmap.Variations is { } variations)
+        {
+            foreach (int selector in variations.Records.Select(r => r.Selector).Where(codes.Contains))
+            {
+                foreach (int code in codes)
+                {
+                    int glyph = face.Cmap.MapVariation(code, selector);
+                    if (glyph > 0 && glyph < face.GlyphCount)
+                    {
+                        glyphs.Add((ushort)glyph);
+                    }
+                }
             }
         }
 

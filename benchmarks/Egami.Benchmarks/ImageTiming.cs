@@ -15,6 +15,8 @@ namespace Egami.Benchmarks;
 /// where a name selects that scenario, or every scenario it starts when no scenario has that exact name; --list prints the names.
 /// The jpeg-stage-* scenarios run one stage of the baseline encoder alone (<see cref="JpegStageTiming"/>), and
 /// <c>--write-ppm=path [--copies=N]</c> writes the photo as PPM for count-instructions.py's cjpeg side instead of timing.
+/// <c>--median</c> reports the median of the runs instead of the fastest, and <c>--warmup=N</c> runs N times untimed first
+/// (tools/time-simd.py).
 /// </summary>
 internal static class ImageTiming
 {
@@ -47,6 +49,9 @@ internal static class ImageTiming
         int[] counts = args.Contains("--one-thread") ? [1] : args.FirstOrDefault(a => a.StartsWith("--threads=", StringComparison.Ordinal)) is { } t
             ? [int.Parse(t["--threads=".Length..], System.Globalization.CultureInfo.InvariantCulture)]
             : [1, Environment.ProcessorCount];
+        bool median = args.Contains("--median");
+        int warmups = args.FirstOrDefault(a => a.StartsWith("--warmup=", StringComparison.Ordinal)) is { } w
+            ? int.Parse(w["--warmup=".Length..], System.Globalization.CultureInfo.InvariantCulture) : 0;
         string[] names = [.. args.Where(a => !a.StartsWith("--", StringComparison.Ordinal))];
         foreach ((string name, Func<EgamiContext, Action> make) in Scenarios)
         {
@@ -58,20 +63,35 @@ internal static class ImageTiming
             foreach (int threads in counts)
             {
                 Action operation = make(EgamiContext.Default with { MaxParallelism = threads });
-                double best = double.MaxValue;
+                for (int warm = 0; warm < warmups; warm++)
+                {
+                    operation();
+                }
+
+                double[] times = new double[runs];
                 long allocated = 0;
                 for (int run = 0; run < runs; run++)
                 {
                     long before = GC.GetAllocatedBytesForCurrentThread();
                     long start = Stopwatch.GetTimestamp();
                     operation();
-                    best = Math.Min(best, Stopwatch.GetElapsedTime(start).TotalMilliseconds);
+                    times[run] = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
                     allocated = GC.GetAllocatedBytesForCurrentThread() - before;
                 }
+
+                double best = median ? Median(times) : times.Min();
 
                 Console.WriteLine($"{name,-28} {threads,2} thread{(threads == 1 ? " " : "s")} {best,9:F2} ms {allocated,12} bytes");
             }
         }
+    }
+
+    /// <summary>The median of <paramref name="times"/>, the mean of the middle two for an even count.</summary>
+    internal static double Median(double[] times)
+    {
+        double[] sorted = [.. times.Order()];
+        int middle = sorted.Length / 2;
+        return sorted.Length % 2 == 1 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
     }
 
     private static Dictionary<string, Func<EgamiContext, Action>> Create()
