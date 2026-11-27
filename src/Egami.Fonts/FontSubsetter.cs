@@ -60,20 +60,40 @@ public sealed record SubsetOptions
 
     /// <summary>
     /// Gets whether the subset can be shaped again as the full face would be: the kept glyphs gain every glyph GSUB can substitute
-    /// for them (<see cref="OpenTypeLayout.GetClosure"/> with <see cref="OpenTypeLayout.DefaultClosureFeatures"/>), the dotted
-    /// circle (U+25CC) the shaper puts before a mark that starts a run, and the larger variants and assembly parts MATH gives them,
-    /// and GSUB, GPOS, GDEF and MATH are copied unchanged. Copied layout tables hold the old glyph ids, so this needs <see cref="RetainGlyphIds"/> and
-    /// sfnt output. Defaults to false, as a PDF needs only the glyphs drawn. To follow other features, pass the glyphs of
-    /// <see cref="OpenTypeLayout.GetClosure"/> with them, and keep the three tables with <see cref="KeepTables"/>.
+    /// for them (<see cref="OpenTypeLayout.GetClosure"/> with <see cref="LayoutFeatures"/>), the dotted circle (U+25CC) the shaper
+    /// puts before a mark that starts a run, and the larger variants and assembly parts MATH gives them; and GDEF, GSUB and GPOS are
+    /// written cut down to the kept glyphs. They keep every script and language system, the features of
+    /// <see cref="LayoutFeatures"/>, the lookups those features (and their contextual rules) name that still apply to a kept glyph,
+    /// and in each lookup only the entries for kept glyphs, with glyph ids, classes and lookup indexes renumbered. Defaults to
+    /// false, as a PDF needs only the glyphs drawn. Needs sfnt output.
     /// </summary>
     /// <remarks>
-    /// The tables of a variable face are copied with their variation data, so in the static subset GPOS positions and feature
+    /// <para>
+    /// With <see cref="RetainGlyphIds"/> the tables are cut down in the same way, without renumbering, and MATH is copied unchanged;
+    /// with dense ids the subset has no MATH table.
+    /// </para>
+    /// <para>
+    /// The layout tables of a variable face keep their variation data, so in the static subset GPOS positions and feature
     /// variations are those of the default instance, whatever <see cref="Variations"/> says.
+    /// </para>
     /// </remarks>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset-layout"/>
     /// </example>
     public bool LayoutClosure { get; init; }
+
+    /// <summary>
+    /// Gets the layout features a <see cref="LayoutClosure"/> subset keeps, or <see langword="null"/> (the default) for
+    /// <see cref="OpenTypeLayout.DefaultClosureFeatures"/>. The glyph closure follows the same features. To keep more, such as
+    /// stylistic sets or old-style figures, pass the default list with the extra tags.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset-layout-features"/>
+    /// </example>
+    public IReadOnlyList<FontTag>? LayoutFeatures { get; init; }
+
+    /// <summary>Gets whether every GSUB and GPOS lookup is written as an extension lookup, as when 16-bit offsets overflow (for tests).</summary>
+    internal bool ExtensionLookups { get; init; }
 
     /// <summary>
     /// Gets whether TrueType hinting is left out: the fpgm, prep and cvt tables and every glyph's instructions, with maxp's
@@ -137,7 +157,11 @@ public static class FontSubsetter
     /// Gets the glyphs that draw characters as the shaper does: the glyph of each one the face maps; for one the face lacks, the
     /// glyphs of its canonical decomposition when the face draws every part (the shaper draws a missing "é" as "e" and a combining
     /// acute); and the glyph of each precomposed character the face maps whose decomposition the characters hold (the shaper
-    /// composes "e" and a combining acute to "é"). Characters the face cannot draw add nothing; .notdef is not included.
+    /// composes "e" and a combining acute to "é"). The shaper's other stand-ins are added too: the decompositions that Indic,
+    /// Khmer, Myanmar and Universal Shaping Engine scripts always make (split vowels, Thai and Lao sara am), mirrored brackets for
+    /// right-to-left text, vertical forms when the face has no vert feature, the space for default-ignorable characters and for
+    /// spaces the face lacks, U+2010 for a missing U+2011, and the Arabic presentation forms when the face has no Arabic GSUB.
+    /// Characters the face cannot draw add nothing; .notdef is not included.
     /// </summary>
     /// <param name="face">The face.</param>
     /// <param name="codePoints">The characters, as Unicode code points; duplicates are fine.</param>
@@ -150,17 +174,22 @@ public static class FontSubsetter
         ArgumentNullException.ThrowIfNull(face);
         ArgumentNullException.ThrowIfNull(codePoints);
         var codes = new HashSet<int>();
-        foreach (int code in codePoints)
+        var pending = new Queue<int>(codePoints);
+        while (pending.TryDequeue(out int code))
         {
-            if (codes.Add(code) && !Maps(face, code))
+            // Decompose to a fixed point where the shaper decomposes characters the face maps: U+0DDD to U+0DDC and U+0DCA, and
+            // U+0DDC in turn.
+            List<int> parts = [];
+            if (codes.Add(code) && (!Maps(face, code) || AlwaysDecomposes(code)) && Decomposes(face, code, parts))
             {
-                List<int> parts = [];
-                if (Decomposes(face, code, parts))
+                foreach (int part in parts)
                 {
-                    codes.UnionWith(parts);
+                    pending.Enqueue(part);
                 }
             }
         }
+
+        AddStandIns(face, codes);
 
         // Compose to a fixed point: a two-step composition such as U+0390 needs U+03CA, itself a composition.
         ReadOnlySpan<int> table = UnicodeTables.Compositions;
@@ -188,6 +217,116 @@ public static class FontSubsetter
         }
 
         return [.. glyphs];
+    }
+
+    // The scripts whose shapers decompose every character they can before shaping (no short circuit for mapped characters).
+    private static bool AlwaysDecomposes(int code) =>
+        ShaperSelector.Select(UnicodeData.GetScript(code), LayoutDirection.LeftToRight, 0).NormalizationPreference ==
+        NormalizationMode.ComposedDiacriticsNoShortCircuit;
+
+    // The characters the shaper draws in place of others: see GlyphsFor.
+    private static void AddStandIns(Typeface face, HashSet<int> codes)
+    {
+        List<int> added = [];
+        bool arabicFallback = false;
+        bool verticalForms = !face.Layout.Features.Contains(new FontTag("vert"));
+        foreach (int code in codes)
+        {
+
+            if (UnicodeData.IsDefaultIgnorable(code) ||
+                (UnicodeProps.SpaceFallbackType(code) != UnicodeProps.NotSpace && !Maps(face, code)))
+            {
+                added.Add(0x0020);
+            }
+
+            if (code == 0x2011 && !Maps(face, code))
+            {
+                added.Add(0x2010);
+            }
+
+            if (UnicodeData.TryGetBidiMirroringGlyph(code, out int mirror))
+            {
+                added.Add(mirror);
+            }
+
+            if ((code & ~0x80) == 0x0E33)
+            {
+                // Thai and Lao sara am: nikhahit (niggahita) and sara aa.
+                added.Add(code - 0x0E33 + 0x0E4D);
+                added.Add(code - 1);
+            }
+
+            if (code is 0x17BE or 0x17BF or 0x17C0 or 0x17C4 or 0x17C5)
+            {
+                // Khmer split vowels: the shaper adds the pre-base part.
+                added.Add(0x17C1);
+            }
+
+            arabicFallback |= code is >= ArabicTables.ShapingTableFirst and <= ArabicTables.ShapingTableLast;
+        }
+
+        codes.UnionWith(added);
+        if (verticalForms)
+        {
+            // Of the mirrored brackets too: bottom-to-top text mirrors them.
+            codes.UnionWith([.. codes.Select(OtShaper.VerticalCharFor)]);
+        }
+
+        if (arabicFallback && !HasArabicGsub(face))
+        {
+            AddArabicPresentationForms(codes);
+        }
+    }
+
+    private static bool HasArabicGsub(Typeface face)
+    {
+        OpenTypeLayout layout = face.Layout;
+        var arab = new FontTag("arab");
+        return layout.HasGsub && layout.Scripts.Contains(arab) && layout.GetFeatures(arab).Contains(new FontTag("isol"));
+    }
+
+    // As the Arabic shaper's fallback shaping: each character's presentation forms, and the ligatures of forms the text holds.
+    private static void AddArabicPresentationForms(HashSet<int> codes)
+    {
+        ReadOnlySpan<ushort> table = ArabicTables.ShapingTable;
+        foreach (int code in codes.ToArray())
+        {
+            if (code is >= ArabicTables.ShapingTableFirst and <= ArabicTables.ShapingTableLast)
+            {
+                foreach (ushort form in table.Slice((code - ArabicTables.ShapingTableFirst) * 4, 4))
+                {
+                    if (form != 0)
+                    {
+                        codes.Add(form);
+                    }
+                }
+            }
+        }
+
+        bool grew = true;
+        while (grew)
+        {
+            grew = false;
+            foreach (var ligatures in (ReadOnlySpan<(ushort First, (ushort[] Components, ushort Ligature)[] Ligatures)[]>)[ArabicTables.Ligatures, ArabicTables.Ligatures3, ArabicTables.MarkLigatures])
+            {
+                foreach ((ushort first, (ushort[] Components, ushort Ligature)[] list) in ligatures)
+                {
+                    if (!codes.Contains(first))
+                    {
+                        continue;
+                    }
+
+                    foreach ((ushort[] components, ushort ligature) in list)
+                    {
+                        if (!codes.Contains(ligature) && components.All(c => codes.Contains(c)))
+                        {
+                            codes.Add(ligature);
+                            grew = true;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private static bool Maps(Typeface face, int code) => face.TryGetGlyph(code, out ushort glyph) && glyph != 0;
@@ -222,9 +361,11 @@ public static class FontSubsetter
     /// <exception cref="ArgumentOutOfRangeException">A glyph id is past the face's glyph count.</exception>
     /// <exception cref="ArgumentException">
     /// The format needs outlines of the other kind, such as CFF output from a TrueType face; or <see cref="SubsetOptions.LayoutClosure"/>
-    /// is set without <see cref="SubsetOptions.RetainGlyphIds"/> or with bare CFF output.
+    /// is set with bare CFF output.
     /// </exception>
-    /// <exception cref="CorruptDataException">A kept glyph's data cannot be read.</exception>
+    /// <exception cref="CorruptDataException">
+    /// A kept glyph's data cannot be read; or, with <see cref="SubsetOptions.LayoutClosure"/>, a GDEF, GSUB or GPOS table is damaged.
+    /// </exception>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset"/>
     /// </example>
@@ -259,11 +400,6 @@ public static class FontSubsetter
             throw new ArgumentException("A bare CFF face has no sfnt tables to write OpenType output from; use BareCff.", nameof(options));
         }
 
-        if (options.LayoutClosure && !options.RetainGlyphIds)
-        {
-            throw new ArgumentException("LayoutClosure copies the layout tables unchanged, so it needs RetainGlyphIds.", nameof(options));
-        }
-
         if (options.LayoutClosure && format == SubsetFormat.BareCff)
         {
             throw new ArgumentException("LayoutClosure needs sfnt output to hold the layout tables; bare CFF has none.", nameof(options));
@@ -288,10 +424,11 @@ public static class FontSubsetter
                 wanted.Add(dottedCircle);
             }
 
-            wanted.UnionWith(face.Layout.GetClosure(wanted));
+            IReadOnlyList<FontTag> features = options.LayoutFeatures ?? OpenTypeLayout.DefaultClosureFeatures;
+            wanted.UnionWith(face.Layout.GetClosure(wanted, features));
             if (face.Math is { } math && AddMathGlyphs(math, wanted, face.GlyphCount))
             {
-                wanted.UnionWith(face.Layout.GetClosure(wanted));
+                wanted.UnionWith(face.Layout.GetClosure(wanted, features));
             }
         }
 

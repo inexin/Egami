@@ -96,6 +96,25 @@ internal sealed class GsubClosure
     /// </summary>
     private static SortedSet<int> CollectLookups(LayoutTable gsub, IReadOnlySet<uint> filter)
     {
+        SortedSet<int> features = CollectFeatures(gsub, filter);
+        SortedSet<int> lookups = [];
+        foreach (int feature in features)
+        {
+            lookups.UnionWith(gsub.GetFeatureLookups(feature, -1));
+        }
+
+        gsub.CollectFeatureVariationLookups(features, lookups);
+        return lookups;
+    }
+
+    /// <summary>
+    /// The feature indexes hb-subset keeps in a GSUB or GPOS table: every feature of every script and language system whose tag
+    /// the filter keeps, or all of them, required features included, when it keeps every tag the table lists.
+    /// </summary>
+    public static SortedSet<int> CollectFeatures(LayoutTable table, IReadOnlySet<uint> filter)
+    {
+        LayoutTable gsub = table;
+
         // _filter_tag_list: the filter only applies when it leaves out a tag the table lists.
         bool filtered = false;
         HashSet<int> kept = [];
@@ -123,14 +142,7 @@ internal sealed class GsubClosure
             collector.CollectScript(i);
         }
 
-        SortedSet<int> lookups = [];
-        foreach (int feature in collector.Features)
-        {
-            lookups.UnionWith(gsub.GetFeatureLookups(feature, -1));
-        }
-
-        gsub.CollectFeatureVariationLookups(collector.Features, lookups);
-        return lookups;
+        return collector.Features;
     }
 
     /// <summary>hb_collect_features_context_t with every language: the feature indexes, with HarfBuzz's visit limits.</summary>

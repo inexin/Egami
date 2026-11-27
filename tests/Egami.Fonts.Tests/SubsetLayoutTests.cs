@@ -96,11 +96,36 @@ public sealed class SubsetLayoutTests
         AssertSame(Shape(face, text, Script.Greek, TextDirection.LeftToRight), Shape(subset, text, Script.Greek, TextDirection.LeftToRight));
     }
 
+    [Theory]
+    [InlineData("shaping/NotoSansThai-Regular.ttf", "กำ", "ํา")] // Sara am: nikhahit and sara aa.
+    [InlineData("shaping/NotoSansBengali-Regular.ttf", "কো", "ো")] // A split vowel, though the face maps it.
+    [InlineData("shaping/NotoSansKhmer-Regular.ttf", "កោ", "េ")] // A Khmer split vowel's pre-base part.
+    [InlineData("NotoSans-Regular.ttf", "a‍b(", " )")] // The space for a default ignorable; the mirrored bracket.
+    public void GlyphsForAddsTheShapersStandIns(string file, string text, string standIns)
+    {
+        Typeface face = TestFonts.Load(file);
+        IReadOnlyList<ushort> glyphs = FontSubsetter.GlyphsFor(face, text.EnumerateRunes().Select(r => r.Value));
+        foreach (char c in standIns)
+        {
+            Assert.True(face.TryGetGlyph(c, out ushort glyph) && glyph != 0, $"The face maps U+{(int)c:X4}.");
+            Assert.Contains(glyph, glyphs);
+        }
+
+        FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { LayoutClosure = true });
+        Typeface written = subset.ToTypeface();
+        foreach ((Script script, TextDirection direction) in (ReadOnlySpan<(Script, TextDirection)>)[(UnicodeData.GetScript(text[0]), TextDirection.LeftToRight), (UnicodeData.GetScript(text[0]), TextDirection.RightToLeft)])
+        {
+            GlyphBuffer full = Shape(face, text, script, direction);
+            GlyphBuffer cut = Shape(written, text, script, direction);
+            Assert.Equal(full.GlyphIds.ToArray().Select(g => subset.GlyphMap[g]), cut.GlyphIds.ToArray());
+        }
+    }
+
     [Fact]
-    public void ItNeedsRetainedIdsAndSfntOutput()
+    public void ItNeedsSfntOutput()
     {
         Typeface face = TestFonts.Load("SourceSans3-Regular.otf");
-        Assert.Throws<ArgumentException>(() => FontSubsetter.Subset(face, [5], new SubsetOptions { LayoutClosure = true }));
+        Assert.NotNull(FontSubsetter.Subset(face, [5], new SubsetOptions { LayoutClosure = true }));
         Assert.Throws<ArgumentException>(() => FontSubsetter.Subset(face, [5], new SubsetOptions { LayoutClosure = true, RetainGlyphIds = true, Format = SubsetFormat.BareCff }));
     }
 

@@ -317,7 +317,7 @@ internal static class OtShaper
         }
     }
 
-    private static int VerticalCharFor(int u) => (u >> 8) switch
+    internal static int VerticalCharFor(int u) => (u >> 8) switch
     {
         0x20 => u switch
         {

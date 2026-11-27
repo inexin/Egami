@@ -365,6 +365,23 @@ WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, a
 - `WebFontFormat.Eot` writes EOT 0x00020001 with the font uncompressed, its header from the OS/2, head and name tables;
   `WebFontOptions.XorFontData` XORs the font data and `WebFontOptions.RootString` sets the root string.
 
+- Font subsets that keep kerning and ligatures (roadmap 2.7.9, first part): `SubsetOptions.LayoutClosure` no longer needs
+  `RetainGlyphIds`. GDEF, GSUB and GPOS are written cut down to the kept glyphs and renumbered through the glyph map, as
+  hb-subset writes them: every script and language system stays with the kept features, each feature keeps the lookups that
+  still apply to a kept glyph, and each lookup keeps the entries for kept glyphs (coverages and class definitions in their
+  smaller format, classes and lookup indexes renumbered, feature variations kept). Lookups that no longer fit 16-bit offsets
+  become extension lookups. With `RetainGlyphIds` the same cutting runs without renumbering, so those subsets are smaller too;
+  MATH is still copied there, and left out with dense ids. The new `SubsetOptions.LayoutFeatures` sets the features kept and
+  followed by the closure (`OpenTypeLayout.DefaultClosureFeatures` by default). A damaged GDEF, GSUB or GPOS table now makes a
+  layout-closure subset throw `CorruptDataException`. Subsets of the 3,823 HarfBuzz shaping test cases a subset can hold
+  now (not yet those of variable faces, legacy kern, vertical metrics or variation selectors) and of Egami's test fonts in
+  Latin, Arabic, Hebrew, Indic, Southeast Asian, CJK and emoji text shape exactly as the full face.
+- `FontSubsetter.GlyphsFor` also adds the shaper's other stand-ins, so a subset shapes text as the full face: the decompositions
+  that Indic, Khmer, Myanmar and Universal Shaping Engine scripts make even of characters the face maps (split vowels, Thai and
+  Lao sara am), mirrored brackets for right-to-left text, vertical forms for a face without vert, the space for default
+  ignorables and for spaces the face lacks, U+2010 for a missing U+2011, and the Arabic presentation forms for a face without
+  an Arabic GSUB.
+
 - `ParagraphStyle.SpaceShrink` (0 to 1, 0 by default) lets justified lines fit the next word by shrinking their word spaces,
   as Word fills justified paragraphs: by at most that share of the spaces in all, and each space by at most half of what it
   would stretch had the line ended at the break before. The whole word is kept by shrinking before automatic hyphenation is
