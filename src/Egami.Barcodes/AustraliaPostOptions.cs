@@ -23,6 +23,9 @@ public sealed record class AustraliaPostOptions
 }
 
 /// <summary>An Australia Post 4-State barcode's format, by its Format Control Code (FCC).</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Barcodes.cs" region="barcode-australia-post"/>
+/// </example>
 public enum AustraliaPostFormat
 {
     /// <summary>The Standard Customer Barcode (FCC 11): the DPID alone, 37 bars.</summary>
@@ -45,6 +48,9 @@ public enum AustraliaPostFormat
 }
 
 /// <summary>The encoding table of an Australia Post barcode's customer information.</summary>
+/// <example>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Barcodes.cs" region="barcode-australia-post"/>
+/// </example>
 public enum AustraliaPostEncoding
 {
     /// <summary>The N table: digits, two bars each, so 8 in Customer Barcode 2 and 15 in Customer Barcode 3.</summary>
