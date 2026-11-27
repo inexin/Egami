@@ -5,6 +5,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
 using Egami.Pixels;
+using Egami.Simd;
 
 namespace Egami.Operations.Filters;
 
@@ -29,6 +30,12 @@ internal static class ByteBlur
     internal const int Group = 64;
 
     private static readonly bool Fast = Avx2.IsSupported && Vector256.IsHardwareAccelerated;
+
+    /// <summary>Whether the 128-bit paths run in place of <see cref="Fast"/>'s: Arm64, and x86 without AVX2.</summary>
+    private static readonly bool Fast128 = !Fast && Simd128.IsSupported;
+
+    /// <summary>Whether whole 256-bit vectors of floats are slower than pairs of 128-bit ones: Vector256 is not accelerated.</summary>
+    internal static readonly bool Narrow128 = !Vector256.IsHardwareAccelerated && Vector128.IsHardwareAccelerated;
 
     /// <summary>Gets whether <typeparamref name="TPixel"/> takes the byte path: whole straight bytes, not CMYK inks.</summary>
     internal static bool Supports<TPixel>()
@@ -200,7 +207,7 @@ internal static class ByteBlur
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private static void TransposeColumns(Span<float> band, int width, int x0, int count, Span<float> columns, bool load)
     {
-        if (Fast && count == 8)
+        if ((Fast || Fast128) && count == 8)
         {
             if (band.Length < ((PlaneBand - 1) * width) + x0 + 8 || columns.Length < 8 * PlaneBand)
             {
@@ -212,7 +219,18 @@ internal static class ByteBlur
             for (int half = 0; half < PlaneBand; half += 8)
             {
                 ref float from = ref Unsafe.Add(ref rows, half * width);
-                if (load)
+                if (Fast128)
+                {
+                    if (load)
+                    {
+                        Transpose8(ref from, (nuint)width, ref Unsafe.Add(ref cells, half), PlaneBand);
+                    }
+                    else
+                    {
+                        Transpose8(ref Unsafe.Add(ref cells, half), PlaneBand, ref from, (nuint)width);
+                    }
+                }
+                else if (load)
                 {
                     Vector256<float> m0 = Vector256.LoadUnsafe(ref from), m1 = Vector256.LoadUnsafe(ref from, (nuint)width);
                     Vector256<float> m2 = Vector256.LoadUnsafe(ref from, (nuint)(2 * width)), m3 = Vector256.LoadUnsafe(ref from, (nuint)(3 * width));
@@ -414,6 +432,16 @@ internal static class ByteBlur
 
         ref float f = ref MemoryMarshal.GetReference(from);
         ref float t = ref MemoryMarshal.GetReference(to);
+        if (Narrow128)
+        {
+            for (nuint i = 0; i < (nuint)from.Length; i += (nuint)Vector128<float>.Count)
+            {
+                Vector128.LoadUnsafe(ref f, i).StoreUnsafe(ref t, i);
+            }
+
+            return;
+        }
+
         for (nuint i = 0; i < (nuint)from.Length; i += (nuint)Vector256<float>.Count)
         {
             Vector256.LoadUnsafe(ref f, i).StoreUnsafe(ref t, i);
@@ -429,6 +457,12 @@ internal static class ByteBlur
         if (Fast && channels == 4 && count == 8 && linear is not null)
         {
             LoadLinear(band, x0, rowBytes, stride, alpha, premultiply, linear, columns);
+            return;
+        }
+
+        if (Fast128 && channels == 4 && count == 8)
+        {
+            LoadColumns128(band, x0, rowBytes, stride, alpha, premultiply, linear, columns);
             return;
         }
 
@@ -551,6 +585,12 @@ internal static class ByteBlur
         if (!deep.IsEmpty && Fast && channels == 4 && count == 8)
         {
             StoreDeep(deep, x0, rowBytes, stride, columns);
+            return;
+        }
+
+        if (Fast128 && channels == 4 && count == 8)
+        {
+            StoreColumns128(band, deep, x0, rowBytes, stride, columns);
             return;
         }
 
@@ -744,6 +784,21 @@ internal static class ByteBlur
                 Vector256.ConvertToSingle(hi.AsInt32()).StoreUnsafe(ref to, (nuint)(i + 8));
             }
         }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            ref byte from = ref MemoryMarshal.GetReference(row);
+            ref float to = ref MemoryMarshal.GetReference(target);
+            for (; i <= row.Length - 16; i += 16)
+            {
+                (Vector128<ushort> w0, Vector128<ushort> w1) = Vector128.Widen(Vector128.LoadUnsafe(ref from, (nuint)i));
+                (Vector128<uint> q0, Vector128<uint> q1) = Vector128.Widen(w0);
+                (Vector128<uint> q2, Vector128<uint> q3) = Vector128.Widen(w1);
+                Vector128.ConvertToSingle(q0.AsInt32()).StoreUnsafe(ref to, (nuint)i);
+                Vector128.ConvertToSingle(q1.AsInt32()).StoreUnsafe(ref to, (nuint)(i + 4));
+                Vector128.ConvertToSingle(q2.AsInt32()).StoreUnsafe(ref to, (nuint)(i + 8));
+                Vector128.ConvertToSingle(q3.AsInt32()).StoreUnsafe(ref to, (nuint)(i + 12));
+            }
+        }
 
         for (; i < row.Length; i++)
         {
@@ -768,6 +823,18 @@ internal static class ByteBlur
                 (Vector256<uint> lo, Vector256<uint> hi) = Vector256.Widen(Vector256.LoadUnsafe(ref from, (nuint)i));
                 (Vector256.ConvertToSingle(lo.AsInt32()) * unit).StoreUnsafe(ref to, (nuint)i);
                 (Vector256.ConvertToSingle(hi.AsInt32()) * unit).StoreUnsafe(ref to, (nuint)(i + 8));
+            }
+        }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            ref ushort from = ref MemoryMarshal.GetReference(row);
+            ref float to = ref MemoryMarshal.GetReference(target);
+            Vector128<float> unit = Vector128.Create(1f / 256);
+            for (; i <= row.Length - 8; i += 8)
+            {
+                (Vector128<uint> lo, Vector128<uint> hi) = Vector128.Widen(Vector128.LoadUnsafe(ref from, (nuint)i));
+                (Vector128.ConvertToSingle(lo.AsInt32()) * unit).StoreUnsafe(ref to, (nuint)i);
+                (Vector128.ConvertToSingle(hi.AsInt32()) * unit).StoreUnsafe(ref to, (nuint)(i + 4));
             }
         }
 
@@ -797,6 +864,17 @@ internal static class ByteBlur
                 {
                     Vector256<ushort> words = Vector256.Narrow(Round(Vector256.LoadUnsafe(ref from, (nuint)i)).AsUInt32(), Round(Vector256.LoadUnsafe(ref from, (nuint)(i + 8))).AsUInt32());
                     Vector256.Narrow(words, words).GetLower().StoreUnsafe(ref to, (nuint)i);
+                }
+            }
+            else if (Vector128.IsHardwareAccelerated)
+            {
+                ref float from = ref MemoryMarshal.GetReference(values);
+                ref byte to = ref MemoryMarshal.GetReference(row);
+                for (; i <= row.Length - 16; i += 16)
+                {
+                    Vector128<ushort> w0 = Vector128.Narrow(Round(Vector128.LoadUnsafe(ref from, (nuint)i)).AsUInt32(), Round(Vector128.LoadUnsafe(ref from, (nuint)(i + 4))).AsUInt32());
+                    Vector128<ushort> w1 = Vector128.Narrow(Round(Vector128.LoadUnsafe(ref from, (nuint)(i + 8))).AsUInt32(), Round(Vector128.LoadUnsafe(ref from, (nuint)(i + 12))).AsUInt32());
+                    Vector128.Narrow(w0, w1).StoreUnsafe(ref to, (nuint)i);
                 }
             }
 
@@ -883,9 +961,16 @@ internal static class ByteBlur
         return Vector256.Min(Vector256.Max(Vector256.ConvertToInt32(value + Vector256.Create(0.5f)), Vector256<int>.Zero), Vector256.Create(255));
     }
 
+    /// <summary>Rounds four values of 0..255 (with float overshoot) to whole numbers 0 to 255.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<int> Round(Vector128<float> value)
+    {
+        return Vector128.Min(Vector128.Max(Vector128.ConvertToInt32(value + Vector128.Create(0.5f)), Vector128<int>.Zero), Vector128.Create(255));
+    }
+
     private static bool Opaque(ReadOnlySpan<byte> bytes, int channels, int alpha)
     {
-        if (channels == 4 && Vector256.IsHardwareAccelerated)
+        if (channels == 4 && (Vector256.IsHardwareAccelerated || !Vector128.IsHardwareAccelerated))
         {
             ReadOnlySpan<uint> pixels = MemoryMarshal.Cast<byte, uint>(bytes);
             uint bits = 0xFFu << (alpha * 8);
@@ -894,6 +979,31 @@ internal static class ByteBlur
             for (; i <= pixels.Length - Vector256<uint>.Count; i += Vector256<uint>.Count)
             {
                 if ((Vector256.Create(pixels[i..]) & mask) != mask)
+                {
+                    return false;
+                }
+            }
+
+            for (; i < pixels.Length; i++)
+            {
+                if ((pixels[i] & bits) != bits)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        if (channels == 4)
+        {
+            ReadOnlySpan<uint> pixels = MemoryMarshal.Cast<byte, uint>(bytes);
+            uint bits = 0xFFu << (alpha * 8);
+            Vector128<uint> mask = Vector128.Create(bits);
+            int i = 0;
+            for (; i <= pixels.Length - Vector128<uint>.Count; i += Vector128<uint>.Count)
+            {
+                if ((Vector128.Create(pixels[i..]) & mask) != mask)
                 {
                     return false;
                 }
@@ -965,6 +1075,28 @@ internal static class ByteBlur
         c3.StoreUnsafe(ref to, 3 * Band);
     }
 
+    /// <summary>Splits four 32-bit pixels into four channel vectors at <paramref name="to"/>, <see cref="Band"/> floats apart, premultiplied if asked.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Split(Vector128<float> pixels, ref float to, bool premultiply, int alpha, Vector128<int> low, Vector128<float> unit)
+    {
+        Vector128<int> pixel = pixels.AsInt32();
+        Vector128<float> c0 = Vector128.ConvertToSingle(pixel & low), c1 = Vector128.ConvertToSingle((pixel >>> 8) & low);
+        Vector128<float> c2 = Vector128.ConvertToSingle((pixel >>> 16) & low), c3 = Vector128.ConvertToSingle(pixel >>> 24);
+        if (premultiply)
+        {
+            Vector128<float> a = (alpha == 0 ? c0 : alpha == 1 ? c1 : alpha == 2 ? c2 : c3) * unit;
+            c0 = alpha == 0 ? c0 : c0 * a;
+            c1 = alpha == 1 ? c1 : c1 * a;
+            c2 = alpha == 2 ? c2 : c2 * a;
+            c3 = alpha == 3 ? c3 : c3 * a;
+        }
+
+        c0.StoreUnsafe(ref to);
+        c1.StoreUnsafe(ref to, Band);
+        c2.StoreUnsafe(ref to, 2 * Band);
+        c3.StoreUnsafe(ref to, 3 * Band);
+    }
+
     /// <summary>
     /// Rounds four channel vectors at <paramref name="from"/>, <see cref="Band"/> floats apart, to bytes and packs them into one
     /// 32-bit pixel per lane, the packs saturating to 0..255.
@@ -981,6 +1113,176 @@ internal static class ByteBlur
         // Per 128-bit half: channel 0 of four lanes, then channels 1, 2 and 3; the shuffle gathers each lane's four channels.
         Vector256<byte> bytes = Avx2.PackUnsignedSaturate(Avx2.PackSignedSaturate(c0, c1), Avx2.PackSignedSaturate(c2, c3));
         return Avx2.Shuffle(bytes, Vector256.Create((byte)0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15, 0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15)).AsSingle();
+    }
+
+    /// <summary><see cref="Pack(ref float)"/> on four lanes, with the same packs, for <see cref="Fast128"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<int> Pack128(ref float from)
+    {
+        Vector128<float> half = Vector128.Create(0.5f);
+        Vector128<int> c0 = Vector128.ConvertToInt32(Vector128.LoadUnsafe(ref from) + half);
+        Vector128<int> c1 = Vector128.ConvertToInt32(Vector128.LoadUnsafe(ref from, Band) + half);
+        Vector128<int> c2 = Vector128.ConvertToInt32(Vector128.LoadUnsafe(ref from, 2 * Band) + half);
+        Vector128<int> c3 = Vector128.ConvertToInt32(Vector128.LoadUnsafe(ref from, 3 * Band) + half);
+        Vector128<byte> bytes = Simd128.PackUnsignedSaturate(Simd128.PackSignedSaturate(c0, c1), Simd128.PackSignedSaturate(c2, c3));
+        return Simd128.Shuffle(bytes, Vector128.Create((byte)0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15)).AsInt32();
+    }
+
+    /// <summary>
+    /// Copies a 4 × 4 block of 32-bit values transposed: <c>to[c × toStride + r] = from[r × fromStride + c]</c>.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Transpose4(ref float from, nuint fromStride, ref float to, nuint toStride)
+    {
+        Vector128<int> r0 = Vector128.LoadUnsafe(ref from).AsInt32(), r1 = Vector128.LoadUnsafe(ref from, fromStride).AsInt32();
+        Vector128<int> r2 = Vector128.LoadUnsafe(ref from, 2 * fromStride).AsInt32(), r3 = Vector128.LoadUnsafe(ref from, 3 * fromStride).AsInt32();
+        Simd128.Transpose(ref r0, ref r1, ref r2, ref r3);
+        r0.AsSingle().StoreUnsafe(ref to);
+        r1.AsSingle().StoreUnsafe(ref to, toStride);
+        r2.AsSingle().StoreUnsafe(ref to, 2 * toStride);
+        r3.AsSingle().StoreUnsafe(ref to, 3 * toStride);
+    }
+
+    /// <summary>Copies an 8 × 8 block of 32-bit values transposed, as four <see cref="Transpose4"/> blocks.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Transpose8(ref float from, nuint fromStride, ref float to, nuint toStride)
+    {
+        Transpose4(ref from, fromStride, ref to, toStride);
+        Transpose4(ref Unsafe.Add(ref from, 4), fromStride, ref Unsafe.Add(ref to, 4 * toStride), toStride);
+        Transpose4(ref Unsafe.Add(ref from, 4 * fromStride), fromStride, ref Unsafe.Add(ref to, 4), toStride);
+        Transpose4(ref Unsafe.Add(ref from, (4 * fromStride) + 4), fromStride, ref Unsafe.Add(ref to, (4 * toStride) + 4), toStride);
+    }
+
+    /// <summary>
+    /// <see cref="LoadColumns"/>'s path for <see cref="Fast128"/>: 4 × 4 blocks of pixels transposed, so each vector is one pixel
+    /// of four rows, then split into channels (looked up in <paramref name="linear"/> for linear light) with the same arithmetic.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    private static void LoadColumns128(ReadOnlySpan<byte> band, int x0, int rowBytes, int stride, int alpha, bool premultiply, float[]? linear, Span<float> columns)
+    {
+        if (band.Length < ((Band - 1) * rowBytes) + (x0 * 4) + 32 || columns.Length < 8 * stride)
+        {
+            throw new ArgumentException("The band is too short.", nameof(band));
+        }
+
+        ref byte from = ref Unsafe.Add(ref MemoryMarshal.GetReference(band), x0 * 4);
+        ref float to = ref MemoryMarshal.GetReference(columns);
+        Vector128<int> low = Vector128.Create(0xFF);
+        Vector128<float> unit = Vector128.Create(1f / 255);
+        for (int rb = 0; rb < Band; rb += 4)
+        {
+            for (int cb = 0; cb < 8; cb += 4)
+            {
+                ref byte rows = ref Unsafe.Add(ref from, (rb * rowBytes) + (cb * 4));
+                Vector128<int> m0 = Vector128.LoadUnsafe(ref rows).AsInt32();
+                Vector128<int> m1 = Vector128.LoadUnsafe(ref rows, (nuint)rowBytes).AsInt32();
+                Vector128<int> m2 = Vector128.LoadUnsafe(ref rows, (nuint)(2 * rowBytes)).AsInt32();
+                Vector128<int> m3 = Vector128.LoadUnsafe(ref rows, (nuint)(3 * rowBytes)).AsInt32();
+                Simd128.Transpose(ref m0, ref m1, ref m2, ref m3);
+                ref float at = ref Unsafe.Add(ref to, (cb * stride) + rb);
+                if (linear is null)
+                {
+                    Split(m0.AsSingle(), ref at, premultiply, alpha, low, unit);
+                    Split(m1.AsSingle(), ref Unsafe.Add(ref at, stride), premultiply, alpha, low, unit);
+                    Split(m2.AsSingle(), ref Unsafe.Add(ref at, 2 * stride), premultiply, alpha, low, unit);
+                    Split(m3.AsSingle(), ref Unsafe.Add(ref at, 3 * stride), premultiply, alpha, low, unit);
+                }
+                else
+                {
+                    SplitLinear(m0, ref at, premultiply, alpha, linear, low, unit);
+                    SplitLinear(m1, ref Unsafe.Add(ref at, stride), premultiply, alpha, linear, low, unit);
+                    SplitLinear(m2, ref Unsafe.Add(ref at, 2 * stride), premultiply, alpha, linear, low, unit);
+                    SplitLinear(m3, ref Unsafe.Add(ref at, 3 * stride), premultiply, alpha, linear, low, unit);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Splits four 32-bit pixels into channel vectors at <paramref name="to"/>, <see cref="Band"/> floats apart, the colors looked
+    /// up in <paramref name="linear"/>, premultiplied if asked, as <see cref="LoadLinear"/> does.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void SplitLinear(Vector128<int> pixel, ref float to, bool premultiply, int alpha, float[] linear, Vector128<int> low, Vector128<float> unit)
+    {
+        Vector128<float> a = Vector128.ConvertToSingle((pixel >>> (alpha * 8)) & low);
+        Vector128<float> share = a * unit;
+        for (int k = 0; k < 4; k++)
+        {
+            Vector128<int> b = (pixel >>> (k * 8)) & low;
+            Vector128<float> c = k == alpha ? a : Vector128.Create(linear[b.GetElement(0)], linear[b.GetElement(1)], linear[b.GetElement(2)], linear[b.GetElement(3)]);
+            (k == alpha || !premultiply ? c : c * share).StoreUnsafe(ref to, (nuint)(k * Band));
+        }
+    }
+
+    /// <summary>
+    /// <see cref="StoreColumns"/>'s path for <see cref="Fast128"/>: bytes packed four pixels at a time and transposed back to rows
+    /// in 4 × 4 blocks, or 16-bit values interleaved as <see cref="StoreDeep"/> does.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    private static void StoreColumns128(Span<byte> band, Span<ushort> deep, int x0, int rowBytes, int stride, ReadOnlySpan<float> columns)
+    {
+        ref float from = ref MemoryMarshal.GetReference(columns);
+        if (!deep.IsEmpty)
+        {
+            if (deep.Length < ((Band - 1) * rowBytes) + (x0 * 4) + 32 || columns.Length < 8 * stride)
+            {
+                throw new ArgumentException("The band is too short.", nameof(deep));
+            }
+
+            ref byte target = ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref MemoryMarshal.GetReference(deep), x0 * 4));
+            Vector128<float> scale = Vector128.Create(256f), half = Vector128.Create(0.5f);
+            Vector128<ushort> top = Vector128.Create((ushort)(255 << 8));
+            int step = rowBytes * 2;
+            for (int i = 0; i < 8; i++)
+            {
+                for (int part = 0; part < Band; part += 4)
+                {
+                    ref float at = ref Unsafe.Add(ref from, (i * stride) + part);
+                    Vector128<int> c0 = Vector128.ConvertToInt32((Vector128.LoadUnsafe(ref at) * scale) + half);
+                    Vector128<int> c1 = Vector128.ConvertToInt32((Vector128.LoadUnsafe(ref at, Band) * scale) + half);
+                    Vector128<int> c2 = Vector128.ConvertToInt32((Vector128.LoadUnsafe(ref at, 2 * Band) * scale) + half);
+                    Vector128<int> c3 = Vector128.ConvertToInt32((Vector128.LoadUnsafe(ref at, 3 * Band) * scale) + half);
+                    Vector128<short> p01 = Vector128.Min(Simd128.PackUnsignedSaturate(c0, c1), top).AsInt16();
+                    Vector128<short> p23 = Vector128.Min(Simd128.PackUnsignedSaturate(c2, c3), top).AsInt16();
+
+                    // Rows 0 to 3 of channels 0 and 1, then of 2 and 3; two zips interleave each row's four.
+                    Vector128<short> even = Simd128.ZipLow(p01, p23), odd = Simd128.ZipHigh(p01, p23);
+                    Vector128<ulong> rows01 = Simd128.ZipLow(even, odd).AsUInt64(), rows23 = Simd128.ZipHigh(even, odd).AsUInt64();
+                    ref byte pixel = ref Unsafe.Add(ref target, ((part * rowBytes) + (i * 4)) * 2);
+                    Unsafe.WriteUnaligned(ref pixel, rows01.GetElement(0));
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref pixel, step), rows01.GetElement(1));
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref pixel, 2 * step), rows23.GetElement(0));
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref pixel, 3 * step), rows23.GetElement(1));
+                }
+            }
+
+            return;
+        }
+
+        if (band.Length < ((Band - 1) * rowBytes) + (x0 * 4) + 32 || columns.Length < 8 * stride)
+        {
+            throw new ArgumentException("The band is too short.", nameof(band));
+        }
+
+        ref byte to = ref Unsafe.Add(ref MemoryMarshal.GetReference(band), x0 * 4);
+        for (int rb = 0; rb < Band; rb += 4)
+        {
+            for (int cb = 0; cb < 8; cb += 4)
+            {
+                ref float at = ref Unsafe.Add(ref from, (cb * stride) + rb);
+                Vector128<int> m0 = Pack128(ref at);
+                Vector128<int> m1 = Pack128(ref Unsafe.Add(ref at, stride));
+                Vector128<int> m2 = Pack128(ref Unsafe.Add(ref at, 2 * stride));
+                Vector128<int> m3 = Pack128(ref Unsafe.Add(ref at, 3 * stride));
+                Simd128.Transpose(ref m0, ref m1, ref m2, ref m3);
+                ref byte rows = ref Unsafe.Add(ref to, (rb * rowBytes) + (cb * 4));
+                m0.AsByte().StoreUnsafe(ref rows);
+                m1.AsByte().StoreUnsafe(ref rows, (nuint)rowBytes);
+                m2.AsByte().StoreUnsafe(ref rows, (nuint)(2 * rowBytes));
+                m3.AsByte().StoreUnsafe(ref rows, (nuint)(3 * rowBytes));
+            }
+        }
     }
 
     /// <summary>
@@ -1184,6 +1486,16 @@ internal sealed class LaneBoxes : IDisposable
             for (int k = 0, slot = leaving; k < slots - 2; k++, slot = slot + 1 == slots ? 0 : slot + 1)
             {
                 ref float row = ref Unsafe.Add(ref ring, slot * width);
+                if (ByteBlur.Narrow128)
+                {
+                    for (nuint i = 0; i < (nuint)width; i += (nuint)Vector128<float>.Count)
+                    {
+                        (Vector128.LoadUnsafe(ref s, i) + Vector128.LoadUnsafe(ref row, i)).StoreUnsafe(ref s, i);
+                    }
+
+                    continue;
+                }
+
                 for (nuint i = 0; i < (nuint)width; i += (nuint)Vector256<float>.Count)
                 {
                     (Vector256.LoadUnsafe(ref s, i) + Vector256.LoadUnsafe(ref row, i)).StoreUnsafe(ref s, i);
@@ -1200,6 +1512,19 @@ internal sealed class LaneBoxes : IDisposable
         ref float b = ref Unsafe.Add(ref ring, head * width);
         ref float l = ref Unsafe.Add(ref ring, leaving * width);
         ref float t = ref MemoryMarshal.GetReference(target);
+        if (ByteBlur.Narrow128)
+        {
+            Vector128<float> vn4 = Vector128.Create(norm), vo4 = Vector128.Create(outer);
+            for (nuint i = 0; i < (nuint)width; i += (nuint)Vector128<float>.Count)
+            {
+                Vector128<float> window = Vector128.LoadUnsafe(ref s, i), next = Vector128.LoadUnsafe(ref b, i);
+                ((window * vn4) + ((Vector128.LoadUnsafe(ref u, i) + next) * vo4)).StoreUnsafe(ref t, i);
+                (window + (next - Vector128.LoadUnsafe(ref l, i))).StoreUnsafe(ref s, i);
+            }
+
+            return;
+        }
+
         Vector256<float> vn = Vector256.Create(norm), vo = Vector256.Create(outer);
         for (nuint i = 0; i < (nuint)width; i += (nuint)Vector256<float>.Count)
         {

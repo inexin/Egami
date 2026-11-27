@@ -500,6 +500,43 @@ internal static class ConvolutionKernels
                 Store(a7, ref o, rowLength, i, count, 7);
             }
         }
+        else if (Vector128.IsHardwareAccelerated)
+        {
+            ref float r = ref MemoryMarshal.GetReference(ring);
+            ref float o = ref MemoryMarshal.GetReference(outputs);
+            Span<nuint> rows = stackalloc nuint[taps + count - 1];
+            for (int k = 0; k < rows.Length; k++)
+            {
+                rows[k] = (nuint)((first + k) % ringRows * rowLength);
+            }
+
+            for (; i <= rowLength - Vector128<float>.Count; i += Vector128<float>.Count)
+            {
+                // One accumulator per output row, all in registers; output j takes ring row k with weight k − j.
+                Vector128<float> a0 = Vector128<float>.Zero, a1 = a0, a2 = a0, a3 = a0, a4 = a0, a5 = a0, a6 = a0, a7 = a0;
+                for (int k = 0; k < rows.Length; k++)
+                {
+                    Vector128<float> v = Vector128.LoadUnsafe(ref r, rows[k] + (nuint)i);
+                    AddTap(ref a0, v, weights, k, count, 0);
+                    AddTap(ref a1, v, weights, k, count, 1);
+                    AddTap(ref a2, v, weights, k, count, 2);
+                    AddTap(ref a3, v, weights, k, count, 3);
+                    AddTap(ref a4, v, weights, k, count, 4);
+                    AddTap(ref a5, v, weights, k, count, 5);
+                    AddTap(ref a6, v, weights, k, count, 6);
+                    AddTap(ref a7, v, weights, k, count, 7);
+                }
+
+                Store(a0, ref o, rowLength, i, count, 0);
+                Store(a1, ref o, rowLength, i, count, 1);
+                Store(a2, ref o, rowLength, i, count, 2);
+                Store(a3, ref o, rowLength, i, count, 3);
+                Store(a4, ref o, rowLength, i, count, 4);
+                Store(a5, ref o, rowLength, i, count, 5);
+                Store(a6, ref o, rowLength, i, count, 6);
+                Store(a7, ref o, rowLength, i, count, 7);
+            }
+        }
 
         for (int j = 0; j < count; j++)
         {
@@ -546,6 +583,39 @@ internal static class ConvolutionKernels
                 a7.StoreUnsafe(ref d, (nuint)(i + 56));
             }
         }
+        else if (Vector128.IsHardwareAccelerated && source.Length >= destination.Length + ((weights.Length - 1) * 4))
+        {
+            // 32 outputs at a time in eight registers, every tap summed into them before they are stored: the row is written once
+            // instead of once per tap, which matters for wide kernels.
+            ref float s = ref MemoryMarshal.GetReference(source);
+            ref float d = ref MemoryMarshal.GetReference(destination);
+            for (; i <= destination.Length - 32; i += 32)
+            {
+                Vector128<float> a0 = Vector128<float>.Zero, a1 = a0, a2 = a0, a3 = a0, a4 = a0, a5 = a0, a6 = a0, a7 = a0;
+                for (int k = 0; k < weights.Length; k++)
+                {
+                    nuint at = (nuint)(i + (k * 4));
+                    float w = weights[k];
+                    a0 += Vector128.LoadUnsafe(ref s, at) * w;
+                    a1 += Vector128.LoadUnsafe(ref s, at + 4) * w;
+                    a2 += Vector128.LoadUnsafe(ref s, at + 8) * w;
+                    a3 += Vector128.LoadUnsafe(ref s, at + 12) * w;
+                    a4 += Vector128.LoadUnsafe(ref s, at + 16) * w;
+                    a5 += Vector128.LoadUnsafe(ref s, at + 20) * w;
+                    a6 += Vector128.LoadUnsafe(ref s, at + 24) * w;
+                    a7 += Vector128.LoadUnsafe(ref s, at + 28) * w;
+                }
+
+                a0.StoreUnsafe(ref d, (nuint)i);
+                a1.StoreUnsafe(ref d, (nuint)(i + 4));
+                a2.StoreUnsafe(ref d, (nuint)(i + 8));
+                a3.StoreUnsafe(ref d, (nuint)(i + 12));
+                a4.StoreUnsafe(ref d, (nuint)(i + 16));
+                a5.StoreUnsafe(ref d, (nuint)(i + 20));
+                a6.StoreUnsafe(ref d, (nuint)(i + 24));
+                a7.StoreUnsafe(ref d, (nuint)(i + 28));
+            }
+        }
 
         // The rest, tap by tap, in the same order per element.
         Span<float> tail = destination[i..];
@@ -565,7 +635,25 @@ internal static class ConvolutionKernels
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void AddTap(ref Vector128<float> sum, Vector128<float> v, ReadOnlySpan<float> weights, int k, int count, int j)
+    {
+        if (j < count && (uint)(k - j) < (uint)weights.Length)
+        {
+            sum += v * weights[k - j];
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Store(Vector256<float> sum, ref float outputs, int rowLength, int i, int count, int j)
+    {
+        if (j < count)
+        {
+            sum.StoreUnsafe(ref outputs, (nuint)((j * rowLength) + i));
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Store(Vector128<float> sum, ref float outputs, int rowLength, int i, int count, int j)
     {
         if (j < count)
         {
@@ -585,6 +673,16 @@ internal static class ConvolutionKernels
             {
                 Vector256<float> product = Vector256.LoadUnsafe(ref s, (nuint)i) * weight;
                 (first ? product : Vector256.LoadUnsafe(ref d, (nuint)i) + product).StoreUnsafe(ref d, (nuint)i);
+            }
+        }
+        else if (Vector128.IsHardwareAccelerated && source.Length >= destination.Length)
+        {
+            ref float s = ref MemoryMarshal.GetReference(source);
+            ref float d = ref MemoryMarshal.GetReference(destination);
+            for (; i <= destination.Length - Vector128<float>.Count; i += Vector128<float>.Count)
+            {
+                Vector128<float> product = Vector128.LoadUnsafe(ref s, (nuint)i) * weight;
+                (first ? product : Vector128.LoadUnsafe(ref d, (nuint)i) + product).StoreUnsafe(ref d, (nuint)i);
             }
         }
 

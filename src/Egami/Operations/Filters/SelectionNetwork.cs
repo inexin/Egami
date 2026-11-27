@@ -95,6 +95,21 @@ internal sealed class SelectionNetwork
         }
     }
 
+    /// <summary>Runs the network on 128-bit vectors (Arm64, and x86 without AVX2), as <see cref="Run(Span{Vector256{byte}})"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    internal void Run(Span<Vector128<byte>> values)
+    {
+        ref Vector128<byte> v = ref MemoryMarshal.GetReference(values);
+        foreach ((int low, int high) in _pairs)
+        {
+            ref Vector128<byte> a = ref Unsafe.Add(ref v, low);
+            ref Vector128<byte> b = ref Unsafe.Add(ref v, high);
+            Vector128<byte> min = Vector128.Min(a, b);
+            b = Vector128.Max(a, b);
+            a = min;
+        }
+    }
+
     /// <summary>Runs the network on scalars, for the ends of rows.</summary>
     internal void Run(Span<byte> values)
     {
