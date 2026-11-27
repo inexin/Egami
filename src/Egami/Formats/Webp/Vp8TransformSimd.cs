@@ -1,45 +1,47 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
+
+using Egami.Simd;
 
 namespace Egami.Formats.Webp;
 
 /// <summary>
-/// SSE4.1 versions of the VP8 block kernels: the forward and inverse DCT, quantization, squared error and the weighted
-/// Hadamard transform of the spectral distortion. Each works in 32-bit lanes with the scalar code's exact integer steps, so
-/// the results are identical; the 4 × 4 blocks are transposed between the row and column passes.
+/// 128-bit versions of the VP8 block kernels (SSE4.1 on x86, and Arm64, through <see cref="Simd128"/>): the forward and
+/// inverse DCT, quantization, squared error and the weighted Hadamard transform of the spectral distortion. Each works in
+/// 32-bit lanes with the scalar code's exact integer steps, so the results are identical; the 4 × 4 blocks are transposed
+/// between the row and column passes.
 /// </summary>
 [SkipLocalsInit]
 internal static class Vp8TransformSimd
 {
     private const int S = Vp8Dsp.Stride;
 
-    /// <summary>Gets whether these kernels run (SSE4.1).</summary>
-    internal static bool IsSupported => Sse41.IsSupported;
+    /// <summary>Gets whether these kernels run (SSE4.1 or Arm64).</summary>
+    internal static bool IsSupported => Simd128.IsSupported;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<int> Load4(ref byte at) => Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<uint>(ref at)).AsByte());
+    private static Vector128<int> Load4(ref byte at) => Simd128.WidenToInt32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<uint>(ref at)).AsByte());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Transpose(ref Vector128<int> r0, ref Vector128<int> r1, ref Vector128<int> r2, ref Vector128<int> r3)
     {
-        Vector128<int> t0 = Sse2.UnpackLow(r0, r1), t1 = Sse2.UnpackLow(r2, r3);
-        Vector128<int> t2 = Sse2.UnpackHigh(r0, r1), t3 = Sse2.UnpackHigh(r2, r3);
-        r0 = Sse2.UnpackLow(t0.AsInt64(), t1.AsInt64()).AsInt32();
-        r1 = Sse2.UnpackHigh(t0.AsInt64(), t1.AsInt64()).AsInt32();
-        r2 = Sse2.UnpackLow(t2.AsInt64(), t3.AsInt64()).AsInt32();
-        r3 = Sse2.UnpackHigh(t2.AsInt64(), t3.AsInt64()).AsInt32();
+        Vector128<int> t0 = Simd128.ZipLow(r0, r1), t1 = Simd128.ZipLow(r2, r3);
+        Vector128<int> t2 = Simd128.ZipHigh(r0, r1), t3 = Simd128.ZipHigh(r2, r3);
+        r0 = Simd128.ZipLow(t0.AsInt64(), t1.AsInt64()).AsInt32();
+        r1 = Simd128.ZipHigh(t0.AsInt64(), t1.AsInt64()).AsInt32();
+        r2 = Simd128.ZipLow(t2.AsInt64(), t3.AsInt64()).AsInt32();
+        r3 = Simd128.ZipHigh(t2.AsInt64(), t3.AsInt64()).AsInt32();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Store4(ref short at, Vector128<int> v) =>
-        Unsafe.WriteUnaligned(ref Unsafe.As<short, byte>(ref at), Sse2.PackSignedSaturate(v, v).AsUInt64().ToScalar());
+        Unsafe.WriteUnaligned(ref Unsafe.As<short, byte>(ref at), Simd128.PackSignedSaturate(v, v).AsUInt64().ToScalar());
 
     /// <summary>Stores the low 16 bits of each lane, wrapping as a cast to short does.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void StoreLow16(ref short at, Vector128<int> v) =>
-        Unsafe.WriteUnaligned(ref Unsafe.As<short, byte>(ref at), Ssse3.Shuffle(v.AsByte(), Vector128.Create((byte)0, 1, 4, 5, 8, 9, 12, 13, 0, 1, 4, 5, 8, 9, 12, 13)).AsUInt64().ToScalar());
+        Unsafe.WriteUnaligned(ref Unsafe.As<short, byte>(ref at), Simd128.Shuffle(v.AsByte(), Vector128.Create((byte)0, 1, 4, 5, 8, 9, 12, 13, 0, 1, 4, 5, 8, 9, 12, 13)).AsUInt64().ToScalar());
 
     /// <summary>The forward DCT of <see cref="Vp8EncDsp.ForwardTransform"/>.</summary>
     internal static void ForwardTransform(ReadOnlySpan<byte> src, int s, ReadOnlySpan<byte> pred, int p, Span<short> output)
@@ -122,8 +124,8 @@ internal static class Vp8TransformSimd
         }
 
         // Row k of both blocks: the left block's in lanes 0 to 3, the right block's in lanes 4 to 7.
-        Vector128<short> i0 = Sse2.UnpackLow(q0.AsInt64(), q2.AsInt64()).AsInt16(), i1 = Sse2.UnpackHigh(q0.AsInt64(), q2.AsInt64()).AsInt16();
-        Vector128<short> i2 = Sse2.UnpackLow(q1.AsInt64(), q3.AsInt64()).AsInt16(), i3 = Sse2.UnpackHigh(q1.AsInt64(), q3.AsInt64()).AsInt16();
+        Vector128<short> i0 = Simd128.ZipLow(q0.AsInt64(), q2.AsInt64()).AsInt16(), i1 = Simd128.ZipHigh(q0.AsInt64(), q2.AsInt64()).AsInt16();
+        Vector128<short> i2 = Simd128.ZipLow(q1.AsInt64(), q3.AsInt64()).AsInt16(), i3 = Simd128.ZipHigh(q1.AsInt64(), q3.AsInt64()).AsInt16();
 
         // The vertical pass over the columns (lanes), as the scalar one.
         Vector128<short> a = i0 + i2, b = i0 - i2;
@@ -152,7 +154,7 @@ internal static class Vp8TransformSimd
     internal static void DcAddTwo(short dcLeft, short dcRight, ref byte dst, int stride)
     {
         // Two broadcasts and an unpack; building the vector from halves goes through the stack.
-        Vector128<short> add = Sse2.UnpackLow(Vector128.Create((short)((dcLeft + 4) >> 3)).AsInt64(), Vector128.Create((short)((dcRight + 4) >> 3)).AsInt64()).AsInt16();
+        Vector128<short> add = Simd128.ZipLow(Vector128.Create((short)((dcLeft + 4) >> 3)).AsInt64(), Vector128.Create((short)((dcRight + 4) >> 3)).AsInt64()).AsInt16();
         AddRow8(ref dst, add);
         AddRow8(ref Unsafe.Add(ref dst, stride), add);
         AddRow8(ref Unsafe.Add(ref dst, 2 * stride), add);
@@ -163,36 +165,36 @@ internal static class Vp8TransformSimd
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void AddRow8(ref byte at, Vector128<short> residual)
     {
-        Vector128<short> pixels = Sse2.UnpackLow(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref at)).AsByte(), Vector128<byte>.Zero).AsInt16();
-        Unsafe.WriteUnaligned(ref at, Sse2.PackUnsignedSaturate(pixels + residual, pixels + residual).AsUInt64().ToScalar());
+        Vector128<short> pixels = Simd128.ZipLow(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref at)).AsByte(), Vector128<byte>.Zero).AsInt16();
+        Unsafe.WriteUnaligned(ref at, Simd128.PackUnsignedSaturate(pixels + residual, pixels + residual).AsUInt64().ToScalar());
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<short> Mul1(Vector128<short> a) => Sse2.MultiplyHigh(a, Vector128.Create((short)20091)) + a;
+    private static Vector128<short> Mul1(Vector128<short> a) => Simd128.MultiplyHigh(a, Vector128.Create((short)20091)) + a;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<short> Mul2(Vector128<short> a) => Sse2.MultiplyHigh(a, Vector128.Create(unchecked((short)35468))) + a;
+    private static Vector128<short> Mul2(Vector128<short> a) => Simd128.MultiplyHigh(a, Vector128.Create(unchecked((short)35468))) + a;
 
     /// <summary>Transposes the 4 × 4 block in lanes 0 to 3 of the four vectors, and the one in lanes 4 to 7.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Transpose(ref Vector128<short> r0, ref Vector128<short> r1, ref Vector128<short> r2, ref Vector128<short> r3)
     {
-        Vector128<short> left01 = Sse2.UnpackLow(r0, r1), left23 = Sse2.UnpackLow(r2, r3);
-        Vector128<short> right01 = Sse2.UnpackHigh(r0, r1), right23 = Sse2.UnpackHigh(r2, r3);
-        Vector128<int> left0 = Sse2.UnpackLow(left01.AsInt32(), left23.AsInt32()), left1 = Sse2.UnpackHigh(left01.AsInt32(), left23.AsInt32());
-        Vector128<int> right0 = Sse2.UnpackLow(right01.AsInt32(), right23.AsInt32()), right1 = Sse2.UnpackHigh(right01.AsInt32(), right23.AsInt32());
-        r0 = Sse2.UnpackLow(left0.AsInt64(), right0.AsInt64()).AsInt16();
-        r1 = Sse2.UnpackHigh(left0.AsInt64(), right0.AsInt64()).AsInt16();
-        r2 = Sse2.UnpackLow(left1.AsInt64(), right1.AsInt64()).AsInt16();
-        r3 = Sse2.UnpackHigh(left1.AsInt64(), right1.AsInt64()).AsInt16();
+        Vector128<short> left01 = Simd128.ZipLow(r0, r1), left23 = Simd128.ZipLow(r2, r3);
+        Vector128<short> right01 = Simd128.ZipHigh(r0, r1), right23 = Simd128.ZipHigh(r2, r3);
+        Vector128<int> left0 = Simd128.ZipLow(left01.AsInt32(), left23.AsInt32()), left1 = Simd128.ZipHigh(left01.AsInt32(), left23.AsInt32());
+        Vector128<int> right0 = Simd128.ZipLow(right01.AsInt32(), right23.AsInt32()), right1 = Simd128.ZipHigh(right01.AsInt32(), right23.AsInt32());
+        r0 = Simd128.ZipLow(left0.AsInt64(), right0.AsInt64()).AsInt16();
+        r1 = Simd128.ZipHigh(left0.AsInt64(), right0.AsInt64()).AsInt16();
+        r2 = Simd128.ZipLow(left1.AsInt64(), right1.AsInt64()).AsInt16();
+        r3 = Simd128.ZipHigh(left1.AsInt64(), right1.AsInt64()).AsInt16();
     }
 
     private static void InverseTransformAdd(ref short ri, ref byte row, int stride)
     {
-        Vector128<int> i0 = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref ri))).AsInt16());
-        Vector128<int> i1 = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref ri, 4)))).AsInt16());
-        Vector128<int> i2 = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref ri, 8)))).AsInt16());
-        Vector128<int> i3 = Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref ri, 12)))).AsInt16());
+        Vector128<int> i0 = Simd128.WidenToInt32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref ri))).AsInt16());
+        Vector128<int> i1 = Simd128.WidenToInt32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref ri, 4)))).AsInt16());
+        Vector128<int> i2 = Simd128.WidenToInt32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref ri, 8)))).AsInt16());
+        Vector128<int> i3 = Simd128.WidenToInt32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref Unsafe.Add(ref ri, 12)))).AsInt16());
         InverseRows(i0, i1, i2, i3, out Vector128<int> r0, out Vector128<int> r1, out Vector128<int> r2, out Vector128<int> r3);
         AddRow(ref row, r0);
         AddRow(ref Unsafe.Add(ref row, stride), r1);
@@ -247,7 +249,7 @@ internal static class Vp8TransformSimd
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<int> Load4Shorts(ref short at) => Sse41.ConvertToVector128Int32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref at))).AsInt16());
+    private static Vector128<int> Load4Shorts(ref short at) => Simd128.WidenToInt32(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.As<short, byte>(ref at))).AsInt16());
 
     /// <summary>
     /// Quantizes four rows of coefficients: the levels go out in zigzag order at <paramref name="levels"/>, and each row becomes
@@ -265,19 +267,19 @@ internal static class Vp8TransformSimd
         Vector128<int> level1 = QuantizeRow(ref r1, Vector128.LoadUnsafe(ref Unsafe.Add(ref sharpen, 4)), acIq, acBias, acThresh, acQ, max);
         Vector128<int> level2 = QuantizeRow(ref r2, Vector128.LoadUnsafe(ref Unsafe.Add(ref sharpen, 8)), acIq, acBias, acThresh, acQ, max);
         Vector128<int> level3 = QuantizeRow(ref r3, Vector128.LoadUnsafe(ref Unsafe.Add(ref sharpen, 12)), acIq, acBias, acThresh, acQ, max);
-        Vector128<short> l03 = Sse2.PackSignedSaturate(level0, level1);
-        Vector128<short> l47 = Sse2.PackSignedSaturate(level2, level3);
+        Vector128<short> l03 = Simd128.PackSignedSaturate(level0, level1);
+        Vector128<short> l47 = Simd128.PackSignedSaturate(level2, level3);
 
         // Raster to zigzag: 0 1 4 8 5 2 3 6 | 9 12 13 10 7 11 14 15, from raster 0–7 (low) and 8–15 (high).
         Vector128<byte> lowFromLow = Vector128.Create((byte)0, 1, 2, 3, 8, 9, 0xFF, 0xFF, 10, 11, 4, 5, 6, 7, 12, 13);
         Vector128<byte> lowFromHigh = Vector128.Create((byte)0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
         Vector128<byte> highFromLow = Vector128.Create((byte)0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 14, 15, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
         Vector128<byte> highFromHigh = Vector128.Create((byte)2, 3, 8, 9, 10, 11, 4, 5, 0xFF, 0xFF, 6, 7, 12, 13, 14, 15);
-        Vector128<short> z0 = (Ssse3.Shuffle(l03.AsByte(), lowFromLow) | Ssse3.Shuffle(l47.AsByte(), lowFromHigh)).AsInt16();
-        Vector128<short> z1 = (Ssse3.Shuffle(l03.AsByte(), highFromLow) | Ssse3.Shuffle(l47.AsByte(), highFromHigh)).AsInt16();
+        Vector128<short> z0 = (Simd128.Shuffle(l03.AsByte(), lowFromLow) | Simd128.Shuffle(l47.AsByte(), lowFromHigh)).AsInt16();
+        Vector128<short> z1 = (Simd128.Shuffle(l03.AsByte(), highFromLow) | Simd128.Shuffle(l47.AsByte(), highFromHigh)).AsInt16();
         z0.StoreUnsafe(ref levels);
         z1.StoreUnsafe(ref Unsafe.Add(ref levels, 8));
-        return ~Sse2.MoveMask(Vector128.Equals(Sse2.PackSignedSaturate(l03, l47), Vector128<sbyte>.Zero).AsByte()) & 0xFFFF;
+        return ~(int)Vector128.Equals(Simd128.PackSignedSaturate(l03, l47), Vector128<sbyte>.Zero).AsByte().ExtractMostSignificantBits() & 0xFFFF;
 
         static Vector128<int> QuantizeRow(ref Vector128<int> v, Vector128<int> sharpen, Vector128<int> iq, Vector128<int> bias, Vector128<int> thresh, Vector128<int> q, Vector128<int> max)
         {
@@ -301,10 +303,10 @@ internal static class Vp8TransformSimd
         {
             for (int x = 0; x < w; x += 8)
             {
-                Vector128<short> va = Sse41.ConvertToVector128Int16(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.Add(ref ra, x))).AsByte());
-                Vector128<short> vb = Sse41.ConvertToVector128Int16(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.Add(ref rb, x))).AsByte());
+                Vector128<short> va = Simd128.WidenToInt16(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.Add(ref ra, x))).AsByte());
+                Vector128<short> vb = Simd128.WidenToInt16(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<long>(ref Unsafe.Add(ref rb, x))).AsByte());
                 Vector128<short> d = va - vb;
-                sum += Sse2.MultiplyAddAdjacent(d, d);
+                sum += Simd128.MultiplyAddAdjacent(d, d);
             }
 
             ra = ref Unsafe.Add(ref ra, S);
@@ -444,17 +446,17 @@ internal static class Vp8TransformSimd
             out Vector128<int> o2,
             out Vector128<int> o3);
         Vector128<int> last = Vector128.Create(31);
-        Vector128<short> low = Sse2.PackSignedSaturate(Vector128.Min(Vector128.Abs(o0) >> 3, last), Vector128.Min(Vector128.Abs(o1) >> 3, last));
-        Vector128<short> high = Sse2.PackSignedSaturate(Vector128.Min(Vector128.Abs(o2) >> 3, last), Vector128.Min(Vector128.Abs(o3) >> 3, last));
-        Sse2.PackUnsignedSaturate(low, high).StoreUnsafe(ref MemoryMarshal.GetReference(bins));
+        Vector128<short> low = Simd128.PackSignedSaturate(Vector128.Min(Vector128.Abs(o0) >> 3, last), Vector128.Min(Vector128.Abs(o1) >> 3, last));
+        Vector128<short> high = Simd128.PackSignedSaturate(Vector128.Min(Vector128.Abs(o2) >> 3, last), Vector128.Min(Vector128.Abs(o3) >> 3, last));
+        Simd128.PackUnsignedSaturate(low, high).StoreUnsafe(ref MemoryMarshal.GetReference(bins));
     }
 
     /// <summary>Stores lanes already within 0 to 255 as 4 bytes.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Store4Bytes(ref byte at, Vector128<int> v)
     {
-        Vector128<short> packed = Sse2.PackSignedSaturate(v, v);
-        Unsafe.WriteUnaligned(ref at, Sse2.PackUnsignedSaturate(packed, packed).AsUInt32().ToScalar());
+        Vector128<short> packed = Simd128.PackSignedSaturate(v, v);
+        Unsafe.WriteUnaligned(ref at, Simd128.PackUnsignedSaturate(packed, packed).AsUInt32().ToScalar());
     }
 
     private static class MemoryArrays

@@ -216,6 +216,31 @@ internal static class Simd128
     internal static Vector128<byte> SubtractSaturate(Vector128<byte> a, Vector128<byte> b) =>
         Sse2.IsSupported ? Sse2.SubtractSaturate(a, b) : AdvSimd.SubtractSaturate(a, b);
 
+    /// <summary>Zero-extends the low four bytes to 32-bit lanes (<c>pmovzxbd</c>, two <c>uxtl</c>).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<int> WidenToInt32(Vector128<byte> a) =>
+        Sse41.IsSupported ? Sse41.ConvertToVector128Int32(a) : Vector128.WidenLower(Vector128.WidenLower(a)).AsInt32();
+
+    /// <summary>Sign-extends the low four 16-bit lanes to 32 bits (<c>pmovsxwd</c>, <c>sxtl</c>).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<int> WidenToInt32(Vector128<short> a) =>
+        Sse41.IsSupported ? Sse41.ConvertToVector128Int32(a) : Vector128.WidenLower(a);
+
+    /// <summary>Zero-extends the low eight bytes to 16-bit lanes (<c>pmovzxbw</c>, <c>uxtl</c>).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<short> WidenToInt16(Vector128<byte> a) =>
+        Sse41.IsSupported ? Sse41.ConvertToVector128Int16(a) : Vector128.WidenLower(a).AsInt16();
+
+    /// <summary>Adds signed bytes with saturation.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<sbyte> AddSaturate(Vector128<sbyte> a, Vector128<sbyte> b) =>
+        Sse2.IsSupported ? Sse2.AddSaturate(a, b) : AdvSimd.AddSaturate(a, b);
+
+    /// <summary>Subtracts signed bytes with saturation.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<sbyte> SubtractSaturate(Vector128<sbyte> a, Vector128<sbyte> b) =>
+        Sse2.IsSupported ? Sse2.SubtractSaturate(a, b) : AdvSimd.SubtractSaturate(a, b);
+
     /// <summary>The rounded average of bytes, <c>(a + b + 1) &gt;&gt; 1</c>: <c>pavgb</c> and <c>urhadd</c>.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static Vector128<byte> Average(Vector128<byte> a, Vector128<byte> b) =>

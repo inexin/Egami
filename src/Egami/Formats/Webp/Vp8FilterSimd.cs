@@ -1,16 +1,17 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
+
+using Egami.Simd;
 
 namespace Egami.Formats.Webp;
 
 /// <summary>
-/// The VP8 loop filters on 16 positions at a time. With SSE2 the arithmetic is libvpx's: pixels biased to signed bytes and
-/// saturating 8-bit adds and subtracts, which clamp exactly where the scalar filters (<see cref="Vp8Dsp"/>) clamp, with only the
-/// macroblock edge's 27, 18 and 9 multiples in 16-bit lanes; elsewhere it is the scalar filters' arithmetic in 16-bit lanes.
-/// Horizontal edges load their rows directly, vertical edges are transposed in and out (SSE2). The callers fall back to the
-/// scalar filters when vectors are not accelerated.
+/// The VP8 loop filters on 16 positions at a time. With <see cref="Simd128"/> (SSE4.1 on x86, and Arm64) the arithmetic is
+/// libvpx's: pixels biased to signed bytes and saturating 8-bit adds and subtracts, which clamp exactly where the scalar filters
+/// (<see cref="Vp8Dsp"/>) clamp, with only the macroblock edge's 27, 18 and 9 multiples in 16-bit lanes; elsewhere it is the
+/// scalar filters' arithmetic in 16-bit lanes. Horizontal edges load their rows directly, vertical edges are transposed in and
+/// out. The callers fall back to the scalar filters when vectors are not accelerated.
 /// </summary>
 internal static class Vp8FilterSimd
 {
@@ -25,8 +26,8 @@ internal static class Vp8FilterSimd
     /// <summary>Gets whether horizontal edges are filtered with vectors.</summary>
     internal static bool Rows => Vector128.IsHardwareAccelerated;
 
-    /// <summary>Gets whether vertical edges are filtered with vectors (the transposes need SSE2).</summary>
-    internal static bool Columns => Sse2.IsSupported;
+    /// <summary>Gets whether vertical edges are filtered with vectors (the transposes need byte interleaves).</summary>
+    internal static bool Columns => Simd128.IsSupported;
 
     /// <summary>Filters a horizontal edge 16 pixels wide: the row at <paramref name="at"/> is q0, the row above p0.</summary>
     internal static void HorizontalEdge16(Span<byte> p, int at, int stride, Kind kind, int threshold, int interior, int hev)
@@ -140,7 +141,7 @@ internal static class Vp8FilterSimd
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Edge Filter(Edge e, Kind kind, int threshold, int interior, int hev)
     {
-        if (Sse2.IsSupported)
+        if (Simd128.IsSupported)
         {
             return kind switch
             {
@@ -172,7 +173,7 @@ internal static class Vp8FilterSimd
         Unsafe.WriteUnaligned(ref Unsafe.Add(ref v, offset), halves.GetElement(1));
     }
 
-    /// <summary>The filter on 16 positions in 16-bit lanes, without SSE2: p3 to q3 are the 8 pixels across the edge at each.</summary>
+    /// <summary>The filter on 16 positions in 16-bit lanes, without <see cref="Simd128"/>: p3 to q3 are the 8 pixels across the edge at each.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void Filter(
         ref Vector128<byte> p3, ref Vector128<byte> p2, ref Vector128<byte> p1, ref Vector128<byte> p0,
@@ -204,26 +205,26 @@ internal static class Vp8FilterSimd
     private static Vector128<byte> EdgeMask(in Edge e, int threshold)
     {
         Vector128<byte> d = AbsDiff(e.P0, e.Q0);
-        Vector128<byte> edge = Sse2.AddSaturate(Sse2.AddSaturate(d, d), Half(AbsDiff(e.P1, e.Q1)));
-        return Sse2.CompareEqual(Sse2.SubtractSaturate(edge, Vector128.Create((byte)threshold)), Vector128<byte>.Zero);
+        Vector128<byte> edge = Simd128.AddSaturate(Simd128.AddSaturate(d, d), Half(AbsDiff(e.P1, e.Q1)));
+        return Vector128.Equals(Simd128.SubtractSaturate(edge, Vector128.Create((byte)threshold)), Vector128<byte>.Zero);
     }
 
     /// <summary>The normal filter's mask: <see cref="EdgeMask"/> and every step from p3 to q3 within the interior limit.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<byte> NormalMask(in Edge e, int threshold, int interior, Vector128<byte> p1p0, Vector128<byte> q1q0)
     {
-        Vector128<byte> steps = Sse2.Max(Sse2.Max(Sse2.Max(AbsDiff(e.P3, e.P2), AbsDiff(e.P2, e.P1)), Sse2.Max(p1p0, q1q0)), Sse2.Max(AbsDiff(e.Q2, e.Q1), AbsDiff(e.Q3, e.Q2)));
-        return EdgeMask(e, threshold) & Sse2.CompareEqual(Sse2.SubtractSaturate(steps, Vector128.Create((byte)interior)), Vector128<byte>.Zero);
+        Vector128<byte> steps = Vector128.Max(Vector128.Max(Vector128.Max(AbsDiff(e.P3, e.P2), AbsDiff(e.P2, e.P1)), Vector128.Max(p1p0, q1q0)), Vector128.Max(AbsDiff(e.Q2, e.Q1), AbsDiff(e.Q3, e.Q2)));
+        return EdgeMask(e, threshold) & Vector128.Equals(Simd128.SubtractSaturate(steps, Vector128.Create((byte)interior)), Vector128<byte>.Zero);
     }
 
     /// <summary>The high-variance positions: |p1 − p0| or |q1 − q0| above the threshold.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<sbyte> HighVariance(Vector128<byte> p1p0, Vector128<byte> q1q0, int hev) =>
-        (~Sse2.CompareEqual(Sse2.SubtractSaturate(Sse2.Max(p1p0, q1q0), Vector128.Create((byte)hev)), Vector128<byte>.Zero)).AsSByte();
+        (~Vector128.Equals(Simd128.SubtractSaturate(Vector128.Max(p1p0, q1q0), Vector128.Create((byte)hev)), Vector128<byte>.Zero)).AsSByte();
 
     /// <summary>3 × (q0 − p0) + <paramref name="outer"/>, saturating at each step as libvpx does (the same as clamping the sum).</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<sbyte> Taps3(Vector128<sbyte> outer, Vector128<sbyte> step) => Sse2.AddSaturate(Sse2.AddSaturate(Sse2.AddSaturate(outer, step), step), step);
+    private static Vector128<sbyte> Taps3(Vector128<sbyte> outer, Vector128<sbyte> step) => Simd128.AddSaturate(Simd128.AddSaturate(Simd128.AddSaturate(outer, step), step), step);
 
     /// <summary>The simple filter in libvpx's 8-bit arithmetic: p0 and q0 change.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -231,9 +232,9 @@ internal static class Vp8FilterSimd
     {
         Vector128<byte> bias = Vector128.Create((byte)0x80);
         Vector128<sbyte> ps1 = (e.P1 ^ bias).AsSByte(), ps0 = (e.P0 ^ bias).AsSByte(), qs0 = (e.Q0 ^ bias).AsSByte(), qs1 = (e.Q1 ^ bias).AsSByte();
-        Vector128<sbyte> f = Taps3(Sse2.SubtractSaturate(ps1, qs1), Sse2.SubtractSaturate(qs0, ps0)) & EdgeMask(e, threshold).AsSByte();
-        e.Q0 = Sse2.SubtractSaturate(qs0, ShiftRight3(Sse2.AddSaturate(f, Vector128.Create((sbyte)4)))).AsByte() ^ bias;
-        e.P0 = Sse2.AddSaturate(ps0, ShiftRight3(Sse2.AddSaturate(f, Vector128.Create((sbyte)3)))).AsByte() ^ bias;
+        Vector128<sbyte> f = Taps3(Simd128.SubtractSaturate(ps1, qs1), Simd128.SubtractSaturate(qs0, ps0)) & EdgeMask(e, threshold).AsSByte();
+        e.Q0 = Simd128.SubtractSaturate(qs0, ShiftRight3(Simd128.AddSaturate(f, Vector128.Create((sbyte)4)))).AsByte() ^ bias;
+        e.P0 = Simd128.AddSaturate(ps0, ShiftRight3(Simd128.AddSaturate(f, Vector128.Create((sbyte)3)))).AsByte() ^ bias;
         return e;
     }
 
@@ -246,14 +247,14 @@ internal static class Vp8FilterSimd
         Vector128<sbyte> high = HighVariance(p1p0, q1q0, hev);
         Vector128<byte> bias = Vector128.Create((byte)0x80);
         Vector128<sbyte> ps1 = (e.P1 ^ bias).AsSByte(), ps0 = (e.P0 ^ bias).AsSByte(), qs0 = (e.Q0 ^ bias).AsSByte(), qs1 = (e.Q1 ^ bias).AsSByte();
-        Vector128<sbyte> f = Taps3(Sse2.SubtractSaturate(ps1, qs1) & high, Sse2.SubtractSaturate(qs0, ps0)) & mask;
-        Vector128<sbyte> f1 = ShiftRight3(Sse2.AddSaturate(f, Vector128.Create((sbyte)4)));
-        Vector128<sbyte> f2 = ShiftRight3(Sse2.AddSaturate(f, Vector128.Create((sbyte)3)));
-        e.Q0 = Sse2.SubtractSaturate(qs0, f1).AsByte() ^ bias;
-        e.P0 = Sse2.AddSaturate(ps0, f2).AsByte() ^ bias;
-        Vector128<sbyte> a = Sse2.AndNot(high, ShiftRight1(f1 + Vector128<sbyte>.One));
-        e.Q1 = Sse2.SubtractSaturate(qs1, a).AsByte() ^ bias;
-        e.P1 = Sse2.AddSaturate(ps1, a).AsByte() ^ bias;
+        Vector128<sbyte> f = Taps3(Simd128.SubtractSaturate(ps1, qs1) & high, Simd128.SubtractSaturate(qs0, ps0)) & mask;
+        Vector128<sbyte> f1 = ShiftRight3(Simd128.AddSaturate(f, Vector128.Create((sbyte)4)));
+        Vector128<sbyte> f2 = ShiftRight3(Simd128.AddSaturate(f, Vector128.Create((sbyte)3)));
+        e.Q0 = Simd128.SubtractSaturate(qs0, f1).AsByte() ^ bias;
+        e.P0 = Simd128.AddSaturate(ps0, f2).AsByte() ^ bias;
+        Vector128<sbyte> a = AndNotFirst(high, ShiftRight1(f1 + Vector128<sbyte>.One));
+        e.Q1 = Simd128.SubtractSaturate(qs1, a).AsByte() ^ bias;
+        e.P1 = Simd128.AddSaturate(ps1, a).AsByte() ^ bias;
         return e;
     }
 
@@ -266,35 +267,39 @@ internal static class Vp8FilterSimd
         Vector128<sbyte> high = HighVariance(p1p0, q1q0, hev);
         Vector128<byte> bias = Vector128.Create((byte)0x80);
         Vector128<sbyte> ps1 = (e.P1 ^ bias).AsSByte(), ps0 = (e.P0 ^ bias).AsSByte(), qs0 = (e.Q0 ^ bias).AsSByte(), qs1 = (e.Q1 ^ bias).AsSByte();
-        Vector128<sbyte> w = Taps3(Sse2.SubtractSaturate(ps1, qs1), Sse2.SubtractSaturate(qs0, ps0)) & mask;
+        Vector128<sbyte> w = Taps3(Simd128.SubtractSaturate(ps1, qs1), Simd128.SubtractSaturate(qs0, ps0)) & mask;
         Vector128<sbyte> h = w & high;
-        qs0 = Sse2.SubtractSaturate(qs0, ShiftRight3(Sse2.AddSaturate(h, Vector128.Create((sbyte)4))));
-        ps0 = Sse2.AddSaturate(ps0, ShiftRight3(Sse2.AddSaturate(h, Vector128.Create((sbyte)3))));
-        w = Sse2.AndNot(high, w);
+        qs0 = Simd128.SubtractSaturate(qs0, ShiftRight3(Simd128.AddSaturate(h, Vector128.Create((sbyte)4))));
+        ps0 = Simd128.AddSaturate(ps0, ShiftRight3(Simd128.AddSaturate(h, Vector128.Create((sbyte)3))));
+        w = AndNotFirst(high, w);
         (Vector128<short> lo, Vector128<short> hi) = Vector128.Widen(w);
         Vector128<sbyte> u27 = Taps(lo, hi, 27), u18 = Taps(lo, hi, 18), u9 = Taps(lo, hi, 9);
         Vector128<sbyte> ps2 = (e.P2 ^ bias).AsSByte(), qs2 = (e.Q2 ^ bias).AsSByte();
-        e.Q0 = Sse2.SubtractSaturate(qs0, u27).AsByte() ^ bias;
-        e.P0 = Sse2.AddSaturate(ps0, u27).AsByte() ^ bias;
-        e.Q1 = Sse2.SubtractSaturate(qs1, u18).AsByte() ^ bias;
-        e.P1 = Sse2.AddSaturate(ps1, u18).AsByte() ^ bias;
-        e.Q2 = Sse2.SubtractSaturate(qs2, u9).AsByte() ^ bias;
-        e.P2 = Sse2.AddSaturate(ps2, u9).AsByte() ^ bias;
+        e.Q0 = Simd128.SubtractSaturate(qs0, u27).AsByte() ^ bias;
+        e.P0 = Simd128.AddSaturate(ps0, u27).AsByte() ^ bias;
+        e.Q1 = Simd128.SubtractSaturate(qs1, u18).AsByte() ^ bias;
+        e.P1 = Simd128.AddSaturate(ps1, u18).AsByte() ^ bias;
+        e.Q2 = Simd128.SubtractSaturate(qs2, u9).AsByte() ^ bias;
+        e.P2 = Simd128.AddSaturate(ps2, u9).AsByte() ^ bias;
         return e;
     }
 
+    /// <summary>~<paramref name="a"/> &amp; <paramref name="b"/>, as <c>pandn</c> takes its operands.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<byte> AbsDiff(Vector128<byte> a, Vector128<byte> b) => Sse2.SubtractSaturate(a, b) | Sse2.SubtractSaturate(b, a);
+    private static Vector128<sbyte> AndNotFirst(Vector128<sbyte> a, Vector128<sbyte> b) => Vector128.AndNot(b, a);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<byte> AbsDiff(Vector128<byte> a, Vector128<byte> b) => Simd128.SubtractSaturate(a, b) | Simd128.SubtractSaturate(b, a);
 
     /// <summary>Halves unsigned bytes.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector128<byte> Half(Vector128<byte> v) => Sse2.ShiftRightLogical(v.AsUInt16(), 1).AsByte() & Vector128.Create((byte)0x7F);
+    private static Vector128<byte> Half(Vector128<byte> v) => Vector128.ShiftRightLogical(v.AsUInt16(), 1).AsByte() & Vector128.Create((byte)0x7F);
 
     /// <summary>Shifts signed bytes right by 3, rounding down: biased to unsigned, shifted, unbiased.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<sbyte> ShiftRight3(Vector128<sbyte> v)
     {
-        Vector128<byte> u = Sse2.ShiftRightLogical((v.AsByte() ^ Vector128.Create((byte)0x80)).AsUInt16(), 3).AsByte() & Vector128.Create((byte)0x1F);
+        Vector128<byte> u = Vector128.ShiftRightLogical((v.AsByte() ^ Vector128.Create((byte)0x80)).AsUInt16(), 3).AsByte() & Vector128.Create((byte)0x1F);
         return (u - Vector128.Create((byte)16)).AsSByte();
     }
 
@@ -302,7 +307,7 @@ internal static class Vp8FilterSimd
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Vector128<sbyte> ShiftRight1(Vector128<sbyte> v)
     {
-        Vector128<byte> u = Sse2.ShiftRightLogical((v.AsByte() ^ Vector128.Create((byte)0x80)).AsUInt16(), 1).AsByte() & Vector128.Create((byte)0x7F);
+        Vector128<byte> u = Vector128.ShiftRightLogical((v.AsByte() ^ Vector128.Create((byte)0x80)).AsUInt16(), 1).AsByte() & Vector128.Create((byte)0x7F);
         return (u - Vector128.Create((byte)64)).AsSByte();
     }
 
@@ -311,7 +316,7 @@ internal static class Vp8FilterSimd
     private static Vector128<sbyte> Taps(Vector128<short> lo, Vector128<short> hi, short k)
     {
         Vector128<short> m = Vector128.Create(k), r = Vector128.Create((short)63);
-        return Sse2.PackSignedSaturate(Sse2.ShiftRightArithmetic(Sse2.MultiplyLow(lo, m) + r, 7), Sse2.ShiftRightArithmetic(Sse2.MultiplyLow(hi, m) + r, 7));
+        return Simd128.PackSignedSaturate(Vector128.ShiftRightArithmetic((lo * m) + r, 7), Vector128.ShiftRightArithmetic((hi * m) + r, 7));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -399,28 +404,28 @@ internal static class Vp8FilterSimd
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Edge Transpose(ref byte a, ref byte b, int stride)
     {
-        Vector128<byte> t0 = Sse2.UnpackLow(Row(ref a, 0), Row(ref a, stride)), t1 = Sse2.UnpackLow(Row(ref a, 2 * stride), Row(ref a, 3 * stride));
-        Vector128<byte> t2 = Sse2.UnpackLow(Row(ref a, 4 * stride), Row(ref a, 5 * stride)), t3 = Sse2.UnpackLow(Row(ref a, 6 * stride), Row(ref a, 7 * stride));
-        Vector128<byte> t4 = Sse2.UnpackLow(Row(ref b, 0), Row(ref b, stride)), t5 = Sse2.UnpackLow(Row(ref b, 2 * stride), Row(ref b, 3 * stride));
-        Vector128<byte> t6 = Sse2.UnpackLow(Row(ref b, 4 * stride), Row(ref b, 5 * stride)), t7 = Sse2.UnpackLow(Row(ref b, 6 * stride), Row(ref b, 7 * stride));
-        Vector128<short> u0 = Sse2.UnpackLow(t0.AsInt16(), t1.AsInt16()), u1 = Sse2.UnpackHigh(t0.AsInt16(), t1.AsInt16());
-        Vector128<short> u2 = Sse2.UnpackLow(t2.AsInt16(), t3.AsInt16()), u3 = Sse2.UnpackHigh(t2.AsInt16(), t3.AsInt16());
-        Vector128<short> u4 = Sse2.UnpackLow(t4.AsInt16(), t5.AsInt16()), u5 = Sse2.UnpackHigh(t4.AsInt16(), t5.AsInt16());
-        Vector128<short> u6 = Sse2.UnpackLow(t6.AsInt16(), t7.AsInt16()), u7 = Sse2.UnpackHigh(t6.AsInt16(), t7.AsInt16());
-        Vector128<int> v0 = Sse2.UnpackLow(u0.AsInt32(), u2.AsInt32()), v1 = Sse2.UnpackHigh(u0.AsInt32(), u2.AsInt32());
-        Vector128<int> v2 = Sse2.UnpackLow(u1.AsInt32(), u3.AsInt32()), v3 = Sse2.UnpackHigh(u1.AsInt32(), u3.AsInt32());
-        Vector128<int> w0 = Sse2.UnpackLow(u4.AsInt32(), u6.AsInt32()), w1 = Sse2.UnpackHigh(u4.AsInt32(), u6.AsInt32());
-        Vector128<int> w2 = Sse2.UnpackLow(u5.AsInt32(), u7.AsInt32()), w3 = Sse2.UnpackHigh(u5.AsInt32(), u7.AsInt32());
+        Vector128<byte> t0 = Simd128.ZipLow(Row(ref a, 0), Row(ref a, stride)), t1 = Simd128.ZipLow(Row(ref a, 2 * stride), Row(ref a, 3 * stride));
+        Vector128<byte> t2 = Simd128.ZipLow(Row(ref a, 4 * stride), Row(ref a, 5 * stride)), t3 = Simd128.ZipLow(Row(ref a, 6 * stride), Row(ref a, 7 * stride));
+        Vector128<byte> t4 = Simd128.ZipLow(Row(ref b, 0), Row(ref b, stride)), t5 = Simd128.ZipLow(Row(ref b, 2 * stride), Row(ref b, 3 * stride));
+        Vector128<byte> t6 = Simd128.ZipLow(Row(ref b, 4 * stride), Row(ref b, 5 * stride)), t7 = Simd128.ZipLow(Row(ref b, 6 * stride), Row(ref b, 7 * stride));
+        Vector128<short> u0 = Simd128.ZipLow(t0.AsInt16(), t1.AsInt16()), u1 = Simd128.ZipHigh(t0.AsInt16(), t1.AsInt16());
+        Vector128<short> u2 = Simd128.ZipLow(t2.AsInt16(), t3.AsInt16()), u3 = Simd128.ZipHigh(t2.AsInt16(), t3.AsInt16());
+        Vector128<short> u4 = Simd128.ZipLow(t4.AsInt16(), t5.AsInt16()), u5 = Simd128.ZipHigh(t4.AsInt16(), t5.AsInt16());
+        Vector128<short> u6 = Simd128.ZipLow(t6.AsInt16(), t7.AsInt16()), u7 = Simd128.ZipHigh(t6.AsInt16(), t7.AsInt16());
+        Vector128<int> v0 = Simd128.ZipLow(u0.AsInt32(), u2.AsInt32()), v1 = Simd128.ZipHigh(u0.AsInt32(), u2.AsInt32());
+        Vector128<int> v2 = Simd128.ZipLow(u1.AsInt32(), u3.AsInt32()), v3 = Simd128.ZipHigh(u1.AsInt32(), u3.AsInt32());
+        Vector128<int> w0 = Simd128.ZipLow(u4.AsInt32(), u6.AsInt32()), w1 = Simd128.ZipHigh(u4.AsInt32(), u6.AsInt32());
+        Vector128<int> w2 = Simd128.ZipLow(u5.AsInt32(), u7.AsInt32()), w3 = Simd128.ZipHigh(u5.AsInt32(), u7.AsInt32());
         return new Edge
         {
-            P3 = Sse2.UnpackLow(v0.AsInt64(), w0.AsInt64()).AsByte(),
-            P2 = Sse2.UnpackHigh(v0.AsInt64(), w0.AsInt64()).AsByte(),
-            P1 = Sse2.UnpackLow(v1.AsInt64(), w1.AsInt64()).AsByte(),
-            P0 = Sse2.UnpackHigh(v1.AsInt64(), w1.AsInt64()).AsByte(),
-            Q0 = Sse2.UnpackLow(v2.AsInt64(), w2.AsInt64()).AsByte(),
-            Q1 = Sse2.UnpackHigh(v2.AsInt64(), w2.AsInt64()).AsByte(),
-            Q2 = Sse2.UnpackLow(v3.AsInt64(), w3.AsInt64()).AsByte(),
-            Q3 = Sse2.UnpackHigh(v3.AsInt64(), w3.AsInt64()).AsByte(),
+            P3 = Simd128.ZipLow(v0.AsInt64(), w0.AsInt64()).AsByte(),
+            P2 = Simd128.ZipHigh(v0.AsInt64(), w0.AsInt64()).AsByte(),
+            P1 = Simd128.ZipLow(v1.AsInt64(), w1.AsInt64()).AsByte(),
+            P0 = Simd128.ZipHigh(v1.AsInt64(), w1.AsInt64()).AsByte(),
+            Q0 = Simd128.ZipLow(v2.AsInt64(), w2.AsInt64()).AsByte(),
+            Q1 = Simd128.ZipHigh(v2.AsInt64(), w2.AsInt64()).AsByte(),
+            Q2 = Simd128.ZipLow(v3.AsInt64(), w3.AsInt64()).AsByte(),
+            Q3 = Simd128.ZipHigh(v3.AsInt64(), w3.AsInt64()).AsByte(),
         };
     }
 
@@ -428,22 +433,22 @@ internal static class Vp8FilterSimd
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void TransposeBack(Edge e, ref byte a, ref byte b, int stride)
     {
-        Vector128<short> a0 = Sse2.UnpackLow(e.P3, e.P2).AsInt16(), a1 = Sse2.UnpackHigh(e.P3, e.P2).AsInt16();
-        Vector128<short> a2 = Sse2.UnpackLow(e.P1, e.P0).AsInt16(), a3 = Sse2.UnpackHigh(e.P1, e.P0).AsInt16();
-        Vector128<short> a4 = Sse2.UnpackLow(e.Q0, e.Q1).AsInt16(), a5 = Sse2.UnpackHigh(e.Q0, e.Q1).AsInt16();
-        Vector128<short> a6 = Sse2.UnpackLow(e.Q2, e.Q3).AsInt16(), a7 = Sse2.UnpackHigh(e.Q2, e.Q3).AsInt16();
-        Vector128<int> b0 = Sse2.UnpackLow(a0, a2).AsInt32(), b1 = Sse2.UnpackHigh(a0, a2).AsInt32();
-        Vector128<int> b2 = Sse2.UnpackLow(a1, a3).AsInt32(), b3 = Sse2.UnpackHigh(a1, a3).AsInt32();
-        Vector128<int> b4 = Sse2.UnpackLow(a4, a6).AsInt32(), b5 = Sse2.UnpackHigh(a4, a6).AsInt32();
-        Vector128<int> b6 = Sse2.UnpackLow(a5, a7).AsInt32(), b7 = Sse2.UnpackHigh(a5, a7).AsInt32();
-        WriteRows(Sse2.UnpackLow(b0, b4).AsUInt64(), ref a, 0, stride);
-        WriteRows(Sse2.UnpackHigh(b0, b4).AsUInt64(), ref a, 2 * stride, stride);
-        WriteRows(Sse2.UnpackLow(b1, b5).AsUInt64(), ref a, 4 * stride, stride);
-        WriteRows(Sse2.UnpackHigh(b1, b5).AsUInt64(), ref a, 6 * stride, stride);
-        WriteRows(Sse2.UnpackLow(b2, b6).AsUInt64(), ref b, 0, stride);
-        WriteRows(Sse2.UnpackHigh(b2, b6).AsUInt64(), ref b, 2 * stride, stride);
-        WriteRows(Sse2.UnpackLow(b3, b7).AsUInt64(), ref b, 4 * stride, stride);
-        WriteRows(Sse2.UnpackHigh(b3, b7).AsUInt64(), ref b, 6 * stride, stride);
+        Vector128<short> a0 = Simd128.ZipLow(e.P3, e.P2).AsInt16(), a1 = Simd128.ZipHigh(e.P3, e.P2).AsInt16();
+        Vector128<short> a2 = Simd128.ZipLow(e.P1, e.P0).AsInt16(), a3 = Simd128.ZipHigh(e.P1, e.P0).AsInt16();
+        Vector128<short> a4 = Simd128.ZipLow(e.Q0, e.Q1).AsInt16(), a5 = Simd128.ZipHigh(e.Q0, e.Q1).AsInt16();
+        Vector128<short> a6 = Simd128.ZipLow(e.Q2, e.Q3).AsInt16(), a7 = Simd128.ZipHigh(e.Q2, e.Q3).AsInt16();
+        Vector128<int> b0 = Simd128.ZipLow(a0, a2).AsInt32(), b1 = Simd128.ZipHigh(a0, a2).AsInt32();
+        Vector128<int> b2 = Simd128.ZipLow(a1, a3).AsInt32(), b3 = Simd128.ZipHigh(a1, a3).AsInt32();
+        Vector128<int> b4 = Simd128.ZipLow(a4, a6).AsInt32(), b5 = Simd128.ZipHigh(a4, a6).AsInt32();
+        Vector128<int> b6 = Simd128.ZipLow(a5, a7).AsInt32(), b7 = Simd128.ZipHigh(a5, a7).AsInt32();
+        WriteRows(Simd128.ZipLow(b0, b4).AsUInt64(), ref a, 0, stride);
+        WriteRows(Simd128.ZipHigh(b0, b4).AsUInt64(), ref a, 2 * stride, stride);
+        WriteRows(Simd128.ZipLow(b1, b5).AsUInt64(), ref a, 4 * stride, stride);
+        WriteRows(Simd128.ZipHigh(b1, b5).AsUInt64(), ref a, 6 * stride, stride);
+        WriteRows(Simd128.ZipLow(b2, b6).AsUInt64(), ref b, 0, stride);
+        WriteRows(Simd128.ZipHigh(b2, b6).AsUInt64(), ref b, 2 * stride, stride);
+        WriteRows(Simd128.ZipLow(b3, b7).AsUInt64(), ref b, 4 * stride, stride);
+        WriteRows(Simd128.ZipHigh(b3, b7).AsUInt64(), ref b, 6 * stride, stride);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
