@@ -90,7 +90,7 @@
 
 
   <h1 id="Egami_Fonts_Layout_LayoutRunKind" data-uid="Egami.Fonts.Layout.LayoutRunKind" class="text-break">
-Enum LayoutRunKind  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L307"><i class="bi bi-code-slash"></i></a>
+Enum LayoutRunKind  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L308"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -120,6 +120,13 @@ Enum LayoutRunKind  <a class="header-action link-secondary" title="View source" 
     <dt id="Egami_Fonts_Layout_LayoutRunKind_Control"><code>Control = 3</code></dt>
   
   <dd><p>A hard break or another control character, which takes no space.</p>
+</dd>
+    <dt id="Egami_Fonts_Layout_LayoutRunKind_Emphasis"><code>Emphasis = 5</code></dt>
+  
+  <dd><p>Emphasis marks: the marks of a <a class="xref" href="Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_Emphasis">Emphasis</a> beside the text of one piece of a line, in
+<a class="xref" href="Egami.Fonts.Layout.TextLine.html#Egami_Fonts_Layout_TextLine_AnnotationRuns">AnnotationRuns</a>. Its <a class="xref" href="Egami.Fonts.Layout.LayoutRun.html#Egami_Fonts_Layout_LayoutRun_Start">Start</a> and <a class="xref" href="Egami.Fonts.Layout.LayoutRun.html#Egami_Fonts_Layout_LayoutRun_Length">Length</a> are the
+piece's text and <a class="xref" href="Egami.Fonts.Layout.LayoutRun.html#Egami_Fonts_Layout_LayoutRun_StyleIndex">StyleIndex</a> its style; its glyph run holds one mark per marked character and no
+text.</p>
 </dd>
     <dt id="Egami_Fonts_Layout_LayoutRunKind_Placeholder"><code>Placeholder = 1</code></dt>
   
@@ -166,7 +173,7 @@ TextLayout unbounded = paragraph.Layout(float.PositiveInfinity);</code></pre>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L307" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L308" class="edit-link">Edit this page</a>
         </div>
 
 

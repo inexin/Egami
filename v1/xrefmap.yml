@@ -30357,6 +30357,72 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.DecorationShape.Top
   nameWithType: DecorationShape.Top
+- uid: Egami.Fonts.Layout.EmphasisMark
+  name: EmphasisMark
+  href: api/Egami.Fonts.Layout.EmphasisMark.html
+  commentId: T:Egami.Fonts.Layout.EmphasisMark
+  fullName: Egami.Fonts.Layout.EmphasisMark
+  nameWithType: EmphasisMark
+- uid: Egami.Fonts.Layout.EmphasisMark.Circle
+  name: Circle
+  href: api/Egami.Fonts.Layout.EmphasisMark.html#Egami_Fonts_Layout_EmphasisMark_Circle
+  commentId: F:Egami.Fonts.Layout.EmphasisMark.Circle
+  fullName: Egami.Fonts.Layout.EmphasisMark.Circle
+  nameWithType: EmphasisMark.Circle
+- uid: Egami.Fonts.Layout.EmphasisMark.Custom
+  name: Custom
+  href: api/Egami.Fonts.Layout.EmphasisMark.html#Egami_Fonts_Layout_EmphasisMark_Custom
+  commentId: F:Egami.Fonts.Layout.EmphasisMark.Custom
+  fullName: Egami.Fonts.Layout.EmphasisMark.Custom
+  nameWithType: EmphasisMark.Custom
+- uid: Egami.Fonts.Layout.EmphasisMark.Dot
+  name: Dot
+  href: api/Egami.Fonts.Layout.EmphasisMark.html#Egami_Fonts_Layout_EmphasisMark_Dot
+  commentId: F:Egami.Fonts.Layout.EmphasisMark.Dot
+  fullName: Egami.Fonts.Layout.EmphasisMark.Dot
+  nameWithType: EmphasisMark.Dot
+- uid: Egami.Fonts.Layout.EmphasisMark.DoubleCircle
+  name: DoubleCircle
+  href: api/Egami.Fonts.Layout.EmphasisMark.html#Egami_Fonts_Layout_EmphasisMark_DoubleCircle
+  commentId: F:Egami.Fonts.Layout.EmphasisMark.DoubleCircle
+  fullName: Egami.Fonts.Layout.EmphasisMark.DoubleCircle
+  nameWithType: EmphasisMark.DoubleCircle
+- uid: Egami.Fonts.Layout.EmphasisMark.None
+  name: None
+  href: api/Egami.Fonts.Layout.EmphasisMark.html#Egami_Fonts_Layout_EmphasisMark_None
+  commentId: F:Egami.Fonts.Layout.EmphasisMark.None
+  fullName: Egami.Fonts.Layout.EmphasisMark.None
+  nameWithType: EmphasisMark.None
+- uid: Egami.Fonts.Layout.EmphasisMark.Sesame
+  name: Sesame
+  href: api/Egami.Fonts.Layout.EmphasisMark.html#Egami_Fonts_Layout_EmphasisMark_Sesame
+  commentId: F:Egami.Fonts.Layout.EmphasisMark.Sesame
+  fullName: Egami.Fonts.Layout.EmphasisMark.Sesame
+  nameWithType: EmphasisMark.Sesame
+- uid: Egami.Fonts.Layout.EmphasisMark.Triangle
+  name: Triangle
+  href: api/Egami.Fonts.Layout.EmphasisMark.html#Egami_Fonts_Layout_EmphasisMark_Triangle
+  commentId: F:Egami.Fonts.Layout.EmphasisMark.Triangle
+  fullName: Egami.Fonts.Layout.EmphasisMark.Triangle
+  nameWithType: EmphasisMark.Triangle
+- uid: Egami.Fonts.Layout.EmphasisPosition
+  name: EmphasisPosition
+  href: api/Egami.Fonts.Layout.EmphasisPosition.html
+  commentId: T:Egami.Fonts.Layout.EmphasisPosition
+  fullName: Egami.Fonts.Layout.EmphasisPosition
+  nameWithType: EmphasisPosition
+- uid: Egami.Fonts.Layout.EmphasisPosition.Over
+  name: Over
+  href: api/Egami.Fonts.Layout.EmphasisPosition.html#Egami_Fonts_Layout_EmphasisPosition_Over
+  commentId: F:Egami.Fonts.Layout.EmphasisPosition.Over
+  fullName: Egami.Fonts.Layout.EmphasisPosition.Over
+  nameWithType: EmphasisPosition.Over
+- uid: Egami.Fonts.Layout.EmphasisPosition.Under
+  name: Under
+  href: api/Egami.Fonts.Layout.EmphasisPosition.html#Egami_Fonts_Layout_EmphasisPosition_Under
+  commentId: F:Egami.Fonts.Layout.EmphasisPosition.Under
+  fullName: Egami.Fonts.Layout.EmphasisPosition.Under
+  nameWithType: EmphasisPosition.Under
 - uid: Egami.Fonts.Layout.HyphenationDictionaries
   name: HyphenationDictionaries
   href: api/Egami.Fonts.Layout.HyphenationDictionaries.html
@@ -30903,6 +30969,12 @@ references:
   commentId: F:Egami.Fonts.Layout.LayoutRunKind.Control
   fullName: Egami.Fonts.Layout.LayoutRunKind.Control
   nameWithType: LayoutRunKind.Control
+- uid: Egami.Fonts.Layout.LayoutRunKind.Emphasis
+  name: Emphasis
+  href: api/Egami.Fonts.Layout.LayoutRunKind.html#Egami_Fonts_Layout_LayoutRunKind_Emphasis
+  commentId: F:Egami.Fonts.Layout.LayoutRunKind.Emphasis
+  fullName: Egami.Fonts.Layout.LayoutRunKind.Emphasis
+  nameWithType: LayoutRunKind.Emphasis
 - uid: Egami.Fonts.Layout.LayoutRunKind.Placeholder
   name: Placeholder
   href: api/Egami.Fonts.Layout.LayoutRunKind.html#Egami_Fonts_Layout_LayoutRunKind_Placeholder
@@ -33008,6 +33080,104 @@ references:
   commentId: F:Egami.Fonts.Layout.TextAlignLast.Start
   fullName: Egami.Fonts.Layout.TextAlignLast.Start
   nameWithType: TextAlignLast.Start
+- uid: Egami.Fonts.Layout.TextCombine
+  name: TextCombine
+  href: api/Egami.Fonts.Layout.TextCombine.html
+  commentId: T:Egami.Fonts.Layout.TextCombine
+  fullName: Egami.Fonts.Layout.TextCombine
+  nameWithType: TextCombine
+- uid: Egami.Fonts.Layout.TextCombine.All
+  name: All
+  href: api/Egami.Fonts.Layout.TextCombine.html#Egami_Fonts_Layout_TextCombine_All
+  commentId: P:Egami.Fonts.Layout.TextCombine.All
+  fullName: Egami.Fonts.Layout.TextCombine.All
+  nameWithType: TextCombine.All
+- uid: Egami.Fonts.Layout.TextCombine.All*
+  name: All
+  href: api/Egami.Fonts.Layout.TextCombine.html#Egami_Fonts_Layout_TextCombine_All_
+  commentId: Overload:Egami.Fonts.Layout.TextCombine.All
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextCombine.All
+  nameWithType: TextCombine.All
+- uid: Egami.Fonts.Layout.TextCombine.Digits(System.Int32)
+  name: Digits(int)
+  href: api/Egami.Fonts.Layout.TextCombine.html#Egami_Fonts_Layout_TextCombine_Digits_System_Int32_
+  commentId: M:Egami.Fonts.Layout.TextCombine.Digits(System.Int32)
+  name.vb: Digits(Integer)
+  fullName: Egami.Fonts.Layout.TextCombine.Digits(int)
+  fullName.vb: Egami.Fonts.Layout.TextCombine.Digits(Integer)
+  nameWithType: TextCombine.Digits(int)
+  nameWithType.vb: TextCombine.Digits(Integer)
+- uid: Egami.Fonts.Layout.TextCombine.Digits*
+  name: Digits
+  href: api/Egami.Fonts.Layout.TextCombine.html#Egami_Fonts_Layout_TextCombine_Digits_
+  commentId: Overload:Egami.Fonts.Layout.TextCombine.Digits
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextCombine.Digits
+  nameWithType: TextCombine.Digits
+- uid: Egami.Fonts.Layout.TextCombine.Kind
+  name: Kind
+  href: api/Egami.Fonts.Layout.TextCombine.html#Egami_Fonts_Layout_TextCombine_Kind
+  commentId: P:Egami.Fonts.Layout.TextCombine.Kind
+  fullName: Egami.Fonts.Layout.TextCombine.Kind
+  nameWithType: TextCombine.Kind
+- uid: Egami.Fonts.Layout.TextCombine.Kind*
+  name: Kind
+  href: api/Egami.Fonts.Layout.TextCombine.html#Egami_Fonts_Layout_TextCombine_Kind_
+  commentId: Overload:Egami.Fonts.Layout.TextCombine.Kind
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextCombine.Kind
+  nameWithType: TextCombine.Kind
+- uid: Egami.Fonts.Layout.TextCombine.MaxDigits
+  name: MaxDigits
+  href: api/Egami.Fonts.Layout.TextCombine.html#Egami_Fonts_Layout_TextCombine_MaxDigits
+  commentId: P:Egami.Fonts.Layout.TextCombine.MaxDigits
+  fullName: Egami.Fonts.Layout.TextCombine.MaxDigits
+  nameWithType: TextCombine.MaxDigits
+- uid: Egami.Fonts.Layout.TextCombine.MaxDigits*
+  name: MaxDigits
+  href: api/Egami.Fonts.Layout.TextCombine.html#Egami_Fonts_Layout_TextCombine_MaxDigits_
+  commentId: Overload:Egami.Fonts.Layout.TextCombine.MaxDigits
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextCombine.MaxDigits
+  nameWithType: TextCombine.MaxDigits
+- uid: Egami.Fonts.Layout.TextCombine.None
+  name: None
+  href: api/Egami.Fonts.Layout.TextCombine.html#Egami_Fonts_Layout_TextCombine_None
+  commentId: P:Egami.Fonts.Layout.TextCombine.None
+  fullName: Egami.Fonts.Layout.TextCombine.None
+  nameWithType: TextCombine.None
+- uid: Egami.Fonts.Layout.TextCombine.None*
+  name: None
+  href: api/Egami.Fonts.Layout.TextCombine.html#Egami_Fonts_Layout_TextCombine_None_
+  commentId: Overload:Egami.Fonts.Layout.TextCombine.None
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextCombine.None
+  nameWithType: TextCombine.None
+- uid: Egami.Fonts.Layout.TextCombineKind
+  name: TextCombineKind
+  href: api/Egami.Fonts.Layout.TextCombineKind.html
+  commentId: T:Egami.Fonts.Layout.TextCombineKind
+  fullName: Egami.Fonts.Layout.TextCombineKind
+  nameWithType: TextCombineKind
+- uid: Egami.Fonts.Layout.TextCombineKind.All
+  name: All
+  href: api/Egami.Fonts.Layout.TextCombineKind.html#Egami_Fonts_Layout_TextCombineKind_All
+  commentId: F:Egami.Fonts.Layout.TextCombineKind.All
+  fullName: Egami.Fonts.Layout.TextCombineKind.All
+  nameWithType: TextCombineKind.All
+- uid: Egami.Fonts.Layout.TextCombineKind.Digits
+  name: Digits
+  href: api/Egami.Fonts.Layout.TextCombineKind.html#Egami_Fonts_Layout_TextCombineKind_Digits
+  commentId: F:Egami.Fonts.Layout.TextCombineKind.Digits
+  fullName: Egami.Fonts.Layout.TextCombineKind.Digits
+  nameWithType: TextCombineKind.Digits
+- uid: Egami.Fonts.Layout.TextCombineKind.None
+  name: None
+  href: api/Egami.Fonts.Layout.TextCombineKind.html#Egami_Fonts_Layout_TextCombineKind_None
+  commentId: F:Egami.Fonts.Layout.TextCombineKind.None
+  fullName: Egami.Fonts.Layout.TextCombineKind.None
+  nameWithType: TextCombineKind.None
 - uid: Egami.Fonts.Layout.TextDecoration
   name: TextDecoration
   href: api/Egami.Fonts.Layout.TextDecoration.html
@@ -33189,6 +33359,90 @@ references:
   commentId: F:Egami.Fonts.Layout.TextDecorationStyle.Wavy
   fullName: Egami.Fonts.Layout.TextDecorationStyle.Wavy
   nameWithType: TextDecorationStyle.Wavy
+- uid: Egami.Fonts.Layout.TextEmphasis
+  name: TextEmphasis
+  href: api/Egami.Fonts.Layout.TextEmphasis.html
+  commentId: T:Egami.Fonts.Layout.TextEmphasis
+  fullName: Egami.Fonts.Layout.TextEmphasis
+  nameWithType: TextEmphasis
+- uid: Egami.Fonts.Layout.TextEmphasis.Color
+  name: Color
+  href: api/Egami.Fonts.Layout.TextEmphasis.html#Egami_Fonts_Layout_TextEmphasis_Color
+  commentId: P:Egami.Fonts.Layout.TextEmphasis.Color
+  fullName: Egami.Fonts.Layout.TextEmphasis.Color
+  nameWithType: TextEmphasis.Color
+- uid: Egami.Fonts.Layout.TextEmphasis.Color*
+  name: Color
+  href: api/Egami.Fonts.Layout.TextEmphasis.html#Egami_Fonts_Layout_TextEmphasis_Color_
+  commentId: Overload:Egami.Fonts.Layout.TextEmphasis.Color
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextEmphasis.Color
+  nameWithType: TextEmphasis.Color
+- uid: Egami.Fonts.Layout.TextEmphasis.Custom
+  name: Custom
+  href: api/Egami.Fonts.Layout.TextEmphasis.html#Egami_Fonts_Layout_TextEmphasis_Custom
+  commentId: P:Egami.Fonts.Layout.TextEmphasis.Custom
+  fullName: Egami.Fonts.Layout.TextEmphasis.Custom
+  nameWithType: TextEmphasis.Custom
+- uid: Egami.Fonts.Layout.TextEmphasis.Custom*
+  name: Custom
+  href: api/Egami.Fonts.Layout.TextEmphasis.html#Egami_Fonts_Layout_TextEmphasis_Custom_
+  commentId: Overload:Egami.Fonts.Layout.TextEmphasis.Custom
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextEmphasis.Custom
+  nameWithType: TextEmphasis.Custom
+- uid: Egami.Fonts.Layout.TextEmphasis.Filled
+  name: Filled
+  href: api/Egami.Fonts.Layout.TextEmphasis.html#Egami_Fonts_Layout_TextEmphasis_Filled
+  commentId: P:Egami.Fonts.Layout.TextEmphasis.Filled
+  fullName: Egami.Fonts.Layout.TextEmphasis.Filled
+  nameWithType: TextEmphasis.Filled
+- uid: Egami.Fonts.Layout.TextEmphasis.Filled*
+  name: Filled
+  href: api/Egami.Fonts.Layout.TextEmphasis.html#Egami_Fonts_Layout_TextEmphasis_Filled_
+  commentId: Overload:Egami.Fonts.Layout.TextEmphasis.Filled
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextEmphasis.Filled
+  nameWithType: TextEmphasis.Filled
+- uid: Egami.Fonts.Layout.TextEmphasis.Mark
+  name: Mark
+  href: api/Egami.Fonts.Layout.TextEmphasis.html#Egami_Fonts_Layout_TextEmphasis_Mark
+  commentId: P:Egami.Fonts.Layout.TextEmphasis.Mark
+  fullName: Egami.Fonts.Layout.TextEmphasis.Mark
+  nameWithType: TextEmphasis.Mark
+- uid: Egami.Fonts.Layout.TextEmphasis.Mark*
+  name: Mark
+  href: api/Egami.Fonts.Layout.TextEmphasis.html#Egami_Fonts_Layout_TextEmphasis_Mark_
+  commentId: Overload:Egami.Fonts.Layout.TextEmphasis.Mark
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextEmphasis.Mark
+  nameWithType: TextEmphasis.Mark
+- uid: Egami.Fonts.Layout.TextEmphasis.Paint
+  name: Paint
+  href: api/Egami.Fonts.Layout.TextEmphasis.html#Egami_Fonts_Layout_TextEmphasis_Paint
+  commentId: P:Egami.Fonts.Layout.TextEmphasis.Paint
+  fullName: Egami.Fonts.Layout.TextEmphasis.Paint
+  nameWithType: TextEmphasis.Paint
+- uid: Egami.Fonts.Layout.TextEmphasis.Paint*
+  name: Paint
+  href: api/Egami.Fonts.Layout.TextEmphasis.html#Egami_Fonts_Layout_TextEmphasis_Paint_
+  commentId: Overload:Egami.Fonts.Layout.TextEmphasis.Paint
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextEmphasis.Paint
+  nameWithType: TextEmphasis.Paint
+- uid: Egami.Fonts.Layout.TextEmphasis.Position
+  name: Position
+  href: api/Egami.Fonts.Layout.TextEmphasis.html#Egami_Fonts_Layout_TextEmphasis_Position
+  commentId: P:Egami.Fonts.Layout.TextEmphasis.Position
+  fullName: Egami.Fonts.Layout.TextEmphasis.Position
+  nameWithType: TextEmphasis.Position
+- uid: Egami.Fonts.Layout.TextEmphasis.Position*
+  name: Position
+  href: api/Egami.Fonts.Layout.TextEmphasis.html#Egami_Fonts_Layout_TextEmphasis_Position_
+  commentId: Overload:Egami.Fonts.Layout.TextEmphasis.Position
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextEmphasis.Position
+  nameWithType: TextEmphasis.Position
 - uid: Egami.Fonts.Layout.TextJustify
   name: TextJustify
   href: api/Egami.Fonts.Layout.TextJustify.html
@@ -33962,6 +34216,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.TextStyle.Color
   nameWithType: TextStyle.Color
+- uid: Egami.Fonts.Layout.TextStyle.CombineUpright
+  name: CombineUpright
+  href: api/Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_CombineUpright
+  commentId: P:Egami.Fonts.Layout.TextStyle.CombineUpright
+  fullName: Egami.Fonts.Layout.TextStyle.CombineUpright
+  nameWithType: TextStyle.CombineUpright
+- uid: Egami.Fonts.Layout.TextStyle.CombineUpright*
+  name: CombineUpright
+  href: api/Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_CombineUpright_
+  commentId: Overload:Egami.Fonts.Layout.TextStyle.CombineUpright
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextStyle.CombineUpright
+  nameWithType: TextStyle.CombineUpright
 - uid: Egami.Fonts.Layout.TextStyle.Decoration
   name: Decoration
   href: api/Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_Decoration
@@ -33975,6 +34242,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.TextStyle.Decoration
   nameWithType: TextStyle.Decoration
+- uid: Egami.Fonts.Layout.TextStyle.Emphasis
+  name: Emphasis
+  href: api/Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_Emphasis
+  commentId: P:Egami.Fonts.Layout.TextStyle.Emphasis
+  fullName: Egami.Fonts.Layout.TextStyle.Emphasis
+  nameWithType: TextStyle.Emphasis
+- uid: Egami.Fonts.Layout.TextStyle.Emphasis*
+  name: Emphasis
+  href: api/Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_Emphasis_
+  commentId: Overload:Egami.Fonts.Layout.TextStyle.Emphasis
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextStyle.Emphasis
+  nameWithType: TextStyle.Emphasis
 - uid: Egami.Fonts.Layout.TextStyle.Features
   name: Features
   href: api/Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_Features

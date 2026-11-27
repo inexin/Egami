@@ -318,6 +318,54 @@ Paragraph paragraph = Paragraph.Create(text, style);</code></pre>
 
 
 
+  <a id="Egami_Fonts_Layout_TextStyle_CombineUpright_" data-uid="Egami.Fonts.Layout.TextStyle.CombineUpright*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextStyle_CombineUpright" data-uid="Egami.Fonts.Layout.TextStyle.CombineUpright">
+  CombineUpright
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextStyle.cs/#L92"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets how short horizontal text combines upright in vertical lines (tate-chu-yoko, CSS
+<code>text-combine-upright</code>); <a class="xref" href="Egami.Fonts.Layout.TextCombine.html#Egami_Fonts_Layout_TextCombine_None">None</a> when unset. A change splits shaping runs.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextCombine? CombineUpright { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.TextCombine.html">TextCombine</a>?</dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_TextStyle_CombineUpright_examples">Examples</h4>
+  <pre><code class="lang-csharp">// 12年3月 in a vertical line: each run of digits stands upright, its digits side by side, in one em.
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle
+    {
+        FontFamilies = [fonts.Families[0]],
+        Size = 20,
+        Language = "ja",
+        CombineUpright = TextCombine.Digits(2),  // runs of up to two ASCII digits; TextCombine.All for a span's text
+    },
+    WritingMode = WritingMode.VerticalRl,
+};
+TextLayout layout = Paragraph.Create("12年3月", style).Layout(300);</code></pre>
+
+
+
+
+
+
   <a id="Egami_Fonts_Layout_TextStyle_Decoration_" data-uid="Egami.Fonts.Layout.TextStyle.Decoration*"></a>
 
   <h3 id="Egami_Fonts_Layout_TextStyle_Decoration" data-uid="Egami.Fonts.Layout.TextStyle.Decoration">
@@ -344,6 +392,57 @@ Paragraph paragraph = Paragraph.Create(text, style);</code></pre>
   </dl>
 
 
+
+
+
+
+
+
+  <a id="Egami_Fonts_Layout_TextStyle_Emphasis_" data-uid="Egami.Fonts.Layout.TextStyle.Emphasis*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextStyle_Emphasis" data-uid="Egami.Fonts.Layout.TextStyle.Emphasis">
+  Emphasis
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextStyle.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the emphasis marks set beside each character (CSS <code>text-emphasis</code>); none when unset.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextEmphasis? Emphasis { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.Layout.TextEmphasis.html">TextEmphasis</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_TextStyle_Emphasis_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Dots over 国際, in red: one mark a character, none on the punctuation after it.
+RichText text = new("国際、価値", [new StyleSpan(0, 3, new TextStyle
+{
+    Emphasis = new TextEmphasis { Mark = EmphasisMark.Dot, Color = new Rgba8(200, 0, 0, 255) },
+})]);
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle { FontFamilies = [.. fonts.Families], Size = 20, Language = "ja" },
+};
+TextLayout layout = Paragraph.Create(text, style).Layout(300);
+
+// The marks: emphasis runs beside the line's text, at half the text's size.
+int marks = layout.Lines[0].AnnotationRuns.Where(r =&gt; r.Kind == LayoutRunKind.Emphasis).Sum(r =&gt; r.Glyphs!.Count);
+
+// Open circles under the text, or Word's comma mark.
+TextEmphasis under = new() { Mark = EmphasisMark.Circle, Filled = false, Position = EmphasisPosition.Under };
+TextEmphasis comma = new() { Mark = EmphasisMark.Custom, Custom = "、" };</code></pre>
 
 
 

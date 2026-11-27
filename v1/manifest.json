@@ -4761,6 +4761,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.EmphasisMark.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.EmphasisMark.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.EmphasisMark",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.EmphasisMark.yml\" sourcestartlinenumber=\"1\">The shape of an emphasis mark, as CSS <code>text-emphasis-style</code> names them.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.EmphasisPosition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.EmphasisPosition.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.EmphasisPosition",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.EmphasisPosition.yml\" sourcestartlinenumber=\"1\">Which side of the text emphasis marks go on.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Fonts.Layout.HyphenationDictionaries.yml",
       "output": {
         ".html": {
@@ -5321,6 +5349,34 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.TextCombine.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.TextCombine.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.TextCombine",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.TextCombine.yml\" sourcestartlinenumber=\"1\">Tate-chu-yoko (CSS <code>text-combine-upright</code>): short horizontal text, such as &quot;12&quot; or &quot;!?&quot;, set upright in one em of a\nvertical line. Set it on <xref href=\"Egami.Fonts.Layout.TextStyle.CombineUpright\" data-throw-if-not-resolved=\"false\"></xref>; horizontal lines and sideways text ignore it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.TextCombineKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.TextCombineKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.TextCombineKind",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.TextCombineKind.yml\" sourcestartlinenumber=\"1\">How a <xref href=\"Egami.Fonts.Layout.TextCombine\" data-throw-if-not-resolved=\"false\"></xref> combines.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Fonts.Layout.TextDecoration.yml",
       "output": {
         ".html": {
@@ -5374,6 +5430,20 @@
       "IsMRef": true,
       "Title": "Egami.Fonts.Layout.TextDecorationStyle",
       "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.TextDecorationStyle.yml\" sourcestartlinenumber=\"1\">How decoration lines are drawn.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.TextEmphasis.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.TextEmphasis.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.TextEmphasis",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.TextEmphasis.yml\" sourcestartlinenumber=\"1\">Emphasis marks (CSS <code>text-emphasis</code>, Word's emphasis marks): a small mark beside each character of a stretch of text,\nas East Asian text stresses words. Set it on <xref href=\"Egami.Fonts.Layout.TextStyle.Emphasis\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",

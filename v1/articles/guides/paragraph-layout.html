@@ -845,6 +845,59 @@ testing, carets and selections work on the base text alone. <code>DrawTextLayout
 </ul>
 <p>Ruby text is shaped left to right on its own; a base inside right-to-left text keeps its characters together in one run, at
 the level of its first character.</p>
+<h3 id="emphasis-marks">Emphasis marks</h3>
+<p>Emphasis marks stress East Asian text with a small mark beside each character, as CSS <code>text-emphasis</code> and Word's emphasis
+marks do. Set <code>TextStyle.Emphasis</code> to a <code>TextEmphasis</code>.</p>
+<pre><code class="lang-csharp">// Dots over 国際, in red: one mark a character, none on the punctuation after it.
+RichText text = new(&quot;国際、価値&quot;, [new StyleSpan(0, 3, new TextStyle
+{
+    Emphasis = new TextEmphasis { Mark = EmphasisMark.Dot, Color = new Rgba8(200, 0, 0, 255) },
+})]);
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle { FontFamilies = [.. fonts.Families], Size = 20, Language = &quot;ja&quot; },
+};
+TextLayout layout = Paragraph.Create(text, style).Layout(300);
+
+// The marks: emphasis runs beside the line's text, at half the text's size.
+int marks = layout.Lines[0].AnnotationRuns.Where(r =&gt; r.Kind == LayoutRunKind.Emphasis).Sum(r =&gt; r.Glyphs!.Count);
+
+// Open circles under the text, or Word's comma mark.
+TextEmphasis under = new() { Mark = EmphasisMark.Circle, Filled = false, Position = EmphasisPosition.Under };
+TextEmphasis comma = new() { Mark = EmphasisMark.Custom, Custom = &quot;、&quot; };
+</code></pre>
+<ul>
+<li><strong>Marks.</strong> <code>Mark</code> is <code>Dot</code> (the default), <code>Circle</code>, <code>DoubleCircle</code>, <code>Triangle</code> or <code>Sesame</code>, <code>Filled</code> (the default) or
+open, or <code>Custom</code> with its first grapheme cluster of <code>Custom</code>; <code>None</code> lets a span switch off the marks it inherits. Marks
+are half the text's size, in the font fallback picks for them, and take <code>Color</code> or <code>Paint</code>, else the text's paint.</li>
+<li><strong>Which characters.</strong> One mark goes beside each grapheme cluster, centred on its advance before justification moves it;
+spaces, control characters and punctuation get none, as CSS Text Decoration 3 says.</li>
+<li><strong>Placement.</strong> <code>Position</code> puts marks <code>Over</code> the text (right of it in vertical lines) or <code>Under</code> it (left). They stand
+outside ruby on the same side, and lines grow to hold them unless their line height already does.</li>
+<li><strong>Results.</strong> Each line's <code>AnnotationRuns</code> holds <code>LayoutRunKind.Emphasis</code> runs after its ruby runs, one per piece of the
+line, with the piece's range and style index. <code>DrawTextLayout</code>, <code>ToPath</code>, pictures and SVG output draw them.</li>
+</ul>
+<h3 id="tate-chu-yoko">Tate-chu-yoko</h3>
+<p>Tate-chu-yoko sets short horizontal text, such as a two-digit number or &quot;!?&quot;, upright in one em of a vertical line, as CSS
+<code>text-combine-upright</code> does. Set <code>TextStyle.CombineUpright</code>: <code>TextCombine.All</code> combines each stretch of the style's text,
+<code>TextCombine.Digits(n)</code> each run of up to <code>n</code> (2 to 4) ASCII digits; its <code>Kind</code> (a <code>TextCombineKind</code>) says which.</p>
+<pre><code class="lang-csharp">// 12年3月 in a vertical line: each run of digits stands upright, its digits side by side, in one em.
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle
+    {
+        FontFamilies = [fonts.Families[0]],
+        Size = 20,
+        Language = &quot;ja&quot;,
+        CombineUpright = TextCombine.Digits(2),  // runs of up to two ASCII digits; TextCombine.All for a span's text
+    },
+    WritingMode = WritingMode.VerticalRl,
+};
+TextLayout layout = Paragraph.Create(&quot;12年3月&quot;, style).Layout(300);
+</code></pre>
+<p>The text is shaped horizontally with the font's <code>hwid</code>, <code>twid</code> or <code>qwid</code> feature for two, three or four characters where the
+font has it, then squashed across the line, keeping its height, if it is still wider than one em. The combined text breaks, justifies
+and takes an emphasis mark as one ideograph. Horizontal lines and <code>TextOrientation.Sideways</code> ignore it.</p>
 <h2 id="recipes">Recipes</h2>
 <p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
 <h3 id="a-caption-in-a-box">A caption in a box</h3>

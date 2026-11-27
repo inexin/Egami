@@ -175,11 +175,12 @@ TextLayout unbounded = paragraph.Layout(float.PositiveInfinity);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_TextLine_AnnotationRuns" data-uid="Egami.Fonts.Layout.TextLine.AnnotationRuns">
   AnnotationRuns
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L297"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L298"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the runs set beside the line's text, which hold no text of the paragraph: <a class="xref" href="Egami.Fonts.Layout.LayoutRunKind.html#Egami_Fonts_Layout_LayoutRunKind_Ruby">Ruby</a>
-runs, in the order of their annotations. Empty for a line without ruby.</p>
+runs in the order of their annotations, then <a class="xref" href="Egami.Fonts.Layout.LayoutRunKind.html#Egami_Fonts_Layout_LayoutRunKind_Emphasis">Emphasis</a> runs in visual order. Empty for a line
+without ruby or emphasis marks.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
