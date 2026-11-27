@@ -376,7 +376,7 @@ to 1.5.0.
   ruby wider than its base spreads the base 1:2:1 and may overhang kana and punctuation (`RubyOverhang`), narrower ruby
   spreads by `RubyAlign`. Bases never break, in greedy and optimal filling, hyphenation and overflow-wrap; justification
   leaves them alone; lines grow to hold ruby unless their line height does. Vertical lines put over ruby right and under ruby
-  left. `ParagraphStyle.Ruby` sets the options and the size ratio (half). Each `TextLine.AnnotationRuns` holds the new
+  left. Ruby's em box stands on its base's (BASE `ideo`/`idtp` em boxes, else centred). `ParagraphStyle.Ruby` sets the options and the size ratio (half). Each `TextLine.AnnotationRuns` holds the new
   `LayoutRunKind.Ruby` runs with `LayoutRun.Annotation`; `TextLayout.GetRubyBounds` gives an annotation's box; ink bounds
   hold ruby, and hit testing and carets stay on the base. A section in the paragraph layout guide shows it.
 

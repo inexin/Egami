@@ -86,9 +86,12 @@ public sealed class RubyTests
         Assert.Equal("くに", ruby.Glyphs!.Text);
         Assert.Equal([0, 1], ruby.Glyphs.Clusters.ToArray());
 
-        // Over the base's em box, inside the line box.
+        // The ruby's em box stands on the base's (JLREQ 3.3), inside the line box. The subset has no BASE table, so each em is
+        // centred between the rounded ascent and descent: the base's (23 and 6) has its top 18.5 above the baseline; the
+        // ruby's (12 and 3 at 10) has its bottom 0.5 below its baseline, which is so 19 above the base's, its box 31 to 16 above.
         TextBounds box = Bounds(layout, 0);
-        Assert.True(box.Bottom <= line.Baseline - 17.5f, $"{box.Bottom} {line.Baseline}");
+        Assert.Equal(line.Baseline - 16, box.Bottom, 3);
+        Assert.Equal(line.Baseline - 31, box.Top, 3);
         Assert.True(box.Top >= line.Top - 1e-3f);
         Assert.Equal(RubyLineHeight, box.Height, 3);
         Assert.Equal(Em / 2, layout.Paragraph.GetStyle(ruby.StyleIndex).Size);
@@ -234,6 +237,20 @@ public sealed class RubyTests
     }
 
     [Fact]
+    public void EmBoxesComeFromBaseElseCentreBetweenAscentAndDescent()
+    {
+        // Source Sans 3's BASE puts ideo at -170 of 1000 and has no idtp: the em is 170 below the baseline to 830 above.
+        (float over, float under) = IdeographicEmBox.Edges(new Font(ParagraphTests.Family("SourceSans3-Regular.otf").Match(FontStyle.Normal).Typeface, 20));
+        Assert.Equal(16.6f, over, 3);
+        Assert.Equal(3.4f, under, 3);
+
+        // The Noto Sans CJK subset has no BASE: centred between its rounded ascent (23) and descent (6).
+        (over, under) = IdeographicEmBox.Edges(new Font(Cjk.Match(FontStyle.Normal).Typeface, 20));
+        Assert.Equal(18.5f, over, 3);
+        Assert.Equal(1.5f, under, 3);
+    }
+
+    [Fact]
     public void RubyGrowsTheLineUnlessItsHeightHoldsIt()
     {
         TextLayout plain = Paragraph.Create("国", Style()).Layout(float.PositiveInfinity);
@@ -241,14 +258,15 @@ public sealed class RubyTests
         Assert.True(over.Lines[0].Ascent > plain.Lines[0].Ascent);
         Assert.Equal(plain.Lines[0].Descent, over.Lines[0].Descent);
 
-        // The ruby sits on the base's ascent, and its top is the line box's top.
-        Assert.Equal(plain.Lines[0].Ascent + RubyLineHeight, over.Lines[0].Ascent, 3);
+        // The ruby's em box stands on the base's em box (its box 31 to 16 above the baseline), and its top is the line box's top.
+        Assert.Equal(31, over.Lines[0].Ascent, 3);
         Assert.Equal(over.Lines[0].Top, Bounds(over, 0).Top, 3);
 
         TextLayout under = Layout("国", [new(0, 1, "くに") { Position = RubyPosition.Under }]);
         Assert.Equal(plain.Lines[0].Ascent, under.Lines[0].Ascent);
         Assert.True(under.Lines[0].Descent > plain.Lines[0].Descent);
-        Assert.True(Bounds(under, 0).Top >= under.Lines[0].Baseline);
+        // Under: the ruby's em top on the base's em bottom, 1.5 below the baseline; its box from 1 above to 14 below.
+        Assert.Equal(under.Lines[0].Baseline - 1, Bounds(under, 0).Top, 3);
 
         // An offset moves the ruby further out and the line grows with it.
         TextLayout offset = Layout("国", [new(0, 1, "くに") { Offset = 4 }]);
@@ -270,14 +288,15 @@ public sealed class RubyTests
         TextLayout over = Layout("の国際の", [new(1, 2, "こくさい")], vertical);
         TextLine line = over.Lines[0];
         TextBounds box = Bounds(over, 0);
-        Assert.True(box.Left >= line.Baseline + 8, $"{box.Left} {line.Baseline}");
+        // Em boxes centred on the central baseline: the ruby's em (10) from 10 to 20 right of it, its box (15 thick) from 7.5.
+        Assert.Equal(line.Baseline + 7.5f, box.Left, 3);
         Assert.Equal(20, box.Top, 3);
         Assert.Equal(60, box.Bottom, 3);
         LayoutRun run = Assert.Single(line.AnnotationRuns);
         Assert.All(run.Glyphs!.Positions.ToArray(), p => Assert.True(p.X > line.Baseline));
 
         TextLayout under = Layout("の国際の", [new(1, 2, "こくさい") { Position = RubyPosition.Under }], vertical);
-        Assert.True(Bounds(under, 0).Right <= under.Lines[0].Baseline - 8);
+        Assert.Equal(under.Lines[0].Baseline - 7.5f, Bounds(under, 0).Right, 3);
 
         // The line is thicker for the ruby, on its over side.
         TextLayout plain = Paragraph.Create("の国際の", vertical).Layout(float.PositiveInfinity);
