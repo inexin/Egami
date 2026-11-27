@@ -196,6 +196,27 @@ public sealed class EmphasisTests
     }
 
     [Fact]
+    public void VerticalMarksStandUprightAsVerticalTextPlacesThem()
+    {
+        // The mark is the character a vertical line of it at half size would draw, its vertical advance centred on the
+        // character's em: the font's vertical origin places it, not its horizontal ascent and descent.
+        TextLine alone = Paragraph.Create("•", new ParagraphStyle
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [DejaVu], Size = Em / 2 },
+            WritingMode = WritingMode.VerticalRl,
+            TextOrientation = TextOrientation.Upright,
+        }).Layout(float.PositiveInfinity).Lines[0];
+        float offset = alone.Runs[0].Glyphs!.Positions[0].Y, advance = alone.Width;
+
+        GlyphRun marks = Marks(Layout("国際", Style(Dots, mode: WritingMode.VerticalRl)).Lines[0])[0].Glyphs!;
+        Assert.True(marks.Transforms.IsEmpty, "upright marks are not turned");
+        for (int i = 0; i < marks.Count; i++)
+        {
+            Assert.Equal((i * Em) + ((Em - advance) / 2) + offset, marks.Positions[i].Y, 2);
+        }
+    }
+
+    [Fact]
     public void JustifiedTextKeepsEachMarkOnItsCharacter()
     {
         ParagraphStyle style = Style(Dots) with { Align = TextAlign.Justify };

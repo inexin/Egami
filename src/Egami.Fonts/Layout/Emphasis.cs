@@ -150,9 +150,17 @@ internal sealed class EmphasisTable
 
             string text = emphasis.MarkText();
             ResolvedStyle markStyle = ResolvedStyle.Resolve(StyleOf(style.Style, style.Size), styles[0], true, fonts);
-            (Font font, GlyphBuffer glyphs) = Itemizer.ShapeAlone(text, markStyle, paragraph.Fallback, fonts);
+            // Marks stand upright in vertical lines, shaped top to bottom so that the font's vertical origin places them.
+            bool vertical = paragraph.WritingMode != WritingMode.HorizontalTb;
+            (Font font, GlyphBuffer glyphs) = Itemizer.ShapeAlone(text, markStyle, paragraph.Fallback, fonts, vertical ? TextDirection.TopToBottom : TextDirection.LeftToRight);
             (float a, float d, _) = LineBuilder.Rounded(font);
-            Mark mark = new(font, glyphs, glyphs.Advance, a, d, emphasis.Position == EmphasisPosition.Over, emphasis);
+            float advance = 0;
+            foreach (GlyphPosition p in glyphs.Positions)
+            {
+                advance += vertical ? -p.YAdvance : p.XAdvance;
+            }
+
+            Mark mark = new(font, glyphs, advance, a, d, emphasis.Position == EmphasisPosition.Over, emphasis);
             shaped[(emphasis, style.ShapingGroup)] = mark;
             marks[i] = mark;
         }
@@ -183,7 +191,10 @@ internal sealed class EmphasisTable
         or UnicodeCategory.ClosePunctuation or UnicodeCategory.InitialQuotePunctuation or UnicodeCategory.FinalQuotePunctuation
         or UnicodeCategory.OtherPunctuation);
 
-    /// <summary>A shaped mark: its glyphs at half size, laid out horizontally, and its font's rounded ascent and descent.</summary>
+    /// <summary>
+    /// A shaped mark: its glyphs at half size, shaped in the line's direction (top to bottom, upright, in vertical lines), their
+    /// advance along the line, and the font's rounded ascent and descent.
+    /// </summary>
     public sealed record Mark(Font Font, GlyphBuffer Glyphs, float Advance, float Ascent, float Descent, bool Over, TextEmphasis Emphasis)
     {
         public float Thickness => Ascent + Descent;

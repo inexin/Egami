@@ -681,12 +681,12 @@ internal static class Itemizer
     private static bool IsHardBreak(int cp) => cp is 0x0A or 0x0B or 0x0C or 0x0D or 0x85 or 0x2028 or 0x2029;
 
     /// <summary>Shapes a short string (an ellipsis) on its own in a style, in the font CSS matching picks for its first cluster.</summary>
-    public static (Font, GlyphBuffer) ShapeAlone(string text, ResolvedStyle style, FontFallback fallback, FontCache fonts)
+    public static (Font, GlyphBuffer) ShapeAlone(string text, ResolvedStyle style, FontFallback fallback, FontCache fonts, TextDirection direction = TextDirection.LeftToRight)
     {
         int first = TextSegmenter.NextGraphemeBoundary(text, 0);
         Font font = ChooseFont(text.AsSpan(0, first), style, fallback, Script.Common, fonts);
         GlyphBuffer glyphs = new();
-        TextShaper.ShapeRun(text, 0, text.Length, font, new RunProperties { Language = style.Language, Features = style.Features }, glyphs);
+        TextShaper.ShapeRun(text, 0, text.Length, font, new RunProperties { Language = style.Language, Features = style.Features, Direction = direction }, glyphs);
         return (font, glyphs);
     }
 

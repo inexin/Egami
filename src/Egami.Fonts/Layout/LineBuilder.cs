@@ -2407,19 +2407,28 @@ internal sealed partial class LineBuilder
             else
             {
                 float across = ToPhysical(block, top, thickness, blockSize);
-                left = across - (mark.Advance / 2);
-                y = centre + ((mark.Ascent - mark.Descent) / 2);
+                left = across;
+                y = centre - (mark.Advance / 2);
                 box = box.Union(new TextBounds(across - (h / 2), centre - (mark.Advance / 2), across + (h / 2), centre + (mark.Advance / 2)));
             }
 
+            // Horizontal: glyphs along x on the baseline y. Vertical: upright glyphs down from y, their offsets from the shaper
+            // holding the vertical origin.
             float gx = left;
             for (int g = 0; g < glyphs.Count; g++)
             {
                 GlyphPosition p = glyphs.Positions[g];
                 ids.Add(glyphs.GlyphIds[g]);
                 points.Add(new Vector2(gx + p.XOffset, y - p.YOffset));
-                markAdvances.Add(p.XAdvance);
-                gx += p.XAdvance;
+                markAdvances.Add(Vertical ? -p.YAdvance : p.XAdvance);
+                if (Vertical)
+                {
+                    y -= p.YAdvance;
+                }
+                else
+                {
+                    gx += p.XAdvance;
+                }
             }
 
             first = Math.Min(first, centre - (mark.Advance / 2));
