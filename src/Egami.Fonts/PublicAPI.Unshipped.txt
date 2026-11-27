@@ -41,6 +41,8 @@ Egami.Fonts.WebFontOptions.RootString.get -> string?
 Egami.Fonts.WebFontOptions.RootString.init -> void
 Egami.Fonts.WebFontOptions.XorFontData.get -> bool
 Egami.Fonts.WebFontOptions.XorFontData.init -> void
+Egami.Fonts.SubsetOptions.Characters.get -> System.Collections.Generic.IReadOnlyCollection<int>?
+Egami.Fonts.SubsetOptions.Characters.init -> void
 Egami.Fonts.SubsetOptions.DropHinting.get -> bool
 Egami.Fonts.SubsetOptions.DropHinting.init -> void
 Egami.Fonts.WebFontReader

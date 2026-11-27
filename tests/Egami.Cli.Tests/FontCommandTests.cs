@@ -138,6 +138,9 @@ public sealed class FontCommandTests : IDisposable
         Assert.Equal(before.Positions.ToArray(), after.Positions.ToArray());
         Assert.True(after.Count < "office".Length, "A ligature forms.");
 
+        // The cmap maps the asked characters only: not U+FB01, though the fi ligature glyph is kept.
+        Assert.False(subset.TryGetGlyph(0xFB01, out ushort fi) && fi != 0);
+
         // --no-layout: no layout tables, dense ids, a smaller file.
         Expect(0, _tool.Run("font", "subset", "NotoSans-Regular.ttf", "--text", "Hello, office", "--no-layout", "-o", "small.woff2"));
         Typeface small = Typeface.FromFile(_tool.PathOf("small.woff2"));

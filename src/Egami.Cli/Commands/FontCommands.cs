@@ -222,8 +222,10 @@ internal static class FontCommands
                 }
 
                 string path = Path(session, template, input, target);
-                (List<ushort> glyphs, List<int> missing, int fromRanges) = wanted.Map(typeface);
-                SubsetOptions these = subsetOptions;
+                (List<ushort> glyphs, List<int> missing, int fromRanges, List<int> characters) = wanted.Map(typeface);
+
+                // The character map holds the asked characters, not every one a kept glyph has (such as a ligature's).
+                SubsetOptions these = subsetOptions with { Characters = characters };
                 string instance = string.Empty;
                 if (typeface.IsVariable)
                 {
@@ -546,14 +548,18 @@ internal static class FontCommands
             return new Wanted(codes, ranges);
         }
 
-        /// <summary>The glyphs of the characters the face has, the asked characters it lacks, and how many characters the ranges added.</summary>
-        public (List<ushort> Glyphs, List<int> Missing, int FromRanges) Map(Typeface face)
+        /// <summary>
+        /// The glyphs of the characters the face has, the asked characters it lacks, how many characters the ranges added, and the
+        /// characters asked for and in the ranges.
+        /// </summary>
+        public (List<ushort> Glyphs, List<int> Missing, int FromRanges, List<int> Characters) Map(Typeface face)
         {
             // The shaper draws a character the face lacks from its decomposition, and composes base and mark to a character it has.
             HashSet<ushort> glyphs = [.. FontSubsetter.GlyphsFor(face, Explicit)];
             List<int> missing = [.. Explicit.Where(code => !face.TryGetGlyph(code, out ushort glyph) || glyph == 0)];
 
             int fromRanges = 0;
+            List<int> characters = [.. Explicit];
             if (Ranges.Count > 0)
             {
                 foreach (int code in FontInfo.CodePoints(face))
@@ -561,12 +567,13 @@ internal static class FontCommands
                     if (!Explicit.Contains(code) && Ranges.Any(r => code >= r.First && code <= r.Last) && face.TryGetGlyph(code, out ushort glyph) && glyph != 0)
                     {
                         glyphs.Add(glyph);
+                        characters.Add(code);
                         fromRanges++;
                     }
                 }
             }
 
-            return ([.. glyphs], missing, fromRanges);
+            return ([.. glyphs], missing, fromRanges, characters);
         }
 
         private static void Add(SortedSet<int> codes, string text)
