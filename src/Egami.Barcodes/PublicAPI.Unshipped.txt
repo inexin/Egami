@@ -98,7 +98,7 @@ static Egami.Barcodes.MicroQrOptions.Default.get -> Egami.Barcodes.MicroQrOption
 static Egami.Barcodes.MicroQrOptions.operator !=(Egami.Barcodes.MicroQrOptions? left, Egami.Barcodes.MicroQrOptions? right) -> bool
 static Egami.Barcodes.MicroQrOptions.operator ==(Egami.Barcodes.MicroQrOptions? left, Egami.Barcodes.MicroQrOptions? right) -> bool
 Egami.Barcodes.BarcodeFormat.JapanPost = 131072 -> Egami.Barcodes.BarcodeFormat
-Egami.Barcodes.BarcodeFormat.Postal = 131072 -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormat.Postal = Egami.Barcodes.BarcodeFormat.JapanPost | Egami.Barcodes.BarcodeFormat.IntelligentMail | Egami.Barcodes.BarcodeFormat.RoyalMail | Egami.Barcodes.BarcodeFormat.Kix | Egami.Barcodes.BarcodeFormat.AustraliaPost -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.JapanPostOptions
 Egami.Barcodes.JapanPostOptions.<Clone>$() -> Egami.Barcodes.JapanPostOptions!
 Egami.Barcodes.JapanPostOptions.Equals(Egami.Barcodes.JapanPostOptions? other) -> bool
@@ -112,3 +112,9 @@ override Egami.Barcodes.JapanPostOptions.GetHashCode() -> int
 override Egami.Barcodes.JapanPostOptions.ToString() -> string!
 static Egami.Barcodes.JapanPostOptions.operator !=(Egami.Barcodes.JapanPostOptions? left, Egami.Barcodes.JapanPostOptions? right) -> bool
 static Egami.Barcodes.JapanPostOptions.operator ==(Egami.Barcodes.JapanPostOptions? left, Egami.Barcodes.JapanPostOptions? right) -> bool
+Egami.Barcodes.BarcodeFormat.IntelligentMail = 262144 -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormat.RoyalMail = 524288 -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormat.Kix = 1048576 -> Egami.Barcodes.BarcodeFormat
+Egami.Barcodes.BarcodeFormat.AustraliaPost = 2097152 -> Egami.Barcodes.BarcodeFormat
+static Egami.Barcodes.Barcode.RoyalMail(string! text) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.Kix(string! text) -> Egami.Barcodes.Barcode!

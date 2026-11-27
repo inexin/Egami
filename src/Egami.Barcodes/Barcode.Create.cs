@@ -36,6 +36,8 @@ public sealed partial class Barcode
         BarcodeFormat.DataBarExpanded => DataBarExpanded(text),
         BarcodeFormat.MicroQr => MicroQr(text),
         BarcodeFormat.JapanPost => JapanPost(text),
+        BarcodeFormat.RoyalMail => RoyalMail(text),
+        BarcodeFormat.Kix => Kix(text),
         _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
     };
 }
