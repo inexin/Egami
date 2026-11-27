@@ -7,6 +7,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
 using Egami.Pixels;
+using Egami.Simd;
 
 namespace Egami.Formats.Jpeg;
 
@@ -2116,7 +2117,7 @@ internal static class JpegColor
 
                 break;
             default:
-                int done = Avx2.IsSupported ? YCbCrAvx2(a, b, c, rgb) : 0;
+                int done = Avx2.IsSupported ? YCbCrAvx2(a, b, c, rgb) : Simd128.IsSupported ? YCbCr128(a, b, c, rgb) : 0;
                 YCbCrScalar(a, b, c, rgb, done);
                 break;
         }
@@ -2195,6 +2196,62 @@ internal static class JpegColor
         }
 
         return x;
+    }
+
+    /// <summary>
+    /// <see cref="YCbCrAvx2"/> in 128-bit vectors (x86 without AVX2, and Arm64), eight pixels at a time with the same integer
+    /// steps, so the bytes equal the scalar ones too. Returns how many pixels it did.
+    /// </summary>
+    internal static int YCbCr128(ReadOnlySpan<byte> luma, ReadOnlySpan<byte> blue, ReadOnlySpan<byte> red, Span<byte> rgb)
+    {
+        int width = rgb.Length / 3;
+        ref byte yRef = ref MemoryMarshal.GetReference(luma);
+        ref byte cbRef = ref MemoryMarshal.GetReference(blue);
+        ref byte crRef = ref MemoryMarshal.GetReference(red);
+        ref byte o = ref MemoryMarshal.GetReference(rgb);
+        Vector128<byte> rg0 = Vector128.Create((byte)0, 8, 255, 1, 9, 255, 2, 10, 255, 3, 11, 255, 4, 12, 255, 5);
+        Vector128<byte> b0 = Vector128.Create((byte)255, 255, 0, 255, 255, 1, 255, 255, 2, 255, 255, 3, 255, 255, 4, 255);
+        Vector128<byte> rg1 = Vector128.Create((byte)13, 255, 6, 14, 255, 7, 15, 255, 255, 255, 255, 255, 255, 255, 255, 255);
+        Vector128<byte> b1 = Vector128.Create((byte)255, 5, 255, 255, 6, 255, 255, 7, 255, 255, 255, 255, 255, 255, 255, 255);
+        Vector128<int> offset = Vector128.Create(-128);
+        Vector128<int> half = Vector128.Create(Half);
+        int x = 0;
+        for (; x + 8 <= width && x + 8 <= luma.Length && x + 8 <= blue.Length && x + 8 <= red.Length; x += 8)
+        {
+            Widen8(ref yRef, x, out Vector128<int> y0, out Vector128<int> y1);
+            Widen8(ref cbRef, x, out Vector128<int> cb0, out Vector128<int> cb1);
+            Widen8(ref crRef, x, out Vector128<int> cr0, out Vector128<int> cr1);
+            cb0 += offset;
+            cb1 += offset;
+            cr0 += offset;
+            cr1 += offset;
+            Vector128<short> r = Simd128.PackSignedSaturate(
+                y0 + (((cr0 * Vector128.Create(CrToRFactor)) + half) >> ScaleBits),
+                y1 + (((cr1 * Vector128.Create(CrToRFactor)) + half) >> ScaleBits));
+            Vector128<short> g = Simd128.PackSignedSaturate(
+                y0 + (((cb0 * Vector128.Create(CbToGFactor)) + half + (cr0 * Vector128.Create(CrToGFactor))) >> ScaleBits),
+                y1 + (((cb1 * Vector128.Create(CbToGFactor)) + half + (cr1 * Vector128.Create(CrToGFactor))) >> ScaleBits));
+            Vector128<short> bl = Simd128.PackSignedSaturate(
+                y0 + (((cb0 * Vector128.Create(CbToBFactor)) + half) >> ScaleBits),
+                y1 + (((cb1 * Vector128.Create(CbToBFactor)) + half) >> ScaleBits));
+            Vector128<byte> redGreen = Simd128.PackUnsignedSaturate(r, g);
+            Vector128<byte> blues = Simd128.PackUnsignedSaturate(bl, bl);
+            ref byte at = ref Unsafe.Add(ref o, 3 * x);
+            (Simd128.Shuffle(redGreen, rg0) | Simd128.Shuffle(blues, b0)).StoreUnsafe(ref at);
+            Vector128<byte> second = Simd128.Shuffle(redGreen, rg1) | Simd128.Shuffle(blues, b1);
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref at, 16), second.AsUInt64().GetElement(0));
+        }
+
+        return x;
+    }
+
+    /// <summary>Eight bytes from <paramref name="x"/> on, as two vectors of 32-bit lanes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Widen8(ref byte source, int x, out Vector128<int> low, out Vector128<int> high)
+    {
+        Vector128<ushort> wide = Vector128.WidenLower(Vector64.LoadUnsafe(ref source, (nuint)x).ToVector128Unsafe());
+        low = Vector128.WidenLower(wide).AsInt32();
+        high = Vector128.WidenUpper(wide).AsInt32();
     }
 
     /// <summary>One output channel (0 red, 1 green, 2 blue) of 16 pixels as shorts in pixel order, before the clamp.</summary>
