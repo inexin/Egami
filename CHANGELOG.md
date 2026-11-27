@@ -24,6 +24,10 @@ EPS previews (roadmap 2.3.14).
   `Eps.LeadingWhitespace` warning, as PostScript interpreters do; some old files have them.
 - The EPS format page, a recipe in the formats guide and a fuzz target (`eps`).
 - New diagnostics: `Eps.PreviewLoaded` on every load, and `Eps.*` warnings for damaged headers, sections and previews.
+- Faster JPEG XL VarDCT decoding where AVX2 is missing, Arm64 among them (roadmap 2.4.13): the DCTs, dequantization,
+  chroma from luma, XYB to sRGB and the 8-bit output have 128-bit SIMD paths for x86 and Arm64. Pixels are identical to the
+  scalar path's; the FMA kernels run where the CPU has FMA, as Arm64 does. 1.4 times as fast as before on x64 with AVX turned
+  off.
 
 ## Egami.Drawing 1.6.0 (unreleased)
 
