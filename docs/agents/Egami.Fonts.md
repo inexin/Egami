@@ -38,8 +38,9 @@ and no `Configuration`.
   writes WOFF2 (or WOFF with `WebFontOptions.Format`); `WebFontReader.ToSfnt(data)` turns WOFF or WOFF2 back into TTF, OTF
   or TTC. `SubsetOptions.DropHinting` leaves TrueType hinting out of a subset.
   `FontSubsetter.GlyphsFor(face, codePoints)` gives the glyphs a text needs as the shaper draws it (decompositions, composed forms).
-  `SubsetOptions.LayoutClosure` adds the glyphs GSUB can reach and cuts GDEF, GSUB and GPOS down to the kept glyphs, so the
-  subset shapes as the full face; `SubsetOptions.LayoutFeatures` names the features it keeps (default: the shaper's defaults).
+  `SubsetOptions.LayoutClosure` adds the glyphs GSUB can reach and cuts GDEF, GSUB, GPOS, MATH, kern and the vertical
+  metrics down to the kept glyphs, so the subset shapes as the full face (a variable face's at its position, baked in);
+  `SubsetOptions.LayoutFeatures` names the features it keeps (default: the shaper's defaults).
 - Egami.Fonts.Substitutes: bundled metric-compatible stand-ins for Arial, Times New Roman, Courier New, Calibri and Cambria.
 
 ## Samples

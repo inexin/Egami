@@ -21,9 +21,9 @@ internal static class JapanPostEncoder
     public const byte Cc4 = 14;
 
     /// <summary>The bars of each character by its value, 0 to 18: digits, hyphen, CC1 to CC8.</summary>
-    private static readonly FourStateBar[][] s_patterns = Patterns(
+    private static readonly FourStateBar[][] s_patterns = [.. ((string[])[
         "FTT", "FFT", "FDA", "DFA", "FAD", "FTF", "DAF", "AFD", "ADF", "TFF",
-        "TFT", "DAT", "DTA", "ADT", "TDA", "ATD", "TAD", "TTF", "FFF");
+        "TFT", "DAT", "DTA", "ADT", "TDA", "ATD", "TAD", "TTF", "FFF"]).Select(FourStateGrid.Bars)];
 
     /// <summary>Gets the value of each data character and the check character: 21 values, as the symbol holds them.</summary>
     /// <param name="postalCode">The 7 digits of the postal code.</param>
@@ -99,15 +99,6 @@ internal static class JapanPostEncoder
 
         bars[^2] = FourStateBar.Descender;
         bars[^1] = FourStateBar.Full;
-        return FourStateGrid.Create(bars);
+        return FourStateGrid.Create(bars, 2, 2);
     }
-
-    private static FourStateBar[][] Patterns(params string[] patterns) =>
-        [.. patterns.Select(p => p.Select(c => c switch
-        {
-            'F' => FourStateBar.Full,
-            'A' => FourStateBar.Ascender,
-            'D' => FourStateBar.Descender,
-            _ => FourStateBar.Tracker,
-        }).ToArray())];
 }
