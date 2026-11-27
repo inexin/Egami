@@ -58,7 +58,8 @@ for that position. `Variations` gives a face's position.
 - `SubsetOptions.Variations` (by default the face's own position) makes the subset a static font at that position, written as an
   instancer would: the varied outlines rounded to whole units, metrics, OS/2 and post at the position, CFF2 written as CFF and the
   variation tables left out. Its outlines, advances and bearings equal fontTools' instancer's, so a PDF shows the position.
-- A variable font's GSUB feature variations (glyph swaps by position) arrive with shaping in 2.8.
+- The shaper applies a variable font's feature variations (glyph swaps by position), and a layout-closure subset bakes in those
+  that hold at its position, with its GPOS, GDEF and MATH deltas.
 
 ## Glyphs and metrics
 
@@ -321,13 +322,21 @@ list with their tags.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-layout-features)]
 
-With `RetainGlyphIds` the layout tables are cut down in the same way without renumbering, and MATH is copied unchanged; a subset
-with dense ids has no MATH table. A layout table the shaper would leave out as damaged makes `Subset` throw
+The layout closure also cuts down and renumbers what else the shaper and a math layout read: MATH (constants, italics corrections,
+accent attachments, math kerning, and the variants and assemblies of kept glyphs), the legacy `kern` table (format 0 pairs of kept
+glyphs; its other formats only with `RetainGlyphIds`), and the vertical metrics in vhea, vmtx and VORG. With `RetainGlyphIds` the
+tables are cut down in the same way without renumbering. A layout table the shaper would leave out as damaged makes `Subset` throw
 `CorruptDataException`. GSUB and GPOS lookups that no longer fit 16-bit offsets are written as extension lookups.
+
+A variable face's subset is a static font at the face's position (or `SubsetOptions.Variations`), and its layout tables are
+too: each GPOS value and anchor, each GDEF caret and each MATH value takes its variation delta, rounded, and loses its variation
+device table; the feature variations that hold at the position replace the features they substitute; and GDEF drops its
+variation store. Vertical advances and origins are written varied as well, so the subset shapes as the face did at that position.
 
 The shaper draws a character the face lacks from its canonical decomposition, and composes a base and a mark to the precomposed
 character when the face has it, so the glyphs of a text are more than those its characters map to. `FontSubsetter.GlyphsFor`
-gives them all.
+gives them all, with the shaper's other stand-ins (split vowels, mirrored brackets, the space for default ignorables) and the
+glyphs of the variation sequences the characters make; the subset's cmap keeps those sequences in format 14.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-text)]
 

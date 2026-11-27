@@ -382,17 +382,27 @@ WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, a
   hb-subset writes them: every script and language system stays with the kept features, each feature keeps the lookups that
   still apply to a kept glyph, and each lookup keeps the entries for kept glyphs (coverages and class definitions in their
   smaller format, classes and lookup indexes renumbered, feature variations kept). Lookups that no longer fit 16-bit offsets
-  become extension lookups. With `RetainGlyphIds` the same cutting runs without renumbering, so those subsets are smaller too;
-  MATH is still copied there, and left out with dense ids. The new `SubsetOptions.LayoutFeatures` sets the features kept and
+  become extension lookups. With `RetainGlyphIds` the same cutting runs without renumbering, so those subsets are smaller too.
+  The new `SubsetOptions.LayoutFeatures` sets the features kept and
   followed by the closure (`OpenTypeLayout.DefaultClosureFeatures` by default). A damaged GDEF, GSUB or GPOS table now makes a
-  layout-closure subset throw `CorruptDataException`. Subsets of the 3,823 HarfBuzz shaping test cases a subset can hold
-  now (not yet those of variable faces, legacy kern, vertical metrics or variation selectors) and of Egami's test fonts in
+  layout-closure subset throw `CorruptDataException`. Subsets of the HarfBuzz shaping test cases and of Egami's test fonts in
   Latin, Arabic, Hebrew, Indic, Southeast Asian, CJK and emoji text shape exactly as the full face.
 - `FontSubsetter.GlyphsFor` also adds the shaper's other stand-ins, so a subset shapes text as the full face: the decompositions
   that Indic, Khmer, Myanmar and Universal Shaping Engine scripts make even of characters the face maps (split vowels, Thai and
   Lao sara am), mirrored brackets for right-to-left text, vertical forms for a face without vert, the space for default
   ignorables and for spaces the face lacks, U+2010 for a missing U+2011, and the Arabic presentation forms for a face without
   an Arabic GSUB.
+- Layout-closure subsets, second part (roadmap 2.7.9): MATH is cut down and renumbered with dense ids too (it was left out),
+  and with retained ids it is cut down rather than copied. The legacy kern table keeps the format 0 pairs of kept glyphs,
+  renumbered and sorted (other formats only with `RetainGlyphIds`), and vhea, vmtx and VORG keep the kept glyphs' vertical
+  metrics. A variable face's static subset bakes its layout variations in at its position: GPOS values and anchors, GDEF
+  carets and MATH values take their rounded deltas and lose their variation device tables, the feature variations that hold
+  there replace their features, GDEF drops its variation store, and vertical advances and origins are written varied. The
+  subset's cmap keeps the variation sequences of the kept characters and glyphs in format 14, and `FontSubsetter.GlyphsFor`
+  adds the glyphs of the variation sequences the characters make. Subsets of 5,229 HarfBuzz shaping test cases (1,406 more
+  than before: variable faces, legacy kern, vertical metrics and variation sequences) shape exactly as the full face; one
+  variable case is left out, as its HVAR and gvar give different advances and the subset follows gvar as fontTools' instancer
+  does. A GDEF, GSUB or GPOS table whose major version is not 1, which the shaper reads as empty, is left out of the subset.
 
 - `ParagraphStyle.SpaceShrink` (0 to 1, 0 by default) lets justified lines fit the next word by shrinking their word spaces,
   as Word fills justified paragraphs: by at most that share of the spaces in all, and each space by at most half of what it

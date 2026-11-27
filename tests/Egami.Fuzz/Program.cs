@@ -2586,6 +2586,13 @@ static void SubsetFont(Stream stream)
     }
 
     int hash = data.Length > 0 ? data[^1] : 0;
+    bool varied = face.IsVariable && (hash & 8) != 0;
+    if (varied)
+    {
+        // A variable face at a position the last byte picks, so the subset bakes in the layout variations there.
+        face = face.WithVariations([.. face.VariationAxes.Select(a => new Egami.Fonts.FontVariation(a.Tag, a.Min + ((a.Max - a.Min) * (hash >> 4) / 15f)))]);
+    }
+
     ushort[] glyphs = [.. Enumerable.Range(0, Math.Min(face.GlyphCount, 40)).Where(g => ((g + hash) % 3) != 0).Select(g => (ushort)g)];
     // Every other input also writes the layout tables cut down to the kept glyphs (roadmap 2.7.9).
     bool layout = (hash & 4) != 0 && !face.IsBareCff;
@@ -2607,7 +2614,9 @@ static void SubsetFont(Stream stream)
         var a = new RecordingSink();
         var b = new RecordingSink();
         bool readA = face.GetGlyphOutline(old, a), readB = again.GetGlyphOutline(now, b);
-        if (readA && (!readB || !a.SameAs(b)))
+
+        // At a position the subset's outlines are rounded to whole units (the instance target checks those).
+        if (readA && (!readB || (!varied && !a.SameAs(b))))
         {
             throw new InvalidOperationException($"Glyph {old} changed in the subset.");
         }
@@ -2625,8 +2634,18 @@ static void SubsetFont(Stream stream)
             }
         }
 
-        string text = "office AV الله क्ष";
+        string text = "office AV الله क्ष 漢字";
         _ = new Egami.Fonts.Font(again, 16).Shape(text);
+        _ = new Egami.Fonts.Font(again, 16).Shape(text, new Egami.Fonts.Shaping.ShapingOptions { Direction = Egami.Fonts.Unicode.TextDirection.TopToBottom });
+        if (again.Math is { } math)
+        {
+            foreach (ushort now in subset.GlyphMap.Values)
+            {
+                _ = math.GetVariants(now, Egami.Fonts.MathDirection.Vertical);
+                _ = math.GetAssembly(now, Egami.Fonts.MathDirection.Horizontal);
+                _ = math.GetKerning(now, Egami.Fonts.MathKernCorner.TopRight, 100);
+            }
+        }
     }
 }
 
