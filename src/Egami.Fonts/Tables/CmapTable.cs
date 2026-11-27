@@ -86,6 +86,9 @@ internal sealed class CmapTable
         return latin;
     }
 
+    /// <summary>Gets the format 14 subtable (Unicode variation sequences), or null.</summary>
+    internal VariationSubtable? Variations => _variations;
+
     /// <summary>
     /// Maps a code point followed by a variation selector: the glyph the format 14 subtable names, the default glyph when it lists
     /// the pair as default, or -1 when the font says nothing about the pair.
@@ -767,6 +770,10 @@ internal sealed class VariationSubtable
 
         return new VariationSubtable(selectors, defaults, mappings);
     }
+
+    /// <summary>Gets each selector's record in table order: the default ranges and the glyph mappings.</summary>
+    public IEnumerable<(int Selector, (int Start, int End)[] Defaults, (int Code, int Glyph)[] Mappings)> Records =>
+        _selectors.Select((selector, i) => (selector, _defaults[i], _mappings[i]));
 
     /// <summary>Returns the glyph for the pair, or -1 with <paramref name="useDefault"/> telling whether the base glyph applies.</summary>
     public int Map(int code, int selector, out bool useDefault)

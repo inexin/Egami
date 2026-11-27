@@ -343,7 +343,7 @@ internal sealed class LayoutTable
         }
     }
 
-    private int FindFeatureSubstitute(int variationsIndex, int featureIndex)
+    public int FindFeatureSubstitute(int variationsIndex, int featureIndex)
     {
         ReadOnlySpan<byte> d = Data.Span;
         int baseOffset = _featureVariations;

@@ -1,6 +1,8 @@
 using System.Buffers.Binary;
 using System.Text;
 
+using Egami.Fonts.Tables;
+
 namespace Egami.Fonts.Subsetting;
 
 /// <summary>A growable big-endian byte buffer.</summary>
@@ -224,16 +226,30 @@ internal static class SfntWriter
     }
 
     /// <summary>A cmap of format 4 for the BMP and, when needed, format 12 for every code point.</summary>
-    public static byte[] Cmap(SortedDictionary<int, ushort> map)
+    /// <summary>
+    /// A cmap of the subset's characters: format 4, format 12 when a character is past the BMP, and format 14 with the variation
+    /// sequences of <paramref name="variations"/> whose base character or glyph the subset keeps.
+    /// </summary>
+    public static byte[] Cmap(SortedDictionary<int, ushort> map, VariationSubtable? variations = null, Dictionary<ushort, ushort>? glyphMap = null)
     {
         bool needsFull = map.Count > 0 && map.Keys.Max() > 0xFFFF;
         byte[] format4 = Format4(map);
         byte[]? format12 = needsFull ? Format12(map) : null;
+        byte[]? format14 = variations is null || glyphMap is null ? null : Format14(map, variations, glyphMap);
+
+        // Encoding records sorted by platform and encoding: (0,5) first, then (3,1) and (3,10).
         var w = new ByteWriter();
         w.U16(0);
-        int tables = needsFull ? 2 : 1;
+        int tables = 1 + (format12 is null ? 0 : 1) + (format14 is null ? 0 : 1);
         w.U16(tables);
         int offset = 4 + (tables * 8);
+        if (format14 is not null)
+        {
+            w.U16(0);
+            w.U16(5);
+            w.U32((uint)(offset + format4.Length + (format12?.Length ?? 0)));
+        }
+
         w.U16(3);
         w.U16(1);
         w.U32((uint)offset);
@@ -250,6 +266,114 @@ internal static class SfntWriter
             w.Bytes(format12);
         }
 
+        if (format14 is not null)
+        {
+            w.Bytes(format14);
+        }
+
+        return w.ToArray();
+    }
+
+    /// <summary>
+    /// Format 14 for the kept characters: per selector (the first record of each, as the face reads them), the default
+    /// sequences of characters the subset maps and the mappings to kept glyphs; null when no sequence is left.
+    /// </summary>
+    private static byte[]? Format14(SortedDictionary<int, ushort> map, VariationSubtable variations, Dictionary<ushort, ushort> glyphMap)
+    {
+        var records = new SortedDictionary<int, (List<(int Start, int Count)> Defaults, List<(int Code, int Glyph)> Mappings)>();
+        foreach ((int selector, (int Start, int End)[] defaults, (int Code, int Glyph)[] mappings) in variations.Records)
+        {
+            if (records.ContainsKey(selector))
+            {
+                continue;
+            }
+
+            var seen = new HashSet<int>();
+            List<(int Code, int Glyph)> kept = [];
+            foreach ((int code, int glyph) in mappings)
+            {
+                if (seen.Add(code) && (uint)glyph <= ushort.MaxValue && glyphMap.TryGetValue((ushort)glyph, out ushort now))
+                {
+                    kept.Add((code, now));
+                }
+            }
+
+            kept.Sort();
+            List<(int Start, int Count)> ranges = [];
+            foreach (int code in map.Keys)
+            {
+                if (!Array.Exists(defaults, r => code >= r.Start && code <= r.End))
+                {
+                    continue;
+                }
+
+                if (ranges.Count > 0 && ranges[^1].Start + ranges[^1].Count + 1 == code && ranges[^1].Count < 255)
+                {
+                    ranges[^1] = (ranges[^1].Start, ranges[^1].Count + 1);
+                }
+                else
+                {
+                    ranges.Add((code, 0));
+                }
+            }
+
+            records[selector] = (ranges, kept);
+        }
+
+        var body = new ByteWriter();
+        var offsets = new List<(int Selector, int Defaults, int Mappings)>();
+        int kept14 = records.Count(r => r.Value.Defaults.Count > 0 || r.Value.Mappings.Count > 0);
+        if (kept14 == 0)
+        {
+            return null;
+        }
+
+        int header = 10 + (kept14 * 11);
+        foreach ((int selector, (List<(int Start, int Count)> defaults, List<(int Code, int Glyph)> mappings)) in records)
+        {
+            if (defaults.Count == 0 && mappings.Count == 0)
+            {
+                continue;
+            }
+
+            int defaultsAt = 0, mappingsAt = 0;
+            if (defaults.Count > 0)
+            {
+                defaultsAt = header + body.Length;
+                body.U32((uint)defaults.Count);
+                foreach ((int start, int count) in defaults)
+                {
+                    body.U24(start);
+                    body.U8(count);
+                }
+            }
+
+            if (mappings.Count > 0)
+            {
+                mappingsAt = header + body.Length;
+                body.U32((uint)mappings.Count);
+                foreach ((int code, int glyph) in mappings)
+                {
+                    body.U24(code);
+                    body.U16(glyph);
+                }
+            }
+
+            offsets.Add((selector, defaultsAt, mappingsAt));
+        }
+
+        var w = new ByteWriter(header + body.Length);
+        w.U16(14);
+        w.U32((uint)(header + body.Length));
+        w.U32((uint)offsets.Count);
+        foreach ((int selector, int defaultsAt, int mappingsAt) in offsets)
+        {
+            w.U24(selector);
+            w.U32((uint)defaultsAt);
+            w.U32((uint)mappingsAt);
+        }
+
+        w.Bytes(body.Written);
         return w.ToArray();
     }
 
@@ -498,6 +622,7 @@ internal static class SfntWriter
         if (options.LayoutClosure)
         {
             LayoutSubsetter.Write(face, map, options, tables);
+            MetricsSubsetter.Write(face, map, options.RetainGlyphIds, tables);
         }
 
         foreach (FontTag tag in options.KeepTables)

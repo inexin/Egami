@@ -83,7 +83,9 @@ Debug build, where the JIT's missing optimizations allocate on their own (a cons
 use, for one).
 
 Benchmarks: `dotnet run -c Release --project benchmarks/Egami.Benchmarks` (also `Egami.Drawing.Benchmarks` and
-`Egami.Fonts.Benchmarks`).
+`Egami.Fonts.Benchmarks`). `python tools/time-simd.py` times the image scenarios and a small decode corpus on one thread with
+AVX-512, AVX2 and all SIMD turned off in turn, to show what a 128-bit path (the one ARM64 takes) gains; the manual
+`benchmarks-arm64.yml` workflow runs it on an ARM64 runner.
 
 Fuzzing: `tools/fuzz-afl.py` runs the readers under AFL++ in Docker; its header explains the usage. A 10-minute run of each
 reader you changed is enough for a pull request.

@@ -32,6 +32,13 @@ internal static partial class LinearDecoder
             return null;
         }
 
+        // Every check character pattern ends in two single modules: when those runs fail the check test below for one
+        // pattern, they fail it for all, and the characters need not be read.
+        if (!CheckMayFit(runs.Slice(start + 15, 14)))
+        {
+            return null;
+        }
+
         Span<(int Value, int Checksum)> left = stackalloc (int, int)[3], right = stackalloc (int, int)[3];
         int lefts = LimitedCharacters(runs.Slice(start + 1, 14), leftWidth / 26, 0, left);
         int rights = lefts == 0 ? 0 : LimitedCharacters(runs.Slice(start + 29, 14), rightWidth / 26, 1, right);
@@ -57,6 +64,27 @@ internal static partial class LinearDecoder
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Whether 14 runs pass <see cref="Variance"/>'s test (at most half a module off) in their last two elements, which are one
+    /// module in every check character pattern (18 modules): the same arithmetic, so a false here is a failure there.
+    /// </summary>
+    private static bool CheckMayFit(ReadOnlySpan<float> runs)
+    {
+        float total = 0;
+        for (int i = 0; i < 14; i++)
+        {
+            total += runs[i];
+        }
+
+        if (total < 18)
+        {
+            return false;
+        }
+
+        float unit = total / 18, limit = 0.5f * unit * Math.Max(1, 1 * 0.75f);
+        return MathF.Abs(runs[12] - (1 * unit)) <= limit && MathF.Abs(runs[13] - (1 * unit)) <= limit;
     }
 
     private static bool Module(float run, float unit) => run >= 0.4f * unit && run <= 2.2f * unit;
@@ -87,7 +115,7 @@ internal static partial class LinearDecoder
 
         Span<int> groups = [0, 1, 2, 3, 4, 5, 6];
         DataBarReader.SortByDistance(groups, odd, DataBarTables.LimitedModules);
-        int[] widths = new int[14];
+        Span<int> widths = stackalloc int[14];
         Span<float> half = stackalloc float[7];
         Span<int> rounded = stackalloc int[7];
         int count = 0;

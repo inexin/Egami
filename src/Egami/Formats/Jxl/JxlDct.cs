@@ -75,6 +75,13 @@ internal static partial class JxlDct
             return;
         }
 
+        Dct2DScalar(data, offset, stride, width, height, forward);
+    }
+
+    /// <summary><see cref="Dct2D"/> without vectors: the operations every vector path keeps.</summary>
+    [System.Runtime.CompilerServices.SkipLocalsInit]
+    internal static void Dct2DScalar(Span<float> data, int offset, int stride, int width, int height, bool forward)
+    {
         Span<float> scratch = stackalloc float[256];
         Span<float> column = stackalloc float[256];
         if (width > 1)

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text;
 
 using Egami.Barcodes.Linear;
@@ -87,6 +88,13 @@ internal static partial class LinearDecoder
             return null;
         }
 
+        return Code93From(runs, offsets, start, width);
+    }
+
+    /// <summary>The rest of <see cref="Code93"/>, after its start character: apart, so that the many positions it rejects cost little.</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static LinearRead? Code93From(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, float width)
+    {
         Span<int> buffer = stackalloc int[64];
         var values = new ValueList(buffer);
         int at = start + 6;
@@ -269,11 +277,13 @@ internal static partial class LinearDecoder
         }
 
         int first = CodabarCharacter(runs.Slice(start, 7));
-        if (first < 16)
-        {
-            return null;
-        }
+        return first < 16 ? null : CodabarFrom(runs, offsets, start, width, first);
+    }
 
+    /// <summary>The rest of <see cref="Codabar"/>, after its start character.</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static LinearRead? CodabarFrom(ReadOnlySpan<float> runs, ReadOnlySpan<float> offsets, int start, float width, int first)
+    {
         var text = new StringBuilder();
         text.Append(CodabarEncoder.Characters[first]);
         int at = start + 7;
@@ -325,7 +335,7 @@ internal static partial class LinearDecoder
     {
         Span<float> sorted = stackalloc float[7];
         runs.CopyTo(sorted);
-        sorted.Sort();
+        SortSmall(sorted);
         if (sorted[6] > sorted[0] * 10)
         {
             return -1;
@@ -345,8 +355,8 @@ internal static partial class LinearDecoder
 
         Span<float> bars = [runs[0], runs[2], runs[4], runs[6]];
         Span<float> spaces = [runs[1], runs[3], runs[5]];
-        bars.Sort();
-        spaces.Sort();
+        SortSmall(bars);
+        SortSmall(spaces);
         float barsWide, spacesWide;
         if (bars[3] >= bars[2] * 1.5f)
         {

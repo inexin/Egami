@@ -300,7 +300,7 @@ internal static class Pdf417Detector
         var points = new Vector2[across];
         var fineRuns = new List<float>();
         var fineOffsets = new List<float>();
-        float[] work = [];
+        byte[] work = [];
         float[] xs = new float[across];
         for (int i = 0; i < across; i++)
         {

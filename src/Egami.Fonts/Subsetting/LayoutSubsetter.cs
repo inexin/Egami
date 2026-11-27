@@ -19,25 +19,26 @@ internal static class LayoutSubsetter
     public static void Write(Typeface face, Dictionary<ushort, ushort> map, SubsetOptions options, SortedDictionary<uint, byte[]> tables)
     {
         var glyphs = new GlyphRemap(map);
+        VariationBake? bake = VariationBake.For(face);
         HashSet<uint> filter = [.. (options.LayoutFeatures ?? OpenTypeLayout.DefaultClosureFeatures).Select(t => t.Value)];
         if (Read(face, Tags.Gdef, d => LayoutSanitizer.SanitizeGdef(d), out ReadOnlyMemory<byte> gdef, out long gdefOffset))
         {
-            tables[Tags.Gdef.Value] = GdefWriter.Write(gdef, glyphs) ?? throw FontErrors.Corrupt(gdefOffset, "The GDEF table is too large to write.");
+            tables[Tags.Gdef.Value] = GdefWriter.Write(gdef, glyphs, bake) ?? throw FontErrors.Corrupt(gdefOffset, "The GDEF table is too large to write.");
         }
 
         foreach ((FontTag tag, bool gpos) in (ReadOnlySpan<(FontTag, bool)>)[(Tags.Gsub, false), (Tags.Gpos, true)])
         {
             if (Read(face, tag, d => LayoutSanitizer.SanitizeLayout(d, gpos), out ReadOnlyMemory<byte> data, out long offset))
             {
-                tables[tag.Value] = LayoutTableWriter.Write(data, gpos, glyphs, filter, options.ExtensionLookups)
+                tables[tag.Value] = LayoutTableWriter.Write(data, gpos, glyphs, filter, bake, options.ExtensionLookups)
                     ?? throw FontErrors.Corrupt(offset, $"The {tag} table is too large to write.");
             }
         }
 
-        // MATH holds glyph ids; it is copied while they stay the same.
-        if (options.RetainGlyphIds)
+        // MATH, cut down and renumbered too; one the face cannot read is left out, as the face has no math data either.
+        if (face.Math is not null && face.TryGetTable(Tags.Math, out ReadOnlyMemory<byte> math))
         {
-            SfntWriter.CopyTable(face, Tags.Math, tables);
+            tables[Tags.Math.Value] = MathSubsetter.Write(math, glyphs, bake) ?? throw FontErrors.Corrupt(face.TableOffset(Tags.Math), "The MATH table is too large to write.");
         }
     }
 
@@ -59,7 +60,8 @@ internal static class LayoutSubsetter
             throw FontErrors.Corrupt(offset, $"The {tag} table is damaged, so the subset cannot keep it.");
         }
 
-        return true;
+        // A major version other than 1 passes the checks because the shaper reads the table as empty; the subset leaves it out.
+        return U16(data.Span, 0) == 1;
     }
 }
 
@@ -73,13 +75,19 @@ internal sealed class LayoutTableWriter
     private readonly SortedSet<int> _features;
     private readonly Dictionary<int, int> _featureMap = [];
     private readonly Dictionary<int, int> _lookupMap = [];
+    private readonly VariationBake? _bake;
+    private readonly int _variations = -1;
 
-    private LayoutTableWriter(ReadOnlyMemory<byte> data, bool gpos, GlyphRemap glyphs, IReadOnlySet<uint> filter)
+    private LayoutTableWriter(ReadOnlyMemory<byte> data, bool gpos, GlyphRemap glyphs, IReadOnlySet<uint> filter, VariationBake? bake)
     {
         _data = data;
         _gpos = gpos;
         _glyphs = glyphs;
+        _bake = bake;
         _table = new LayoutTable(data, gpos);
+
+        // A static subset of a variable face takes the feature variations that hold at its position into its features.
+        _variations = bake is null ? -1 : _table.FindFeatureVariations(bake.Coords);
         _features = GsubClosure.CollectFeatures(_table, filter);
         foreach (int feature in _features)
         {
@@ -90,9 +98,9 @@ internal sealed class LayoutTableWriter
     private ReadOnlySpan<byte> D => _data.Span;
 
     /// <summary>The table, or null when it cannot be packed with every offset in range.</summary>
-    public static byte[]? Write(ReadOnlyMemory<byte> data, bool gpos, GlyphRemap glyphs, IReadOnlySet<uint> filter, bool extension = false)
+    public static byte[]? Write(ReadOnlyMemory<byte> data, bool gpos, GlyphRemap glyphs, IReadOnlySet<uint> filter, VariationBake? bake = null, bool extension = false)
     {
-        var writer = new LayoutTableWriter(data, gpos, glyphs, filter);
+        var writer = new LayoutTableWriter(data, gpos, glyphs, filter, bake);
         writer.KeepLookups();
 
         // As hb-repacker: first plainly; then with every lookup an extension lookup, each subtable packed on its own.
@@ -110,10 +118,14 @@ internal sealed class LayoutTableWriter
         SortedSet<int> roots = [];
         foreach (int feature in _features)
         {
-            roots.UnionWith(_table.GetFeatureLookups(feature, -1));
+            roots.UnionWith(_table.GetFeatureLookups(feature, _variations));
         }
 
-        _table.CollectFeatureVariationLookups(_features, roots);
+        if (_bake is null)
+        {
+            _table.CollectFeatureVariationLookups(_features, roots);
+        }
+
         var seen = new HashSet<int>(roots);
         var pending = new Queue<int>(roots);
         var kept = new SortedSet<int>();
@@ -125,7 +137,7 @@ internal sealed class LayoutTableWriter
             }
 
             return index;
-        }, _gpos);
+        }, _gpos, _bake);
         while (pending.Count > 0)
         {
             int index = pending.Dequeue();
@@ -157,7 +169,7 @@ internal sealed class LayoutTableWriter
     private OtObject Build(bool extension)
     {
         var graph = new OtGraph();
-        var subtables = new SubtableWriter(_data, graph, _glyphs, MapLookup, _gpos);
+        var subtables = new SubtableWriter(_data, graph, _glyphs, MapLookup, _gpos, _bake);
         int extensionType = _gpos ? 9 : 7;
         int group = 1;
         List<OtObject> lookups = [];
@@ -227,7 +239,7 @@ internal sealed class LayoutTableWriter
         int scriptList = Off16(d, 0, 4);
         int featureList = Off16(d, 0, 6);
         int featureVariations = U16(d, 2) >= 1 ? Off32(d, 0, 10) : 0;
-        OtObject? variations = featureVariations != 0 && U16(d, featureVariations) == 1 ? FeatureVariations(graph, featureVariations) : null;
+        OtObject? variations = _bake is null && featureVariations != 0 && U16(d, featureVariations) == 1 ? FeatureVariations(graph, featureVariations) : null;
 
         OtWriter header = OtGraph.Writer();
         header.U16(1);
@@ -315,8 +327,14 @@ internal sealed class LayoutTableWriter
         {
             int record = list + 2 + (index * 6);
             uint tag = Tag(d, record);
+            int feature = Off16(d, list, record + 4);
+            if (_variations >= 0 && _table.FindFeatureSubstitute(_variations, index) is int substitute and not 0)
+            {
+                feature = substitute;
+            }
+
             w.U32(tag);
-            w.Offset16(Feature(graph, Off16(d, list, record + 4), tag));
+            w.Offset16(Feature(graph, feature, tag));
         }
 
         return graph.Add(w);
@@ -450,7 +468,7 @@ internal sealed class LayoutTableWriter
 /// <summary>Writes a GDEF table cut down to the kept glyphs: glyph and mark attachment classes, attach points, ligature carets and mark glyph sets.</summary>
 internal static class GdefWriter
 {
-    public static byte[]? Write(ReadOnlyMemory<byte> data, GlyphRemap glyphs)
+    public static byte[]? Write(ReadOnlyMemory<byte> data, GlyphRemap glyphs, VariationBake? bake = null)
     {
         ReadOnlySpan<byte> d = data.Span;
         var graph = new OtGraph();
@@ -462,12 +480,18 @@ internal static class GdefWriter
         int markGlyphSets = minor >= 2 ? Off16(d, 0, 12) : 0;
         int varStore = minor >= 3 ? Off32(d, 0, 14) : 0;
 
+        // A static subset of a variable face has its deltas baked in, so no variation store.
+        if (bake is not null)
+        {
+            minor = Math.Min(minor, 2);
+        }
+
         OtWriter w = OtGraph.Writer();
         w.U16(1);
         w.U16(Math.Min(minor, 3));
         w.Offset16(glyphClassDef == 0 ? null : LayoutCommon.WriteClassDef(graph, d, glyphClassDef, glyphs, null));
         w.Offset16(AttachList(graph, d, attachList, glyphs));
-        w.Offset16(LigCaretList(graph, d, ligCaretList, glyphs));
+        w.Offset16(LigCaretList(graph, d, ligCaretList, glyphs, bake));
         w.Offset16(markAttachClassDef == 0 ? null : LayoutCommon.WriteClassDef(graph, d, markAttachClassDef, glyphs, null));
         if (minor >= 2)
         {
@@ -506,7 +530,7 @@ internal static class GdefWriter
         return covered.Count == 0 ? null : CoveredOffsets(graph, covered, points);
     }
 
-    private static OtObject? LigCaretList(OtGraph graph, ReadOnlySpan<byte> d, int list, GlyphRemap glyphs)
+    private static OtObject? LigCaretList(OtGraph graph, ReadOnlySpan<byte> d, int list, GlyphRemap glyphs, VariationBake? bake)
     {
         if (list == 0)
         {
@@ -531,7 +555,14 @@ internal static class GdefWriter
             {
                 int caret = Off16(d, ligGlyph, ligGlyph + 2 + (i * 2));
                 OtObject? written = null;
-                if (caret != 0 && U16(d, caret) == 3)
+                if (caret != 0 && U16(d, caret) == 3 && bake is not null)
+                {
+                    OtWriter cw = OtGraph.Writer();
+                    cw.U16(1);
+                    cw.U16(U16(d, caret + 2) + bake.Delta(d, Off16(d, caret, caret + 4)));
+                    written = graph.Add(cw);
+                }
+                else if (caret != 0 && U16(d, caret) == 3)
                 {
                     OtWriter cw = OtGraph.Writer();
                     cw.U16(3);

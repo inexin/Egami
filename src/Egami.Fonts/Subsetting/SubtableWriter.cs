@@ -8,9 +8,10 @@ namespace Egami.Fonts.Subsetting;
 /// <summary>
 /// Writes one GSUB or GPOS lookup subtable cut down to the kept glyphs, with glyph ids, classes and lookup indexes renumbered;
 /// null when nothing in it can apply to a kept glyph. Every entry is read as the shaper reads it, so the subset shapes the kept
-/// glyphs as the full face does, damaged tables included.
+/// glyphs as the full face does, damaged tables included. With a <see cref="VariationBake"/> (a variable face's static subset),
+/// value records and anchors take their variation deltas into their values and lose their device tables.
 /// </summary>
-internal sealed class SubtableWriter(ReadOnlyMemory<byte> data, OtGraph graph, GlyphRemap glyphs, Func<int, int> lookupMap, bool gpos)
+internal sealed class SubtableWriter(ReadOnlyMemory<byte> data, OtGraph graph, GlyphRemap glyphs, Func<int, int> lookupMap, bool gpos, VariationBake? bake = null)
 {
     private ReadOnlySpan<byte> D => data.Span;
 
@@ -575,7 +576,7 @@ internal sealed class SubtableWriter(ReadOnlyMemory<byte> data, OtGraph graph, G
         OtWriter w = OtGraph.Writer();
         w.U16(format);
         w.Offset16(coverage);
-        w.U16(valueFormat);
+        w.U16(Baked(valueFormat));
         if (format == 1)
         {
             WriteValue(w, valueFormat, t, t + 6);
@@ -639,8 +640,8 @@ internal sealed class SubtableWriter(ReadOnlyMemory<byte> data, OtGraph graph, G
         OtWriter w = OtGraph.Writer();
         w.U16(1);
         w.Offset16(LayoutCommon.WriteCoverage(graph, covered));
-        w.U16(format1);
-        w.U16(format2);
+        w.U16(Baked(format1));
+        w.U16(Baked(format2));
         WriteOffsets(w, sets);
         return graph.Add(w);
     }
@@ -672,8 +673,8 @@ internal sealed class SubtableWriter(ReadOnlyMemory<byte> data, OtGraph graph, G
         OtWriter w = OtGraph.Writer();
         w.U16(2);
         w.Offset16(LayoutCommon.WriteCoverage(graph, [.. covered.Select(c => glyphs.Map(c.Old))]));
-        w.U16(format1);
-        w.U16(format2);
+        w.U16(Baked(format1));
+        w.U16(Baked(format2));
         w.Offset16(classDef1 == 0 ? null : LayoutCommon.WriteClassDef(graph, d, classDef1, glyphs, classes1));
         w.Offset16(classDef2 == 0 ? null : LayoutCommon.WriteClassDef(graph, d, classDef2, glyphs, classes2));
         w.U16(classes1.Count);
@@ -869,6 +870,11 @@ internal sealed class SubtableWriter(ReadOnlyMemory<byte> data, OtGraph graph, G
                 w.U16(U16(d, a + 4));
                 w.U16(U16(d, a + 6));
                 break;
+            case 3 when bake is not null:
+                w.U16(1);
+                w.U16(U16(d, a + 2) + bake.Delta(d, Off16(d, a, a + 6)));
+                w.U16(U16(d, a + 4) + bake.Delta(d, Off16(d, a, a + 8)));
+                break;
             case 3:
                 w.U16(3);
                 w.U16(U16(d, a + 2));
@@ -935,6 +941,40 @@ internal sealed class SubtableWriter(ReadOnlyMemory<byte> data, OtGraph graph, G
     private void WriteValue(OtWriter w, int format, int baseOffset, int at)
     {
         ReadOnlySpan<byte> d = D;
+        if (bake is not null)
+        {
+            // Each device's delta goes into its value: XPlaDevice into XPlacement, and so on.
+            Span<int> values = stackalloc int[4];
+            for (int bit = 0; bit < 8; bit++)
+            {
+                if ((format & (1 << bit)) == 0)
+                {
+                    continue;
+                }
+
+                if (bit < 4)
+                {
+                    values[bit] += S16(d, at);
+                }
+                else
+                {
+                    values[bit - 4] += bake.Delta(d, Off16(d, baseOffset, at));
+                }
+
+                at += 2;
+            }
+
+            for (int bit = 0; bit < 4; bit++)
+            {
+                if ((Baked(format) & (1 << bit)) != 0)
+                {
+                    w.U16(values[bit]);
+                }
+            }
+
+            return;
+        }
+
         for (int bit = 0; bit < 8; bit++)
         {
             if ((format & (1 << bit)) == 0)
@@ -954,6 +994,9 @@ internal sealed class SubtableWriter(ReadOnlyMemory<byte> data, OtGraph graph, G
             at += 2;
         }
     }
+
+    /// <summary>A value format as written: with a bake, each device bit becomes its value's bit.</summary>
+    private int Baked(int format) => bake is null ? format : (format | (format >> 4)) & 0x0F;
 
     private static int ValueLength(int format) => System.Numerics.BitOperations.PopCount((uint)format & 0xFF);
 
