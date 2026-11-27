@@ -3,11 +3,13 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
+using Egami.Simd;
+
 namespace Egami.Formats.Jpeg;
 
 /// <summary>
 /// The encoder's per-pixel kernels: RGB to YCbCr (or luma) in libjpeg's fixed point, and chroma averaging with its alternating
-/// rounding bias. Each has a scalar form and an AVX2 form that gives exactly the same bytes.
+/// rounding bias. Each has a scalar form, an AVX2 form and a 128-bit form (x86 and Arm64) that give exactly the same bytes.
 /// </summary>
 internal static class JpegEncodeKernels
 {
@@ -28,28 +30,28 @@ internal static class JpegEncodeKernels
     /// <summary>Converts packed RGB to luma and chroma rows, as wide as <paramref name="y"/>.</summary>
     internal static void YCbCr(ReadOnlySpan<byte> rgb, Span<byte> y, Span<byte> cb, Span<byte> cr)
     {
-        int done = Avx2.IsSupported ? YCbCrAvx2(rgb, y, cb, cr, lumaOnly: false) : 0;
+        int done = Avx2.IsSupported ? YCbCrAvx2(rgb, y, cb, cr, lumaOnly: false) : Simd128.IsSupported ? YCbCr128(rgb, y, cb, cr, lumaOnly: false) : 0;
         YCbCrScalar(rgb, 3, y, cb, cr, done);
     }
 
     /// <summary>Converts packed RGBA to luma and chroma rows, as wide as <paramref name="y"/>, ignoring the alpha.</summary>
     internal static void YCbCrFromRgba(ReadOnlySpan<byte> rgba, Span<byte> y, Span<byte> cb, Span<byte> cr)
     {
-        int done = Avx2.IsSupported ? YCbCrFromRgbaAvx2(rgba, y, cb, cr, lumaOnly: false) : 0;
+        int done = Avx2.IsSupported ? YCbCrFromRgbaAvx2(rgba, y, cb, cr, lumaOnly: false) : Simd128.IsSupported ? YCbCrFromRgba128(rgba, y, cb, cr, lumaOnly: false) : 0;
         YCbCrScalar(rgba, 4, y, cb, cr, done);
     }
 
     /// <summary>Converts packed RGB to luma alone, as <c>cjpeg -grayscale</c> does.</summary>
     internal static void Luma(ReadOnlySpan<byte> rgb, Span<byte> y)
     {
-        int done = Avx2.IsSupported ? YCbCrAvx2(rgb, y, default, default, lumaOnly: true) : 0;
+        int done = Avx2.IsSupported ? YCbCrAvx2(rgb, y, default, default, lumaOnly: true) : Simd128.IsSupported ? YCbCr128(rgb, y, default, default, lumaOnly: true) : 0;
         LumaScalar(rgb, 3, y, done);
     }
 
     /// <summary>Converts packed RGBA to luma alone, ignoring the alpha.</summary>
     internal static void LumaFromRgba(ReadOnlySpan<byte> rgba, Span<byte> y)
     {
-        int done = Avx2.IsSupported ? YCbCrFromRgbaAvx2(rgba, y, default, default, lumaOnly: true) : 0;
+        int done = Avx2.IsSupported ? YCbCrFromRgbaAvx2(rgba, y, default, default, lumaOnly: true) : Simd128.IsSupported ? YCbCrFromRgba128(rgba, y, default, default, lumaOnly: true) : 0;
         LumaScalar(rgba, 4, y, done);
     }
 
@@ -185,7 +187,7 @@ internal static class JpegEncodeKernels
     /// <summary>Averages full-size rows down: 2×2 (bias 1, 2, 1, 2, …) or 2×1 (bias 0, 1, …), into <paramref name="output"/>.</summary>
     internal static void Downsample(ReadOnlySpan<byte> row0, ReadOnlySpan<byte> row1, bool twoRows, Span<byte> output)
     {
-        int done = Avx2.IsSupported ? DownsampleAvx2(row0, row1, twoRows, output) : 0;
+        int done = Avx2.IsSupported ? DownsampleAvx2(row0, row1, twoRows, output) : Simd128.IsSupported ? Downsample128(row0, row1, twoRows, output) : 0;
         DownsampleScalar(row0, row1, twoRows, output, done);
     }
 
@@ -237,6 +239,192 @@ internal static class JpegEncodeKernels
     }
 
     /// <summary>
+    /// <see cref="YCbCrAvx2(ReadOnlySpan{byte}, Span{byte}, Span{byte}, Span{byte}, bool)"/> in 128-bit vectors (x86 without
+    /// AVX2, and Arm64): the same multiply-adds on 16 pixels at a time, as two halves of eight, so the bytes equal the scalar ones.
+    /// </summary>
+    internal static int YCbCr128(ReadOnlySpan<byte> rgb, Span<byte> y, Span<byte> cb, Span<byte> cr, bool lumaOnly)
+    {
+        return YCbCr128<Rgb>(rgb, y, cb, cr, lumaOnly);
+    }
+
+    /// <summary><see cref="YCbCr128(ReadOnlySpan{byte}, Span{byte}, Span{byte}, Span{byte}, bool)"/> from packed RGBA.</summary>
+    internal static int YCbCrFromRgba128(ReadOnlySpan<byte> rgba, Span<byte> y, Span<byte> cb, Span<byte> cr, bool lumaOnly)
+    {
+        return YCbCr128<Rgba>(rgba, y, cb, cr, lumaOnly);
+    }
+
+    private static int YCbCr128<TLayout>(ReadOnlySpan<byte> pixels, Span<byte> y, Span<byte> cb, Span<byte> cr, bool lumaOnly)
+        where TLayout : struct, ILayout
+    {
+        int size = TLayout.Size;
+        int width = y.Length;
+        ref byte source = ref MemoryMarshal.GetReference(pixels);
+        int halfOfHalf = BCbRCr / 2;
+        Vector128<short> yRg = Pair128(RY, GY - (1 << 14)), yBg = Pair128(BY, 1 << 14);
+        Vector128<short> cbRg = Pair128(RCb, GCb), cbBb = Pair128(halfOfHalf, BCbRCr - halfOfHalf);
+        Vector128<short> crRg = Pair128(halfOfHalf, GCr), crBr = Pair128(BCr, BCbRCr - halfOfHalf);
+        Vector128<int> yAdd = Vector128.Create(Half), cAdd = Vector128.Create(CbCrOffset + Half - 1);
+        int x = 0;
+        for (; x + 16 <= width && (size * x) + (16 * size) <= pixels.Length && (lumaOnly || (x + 16 <= cb.Length && x + 16 <= cr.Length)); x += 16)
+        {
+            Vector128<byte> red, green, blue;
+            if (TLayout.Size == 4)
+            {
+                Planes(ref source, 4 * x, out red, out green, out blue, out _);
+            }
+            else
+            {
+                Planes(ref source, 3 * x, out red, out green, out blue);
+            }
+
+            Vector128<short> rl = Vector128.WidenLower(red).AsInt16(), rh = Vector128.WidenUpper(red).AsInt16();
+            Vector128<short> gl = Vector128.WidenLower(green).AsInt16(), gh = Vector128.WidenUpper(green).AsInt16();
+            Vector128<short> bl = Vector128.WidenLower(blue).AsInt16(), bh = Vector128.WidenUpper(blue).AsInt16();
+            Vector128<short> rgLow = Simd128.ZipLow(rl, gl), rgHigh = Simd128.ZipHigh(rl, gl);
+            Vector128<short> rgLow2 = Simd128.ZipLow(rh, gh), rgHigh2 = Simd128.ZipHigh(rh, gh);
+            Vector128<short> luma0 = Channel128(rgLow, rgHigh, yRg, Simd128.ZipLow(bl, gl), Simd128.ZipHigh(bl, gl), yBg, yAdd);
+            Vector128<short> luma1 = Channel128(rgLow2, rgHigh2, yRg, Simd128.ZipLow(bh, gh), Simd128.ZipHigh(bh, gh), yBg, yAdd);
+            Simd128.PackUnsignedSaturate(luma0, luma1).StoreUnsafe(ref MemoryMarshal.GetReference(y), (nuint)x);
+            if (lumaOnly)
+            {
+                continue;
+            }
+
+            Vector128<short> cb0 = Channel128(rgLow, rgHigh, cbRg, Simd128.ZipLow(bl, bl), Simd128.ZipHigh(bl, bl), cbBb, cAdd);
+            Vector128<short> cb1 = Channel128(rgLow2, rgHigh2, cbRg, Simd128.ZipLow(bh, bh), Simd128.ZipHigh(bh, bh), cbBb, cAdd);
+            Simd128.PackUnsignedSaturate(cb0, cb1).StoreUnsafe(ref MemoryMarshal.GetReference(cb), (nuint)x);
+            Vector128<short> cr0 = Channel128(rgLow, rgHigh, crRg, Simd128.ZipLow(bl, rl), Simd128.ZipHigh(bl, rl), crBr, cAdd);
+            Vector128<short> cr1 = Channel128(rgLow2, rgHigh2, crRg, Simd128.ZipLow(bh, rh), Simd128.ZipHigh(bh, rh), crBr, cAdd);
+            Simd128.PackUnsignedSaturate(cr0, cr1).StoreUnsafe(ref MemoryMarshal.GetReference(cr), (nuint)x);
+        }
+
+        return x;
+    }
+
+    /// <summary>Splits 16 packed RGB pixels (48 bytes from <paramref name="at"/>) into planes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Planes(ref byte source, int at, out Vector128<byte> red, out Vector128<byte> green, out Vector128<byte> blue)
+    {
+        Vector128<byte> v0 = Vector128.LoadUnsafe(ref source, (nuint)at);
+        Vector128<byte> v1 = Vector128.LoadUnsafe(ref source, (nuint)(at + 16));
+        Vector128<byte> v2 = Vector128.LoadUnsafe(ref source, (nuint)(at + 32));
+        red = Simd128.Shuffle(v0, Vector128.Create((byte)0, 3, 6, 9, 12, 15, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128))
+            | Simd128.Shuffle(v1, Vector128.Create((byte)128, 128, 128, 128, 128, 128, 2, 5, 8, 11, 14, 128, 128, 128, 128, 128))
+            | Simd128.Shuffle(v2, Vector128.Create((byte)128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 1, 4, 7, 10, 13));
+        green = Simd128.Shuffle(v0, Vector128.Create((byte)1, 4, 7, 10, 13, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128))
+            | Simd128.Shuffle(v1, Vector128.Create((byte)128, 128, 128, 128, 128, 0, 3, 6, 9, 12, 15, 128, 128, 128, 128, 128))
+            | Simd128.Shuffle(v2, Vector128.Create((byte)128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 2, 5, 8, 11, 14));
+        blue = Simd128.Shuffle(v0, Vector128.Create((byte)2, 5, 8, 11, 14, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128))
+            | Simd128.Shuffle(v1, Vector128.Create((byte)128, 128, 128, 128, 128, 1, 4, 7, 10, 13, 128, 128, 128, 128, 128, 128))
+            | Simd128.Shuffle(v2, Vector128.Create((byte)128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 0, 3, 6, 9, 12, 15));
+    }
+
+    /// <summary>Splits 16 packed four-byte pixels (64 bytes from <paramref name="at"/>) into their four byte planes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Planes(ref byte source, int at, out Vector128<byte> p0, out Vector128<byte> p1, out Vector128<byte> p2, out Vector128<byte> p3)
+    {
+        // Each 16 bytes to the four pixels' byte 0, then byte 1, 2 and 3, as 32-bit groups; then the groups gathered by plane.
+        Vector128<byte> planar = Vector128.Create((byte)0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15);
+        Vector128<int> q0 = Simd128.Shuffle(Vector128.LoadUnsafe(ref source, (nuint)at), planar).AsInt32();
+        Vector128<int> q1 = Simd128.Shuffle(Vector128.LoadUnsafe(ref source, (nuint)(at + 16)), planar).AsInt32();
+        Vector128<int> q2 = Simd128.Shuffle(Vector128.LoadUnsafe(ref source, (nuint)(at + 32)), planar).AsInt32();
+        Vector128<int> q3 = Simd128.Shuffle(Vector128.LoadUnsafe(ref source, (nuint)(at + 48)), planar).AsInt32();
+        Vector128<long> t0 = Simd128.ZipLow(q0, q1).AsInt64(), t1 = Simd128.ZipHigh(q0, q1).AsInt64();
+        Vector128<long> t2 = Simd128.ZipLow(q2, q3).AsInt64(), t3 = Simd128.ZipHigh(q2, q3).AsInt64();
+        p0 = Simd128.ZipLow(t0, t2).AsByte();
+        p1 = Simd128.ZipHigh(t0, t2).AsByte();
+        p2 = Simd128.ZipLow(t1, t3).AsByte();
+        p3 = Simd128.ZipHigh(t1, t3).AsByte();
+    }
+
+    /// <summary><see cref="Channel"/> for eight pixels.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Channel128(
+        Vector128<short> low1, Vector128<short> high1, Vector128<short> factors1,
+        Vector128<short> low2, Vector128<short> high2, Vector128<short> factors2, Vector128<int> add)
+    {
+        Vector128<int> low = Simd128.MultiplyAddAdjacent(low1, factors1) + Simd128.MultiplyAddAdjacent(low2, factors2) + add;
+        Vector128<int> high = Simd128.MultiplyAddAdjacent(high1, factors1) + Simd128.MultiplyAddAdjacent(high2, factors2) + add;
+        return Simd128.PackSignedSaturate(low >> ScaleBits, high >> ScaleBits);
+    }
+
+    private static Vector128<short> Pair128(int first, int second)
+    {
+        return Vector128.Create((int)(ushort)first | (second << 16)).AsInt16();
+    }
+
+    /// <summary><see cref="DownsampleAvx2"/> in 128-bit vectors: 16 outputs from 32 input columns; returns how many it did.</summary>
+    internal static int Downsample128(ReadOnlySpan<byte> row0, ReadOnlySpan<byte> row1, bool twoRows, Span<byte> output)
+    {
+        ref byte a = ref MemoryMarshal.GetReference(row0);
+        ref byte b = ref MemoryMarshal.GetReference(row1);
+        ref byte o = ref MemoryMarshal.GetReference(output);
+        Vector128<ushort> bias = twoRows ? Vector128.Create((ushort)1, 2, 1, 2, 1, 2, 1, 2) : Vector128.Create((ushort)0, 1, 0, 1, 0, 1, 0, 1);
+        int shift = twoRows ? 2 : 1;
+        int x = 0;
+        for (; x + 16 <= output.Length && (2 * x) + 32 <= row0.Length && (!twoRows || (2 * x) + 32 <= row1.Length); x += 16)
+        {
+            Vector128<ushort> low = Simd128.AddPairwiseWidening(Vector128.LoadUnsafe(ref a, (nuint)(2 * x)));
+            Vector128<ushort> high = Simd128.AddPairwiseWidening(Vector128.LoadUnsafe(ref a, (nuint)((2 * x) + 16)));
+            if (twoRows)
+            {
+                low += Simd128.AddPairwiseWidening(Vector128.LoadUnsafe(ref b, (nuint)(2 * x)));
+                high += Simd128.AddPairwiseWidening(Vector128.LoadUnsafe(ref b, (nuint)((2 * x) + 16)));
+            }
+
+            // Every average is 0..255, so the narrowing keeps it whole.
+            Vector128.Narrow((low + bias) >>> shift, (high + bias) >>> shift).StoreUnsafe(ref o, (nuint)x);
+        }
+
+        return x;
+    }
+
+    /// <summary><see cref="InksFromRgbAvx2"/> in 128-bit vectors, sixteen pixels at a time with the same arithmetic.</summary>
+    internal static int InksFromRgb128(ReadOnlySpan<byte> rgb, Span<byte> cmyk)
+    {
+        int width = cmyk.Length / 4;
+        ref byte source = ref MemoryMarshal.GetReference(rgb);
+        ref byte target = ref MemoryMarshal.GetReference(cmyk);
+        int x = 0;
+        for (; x + 16 <= width && (3 * x) + 48 <= rgb.Length; x += 16)
+        {
+            Planes(ref source, 3 * x, out Vector128<byte> red, out Vector128<byte> green, out Vector128<byte> blue);
+            Vector128<byte> max = Vector128.Max(red, Vector128.Max(green, blue));
+            Vector128<ushort> r0 = Vector128.WidenLower(red), r1 = Vector128.WidenUpper(red);
+            Vector128<ushort> g0 = Vector128.WidenLower(green), g1 = Vector128.WidenUpper(green);
+            Vector128<ushort> b0 = Vector128.WidenLower(blue), b1 = Vector128.WidenUpper(blue);
+            Vector128<ushort> m0 = Vector128.WidenLower(max), m1 = Vector128.WidenUpper(max);
+            Inks4(Vector128.WidenLower(r0), Vector128.WidenLower(g0), Vector128.WidenLower(b0), Vector128.WidenLower(m0)).StoreUnsafe(ref target, (nuint)(4 * x));
+            Inks4(Vector128.WidenUpper(r0), Vector128.WidenUpper(g0), Vector128.WidenUpper(b0), Vector128.WidenUpper(m0)).StoreUnsafe(ref target, (nuint)((4 * x) + 16));
+            Inks4(Vector128.WidenLower(r1), Vector128.WidenLower(g1), Vector128.WidenLower(b1), Vector128.WidenLower(m1)).StoreUnsafe(ref target, (nuint)((4 * x) + 32));
+            Inks4(Vector128.WidenUpper(r1), Vector128.WidenUpper(g1), Vector128.WidenUpper(b1), Vector128.WidenUpper(m1)).StoreUnsafe(ref target, (nuint)((4 * x) + 48));
+        }
+
+        return x;
+    }
+
+    /// <summary>The packed inks of four pixels: C, M, Y, K bytes per pixel.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<byte> Inks4(Vector128<uint> red, Vector128<uint> green, Vector128<uint> blue, Vector128<uint> maxLanes)
+    {
+        Vector128<int> max = maxLanes.AsInt32();
+        Vector128<int> half = max >>> 1;
+        Vector128<float> divisor = Vector128.ConvertToSingle(max);
+        Vector128<int> black = Vector128.Equals(max, Vector128<int>.Zero);
+        Vector128<int> c = Ink(red.AsInt32(), max, half, divisor, black);
+        Vector128<int> m = Ink(green.AsInt32(), max, half, divisor, black);
+        Vector128<int> y = Ink(blue.AsInt32(), max, half, divisor, black);
+        Vector128<int> k = Vector128.Create(255) - max;
+        return (c | (m << 8) | (y << 16) | (k << 24)).AsByte();
+
+        static Vector128<int> Ink(Vector128<int> channel, Vector128<int> max, Vector128<int> half, Vector128<float> divisor, Vector128<int> black)
+        {
+            Vector128<float> n = Vector128.ConvertToSingle(((max - channel) * Vector128.Create(255)) + half) + Vector128.Create(0.5f);
+            return Vector128.AndNot(Vector128.ConvertToInt32(Vector128.Floor(n / divisor)), black);
+        }
+    }
+
+    /// <summary>
     /// One output channel of 16 pixels from two sets of interleaved pairs: (pairs · factors summed + <paramref name="add"/>) &gt;&gt; 16,
     /// as 16-bit lanes in pixel order.
     /// </summary>
@@ -276,7 +464,7 @@ internal static class JpegEncodeKernels
         ref byte source = ref MemoryMarshal.GetReference(rgb);
         ref byte target = ref MemoryMarshal.GetReference(cmyk);
         ref ulong reciprocal = ref MemoryMarshal.GetArrayDataReference(Reciprocal);
-        int done = Avx2.IsSupported ? InksFromRgbAvx2(rgb, cmyk) : 0;
+        int done = Avx2.IsSupported ? InksFromRgbAvx2(rgb, cmyk) : Simd128.IsSupported ? InksFromRgb128(rgb, cmyk) : 0;
         for (int x = done; x < width; x++)
         {
             int r = Unsafe.Add(ref source, 3 * x), g = Unsafe.Add(ref source, (3 * x) + 1), b = Unsafe.Add(ref source, (3 * x) + 2);
@@ -353,7 +541,7 @@ internal static class JpegEncodeKernels
 
     /// <summary>
     /// Splits packed inks into four planes, each value inverted as Adobe stores CMYK, as wide as <paramref name="c"/>; with AVX2,
-    /// eight pixels at a time by byte shuffles.
+    /// eight pixels at a time by byte shuffles, and 16 at a time in 128-bit vectors elsewhere.
     /// </summary>
     internal static void SplitInverted(ReadOnlySpan<byte> cmyk, Span<byte> c, Span<byte> m, Span<byte> y, Span<byte> k)
     {
@@ -373,6 +561,18 @@ internal static class JpegEncodeKernels
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetReference(m), x), planes.GetElement(1));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetReference(y), x), planes.GetElement(2));
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref MemoryMarshal.GetReference(k), x), planes.GetElement(3));
+            }
+        }
+        else if (Simd128.IsSupported)
+        {
+            ref byte source = ref MemoryMarshal.GetReference(cmyk);
+            for (; x + 16 <= width && (4 * x) + 64 <= cmyk.Length; x += 16)
+            {
+                Planes(ref source, 4 * x, out Vector128<byte> p0, out Vector128<byte> p1, out Vector128<byte> p2, out Vector128<byte> p3);
+                (~p0).StoreUnsafe(ref MemoryMarshal.GetReference(c), (nuint)x);
+                (~p1).StoreUnsafe(ref MemoryMarshal.GetReference(m), (nuint)x);
+                (~p2).StoreUnsafe(ref MemoryMarshal.GetReference(y), (nuint)x);
+                (~p3).StoreUnsafe(ref MemoryMarshal.GetReference(k), (nuint)x);
             }
         }
 
