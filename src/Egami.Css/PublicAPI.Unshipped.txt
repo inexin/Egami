@@ -61,3 +61,25 @@ static Egami.Css.CssLengthContext.operator !=(Egami.Css.CssLengthContext left, E
 static Egami.Css.CssLengthContext.operator ==(Egami.Css.CssLengthContext left, Egami.Css.CssLengthContext right) -> bool
 ~override Egami.Css.CssLengthContext.Equals(object obj) -> bool
 ~override Egami.Css.CssLengthContext.ToString() -> string
+Egami.Css.CssColor.C0.get -> double
+Egami.Css.CssColor.C1.get -> double
+Egami.Css.CssColor.C2.get -> double
+Egami.Css.CssColor.IsInSrgbGamut.get -> bool
+Egami.Css.CssColor.Space.get -> Egami.Css.CssColorSpace
+Egami.Css.CssColor.ToColorSpace(Egami.Css.CssColorSpace space) -> (double C0, double C1, double C2)
+Egami.Css.CssColor.ToSrgbGamutMapped() -> Egami.Css.CssColor
+Egami.Css.CssColor.ToString(bool keepSpace) -> string!
+Egami.Css.CssColorSpace
+Egami.Css.CssColorSpace.A98Rgb = 3 -> Egami.Css.CssColorSpace
+Egami.Css.CssColorSpace.DisplayP3 = 2 -> Egami.Css.CssColorSpace
+Egami.Css.CssColorSpace.Lab = 8 -> Egami.Css.CssColorSpace
+Egami.Css.CssColorSpace.Lch = 9 -> Egami.Css.CssColorSpace
+Egami.Css.CssColorSpace.Oklab = 10 -> Egami.Css.CssColorSpace
+Egami.Css.CssColorSpace.Oklch = 11 -> Egami.Css.CssColorSpace
+Egami.Css.CssColorSpace.ProPhotoRgb = 4 -> Egami.Css.CssColorSpace
+Egami.Css.CssColorSpace.Rec2020 = 5 -> Egami.Css.CssColorSpace
+Egami.Css.CssColorSpace.Srgb = 0 -> Egami.Css.CssColorSpace
+Egami.Css.CssColorSpace.SrgbLinear = 1 -> Egami.Css.CssColorSpace
+Egami.Css.CssColorSpace.XyzD50 = 6 -> Egami.Css.CssColorSpace
+Egami.Css.CssColorSpace.XyzD65 = 7 -> Egami.Css.CssColorSpace
+static Egami.Css.CssColor.FromColorSpace(Egami.Css.CssColorSpace space, double c0, double c1, double c2, double alpha = 1) -> Egami.Css.CssColor

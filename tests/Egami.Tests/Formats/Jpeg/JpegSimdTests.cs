@@ -1,6 +1,7 @@
 using System.Runtime.Intrinsics.X86;
 
 using Egami.Formats.Jpeg;
+using Egami.Simd;
 
 namespace Egami.Tests.Formats.Jpeg;
 
@@ -26,6 +27,27 @@ public class JpegSimdTests
             Array.Clear(vector);
             JpegIdct.TransformScalar(block, quant, scalar, 11);
             JpegIdct.TransformAvx2(block, quant, vector, 11);
+            Assert.Equal(scalar, vector);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Kinds))]
+    public void Idct128EqualsScalar(string kind)
+    {
+        Assert.SkipUnless(Simd128.IsSupported, "128-bit SIMD is not available.");
+        Random random = new(kind.GetHashCode(StringComparison.Ordinal) & 0xFFFF);
+        short[] block = new short[64];
+        ushort[] quant = new ushort[64];
+        byte[] scalar = new byte[8 * 11];
+        byte[] vector = new byte[8 * 11];
+        for (int trial = 0; trial < 5000; trial++)
+        {
+            Fill(kind, random, block, quant);
+            Array.Clear(scalar);
+            Array.Clear(vector);
+            JpegIdct.TransformScalar(block, quant, scalar, 11);
+            JpegIdct.Transform128(block, quant, vector, 11);
             Assert.Equal(scalar, vector);
         }
     }
@@ -268,6 +290,60 @@ public class JpegSimdTests
             int done = JpegColor.YCbCrAvx2(y, cb, cr, vector);
             JpegColor.YCbCrScalar(y, cb, cr, vector, done);
             Assert.Equal(scalar, vector);
+        }
+    }
+
+    [Fact]
+    public void Color128EqualsScalar()
+    {
+        Assert.SkipUnless(Simd128.IsSupported, "128-bit SIMD is not available.");
+        Random random = new(7);
+        foreach (int width in (int[])[1, 7, 8, 9, 15, 16, 17, 33, 100, 1000])
+        {
+            byte[] y = new byte[width], cb = new byte[width], cr = new byte[width];
+            random.NextBytes(y);
+            random.NextBytes(cb);
+            random.NextBytes(cr);
+            for (int i = 0; i < Math.Min(width, 8); i++)
+            {
+                (y[i], cb[i], cr[i]) = ((byte)((i & 1) * 255), (byte)(((i >> 1) & 1) * 255), (byte)(((i >> 2) & 1) * 255));
+            }
+
+            byte[] scalar = new byte[width * 3], vector = new byte[width * 3];
+            JpegColor.YCbCrScalar(y, cb, cr, scalar, 0);
+            int done = JpegColor.YCbCr128(y, cb, cr, vector);
+            JpegColor.YCbCrScalar(y, cb, cr, vector, done);
+            Assert.Equal(scalar, vector);
+        }
+    }
+
+    [Fact]
+    public void Upsampling128EqualsScalar()
+    {
+        Assert.SkipUnless(Simd128.IsSupported, "128-bit SIMD is not available.");
+        Random random = new(11);
+        foreach (int n in (int[])[1, 2, 7, 8, 9, 15, 16, 17, 31, 40, 333])
+        {
+            byte[] near = new byte[n + 32], far = new byte[n + 32];
+            random.NextBytes(near);
+            random.NextBytes(far);
+            short[] sums = new short[n + 2];
+            foreach (bool odd in (bool[])[false, true])
+            {
+                int width = (2 * n) - (odd ? 1 : 0);
+                JpegUpsample.ColumnSums(near, far, n, sums);
+                byte[] scalar = new byte[width], vector = new byte[width];
+                JpegUpsample.DoubleScalar(sums, 0, n, scalar, 8, 7, 4);
+                int done = JpegUpsample.Double128(sums, n, vector, 8, 7, 4);
+                JpegUpsample.DoubleScalar(sums, done, n, vector, 8, 7, 4);
+                Assert.Equal(scalar, vector);
+
+                JpegUpsample.Widen(near, n, sums);
+                JpegUpsample.DoubleScalar(sums, 0, n, scalar, 1, 2, 2);
+                done = JpegUpsample.Double128(sums, n, vector, 1, 2, 2);
+                JpegUpsample.DoubleScalar(sums, done, n, vector, 1, 2, 2);
+                Assert.Equal(scalar, vector);
+            }
         }
     }
 

@@ -24,6 +24,9 @@ EPS previews (roadmap 2.3.14).
   `Eps.LeadingWhitespace` warning, as PostScript interpreters do; some old files have them.
 - The EPS format page, a recipe in the formats guide and a fuzz target (`eps`).
 - New diagnostics: `Eps.PreviewLoaded` on every load, and `Eps.*` warnings for damaged headers, sections and previews.
+- Faster JPEG decoding where AVX2 is missing, Arm64 among them (roadmap 2.4.13): the inverse DCT, chroma upsampling and
+  YCbCr to RGB conversion have 128-bit SIMD paths for x86 and Arm64, giving the same bytes as before; 1.6 to 2.7 times as fast
+  as the scalar path on x64 with AVX2 turned off.
 
 ## Egami.Drawing 1.6.0 (unreleased)
 
@@ -229,6 +232,15 @@ Egami.Css:
   the parent; both cache their result on the style. Plain values allocate nothing.
 - `CssLengthContext` says what relative lengths are worth (font sizes, viewport, the reference length for percentages, and
   optional line height, x-height and `ch` width) and resolves a `CssLength` or a `CssCalc` to CSS pixels with `TryResolve`.
+- Wide-gamut colors (roadmap 2.10.2): a `CssColor` keeps the space it was written in as a `CssColorSpace` (`Space`, one of
+  CSS Color 4's twelve, `Srgb` for hex, named colors, `rgb()`, `hsl()` and `hwb()`) and its components there, unclipped
+  (`C0`, `C1`, `C2`). `ToColorSpace` converts them to any other space, `CssColor.FromColorSpace` builds a color from them,
+  `IsInSrgbGamut` says whether sRGB can show it, and `ToSrgbGamutMapped` maps it into sRGB with CSS Color 4's OkLCh chroma
+  reduction (deltaEOK 0.02). `ToString(keepSpace: true)` writes `color(display-p3 ...)`, `lab()`, `lch()`, `oklab()` or
+  `oklch()`. `R`, `G`, `B`, `A`, `Level` and `ToString()` are unchanged, so Egami.Svg draws as before.
+- Behavior change: `CssColor` equality compares the color space and the unclipped components, so `color(display-p3 1 0 0)`
+  no longer equals `rgb(255 0 0)`, and two colors outside the sRGB gamut that clip alike are no longer equal. Colors written
+  in sRGB syntaxes inside its gamut compare as before. `CssColor` grows from 20 to 48 bytes.
 - `@keyframes` and `@-webkit-keyframes` now parse into a `CssKeyframesRule` (its `Name` and `CssKeyframe`s, each with its
   `Offsets` and `Declarations`, `!important` ones dropped) instead of a `CssUnknownAtRule`. Code that looked for keyframes
   among the unknown at-rules must look for the new type.
@@ -488,6 +500,23 @@ Japan Post customer barcode (roadmap 2.11.3, stage A).
   `BarcodeFormat.JapanPost`, with a quiet zone of 4 modules (2 mm or more).
 - `BarcodeFormat.JapanPost` and the group `BarcodeFormat.Postal` are new. Postal barcodes are written, not read, so
   `Postal` is not in `All` and reads with the default options are unchanged.
+
+Intelligent Mail, Royal Mail, KIX and Australia Post barcodes (roadmap 2.11.3, stage B).
+
+- `Barcode.IntelligentMail` writes the USPS Intelligent Mail barcode (USPS-B-3200) from the 20-digit tracking code and a
+  routing code of 0, 5, 9 or 11 digits: 65 bars with an 11-bit frame check, a grid of 6 rows that gives bars 0.136 inch tall
+  at 22 per inch at a 1/44 inch module, with a quiet zone of 6 modules. The spec's examples pass.
+- `Barcode.RoyalMail` writes RM4SCC, digits and letters A to Z with start and stop bars and a modulo 6 check character, and
+  `Barcode.Kix` PostNL's KIX code, the same characters without them: grids of 8 rows that give Royal Mail's sizes at a 0.6
+  mm module, with a quiet zone of 4 modules.
+- `Barcode.AustraliaPost` and `AustraliaPostOptions` write the Australia Post 4-State Customer Barcode: the eight-digit DPID
+  and, in Customer Barcodes 2 and 3, customer information in the N or C table, with filler bars and four Reed-Solomon check
+  symbols over GF(64). `AustraliaPostFormat` names the formats by their FCC (11, 59, 62 and the internal 45, 87 and 92),
+  `AustraliaPostEncoding` the tables. The human-readable text is the spec's text representation. A grid of 8 rows gives
+  Australia Post's sizes at a 0.55 mm module, with a quiet zone of 11 modules (6 mm). The spec's examples pass.
+- The symbols equal zint's. `Barcode.Create` and `Barcode.FromModules` take the four formats.
+- `BarcodeFormat.IntelligentMail`, `RoyalMail`, `Kix` and `AustraliaPost` are new and in `Postal`, which stays out of `All`,
+  so reads with the default options are unchanged.
 
 Faster linear reading (roadmap 2.11.2 follow-up).
 
