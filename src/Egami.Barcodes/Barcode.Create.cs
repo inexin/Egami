@@ -38,6 +38,7 @@ public sealed partial class Barcode
         BarcodeFormat.JapanPost => JapanPost(text),
         BarcodeFormat.RoyalMail => RoyalMail(text),
         BarcodeFormat.Kix => Kix(text),
+        BarcodeFormat.AustraliaPost => AustraliaPost(text),
         BarcodeFormat.IntelligentMail => IntelligentMail(text.Length > 20 ? text[..20] : text, text.Length > 20 ? text[(text[20] is '-' or ' ' ? 21 : 20)..] : null),
         _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown barcode format."),
     };

@@ -119,3 +119,28 @@ Egami.Barcodes.BarcodeFormat.AustraliaPost = 2097152 -> Egami.Barcodes.BarcodeFo
 static Egami.Barcodes.Barcode.RoyalMail(string! text) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Kix(string! text) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.IntelligentMail(string! tracking, string? routing = null) -> Egami.Barcodes.Barcode!
+Egami.Barcodes.AustraliaPostEncoding
+Egami.Barcodes.AustraliaPostEncoding.C = 1 -> Egami.Barcodes.AustraliaPostEncoding
+Egami.Barcodes.AustraliaPostEncoding.N = 0 -> Egami.Barcodes.AustraliaPostEncoding
+Egami.Barcodes.AustraliaPostFormat
+Egami.Barcodes.AustraliaPostFormat.Customer2 = 59 -> Egami.Barcodes.AustraliaPostFormat
+Egami.Barcodes.AustraliaPostFormat.Customer3 = 62 -> Egami.Barcodes.AustraliaPostFormat
+Egami.Barcodes.AustraliaPostFormat.Redirection = 92 -> Egami.Barcodes.AustraliaPostFormat
+Egami.Barcodes.AustraliaPostFormat.ReplyPaid = 45 -> Egami.Barcodes.AustraliaPostFormat
+Egami.Barcodes.AustraliaPostFormat.Routing = 87 -> Egami.Barcodes.AustraliaPostFormat
+Egami.Barcodes.AustraliaPostFormat.Standard = 11 -> Egami.Barcodes.AustraliaPostFormat
+Egami.Barcodes.AustraliaPostOptions
+Egami.Barcodes.AustraliaPostOptions.<Clone>$() -> Egami.Barcodes.AustraliaPostOptions!
+Egami.Barcodes.AustraliaPostOptions.AustraliaPostOptions() -> void
+Egami.Barcodes.AustraliaPostOptions.Encoding.get -> Egami.Barcodes.AustraliaPostEncoding?
+Egami.Barcodes.AustraliaPostOptions.Encoding.init -> void
+Egami.Barcodes.AustraliaPostOptions.Equals(Egami.Barcodes.AustraliaPostOptions? other) -> bool
+Egami.Barcodes.AustraliaPostOptions.Format.get -> Egami.Barcodes.AustraliaPostFormat?
+Egami.Barcodes.AustraliaPostOptions.Format.init -> void
+override Egami.Barcodes.AustraliaPostOptions.Equals(object? obj) -> bool
+override Egami.Barcodes.AustraliaPostOptions.GetHashCode() -> int
+override Egami.Barcodes.AustraliaPostOptions.ToString() -> string!
+static Egami.Barcodes.AustraliaPostOptions.Default.get -> Egami.Barcodes.AustraliaPostOptions!
+static Egami.Barcodes.AustraliaPostOptions.operator !=(Egami.Barcodes.AustraliaPostOptions? left, Egami.Barcodes.AustraliaPostOptions? right) -> bool
+static Egami.Barcodes.AustraliaPostOptions.operator ==(Egami.Barcodes.AustraliaPostOptions? left, Egami.Barcodes.AustraliaPostOptions? right) -> bool
+static Egami.Barcodes.Barcode.AustraliaPost(string! text, Egami.Barcodes.AustraliaPostOptions? options = null) -> Egami.Barcodes.Barcode!

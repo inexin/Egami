@@ -143,4 +143,79 @@ public class PostalTests
         Assert.InRange(128f / 44, 2.667f, 3.225f);
         Assert.Equal(6f / 44, path.Bounds.X, 4);
     }
+    /// <summary>Gets an Australia Post barcode's bar values: 0 full, 1 ascender, 2 descender, 3 tracker.</summary>
+    private static string AustraliaPostValues(Barcode barcode) => Bars(barcode.Modules, 3, 2).Replace('F', '0').Replace('A', '1').Replace('D', '2').Replace('T', '3');
+
+    [Fact]
+    public void AustraliaPostMakesTheSpecsStandardExample()
+    {
+        // The spec's Diagram 9 and 10: FCC 11, DPID 39549554, check symbols 54 17 53 58.
+        Barcode barcode = Barcode.AustraliaPost("39549554");
+        Assert.Equal("1301011030121130121211331210131132213", AustraliaPostValues(barcode));
+        Assert.Equal("11 39549554 54 17 53 58", barcode.HumanReadableText);
+        Assert.Equal(BarcodeFormat.AustraliaPost, barcode.Format);
+        Assert.Equal(11, barcode.QuietZone);
+
+        // Diagram 14's text representation.
+        Assert.Equal("11 96184209 32 57 38 54", Barcode.AustraliaPost("96184209").HumanReadableText);
+        Assert.Equal(AustraliaPostValues(barcode), AustraliaPostValues(Barcode.Create(BarcodeFormat.AustraliaPost, "39549554")));
+    }
+
+    [Fact]
+    public void AustraliaPostMakesTheSpecsCustomerBarcodes()
+    {
+        // The spec's Diagram 7: Customer Barcode 2 without customer information and Customer Barcode 3 with ABC123 in the C table,
+        // filler bars after it.
+        Assert.Equal(
+            "1312301211120120021201333333333333333310031000312313",
+            AustraliaPostValues(Barcode.AustraliaPost("54516251", new AustraliaPostOptions { Format = AustraliaPostFormat.Customer2 })));
+        Assert.Equal(
+            "1320021211120120021201000001002300301302333333333333313133002021313",
+            AustraliaPostValues(Barcode.AustraliaPost("54516251ABC123")));
+    }
+
+    [Theory]
+    [InlineData("39549554", null, null, 37, "11 39549554")]
+    [InlineData("3954955412345678", null, null, 52, "59 39549554 12345678")]
+    [InlineData("39549554123456789", null, null, 67, "62 39549554 123456789")]
+    [InlineData("39549554Ab #9", null, null, 52, "59 39549554 Ab #9")]
+    [InlineData("39549554Ab #95", null, null, 67, "62 39549554 Ab #95")]
+    [InlineData("3954955412", null, AustraliaPostEncoding.C, 52, "59 39549554 12")]
+    [InlineData("39549554", AustraliaPostFormat.ReplyPaid, null, 37, "45 39549554")]
+    [InlineData("39549554", AustraliaPostFormat.Routing, null, 37, "87 39549554")]
+    [InlineData("39549554", AustraliaPostFormat.Redirection, null, 37, "92 39549554")]
+    [InlineData("3954955412", AustraliaPostFormat.Customer3, null, 67, "62 39549554 12")]
+    public void AustraliaPostChoosesItsFormatAndTable(string text, AustraliaPostFormat? format, AustraliaPostEncoding? encoding, int bars, string readable)
+    {
+        Barcode barcode = Barcode.AustraliaPost(text, new AustraliaPostOptions { Format = format, Encoding = encoding });
+        string values = AustraliaPostValues(barcode);
+        Assert.Equal(bars, values.Length);
+        Assert.StartsWith("13", values, StringComparison.Ordinal);
+        Assert.EndsWith("13", values, StringComparison.Ordinal);
+        Assert.Matches("^" + System.Text.RegularExpressions.Regex.Escape(readable) + "( [0-9][0-9]){4}$", barcode.HumanReadableText);
+    }
+
+    [Theory]
+    [InlineData("3954955", null, null, "not 7")]
+    [InlineData("3954x554", null, null, "'x' at 4")]
+    [InlineData("39549554AB-", null, null, "'-' at 10")]
+    [InlineData("3954955412a", null, AustraliaPostEncoding.N, "'a' at 10")]
+    [InlineData("395495541", AustraliaPostFormat.Standard, null, "without customer information")]
+    [InlineData("39549554123456789", AustraliaPostFormat.Customer2, null, "takes 18 bars")]
+    [InlineData("395495541234567890123456", null, null, "takes 32 bars")]
+    [InlineData("3954955412345678901", null, AustraliaPostEncoding.C, "takes 33 bars")]
+    public void AustraliaPostNamesABadText(string text, AustraliaPostFormat? format, AustraliaPostEncoding? encoding, string message) =>
+        Assert.Contains(message, Assert.Throws<ArgumentException>(() => Barcode.AustraliaPost(text, new AustraliaPostOptions { Format = format, Encoding = encoding })).Message, StringComparison.Ordinal);
+
+    [Fact]
+    public void AustraliaPostDrawnAtItsModuleHasAustraliaPostsSizes()
+    {
+        // 0.55 mm modules: tracker 1.1 mm, ascender and descender 2.75 mm, full 4.4 mm; 37 bars 40.15 mm long, 6.05 mm quiet zone.
+        Barcode barcode = Barcode.AustraliaPost("39549554");
+        Drawing.Path path = barcode.ToPath(0.55f);
+        Assert.Equal(4.4f, path.Bounds.Height, 3);
+        Assert.Equal(((2 * 37) - 1) * 0.55f, path.Bounds.Width, 3);
+        Assert.InRange(path.Bounds.Width, 37.0f, 42.2f);
+        Assert.Equal(6.05f, path.Bounds.X, 3);
+    }
 }

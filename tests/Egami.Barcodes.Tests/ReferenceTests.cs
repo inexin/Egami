@@ -178,6 +178,11 @@ public class ReferenceTests
             "JapanPost" => Barcode.JapanPost(data),
             "RoyalMail" => Barcode.RoyalMail(data),
             "Kix" => Barcode.Kix(data),
+            "AustraliaPost" => Barcode.AustraliaPost(data, new AustraliaPostOptions
+            {
+                Format = options.ValueKind == JsonValueKind.Object && options.TryGetProperty("format", out JsonElement format) ? Enum.Parse<AustraliaPostFormat>(format.GetString()!) : null,
+                Encoding = options.ValueKind == JsonValueKind.Object && options.TryGetProperty("encoding", out JsonElement encoding) ? Enum.Parse<AustraliaPostEncoding>(encoding.GetString()!) : null,
+            }),
             "IntelligentMail" => Barcode.IntelligentMail(data, options.ValueKind == JsonValueKind.Object && options.TryGetProperty("routing", out JsonElement routing) ? routing.GetString() : null),
             "AztecRune" => Barcode.AztecRune(int.Parse(data, System.Globalization.CultureInfo.InvariantCulture)),
             string call => throw new NotSupportedException(call),
