@@ -34,14 +34,17 @@ internal enum FontFileFormat
 /// </summary>
 internal static class FontCommands
 {
-    /// <summary>Tables a subset leaves out that a reader may miss, by what they hold.</summary>
-    private static readonly (string What, string[] Tags)[] DroppedTables =
+    /// <summary>
+    /// Tables a subset leaves out that a reader may miss, by what they hold; with the layout closure the subset keeps the
+    /// <c>Layout</c> ones, cut down (a kern table with no pair left goes, as nothing is lost).
+    /// </summary>
+    private static readonly (string What, string[] Tags, bool Layout)[] DroppedTables =
     [
-        ("color glyphs", ["COLR", "CPAL", "SVG ", "CBDT", "CBLC", "sbix"]),
-        ("embedded bitmaps", ["EBDT", "EBLC"]),
-        ("vertical metrics", ["vhea", "vmtx", "VORG"]),
-        ("legacy kerning", ["kern"]),
-        ("math layout", ["MATH"]),
+        ("color glyphs", ["COLR", "CPAL", "SVG ", "CBDT", "CBLC", "sbix"], false),
+        ("embedded bitmaps", ["EBDT", "EBLC"], false),
+        ("vertical metrics", ["vhea", "vmtx", "VORG"], true),
+        ("legacy kerning", ["kern"], true),
+        ("math layout", ["MATH"], true),
     ];
 
     public static Command Create(CliSession session)
@@ -253,7 +256,7 @@ internal static class FontCommands
                 Output.Write(session, path, stream => stream.Write(written));
 
                 Typeface back = subset.ToTypeface();
-                foreach ((string what, string[] tags) in DroppedTables)
+                foreach ((string what, string[] tags, _) in DroppedTables.Where(t => !(layout && t.Layout)))
                 {
                     string[] lost = [.. tags.Where(t => typeface.TryGetTable(new FontTag(t), out _) && !back.TryGetTable(new FontTag(t), out _)).Select(t => t.TrimEnd())];
                     if (lost.Length > 0)
