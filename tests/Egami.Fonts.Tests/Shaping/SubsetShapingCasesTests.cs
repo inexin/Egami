@@ -65,24 +65,9 @@ public sealed class SubsetShapingCasesTests
             return "case: " + skipped;
         }
 
-        if (face.IsVariable || face.Instance is not null)
-        {
-            return "variable face (variation deltas are baked later)";
-        }
-
         if (request.NotFound != 0 || request.Invisible != 0 || request.NotFoundVariationSelector != uint.MaxValue)
         {
             return "glyph id options";
-        }
-
-        if (face.TryGetTable(new FontTag("kern"), out _) && !(face.Layout.HasGpos && face.Layout.Features.Contains(new FontTag("kern"))))
-        {
-            return "legacy kern table (kept in a later step)";
-        }
-
-        if (LayoutBuffer.IsVertical(request.Direction) && face.TryGetTable(new FontTag("vmtx"), out _))
-        {
-            return "vertical metrics (kept in a later step)";
         }
 
         if (c.File.StartsWith("gsub1_1_modulo", StringComparison.Ordinal))
@@ -91,11 +76,6 @@ public sealed class SubsetShapingCasesTests
         }
 
         int[] all = [.. codePoints, .. request.PreContext, .. request.PostContext];
-        if (all.Any(cp => cp is >= 0xFE00 and <= 0xFE0F or >= 0xE0100 and <= 0xE01EF))
-        {
-            return "variation selectors (no cmap format 14 in subsets)";
-        }
-
         var options = new SubsetOptions
         {
             LayoutClosure = true,
