@@ -79,6 +79,23 @@ public class ReadLinearTests
     }
 
     [Fact]
+    public void AHorizontalAndAVerticalSymbolAreBothFound()
+    {
+        // The rows read the horizontal symbol and the columns the vertical one, at the default effort.
+        using Raster<Gray8> photo = Raster.Create(640, 480, new Gray8(255));
+        using (RasterCanvas<Gray8> canvas = photo.CreateCanvas())
+        {
+            canvas.DrawBarcode(Barcode.Code128("ACROSS"), new RectF(20, 165, 320, 150), Rgba8.Black);
+            canvas.Rotate(90, new Vector2(500, 240));
+            canvas.DrawBarcode(Barcode.Code39("DOWN"), new RectF(320, 170, 360, 140), Rgba8.Black);
+        }
+
+        IReadOnlyList<BarcodeResult> results = photo.ReadBarcodes();
+        Assert.Contains(results, r => r.Text == "ACROSS" && r.Format == BarcodeFormat.Code128);
+        Assert.Contains(results, r => r.Text == "DOWN" && r.Format == BarcodeFormat.Code39);
+    }
+
+    [Fact]
     public void NoiseIsNotABarcode()
     {
         using Raster<Gray8> noise = Raster.Create(320, 240, new Gray8(128));

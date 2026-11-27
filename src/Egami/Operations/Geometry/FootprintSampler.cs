@@ -440,6 +440,11 @@ internal readonly ref struct FootprintSampler<TPixel>
     /// </summary>
     private Vector4 Kernel8(int x0, int y0, ReadOnlySpan<float> wx, ReadOnlySpan<float> wy)
     {
+        if (!Vector256.IsHardwareAccelerated && Vector128.IsHardwareAccelerated)
+        {
+            return Kernel8Lanes4(x0, y0, wx, wy);
+        }
+
         Vector256<float> sum = Vector256<float>.Zero;
         Vector256<int> alphaLanes = Vector256.Create(3, 3, 3, 3, 7, 7, 7, 7);
         Vector256<float> full = Vector256.Create(0f, 0f, 0f, 255f, 0f, 0f, 0f, 255f);
@@ -492,6 +497,75 @@ internal readonly ref struct FootprintSampler<TPixel>
         }
 
         Vector128<float> total = sum.GetLower() + sum.GetUpper();
+        return (total * (premultiplied ? 1f / 255f : 1f / (255f * 255f))).AsVector4();
+    }
+
+    /// <summary>
+    /// <see cref="Kernel8"/> on 128-bit vectors (Arm64, and x86 without AVX2): the even and odd pixels keep their own sums, as the
+    /// two halves of the 256-bit sum do, so the result is the same to the bit.
+    /// </summary>
+    private Vector4 Kernel8Lanes4(int x0, int y0, ReadOnlySpan<float> wx, ReadOnlySpan<float> wy)
+    {
+        Vector128<float> even = Vector128<float>.Zero, odd = Vector128<float>.Zero;
+        Vector128<int> alphaLanes = Vector128.Create(3);
+        Vector128<float> full = Vector128.Create(0f, 0f, 0f, 255f);
+        Vector128<float> isAlpha = Vector128.Create(0, 0, 0, -1).AsSingle();
+        bool premultiplied = RowConverter<TPixel>.Premul8;
+        if (_taps == 4)
+        {
+            Vector128<float> w0 = Vector128.Create(wx[0]), w1 = Vector128.Create(wx[1]), w2 = Vector128.Create(wx[2]), w3 = Vector128.Create(wx[3]);
+            bool contiguous = !_all.IsEmpty;
+            ref byte origin = ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(_all));
+            for (int j = 0; j < 4; j++)
+            {
+                Vector128<byte> four = contiguous
+                    ? Vector128.LoadUnsafe(ref origin, (nuint)(((long)(y0 + j) * _width) + x0) * 4)
+                    : Vector128.LoadUnsafe(ref MemoryMarshal.GetReference(MemoryMarshal.AsBytes(Row(y0 + j).Slice(x0, 4))));
+                Vector128<ushort> low = Vector128.WidenLower(four), high = Vector128.WidenUpper(four);
+                Vector128<float> p0 = Vector128.ConvertToSingle(Vector128.WidenLower(low).AsInt32());
+                Vector128<float> p1 = Vector128.ConvertToSingle(Vector128.WidenUpper(low).AsInt32());
+                Vector128<float> p2 = Vector128.ConvertToSingle(Vector128.WidenLower(high).AsInt32());
+                Vector128<float> p3 = Vector128.ConvertToSingle(Vector128.WidenUpper(high).AsInt32());
+                if (!premultiplied)
+                {
+                    p0 *= Vector128.ConditionalSelect(isAlpha, full, Vector128.Shuffle(p0, alphaLanes));
+                    p1 *= Vector128.ConditionalSelect(isAlpha, full, Vector128.Shuffle(p1, alphaLanes));
+                    p2 *= Vector128.ConditionalSelect(isAlpha, full, Vector128.Shuffle(p2, alphaLanes));
+                    p3 *= Vector128.ConditionalSelect(isAlpha, full, Vector128.Shuffle(p3, alphaLanes));
+                }
+
+                even += ((p0 * w0) + (p2 * w2)) * wy[j];
+                odd += ((p1 * w1) + (p3 * w3)) * wy[j];
+            }
+        }
+        else
+        {
+            for (int j = 0; j < wy.Length; j++)
+            {
+                ReadOnlySpan<byte> bytes = MemoryMarshal.AsBytes(Row(y0 + j).Slice(x0, _taps));
+                ref byte start = ref MemoryMarshal.GetReference(bytes);
+                Vector128<float> lineEven = Vector128<float>.Zero, lineOdd = Vector128<float>.Zero;
+                for (int i = 0; i < wx.Length; i += 2)
+                {
+                    Vector128<ushort> wide = Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref start, i * 4))).AsByte());
+                    Vector128<float> p0 = Vector128.ConvertToSingle(Vector128.WidenLower(wide).AsInt32());
+                    Vector128<float> p1 = Vector128.ConvertToSingle(Vector128.WidenUpper(wide).AsInt32());
+                    if (!premultiplied)
+                    {
+                        p0 *= Vector128.ConditionalSelect(isAlpha, full, Vector128.Shuffle(p0, alphaLanes));
+                        p1 *= Vector128.ConditionalSelect(isAlpha, full, Vector128.Shuffle(p1, alphaLanes));
+                    }
+
+                    lineEven += p0 * Vector128.Create(wx[i]);
+                    lineOdd += p1 * Vector128.Create(wx[i + 1]);
+                }
+
+                even += lineEven * wy[j];
+                odd += lineOdd * wy[j];
+            }
+        }
+
+        Vector128<float> total = even + odd;
         return (total * (premultiplied ? 1f / 255f : 1f / (255f * 255f))).AsVector4();
     }
 

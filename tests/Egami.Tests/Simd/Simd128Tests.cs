@@ -63,7 +63,7 @@ public class Simd128Tests
     }
 
     [Fact]
-    public void SumsOfAbsoluteDifferences()
+    public void SumsOfAbsoluteDifferencesAndPairs()
     {
         Assert.SkipUnless(Simd128.IsSupported, "128-bit SIMD is not available.");
         Random random = new(3);
@@ -86,6 +86,7 @@ public class Simd128Tests
             }
 
             Assert.Equal([low, high], Lanes(Simd128.SumAbsoluteDifferences(Vector(a), Vector(b))));
+            Assert.Equal([.. Enumerable.Range(0, 8).Select(i => (ushort)(a[2 * i] + a[(2 * i) + 1]))], Lanes(Simd128.AddPairwiseWidening(Vector(a))));
         }
     }
 

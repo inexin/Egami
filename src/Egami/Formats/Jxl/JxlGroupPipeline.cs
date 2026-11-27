@@ -112,6 +112,9 @@ internal sealed class JxlGroupPipeline
     // XYB to 8-bit sRGB in one step, when the output is plain sRGB (see WriteSrgbBytes).
     private readonly JxlXyb8? _srgb8;
 
+    // The same in 128-bit vectors (Arm64), when the 256-bit form does not run (see WriteSrgbBytes128).
+    private readonly JxlXyb4? _srgb4;
+
     // The EPF sigma of each block (BlocksX a row), or the one sigma of a Modular frame.
     private float[]? _sigma;
     private int _sigmaBlocksX;
@@ -159,9 +162,16 @@ internal sealed class JxlGroupPipeline
 
         _steps = [.. steps];
         if (file is { Output: JxlOutput o } && file.Header.XybEncoded && o is { Transform: null, Gray: false } && (o.Matrix is null || o.Opsin is not null)
-            && o.Curve is { Gamma: 0, TransferFunction: not (1 or 8 or 16 or 17 or 18) } && System.Runtime.Intrinsics.X86.Fma.IsSupported && System.Runtime.Intrinsics.X86.Avx2.IsSupported)
+            && o.Curve is { Gamma: 0, TransferFunction: not (1 or 8 or 16 or 17 or 18) })
         {
-            _srgb8 = new JxlXyb8(o.Opsin ?? JxlColor.Opsin(file.Header), file.Header.ToneMapping.IntensityTarget);
+            if (JxlColor.Fused256 && System.Runtime.Intrinsics.X86.Avx2.IsSupported)
+            {
+                _srgb8 = new JxlXyb8(o.Opsin ?? JxlColor.Opsin(file.Header), file.Header.ToneMapping.IntensityTarget);
+            }
+            else if (JxlColor.Fused128)
+            {
+                _srgb4 = new JxlXyb4(o.Opsin ?? JxlColor.Opsin(file.Header), file.Header.ToneMapping.IntensityTarget);
+            }
         }
 
         _reach = [.. steps.Select(s => s switch { -1 => 1, 0 => 3, 1 => 2, _ => 1 })];
@@ -964,9 +974,17 @@ internal sealed class JxlGroupPipeline
         int colorSamples = alpha ? samples - 1 : samples;
         int width = row.Length;
         Span<byte> bytes = MemoryMarshal.AsBytes(row);
-        if (layout.ChannelType == PixelChannelType.Unorm8 && (samples is 1 or 3 ? !alpha : samples == 4 && alpha) && System.Runtime.Intrinsics.X86.Avx2.IsSupported)
+        if (layout.ChannelType == PixelChannelType.Unorm8 && (samples is 1 or 3 ? !alpha : samples == 4 && alpha) && Vector128.IsHardwareAccelerated)
         {
-            WriteBytes(bytes, color, at, samples);
+            if (System.Runtime.Intrinsics.X86.Avx2.IsSupported && Vector256.IsHardwareAccelerated)
+            {
+                WriteBytes(bytes, color, at, samples);
+            }
+            else
+            {
+                WriteBytes128(bytes, color, at, samples);
+            }
+
             return;
         }
 
@@ -1067,7 +1085,7 @@ internal sealed class JxlGroupPipeline
     /// the same arithmetic as <see cref="JxlImageDecoder.ToColorSpace(float[][], int, int, JxlFile)"/> (XYB to linear sRGB,
     /// the sRGB curve) and <see cref="WriteBytes"/>; a row of under eight pixels through those.
     /// </summary>
-    private static void WriteSrgbBytes(Span<byte> bytes, float[][] color, int at, int samples, in JxlXyb8 xyb, JxlFile file)
+    internal static void WriteSrgbBytes(Span<byte> bytes, float[][] color, int at, int samples, in JxlXyb8 xyb, JxlFile file)
     {
         int width = bytes.Length / samples;
         ref byte to = ref MemoryMarshal.GetReference(bytes);
@@ -1095,6 +1113,122 @@ internal sealed class JxlGroupPipeline
             JxlImageDecoder.ToColorSpace(color, at + x, at + width, file);
             WriteBytesTail(bytes, color, at, samples, x);
         }
+    }
+
+    /// <summary><see cref="WriteBytes"/> in 128-bit vectors (Arm64, and x86 without AVX2), eight pixels at a time.</summary>
+    internal static void WriteBytes128(Span<byte> bytes, float[][] color, int at, int samples)
+    {
+        int width = bytes.Length / samples;
+        ref byte to = ref MemoryMarshal.GetReference(bytes);
+        float[] p0 = color[0];
+        float[] p1 = color[samples == 1 ? 0 : 1];
+        float[] p2 = color[samples == 1 ? 0 : 2];
+        int x = 0;
+        for (; x + 8 <= width; x += 8)
+        {
+            Store8(
+                ref to, x, samples, Narrow(Round4(Load4(p0, at + x)), Round4(Load4(p0, at + x + 4))), Narrow(Round4(Load4(p1, at + x)), Round4(Load4(p1, at + x + 4))),
+                Narrow(Round4(Load4(p2, at + x)), Round4(Load4(p2, at + x + 4))));
+        }
+
+        WriteBytesTail(bytes, color, at, samples, x);
+    }
+
+    /// <summary><see cref="WriteSrgbBytes"/> in 128-bit vectors (Arm64, needs FMA), eight pixels at a time.</summary>
+    internal static void WriteSrgbBytes128(Span<byte> bytes, float[][] color, int at, int samples, in JxlXyb4 xyb, JxlFile file)
+    {
+        int width = bytes.Length / samples;
+        ref byte to = ref MemoryMarshal.GetReference(bytes);
+        int x = 0;
+        for (; x + 8 <= width; x += 8)
+        {
+            Srgb8(ref to, x, samples, color, at, xyb);
+        }
+
+        if (x < width && width >= 8)
+        {
+            // The last pixels as the last eight of the row, writing some again with the same values.
+            Srgb8(ref to, width - 8, samples, color, at, xyb);
+        }
+        else if (x < width)
+        {
+            JxlImageDecoder.ToColorSpace(color, at + x, at + width, file);
+            WriteBytesTail(bytes, color, at, samples, x);
+        }
+    }
+
+    /// <summary>Converts and stores the eight pixels at <paramref name="x"/> for <see cref="WriteSrgbBytes128"/>.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Srgb8(ref byte to, int x, int samples, float[][] color, int at, in JxlXyb4 xyb)
+    {
+        float[] p0 = color[0];
+        float[] p1 = color[1];
+        float[] p2 = color[2];
+        (Vector128<float> r0, Vector128<float> g0, Vector128<float> b0) = xyb.ToLinear(Load4(p0, at + x), Load4(p1, at + x), Load4(p2, at + x));
+        (Vector128<float> r1, Vector128<float> g1, Vector128<float> b1) = xyb.ToLinear(Load4(p0, at + x + 4), Load4(p1, at + x + 4), Load4(p2, at + x + 4));
+        Vector128<short> r = Narrow(Round4(JxlColor.EncodeSrgb4(r0)), Round4(JxlColor.EncodeSrgb4(r1)));
+        if (samples == 1)
+        {
+            Store8(ref to, x, samples, r, r, r);
+        }
+        else
+        {
+            Store8(
+                ref to, x, samples, r, Narrow(Round4(JxlColor.EncodeSrgb4(g0)), Round4(JxlColor.EncodeSrgb4(g1))),
+                Narrow(Round4(JxlColor.EncodeSrgb4(b0)), Round4(JxlColor.EncodeSrgb4(b1))));
+        }
+    }
+
+    /// <summary>
+    /// Stores eight pixels of gray, RGB or RGBA (alpha 255) from their rounded samples (0 to 255 in 16-bit lanes) at pixel
+    /// <paramref name="x"/>: the byte layout of the 256-bit <c>Store8</c>, by the same shuffles.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Store8(ref byte to, int x, int samples, Vector128<short> r, Vector128<short> g, Vector128<short> b)
+    {
+        if (samples == 3)
+        {
+            Vector128<byte> first = Vector128.Narrow(r.AsUInt16(), g.AsUInt16());
+            Vector128<byte> second = Vector128.Narrow(b.AsUInt16(), Vector128<ushort>.Zero);
+            Vector128<byte> out0 = Vector128.Shuffle(first, Vector128.Create((byte)0, 8, 0x80, 1, 9, 0x80, 2, 10, 0x80, 3, 11, 0x80, 4, 12, 0x80, 5))
+                | Vector128.Shuffle(second, Vector128.Create((byte)0x80, 0x80, 0, 0x80, 0x80, 1, 0x80, 0x80, 2, 0x80, 0x80, 3, 0x80, 0x80, 4, 0x80));
+            Vector128<byte> out1 = Vector128.Shuffle(first, Vector128.Create((byte)13, 0x80, 6, 14, 0x80, 7, 15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80))
+                | Vector128.Shuffle(second, Vector128.Create((byte)0x80, 5, 0x80, 0x80, 6, 0x80, 0x80, 7, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80));
+            out0.StoreUnsafe(ref to, (nuint)(x * 3));
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref to, (x * 3) + 16), out1.AsUInt64().ToScalar());
+        }
+        else if (samples == 4)
+        {
+            // R, G, B and an alpha of 255 (the alpha channel, if any, is written later).
+            Vector128<byte> first = Vector128.Narrow(r.AsUInt16(), g.AsUInt16());
+            Vector128<byte> second = Vector128.Narrow(b.AsUInt16(), Vector128.Create((ushort)255));
+            (Vector128.Shuffle(first, Vector128.Create((byte)0, 8, 0x80, 0x80, 1, 9, 0x80, 0x80, 2, 10, 0x80, 0x80, 3, 11, 0x80, 0x80))
+                | Vector128.Shuffle(second, Vector128.Create((byte)0x80, 0x80, 0, 8, 0x80, 0x80, 1, 9, 0x80, 0x80, 2, 10, 0x80, 0x80, 3, 11))).StoreUnsafe(ref to, (nuint)(x * 4));
+            (Vector128.Shuffle(first, Vector128.Create((byte)4, 12, 0x80, 0x80, 5, 13, 0x80, 0x80, 6, 14, 0x80, 0x80, 7, 15, 0x80, 0x80))
+                | Vector128.Shuffle(second, Vector128.Create((byte)0x80, 0x80, 4, 12, 0x80, 0x80, 5, 13, 0x80, 0x80, 6, 14, 0x80, 0x80, 7, 15))).StoreUnsafe(ref to, (nuint)((x * 4) + 16));
+        }
+        else
+        {
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref to, x), Vector128.Narrow(r.AsUInt16(), Vector128<ushort>.Zero).AsUInt64().ToScalar());
+        }
+    }
+
+    /// <summary>Narrows two sets of four samples of 0 to 255 to 16-bit lanes in order.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Narrow(Vector128<int> a, Vector128<int> b) => Vector128.Narrow(a, b);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<float> Load4(float[] plane, int at) => Vector128.LoadUnsafe(ref MemoryMarshal.GetArrayDataReference(plane), (nuint)at);
+
+    /// <summary>
+    /// Four samples clamped to 0 to 1, scaled to 255 and rounded to nearest even, as <c>MathF.Round(Math.Clamp(f, 0, 1) * 255)</c>
+    /// (a NaN gives 0 there and here).
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<int> Round4(Vector128<float> f)
+    {
+        f = Vector128.MinNative(Vector128.MaxNative(f, Vector128<float>.Zero), Vector128<float>.One) * Vector128.Create(255f);
+        return Vector128.Max(Vector128.ConvertToInt32Native(Vector128.Round(f)), Vector128<int>.Zero);
     }
 
     /// <summary>Stores eight pixels of gray, RGB or RGBA (alpha 255) from their rounded samples at pixel <paramref name="x"/>.</summary>
@@ -1140,7 +1274,7 @@ internal sealed class JxlGroupPipeline
     }
 
     /// <summary>Writes pixels <paramref name="x"/> onward of a row of 8-bit gray, RGB or RGBA (alpha 255) one at a time.</summary>
-    private static void WriteBytesTail(Span<byte> bytes, float[][] color, int at, int samples, int x)
+    internal static void WriteBytesTail(Span<byte> bytes, float[][] color, int at, int samples, int x)
     {
         int width = bytes.Length / samples;
         float[] p0 = color[0];
@@ -1208,7 +1342,18 @@ internal sealed class JxlGroupPipeline
             float[][] color = worker.Color;
             (color[0], color[1], color[2]) = (planes[0], planes[1], planes[2]);
             PixelLayoutInfo layout = TPixel.Layout;
-            if (pipeline._srgb8 is JxlXyb8 xyb && layout.ChannelType == PixelChannelType.Unorm8 && (layout.ChannelCount is 1 or 3 ? !layout.HasAlpha : layout.ChannelCount == 4 && layout.HasAlpha))
+            bool bytes = layout.ChannelType == PixelChannelType.Unorm8 && (layout.ChannelCount is 1 or 3 ? !layout.HasAlpha : layout.ChannelCount == 4 && layout.HasAlpha);
+            if (bytes && pipeline._srgb4 is JxlXyb4 xyb4)
+            {
+                for (int y = y0; y < y1; y++)
+                {
+                    WriteSrgbBytes128(MemoryMarshal.AsBytes(output.Row(y).Slice(x0, x1 - x0)), color, area.Index(x0, y), layout.ChannelCount, xyb4, file);
+                }
+
+                return;
+            }
+
+            if (bytes && pipeline._srgb8 is JxlXyb8 xyb)
             {
                 for (int y = y0; y < y1; y++)
                 {

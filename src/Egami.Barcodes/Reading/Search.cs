@@ -54,8 +54,9 @@ internal static class Search
         var results = first.Select(f => ToResult(f, false)).ToList();
         if (tryInverted && !(firstOnly && results.Count > 0))
         {
-            BitImage? swapped = local?.Complement();
-            jobs = Jobs(image, true, swapped, ReferenceEquals(global, local) ? swapped! : global.Complement(), formats, effort, first);
+            // The local bits serve the inverted pass's 2D detectors only: the linear scan has read both ways already.
+            BitImage? swapped = matrix ? local?.Complement() : null;
+            jobs = Jobs(image, true, swapped, ReferenceEquals(global, local) ? swapped ?? local.Complement() : global.Complement(), formats, effort, first);
             jobs.Add(() => linearInverted);
             results.AddRange(Merge(RunJobs(jobs, threads)).Select(f => ToResult(f, true)));
         }

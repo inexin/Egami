@@ -110,6 +110,11 @@ internal static class Simd128
         return AdvSimd.Arm64.AddPairwise(low, high);
     }
 
+    /// <summary>Adds adjacent pairs of bytes into 16-bit lanes: lane i is a[2i] + a[2i+1] (<c>pmaddubsw</c> by ones, <c>uaddlp</c>).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<ushort> AddPairwiseWidening(Vector128<byte> a) =>
+        Ssse3.IsSupported ? Ssse3.MultiplyAddAdjacent(a, Vector128<sbyte>.One).AsUInt16() : AdvSimd.AddPairwiseWidening(a);
+
     /// <summary>
     /// The sums of absolute differences of each half's eight bytes, in the low 16 bits of each 64-bit lane (the rest zero):
     /// <c>psadbw</c>.
@@ -209,6 +214,31 @@ internal static class Simd128
     /// <summary>Subtracts bytes with unsigned saturation.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static Vector128<byte> SubtractSaturate(Vector128<byte> a, Vector128<byte> b) =>
+        Sse2.IsSupported ? Sse2.SubtractSaturate(a, b) : AdvSimd.SubtractSaturate(a, b);
+
+    /// <summary>Zero-extends the low four bytes to 32-bit lanes (<c>pmovzxbd</c>, two <c>uxtl</c>).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<int> WidenToInt32(Vector128<byte> a) =>
+        Sse41.IsSupported ? Sse41.ConvertToVector128Int32(a) : Vector128.WidenLower(Vector128.WidenLower(a)).AsInt32();
+
+    /// <summary>Sign-extends the low four 16-bit lanes to 32 bits (<c>pmovsxwd</c>, <c>sxtl</c>).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<int> WidenToInt32(Vector128<short> a) =>
+        Sse41.IsSupported ? Sse41.ConvertToVector128Int32(a) : Vector128.WidenLower(a);
+
+    /// <summary>Zero-extends the low eight bytes to 16-bit lanes (<c>pmovzxbw</c>, <c>uxtl</c>).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<short> WidenToInt16(Vector128<byte> a) =>
+        Sse41.IsSupported ? Sse41.ConvertToVector128Int16(a) : Vector128.WidenLower(a).AsInt16();
+
+    /// <summary>Adds signed bytes with saturation.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<sbyte> AddSaturate(Vector128<sbyte> a, Vector128<sbyte> b) =>
+        Sse2.IsSupported ? Sse2.AddSaturate(a, b) : AdvSimd.AddSaturate(a, b);
+
+    /// <summary>Subtracts signed bytes with saturation.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<sbyte> SubtractSaturate(Vector128<sbyte> a, Vector128<sbyte> b) =>
         Sse2.IsSupported ? Sse2.SubtractSaturate(a, b) : AdvSimd.SubtractSaturate(a, b);
 
     /// <summary>The rounded average of bytes, <c>(a + b + 1) &gt;&gt; 1</c>: <c>pavgb</c> and <c>urhadd</c>.</summary>

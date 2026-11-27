@@ -269,7 +269,7 @@ every command takes many files, globs and folders with `--recursive` as the imag
   default position, or at `--variation wght=700,wdth=90`. `--no-hinting` leaves out TrueType hinting, `--name-prefix` prefixes
   the PostScript name and `--face` picks a font of a collection. It prints one line per font: the glyphs kept of the total,
   the asked characters the font lacks (characters in `--unicodes` ranges keep whatever the font has) and the sizes, and warns
-  when the subset leaves out color, bitmap, vertical, kern or (with `--no-layout`) MATH tables.
+  when the subset leaves out color or bitmap tables, or (with `--no-layout`) vertical, kern or MATH tables.
 - `font info` prints each font's names, container, outlines, glyph count, units per em, variation axes, embedding rights,
   tables and the Unicode blocks it covers; `--json` adds every name and table and the coverage as a CSS `unicode-range`.
 

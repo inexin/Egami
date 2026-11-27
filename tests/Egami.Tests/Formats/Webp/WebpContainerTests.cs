@@ -79,6 +79,44 @@ public class WebpContainerTests
         Assert.Equal(118.11, cm.Metadata.Resolution!.Value.X, 3);
     }
 
+    [Theory]
+    [InlineData(5, 0)]   // a rational with no values (a fuzzed file had one)
+    [InlineData(2, 4)]   // text
+    [InlineData(99, 1)]  // an unknown type
+    public void ResolutionEntriesThatHoldNoNumberAreIgnored(ushort type, uint count)
+    {
+        using Raster<Rgba8> raster = Raster.Create(4, 3, Rgba8.Red);
+        raster.Metadata.Resolution = new Resolution(300, 150, ResolutionUnit.PerInch);
+        byte[] file = Save(raster);
+
+        // The XResolution entry (tag 0x011A) in the EXIF chunk's IFD, its type and count overwritten.
+        bool little = true;
+        WalkChunks(file, (name, size, at) =>
+        {
+            if (name == "EXIF")
+            {
+                little = file[at + 8] == (byte)'I';
+            }
+        });
+        byte[] tag = little ? [0x1A, 0x01, 0x05, 0x00] : [0x01, 0x1A, 0x00, 0x05];
+        int entry = file.AsSpan().IndexOf(tag);
+        Assert.True(entry > 0);
+        if (little)
+        {
+            BinaryPrimitives.WriteUInt16LittleEndian(file.AsSpan(entry + 2), type);
+            BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(entry + 4), count);
+        }
+        else
+        {
+            BinaryPrimitives.WriteUInt16BigEndian(file.AsSpan(entry + 2), type);
+            BinaryPrimitives.WriteUInt32BigEndian(file.AsSpan(entry + 4), count);
+        }
+
+        Assert.True(Raster.Probe(file).HasMetadata);
+        using Raster back = Raster.Load(file);
+        Assert.Null(back.Metadata.Resolution);
+    }
+
     [Fact]
     public void OddSizedChunksArePadded()
     {

@@ -1,7 +1,8 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
+
+using Egami.Simd;
 
 namespace Egami.Operations.Geometry;
 
@@ -55,7 +56,7 @@ internal static class GeometryKernels
     internal static void Transpose<T>(ReadOnlySpan<T> source, Span<T> destination)
         where T : unmanaged
     {
-        if (Unsafe.SizeOf<T>() == 4 && Sse2.IsSupported)
+        if (Unsafe.SizeOf<T>() == 4 && Simd128.IsSupported)
         {
             Transpose4x4Blocks(MemoryMarshal.Cast<T, uint>(source), MemoryMarshal.Cast<T, uint>(destination));
             return;
@@ -101,16 +102,16 @@ internal static class GeometryKernels
                 Vector128<uint> a2 = Vector128.LoadUnsafe(ref src, s + (2 * Tile));
                 Vector128<uint> a3 = Vector128.LoadUnsafe(ref src, s + (3 * Tile));
 
-                Vector128<ulong> t0 = Sse2.UnpackLow(a0, a1).AsUInt64();
-                Vector128<ulong> t1 = Sse2.UnpackLow(a2, a3).AsUInt64();
-                Vector128<ulong> t2 = Sse2.UnpackHigh(a0, a1).AsUInt64();
-                Vector128<ulong> t3 = Sse2.UnpackHigh(a2, a3).AsUInt64();
+                Vector128<long> t0 = Simd128.ZipLow(a0.AsInt32(), a1.AsInt32()).AsInt64();
+                Vector128<long> t1 = Simd128.ZipLow(a2.AsInt32(), a3.AsInt32()).AsInt64();
+                Vector128<long> t2 = Simd128.ZipHigh(a0.AsInt32(), a1.AsInt32()).AsInt64();
+                Vector128<long> t3 = Simd128.ZipHigh(a2.AsInt32(), a3.AsInt32()).AsInt64();
 
                 nuint d = (nuint)((br * Tile) + bc);
-                Sse2.UnpackLow(t0, t1).AsUInt32().StoreUnsafe(ref dst, d);
-                Sse2.UnpackHigh(t0, t1).AsUInt32().StoreUnsafe(ref dst, d + Tile);
-                Sse2.UnpackLow(t2, t3).AsUInt32().StoreUnsafe(ref dst, d + (2 * Tile));
-                Sse2.UnpackHigh(t2, t3).AsUInt32().StoreUnsafe(ref dst, d + (3 * Tile));
+                Simd128.ZipLow(t0, t1).AsUInt32().StoreUnsafe(ref dst, d);
+                Simd128.ZipHigh(t0, t1).AsUInt32().StoreUnsafe(ref dst, d + Tile);
+                Simd128.ZipLow(t2, t3).AsUInt32().StoreUnsafe(ref dst, d + (2 * Tile));
+                Simd128.ZipHigh(t2, t3).AsUInt32().StoreUnsafe(ref dst, d + (3 * Tile));
             }
         }
     }

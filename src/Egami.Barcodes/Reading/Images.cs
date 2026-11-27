@@ -459,15 +459,13 @@ internal static class Binarizer
     /// </summary>
     public static void RowRuns(ReadOnlySpan<byte> row, List<float> runs, List<float> offsets)
     {
-        float[] work = [];
+        byte[] work = [];
         RowRuns(row, runs, offsets, ref work);
     }
 
     /// <summary>As <see cref="RowRuns(ReadOnlySpan{byte}, List{float}, List{float})"/>, with a work buffer kept between calls.</summary>
-    public static void RowRuns(ReadOnlySpan<byte> row, List<float> runs, List<float> offsets, ref float[] work)
+    public static void RowRuns(ReadOnlySpan<byte> row, List<float> runs, List<float> offsets, ref byte[] work)
     {
-        runs.Clear();
-        offsets.Clear();
         int n = row.Length;
         Span<int> histogram = stackalloc int[32];
         foreach (byte p in row)
@@ -475,55 +473,30 @@ internal static class Binarizer
             histogram[p >> 3]++;
         }
 
-        float threshold = Valley(histogram) << 3;
-        if (work.Length < n)
-        {
-            work = new float[n];
-        }
+        int threshold = Valley(histogram) << 3;
+        Span<byte> dark = Grow(ref work, n);
 
-        Span<float> sharp = work.AsSpan(0, n);
-        for (int i = 0; i < n; i++)
-        {
-            int left = row[Math.Max(i - 1, 0)], right = row[Math.Min(i + 1, n - 1)];
-            sharp[i] = ((4 * row[i]) - left - right) / 2f;
-        }
-
-        bool dark = false;
-        float start = 0;
-        for (int i = 0; i < n; i++)
-        {
-            bool d = sharp[i] < threshold;
-            if (d == dark)
-            {
-                continue;
-            }
-
-            // The crossing between sample centers i - 0.5 and i + 0.5.
-            float a = i > 0 ? sharp[i - 1] : sharp[i], b = sharp[i];
-            float edge = a == b ? i : i - 0.5f + Math.Clamp((threshold - a) / (b - a), 0, 1);
-            runs.Add(Math.Max(edge - start, 0));
-            offsets.Add(start);
-            start = edge;
-            dark = d;
-        }
-
-        runs.Add(n - start);
-        offsets.Add(start);
-        offsets.Add(n);
+        // A sample is dark where its sharpened value, (4 c - l - r) / 2, is below the threshold: the same test in whole
+        // numbers, sixteen samples at a time; the sub-pixel edges are worked out at the changes of color only.
+        SharpenedDark(row, dark, 2 * threshold);
+        EmitRuns(dark, new SharpenedCrossing(row, threshold), runs, offsets);
     }
 
     /// <summary>
     /// Cuts a row into runs against a threshold that follows the light: the mean over a window around each sample (an eighth of
     /// the row, at least 15 samples), so a gradient across a label does not swallow its bars. Edges are at sub-pixel positions.
     /// </summary>
-    public static void AdaptiveRowRuns(ReadOnlySpan<byte> row, List<float> runs, List<float> offsets, ref float[] work, ref int[] prefixes)
+    public static void AdaptiveRowRuns(ReadOnlySpan<byte> row, List<float> runs, List<float> offsets, ref byte[] work, ref int[] prefixes)
     {
-        runs.Clear();
-        offsets.Clear();
         int n = row.Length, radius = Math.Max(7, n / 16);
-        if (work.Length < n)
+        if (MaxMinusMin(row) < MinimumDynamicRange)
         {
-            work = new float[n];
+            runs.Clear();
+            offsets.Clear();
+            runs.Add(n);
+            offsets.Add(0);
+            offsets.Add(n);
+            return;
         }
 
         if (prefixes.Length < n + 1)
@@ -533,50 +506,253 @@ internal static class Binarizer
 
         Span<int> prefix = prefixes.AsSpan(0, n + 1);
         prefix[0] = 0;
+        int sum = 0;
         for (int i = 0; i < n; i++)
         {
-            prefix[i + 1] = prefix[i] + row[i];
+            sum += row[i];
+            prefix[i + 1] = sum;
         }
 
-        Span<float> level = work.AsSpan(0, n);
-        int min = 255, max = 0;
-        for (int i = 0; i < n; i++)
+        Span<byte> dark = Grow(ref work, n);
+        WindowDark(row, prefix, radius, dark);
+        EmitRuns(dark, new WindowCrossing(row, prefix, radius), runs, offsets);
+    }
+
+    private static Span<byte> Grow(ref byte[] buffer, int length)
+    {
+        if (buffer.Length < length)
         {
-            int a = Math.Max(0, i - radius), b = Math.Min(n, i + radius + 1);
-            level[i] = row[i] - ((prefix[b] - prefix[a]) / (float)(b - a));
+            buffer = new byte[Math.Max(length, buffer.Length * 2)];
+        }
+
+        return buffer.AsSpan(0, length);
+    }
+
+    /// <summary>The row's brightest sample less its darkest; 0 for an empty row.</summary>
+    private static int MaxMinusMin(ReadOnlySpan<byte> row)
+    {
+        int i = 0, min = 255, max = 0;
+        if (Vector128.IsHardwareAccelerated && row.Length >= 16)
+        {
+            ref byte start = ref MemoryMarshal.GetReference(row);
+            Vector128<byte> low = Vector128.LoadUnsafe(ref start), high = low;
+            for (i = 16; i + 16 <= row.Length; i += 16)
+            {
+                Vector128<byte> v = Vector128.LoadUnsafe(ref start, (nuint)i);
+                low = Vector128.Min(low, v);
+                high = Vector128.Max(high, v);
+            }
+
+            for (int k = 0; k < 16; k++)
+            {
+                min = Math.Min(min, low[k]);
+                max = Math.Max(max, high[k]);
+            }
+        }
+
+        for (; i < row.Length; i++)
+        {
             min = Math.Min(min, row[i]);
             max = Math.Max(max, row[i]);
         }
 
-        if (max - min < MinimumDynamicRange)
+        return Math.Max(max - min, 0);
+    }
+
+    /// <summary>Marks the samples whose 4 c - l - r (the ends repeated) is below <paramref name="limit"/>.</summary>
+    private static void SharpenedDark(ReadOnlySpan<byte> row, Span<byte> dark, int limit)
+    {
+        int n = row.Length;
+        if (n == 0)
         {
-            runs.Add(n);
-            offsets.Add(0);
-            offsets.Add(n);
             return;
         }
 
-        bool dark = false;
-        float start = 0;
-        for (int i = 0; i < n; i++)
+        if (n == 1)
         {
-            bool d = level[i] < 0;
-            if (d == dark)
-            {
-                continue;
-            }
-
-            float a = i > 0 ? level[i - 1] : level[i], b = level[i];
-            float edge = a == b ? i : i - 0.5f + Math.Clamp(-a / (b - a), 0, 1);
-            runs.Add(Math.Max(edge - start, 0));
-            offsets.Add(start);
-            start = edge;
-            dark = d;
+            dark[0] = (byte)(2 * row[0] < limit ? 1 : 0);
+            return;
         }
 
-        runs.Add(n - start);
-        offsets.Add(start);
-        offsets.Add(n);
+        dark[0] = (byte)((3 * row[0]) - row[1] < limit ? 1 : 0);
+        int i = 1;
+        if (Vector128.IsHardwareAccelerated)
+        {
+            ref byte r = ref MemoryMarshal.GetReference(row);
+            ref byte d = ref MemoryMarshal.GetReference(dark);
+            Vector128<short> bound = Vector128.Create((short)limit);
+            for (; i + 17 <= n; i += 16)
+            {
+                (Vector128<ushort> leftLow, Vector128<ushort> leftHigh) = Vector128.Widen(Vector128.LoadUnsafe(ref r, (nuint)(i - 1)));
+                (Vector128<ushort> centerLow, Vector128<ushort> centerHigh) = Vector128.Widen(Vector128.LoadUnsafe(ref r, (nuint)i));
+                (Vector128<ushort> rightLow, Vector128<ushort> rightHigh) = Vector128.Widen(Vector128.LoadUnsafe(ref r, (nuint)(i + 1)));
+                Vector128<short> low = ((centerLow << 2) - leftLow - rightLow).AsInt16(), high = ((centerHigh << 2) - leftHigh - rightHigh).AsInt16();
+                Vector128<sbyte> mask = Vector128.Narrow(Vector128.LessThan(low, bound), Vector128.LessThan(high, bound));
+                (mask.AsByte() & Vector128<byte>.One).StoreUnsafe(ref d, (nuint)i);
+            }
+        }
+
+        for (; i < n - 1; i++)
+        {
+            dark[i] = (byte)((4 * row[i]) - row[i - 1] - row[i + 1] < limit ? 1 : 0);
+        }
+
+        dark[n - 1] = (byte)((3 * row[n - 1]) - row[n - 2] < limit ? 1 : 0);
+    }
+
+    /// <summary>
+    /// Marks the samples darker than the mean of the window <paramref name="radius"/> to each side (cut at the ends): in whole
+    /// numbers, c (b - a) &lt; sum, which has the sign of c - sum / (b - a) in floats while the window is under 2^15 samples.
+    /// </summary>
+    private static void WindowDark(ReadOnlySpan<byte> row, ReadOnlySpan<int> prefix, int radius, Span<byte> dark)
+    {
+        int n = row.Length, width = (2 * radius) + 1;
+        if (width >= 1 << 15)
+        {
+            var crossing = new WindowCrossing(row, prefix, radius);
+            for (int k = 0; k < n; k++)
+            {
+                dark[k] = (byte)(crossing.Level(k) < 0 ? 1 : 0);
+            }
+
+            return;
+        }
+
+        // Samples radius to n - radius - 1 have the whole window; the ends have it cut.
+        int inner = Math.Min(radius, n), outer = Math.Max(inner, n - radius);
+        for (int k = 0; k < inner; k++)
+        {
+            dark[k] = Mark(row, prefix, radius, k);
+        }
+
+        int i = inner;
+        if (Vector128.IsHardwareAccelerated)
+        {
+            ref byte r = ref MemoryMarshal.GetReference(row);
+            ref int p = ref MemoryMarshal.GetReference(prefix);
+            ref byte d = ref MemoryMarshal.GetReference(dark);
+            Vector128<int> w = Vector128.Create(width);
+            for (; i + 16 <= outer; i += 16)
+            {
+                (Vector128<ushort> low, Vector128<ushort> high) = Vector128.Widen(Vector128.LoadUnsafe(ref r, (nuint)i));
+                (Vector128<uint> c0, Vector128<uint> c1) = Vector128.Widen(low);
+                (Vector128<uint> c2, Vector128<uint> c3) = Vector128.Widen(high);
+                nuint from = (nuint)(i - radius), to = (nuint)(i + radius + 1);
+                Vector128<int> m0 = Vector128.LessThan(c0.AsInt32() * w, Vector128.LoadUnsafe(ref p, to) - Vector128.LoadUnsafe(ref p, from));
+                Vector128<int> m1 = Vector128.LessThan(c1.AsInt32() * w, Vector128.LoadUnsafe(ref p, to + 4) - Vector128.LoadUnsafe(ref p, from + 4));
+                Vector128<int> m2 = Vector128.LessThan(c2.AsInt32() * w, Vector128.LoadUnsafe(ref p, to + 8) - Vector128.LoadUnsafe(ref p, from + 8));
+                Vector128<int> m3 = Vector128.LessThan(c3.AsInt32() * w, Vector128.LoadUnsafe(ref p, to + 12) - Vector128.LoadUnsafe(ref p, from + 12));
+                Vector128<sbyte> mask = Vector128.Narrow(Vector128.Narrow(m0, m1), Vector128.Narrow(m2, m3));
+                (mask.AsByte() & Vector128<byte>.One).StoreUnsafe(ref d, (nuint)i);
+            }
+        }
+
+        for (; i < n; i++)
+        {
+            dark[i] = Mark(row, prefix, radius, i);
+        }
+
+        static byte Mark(ReadOnlySpan<byte> row, ReadOnlySpan<int> prefix, int radius, int k)
+        {
+            int a = Math.Max(0, k - radius), b = Math.Min(row.Length, k + radius + 1);
+            return (byte)(row[k] * (b - a) < prefix[b] - prefix[a] ? 1 : 0);
+        }
+    }
+
+    /// <summary>Places an edge between samples i - 1 and i at a sub-pixel position.</summary>
+    private interface ICrossing
+    {
+        float Edge(int i);
+    }
+
+    /// <summary>Where the sharpened values cross the threshold.</summary>
+    private readonly ref struct SharpenedCrossing(ReadOnlySpan<byte> row, float threshold) : ICrossing
+    {
+        private readonly ReadOnlySpan<byte> _row = row;
+
+        public float Edge(int i)
+        {
+            float a = i > 0 ? Sharp(i - 1) : Sharp(i), b = Sharp(i);
+            return a == b ? i : i - 0.5f + Math.Clamp((threshold - a) / (b - a), 0, 1);
+        }
+
+        private float Sharp(int i)
+        {
+            int left = _row[Math.Max(i - 1, 0)], right = _row[Math.Min(i + 1, _row.Length - 1)];
+            return ((4 * _row[i]) - left - right) / 2f;
+        }
+    }
+
+    /// <summary>Where the samples cross their window's mean.</summary>
+    private readonly ref struct WindowCrossing(ReadOnlySpan<byte> row, ReadOnlySpan<int> prefix, int radius) : ICrossing
+    {
+        private readonly ReadOnlySpan<byte> _row = row;
+        private readonly ReadOnlySpan<int> _prefix = prefix;
+
+        public float Edge(int i)
+        {
+            float a = i > 0 ? Level(i - 1) : Level(i), b = Level(i);
+            return a == b ? i : i - 0.5f + Math.Clamp(-a / (b - a), 0, 1);
+        }
+
+        public float Level(int i)
+        {
+            int a = Math.Max(0, i - radius), b = Math.Min(_row.Length, i + radius + 1);
+            return _row[i] - ((_prefix[b] - _prefix[a]) / (float)(b - a));
+        }
+    }
+
+    /// <summary>Cuts marked samples into runs, light first (possibly empty), with each edge where the crossing places it.</summary>
+    private static void EmitRuns<T>(ReadOnlySpan<byte> dark, T crossing, List<float> runList, List<float> offsetList)
+        where T : ICrossing, allows ref struct
+    {
+        // At most one run per sample and one more, written straight into the lists' storage.
+        int n = dark.Length, count = 0;
+        CollectionsMarshal.SetCount(runList, n + 1);
+        CollectionsMarshal.SetCount(offsetList, n + 2);
+        Span<float> runs = CollectionsMarshal.AsSpan(runList), offsets = CollectionsMarshal.AsSpan(offsetList);
+        float start = 0;
+        if (n > 0 && dark[0] != 0)
+        {
+            Add(runs, offsets, ref count, ref start, crossing.Edge(0));
+        }
+
+        int x = 1;
+        if (Vector128.IsHardwareAccelerated)
+        {
+            // Sixteen neighbours compared at a time; each set bit of the mask is a change of color.
+            ref byte d = ref MemoryMarshal.GetReference(dark);
+            for (; x + 16 <= n; x += 16)
+            {
+                uint changes = (~Vector128.Equals(Vector128.LoadUnsafe(ref d, (nuint)x), Vector128.LoadUnsafe(ref d, (nuint)(x - 1)))).ExtractMostSignificantBits();
+                while (changes != 0)
+                {
+                    Add(runs, offsets, ref count, ref start, crossing.Edge(x + BitOperations.TrailingZeroCount(changes)));
+                    changes &= changes - 1;
+                }
+            }
+        }
+
+        for (; x < n; x++)
+        {
+            if (dark[x] != dark[x - 1])
+            {
+                Add(runs, offsets, ref count, ref start, crossing.Edge(x));
+            }
+        }
+
+        runs[count] = n - start;
+        offsets[count] = start;
+        offsets[count + 1] = n;
+        CollectionsMarshal.SetCount(runList, count + 1);
+        CollectionsMarshal.SetCount(offsetList, count + 2);
+
+        static void Add(Span<float> runs, Span<float> offsets, ref int count, ref float start, float edge)
+        {
+            runs[count] = Math.Max(edge - start, 0);
+            offsets[count++] = start;
+            start = edge;
+        }
     }
 
     /// <summary>

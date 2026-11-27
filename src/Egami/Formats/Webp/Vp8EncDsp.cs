@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
+using Egami.Simd;
+
 namespace Egami.Formats.Webp;
 
 /// <summary>
@@ -178,7 +180,7 @@ internal static class Vp8EncDsp
     /// </summary>
     internal static int Sad(ReadOnlySpan<byte> src, int s, ReadOnlySpan<byte> plane, int p, int stride, int w, int h)
     {
-        if ((w == 16 || w == 8) && (h & 1) == 0 && Sse2.IsSupported)
+        if ((w == 16 || w == 8) && (h & 1) == 0 && Simd128.IsSupported)
         {
             _ = src.Slice(s, ((h - 1) * S) + w);
             _ = plane.Slice(p, ((h - 1) * stride) + w);
@@ -205,7 +207,7 @@ internal static class Vp8EncDsp
                 Vector128<byte> va, vb;
                 if (w == 16)
                 {
-                    total += Sse2.SumAbsoluteDifferences(Vector128.LoadUnsafe(ref a), Vector128.LoadUnsafe(ref b)).AsUInt64();
+                    total += Simd128.SumAbsoluteDifferences(Vector128.LoadUnsafe(ref a), Vector128.LoadUnsafe(ref b)).AsUInt64();
                     va = Vector128.LoadUnsafe(ref Unsafe.Add(ref a, S));
                     vb = Vector128.LoadUnsafe(ref Unsafe.Add(ref b, stride));
                 }
@@ -215,7 +217,7 @@ internal static class Vp8EncDsp
                     vb = Vector128.Create(Unsafe.ReadUnaligned<ulong>(ref b), Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref b, stride))).AsByte();
                 }
 
-                total += Sse2.SumAbsoluteDifferences(va, vb).AsUInt64();
+                total += Simd128.SumAbsoluteDifferences(va, vb).AsUInt64();
                 a = ref Unsafe.Add(ref a, 2 * S);
                 b = ref Unsafe.Add(ref b, 2 * stride);
             }

@@ -138,6 +138,9 @@ public sealed class FontCommandTests : IDisposable
         Assert.Equal(before.Positions.ToArray(), after.Positions.ToArray());
         Assert.True(after.Count < "office".Length, "A ligature forms.");
 
+        // The cmap maps the asked characters only: not U+FB01, though the fi ligature glyph is kept.
+        Assert.False(subset.TryGetGlyph(0xFB01, out ushort fi) && fi != 0);
+
         // --no-layout: no layout tables, dense ids, a smaller file.
         Expect(0, _tool.Run("font", "subset", "NotoSans-Regular.ttf", "--text", "Hello, office", "--no-layout", "-o", "small.woff2"));
         Typeface small = Typeface.FromFile(_tool.PathOf("small.woff2"));
@@ -280,6 +283,23 @@ public sealed class FontCommandTests : IDisposable
         Expect(0, run);
         Assert.Contains("leaves out COLR, CPAL", run.Error, StringComparison.Ordinal);
         Assert.Contains("(color glyphs)", run.Error, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("DejaVuSans.ttf", "(x+y)", "MATH (math layout)")]
+    [InlineData("derived/NotoSans-kern.ttf", "Hi", "kern (legacy kerning)")]
+    public void SubsetWarnsAboutLayoutTablesOnlyWithoutLayout(string file, string text, string warning)
+    {
+        // With the layout closure the subset keeps MATH, kern and vertical metrics, cut down (a kern table with no pair of the
+        // kept glyphs goes, losing nothing); --no-layout leaves them out and says so.
+        Font(file);
+        string name = Path.GetFileName(file);
+        ToolRun run = _tool.Run("font", "subset", name, "--text", text, "-o", "a.ttf");
+        Expect(0, run);
+        Assert.DoesNotContain("leaves out", run.Error, StringComparison.Ordinal);
+        run = _tool.Run("font", "subset", name, "--text", text, "--no-layout", "-o", "b.ttf");
+        Expect(0, run);
+        Assert.Contains("leaves out " + warning, run.Error, StringComparison.Ordinal);
     }
 
     [Fact]

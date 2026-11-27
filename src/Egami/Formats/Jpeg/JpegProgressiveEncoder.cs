@@ -165,6 +165,21 @@ internal sealed class JpegProgressiveEncoder
     internal static ulong AtLeast(ReadOnlySpan<short> block, int threshold)
     {
         ref short first = ref MemoryMarshal.GetReference(block);
+        if (!Vector256.IsHardwareAccelerated && Vector128.IsHardwareAccelerated)
+        {
+            // Arm64 and x86 without AVX2, where Vector256 runs in software.
+            Vector128<short> limit = Vector128.Create((short)(threshold - 1));
+            ulong bits = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                Vector128<short> a128 = Vector128.GreaterThan(Vector128.Abs(Vector128.LoadUnsafe(ref first, (nuint)(16 * i))), limit);
+                Vector128<short> b128 = Vector128.GreaterThan(Vector128.Abs(Vector128.LoadUnsafe(ref first, (nuint)((16 * i) + 8))), limit);
+                bits |= (ulong)Vector128.Narrow(a128, b128).ExtractMostSignificantBits() << (16 * i);
+            }
+
+            return bits;
+        }
+
         Vector256<short> below = Vector256.Create((short)(threshold - 1));
         Vector256<short> a = Vector256.GreaterThan(Vector256.Abs(Vector256.LoadUnsafe(ref first)), below);
         Vector256<short> b = Vector256.GreaterThan(Vector256.Abs(Vector256.LoadUnsafe(ref first, 16)), below);
