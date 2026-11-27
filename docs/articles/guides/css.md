@@ -159,10 +159,21 @@ counts as false.
 Each parser has `TryParse` over text and over component values.
 
 `CssColor` reads every CSS Color 4 syntax: the named and system colors, hex, `rgb()`, `hsl()`, `hwb()`, `lab()`, `lch()`,
-`oklab()`, `oklch()` and `color()`. It converts to sRGB and clips to its gamut. `Level` says whether the text used CSS Color 3
-or 4 syntax, for consumers that follow an older specification.
+`oklab()`, `oklch()` and `color()`. `R`, `G`, `B` and `A` give it in sRGB, each channel clipped to the gamut. `Level` says
+whether the text used CSS Color 3 or 4 syntax, for consumers that follow an older specification.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Css.cs#colors)]
+
+A color also keeps the space it was written in, for consumers that can show wide gamut (a PDF with an ICC color space, an
+image with a Display P3 profile). `Space` is a `CssColorSpace`: one of the twelve spaces of CSS Color 4, with hex, named
+colors, `rgb()`, `hsl()` and `hwb()` as `Srgb`. `C0`, `C1` and `C2` are its components in that space, unclipped.
+`ToColorSpace` converts them to any other space and `CssColor.FromColorSpace` builds a color from them. `IsInSrgbGamut` says
+whether clipping changed it; `ToSrgbGamutMapped` maps it into sRGB as CSS Color 4 does, lowering its OkLCh chroma until the
+clipped color is within a just-noticeable difference. `ToString(keepSpace: true)` writes `color(display-p3 1 0 0)`,
+`lab()` or `oklch()` as CSS Color 4 serializes them; `ToString()` still writes clipped `rgb()`. Two colors are equal when
+their space, components and alpha are, so `color(display-p3 1 0 0)` is not `rgb(255 0 0)`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Css.cs#widegamut)]
 
 `CssLength` is a number with a `CssUnit`. `CssAngle` converts to degrees. `CssUrl` reads `url()` and `src()`. `CssCalc` reads
 `calc()`, `min()`, `max()` and `clamp()`; the consumer resolves it by saying what each unit is worth.
@@ -209,6 +220,6 @@ progress to an output progress, extrapolating outside 0 to 1; its before flag ma
 - Page selectors take `:first`, `:left`, `:right` and `:blank`, not `:nth()` or page groups.
 - Shadow DOM: `:host` is invalid, and `::part()` and `::slotted()` parse but never match. `:state()` and Selectors 5's
   `:heading` are invalid.
-- CSS Color 5: `color-mix()`, relative colors and `device-cmyk()`. Colors outside sRGB are clipped, not gamut-mapped.
+- CSS Color 5: `color-mix()`, relative colors and `device-cmyk()`.
 - `calc()` covers lengths, percentages and numbers, not angles or `calc()` inside transforms.
 - Selectors keep their text as written, not CSSOM's canonical serialization.

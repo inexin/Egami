@@ -3,57 +3,90 @@ using System.Globalization;
 namespace Egami.Css;
 
 /// <summary>
-/// A CSS color (CSS Color 4) converted to sRGB: red, green, blue and alpha from 0 to 1, gamma-encoded, clipped to the sRGB gamut;
-/// or <c>currentcolor</c>.
+/// A CSS color (CSS Color 4), or <c>currentcolor</c>: its components in the color space it was written in
+/// (<see cref="Space"/>, <see cref="C0"/>, <see cref="C1"/>, <see cref="C2"/>), and the same color converted to sRGB as red,
+/// green, blue and alpha from 0 to 1, gamma-encoded, each channel clipped to the sRGB gamut.
 /// </summary>
 /// <remarks>
+/// <para>
 /// <see cref="Level"/> says which CSS Color level's syntax the text used, so a consumer that follows an older specification
 /// (such as SVG 1.1, which knows only CSS Color 3) can refuse the newer forms.
+/// </para>
+/// <para>
+/// A color outside the sRGB gamut, such as <c>color(display-p3 1 0 0)</c>, keeps its components unclipped;
+/// <see cref="R"/>, <see cref="G"/> and <see cref="B"/> clip each channel, and <see cref="ToSrgbGamutMapped"/> maps it into the
+/// gamut as CSS Color 4 does instead. Two colors are equal when their space, components and alpha are, so
+/// <c>color(display-p3 1 0 0)</c> is not <c>rgb(255 0 0)</c>.
+/// </para>
 /// </remarks>
 /// <example>
 /// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="colors"/>
+/// <code language="csharp" source="../../tests/Egami.DocSamples/Css.cs" region="widegamut"/>
 /// </example>
 public readonly struct CssColor : IEquatable<CssColor>
 {
+    private const int CurrentColorFlag = 0x80;
+    private const int LegacyFlag = 0x40;
+    private const int LevelMask = 0x0F;
+
+    // What IsInSrgbGamut lets through: rounding in the conversions, far below what an 8- or 16-bit channel resolves.
+    private const double GamutTolerance = 1e-6;
+
     private readonly byte _flags;
+    private readonly byte _space;
 
     /// <summary>Creates an sRGB color.</summary>
     /// <param name="r">Red, 0 to 1.</param>
     /// <param name="g">Green, 0 to 1.</param>
     /// <param name="b">Blue, 0 to 1.</param>
     /// <param name="a">Alpha, 0 (transparent) to 1 (opaque).</param>
+    /// <remarks>The components keep the values given; <see cref="R"/>, <see cref="G"/> and <see cref="B"/> are clipped to 0 to 1.</remarks>
     public CssColor(float r, float g, float b, float a = 1)
+        : this(CssColorSpace.Srgb, r, g, b, a, 3, true, false)
     {
+    }
+
+    private CssColor(CssColorSpace space, double c0, double c1, double c2, double alpha, int level, bool legacy, bool currentColor)
+    {
+        // +0.0 turns -0 into 0, so equal colors hash alike; NaN (from arithmetic on infinities) becomes 0, as 'none' does.
+        C0 = double.IsNaN(c0) ? 0 : c0 + 0.0;
+        C1 = double.IsNaN(c1) ? 0 : c1 + 0.0;
+        C2 = double.IsNaN(c2) ? 0 : c2 + 0.0;
+        (double r, double g, double b) = CssColorConversion.ToSrgb(space, C0, C1, C2);
         R = Clip(r);
         G = Clip(g);
         B = Clip(b);
-        A = Clip(a);
-        _flags = 3;
+        A = Clip((float)alpha);
+        _space = (byte)space;
+        _flags = (byte)(level | (legacy ? LegacyFlag : 0) | (currentColor ? CurrentColorFlag : 0));
     }
 
-    private CssColor(float r, float g, float b, float a, int level, bool currentColor)
-    {
-        R = Clip(r);
-        G = Clip(g);
-        B = Clip(b);
-        A = Clip(a);
-        _flags = (byte)(level | (currentColor ? 0x80 : 0));
-    }
-
-    /// <summary>Gets red, 0 to 1 (gamma-encoded sRGB).</summary>
+    /// <summary>Gets red, 0 to 1 (gamma-encoded sRGB, clipped).</summary>
     public float R { get; }
 
-    /// <summary>Gets green, 0 to 1 (gamma-encoded sRGB).</summary>
+    /// <summary>Gets green, 0 to 1 (gamma-encoded sRGB, clipped).</summary>
     public float G { get; }
 
-    /// <summary>Gets blue, 0 to 1 (gamma-encoded sRGB).</summary>
+    /// <summary>Gets blue, 0 to 1 (gamma-encoded sRGB, clipped).</summary>
     public float B { get; }
 
     /// <summary>Gets alpha, 0 (transparent) to 1 (opaque).</summary>
     public float A { get; }
 
+    /// <summary>Gets the color space the color was written in: <see cref="CssColorSpace.Srgb"/> for hex, named colors, <c>rgb()</c>, <c>hsl()</c> and <c>hwb()</c>.</summary>
+    public CssColorSpace Space => (CssColorSpace)_space;
+
+    /// <summary>Gets the first component in <see cref="Space"/>, unclipped: red, X or lightness.</summary>
+    public double C0 { get; }
+
+    /// <summary>Gets the second component in <see cref="Space"/>, unclipped: green, Y, a or chroma.</summary>
+    public double C1 { get; }
+
+    /// <summary>Gets the third component in <see cref="Space"/>, unclipped: blue, Z, b or hue in degrees.</summary>
+    public double C2 { get; }
+
     /// <summary>Gets whether the color is <c>currentcolor</c>: the consumer substitutes the element's <c>color</c>.</summary>
-    public bool IsCurrentColor => (_flags & 0x80) != 0;
+    public bool IsCurrentColor => (_flags & CurrentColorFlag) != 0;
 
     /// <summary>
     /// Gets the CSS Color level whose syntax the color was written in: 3 for keywords, <c>#rgb</c> and <c>#rrggbb</c>,
@@ -61,13 +94,149 @@ public readonly struct CssColor : IEquatable<CssColor>
     /// <c>#rgba</c>, <c>#rrggbbaa</c>, <c>rebeccapurple</c>, space-separated or percentage-alpha <c>rgb()</c> and <c>hsl()</c>,
     /// <c>hwb()</c>, <c>lab()</c>, <c>lch()</c>, <c>oklab()</c>, <c>oklch()</c>, <c>color()</c> and the CSS Color 4 system colors.
     /// </summary>
-    public int Level => (_flags & 0x7F) == 0 ? 3 : _flags & 0x7F;
+    public int Level => (_flags & LevelMask) == 0 ? 3 : _flags & LevelMask;
+
+    /// <summary>
+    /// Gets whether the color is inside the sRGB gamut (within rounding), so <see cref="R"/>, <see cref="G"/> and
+    /// <see cref="B"/> are the color itself rather than a clipped one. True for <c>currentcolor</c>.
+    /// </summary>
+    public bool IsInSrgbGamut
+    {
+        get
+        {
+            (double r, double g, double b) = CssColorConversion.ToSrgb(Space, C0, C1, C2);
+            return InGamut(r, g, b);
+        }
+    }
 
     /// <summary>Gets <c>currentcolor</c>.</summary>
-    public static CssColor CurrentColor => new(0, 0, 0, 1, 3, true);
+    public static CssColor CurrentColor => new(CssColorSpace.Srgb, 0, 0, 0, 1, 3, true, true);
 
     /// <summary>Gets <c>transparent</c>: black with zero alpha.</summary>
-    public static CssColor Transparent => new(0, 0, 0, 0, 3, false);
+    public static CssColor Transparent => new(CssColorSpace.Srgb, 0, 0, 0, 0, 3, true, false);
+
+    /// <summary>Creates a color from its components in a color space, as <c>color()</c>, <c>lab()</c> or <c>oklch()</c> give them.</summary>
+    /// <param name="space">The color space.</param>
+    /// <param name="c0">The first component: red, X or lightness (0 to 100 for Lab and LCH, 0 to 1 for Oklab and OkLCh).</param>
+    /// <param name="c1">The second component: green, Y, a or chroma.</param>
+    /// <param name="c2">The third component: blue, Z, b or hue in degrees.</param>
+    /// <param name="alpha">Alpha, 0 (transparent) to 1 (opaque).</param>
+    /// <returns>The color, at CSS Color level 4. The components are kept as given, out of gamut too; NaN becomes 0.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="space"/> is not a defined color space.</exception>
+    public static CssColor FromColorSpace(CssColorSpace space, double c0, double c1, double c2, double alpha = 1)
+    {
+        if ((uint)space > (uint)CssColorSpace.Oklch)
+        {
+            throw new ArgumentOutOfRangeException(nameof(space));
+        }
+
+        return new CssColor(space, c0, c1, c2, double.IsNaN(alpha) ? 0 : alpha, 4, false, false);
+    }
+
+    /// <summary>Converts the color's components to another color space, unclipped.</summary>
+    /// <param name="space">The color space.</param>
+    /// <returns>The three components in that space (hues in degrees, 0 to 360).</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="space"/> is not a defined color space.</exception>
+    public (double C0, double C1, double C2) ToColorSpace(CssColorSpace space)
+    {
+        if ((uint)space > (uint)CssColorSpace.Oklch)
+        {
+            throw new ArgumentOutOfRangeException(nameof(space));
+        }
+
+        return CssColorConversion.Convert(Space, C0, C1, C2, space);
+    }
+
+    /// <summary>
+    /// Maps the color into the sRGB gamut as CSS Color 4 does (section 13.2, "CSS gamut mapping to an RGB destination"): it
+    /// lowers the chroma in OkLCh, holding lightness and hue, until the color clipped to the gamut is within a just-noticeable
+    /// difference (deltaEOK 0.02) of it. Colors in the gamut, and <c>currentcolor</c>, come back as they are.
+    /// </summary>
+    /// <returns>An sRGB color (<see cref="CssColorSpace.Srgb"/>) whose components are inside the gamut, with the same alpha.</returns>
+    public CssColor ToSrgbGamutMapped()
+    {
+        if (IsCurrentColor)
+        {
+            return this;
+        }
+
+        float alpha = A;
+        int level = Level;
+        (double r, double g, double b) = CssColorConversion.ToSrgb(Space, C0, C1, C2);
+        if (InGamut(r, g, b))
+        {
+            return Space == CssColorSpace.Srgb ? this : MakeSrgb(Math.Clamp(r, 0, 1), Math.Clamp(g, 0, 1), Math.Clamp(b, 0, 1));
+        }
+
+        (double lightness, double chroma, double hue) = CssColorConversion.Convert(Space, C0, C1, C2, CssColorSpace.Oklch);
+        if (lightness >= 1)
+        {
+            return MakeSrgb(1, 1, 1);
+        }
+
+        if (lightness <= 0)
+        {
+            return MakeSrgb(0, 0, 0);
+        }
+
+        const double JustNoticeable = 0.02;
+        const double Epsilon = 0.0001;
+        (double R, double G, double B) clipped = ClipAll(r, g, b);
+        if (DeltaEOk(clipped, lightness, chroma, hue) < JustNoticeable)
+        {
+            return MakeSrgb(clipped.R, clipped.G, clipped.B);
+        }
+
+        // Binary search on chroma: 'low' stays in gamut (or, once the clipped color came within the difference, close enough);
+        // 'high' does not.
+        double low = 0;
+        double high = chroma;
+        bool lowInGamut = true;
+        while (high - low > Epsilon)
+        {
+            double middle = (low + high) / 2;
+            (double cr, double cg, double cb) = CssColorConversion.ToSrgb(CssColorSpace.Oklch, lightness, middle, hue);
+            if (lowInGamut && InGamut(cr, cg, cb))
+            {
+                low = middle;
+                continue;
+            }
+
+            clipped = ClipAll(cr, cg, cb);
+            double delta = DeltaEOk(clipped, lightness, middle, hue);
+            if (delta < JustNoticeable)
+            {
+                if (JustNoticeable - delta < Epsilon)
+                {
+                    break;
+                }
+
+                lowInGamut = false;
+                low = middle;
+            }
+            else
+            {
+                high = middle;
+            }
+        }
+
+        return MakeSrgb(clipped.R, clipped.G, clipped.B);
+
+        CssColor MakeSrgb(double red, double green, double blue) => new(CssColorSpace.Srgb, red, green, blue, alpha, level, false, false);
+
+        static (double R, double G, double B) ClipAll(double red, double green, double blue) => (Math.Clamp(red, 0, 1), Math.Clamp(green, 0, 1), Math.Clamp(blue, 0, 1));
+
+        // The Euclidean distance in Oklab between a clipped sRGB color and an OkLCh one.
+        static double DeltaEOk((double R, double G, double B) srgb, double lightness, double chroma, double hue)
+        {
+            (double l1, double a1, double b1) = CssColorConversion.SrgbToOklab(srgb.R, srgb.G, srgb.B);
+            (double a2, double b2) = CssColorConversion.FromPolar(chroma, hue);
+            double dl = l1 - lightness;
+            double da = a1 - a2;
+            double db = b1 - b2;
+            return Math.Sqrt((dl * dl) + (da * da) + (db * db));
+        }
+    }
 
     /// <summary>Parses a color, such as <c>red</c>, <c>#ff000080</c>, <c>rgb(255 0 0 / 50%)</c> or <c>oklch(62.8% 0.26 29)</c>.</summary>
     /// <param name="text">The CSS text (ASCII case-insensitive).</param>
@@ -118,6 +287,7 @@ public readonly struct CssColor : IEquatable<CssColor>
 
     /// <summary>Serializes the color as CSS Color 4 does for sRGB: <c>rgb(r, g, b)</c> or <c>rgba(r, g, b, a)</c>, or <c>currentcolor</c>.</summary>
     /// <returns>The text.</returns>
+    /// <remarks>A color outside the sRGB gamut is written clipped; <see cref="ToString(bool)"/> can keep its color space.</remarks>
     public override string ToString()
     {
         if (IsCurrentColor)
@@ -140,32 +310,91 @@ public readonly struct CssColor : IEquatable<CssColor>
         return string.Create(CultureInfo.InvariantCulture, $"rgba({r}, {g}, {b}, {alpha})");
     }
 
+    /// <summary>
+    /// Serializes the color, in its own color space when <paramref name="keepSpace"/> is set, as CSS Color 4 does:
+    /// <c>color(display-p3 1 0 0)</c>, <c>lab(52.3 40.1 59.9)</c>, <c>oklch(0.628 0.258 29.2 / 0.5)</c>. Hex, named colors,
+    /// <c>rgb()</c>, <c>hsl()</c> and <c>hwb()</c> keep the <c>rgb()</c> form of <see cref="ToString()"/>.
+    /// </summary>
+    /// <param name="keepSpace">Whether to keep the color space; false gives <see cref="ToString()"/>.</param>
+    /// <returns>The text. Components are written with up to six decimals.</returns>
+    public string ToString(bool keepSpace)
+    {
+        if (!keepSpace || IsCurrentColor || (Space == CssColorSpace.Srgb && (_flags & LegacyFlag) != 0))
+        {
+            return ToString();
+        }
+
+        string alpha = A >= 1 ? "" : " / " + Number(A);
+        string components = Number(C0) + " " + Number(C1) + " " + Number(C2);
+        return Space switch
+        {
+            CssColorSpace.Lab => "lab(" + components + alpha + ")",
+            CssColorSpace.Lch => "lch(" + components + alpha + ")",
+            CssColorSpace.Oklab => "oklab(" + components + alpha + ")",
+            CssColorSpace.Oklch => "oklch(" + components + alpha + ")",
+            _ => "color(" + SpaceName(Space) + " " + components + alpha + ")",
+        };
+
+        static string Number(double value)
+        {
+            double rounded = Math.Round(value, 6) + 0.0;
+            return rounded.ToString("0.######", CultureInfo.InvariantCulture);
+        }
+    }
+
     /// <inheritdoc/>
-    public bool Equals(CssColor other) => R == other.R && G == other.G && B == other.B && A == other.A && IsCurrentColor == other.IsCurrentColor;
+    public bool Equals(CssColor other)
+    {
+        return _space == other._space && C0.Equals(other.C0) && C1.Equals(other.C1) && C2.Equals(other.C2) && A == other.A && IsCurrentColor == other.IsCurrentColor;
+    }
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is CssColor other && Equals(other);
 
     /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(R, G, B, A, IsCurrentColor);
+    public override int GetHashCode() => HashCode.Combine(_space, C0, C1, C2, A, IsCurrentColor);
 
-    /// <summary>Compares two colors by their components; the syntax level is not compared.</summary>
+    /// <summary>Compares two colors by their color space, components and alpha; the syntax level is not compared.</summary>
     /// <param name="left">The first color.</param>
     /// <param name="right">The second color.</param>
     /// <returns>True when they are equal.</returns>
     public static bool operator ==(CssColor left, CssColor right) => left.Equals(right);
 
-    /// <summary>Compares two colors by their components; the syntax level is not compared.</summary>
+    /// <summary>Compares two colors by their color space, components and alpha; the syntax level is not compared.</summary>
     /// <param name="left">The first color.</param>
     /// <param name="right">The second color.</param>
     /// <returns>True when they differ.</returns>
     public static bool operator !=(CssColor left, CssColor right) => !left.Equals(right);
 
+    private static string SpaceName(CssColorSpace space) => space switch
+    {
+        CssColorSpace.Srgb => "srgb",
+        CssColorSpace.SrgbLinear => "srgb-linear",
+        CssColorSpace.DisplayP3 => "display-p3",
+        CssColorSpace.A98Rgb => "a98-rgb",
+        CssColorSpace.ProPhotoRgb => "prophoto-rgb",
+        CssColorSpace.Rec2020 => "rec2020",
+        CssColorSpace.XyzD50 => "xyz-d50",
+        _ => "xyz-d65",
+    };
+
+    private static bool InGamut(double r, double g, double b)
+    {
+        const double Low = -GamutTolerance;
+        const double High = 1 + GamutTolerance;
+        return r is >= Low and <= High && g is >= Low and <= High && b is >= Low and <= High;
+    }
+
     private static byte To8(float v) => (byte)Math.Round(Math.Clamp(v, 0f, 1f) * 255, MidpointRounding.AwayFromZero);
+
+    private static float Clip(double v) => double.IsNaN(v) ? 0 : (float)Math.Clamp(v, 0, 1);
 
     private static float Clip(float v) => float.IsNaN(v) ? 0 : Math.Clamp(v, 0f, 1f);
 
-    private static CssColor Make(double r, double g, double b, double a, int level) => new((float)r, (float)g, (float)b, (float)a, level, false);
+    // A legacy sRGB color: hex, keyword, rgb(), hsl() or hwb().
+    private static CssColor Make(double r, double g, double b, double a, int level) => new(CssColorSpace.Srgb, r, g, b, a, level, true, false);
+
+    private static CssColor Make(CssColorSpace space, double c0, double c1, double c2, double a) => new(space, c0, c1, c2, a, 4, false, false);
 
     private static bool TryParseKeyword(string name, out CssColor color)
     {
@@ -417,7 +646,7 @@ public readonly struct CssColor : IEquatable<CssColor>
                     double a = c1.None ? 0 : c1.Percent ? c1.Value / 100 * scale : c1.Value;
                     double b = c2.None ? 0 : c2.Percent ? c2.Value / 100 * scale : c2.Value;
                     l = Math.Clamp(l, 0, ok ? 1 : 100);
-                    color = ok ? FromOklab(l, a, b, alphaValue) : FromLab(l, a, b, alphaValue);
+                    color = Make(ok ? CssColorSpace.Oklab : CssColorSpace.Lab, l, a, b, alphaValue);
                     return true;
                 }
 
@@ -433,10 +662,7 @@ public readonly struct CssColor : IEquatable<CssColor>
                     double chroma = c1.None ? 0 : c1.Percent ? c1.Value / 100 * (ok ? 0.4 : 150) : c1.Value;
                     l = Math.Clamp(l, 0, ok ? 1 : 100);
                     chroma = Math.Max(0, chroma);
-                    double hue = Hue(c2) * Math.PI / 180;
-                    double a = chroma * Math.Cos(hue);
-                    double b = chroma * Math.Sin(hue);
-                    color = ok ? FromOklab(l, a, b, alphaValue) : FromLab(l, a, b, alphaValue);
+                    color = Make(ok ? CssColorSpace.Oklch : CssColorSpace.Lch, l, chroma, Hue(c2), alphaValue);
                     return true;
                 }
 
@@ -450,7 +676,25 @@ public readonly struct CssColor : IEquatable<CssColor>
                     double x = c0.None ? 0 : c0.Percent ? c0.Value / 100 : c0.Value;
                     double y = c1.None ? 0 : c1.Percent ? c1.Value / 100 : c1.Value;
                     double z = c2.None ? 0 : c2.Percent ? c2.Value / 100 : c2.Value;
-                    return TryFromColorSpace(space!, x, y, z, alphaValue, out color);
+                    CssColorSpace? colorSpace = space switch
+                    {
+                        "srgb" => CssColorSpace.Srgb,
+                        "srgb-linear" => CssColorSpace.SrgbLinear,
+                        "display-p3" => CssColorSpace.DisplayP3,
+                        "a98-rgb" => CssColorSpace.A98Rgb,
+                        "prophoto-rgb" => CssColorSpace.ProPhotoRgb,
+                        "rec2020" => CssColorSpace.Rec2020,
+                        "xyz" or "xyz-d65" => CssColorSpace.XyzD65,
+                        "xyz-d50" => CssColorSpace.XyzD50,
+                        _ => null,
+                    };
+                    if (colorSpace is null)
+                    {
+                        return false;
+                    }
+
+                    color = Make(colorSpace.Value, x, y, z, alphaValue);
+                    return true;
                 }
         }
     }
@@ -509,131 +753,6 @@ public readonly struct CssColor : IEquatable<CssColor>
         }
 
         return (F(0), F(8), F(4));
-    }
-
-    private static CssColor FromLab(double l, double a, double b, double alpha)
-    {
-        const double Kappa = 24389.0 / 27;
-        const double Epsilon = 216.0 / 24389;
-        double f1 = (l + 16) / 116;
-        double f0 = (a / 500) + f1;
-        double f2 = f1 - (b / 200);
-        double x = (f0 * f0 * f0) > Epsilon ? f0 * f0 * f0 : ((116 * f0) - 16) / Kappa;
-        double y = l > Kappa * Epsilon ? f1 * f1 * f1 : l / Kappa;
-        double z = (f2 * f2 * f2) > Epsilon ? f2 * f2 * f2 : ((116 * f2) - 16) / Kappa;
-
-        // D50 white point.
-        x *= 0.3457 / 0.3585;
-        z *= (1.0 - 0.3457 - 0.3585) / 0.3585;
-        (x, y, z) = D50ToD65(x, y, z);
-        return FromXyzD65(x, y, z, alpha);
-    }
-
-    private static CssColor FromOklab(double l, double a, double b, double alpha)
-    {
-        double lp = l + (0.3963377773761749 * a) + (0.2158037573099136 * b);
-        double mp = l - (0.1055613458156586 * a) - (0.0638541728258133 * b);
-        double sp = l - (0.0894841775298119 * a) - (1.2914855480194092 * b);
-        double lc = lp * lp * lp;
-        double mc = mp * mp * mp;
-        double sc = sp * sp * sp;
-        double r = (4.0767416621 * lc) - (3.3077115913 * mc) + (0.2309699292 * sc);
-        double g = (-1.2684380046 * lc) + (2.6097574011 * mc) - (0.3413193965 * sc);
-        double bl = (-0.0041960863 * lc) - (0.7034186147 * mc) + (1.7076147010 * sc);
-        return Make(Encode(r), Encode(g), Encode(bl), alpha, 4);
-    }
-
-    private static bool TryFromColorSpace(string space, double c0, double c1, double c2, double alpha, out CssColor color)
-    {
-        double x;
-        double y;
-        double z;
-        switch (space)
-        {
-            case "srgb":
-                color = Make(c0, c1, c2, alpha, 4);
-                return true;
-            case "srgb-linear":
-                color = Make(Encode(c0), Encode(c1), Encode(c2), alpha, 4);
-                return true;
-            case "display-p3":
-                (x, y, z) = Multiply(
-                    [0.4865709486482162, 0.26566769316909306, 0.1982172852343625, 0.2289745640697488, 0.6917385218365064, 0.079286914093745, 0, 0.04511338185890264, 1.043944368900976],
-                    Decode(c0), Decode(c1), Decode(c2));
-                break;
-            case "a98-rgb":
-                (x, y, z) = Multiply(
-                    [0.5766690429101305, 0.1855582379065463, 0.1882286462349947, 0.29734497525053605, 0.6273635662554661, 0.07529145849399788, 0.02703136138641234, 0.07068885253582723, 0.9913375368376388],
-                    A98(c0), A98(c1), A98(c2));
-                break;
-            case "prophoto-rgb":
-                (x, y, z) = Multiply(
-                    [0.7977604896723027, 0.13518583717574031, 0.0313493495815248, 0.2880711282292934, 0.7118432178101014, 0.00008565396060525902, 0, 0, 0.8251046025104601],
-                    ProPhoto(c0), ProPhoto(c1), ProPhoto(c2));
-                (x, y, z) = D50ToD65(x, y, z);
-                break;
-            case "rec2020":
-                (x, y, z) = Multiply(
-                    [0.6369580483012914, 0.14461690358620832, 0.1688809751641721, 0.2627002120112671, 0.6779980715188708, 0.05930171646986196, 0, 0.028072693049087428, 1.060985057710791],
-                    Rec2020(c0), Rec2020(c1), Rec2020(c2));
-                break;
-            case "xyz" or "xyz-d65":
-                (x, y, z) = (c0, c1, c2);
-                break;
-            case "xyz-d50":
-                (x, y, z) = D50ToD65(c0, c1, c2);
-                break;
-            default:
-                color = default;
-                return false;
-        }
-
-        color = FromXyzD65(x, y, z, alpha);
-        return true;
-
-        static double A98(double c) => double.CopySign(Math.Pow(Math.Abs(c), 563.0 / 256), c);
-
-        static double ProPhoto(double c) => Math.Abs(c) <= 16.0 / 512 ? c / 16 : double.CopySign(Math.Pow(Math.Abs(c), 1.8), c);
-
-        static double Rec2020(double c)
-        {
-            const double Alpha = 1.09929682680944;
-            const double Beta = 0.018053968510807;
-            return Math.Abs(c) < Beta * 4.5 ? c / 4.5 : double.CopySign(Math.Pow((Math.Abs(c) + Alpha - 1) / Alpha, 1 / 0.45), c);
-        }
-    }
-
-    private static (double, double, double) Multiply(double[] m, double a, double b, double c)
-    {
-        return ((m[0] * a) + (m[1] * b) + (m[2] * c), (m[3] * a) + (m[4] * b) + (m[5] * c), (m[6] * a) + (m[7] * b) + (m[8] * c));
-    }
-
-    private static (double, double, double) D50ToD65(double x, double y, double z)
-    {
-        return Multiply(
-            [0.955473421488075, -0.02309845494876471, 0.06325924320057072, -0.0283697093338637, 1.0099953980813041, 0.021041441191917323, 0.012314014864481998, -0.020507649298898964, 1.330365926242124],
-            x, y, z);
-    }
-
-    private static CssColor FromXyzD65(double x, double y, double z, double alpha)
-    {
-        (double r, double g, double b) = Multiply(
-            [3.2409699419045226, -1.537383177570094, -0.4986107602930034, -0.9692436362808796, 1.8759675015077202, 0.04155505740717559, 0.05563007969699366, -0.20397695888897652, 1.0569715142428786],
-            x, y, z);
-        return Make(Encode(r), Encode(g), Encode(b), alpha, 4);
-    }
-
-    // The sRGB transfer function, extended to negative values by symmetry.
-    private static double Encode(double c)
-    {
-        double abs = Math.Abs(c);
-        return abs <= 0.0031308 ? 12.92 * c : double.CopySign((1.055 * Math.Pow(abs, 1 / 2.4)) - 0.055, c);
-    }
-
-    private static double Decode(double c)
-    {
-        double abs = Math.Abs(c);
-        return abs <= 0.04045 ? c / 12.92 : double.CopySign(Math.Pow((abs + 0.055) / 1.055, 2.4), c);
     }
 }
 
