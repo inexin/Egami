@@ -27,6 +27,9 @@ EPS previews (roadmap 2.3.14).
 - Faster JPEG decoding where AVX2 is missing, Arm64 among them (roadmap 2.4.13): the inverse DCT, chroma upsampling and
   YCbCr to RGB conversion have 128-bit SIMD paths for x86 and Arm64, giving the same bytes as before; 1.6 to 2.7 times as fast
   as the scalar path on x64 with AVX2 turned off.
+- Faster JPEG encoding where AVX2 is missing, Arm64 among them (roadmap 2.4.13): RGB and RGBA to YCbCr, chroma
+  downsampling, CMYK inks, the forward DCT and quantization, and the nonzero-coefficient masks have 128-bit SIMD paths; files
+  are byte-identical to before; baseline encodes 3.7 to 4.8 times as fast as the scalar path on x64 with AVX2 turned off.
 
 ## Egami.Drawing 1.6.0 (unreleased)
 

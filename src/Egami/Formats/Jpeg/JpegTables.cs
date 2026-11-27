@@ -2,6 +2,8 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
+using Egami.Simd;
+
 namespace Egami.Formats.Jpeg;
 
 /// <summary>Fixed tables from ITU-T T.81.</summary>
@@ -141,6 +143,11 @@ internal static class JpegBlock
     internal static ulong NonZeroZigZagInlined(ReadOnlySpan<short> natural)
     {
         natural = natural[..64];
+        if (!Avx2.IsSupported && Simd128.IsSupported)
+        {
+            return NonZeroZigZag128(natural);
+        }
+
         if (!Avx2.IsSupported)
         {
             ReadOnlySpan<byte> zigzag = JpegTables.ZigZag;
@@ -176,6 +183,53 @@ internal static class JpegBlock
         Vector256<byte> first = Avx2.Shuffle(s0, masks[0]) | Avx2.Shuffle(s1, masks[1]) | Avx2.Shuffle(s2, masks[2]) | Avx2.Shuffle(s3, masks[3]);
         Vector256<byte> second = Avx2.Shuffle(s0, masks[4]) | Avx2.Shuffle(s1, masks[5]) | Avx2.Shuffle(s2, masks[6]) | Avx2.Shuffle(s3, masks[7]);
         return (uint)Avx2.MoveMask(first) | ((ulong)(uint)Avx2.MoveMask(second) << 32);
+    }
+
+    // For each output byte k of a 16-byte quarter of the zigzag order: which byte of source vector j (natural indices 16j to
+    // 16j + 15) holds natural index ZigZag[k], or 0x80 (zero); four masks per quarter, one per source vector.
+    private static readonly Vector128<byte>[] ZigZagShuffles128 = BuildZigZagShuffles128();
+
+    /// <summary><see cref="NonZeroZigZagInlined"/> in 128-bit vectors (x86 without AVX2, and Arm64).</summary>
+    internal static ulong NonZeroZigZag128(ReadOnlySpan<short> natural)
+    {
+        natural = natural[..64];
+        ref short b = ref MemoryMarshal.GetReference(natural);
+        Vector128<short> zero = Vector128<short>.Zero;
+        Vector128<byte> s0 = Simd128.PackSignedSaturate(~Vector128.Equals(Vector128.LoadUnsafe(ref b, 0), zero), ~Vector128.Equals(Vector128.LoadUnsafe(ref b, 8), zero)).AsByte();
+        Vector128<byte> s1 = Simd128.PackSignedSaturate(~Vector128.Equals(Vector128.LoadUnsafe(ref b, 16), zero), ~Vector128.Equals(Vector128.LoadUnsafe(ref b, 24), zero)).AsByte();
+        Vector128<byte> s2 = Simd128.PackSignedSaturate(~Vector128.Equals(Vector128.LoadUnsafe(ref b, 32), zero), ~Vector128.Equals(Vector128.LoadUnsafe(ref b, 40), zero)).AsByte();
+        Vector128<byte> s3 = Simd128.PackSignedSaturate(~Vector128.Equals(Vector128.LoadUnsafe(ref b, 48), zero), ~Vector128.Equals(Vector128.LoadUnsafe(ref b, 56), zero)).AsByte();
+        Vector128<byte>[] masks = ZigZagShuffles128;
+        ulong bits = 0;
+        for (int q = 0; q < 4; q++)
+        {
+            Vector128<byte> quarter = Simd128.Shuffle(s0, masks[4 * q]) | Simd128.Shuffle(s1, masks[(4 * q) + 1])
+                | Simd128.Shuffle(s2, masks[(4 * q) + 2]) | Simd128.Shuffle(s3, masks[(4 * q) + 3]);
+            bits |= (ulong)quarter.ExtractMostSignificantBits() << (16 * q);
+        }
+
+        return bits;
+    }
+
+    private static Vector128<byte>[] BuildZigZagShuffles128()
+    {
+        Vector128<byte>[] masks = new Vector128<byte>[16];
+        Span<byte> bytes = stackalloc byte[16];
+        for (int q = 0; q < 4; q++)
+        {
+            for (int source = 0; source < 4; source++)
+            {
+                for (int k = 0; k < 16; k++)
+                {
+                    int n = JpegTables.ZigZag[(q * 16) + k];
+                    bytes[k] = n / 16 == source ? (byte)(n % 16) : (byte)0x80;
+                }
+
+                masks[(q * 4) + source] = Vector128.Create((ReadOnlySpan<byte>)bytes);
+            }
+        }
+
+        return masks;
     }
 
     private static Vector256<byte>[] BuildZigZagShuffles()
