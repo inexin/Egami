@@ -36484,6 +36484,19 @@ references:
   commentId: T:Egami.Fonts.SubsetOptions
   fullName: Egami.Fonts.SubsetOptions
   nameWithType: SubsetOptions
+- uid: Egami.Fonts.SubsetOptions.Characters
+  name: Characters
+  href: api/Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_Characters
+  commentId: P:Egami.Fonts.SubsetOptions.Characters
+  fullName: Egami.Fonts.SubsetOptions.Characters
+  nameWithType: SubsetOptions.Characters
+- uid: Egami.Fonts.SubsetOptions.Characters*
+  name: Characters
+  href: api/Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_Characters_
+  commentId: Overload:Egami.Fonts.SubsetOptions.Characters
+  isSpec: "True"
+  fullName: Egami.Fonts.SubsetOptions.Characters
+  nameWithType: SubsetOptions.Characters
 - uid: Egami.Fonts.SubsetOptions.Default
   name: Default
   href: api/Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_Default

@@ -170,6 +170,50 @@ bool restricted = face.Embedding.HasFlag(FontEmbedding.Restricted);</code></pre>
 </h2>
 
 
+  <a id="Egami_Fonts_SubsetOptions_Characters_" data-uid="Egami.Fonts.SubsetOptions.Characters*"></a>
+
+  <h3 id="Egami_Fonts_SubsetOptions_Characters" data-uid="Egami.Fonts.SubsetOptions.Characters">
+  Characters
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L106"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the characters the subset is for, as passed to <a class="xref" href="Egami.Fonts.FontSubsetter.html#Egami_Fonts_FontSubsetter_GlyphsFor_Egami_Fonts_Typeface_System_Collections_Generic_IEnumerable_System_Int32__">GlyphsFor(Typeface, IEnumerable&lt;int&gt;)</a>, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the
+default). When set, the character map holds only them and the characters the shaper draws in their place, as
+<a class="xref" href="Egami.Fonts.FontSubsetter.html#Egami_Fonts_FontSubsetter_GlyphsFor_Egami_Fonts_Typeface_System_Collections_Generic_IEnumerable_System_Int32__">GlyphsFor(Typeface, IEnumerable&lt;int&gt;)</a> finds them; otherwise it maps every character whose glyph the subset keeps, such as the
+presentation forms and ligature characters of glyphs that only a layout closure reached.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyCollection&lt;int&gt;? Characters { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1">IReadOnlyCollection</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Fonts_SubsetOptions_Characters_examples">Examples</h4>
+  <pre><code class="lang-csharp">// Name the characters too, and the character map holds only them: not U+FB01, though the "fi" ligature glyph it maps is kept.
+int[] text = [.. "office".Select(c =&gt; (int)c)];
+FontSubset subset = FontSubsetter.Subset(face, FontSubsetter.GlyphsFor(face, text), new SubsetOptions
+{
+    LayoutClosure = true,
+    Characters = text,
+});</code></pre>
+
+
+
+
+
+
   <a id="Egami_Fonts_SubsetOptions_Default_" data-uid="Egami.Fonts.SubsetOptions.Default*"></a>
 
   <h3 id="Egami_Fonts_SubsetOptions_Default" data-uid="Egami.Fonts.SubsetOptions.Default">
@@ -206,7 +250,7 @@ bool restricted = face.Embedding.HasFlag(FontEmbedding.Restricted);</code></pre>
 
   <h3 id="Egami_Fonts_SubsetOptions_DropHinting" data-uid="Egami.Fonts.SubsetOptions.DropHinting">
   DropHinting
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L119"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether TrueType hinting is left out: the fpgm, prep and cvt tables and every glyph's instructions, with maxp's
