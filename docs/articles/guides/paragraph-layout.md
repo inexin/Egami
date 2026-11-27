@@ -414,9 +414,9 @@ marks do. Set `TextStyle.Emphasis` to a `TextEmphasis`.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#emphasis)]
 
-- **Marks.** `Mark` is `Dot`, `Circle`, `DoubleCircle`, `Triangle` or `Sesame`, `Filled` (the default) or open, or `Custom`
-  with its first grapheme cluster of `Custom`. Marks are half the text's size, in the font fallback picks for them, and take
-  `Color` or `Paint`, else the text's paint.
+- **Marks.** `Mark` is `Dot` (the default), `Circle`, `DoubleCircle`, `Triangle` or `Sesame`, `Filled` (the default) or
+  open, or `Custom` with its first grapheme cluster of `Custom`; `None` lets a span switch off the marks it inherits. Marks
+  are half the text's size, in the font fallback picks for them, and take `Color` or `Paint`, else the text's paint.
 - **Which characters.** One mark goes beside each grapheme cluster, centred on its advance before justification moves it;
   spaces, control characters and punctuation get none, as CSS Text Decoration 3 says.
 - **Placement.** `Position` puts marks `Over` the text (right of it in vertical lines) or `Under` it (left). They stand
@@ -433,7 +433,7 @@ Tate-chu-yoko sets short horizontal text, such as a two-digit number or "!?", up
 [!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#tate-chu-yoko)]
 
 The text is shaped horizontally with the font's `hwid`, `twid` or `qwid` feature for two, three or four characters where the
-font has it, then scaled down, keeping its proportions, if it is still wider than one em. The combined text breaks, justifies
+font has it, then squashed across the line, keeping its height, if it is still wider than one em. The combined text breaks, justifies
 and takes an emphasis mark as one ideograph. Horizontal lines and `TextOrientation.Sideways` ignore it.
 
 ## Recipes

@@ -142,12 +142,13 @@ static Egami.Fonts.Layout.RubyOptions.Default.get -> Egami.Fonts.Layout.RubyOpti
 static Egami.Fonts.Layout.RubyOptions.operator !=(Egami.Fonts.Layout.RubyOptions? left, Egami.Fonts.Layout.RubyOptions? right) -> bool
 static Egami.Fonts.Layout.RubyOptions.operator ==(Egami.Fonts.Layout.RubyOptions? left, Egami.Fonts.Layout.RubyOptions? right) -> bool
 Egami.Fonts.Layout.EmphasisMark
-Egami.Fonts.Layout.EmphasisMark.Circle = 1 -> Egami.Fonts.Layout.EmphasisMark
-Egami.Fonts.Layout.EmphasisMark.Custom = 5 -> Egami.Fonts.Layout.EmphasisMark
-Egami.Fonts.Layout.EmphasisMark.Dot = 0 -> Egami.Fonts.Layout.EmphasisMark
-Egami.Fonts.Layout.EmphasisMark.DoubleCircle = 2 -> Egami.Fonts.Layout.EmphasisMark
-Egami.Fonts.Layout.EmphasisMark.Sesame = 4 -> Egami.Fonts.Layout.EmphasisMark
-Egami.Fonts.Layout.EmphasisMark.Triangle = 3 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.Circle = 2 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.Custom = 6 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.Dot = 1 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.DoubleCircle = 3 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.None = 0 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.Sesame = 5 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.Triangle = 4 -> Egami.Fonts.Layout.EmphasisMark
 Egami.Fonts.Layout.EmphasisPosition
 Egami.Fonts.Layout.EmphasisPosition.Over = 0 -> Egami.Fonts.Layout.EmphasisPosition
 Egami.Fonts.Layout.EmphasisPosition.Under = 1 -> Egami.Fonts.Layout.EmphasisPosition

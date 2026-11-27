@@ -2449,8 +2449,8 @@ internal sealed partial class LineBuilder
                 points[g] = new Vector2(baselineX + piece.Offsets[g].X, pen - piece.Offsets[g].Y);
                 if (scaled is not null)
                 {
-                    // A tate-chu-yoko unit too wide for its em, scaled down.
-                    scaled[g] = GlyphTransform.FromRotationScale(scale, 0, points[g]);
+                    // A tate-chu-yoko unit too wide for its em, squashed across the line only.
+                    scaled[g] = new GlyphTransform(1, 0, points[g].X, points[g].Y) { WidthScale = scale };
                 }
 
                 pen += advances[g];

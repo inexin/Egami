@@ -155,4 +155,17 @@ public class EmphasisDrawingTests
         Assert.True(Reds(drawn, (x, _) => x > 5 + layout.Lines[0].Baseline) > 0);
         Assert.Equal(3, layout.Lines[0].AnnotationRuns.Sum(r => r.Glyphs!.Count));
     }
+
+    [Fact]
+    public void WideTateChuYokoPathsSquashIntoTheEm()
+    {
+        TextLayout layout = Layout(new TextEmphasis { Mark = EmphasisMark.None }, WritingMode.VerticalRl, TextCombine.Digits(4), "年1234年");
+        Assert.Empty(layout.Lines[0].AnnotationRuns);
+        GlyphRun unit = layout.Lines[0].Runs.Single(r => r.Start == 1).Glyphs!;
+        Path path = unit.ToPath(Vector2.Zero);
+        Assert.True(path.Bounds.Width < 20, $"{path.Bounds}");
+        Assert.True(path.Bounds.Height > 10, $"{path.Bounds}");
+        using Raster<Rgba8> drawn = Draw(c => c.DrawTextLayout(layout, new Vector2(5, 5)), 60, 80);
+        Assert.Contains(Enumerable.Range(0, drawn.Width * drawn.Height), i => drawn.GetPixel(i % drawn.Width, i / drawn.Width).R < 100);
+    }
 }

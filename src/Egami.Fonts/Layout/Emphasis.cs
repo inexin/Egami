@@ -21,8 +21,8 @@ namespace Egami.Fonts.Layout;
 /// </example>
 public sealed record class TextEmphasis
 {
-    /// <summary>Gets the mark's shape.</summary>
-    public EmphasisMark Mark { get; init; }
+    /// <summary>Gets the mark's shape; <see cref="EmphasisMark.Dot"/> by default, <see cref="EmphasisMark.None"/> for no marks.</summary>
+    public EmphasisMark Mark { get; init; } = EmphasisMark.Dot;
 
     /// <summary>Gets whether the mark is filled (●) or open (○); <see cref="EmphasisMark.Custom"/> marks ignore it.</summary>
     public bool Filled { get; init; } = true;
@@ -84,23 +84,26 @@ public sealed record class TextEmphasis
 /// </example>
 public enum EmphasisMark
 {
-    /// <summary>A small dot: • filled, ◦ open (Word's dot).</summary>
-    Dot = 0,
+    /// <summary>No mark: a span's way to switch off the emphasis it inherits, as Word's <c>w:em="none"</c>.</summary>
+    None = 0,
+
+    /// <summary>A small dot: • filled, ◦ open (Word's dot). The default.</summary>
+    Dot = 1,
 
     /// <summary>A large circle: ● filled, ○ open.</summary>
-    Circle = 1,
+    Circle = 2,
 
     /// <summary>A double circle: ◉ filled, ◎ open.</summary>
-    DoubleCircle = 2,
+    DoubleCircle = 3,
 
     /// <summary>A triangle: ▲ filled, △ open.</summary>
-    Triangle = 3,
+    Triangle = 4,
 
     /// <summary>A sesame dot: ﹅ filled, ﹆ open, the default for vertical Japanese text in CSS.</summary>
-    Sesame = 4,
+    Sesame = 5,
 
     /// <summary>The mark in <see cref="TextEmphasis.Custom"/>.</summary>
-    Custom = 5,
+    Custom = 6,
 }
 
 /// <summary>Which side of the text emphasis marks go on.</summary>
@@ -132,7 +135,7 @@ internal sealed class EmphasisTable
         for (int i = 0; i < count; i++)
         {
             ResolvedStyle style = styles[i];
-            if (style.Style.Emphasis is not TextEmphasis emphasis || style.Primary is null)
+            if (style.Style.Emphasis is not TextEmphasis emphasis || emphasis.Mark == EmphasisMark.None || style.Primary is null)
             {
                 continue;
             }

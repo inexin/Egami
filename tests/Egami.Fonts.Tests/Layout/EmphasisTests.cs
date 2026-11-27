@@ -116,6 +116,16 @@ public sealed class EmphasisTests
     }
 
     [Fact]
+    public void NoneSwitchesOffInheritedMarks()
+    {
+        RichText text = new("国際価値", [new StyleSpan(1, 2, new TextStyle { Emphasis = new TextEmphasis { Mark = EmphasisMark.None } })]);
+        TextLayout layout = Paragraph.Create(text, Style(Dots)).Layout(float.PositiveInfinity);
+        Assert.Equal(2, MarkCount(layout));
+        Assert.Empty(Layout("国際", Style(new TextEmphasis { Mark = EmphasisMark.None })).Lines[0].AnnotationRuns);
+        Assert.Equal(EmphasisMark.Dot, new TextEmphasis().Mark);
+    }
+
+    [Fact]
     public void BadEmphasisThrows()
     {
         Assert.Throws<ArgumentException>(() => Paragraph.Create("国", Style(new TextEmphasis { Mark = EmphasisMark.Custom })));
@@ -273,8 +283,13 @@ public sealed class EmphasisTests
         GlyphRun unit = layout.Lines[0].Runs.Single(r => r.Start == 1).Glyphs!;
         Assert.Equal(4, unit.Count);
         Assert.False(unit.Transforms[0].IsTranslation);
-        Assert.True(unit.Transforms[0].ScaleCos < 1);
-        Assert.True(unit.Transforms[3].Tx - unit.Transforms[0].Tx < Em);
+
+        // Squashed across the line only: no turn, full height, and the ink inside the line's em.
+        Assert.All(unit.Transforms.ToArray(), t => Assert.True(t.ScaleCos == 1 && t.ScaleSin == 0 && t.WidthScale < 1, $"{t} {t.WidthScale}"));
+        Assert.True(unit.Bounds.Width < Em, $"{unit.Bounds}");
+        TextLayout two = Vertical("年12年", TextCombine.Digits(2));
+        GlyphRun pair = two.Lines[0].Runs.Single(r => r.Start == 1).Glyphs!;
+        Assert.InRange(unit.Bounds.Height, pair.Bounds.Height - 1, pair.Bounds.Height + 1);
     }
 
     [Fact]

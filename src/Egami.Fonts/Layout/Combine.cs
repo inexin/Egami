@@ -9,8 +9,8 @@ namespace Egami.Fonts.Layout;
 /// </summary>
 /// <remarks>
 /// The combined text is shaped horizontally and fit into one em: with the font's <c>hwid</c>, <c>twid</c> or <c>qwid</c>
-/// feature for two, three or four characters where the font has it, then scaled down if it is still wider (the scale keeps the
-/// glyphs' proportions). It breaks, justifies and takes an emphasis mark as one ideograph.
+/// feature for two, three or four characters where the font has it, then squashed across the line if it is still wider, as
+/// CSS Writing Modes 3 says (its height stays). It breaks, justifies and takes an emphasis mark as one ideograph.
 /// </remarks>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="tate-chu-yoko"/>
@@ -208,7 +208,7 @@ internal sealed class CombineTable
         {
             GlyphPosition p = glyphs.Positions[g];
             float x = (-scale * width / 2) + (scale * (pen + p.XOffset));
-            float y = -(size / 2) - (scale * (a - d) / 2) + (scale * p.YOffset);
+            float y = -(size / 2) - ((a - d) / 2) + p.YOffset;
             glyphs.SetPosition(g, new GlyphPosition(0, g == glyphs.Count - 1 ? -size : 0, x, y));
             pen += p.XAdvance;
         }

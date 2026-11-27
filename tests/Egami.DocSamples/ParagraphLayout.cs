@@ -731,7 +731,7 @@ public class ParagraphLayout
         FontCollection fonts = new();
         fonts.AddFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSansCJK-layout-subset.otf"));
         #region tate-chu-yoko
-        // 平成12年 in a vertical line: the two digits stand upright side by side, in one em.
+        // 12年3月 in a vertical line: each run of digits stands upright, its digits side by side, in one em.
         ParagraphStyle style = new()
         {
             DefaultStyle = new TextStyle
@@ -743,7 +743,7 @@ public class ParagraphLayout
             },
             WritingMode = WritingMode.VerticalRl,
         };
-        TextLayout layout = Paragraph.Create("平成12年", style).Layout(300);
+        TextLayout layout = Paragraph.Create("12年3月", style).Layout(300);
         #endregion
 
         Assert.Equal(80, layout.Lines[0].Width, 3);
