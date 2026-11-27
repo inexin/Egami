@@ -360,7 +360,7 @@ id, with empty glyphs in the gaps, for a tool that refers to glyphs by id. A var
 default position, or at <code>--variation wght=700,wdth=90</code>. <code>--no-hinting</code> leaves out TrueType hinting, <code>--name-prefix</code> prefixes
 the PostScript name and <code>--face</code> picks a font of a collection. It prints one line per font: the glyphs kept of the total,
 the asked characters the font lacks (characters in <code>--unicodes</code> ranges keep whatever the font has) and the sizes, and warns
-when the subset leaves out color, bitmap, vertical, kern or (with <code>--no-layout</code>) MATH tables.</li>
+when the subset leaves out color or bitmap tables, or (with <code>--no-layout</code>) vertical, kern or MATH tables.</li>
 <li><code>font info</code> prints each font's names, container, outlines, glyph count, units per em, variation axes, embedding rights,
 tables and the Unicode blocks it covers; <code>--json</code> adds every name and table and the coverage as a CSS <code>unicode-range</code>.</li>
 </ul>
