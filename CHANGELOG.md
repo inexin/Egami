@@ -3,9 +3,32 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Egami 1.6.0 (unreleased)
+## Egami train 1.6.0-preview.1, Egami.Metafiles and Egami.Barcodes 1.1.0-preview.1, Egami.SystemDrawing 1.0.0-preview.4 (unreleased)
 
-EPS previews (roadmap 2.3.14).
+A preview of the next release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic,
+Egami.Formats.Extended and Egami.Cli), so the work since 1.5.0 can be tried before 1.6.0, with previews of Egami.Metafiles
+1.1.0, Egami.Barcodes 1.1.0 and Egami.SystemDrawing. It adds API and removes none. The sections below list the changes: SVG
+animation (SMIL and CSS, drawn at any moment, as animated rasters or as frames for video), typed CSS getters and wide-gamut
+colors, WOFF and WOFF2 writing, Embedded OpenType, font subsets that keep kerning and ligatures, the `egami font` commands,
+line breaking by dictionary for Thai, Lao, Khmer and Myanmar, ruby, emphasis marks and tate-chu-yoko, Word-style justified
+lines, bevels and warped paths, EPS previews, EMF writing and metafile recording, Code 93, Codabar, GS1 DataBar, Micro QR and
+postal barcodes, MCP prompts and resources in `egami mcp`, faster JPEG XL, and SIMD paths for JPEG, JPEG XL, lossy WebP and
+operations on processors without AVX2, Arm64 among them.
+
+- NuGet installs a preview only when asked: `dotnet add package Egami --prerelease`, or the exact version
+  (`--version 1.6.0-preview.1`). 1.5.0 (Egami.Metafiles 1.0.2, Egami.Barcodes 1.0.1) stays the default.
+- API added since 1.5.0 may still change before 1.6.0. Code built against 1.5.0 keeps working; Egami.Css changes how
+  `CssColor` compares and parses `@keyframes` into a new rule type (see its section).
+- Egami.Formats.Extended has no changes and ships as 1.6.0-preview.1 to keep the train together. Egami.Heic and
+  Egami.Formats.Extended depend on exactly Egami 1.6.0-preview.1; Egami.Metafiles 1.1.0-preview.1 and Egami.SystemDrawing
+  1.0.0-preview.4 need the 1.6.0-preview.1 train. Egami.Barcodes 1.1.0-preview.1 needs Egami, Egami.Drawing and Egami.Fonts
+  1.0.0 or later, so it installs without the train preview.
+- Egami.Video, its codec packages and Egami.Fonts.Substitutes are not part of this preview. Egami.Css and Egami.Cli.Host
+  stay unlisted on NuGet.
+
+## Egami 1.6.0-preview.1 (unreleased)
+
+EPS previews, faster JPEG XL, and SIMD paths for processors without AVX2.
 
 - EPS is a built-in format (`EpsFormat.Info`, registered in `EgamiContext.Default`, read only): `Raster.Load` returns the
   preview the file carries, never running its PostScript: the TIFF preview behind the DOS binary header, its Windows metafile
@@ -24,27 +47,32 @@ EPS previews (roadmap 2.3.14).
   `Eps.LeadingWhitespace` warning, as PostScript interpreters do; some old files have them.
 - The EPS format page, a recipe in the formats guide and a fuzz target (`eps`).
 - New diagnostics: `Eps.PreviewLoaded` on every load, and `Eps.*` warnings for damaged headers, sections and previews.
-- Faster JPEG decoding where AVX2 is missing, Arm64 among them (roadmap 2.4.13): the inverse DCT, chroma upsampling and
-  YCbCr to RGB conversion have 128-bit SIMD paths for x86 and Arm64, giving the same bytes as before; 1.6 to 2.7 times as fast
-  as the scalar path on x64 with AVX2 turned off.
-- Faster JPEG XL VarDCT decoding where AVX2 is missing, Arm64 among them (roadmap 2.4.13): the DCTs, dequantization,
-  chroma from luma, XYB to sRGB and the 8-bit output have 128-bit SIMD paths for x86 and Arm64. Pixels are identical to the
-  scalar path's; the FMA kernels run where the CPU has FMA, as Arm64 does. 1.4 times as fast as before on x64 with AVX turned
-  off.
+- Faster JPEG XL encoding: the lossless encoder allocates far less and scales better across threads (efforts 5 to 7 learn
+  their tree on all threads), and lossy encodes at low efforts allocate about a fifth of what they did. Files are
+  byte-identical to 1.5.0's.
+- Faster JPEG XL decoding: Modular (lossless) entropy decoding, and VarDCT's render filters, dequantization and inverse
+  transforms. VarDCT now uses fused multiply-adds, so a few samples differ from 1.5.0's by one level (0.003 % of 8-bit pixels
+  on the test files); every frame of the conformance suite still passes.
+- Faster JPEG decoding where AVX2 is missing, Arm64 among them: the inverse DCT, chroma upsampling and YCbCr to RGB
+  conversion have 128-bit SIMD paths for x86 and Arm64, giving the same bytes as before; 1.6 to 2.7 times as fast as the
+  scalar path on x64 with AVX2 turned off.
+- Faster JPEG encoding where AVX2 is missing, Arm64 among them: RGB and RGBA to YCbCr, chroma downsampling, CMYK inks, the
+  forward DCT and quantization, and the nonzero-coefficient masks have 128-bit SIMD paths; files are byte-identical to
+  before; baseline encodes 3.7 to 4.8 times as fast as the scalar path on x64 with AVX2 turned off.
+- Faster JPEG XL VarDCT decoding where AVX2 is missing, Arm64 among them: the DCTs, dequantization, chroma from luma, XYB to
+  sRGB and the 8-bit output have 128-bit SIMD paths for x86 and Arm64. Pixels are identical to the scalar path's; the FMA
+  kernels run where the processor has FMA, as Arm64 does. 1.4 times as fast as before on x64 with AVX turned off.
+- Lossy WebP decoding and encoding use SIMD on Arm64: the VP8 loop filter, transforms, prediction and distortion kernels and
+  the YUV to RGB upsampling, which had SSE paths only, now run on 128-bit vectors on x86 and Arm64, giving the same bytes as
+  before.
+- Faster operations where AVX2 is missing, Arm64 among them: resizing, rotation and transforms, the median, box and Gaussian
+  blurs, convolution, emboss, lighting and drop shadows have 128-bit SIMD paths where they had only 256-bit ones, giving the
+  same pixels as before; 1.3 to 50 times as fast on x64 with AVX2 turned off.
 - Fixed: a WebP file whose EXIF XResolution or YResolution entry holds no values or text threw `ArgumentOutOfRangeException`
   from `Raster.Probe` and `Raster.Load`; such entries now count as missing. An EXIF ColorSpace tag holding text no longer throws
   from `RasterMetadata.GetColorProfile`.
-- Faster JPEG encoding where AVX2 is missing, Arm64 among them (roadmap 2.4.13): RGB and RGBA to YCbCr, chroma
-  downsampling, CMYK inks, the forward DCT and quantization, and the nonzero-coefficient masks have 128-bit SIMD paths; files
-  are byte-identical to before; baseline encodes 3.7 to 4.8 times as fast as the scalar path on x64 with AVX2 turned off.
-- Faster operations where AVX2 is missing, Arm64 among them (roadmap 2.4.13): resizing, rotation and transforms, the median,
-  box and Gaussian blurs, convolution, emboss, lighting and drop shadows have 128-bit SIMD paths where they had only 256-bit
-  ones, giving the same pixels as before; 1.3 to 50 times as fast on x64 with AVX2 turned off.
-- Lossy WebP decoding and encoding use SIMD on Arm64 (roadmap 2.4.13): the VP8 loop filter, transforms, prediction and
-  distortion kernels and the YUV to RGB upsampling, which had SSE paths only, now run on 128-bit vectors on x86 and Arm64,
-  giving the same bytes as before.
 
-## Egami.Drawing 1.6.0 (unreleased)
+## Egami.Drawing 1.6.0-preview.1 (unreleased)
 
 - `Canvas.DrawBevel` draws a `Bevel` over a filled shape: DrawingML's twelve bevel profiles (`BevelProfile`) with a width and
   height, eleven preset materials (`BevelMaterial`) and a `BevelLight` (angle, elevation, intensity; `FromDirection` takes a
@@ -56,15 +84,15 @@ EPS previews (roadmap 2.3.14).
   curves): lines and curves are split until the result stays within a tolerance, a line whose image stays straight stays a
   line, closed contours stay closed (their closing line bends too) and the fill rule is kept. A recipe in the drawing guide
   bends text into an arch.
-- Ruby (roadmap 2.8.6): `DrawTextLayout` draws each line's `AnnotationRuns` in their ruby style's paint, after the glyphs
-  and before line-throughs, with their shadows; `TextLayout.ToPath`, recorded pictures and SVG output hold them too.
-- Emphasis marks (roadmap 2.8.6, stage B): `DrawTextLayout` draws `LayoutRunKind.Emphasis` runs in their `TextEmphasis`
-  paint or color, else the text's paint; paths, pictures and SVG output hold them. Tate-chu-yoko units draw upright,
-  squashed across the line into their em when they are too wide.
+- Ruby: `DrawTextLayout` draws each line's `AnnotationRuns` in their ruby style's paint, after the glyphs and before
+  line-throughs, with their shadows; `TextLayout.ToPath`, recorded pictures and SVG output hold them too.
+- Emphasis marks: `DrawTextLayout` draws `LayoutRunKind.Emphasis` runs in their `TextEmphasis` paint or color, else the
+  text's paint; paths, pictures and SVG output hold them. Tate-chu-yoko units draw upright, squashed across the line into
+  their em when they are too wide.
 
-## Egami.Metafiles 1.1.0 (unreleased)
+## Egami.Metafiles 1.1.0-preview.1 (unreleased)
 
-EMF writing, stage A (roadmap 2.3.7.1).
+EMF writing: `EmfCanvas` draws Egami's `Canvas` calls into EMF+, EMF or both, checked against GDI, GDI+ and Office.
 
 - `EmfCanvas` is a `Canvas` that writes an EMF to a stream when disposed, leaving the stream open: dual EMF+ by default, or
   EMF+ only or plain EMF (`EmfWriteOptions.Kind`), at a DPI, with a description, or gzipped as EMZ (`Compress`). Paths,
@@ -73,68 +101,51 @@ EMF writing, stage A (roadmap 2.3.7.1).
   difference), the antialias flag, `Clear` and `DrawPaint` are written as EMF+ records and as GDI records (paths,
   `ExtCreatePen`, solid brushes, the world transform, `SaveDC`, clip regions and clip paths). Equal pens, brushes and paths
   are written once; the EMF+ and GDI object tables reuse their slots.
-- Other paints (on shapes and text), images, meshes and layers with opacity, blending, filters or masks are drawn by
-  Egami as an image at `EmfWriteOptions.FallbackScale` and written as an EMF+ image and a GDI `AlphaBlend`, with one new
-  `Metafile.FallbackImage` warning per kind in `EmfCanvas.Warnings`. Text is written as outlines.
-- A "Writing EMF" section in the metafiles guide.
-
-EMF writing, stage B: paints as brushes.
-
-- Linear gradients become EMF+ linear gradient brushes with preset colors and the wrap mode for repeat and mirror. A clamped
-  gradient gets a brush wide enough to cover the shape. Opaque ones are drawn in the GDI copy exactly too, as
-  `EMR_GRADIENTFILL` triangles clipped to the shape.
-- Centered radial gradients become EMF+ path gradient brushes on a circle large enough to hold the shape. Repeating and
-  mirrored ones are unrolled into stops.
-- `ImagePaint` and `PicturePaint` become EMF+ texture brushes with the paint's matrix, its wrap mode and the matching
-  interpolation mode. A picture's tile is drawn at `FallbackScale`.
-- Gradients mixed in linear light, or with stops of different alpha, get extra stops so EMF+ readers mix them as Egami does.
-- Strokes with these paints are written as their filled outlines.
-- In a dual file, the GDI copy of what GDI cannot draw is an image without a warning.
-- Exact vectors are written instead of images where they exist:
-  - A layer with only an opacity is folded into its shapes' paints when it holds one shape, or shapes whose pixels do not meet.
-  - A `ColorMatrixPaint` or `BlendPaint` over solid paints becomes the color it draws.
-- Sweep and two-point conical gradients, and overlapping shapes in a layer with opacity, still fall back to images.
-- Egami's EMF+ player now draws path gradients with preset colors from their own colors. Before, it mixed them from the
-  surrounding and center colors.
-
-EMF writing, stage C: images, text and pictures.
-
+- Paints become brushes:
+  - Linear gradients become EMF+ linear gradient brushes with preset colors and the wrap mode for repeat and mirror. A
+    clamped gradient gets a brush wide enough to cover the shape. Opaque ones are drawn in the GDI copy exactly too, as
+    `EMR_GRADIENTFILL` triangles clipped to the shape.
+  - Centered radial gradients become EMF+ path gradient brushes on a circle large enough to hold the shape. Repeating and
+    mirrored ones are unrolled into stops.
+  - `ImagePaint` and `PicturePaint` become EMF+ texture brushes with the paint's matrix, its wrap mode and the matching
+    interpolation mode. A picture paint's tile is drawn at the resolution, as Egami draws picture paints on a raster.
+  - Gradients mixed in linear light, or with stops of different alpha, get extra stops so EMF+ readers mix them as Egami
+    does.
+  - Strokes with these paints are written as their filled outlines.
+  - A layer with only an opacity is folded into its shapes' paints when it holds one shape, or shapes whose pixels do not
+    meet. A `ColorMatrixPaint` or `BlendPaint` over solid paints becomes the color it draws.
 - Images are EMF+ images drawn with `DrawImagePoints`, their source rectangle and interpolation mode, and GDI `AlphaBlend`
   bitmaps of the pixels they use (premultiplied, 32-bit). An `EncodedImage` that is a PNG, or a baseline or progressive
   JPEG, keeps its bytes as they are; other images are written as PNG, with a paint's opacity baked in. `EmfPlusOnly` files
-  have no bitmap copy. In the GDI copy, a turned or mirrored image is an image of the call.
-- Lattices and atlases are drawn as their images; pictures are played inline, `cacheAsImage` or not.
-- `EmfText.Glyphs` writes glyph runs as text: an EMF+ font (the face's family name, the em size, bold and italic) with
-  `DrawDriverString`, and a GDI font with `ExtTextOutW` and glyph indices. Synthesized, emboldened and variable faces,
-  turned glyphs, mirrored text and paints other than one color stay outlines. Color glyphs are drawn as their layers or
-  images in both modes.
-- A call that blends with what is beneath it (a blend mode, a backdrop filter) is drawn by Egami over everything drawn before
-  it, and its image replaces those pixels (`CompositingModeSourceCopy`), so raster operations and compositing modes keep
-  their look.
-- A picture paint's tile is drawn at the resolution, as Egami draws picture paints on a raster, not at `FallbackScale`.
-- `Metafile.Load(...).Draw(emfCanvas)` writes every WMF, EMF and EMF+ file in the test corpus again with the same playback.
-
-EMF writing, stage E: checked against Windows and Office.
-
-- EMR_SETMITERLIMIT holds a whole number, as GDI's `SetMiterLimit` writes it. GDI did not stroke wide miter-joined pens of
-  written files, since it read the float's bits as the limit.
-- Every EMF+ record's data size counts its padding, as GDI+ writes it. GDI+ skipped `DrawDriverString` records with an odd
-  glyph count, so glyph text lost those runs.
-- Nonzero paths in EMF+ carry GDI+'s winding flag (0x2000), and Egami's player reads it. They are still written as contours
-  that do not overlap, because LibreOffice fills every EMF+ path even-odd. A path drawn again is simplified once.
-- Writing is 2.7 times faster and allocates a third less: 10,000 shapes take about as long as with `SvgCanvas` (33 ms on
-  average against 28). GDI objects leave the table in least recently used order without a scan, object lookups allocate
-  nothing on a hit, and records gather in 64 KiB chunks.
+  have no bitmap copy. In the GDI copy, a turned or mirrored image is an image of the call. Lattices and atlases are drawn
+  as their images; pictures are played inline, `cacheAsImage` or not.
 - `EmfCanvas.DrawImage(image, source, destination, emfPlusImage, emfPlusSource, sampling, paint)` draws one image in the GDI
   part and another (or another rectangle of it) in the EMF+ part, for files that must sample images as GDI+'s own recordings
   do. Egami.SystemDrawing uses it.
-- Egami's EMF+ player draws images as GDI+ does without `PixelOffsetModeHalf`: half a pixel back, inside their rectangle.
-- A writer benchmark, `VectorWriterBenchmarks`, compares `EmfCanvas` with `SvgCanvas`.
-- The metafiles guide's "Writing EMF" section covers warnings, `FallbackScale`, EMF+ only files and the gate numbers.
+- Text is written as outlines by default. `EmfText.Glyphs` (`EmfWriteOptions.Text`) writes glyph runs as text: an EMF+ font
+  (the face's family name, the em size, bold and italic) with `DrawDriverString`, and a GDI font with `ExtTextOutW` and glyph
+  indices. Synthesized, emboldened and variable faces, turned glyphs, mirrored text and paints other than one color stay
+  outlines. Color glyphs are drawn as their layers or images in both modes.
+- What EMF cannot hold (sweep and two-point conical gradients, meshes, layers with blending, filters or masks, and
+  overlapping shapes in a layer with opacity) is drawn by Egami as an image at `EmfWriteOptions.FallbackScale` and written
+  as an EMF+ image and a GDI `AlphaBlend`, with one `Metafile.FallbackImage` warning per kind in `EmfCanvas.Warnings`. In a
+  dual file, the GDI copy of what only GDI cannot draw is an image without a warning. A call that blends with what is
+  beneath it (a blend mode, a backdrop filter) is drawn by Egami over everything drawn before it, and its image replaces
+  those pixels (`CompositingModeSourceCopy`), so raster operations and compositing modes keep their look.
+- Files are written as GDI and GDI+ write them: EMR_SETMITERLIMIT holds a whole number, as `SetMiterLimit` writes it; every
+  EMF+ record's data size counts its padding; nonzero paths carry GDI+'s winding flag (0x2000). They are still written as
+  contours that do not overlap, because LibreOffice fills every EMF+ path even-odd.
+- `Metafile.Load(...).Draw(emfCanvas)` writes WMF, EMF and EMF+ files again with the same playback (every file in the test
+  corpus).
+- Writing 10,000 shapes takes about as long as with `SvgCanvas` (33 ms on average against 28).
+- A "Writing EMF" section in the metafiles guide covers the canvas, warnings, `FallbackScale` and EMF+ only files.
+- Fixed: Egami's EMF+ player drew path gradients with preset colors mixed from the surrounding and center colors; it now
+  uses their own colors. It reads GDI+'s winding flag on paths, and draws images as GDI+ does without
+  `PixelOffsetModeHalf`: half a pixel back, inside their rectangle.
 
 ## Egami.SystemDrawing 1.0.0-preview.4 (unreleased)
 
-EMF writing, stage D (roadmap 2.3.7.1): metafiles are recorded.
+Metafiles are recorded.
 
 - The `Metafile` constructors that take a reference device context no longer throw. They record into memory, a file or a
   stream, for a 96 DPI screen whatever handle is given (`IntPtr.Zero` too). `EmfType` chooses EMF+ dual, EMF+ only or GDI
@@ -151,18 +162,12 @@ EMF writing, stage D (roadmap 2.3.7.1): metafiles are recorded.
   negative frames throw `ExternalException`; without a frame, the frame is the bounds of what was drawn.
 - As GDI+: a second `FromImage`, or one on a loaded or recorded metafile, throws `ExternalException` (0x8000FFFF); the size
   of a metafile being recorded throws `ArgumentException`; drawing a metafile onto its own recording draws nothing.
-- Tests play GDI+'s recordings of nine scenes (tests/images/metafiles/recorded, written by egami-compare) next to Egami's:
-  EMF+ means 0.005 to 5.2.
-
-EMF writing, stage E.
-
 - Recorded images sample as GDI+ samples them without `PixelOffsetModeHalf`, with pixel centers on whole coordinates and
-  edges fading beyond the image. GDI+ now plays the nine recorded scenes within a mean of 0.17 levels of its own recordings
-  of the same calls; images were 13.8 before. The GDI copy keeps the image as it is, as GDI+ writes it.
+  edges fading beyond the image; the GDI copy keeps the image as it is, as GDI+ writes it. GDI+ plays nine recorded test
+  scenes within a mean of 0.17 levels of its own recordings of the same calls.
+## Egami.Svg and Egami.Css 1.6.0-preview.1 (unreleased)
 
-## Egami.Svg and Egami.Css 1.6.0 (unreleased)
-
-SVG animation (roadmap 2.10.1): SMIL and CSS animations drawn at any moment, as frames, animated rasters, frozen static copies
+SVG animation: SMIL and CSS animations drawn at any moment, as frames, animated rasters, frozen static copies
 and, through Egami.Video, video. Additive to 1.5.0: without a time every document draws as before.
 
 - `SvgRenderOptions.Time` draws a document as it looks at that moment of its SMIL and CSS animations, in `Rasterize`, `Draw` and
@@ -216,8 +221,8 @@ and, through Egami.Video, video. Additive to 1.5.0: without a time every documen
   motion into the transform, discarded elements and the animations themselves taken out.
 - Fixed: `translate()` in the CSS `transform` property now resolves `em`, `rem` and viewport units against the element's font
   size and viewport, as the `translate` property does; they were taken at 16 px and a 100 px viewport.
-- Checked against headless Chromium at 5,860 frozen moments of 637 animated files (egami-compare's animation gate; 98.6 % of
-  frames pass). Fixes from it:
+- Checked against headless Chromium at 5,860 frozen moments of 637 animated files (98.6 % of frames match). Animation
+  details that follow from it:
   - An animation with a value that is not legal for its attribute (a misspelt length, color, transform or path; an empty
     `by` path) has no effect, as SMIL says, instead of stepping to the bad value.
   - `currentColor` in a color animation's values interpolates as the element's color at that moment, its animated `color`
@@ -234,8 +239,7 @@ and, through Egami.Video, video. Additive to 1.5.0: without a time every documen
   polygons. Found by the svg-timeline fuzz target.
 - Animation frames share what does not change from one frame to the next: the parsed style sheets, the cascade of each
   element no animation touches, and each CSS animation's keyframes when their values do not depend on the element. A
-  CSS-animated frame now costs about what a static draw of the same moment does (it was up to 2.4 times as much), with the
-  same output byte for byte.
+  CSS-animated frame costs about what a static draw of the same moment does, with the same output byte for byte.
 - The SVG guide's Animation section covers drawing at a time, frames and animated rasters, `Raster.Load` with
   `AnimationFrameRate`, `Freeze`, video, the command line, the limits and the known gaps, with recipes for a GIF and a video
   from an animated SVG.
@@ -245,7 +249,7 @@ and, through Egami.Video, video. Additive to 1.5.0: without a time every documen
 
 Egami.Css:
 
-- Typed getters on `CssComputedStyle` (roadmap 2.10.2): `TryGetKeyword`, `GetKeywords`, `TryGetNumber`, `TryGetInteger`,
+- Typed getters on `CssComputedStyle`: `TryGetKeyword`, `GetKeywords`, `TryGetNumber`, `TryGetInteger`,
   `TryGetLength`, `TryResolveLength`, `TryGetColor`, `TryGetUrl`, `TryGetFontFamilies`, `GetFontWeight` and `GetFontSize`.
   Each reads one property's computed value as a type and gives false when the value is not of that type. `TryGetColor`
   resolves `currentcolor`, on `color` itself through the parent. `GetFontWeight` resolves `bolder` and `lighter` with the CSS
@@ -253,7 +257,7 @@ Egami.Css:
   the parent; both cache their result on the style. Plain values allocate nothing.
 - `CssLengthContext` says what relative lengths are worth (font sizes, viewport, the reference length for percentages, and
   optional line height, x-height and `ch` width) and resolves a `CssLength` or a `CssCalc` to CSS pixels with `TryResolve`.
-- Wide-gamut colors (roadmap 2.10.2): a `CssColor` keeps the space it was written in as a `CssColorSpace` (`Space`, one of
+- Wide-gamut colors: a `CssColor` keeps the space it was written in as a `CssColorSpace` (`Space`, one of
   CSS Color 4's twelve, `Srgb` for hex, named colors, `rgb()`, `hsl()` and `hwb()`) and its components there, unclipped
   (`C0`, `C1`, `C2`). `ToColorSpace` converts them to any other space, `CssColor.FromColorSpace` builds a color from them,
   `IsInSrgbGamut` says whether sRGB can show it, and `ToSrgbGamutMapped` maps it into sRGB with CSS Color 4's OkLCh chroma
@@ -272,11 +276,228 @@ Egami.Css:
   declaration and below every important one. A style sheet given the animation origin is refused. Origins are not in
   cascade order as numbers: an important declaration of any origin wins over the animation origin.
 
-## Egami.Heic 1.6.0 (unreleased)
+## Egami.Heic 1.6.0-preview.1 (unreleased)
 
 - A cancelled HEIC save stops within a CTB row of the image it is coding, also on one thread, where it went on to the end
   of the image. Output is unchanged.
 
+## Egami.Fonts 1.6.0-preview.1 (unreleased)
+
+WOFF and WOFF2 writing, Embedded OpenType reading and writing, font subsets that keep kerning and ligatures, line breaking
+by dictionary for Thai, Lao, Khmer and Myanmar, Word-style justified lines, ruby, emphasis marks and tate-chu-yoko.
+Additive to 1.5.0.
+
+Web fonts:
+
+- `WebFontWriter.Write` writes a `Typeface`, a `FontSubset` or sfnt or collection bytes as WOFF2 (the default) or WOFF 1.0
+  (`WebFontOptions.Format`), to a byte array or a stream. Every table is kept. WOFF2 stores glyf and loca in the transformed
+  form (bounding boxes only where the points do not give them, the overlap bitmap when a glyph needs it) and leaves out the
+  hmtx bearings that equal each glyph's xMin; `TransformGlyf` and `TransformHmtx` turn them off. As woff2_compress does,
+  WOFF2 sets bit 11 of head's flags (a lossless modifying transform). A WOFF2 file read back gives the same glyf and loca
+  bytes as Google's woff2_decompress gives for woff2_compress's file of the same font.
+- Collections (TTC and OTC) become WOFF2 collections that share tables as the collection does; WOFF 1.0 holds a single font
+  and throws `ArgumentException` for one. A face of a collection is written as a single font.
+- The metadata and private data blocks of a WOFF or WOFF2 source are kept unless `WebFontOptions.Metadata` or `PrivateData`
+  replace them. The file's version is head's fontRevision; WOFF checksums are computed, whatever the source's directory says.
+- Compression is .NET's own Brotli (quality 11, 4 MB window) and zlib (the smallest of levels 9 and 8 with the default and
+  filtered strategies, tables stored raw when that is not smaller). WOFF2 files are within 0.5 % of woff2_compress's with
+  the hmtx transform off, and WOFF files within 0.5 % of fontTools' at zlib level 9, on the test fonts.
+- A glyf table the writer cannot read is stored untransformed with the new `Font.TransformSkipped` warning. A bare CFF font
+  throws `ArgumentException`. Input and output are bounded by the context's `SafetyLimits.MaxTotalBytes`.
+- `WebFontReader.ToSfnt` turns a WOFF or WOFF2 file back into the TrueType or OpenType font it holds, rebuilding WOFF2's
+  transformed glyf, loca and hmtx; a WOFF2 collection becomes a TTC. Bounded by `SafetyLimits.MaxTotalBytes`.
+- Embedded OpenType: `Typeface.FromMemory`, `FromFile`, `FromStream` and `FontLoader.LoadAll` read EOT files (versions
+  0x00010000, 0x00020001 and 0x00020002), as old Internet Explorer loads them and PowerPoint embeds fonts (.fntdata), with
+  XOR-ed data and MicroType Express compression (W3C submission: LZCOMP, then the compact glyf, cvt, hdmx and VDMX tables,
+  loca rebuilt). `FontLoader.Probe` reports the new `FontFileKind.Eot`, as does `Typeface.Container`, and font folders index
+  .eot files. Every table but glyf and loca comes back as it was; glyphs come back as they were, their push instructions
+  written anew and without overlap flags, which MicroType Express does not keep. The root string and embedding bits are not
+  enforced; a root string whose checksum is wrong gets a `Font.BadContainer` warning.
+- `WebFontFormat.Eot` writes EOT 0x00020001 with the font uncompressed, its header from the OS/2, head and name tables;
+  `WebFontOptions.XorFontData` XORs the font data and `WebFontOptions.RootString` sets the root string.
+
+Subsets:
+
+- `FontSubsetter.GlyphsFor` gives the glyphs that draw characters as the shaper does: each one the face maps, the
+  decomposition of one it lacks when it draws every part (a missing "ὶ" draws as iota and a combining grave), the
+  precomposed characters it maps whose decomposition the text holds (an "e" and a combining acute compose to "é"), and the
+  shaper's other stand-ins: the decompositions that Indic, Khmer, Myanmar and Universal Shaping Engine scripts make even of
+  characters the face maps (split vowels, Thai and Lao sara am), mirrored brackets for right-to-left text, vertical forms for
+  a face without vert, the space for default ignorables and for spaces the face lacks, U+2010 for a missing U+2011, the
+  glyphs of the variation sequences the characters make, and the Arabic presentation forms when the shaper would use them
+  (for a face with no isol, fina, medi or init feature).
+- Subsets that keep kerning and ligatures: `SubsetOptions.LayoutClosure` no longer needs `RetainGlyphIds`. GDEF, GSUB, GPOS
+  and MATH are written cut down to the kept glyphs and renumbered through the glyph map, as hb-subset writes them: every
+  script and language system stays with the kept features, each feature keeps the lookups that still apply to a kept glyph,
+  and each lookup keeps the entries for kept glyphs (coverages and class definitions in their smaller format, classes and
+  lookup indexes renumbered, feature variations kept). Lookups that no longer fit 16-bit offsets become extension lookups.
+  With `RetainGlyphIds` the same cutting runs without renumbering, so those subsets are smaller too.
+- GSUB and GPOS are pruned as hb-subset prunes them: a feature left with no lookup is left out, except one with parameters
+  (size, stylistic sets, character variants), one whose feature variations keep a lookup and one a shaper asks for by name
+  (frac, numr, dnom, rtlm, vert, kern, vkrn, mark, the Arabic joining forms, rlig, rclt, stch and pref); a language system the
+  same as its script's default after the cut is left out, as the shaper falls back to the default.
+- The legacy kern table keeps the format 0 pairs of kept glyphs, renumbered and sorted (other formats only with
+  `RetainGlyphIds`), and vhea, vmtx and VORG keep the kept glyphs' vertical metrics. The cmap keeps the variation sequences of
+  the kept characters and glyphs in format 14.
+- A variable face's static subset bakes its layout variations in at its position: GPOS values and anchors, GDEF carets and
+  MATH values take their rounded deltas and lose their variation device tables, the feature variations that hold there
+  replace their features, GDEF drops its variation store, and vertical advances and origins are written varied.
+- `SubsetOptions.LayoutFeatures` sets the features kept and followed by the closure (`OpenTypeLayout.DefaultClosureFeatures`
+  by default). `SubsetOptions.Characters` names the characters a subset is for: the cmap then holds only them and the
+  shaper's stand-ins for them, not every character of a kept glyph (such as U+FB01 for the fi ligature).
+- `SubsetOptions.LayoutClosure` also keeps the dotted circle (U+25CC) the shaper puts before a mark that starts a run, and
+  the larger MATH variants and assembly parts of the kept glyphs, so such text draws as with the full face.
+- `SubsetOptions.DropHinting` (false by default) leaves TrueType hinting out of a subset: fpgm, prep, cvt and every glyph's
+  instructions, with maxp's hinting limits set to none; gasp stays. CFF hints are kept.
+- A damaged GDEF, GSUB or GPOS table makes a layout-closure subset throw `CorruptDataException`; one whose major version is
+  not 1, which the shaper reads as empty, is left out of the subset.
+- Subsets of 5,229 HarfBuzz shaping test cases and of Egami's test fonts in Latin, Arabic, Hebrew, Indic, Southeast Asian,
+  CJK and emoji text shape exactly as the full face. One variable case is left out, as its HVAR and gvar give different
+  advances and the subset follows gvar as fontTools' instancer does.
+- A name-keyed CFF subset keeps only the strings its dicts and glyph names use: the String INDEX held every glyph's name, most
+  of a small subset's CFF (a 66-character SourceSans3 subset drops from 28 KB to 6 KB).
+
+Line breaking and justification:
+
+- `WordDictionary` and `WordDictionaries`: word lists by script for breaking text written without spaces between words.
+  `WordDictionaries.BuiltIn` holds ICU's word lists for Thai, Lao, Khmer and Myanmar (release 79.1; Unicode License v3, BSD-2
+  and BSD-3 notices in THIRD-PARTY-NOTICES.md), about 0.7 MB in all, each loaded on first use in about 2 ms or less. A
+  `WordDictionary` comes from a word list (`FromWords`, or `Load` of a UTF-8 list with one word per line), takes user words
+  with `WithWords`, and saves to and loads from Egami's compiled form (`.edict`).
+- `LineBreaks` and `Paragraph` break Thai, Lao, Khmer and Myanmar between dictionary words, on by default.
+  `LineBreakOptions.Dictionaries` picks the set (null for `WordDictionaries.BuiltIn`, `WordDictionaries.None` to break only
+  at spaces as before). The segmenter follows ICU's dictionary break engines and gives ICU's word boundaries on the UDHR
+  texts of all four scripts; it also never splits a grapheme cluster (ICU does, after a Khmer coeng or Myanmar virama) and
+  keeps ໆ and ຯ with the word before them. Thai and Myanmar line starts equal Chromium 129's; Chromium breaks Lao and Khmer
+  with older, smaller lists, so it splits some compounds Egami keeps whole. Breaking stays allocation-free, and the
+  dictionaries load the first time text of their script is broken.
+- `TextSegmenter.Words(text, dictionaries)` returns a `DictionaryWordEnumerator` that splits Thai, Lao, Khmer and Myanmar runs
+  into words, counting their letters as ALetter as ICU's word rules do; the old `Words(text)` keeps plain UAX #29.
+  `TextLayout.GetWordBoundary` and `CaretMove.NextWord` and `PreviousWord` use the paragraph's `LineBreaking.Dictionaries`.
+  Word boundaries equal Chromium 129's `Intl.Segmenter` on the Thai UDHR text and on Myanmar apart from ICU's splits inside a
+  grapheme cluster; Lao and Khmer differ where Chromium's older lists do.
+- `ParagraphStyle.SpaceShrink` (0 to 1, 0 by default) lets justified lines fit the next word by shrinking their word spaces,
+  as Word fills justified paragraphs: by at most that share of the spaces in all, and each space by at most half of what it
+  would stretch had the line ended at the break before. The whole word is kept by shrinking before automatic hyphenation is
+  tried, and a hyphenated piece may fit by shrinking too. No-break spaces, glyphs and letter spacing keep their widths; last
+  lines and lines before a hard break shrink when they must but never stretch; kashida lines that shrink get no tatweels.
+  `LineFill.Optimal` uses it as its shrink limit in place of `OptimalLineOptions.ShrinkSpaces`' third. At 0 every layout is
+  the same as in 1.5.0.
+- `ParagraphStyle.JustifyLineBreaks` (false by default) justifies the lines of a justified paragraph that end in a hard break
+  other than U+2029 (LF, CR, CRLF, VT, FF, NEL, U+2028) like wrapped lines, as Word justifies the line before Shift+Enter: they
+  stretch to the width, shrink and stretch with `SpaceShrink`, and `LineFill.Optimal` weighs their stretch instead of scoring
+  them 0. The paragraph's last line and lines before U+2029 keep `AlignLast`; `TextLine.HardBreak` stays true.
+- `ParagraphStyle.StretchNoBreakSpaces` (true by default, as CSS) set to false keeps U+00A0 at its width on justified lines,
+  as Word does.
+- Fixed: on a justified line with tabs, stretched or shrunk word spaces before a tab moved the text after it off its tab stop.
+  Only the justification opportunities after a line's last tab now stretch or shrink, as Word spreads such lines; lines
+  without tabs are unchanged.
+- Fixed: a line ending inside a run whose shaping is unsafe to break measured a lone mark, such as a Myanmar asat, with a
+  dotted circle when the window shaped again began inside a glyph cluster.
+
+East Asian annotations:
+
+- Ruby annotations, after W3C's JLREQ and CSS Ruby Layout: `RubyAnnotation` sets ruby text over, under or (horizontal
+  bopomofo) beside a base range, added with `RichTextBuilder.AddRuby` or a new `RichText` constructor and read back from
+  `RichText.Ruby`. Mono, group and jukugo ruby (`RubyOptions.Merge`: `Separate`, `Auto`, `Collapse`); ruby wider than its
+  base spreads the base 1:2:1 and may overhang kana and punctuation (`RubyOverhang`), narrower ruby spreads by `RubyAlign`.
+  Bases never break, in greedy and optimal filling, hyphenation and overflow-wrap; justification leaves them alone; lines grow
+  to hold ruby unless their line height does. Vertical lines put over ruby right and under ruby left. Ruby's em box stands
+  on its base's (BASE `ideo`/`idtp` em boxes, else centred). `ParagraphStyle.Ruby` sets the options and the size ratio
+  (half). Each `TextLine.AnnotationRuns` holds the new `LayoutRunKind.Ruby` runs with `LayoutRun.Annotation`;
+  `TextLayout.GetRubyBounds` gives an annotation's box; ink bounds hold ruby, and hit testing and carets stay on the base. A
+  section in the paragraph layout guide shows it.
+- Emphasis marks, after CSS Text Decoration 3: `TextStyle.Emphasis` takes a `TextEmphasis` (`EmphasisMark` `Dot`, `Circle`,
+  `DoubleCircle`, `Triangle`, `Sesame`, `Custom`, or `None` to switch off inherited marks; filled or open;
+  `EmphasisPosition` `Over` or `Under`; color or paint). One mark at half size goes centred beside each grapheme cluster but
+  spaces, controls and punctuation; marks stand outside ruby on the same side and grow the line; vertical lines put over
+  marks right and under marks left. Lines report them as `LayoutRunKind.Emphasis` runs in `TextLine.AnnotationRuns`.
+- Tate-chu-yoko, after CSS Writing Modes 3: `TextStyle.CombineUpright` takes a `TextCombine` (`None`, `All` or
+  `Digits(2..4)`). In vertical, upright text the combined run is shaped horizontally with `hwid`, `twid` or `qwid` where the
+  font has them, squashed to one em across the line when still wider, and breaks, justifies and takes an emphasis mark as
+  one ideograph.
+
+## Egami.Barcodes 1.1.0-preview.1 (unreleased)
+
+Code 93, Codabar, GS1 DataBar, Micro QR Code and postal barcodes (Japan Post, Intelligent Mail, Royal Mail, KIX and Australia
+Post), and faster linear reading.
+
+- `Barcode.Code93` and `Code93Options` write Code 93 (ANSI/AIM BC5) with its two check characters, C and K, and Full ASCII
+  when the text needs it; `Barcode.Codabar` and `CodabarOptions` write Codabar (EN 798) with a start and stop character A to
+  D, an optional modulo 16 check character and a wide ratio of 2 or 3. `Barcode.Create` makes both.
+- Both are read: Code 93 without its check characters and with Full ASCII decoded, Codabar with its start and stop
+  characters, as zxing-cpp returns it.
+- `BarcodeFormat.Code93` and `BarcodeFormat.Codabar` are new, and `BarcodeFormat.Linear` and `All` include them, so reads
+  with the default options look for them too. A program built against 1.0 that names `Linear` or `All` keeps 1.0's value
+  until it is built again, as enum values are compiled into it.
+- `Barcode.DataBar` and `DataBarOptions` write GS1 DataBar Omnidirectional (ISO/IEC 24724) and its Truncated, Stacked and
+  Stacked Omnidirectional forms (`DataBarKind`); `Barcode.DataBarLimited` writes DataBar Limited; `Barcode.DataBarExpanded` and
+  `DataBarExpandedOptions` write DataBar Expanded from GS1 element strings, and Expanded Stacked in rows of 2 to 20 symbol
+  characters. The symbols equal zint's. `Barcode.Create` makes all three, and `Barcode.FromModules` takes the stacked forms'
+  grids.
+- All of them are read, as GS1 element strings with `BarcodeResult.Gs1` set: the halves of stacked symbols and the rows of
+  Expanded Stacked from different scan lines, joined by their checksum and finder sequence. Expanded symbols made to the
+  standard's first edition read too.
+- `BarcodeFormat.DataBar`, `DataBarLimited` and `DataBarExpanded` are new and join `Linear` and `All`.
+- `Barcode.MicroQr` and `MicroQrOptions` write Micro QR Code (ISO/IEC 18004), versions M1 to M4: the smallest version that
+  holds the text at level L (or the level and smallest version asked for), with the level raised while the version holds.
+  Segments are numeric, alphanumeric, byte and Kanji as each version allows; there is no ECI. The symbols equal zint's.
+  `Barcode.Create` and `Barcode.FromModules` take `BarcodeFormat.MicroQr`, with a quiet zone of 2 modules.
+- Micro QR is read at any rotation, in some perspective, mirrored and light on dark, with errors corrected (M1 only detects
+  them). The search finds the finder patterns once for QR and Micro QR.
+- `BarcodeFormat.MicroQr` is new, and `BarcodeFormat.Matrix` and `All` include it, so reads with the default options look for
+  it too.
+- `Barcode.JapanPost` and `JapanPostOptions` write the Japan Post customer barcode (カスタマバーコード) from prepared data: the
+  7-digit postal code and the address number, letters A to Z as a control code and a digit, padded with CC4 to 20 characters,
+  with its modulo 19 check character. An address number too long for the symbol loses its end, as Japan Post's manual says,
+  unless `TruncateAddress` is off. The modules are a grid of 6 rows, one dark column per bar; drawn at 0.6 mm per module the
+  symbol has the manual's size, 79.8 by 3.6 mm. `Barcode.Create` and `Barcode.FromModules` take `BarcodeFormat.JapanPost`,
+  with a quiet zone of 4 modules (2 mm or more).
+- `Barcode.IntelligentMail` writes the USPS Intelligent Mail barcode (USPS-B-3200) from the 20-digit tracking code and a
+  routing code of 0, 5, 9 or 11 digits: 65 bars with an 11-bit frame check, a grid of 6 rows that gives bars 0.136 inch tall
+  at 22 per inch at a 1/44 inch module, with a quiet zone of 6 modules. The spec's examples pass.
+- `Barcode.RoyalMail` writes RM4SCC, digits and letters A to Z with start and stop bars and a modulo 6 check character, and
+  `Barcode.Kix` PostNL's KIX code, the same characters without them: grids of 8 rows that give Royal Mail's sizes at a 0.6
+  mm module, with a quiet zone of 4 modules.
+- `Barcode.AustraliaPost` and `AustraliaPostOptions` write the Australia Post 4-State Customer Barcode: the eight-digit DPID
+  and, in Customer Barcodes 2 and 3, customer information in the N or C table, with filler bars and four Reed-Solomon check
+  symbols over GF(64). `AustraliaPostFormat` names the formats by their FCC (11, 59, 62 and the internal 45, 87 and 92),
+  `AustraliaPostEncoding` the tables. The human-readable text is the spec's text representation. A grid of 8 rows gives
+  Australia Post's sizes at a 0.55 mm module, with a quiet zone of 11 modules (6 mm). The spec's examples pass.
+- The postal symbols equal zint's. `Barcode.Create` and `Barcode.FromModules` take the four formats.
+- `BarcodeFormat.JapanPost`, `IntelligentMail`, `RoyalMail`, `Kix` and `AustraliaPost` and the group `BarcodeFormat.Postal`
+  are new. Postal barcodes are written, not read, so `Postal` is not in `All` and reads with the default options are
+  unchanged.
+- Faster linear reading: the scan lines are cut into runs sixteen samples at a time, and each decoder tests the quiet zone
+  before its start pattern. A linear read allocates less: no DataBar tables unless DataBar is asked for, and no inverted
+  local threshold without 2D formats. Egami's read time as a share of zxing-cpp 3.1.1's, on one thread, went from 0.96 to
+  0.64 for Code 128, 0.68 to 0.50 for Code 39, 1.57 to 1.15 for ITF and 0.93 to 0.67 for EAN and UPC; a default read of the
+  blackbox and zint test images takes 0.95 of the time it did.
+
+## Egami.Cli 1.6.0-preview.1 (unreleased)
+
+MCP prompts and resources, a guide for coding agents, animated SVG input and font commands. Additive to 1.5.0.
+
+- `egami font convert` writes fonts losslessly as WOFF2 (the default) or WOFF, or WOFF and WOFF2 back to TTF, OTF or TTC, by
+  `-o`'s extension or `--format`; collections convert to WOFF2 or TTC only. `--no-transform` and `--metadata`.
+- `egami font subset` keeps the characters of `--text`, `--text-file` and `--unicodes` (CSS unicode-range syntax). By default
+  it keeps the glyphs the layout tables reach and those tables cut down to the kept glyphs, renumbered from 0, so the subset
+  shapes as the full font; `--retain-gids` keeps the glyph ids and `--no-layout` gives the smallest file. The cmap maps only
+  the asked characters (and the characters the shaper draws in their place), not every character of a kept glyph. Variable
+  fonts become static, at `--variation` or the default position. `--no-hinting`, `--name-prefix`, `--face`. It prints the
+  glyphs kept, the missing characters and the sizes, and warns about tables it leaves out.
+- `egami font info` describes fonts: names, container, outlines, glyphs, units per em, axes, embedding rights, tables and
+  Unicode blocks covered; `--json` adds the coverage as a CSS unicode-range. The three are MCP tools (`font_info` read-only).
+- Every command takes `--animate [fps]`, which loads an animated SVG input with all its frames (30 a second by default), and
+  `--at <time>`, which draws it at one moment (or, with `--animate`, starts the frames there). `egami mcp`'s tools that take
+  files take both as `animate` and `at`.
+- `egami mcp` serves three resources: `egami://schema/workflow` (the workflow schema, byte for byte), `egami://formats` (what
+  `egami formats --json` prints) and `egami://guide` (the agent guide). It offers five prompts, each one message naming the
+  tools to call: `thumbnails`, `convert_folder`, `web_images`, `strip_metadata` and `make_workflow`. Both are static: no
+  subscriptions or list-changed notices. Egami.Cli.Host 1.6.0-preview.1 serves the resources and prompts a tool declares,
+  so other tools built on it can offer their own.
+- The package carries `AGENTS.md`, a guide for coding agents that call egami from scripts or through `egami mcp`: commands,
+  workflow files, exit codes and common mistakes. Its command lines run with the tests.
 ## Egami.Video.Hardware 0.1.0-preview.1 (unreleased)
 
 A new package, Egami.Video.Hardware: hardware video through Vulkan Video on Windows and Linux (Vulkan Video Build Plan, PR A
@@ -383,234 +604,6 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
   neither H.264 nor HEVC.
 - The package carries `AGENTS.md`, a guide for coding agents that call egami-video from scripts or through `egami-video mcp`.
   Its command lines run with the tests.
-
-## Egami.Fonts 1.6.0 (unreleased)
-
-WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, Word-style justified lines, ruby, emphasis marks
-and tate-chu-yoko. Additive to 1.5.0.
-
-- Ruby annotations (roadmap 2.8.6, stage A), after W3C's JLREQ and CSS Ruby Layout: `RubyAnnotation` sets ruby text over,
-  under or (horizontal bopomofo) beside a base range, added with `RichTextBuilder.AddRuby` or a new `RichText` constructor
-  and read back from `RichText.Ruby`. Mono, group and jukugo ruby (`RubyOptions.Merge`: `Separate`, `Auto`, `Collapse`);
-  ruby wider than its base spreads the base 1:2:1 and may overhang kana and punctuation (`RubyOverhang`), narrower ruby
-  spreads by `RubyAlign`. Bases never break, in greedy and optimal filling, hyphenation and overflow-wrap; justification
-  leaves them alone; lines grow to hold ruby unless their line height does. Vertical lines put over ruby right and under ruby
-  left. Ruby's em box stands on its base's (BASE `ideo`/`idtp` em boxes, else centred). `ParagraphStyle.Ruby` sets the options and the size ratio (half). Each `TextLine.AnnotationRuns` holds the new
-  `LayoutRunKind.Ruby` runs with `LayoutRun.Annotation`; `TextLayout.GetRubyBounds` gives an annotation's box; ink bounds
-  hold ruby, and hit testing and carets stay on the base. A section in the paragraph layout guide shows it.
-- Emphasis marks (roadmap 2.8.6, stage B), after CSS Text Decoration 3: `TextStyle.Emphasis` takes a `TextEmphasis`
-  (`EmphasisMark` `Dot`, `Circle`, `DoubleCircle`, `Triangle`, `Sesame`, `Custom`, or `None` to switch off inherited
-  marks; filled or open; `EmphasisPosition` `Over` or `Under`; color or paint). One mark at half size goes centred beside
-  each grapheme cluster but spaces, controls and punctuation; marks stand outside ruby on the same side and grow the line;
-  vertical lines put over marks right and under marks left. Lines report them as `LayoutRunKind.Emphasis` runs in
-  `TextLine.AnnotationRuns`.
-- Tate-chu-yoko (roadmap 2.8.6, stage B), after CSS Writing Modes 3: `TextStyle.CombineUpright` takes a `TextCombine`
-  (`None`, `All` or `Digits(2..4)`). In vertical, upright text the combined run is shaped horizontally with `hwid`, `twid`
-  or `qwid` where the font has them, squashed to one em across the line when still wider, and breaks, justifies and takes
-  an emphasis mark as one ideograph.
-
-- Embedded OpenType: `Typeface.FromMemory`, `FromFile`, `FromStream` and `FontLoader.LoadAll` read EOT files (versions
-  0x00010000, 0x00020001 and 0x00020002), as old Internet Explorer loads them and PowerPoint embeds fonts (.fntdata), with XOR-ed
-  data and MicroType Express compression (W3C submission: LZCOMP, then the compact glyf, cvt, hdmx and VDMX tables, loca rebuilt).
-  `FontLoader.Probe` reports the new `FontFileKind.Eot`, as does `Typeface.Container`, and font folders index .eot files. Every
-  table but glyf and loca comes back as it was; glyphs come back as they were, their push instructions written anew and without
-  overlap flags, which MicroType Express does not keep. The root string and embedding bits are not enforced; a root string whose
-  checksum is wrong gets a `Font.BadContainer` warning.
-- `WebFontFormat.Eot` writes EOT 0x00020001 with the font uncompressed, its header from the OS/2, head and name tables;
-  `WebFontOptions.XorFontData` XORs the font data and `WebFontOptions.RootString` sets the root string.
-
-- Font subsets that keep kerning and ligatures (roadmap 2.7.9, first part): `SubsetOptions.LayoutClosure` no longer needs
-  `RetainGlyphIds`. GDEF, GSUB and GPOS are written cut down to the kept glyphs and renumbered through the glyph map, as
-  hb-subset writes them: every script and language system stays with the kept features, each feature keeps the lookups that
-  still apply to a kept glyph, and each lookup keeps the entries for kept glyphs (coverages and class definitions in their
-  smaller format, classes and lookup indexes renumbered, feature variations kept). Lookups that no longer fit 16-bit offsets
-  become extension lookups. With `RetainGlyphIds` the same cutting runs without renumbering, so those subsets are smaller too.
-  The new `SubsetOptions.LayoutFeatures` sets the features kept and
-  followed by the closure (`OpenTypeLayout.DefaultClosureFeatures` by default). A damaged GDEF, GSUB or GPOS table now makes a
-  layout-closure subset throw `CorruptDataException`. Subsets of the HarfBuzz shaping test cases and of Egami's test fonts in
-  Latin, Arabic, Hebrew, Indic, Southeast Asian, CJK and emoji text shape exactly as the full face.
-- `FontSubsetter.GlyphsFor` also adds the shaper's other stand-ins, so a subset shapes text as the full face: the decompositions
-  that Indic, Khmer, Myanmar and Universal Shaping Engine scripts make even of characters the face maps (split vowels, Thai and
-  Lao sara am), mirrored brackets for right-to-left text, vertical forms for a face without vert, the space for default
-  ignorables and for spaces the face lacks, U+2010 for a missing U+2011, and the Arabic presentation forms for a face without
-  an Arabic GSUB.
-- Layout-closure subsets, second part (roadmap 2.7.9): MATH is cut down and renumbered with dense ids too (it was left out),
-  and with retained ids it is cut down rather than copied. The legacy kern table keeps the format 0 pairs of kept glyphs,
-  renumbered and sorted (other formats only with `RetainGlyphIds`), and vhea, vmtx and VORG keep the kept glyphs' vertical
-  metrics. A variable face's static subset bakes its layout variations in at its position: GPOS values and anchors, GDEF
-  carets and MATH values take their rounded deltas and lose their variation device tables, the feature variations that hold
-  there replace their features, GDEF drops its variation store, and vertical advances and origins are written varied. The
-  subset's cmap keeps the variation sequences of the kept characters and glyphs in format 14, and `FontSubsetter.GlyphsFor`
-  adds the glyphs of the variation sequences the characters make. Subsets of 5,229 HarfBuzz shaping test cases (1,406 more
-  than before: variable faces, legacy kern, vertical metrics and variation sequences) shape exactly as the full face; one
-  variable case is left out, as its HVAR and gvar give different advances and the subset follows gvar as fontTools' instancer
-  does. A GDEF, GSUB or GPOS table whose major version is not 1, which the shaper reads as empty, is left out of the subset.
-- Layout-closure subsets, third part (roadmap 2.7.9): smaller GSUB and GPOS, as hb-subset prunes them. A feature left with no
-  lookup is left out, except one with parameters (size, stylistic sets, character variants), one whose feature variations
-  keep a lookup and one a shaper asks for by name (frac, numr, dnom, rtlm, vert, kern, vkrn, mark, the Arabic joining forms,
-  rlig, rclt, stch and pref); a language system the same as its script's default after the cut is left out, as the shaper
-  falls back to the default. The new `SubsetOptions.Characters` names the characters a subset is for: the cmap then holds
-  only them and the shaper's stand-ins for them, not every character of a kept glyph (such as U+FB01 for the fi ligature).
-  `FontSubsetter.GlyphsFor` adds the Arabic presentation forms only when the shaper would use them, as for a face with no
-  isol, fina, medi or init feature (it added them for a face without isol, such as Noto Sans Arabic).
-
-- `ParagraphStyle.SpaceShrink` (0 to 1, 0 by default) lets justified lines fit the next word by shrinking their word spaces,
-  as Word fills justified paragraphs: by at most that share of the spaces in all, and each space by at most half of what it
-  would stretch had the line ended at the break before. The whole word is kept by shrinking before automatic hyphenation is
-  tried, and a hyphenated piece may fit by shrinking too. No-break spaces, glyphs and letter spacing keep their widths; last
-  lines and lines before a hard break shrink when they must but never stretch; kashida lines that shrink get no tatweels.
-  `LineFill.Optimal` uses it as its shrink limit in place of `OptimalLineOptions.ShrinkSpaces`' third. At 0 every layout is
-  the same as in 1.5.0.
-- `ParagraphStyle.JustifyLineBreaks` (false by default) justifies the lines of a justified paragraph that end in a hard break
-  other than U+2029 (LF, CR, CRLF, VT, FF, NEL, U+2028) like wrapped lines, as Word justifies the line before Shift+Enter: they
-  stretch to the width, shrink and stretch with `SpaceShrink`, and `LineFill.Optimal` weighs their stretch instead of scoring
-  them 0. The paragraph's last line and lines before U+2029 keep `AlignLast`; `TextLine.HardBreak` stays true.
-- `ParagraphStyle.StretchNoBreakSpaces` (true by default, as CSS) set to false keeps U+00A0 at its width on justified lines,
-  as Word does.
-- Fixed: on a justified line with tabs, stretched or shrunk word spaces before a tab moved the text after it off its tab stop.
-  Only the justification opportunities after a line's last tab now stretch or shrink, as Word spreads such lines; lines
-  without tabs are unchanged.
-- `WordDictionary` and `WordDictionaries` (roadmap 2.8.5, first part): word lists by script for breaking text written without
-  spaces between words. `WordDictionaries.BuiltIn` holds ICU's word lists for Thai, Lao, Khmer and Myanmar (release 79.1;
-  Unicode License v3, BSD-2 and BSD-3 notices in THIRD-PARTY-NOTICES.md), about 0.7 MB in all, each loaded on first use in
-  about 2 ms or less. A `WordDictionary` comes from a word list (`FromWords`, or `Load` of a UTF-8 list with one word per line),
-  takes user words with `WithWords`, and saves to and loads from Egami's compiled form (`.edict`).
-- Dictionary line breaking (roadmap 2.8.5, second part): `LineBreaks` and `Paragraph` break Thai, Lao, Khmer and Myanmar
-  between dictionary words, on by default. `LineBreakOptions.Dictionaries` picks the set (null for `WordDictionaries.BuiltIn`,
-  `WordDictionaries.None` to break only at spaces as before). The segmenter follows ICU's dictionary break engines and gives
-  ICU's word boundaries on the UDHR texts of all four scripts; it also never splits a grapheme cluster (ICU does, after a
-  Khmer coeng or Myanmar virama) and keeps ໆ and ຯ with the word before them. Thai and Myanmar line starts equal Chromium
-  129's; Chromium breaks Lao and Khmer with older, smaller lists, so it splits some compounds Egami keeps whole. Breaking
-  stays allocation-free, and the dictionaries load the first time text of their script is broken.
-- Dictionary word boundaries (roadmap 2.8.5, third part): `TextSegmenter.Words(text, dictionaries)` returns a
-  `DictionaryWordEnumerator` that splits Thai, Lao, Khmer and Myanmar runs into words, counting their letters as ALetter as
-  ICU's word rules do; the old `Words(text)` keeps plain UAX #29. `TextLayout.GetWordBoundary` and `CaretMove.NextWord` and `PreviousWord` use the paragraph's
-  `LineBreaking.Dictionaries`. Word boundaries equal Chromium 129's `Intl.Segmenter` on the Thai UDHR text and on Myanmar
-  apart from ICU's splits inside a grapheme cluster; Lao and Khmer differ where Chromium's older lists do.
-- Fixed: a line ending inside a run whose shaping is unsafe to break measured a lone mark, such as a Myanmar asat, with a
-  dotted circle when the window shaped again began inside a glyph cluster.
-
-- `WebFontWriter.Write` writes a `Typeface`, a `FontSubset` or sfnt or collection bytes as WOFF2 (the default) or WOFF 1.0
-  (`WebFontOptions.Format`), to a byte array or a stream. Every table is kept. WOFF2 stores glyf and loca in the transformed
-  form (bounding boxes only where the points do not give them, the overlap bitmap when a glyph needs it) and leaves out the hmtx
-  bearings that equal each glyph's xMin; `TransformGlyf` and `TransformHmtx` turn them off. As woff2_compress does, WOFF2
-  sets bit 11 of head's flags (a lossless modifying transform). A WOFF2 file read back gives the
-  same glyf and loca bytes as Google's woff2_decompress gives for woff2_compress's file of the same font.
-- Collections (TTC and OTC) become WOFF2 collections that share tables as the collection does; WOFF 1.0 holds a single font
-  and throws `ArgumentException` for one. A face of a collection is written as a single font.
-- The metadata and private data blocks of a WOFF or WOFF2 source are kept unless `WebFontOptions.Metadata` or `PrivateData`
-  replace them. The file's version is head's fontRevision; WOFF checksums are computed, whatever the source's directory says.
-- Compression is .NET's own Brotli (quality 11, 4 MB window) and zlib (the smallest of levels 9 and 8 with the default and
-  filtered strategies, tables stored raw when that is not smaller). WOFF2 files are within 0.5 % of woff2_compress's with the hmtx transform off, and WOFF files within 0.5 % of
-  fontTools' at zlib level 9, on the test fonts.
-- A glyf table the writer cannot read is stored untransformed with the new `Font.TransformSkipped` warning. A bare CFF font
-  throws `ArgumentException`. Input and output are bounded by the context's `SafetyLimits.MaxTotalBytes`.
-- `WebFontReader.ToSfnt` (2.7.8) turns a WOFF or WOFF2 file back into the TrueType or OpenType font it holds, rebuilding
-  WOFF2's transformed glyf, loca and hmtx; a WOFF2 collection becomes a TTC. Bounded by `SafetyLimits.MaxTotalBytes`.
-- `SubsetOptions.DropHinting` (false by default) leaves TrueType hinting out of a subset: fpgm, prep, cvt and every glyph's
-  instructions, with maxp's hinting limits set to none; gasp stays. CFF hints are kept.
-- `SubsetOptions.LayoutClosure` also keeps the dotted circle (U+25CC) the shaper puts before a mark that starts a run, and
-  copies MATH with the larger variants and assembly parts it gives the kept glyphs, so such text draws as with the full face.
-- `FontSubsetter.GlyphsFor` gives the glyphs that draw characters as the shaper does: each one the face maps, the
-  decomposition of one it lacks when it draws every part (a missing "ὶ" draws as iota and a combining grave) and the
-  precomposed characters it maps whose decomposition the text holds (an "e" and a combining acute compose to "é").
-- A name-keyed CFF subset keeps only the strings its dicts and glyph names use: the String INDEX held every glyph's name, most
-  of a small subset's CFF (a 66-character SourceSans3 subset drops from 28 KB to 6 KB).
-
-## Egami.Barcodes 1.1.0 (unreleased)
-
-Code 93 and Codabar (roadmap 2.11.2, stage A) and GS1 DataBar (stage B).
-
-- `Barcode.Code93` and `Code93Options` write Code 93 (ANSI/AIM BC5) with its two check characters, C and K, and Full ASCII
-  when the text needs it; `Barcode.Codabar` and `CodabarOptions` write Codabar (EN 798) with a start and stop character A to
-  D, an optional modulo 16 check character and a wide ratio of 2 or 3. `Barcode.Create` makes both.
-- Both are read: Code 93 without its check characters and with Full ASCII decoded, Codabar with its start and stop
-  characters, as zxing-cpp returns it.
-- `BarcodeFormat.Code93` and `BarcodeFormat.Codabar` are new, and `BarcodeFormat.Linear` and `All` include them, so reads
-  with the default options look for them too. A program built against 1.0 that names `Linear` or `All` keeps 1.0's value
-  until it is built again, as enum values are compiled into it.
-- `Barcode.DataBar` and `DataBarOptions` write GS1 DataBar Omnidirectional (ISO/IEC 24724) and its Truncated, Stacked and
-  Stacked Omnidirectional forms (`DataBarKind`); `Barcode.DataBarLimited` writes DataBar Limited; `Barcode.DataBarExpanded` and
-  `DataBarExpandedOptions` write DataBar Expanded from GS1 element strings, and Expanded Stacked in rows of 2 to 20 symbol
-  characters. The symbols equal zint's. `Barcode.Create` makes all three, and `Barcode.FromModules` takes the stacked forms'
-  grids.
-- All of them are read, as GS1 element strings with `BarcodeResult.Gs1` set: the halves of stacked symbols and the rows of
-  Expanded Stacked from different scan lines, joined by their checksum and finder sequence. Expanded symbols made to the
-  standard's first edition read too.
-- `BarcodeFormat.DataBar`, `DataBarLimited` and `DataBarExpanded` are new and join `Linear` and `All`.
-
-Micro QR Code (roadmap 2.11.2, stage C).
-
-- `Barcode.MicroQr` and `MicroQrOptions` write Micro QR Code (ISO/IEC 18004), versions M1 to M4: the smallest version that
-  holds the text at level L (or the level and smallest version asked for), with the level raised while the version holds.
-  Segments are numeric, alphanumeric, byte and Kanji as each version allows; there is no ECI. The symbols equal zint's.
-  `Barcode.Create` and `Barcode.FromModules` take `BarcodeFormat.MicroQr`, with a quiet zone of 2 modules.
-- Micro QR is read at any rotation, in some perspective, mirrored and light on dark, with errors corrected (M1 only detects
-  them). The search finds the finder patterns once for QR and Micro QR.
-- `BarcodeFormat.MicroQr` is new, and `BarcodeFormat.Matrix` and `All` include it, so reads with the default options look for
-  it too.
-
-Japan Post customer barcode (roadmap 2.11.3, stage A).
-
-- `Barcode.JapanPost` and `JapanPostOptions` write the Japan Post customer barcode (カスタマバーコード) from prepared data: the
-  7-digit postal code and the address number, letters A to Z as a control code and a digit, padded with CC4 to 20 characters,
-  with its modulo 19 check character. An address number too long for the symbol loses its end, as Japan Post's manual says,
-  unless `TruncateAddress` is off. The modules are a grid of 6 rows, one dark column per bar; drawn at 0.6 mm per module the
-  symbol has the manual's size, 79.8 by 3.6 mm. The symbols equal zint's. `Barcode.Create` and `Barcode.FromModules` take
-  `BarcodeFormat.JapanPost`, with a quiet zone of 4 modules (2 mm or more).
-- `BarcodeFormat.JapanPost` and the group `BarcodeFormat.Postal` are new. Postal barcodes are written, not read, so
-  `Postal` is not in `All` and reads with the default options are unchanged.
-
-Intelligent Mail, Royal Mail, KIX and Australia Post barcodes (roadmap 2.11.3, stage B).
-
-- `Barcode.IntelligentMail` writes the USPS Intelligent Mail barcode (USPS-B-3200) from the 20-digit tracking code and a
-  routing code of 0, 5, 9 or 11 digits: 65 bars with an 11-bit frame check, a grid of 6 rows that gives bars 0.136 inch tall
-  at 22 per inch at a 1/44 inch module, with a quiet zone of 6 modules. The spec's examples pass.
-- `Barcode.RoyalMail` writes RM4SCC, digits and letters A to Z with start and stop bars and a modulo 6 check character, and
-  `Barcode.Kix` PostNL's KIX code, the same characters without them: grids of 8 rows that give Royal Mail's sizes at a 0.6
-  mm module, with a quiet zone of 4 modules.
-- `Barcode.AustraliaPost` and `AustraliaPostOptions` write the Australia Post 4-State Customer Barcode: the eight-digit DPID
-  and, in Customer Barcodes 2 and 3, customer information in the N or C table, with filler bars and four Reed-Solomon check
-  symbols over GF(64). `AustraliaPostFormat` names the formats by their FCC (11, 59, 62 and the internal 45, 87 and 92),
-  `AustraliaPostEncoding` the tables. The human-readable text is the spec's text representation. A grid of 8 rows gives
-  Australia Post's sizes at a 0.55 mm module, with a quiet zone of 11 modules (6 mm). The spec's examples pass.
-- The symbols equal zint's. `Barcode.Create` and `Barcode.FromModules` take the four formats.
-- `BarcodeFormat.IntelligentMail`, `RoyalMail`, `Kix` and `AustraliaPost` are new and in `Postal`, which stays out of `All`,
-  so reads with the default options are unchanged.
-
-Faster linear reading (roadmap 2.11.2 follow-up).
-
-- The scan lines are cut into runs sixteen samples at a time, each decoder tests the quiet zone before its start pattern, and
-  DataBar Limited tests its check character's last two elements before reading its characters: the same reads, faster.
-- A linear read allocates less: no DataBar tables unless DataBar is asked for, and no inverted local threshold without 2D
-  formats.
-- On one thread against zxing-cpp 3.1.1 (egami-compare's speed gate): Codabar 1.06x to 0.89x, Code 93 1.39x to 1.04x,
-  Code 128 0.96x to 0.64x, Code 39 0.68x to 0.50x, ITF 1.57x to 1.15x, EAN and UPC 0.93x to 0.67x, DataBar Limited 2.55x to
-  1.8x; a default read of the blackbox and zint images takes 0.95x of the time before.
-
-## Egami.Cli 1.6.0 (unreleased)
-
-MCP prompts and resources, a guide for coding agents, animated SVG input and font commands. Additive to 1.5.0.
-
-- `egami font convert` (2.7.8) writes fonts losslessly as WOFF2 (the default) or WOFF, or WOFF and WOFF2 back to TTF, OTF or
-  TTC, by `-o`'s extension or `--format`; collections convert to WOFF2 or TTC only. `--no-transform` and `--metadata`.
-- `egami font subset` keeps the characters of `--text`, `--text-file` and `--unicodes` (CSS unicode-range syntax). By default
-  it keeps the glyphs the layout tables reach and those tables cut down to the kept glyphs, renumbered from 0 (roadmap 2.7.9),
-  so the subset shapes as the full font; `--retain-gids` keeps the glyph ids and `--no-layout` gives the smallest file. The
-  cmap maps only the asked characters (and the characters the shaper draws in their place), not every character of a kept glyph.
-  Variable fonts become static, at `--variation` or the default position. `--no-hinting`, `--name-prefix`, `--face`. It prints the glyphs kept, the missing characters and the sizes, and warns about
-  tables it leaves out.
-- `egami font info` describes fonts: names, container, outlines, glyphs, units per em, axes, embedding rights, tables and Unicode
-  blocks covered; `--json` adds the coverage as a CSS unicode-range. The three are MCP tools (`font_info` read-only).
-- Every command takes `--animate [fps]`, which loads an animated SVG input with all its frames (30 a second by default), and
-  `--at <time>`, which draws it at one moment (or, with `--animate`, starts the frames there). `egami mcp`'s tools that take
-  files take both as `animate` and `at`.
-- `egami mcp` serves three resources: `egami://schema/workflow` (the workflow schema, byte for byte), `egami://formats` (what
-  `egami formats --json` prints) and `egami://guide` (the agent guide). It offers five prompts, each one message naming the
-  tools to call: `thumbnails`, `convert_folder`, `web_images`, `strip_metadata` and `make_workflow`. Both are static: no
-  subscriptions or list-changed notices.
-- The package carries `AGENTS.md`, a guide for coding agents that call egami from scripts or through `egami mcp`: commands,
-  workflow files, exit codes and common mistakes. Its command lines run with the tests.
 
 ## Egami train 1.5.0 (2026-11-23)
 
