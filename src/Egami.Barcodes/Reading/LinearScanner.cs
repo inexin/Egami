@@ -79,7 +79,8 @@ internal static class LinearScanner
 
         public List<Found> Results { get; } = [];
 
-        public DataBarCollector DataBar { get; } = new();
+        /// <summary>Gets the DataBar pairs and segments seen so far, made when first needed (its tables are large).</summary>
+        public DataBarCollector DataBar => field ??= new();
 
         public List<(DecodedData Data, Vector2 From, Vector2 To)> DataBarFound { get; } = [];
     }
@@ -88,7 +89,7 @@ internal static class LinearScanner
     private sealed class LineBuffers
     {
         public byte[] Samples = [];
-        public float[] Work = [];
+        public byte[] Work = [];
         public int[] Prefix = [];
         public float[] Shifted = [], ShiftedOffsets = [], Back = [], BackOffsets = [];
         public readonly List<float> Runs = [], Offsets = [];
@@ -186,6 +187,20 @@ internal static class LinearScanner
         }
 
         Span<byte> samples = line.Samples.AsSpan(0, length);
+        if (step == new Vector2(0, 1) && start.X == MathF.Floor(start.X) && start.Y == MathF.Floor(start.Y) && start.Y >= 0 && start.Y + length < 1 << 24
+            && start.X >= 0 && start.X < image.Width)
+        {
+            // A column: the same samples as below, without the arithmetic per sample.
+            int column = (int)start.X, top = (int)start.Y, inside = Math.Clamp(image.Height - top, 0, length);
+            for (int i = 0; i < inside; i++)
+            {
+                samples[i] = image[column, top + i];
+            }
+
+            samples[inside..].Fill(255);
+            return samples;
+        }
+
         for (int i = 0; i < length; i++)
         {
             int x = (int)(start.X + (step.X * i)), y = (int)(start.Y + (step.Y * i));

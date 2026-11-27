@@ -671,14 +671,15 @@ internal sealed class JxlVarDct
     /// <summary>
     /// Dequantizes a row of a varblock's HF coefficients (I.2.4): a quantized ±1 or 0 times the bias, any other q as
     /// q − numerator / q, then times the matrix entry and the scale. With FMA eight at a time, the division as the reciprocal
-    /// estimate refined by one Newton step.
+    /// estimate refined by one Newton step; without it four at a time in 128-bit vectors (Arm64, and x86 without AVX2) with the
+    /// scalar operations, so the same samples as the scalar loop.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void DequantizeRow(ReadOnlySpan<int> coeffs, ReadOnlySpan<float> matrix, Span<float> output, float bias, float numerator, float mul)
     {
         int width = output.Length;
         int x = 0;
-        if (System.Runtime.Intrinsics.X86.Fma.IsSupported && coeffs.Length >= width && matrix.Length >= width)
+        if (JxlColor.Fused256 && coeffs.Length >= width && matrix.Length >= width)
         {
             ref int c = ref MemoryMarshal.GetReference(coeffs);
             ref float m = ref MemoryMarshal.GetReference(matrix);
@@ -698,6 +699,10 @@ internal sealed class JxlVarDct
                 (q * Vector256.LoadUnsafe(ref m, (nuint)x) * vMul).StoreUnsafe(ref to, (nuint)x);
             }
         }
+        else if (Vector128.IsHardwareAccelerated && coeffs.Length >= width && matrix.Length >= width)
+        {
+            x = DequantizeRow128(coeffs, matrix, output, bias, numerator, mul);
+        }
 
         for (; x < width; x++)
         {
@@ -707,13 +712,37 @@ internal sealed class JxlVarDct
         }
     }
 
+    /// <summary>The 128-bit part of <see cref="DequantizeRow"/>: the samples it did, a multiple of four, the same as the scalar loop's.</summary>
+    internal static int DequantizeRow128(ReadOnlySpan<int> coeffs, ReadOnlySpan<float> matrix, Span<float> output, float bias, float numerator, float mul)
+    {
+        int width = Math.Min(output.Length, Math.Min(coeffs.Length, matrix.Length));
+        ref int c = ref MemoryMarshal.GetReference(coeffs);
+        ref float m = ref MemoryMarshal.GetReference(matrix);
+        ref float to = ref MemoryMarshal.GetReference(output);
+        Vector128<float> vBias = Vector128.Create(bias);
+        Vector128<float> vNumerator = Vector128.Create(numerator);
+        Vector128<float> vMul = Vector128.Create(mul);
+        int x = 0;
+        for (; x + 4 <= width; x += 4)
+        {
+            // At q = 0 the large form is NaN, in a lane not chosen.
+            Vector128<float> q = Vector128.ConvertToSingle(Vector128.LoadUnsafe(ref c, (nuint)x));
+            Vector128<float> small = Vector128.LessThanOrEqual(Vector128.Abs(q), Vector128<float>.One);
+            q = Vector128.ConditionalSelect(small, q * vBias, q - (vNumerator / q));
+            (q * Vector128.LoadUnsafe(ref m, (nuint)x) * vMul).StoreUnsafe(ref to, (nuint)x);
+        }
+
+        return x;
+    }
+
     /// <summary>Chroma from luma (I.2.5) on <paramref name="count"/> samples from <paramref name="at"/>: X += kx · Y and B += kb · Y, fused where there is FMA.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void ChromaFromLumaRow(float[] px, float[] py, float[] pb, int at, int count, float kx, float kb)
     {
         if (!System.Runtime.Intrinsics.X86.Fma.IsSupported)
         {
-            for (int i = at; i < at + count; i++)
+            int done = Vector128.IsHardwareAccelerated ? ChromaFromLumaRow128(px.AsSpan(at, count), py.AsSpan(at, count), pb.AsSpan(at, count), kx, kb) : 0;
+            for (int i = at + done; i < at + count; i++)
             {
                 float yv = py[i];
                 px[i] += kx * yv;
@@ -744,6 +773,29 @@ internal sealed class JxlVarDct
             sx[x] = MathF.FusedMultiplyAdd(kx, sy[x], sx[x]);
             sb[x] = MathF.FusedMultiplyAdd(kb, sy[x], sb[x]);
         }
+    }
+
+    /// <summary>
+    /// The unfused part of <see cref="ChromaFromLumaRow"/> (no FMA: Arm64, and x86 without AVX2) four at a time, with the scalar
+    /// loop's multiply and add; returns the samples done.
+    /// </summary>
+    internal static int ChromaFromLumaRow128(Span<float> sx, ReadOnlySpan<float> sy, Span<float> sb, float kx, float kb)
+    {
+        int count = Math.Min(sx.Length, Math.Min(sy.Length, sb.Length));
+        ref float rx = ref MemoryMarshal.GetReference(sx);
+        ref float ry = ref MemoryMarshal.GetReference(sy);
+        ref float rb = ref MemoryMarshal.GetReference(sb);
+        Vector128<float> vkx = Vector128.Create(kx);
+        Vector128<float> vkb = Vector128.Create(kb);
+        int x = 0;
+        for (; x + 4 <= count; x += 4)
+        {
+            Vector128<float> yv = Vector128.LoadUnsafe(ref ry, (nuint)x);
+            (Vector128.LoadUnsafe(ref rx, (nuint)x) + (vkx * yv)).StoreUnsafe(ref rx, (nuint)x);
+            (Vector128.LoadUnsafe(ref rb, (nuint)x) + (vkb * yv)).StoreUnsafe(ref rb, (nuint)x);
+        }
+
+        return x;
     }
 
     /// <summary>Puts a varblock's LF coefficients into its dequantized HF (the LLF of a large varblock via a DCT) and runs its inverse transform.</summary>
@@ -777,6 +829,14 @@ internal sealed class JxlVarDct
                     {
                         Span<float> row = plane.AsSpan(o + (y * stride) + x, 8);
                         (Vector256.Create(row) * Vector256.Create(multipliers.AsSpan((y * bw) + x, 8))).CopyTo(row);
+                    }
+                }
+                else if (Vector128.IsHardwareAccelerated)
+                {
+                    for (; x + 4 <= bw; x += 4)
+                    {
+                        Span<float> row = plane.AsSpan(o + (y * stride) + x, 4);
+                        (Vector128.Create(row) * Vector128.Create(multipliers.AsSpan((y * bw) + x, 4))).CopyTo(row);
                     }
                 }
 
