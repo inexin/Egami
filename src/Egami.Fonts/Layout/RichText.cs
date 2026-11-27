@@ -53,9 +53,9 @@ public enum PlaceholderAlignment
 }
 
 /// <summary>
-/// Text with styles: a string, the <see cref="StyleSpan"/>s over it (sorted, never overlapping) and the
-/// <see cref="Placeholder"/>s for its object replacement characters, in order. Immutable; build one with
-/// <see cref="RichTextBuilder"/>.
+/// Text with styles: a string, the <see cref="StyleSpan"/>s over it (sorted, never overlapping), the
+/// <see cref="Placeholder"/>s for its object replacement characters, in order, and the <see cref="RubyAnnotation"/>s over it
+/// (sorted, never overlapping). Immutable; build one with <see cref="RichTextBuilder"/>.
 /// </summary>
 /// <example>
 /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="rich-text"/>
@@ -71,6 +71,24 @@ public sealed class RichText
     /// <exception cref="ArgumentException">A span is empty, outside the text or overlaps another, or the placeholders do not
     /// match the text's U+FFFC characters.</exception>
     public RichText(string text, IEnumerable<StyleSpan>? spans = null, IEnumerable<Placeholder>? placeholders = null)
+        : this(text, spans, placeholders, null)
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="RichText"/> class with ruby.</summary>
+    /// <param name="text">The text.</param>
+    /// <param name="spans">Styles over parts of the text, in any order but not overlapping; text outside them takes the
+    /// paragraph's default style.</param>
+    /// <param name="placeholders">One placeholder for each U+FFFC in the text, in order.</param>
+    /// <param name="ruby">Ruby annotations over parts of the text, in any order but not overlapping.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="text"/>, a span's style, an annotation or its ruby text is null.</exception>
+    /// <exception cref="ArgumentException">A span is empty, outside the text or overlaps another; the placeholders do not match
+    /// the text's U+FFFC characters; or an annotation's base is empty, outside the text, overlaps another or splits a surrogate
+    /// pair, its ruby text holds U+FFFC, its position or alignment is not defined, or its offset is not finite.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="ruby"/>
+    /// </example>
+    public RichText(string text, IEnumerable<StyleSpan>? spans, IEnumerable<Placeholder>? placeholders, IEnumerable<RubyAnnotation>? ruby)
     {
         ArgumentNullException.ThrowIfNull(text);
         StyleSpan[] sorted = [.. (spans ?? []).OrderBy(s => s.Start)];
@@ -114,6 +132,7 @@ public sealed class RichText
         Text = text;
         Spans = sorted;
         Placeholders = boxes;
+        Ruby = ruby is null ? [] : ValidRuby(text, ruby);
     }
 
     /// <summary>Gets the text.</summary>
@@ -124,6 +143,59 @@ public sealed class RichText
 
     /// <summary>Gets the placeholders, one per U+FFFC in the text, in order.</summary>
     public IReadOnlyList<Placeholder> Placeholders { get; }
+
+    /// <summary>Gets the ruby annotations, sorted by start; their indexes are the ones <see cref="LayoutRun.Annotation"/> and
+    /// <see cref="TextLayout.GetRubyBounds"/> use.</summary>
+    public IReadOnlyList<RubyAnnotation> Ruby { get; }
+
+    private static RubyAnnotation[] ValidRuby(string text, IEnumerable<RubyAnnotation> ruby)
+    {
+        RubyAnnotation[] given = [.. ruby];
+        foreach (RubyAnnotation? a in given)
+        {
+            if (a is null || a.Text is null)
+            {
+                throw new ArgumentNullException(nameof(ruby), "An annotation or its ruby text is null.");
+            }
+        }
+
+        RubyAnnotation[] sorted = [.. given.OrderBy(a => a.Start)];
+        int end = 0;
+        foreach (RubyAnnotation a in sorted)
+        {
+            if (a.Start < 0 || a.Length <= 0 || a.Length > text.Length - a.Start)
+            {
+                throw new ArgumentException($"The annotation at {a.Start} with length {a.Length} is empty or not inside the text.", nameof(ruby));
+            }
+
+            if (a.Start < end)
+            {
+                throw new ArgumentException($"The annotation at {a.Start} overlaps the annotation before it.", nameof(ruby));
+            }
+
+            if (SplitsPair(text, a.Start) || SplitsPair(text, a.End))
+            {
+                throw new ArgumentException($"The annotation at {a.Start} with length {a.Length} splits a surrogate pair.", nameof(ruby));
+            }
+
+            if (a.Text.Contains('\uFFFC'))
+            {
+                throw new ArgumentException("Ruby text cannot hold object replacement characters.", nameof(ruby));
+            }
+
+            if (!Enum.IsDefined(a.Position) || !Enum.IsDefined(a.Align) || (a.Offset is float offset && !float.IsFinite(offset)))
+            {
+                throw new ArgumentException($"The annotation at {a.Start} has an undefined position or alignment, or an offset that is not finite.", nameof(ruby));
+            }
+
+            end = a.End;
+        }
+
+        return sorted;
+    }
+
+    private static bool SplitsPair(string text, int index) =>
+        index > 0 && index < text.Length && char.IsLowSurrogate(text[index]) && char.IsHighSurrogate(text[index - 1]);
 
     /// <summary>The index of the span covering a UTF-16 index, or -1.</summary>
     internal int SpanAt(int index)
@@ -164,6 +236,7 @@ public sealed class RichTextBuilder
     private readonly System.Text.StringBuilder _text = new();
     private readonly List<StyleSpan> _spans = [];
     private readonly List<Placeholder> _placeholders = [];
+    private readonly List<RubyAnnotation> _ruby = [];
     private readonly Stack<TextStyle> _styles = new();
 
     /// <summary>Gets the number of styles pushed and not popped.</summary>
@@ -228,9 +301,36 @@ public sealed class RichTextBuilder
         return this;
     }
 
+    /// <summary>Adds a ruby annotation over text appended so far or later; <see cref="ToRichText"/> checks it.</summary>
+    /// <param name="start">The base's first UTF-16 index.</param>
+    /// <param name="length">The base's length in UTF-16 units.</param>
+    /// <param name="text">The ruby text.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="text"/> is null.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="ruby"/>
+    /// </example>
+    public RichTextBuilder AddRuby(int start, int length, string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        return AddRuby(new RubyAnnotation(start, length, text));
+    }
+
+    /// <summary>Adds a ruby annotation with its style, position, alignment and offset; <see cref="ToRichText"/> checks it.</summary>
+    /// <param name="annotation">The annotation.</param>
+    /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="annotation"/> is null.</exception>
+    public RichTextBuilder AddRuby(RubyAnnotation annotation)
+    {
+        ArgumentNullException.ThrowIfNull(annotation);
+        _ruby.Add(annotation);
+        return this;
+    }
+
     /// <summary>Builds the rich text; styles still pushed end with the text.</summary>
     /// <returns>The rich text.</returns>
-    public RichText ToRichText() => new(_text.ToString(), _spans, _placeholders);
+    /// <exception cref="ArgumentException">A ruby annotation does not fit the text.</exception>
+    public RichText ToRichText() => new(_text.ToString(), _spans, _placeholders, _ruby.Count == 0 ? null : _ruby);
 
     private void Add(ReadOnlySpan<char> text)
     {

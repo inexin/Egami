@@ -17,6 +17,7 @@ public sealed record class ParagraphStyle
     private readonly int? _maxLines;
     private readonly float? _maxHeight;
     private readonly float _spaceShrink;
+    private readonly RubyOptions _ruby = RubyOptions.Default;
 
     /// <summary>Gets the default paragraph style.</summary>
     public static ParagraphStyle Default { get; } = new();
@@ -169,6 +170,17 @@ public sealed record class ParagraphStyle
 
     /// <summary>Gets the families and resolver tried after a style's own families.</summary>
     public FontFallback Fallback { get; init; } = FontFallback.None;
+
+    /// <summary>Gets how the rich text's <see cref="RichText.Ruby"/> annotations lay out.</summary>
+    /// <exception cref="ArgumentNullException">The value is null.</exception>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="ruby"/>
+    /// </example>
+    public RubyOptions Ruby
+    {
+        get => _ruby;
+        init => _ruby = value ?? throw new ArgumentNullException(nameof(value));
+    }
 }
 
 /// <summary>How lines align in their width (CSS <c>text-align</c>).</summary>

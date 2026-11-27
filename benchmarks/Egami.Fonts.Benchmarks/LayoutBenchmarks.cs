@@ -6,7 +6,8 @@ namespace Egami.Fonts.Benchmarks;
 
 /// <summary>Justified paragraph layout: Latin and Arabic at word spaces, Latin whose spaces may also shrink by a quarter
 /// (ParagraphStyle.SpaceShrink), and Arabic with kashida (2.8.3); Latin laid out plain and with every fourth word in
-/// another color, which cuts lines into a run per color; and Thai and Khmer, which break between dictionary words (2.8.5).</summary>
+/// another color, which cuts lines into a run per color; Thai and Khmer, which break between dictionary words (2.8.5); and
+/// Japanese plain and with ruby over every kanji pair (2.8.6).</summary>
 [MemoryDiagnoser]
 public class LayoutBenchmarks
 {
@@ -20,6 +21,8 @@ public class LayoutBenchmarks
     private Paragraph _colored = null!;
     private Paragraph _thai = null!;
     private Paragraph _khmer = null!;
+    private Paragraph _japanese = null!;
+    private Paragraph _ruby = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -37,6 +40,22 @@ public class LayoutBenchmarks
         _colored = Paragraph.Create(Colored(latin), left);
         _thai = Plain(root, "thai", "NotoSansThai-Regular.ttf");
         _khmer = Plain(root, "khmer", "NotoSansKhmer-Regular.ttf");
+        FontCollection cjk = new();
+        cjk.AddFile(Path.Combine(root, "tests", "fonts", "derived", "NotoSansCJK-layout-subset.otf"));
+        ParagraphStyle japanese = new() { DefaultStyle = new TextStyle { FontFamilies = [cjk.Families[0]], Size = 16, Language = "ja" } };
+        string kanji = string.Concat(Enumerable.Repeat("諸国間の友好関係の発展を促進することが肝要である", 8));
+        _japanese = Paragraph.Create(kanji, japanese);
+        List<RubyAnnotation> ruby = [];
+        for (int i = 0; i + 1 < kanji.Length; i++)
+        {
+            if (kanji[i] >= 0x4E00 && kanji[i + 1] >= 0x4E00)
+            {
+                ruby.Add(new RubyAnnotation(i, 2, "こくさい"));
+                i++;
+            }
+        }
+
+        _ruby = Paragraph.Create(new RichText(kanji, null, null, ruby), japanese);
     }
 
     [Benchmark]
@@ -62,6 +81,12 @@ public class LayoutBenchmarks
 
     [Benchmark]
     public int LayoutKhmer() => _khmer.Layout(Width).Lines.Count;
+
+    [Benchmark]
+    public int LayoutJapanese() => _japanese.Layout(Width).Lines.Count;
+
+    [Benchmark]
+    public int LayoutJapaneseRuby() => _ruby.Layout(Width).Lines.Count;
 
     /// <summary>The repository root.</summary>
     internal static string Root()

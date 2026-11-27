@@ -37,7 +37,7 @@ public abstract partial class Canvas
     /// <summary>
     /// Draws a laid-out paragraph with its top-left corner at <paramref name="origin"/>, line by line in CSS's order: text shadows
     /// (glyphs and decorations again, offset and blurred), run backgrounds, underlines and overlines, glyphs and placeholders,
-    /// then line-throughs. Each run uses its style's <see cref="TextStyle.Paint"/> or <see cref="TextStyle.Color"/> (black when
+    /// ruby (<see cref="TextLine.AnnotationRuns"/>, each in its ruby style's paint), then line-throughs. Each run uses its style's <see cref="TextStyle.Paint"/> or <see cref="TextStyle.Color"/> (black when
     /// neither is set), each decoration its own paint or color. Lines outside <paramref name="visibleRect"/> and the clip are
     /// skipped. An ellipsis is drawn as marked content whose ActualText is the text it stands for on its line, and a soft
     /// hyphen's hyphen as one whose ActualText is the soft hyphen; an automatic hyphen (<see cref="Hyphens.Auto"/>) and the
@@ -145,7 +145,7 @@ public abstract partial class Canvas
         DecorationShape[] shapes = [.. decorations];
 
         // Shadows: everything a style draws, again, offset and blurred, the first shadow on top as CSS stacks them.
-        foreach (LayoutRun run in line.Runs)
+        foreach (LayoutRun run in line.AnnotationRuns.Count == 0 ? line.Runs : line.Runs.Concat(line.AnnotationRuns))
         {
             if (run.Glyphs is GlyphRun glyphs && paragraph.GetStyle(run.StyleIndex).Shadows is { Count: > 0 } shadows)
             {
@@ -248,6 +248,16 @@ public abstract partial class Canvas
             else
             {
                 OnDrawGlyphRun(glyphs, origin, paint);
+            }
+        }
+
+        // Ruby, in its own style's paint.
+        foreach (LayoutRun run in line.AnnotationRuns)
+        {
+            if (run.Glyphs is GlyphRun glyphs && glyphs.Count > 0)
+            {
+                TextStyle style = paragraph.GetStyle(run.StyleIndex);
+                OnDrawGlyphRun(glyphs, origin, PaintOf(style.Paint, style.Color ?? new Rgba8(0, 0, 0, 255)));
             }
         }
 
@@ -354,7 +364,7 @@ public abstract partial class Canvas
     private static float ShadowReach(Paragraph paragraph, TextLine line)
     {
         float reach = 0;
-        foreach (LayoutRun run in line.Runs)
+        foreach (LayoutRun run in line.AnnotationRuns.Count == 0 ? line.Runs : line.Runs.Concat(line.AnnotationRuns))
         {
             if (paragraph.GetStyle(run.StyleIndex).Shadows is { Count: > 0 } shadows)
             {

@@ -37,6 +37,8 @@ EPS previews (roadmap 2.3.14).
   curves): lines and curves are split until the result stays within a tolerance, a line whose image stays straight stays a
   line, closed contours stay closed (their closing line bends too) and the fill rule is kept. A recipe in the drawing guide
   bends text into an arch.
+- Ruby (roadmap 2.8.6): `DrawTextLayout` draws each line's `AnnotationRuns` in their ruby style's paint, after the glyphs
+  and before line-throughs, with their shadows; `TextLayout.ToPath`, recorded pictures and SVG output hold them too.
 
 ## Egami.Metafiles 1.1.0 (unreleased)
 
@@ -362,7 +364,18 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
 
 ## Egami.Fonts 1.6.0 (unreleased)
 
-WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, and Word-style justified lines. Additive to 1.5.0.
+WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, Word-style justified lines and ruby. Additive
+to 1.5.0.
+
+- Ruby annotations (roadmap 2.8.6, stage A), after W3C's JLREQ and CSS Ruby Layout: `RubyAnnotation` sets ruby text over,
+  under or (horizontal bopomofo) beside a base range, added with `RichTextBuilder.AddRuby` or a new `RichText` constructor
+  and read back from `RichText.Ruby`. Mono, group and jukugo ruby (`RubyOptions.Merge`: `Separate`, `Auto`, `Collapse`);
+  ruby wider than its base spreads the base 1:2:1 and may overhang kana and punctuation (`RubyOverhang`), narrower ruby
+  spreads by `RubyAlign`. Bases never break, in greedy and optimal filling, hyphenation and overflow-wrap; justification
+  leaves them alone; lines grow to hold ruby unless their line height does. Vertical lines put over ruby right and under ruby
+  left. `ParagraphStyle.Ruby` sets the options and the size ratio (half). Each `TextLine.AnnotationRuns` holds the new
+  `LayoutRunKind.Ruby` runs with `LayoutRun.Annotation`; `TextLayout.GetRubyBounds` gives an annotation's box; ink bounds
+  hold ruby, and hit testing and carets stay on the base. A section in the paragraph layout guide shows it.
 
 - Embedded OpenType: `Typeface.FromMemory`, `FromFile`, `FromStream` and `FontLoader.LoadAll` read EOT files (versions
   0x00010000, 0x00020001 and 0x00020002), as old Internet Explorer loads them and PowerPoint embeds fonts (.fntdata), with XOR-ed
