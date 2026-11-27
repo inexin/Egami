@@ -407,6 +407,35 @@ overlap, and their bases never split a surrogate pair.
 Ruby text is shaped left to right on its own; a base inside right-to-left text keeps its characters together in one run, at
 the level of its first character.
 
+### Emphasis marks
+
+Emphasis marks stress East Asian text with a small mark beside each character, as CSS `text-emphasis` and Word's emphasis
+marks do. Set `TextStyle.Emphasis` to a `TextEmphasis`.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#emphasis)]
+
+- **Marks.** `Mark` is `Dot`, `Circle`, `DoubleCircle`, `Triangle` or `Sesame`, `Filled` (the default) or open, or `Custom`
+  with its first grapheme cluster of `Custom`. Marks are half the text's size, in the font fallback picks for them, and take
+  `Color` or `Paint`, else the text's paint.
+- **Which characters.** One mark goes beside each grapheme cluster, centred on its advance before justification moves it;
+  spaces, control characters and punctuation get none, as CSS Text Decoration 3 says.
+- **Placement.** `Position` puts marks `Over` the text (right of it in vertical lines) or `Under` it (left). They stand
+  outside ruby on the same side, and lines grow to hold them unless their line height already does.
+- **Results.** Each line's `AnnotationRuns` holds `LayoutRunKind.Emphasis` runs after its ruby runs, one per piece of the
+  line, with the piece's range and style index. `DrawTextLayout`, `ToPath`, pictures and SVG output draw them.
+
+### Tate-chu-yoko
+
+Tate-chu-yoko sets short horizontal text, such as a two-digit number or "!?", upright in one em of a vertical line, as CSS
+`text-combine-upright` does. Set `TextStyle.CombineUpright`: `TextCombine.All` combines each stretch of the style's text,
+`TextCombine.Digits(n)` each run of up to `n` (2 to 4) ASCII digits; its `Kind` (a `TextCombineKind`) says which.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/ParagraphLayout.cs#tate-chu-yoko)]
+
+The text is shaped horizontally with the font's `hwid`, `twid` or `qwid` feature for two, three or four characters where the
+font has it, then scaled down, keeping its proportions, if it is still wider than one em. The combined text breaks, justifies
+and takes an emphasis mark as one ideograph. Horizontal lines and `TextOrientation.Sideways` ignore it.
+
 ## Recipes
 
 Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.

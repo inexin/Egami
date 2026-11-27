@@ -7,7 +7,8 @@ namespace Egami.Fonts.Benchmarks;
 /// <summary>Justified paragraph layout: Latin and Arabic at word spaces, Latin whose spaces may also shrink by a quarter
 /// (ParagraphStyle.SpaceShrink), and Arabic with kashida (2.8.3); Latin laid out plain and with every fourth word in
 /// another color, which cuts lines into a run per color; Thai and Khmer, which break between dictionary words (2.8.5); and
-/// Japanese plain and with ruby over every kanji pair (2.8.6).</summary>
+/// Japanese plain, created and laid out, with ruby over every kanji pair and with emphasis marks, and vertical Japanese with
+/// tate-chu-yoko digits (2.8.6).</summary>
 [MemoryDiagnoser]
 public class LayoutBenchmarks
 {
@@ -23,6 +24,10 @@ public class LayoutBenchmarks
     private Paragraph _khmer = null!;
     private Paragraph _japanese = null!;
     private Paragraph _ruby = null!;
+    private string _kanji = null!;
+    private ParagraphStyle _japaneseStyle = null!;
+    private Paragraph _emphasis = null!;
+    private Paragraph _combined = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -56,6 +61,11 @@ public class LayoutBenchmarks
         }
 
         _ruby = Paragraph.Create(new RichText(kanji, null, null, ruby), japanese);
+        _kanji = kanji;
+        _japaneseStyle = japanese;
+        _emphasis = Paragraph.Create(kanji, japanese with { DefaultStyle = japanese.DefaultStyle with { Emphasis = new TextEmphasis { Mark = EmphasisMark.Custom, Custom = "、" } } });
+        string dates = string.Concat(Enumerable.Repeat("諸国間の12年3月の31の友好関係", 12));
+        _combined = Paragraph.Create(dates, japanese with { WritingMode = WritingMode.VerticalRl, DefaultStyle = japanese.DefaultStyle with { CombineUpright = TextCombine.Digits(2) } });
     }
 
     [Benchmark]
@@ -87,6 +97,15 @@ public class LayoutBenchmarks
 
     [Benchmark]
     public int LayoutJapaneseRuby() => _ruby.Layout(Width).Lines.Count;
+
+    [Benchmark]
+    public int CreateJapanese() => Paragraph.Create(_kanji, _japaneseStyle).RichText.Text.Length;
+
+    [Benchmark]
+    public int LayoutJapaneseEmphasis() => _emphasis.Layout(Width).Lines.Count;
+
+    [Benchmark]
+    public int LayoutVerticalTateChuYoko() => _combined.Layout(Width).Lines.Count;
 
     /// <summary>The repository root.</summary>
     internal static string Root()

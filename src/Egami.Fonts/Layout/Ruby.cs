@@ -336,6 +336,8 @@ internal sealed class RubyTable
             WordSpacing = null,
             LineHeight = null,
             BaselineShift = null,
+            Emphasis = null,
+            CombineUpright = null,
         };
         return (annotation.Style ?? parent).InheritFrom(parent);
     }

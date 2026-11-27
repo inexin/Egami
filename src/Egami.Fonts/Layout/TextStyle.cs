@@ -78,6 +78,19 @@ public sealed record class TextStyle
     /// <summary>Gets how far the text moves down from the baseline, in canvas units (negative raises it, for superscripts).</summary>
     public float? BaselineShift { get; init; }
 
+    /// <summary>Gets the emphasis marks set beside each character (CSS <c>text-emphasis</c>); none when unset.</summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="emphasis"/>
+    /// </example>
+    public TextEmphasis? Emphasis { get; init; }
+
+    /// <summary>Gets how short horizontal text combines upright in vertical lines (tate-chu-yoko, CSS
+    /// <c>text-combine-upright</c>); <see cref="TextCombine.None"/> when unset. A change splits shaping runs.</summary>
+    /// <example>
+    /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="tate-chu-yoko"/>
+    /// </example>
+    public TextCombine? CombineUpright { get; init; }
+
     /// <summary>A style with every unset field taken from <paramref name="parent"/>.</summary>
     internal TextStyle InheritFrom(TextStyle? parent) => parent is null ? this : new TextStyle
     {
@@ -97,6 +110,8 @@ public sealed record class TextStyle
         WordSpacing = WordSpacing ?? parent.WordSpacing,
         LineHeight = LineHeight ?? parent.LineHeight,
         BaselineShift = BaselineShift ?? parent.BaselineShift,
+        Emphasis = Emphasis ?? parent.Emphasis,
+        CombineUpright = CombineUpright ?? parent.CombineUpright,
     };
 }
 

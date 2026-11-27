@@ -693,6 +693,62 @@ public class ParagraphLayout
         Assert.Equal(2, under.End);
     }
 
+    [Fact]
+    public void Emphasis()
+    {
+        FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSansCJK-layout-subset.otf"));
+        fonts.AddFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "DejaVuSans.ttf"));
+        #region emphasis
+        // Dots over 国際, in red: one mark a character, none on the punctuation after it.
+        RichText text = new("国際、価値", [new StyleSpan(0, 3, new TextStyle
+        {
+            Emphasis = new TextEmphasis { Mark = EmphasisMark.Dot, Color = new Rgba8(200, 0, 0, 255) },
+        })]);
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle { FontFamilies = [.. fonts.Families], Size = 20, Language = "ja" },
+        };
+        TextLayout layout = Paragraph.Create(text, style).Layout(300);
+
+        // The marks: emphasis runs beside the line's text, at half the text's size.
+        int marks = layout.Lines[0].AnnotationRuns.Where(r => r.Kind == LayoutRunKind.Emphasis).Sum(r => r.Glyphs!.Count);
+
+        // Open circles under the text, or Word's comma mark.
+        TextEmphasis under = new() { Mark = EmphasisMark.Circle, Filled = false, Position = EmphasisPosition.Under };
+        TextEmphasis comma = new() { Mark = EmphasisMark.Custom, Custom = "、" };
+        #endregion
+
+        Assert.Equal(2, marks);
+        Assert.True(layout.Lines[0].Ascent > 20);
+        Assert.False(under.Filled);
+        Assert.Equal("、", comma.Custom);
+    }
+
+    [Fact]
+    public void TateChuYoko()
+    {
+        FontCollection fonts = new();
+        fonts.AddFile(System.IO.Path.Combine(AppContext.BaseDirectory, "fonts", "NotoSansCJK-layout-subset.otf"));
+        #region tate-chu-yoko
+        // 平成12年 in a vertical line: the two digits stand upright side by side, in one em.
+        ParagraphStyle style = new()
+        {
+            DefaultStyle = new TextStyle
+            {
+                FontFamilies = [fonts.Families[0]],
+                Size = 20,
+                Language = "ja",
+                CombineUpright = TextCombine.Digits(2),  // runs of up to two ASCII digits; TextCombine.All for a span's text
+            },
+            WritingMode = WritingMode.VerticalRl,
+        };
+        TextLayout layout = Paragraph.Create("平成12年", style).Layout(300);
+        #endregion
+
+        Assert.Equal(80, layout.Lines[0].Width, 3);
+    }
+
     private sealed class PathRecorder : IGlyphOutlineSink
     {
         public int Count { get; private set; }
