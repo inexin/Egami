@@ -1,7 +1,8 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
+
+using Egami.Simd;
 
 namespace Egami.Formats.Webp;
 
@@ -100,7 +101,7 @@ internal static class Vp8Dsp
     internal static void InverseTransformDcAdd(short dc, Span<byte> buffer, int at, int stride = Stride)
     {
         int add = (dc + 4) >> 3;
-        if (Sse2.IsSupported)
+        if (Simd128.IsSupported)
         {
             // Saturating byte adds clamp to 0 to 255 exactly as Clip8 does.
             _ = buffer.Slice(at + (3 * stride), 4);
@@ -109,7 +110,7 @@ internal static class Vp8Dsp
                 Unsafe.ReadUnaligned<uint>(ref p), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref p, stride)),
                 Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref p, 2 * stride)), Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref p, 3 * stride))).AsByte();
             Vector128<byte> amount = Vector128.Create((byte)Math.Min(Math.Abs(add), 255));
-            rows = add >= 0 ? Sse2.AddSaturate(rows, amount) : Sse2.SubtractSaturate(rows, amount);
+            rows = add >= 0 ? Simd128.AddSaturate(rows, amount) : Simd128.SubtractSaturate(rows, amount);
             Vector128<uint> words = rows.AsUInt32();
             Unsafe.WriteUnaligned(ref p, words.ToScalar());
             Unsafe.WriteUnaligned(ref Unsafe.Add(ref p, stride), words.GetElement(1));
@@ -192,11 +193,11 @@ internal static class Vp8Dsp
                 int sum = 0;
                 bool hasTop = mode is BlockMode.Dc or BlockMode.DcNoLeft;
                 bool hasLeft = mode is BlockMode.Dc or BlockMode.DcNoTop;
-                if (hasTop && Sse2.IsSupported)
+                if (hasTop && Simd128.IsSupported)
                 {
                     // psadbw against zero sums each 8 bytes into its 64-bit half.
                     Vector128<byte> row = size == 16 ? Vector128.LoadUnsafe(ref top) : Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref top)).AsByte();
-                    Vector128<ulong> sums = Sse2.SumAbsoluteDifferences(row, Vector128<byte>.Zero).AsUInt64();
+                    Vector128<ulong> sums = Simd128.SumAbsoluteDifferences(row, Vector128<byte>.Zero).AsUInt64();
                     sum = (int)(sums.ToScalar() + sums.GetElement(1));
                 }
                 else if (hasTop)
@@ -250,17 +251,17 @@ internal static class Vp8Dsp
         ref byte p = ref Unsafe.Add(ref MemoryMarshal.GetReference(b), at);
         ref byte top = ref Unsafe.Subtract(ref p, Stride);
         int corner = Unsafe.Subtract(ref top, 1);
-        if (Sse2.IsSupported && size >= 8)
+        if (Simd128.IsSupported && size >= 8)
         {
             // The top row in 16-bit lanes; each row adds its left minus the corner and packs back with unsigned saturation,
             // which clamps to 0 to 255 as Clip8 does (the sums stay within 16 bits).
-            Vector128<short> lo = Sse2.UnpackLow(Vector128.LoadUnsafe(ref top), Vector128<byte>.Zero).AsInt16();
-            Vector128<short> hi = Sse2.UnpackHigh(Vector128.LoadUnsafe(ref top), Vector128<byte>.Zero).AsInt16();
+            Vector128<short> lo = Simd128.ZipLow(Vector128.LoadUnsafe(ref top), Vector128<byte>.Zero).AsInt16();
+            Vector128<short> hi = Simd128.ZipHigh(Vector128.LoadUnsafe(ref top), Vector128<byte>.Zero).AsInt16();
             for (int y = 0; y < size; y++)
             {
                 ref byte row = ref Unsafe.Add(ref p, y * Stride);
                 Vector128<short> left = Vector128.Create((short)(Unsafe.Subtract(ref row, 1) - corner));
-                Vector128<byte> o = Sse2.PackUnsignedSaturate(lo + left, hi + left);
+                Vector128<byte> o = Simd128.PackUnsignedSaturate(lo + left, hi + left);
                 if (size == 16)
                 {
                     o.StoreUnsafe(ref row);

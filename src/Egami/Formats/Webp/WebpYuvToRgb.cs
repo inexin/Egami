@@ -2,9 +2,9 @@ using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
 
 using Egami.Pixels;
+using Egami.Simd;
 
 namespace Egami.Formats.Webp;
 
@@ -145,9 +145,9 @@ internal sealed class WebpYuvToRgb : IDisposable
         int pairs = (width - 1) >> 1;
         target[0] = (short)((upper ? ((3 * above[0]) + current[0] + 2) >> 2 : ((3 * current[0]) + above[0] + 2) >> 2) << 4);
         int x = 1;
-        if (Sse2.IsSupported)
+        if (Simd128.IsSupported)
         {
-            x = UpsampleSse2(above, current, upper, target, pairs);
+            x = Upsample128(above, current, upper, target, pairs);
         }
 
         for (; x <= pairs; x++)
@@ -168,7 +168,7 @@ internal sealed class WebpYuvToRgb : IDisposable
     }
 
     /// <summary>The pairs of <see cref="Upsample"/> eight at a time; returns the first pair left for the scalar loop.</summary>
-    private static int UpsampleSse2(ReadOnlySpan<byte> above, ReadOnlySpan<byte> current, bool upper, Span<short> target, int pairs)
+    private static int Upsample128(ReadOnlySpan<byte> above, ReadOnlySpan<byte> current, bool upper, Span<short> target, int pairs)
     {
         ref byte a = ref MemoryMarshal.GetReference(above);
         ref byte b = ref MemoryMarshal.GetReference(current);
@@ -187,8 +187,8 @@ internal sealed class WebpYuvToRgb : IDisposable
             Vector128<short> odd = upper ? Vector128.ShiftRightArithmetic(diag12 + tl, 1) : Vector128.ShiftRightArithmetic(diag03 + l, 1);
             Vector128<short> even = upper ? Vector128.ShiftRightArithmetic(diag03 + t, 1) : Vector128.ShiftRightArithmetic(diag12 + c, 1);
             ref short at = ref Unsafe.Add(ref o, (2 * x) - 1);
-            (Sse2.UnpackLow(odd, even) << 4).StoreUnsafe(ref at);
-            (Sse2.UnpackHigh(odd, even) << 4).StoreUnsafe(ref Unsafe.Add(ref at, 8));
+            (Simd128.ZipLow(odd, even) << 4).StoreUnsafe(ref at);
+            (Simd128.ZipHigh(odd, even) << 4).StoreUnsafe(ref Unsafe.Add(ref at, 8));
         }
 
         return x;
