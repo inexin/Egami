@@ -448,14 +448,37 @@ bool coarse = CssMediaQueryList.Parse(&quot;(pointer: coarse)&quot;).Matches(tou
 </code></pre><h2 id="value-parsers">Value parsers</h2>
 <p>Each parser has <code>TryParse</code> over text and over component values.</p>
 <p><code>CssColor</code> reads every CSS Color 4 syntax: the named and system colors, hex, <code>rgb()</code>, <code>hsl()</code>, <code>hwb()</code>, <code>lab()</code>, <code>lch()</code>,
-<code>oklab()</code>, <code>oklch()</code> and <code>color()</code>. It converts to sRGB and clips to its gamut. <code>Level</code> says whether the text used CSS Color 3
-or 4 syntax, for consumers that follow an older specification.</p>
+<code>oklab()</code>, <code>oklch()</code> and <code>color()</code>. <code>R</code>, <code>G</code>, <code>B</code> and <code>A</code> give it in sRGB, each channel clipped to the gamut. <code>Level</code> says
+whether the text used CSS Color 3 or 4 syntax, for consumers that follow an older specification.</p>
 <pre><code class="lang-csharp">// Every CSS Color 4 syntax, converted to sRGB (0 to 1) and clipped to its gamut.
 bool isColor = CssColor.TryParse(&quot;oklch(62.8% 0.258 29.2 / 50%)&quot;, out CssColor red);
 (byte r, byte g, byte b, byte a) = red.ToRgba8();         // about (255, 0, 0, 128)
 bool newer = red.Level == 4;                             // SVG 1.1 knows only level 3
 
 bool isCurrent = CssColor.TryParse(&quot;currentColor&quot;, out CssColor current);  // current.IsCurrentColor: use the 'color' property
+</code></pre>
+<p>A color also keeps the space it was written in, for consumers that can show wide gamut (a PDF with an ICC color space, an
+image with a Display P3 profile). <code>Space</code> is a <code>CssColorSpace</code>: one of the twelve spaces of CSS Color 4, with hex, named
+colors, <code>rgb()</code>, <code>hsl()</code> and <code>hwb()</code> as <code>Srgb</code>. <code>C0</code>, <code>C1</code> and <code>C2</code> are its components in that space, unclipped.
+<code>ToColorSpace</code> converts them to any other space and <code>CssColor.FromColorSpace</code> builds a color from them. <code>IsInSrgbGamut</code> says
+whether clipping changed it; <code>ToSrgbGamutMapped</code> maps it into sRGB as CSS Color 4 does, lowering its OkLCh chroma until the
+clipped color is within a just-noticeable difference. <code>ToString(keepSpace: true)</code> writes <code>color(display-p3 1 0 0)</code>,
+<code>lab()</code> or <code>oklch()</code> as CSS Color 4 serializes them; <code>ToString()</code> still writes clipped <code>rgb()</code>. Two colors are equal when
+their space, components and alpha are, so <code>color(display-p3 1 0 0)</code> is not <code>rgb(255 0 0)</code>.</p>
+<pre><code class="lang-csharp">// The color keeps the space it was written in, unclipped; R, G and B are the clipped sRGB.
+bool isColor = CssColor.TryParse(&quot;color(display-p3 1 0.5 0)&quot;, out CssColor orange);
+CssColorSpace space = orange.Space;                       // DisplayP3
+double red = orange.C0;                                   // 1
+bool inSrgb = orange.IsInSrgbGamut;                       // false: sRGB cannot show it
+
+// Convert to any CSS Color 4 space, or build one in code.
+(double l, double c, double h) = orange.ToColorSpace(CssColorSpace.Oklch);
+CssColor lab = CssColor.FromColorSpace(CssColorSpace.Lab, 60, 40, 70, alpha: 0.5);
+
+// CSS Color 4 gamut mapping lowers chroma until it fits, instead of clipping each channel.
+CssColor mapped = orange.ToSrgbGamutMapped();
+string text = orange.ToString(keepSpace: true);           // &quot;color(display-p3 1 0.5 0)&quot;
+string legacy = orange.ToString();                        // &quot;rgb(255, 117, 0)&quot;: clipped sRGB, as before
 </code></pre>
 <p><code>CssLength</code> is a number with a <code>CssUnit</code>. <code>CssAngle</code> converts to degrees. <code>CssUrl</code> reads <code>url()</code> and <code>src()</code>. <code>CssCalc</code> reads
 <code>calc()</code>, <code>min()</code>, <code>max()</code> and <code>clamp()</code>; the consumer resolves it by saying what each unit is worth.</p>
@@ -575,7 +598,7 @@ default registry: they cascade as unregistered properties, without a shorthand o
 <li>Page selectors take <code>:first</code>, <code>:left</code>, <code>:right</code> and <code>:blank</code>, not <code>:nth()</code> or page groups.</li>
 <li>Shadow DOM: <code>:host</code> is invalid, and <code>::part()</code> and <code>::slotted()</code> parse but never match. <code>:state()</code> and Selectors 5's
 <code>:heading</code> are invalid.</li>
-<li>CSS Color 5: <code>color-mix()</code>, relative colors and <code>device-cmyk()</code>. Colors outside sRGB are clipped, not gamut-mapped.</li>
+<li>CSS Color 5: <code>color-mix()</code>, relative colors and <code>device-cmyk()</code>.</li>
 <li><code>calc()</code> covers lengths, percentages and numbers, not angles or <code>calc()</code> inside transforms.</li>
 <li>Selectors keep their text as written, not CSSOM's canonical serialization.</li>
 </ul>

@@ -8676,6 +8676,45 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssColor.B
   nameWithType: CssColor.B
+- uid: Egami.Css.CssColor.C0
+  name: C0
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_C0
+  commentId: P:Egami.Css.CssColor.C0
+  fullName: Egami.Css.CssColor.C0
+  nameWithType: CssColor.C0
+- uid: Egami.Css.CssColor.C0*
+  name: C0
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_C0_
+  commentId: Overload:Egami.Css.CssColor.C0
+  isSpec: "True"
+  fullName: Egami.Css.CssColor.C0
+  nameWithType: CssColor.C0
+- uid: Egami.Css.CssColor.C1
+  name: C1
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_C1
+  commentId: P:Egami.Css.CssColor.C1
+  fullName: Egami.Css.CssColor.C1
+  nameWithType: CssColor.C1
+- uid: Egami.Css.CssColor.C1*
+  name: C1
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_C1_
+  commentId: Overload:Egami.Css.CssColor.C1
+  isSpec: "True"
+  fullName: Egami.Css.CssColor.C1
+  nameWithType: CssColor.C1
+- uid: Egami.Css.CssColor.C2
+  name: C2
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_C2
+  commentId: P:Egami.Css.CssColor.C2
+  fullName: Egami.Css.CssColor.C2
+  nameWithType: CssColor.C2
+- uid: Egami.Css.CssColor.C2*
+  name: C2
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_C2_
+  commentId: Overload:Egami.Css.CssColor.C2
+  isSpec: "True"
+  fullName: Egami.Css.CssColor.C2
+  nameWithType: CssColor.C2
 - uid: Egami.Css.CssColor.CurrentColor
   name: CurrentColor
   href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_CurrentColor
@@ -8711,6 +8750,22 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssColor.Equals
   nameWithType: CssColor.Equals
+- uid: Egami.Css.CssColor.FromColorSpace(Egami.Css.CssColorSpace,System.Double,System.Double,System.Double,System.Double)
+  name: FromColorSpace(CssColorSpace, double, double, double, double)
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_FromColorSpace_Egami_Css_CssColorSpace_System_Double_System_Double_System_Double_System_Double_
+  commentId: M:Egami.Css.CssColor.FromColorSpace(Egami.Css.CssColorSpace,System.Double,System.Double,System.Double,System.Double)
+  name.vb: FromColorSpace(CssColorSpace, Double, Double, Double, Double)
+  fullName: Egami.Css.CssColor.FromColorSpace(Egami.Css.CssColorSpace, double, double, double, double)
+  fullName.vb: Egami.Css.CssColor.FromColorSpace(Egami.Css.CssColorSpace, Double, Double, Double, Double)
+  nameWithType: CssColor.FromColorSpace(CssColorSpace, double, double, double, double)
+  nameWithType.vb: CssColor.FromColorSpace(CssColorSpace, Double, Double, Double, Double)
+- uid: Egami.Css.CssColor.FromColorSpace*
+  name: FromColorSpace
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_FromColorSpace_
+  commentId: Overload:Egami.Css.CssColor.FromColorSpace
+  isSpec: "True"
+  fullName: Egami.Css.CssColor.FromColorSpace
+  nameWithType: CssColor.FromColorSpace
 - uid: Egami.Css.CssColor.G
   name: G
   href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_G
@@ -8750,6 +8805,19 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssColor.IsCurrentColor
   nameWithType: CssColor.IsCurrentColor
+- uid: Egami.Css.CssColor.IsInSrgbGamut
+  name: IsInSrgbGamut
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_IsInSrgbGamut
+  commentId: P:Egami.Css.CssColor.IsInSrgbGamut
+  fullName: Egami.Css.CssColor.IsInSrgbGamut
+  nameWithType: CssColor.IsInSrgbGamut
+- uid: Egami.Css.CssColor.IsInSrgbGamut*
+  name: IsInSrgbGamut
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_IsInSrgbGamut_
+  commentId: Overload:Egami.Css.CssColor.IsInSrgbGamut
+  isSpec: "True"
+  fullName: Egami.Css.CssColor.IsInSrgbGamut
+  nameWithType: CssColor.IsInSrgbGamut
 - uid: Egami.Css.CssColor.Level
   name: Level
   href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_Level
@@ -8776,6 +8844,32 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssColor.R
   nameWithType: CssColor.R
+- uid: Egami.Css.CssColor.Space
+  name: Space
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_Space
+  commentId: P:Egami.Css.CssColor.Space
+  fullName: Egami.Css.CssColor.Space
+  nameWithType: CssColor.Space
+- uid: Egami.Css.CssColor.Space*
+  name: Space
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_Space_
+  commentId: Overload:Egami.Css.CssColor.Space
+  isSpec: "True"
+  fullName: Egami.Css.CssColor.Space
+  nameWithType: CssColor.Space
+- uid: Egami.Css.CssColor.ToColorSpace(Egami.Css.CssColorSpace)
+  name: ToColorSpace(CssColorSpace)
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_ToColorSpace_Egami_Css_CssColorSpace_
+  commentId: M:Egami.Css.CssColor.ToColorSpace(Egami.Css.CssColorSpace)
+  fullName: Egami.Css.CssColor.ToColorSpace(Egami.Css.CssColorSpace)
+  nameWithType: CssColor.ToColorSpace(CssColorSpace)
+- uid: Egami.Css.CssColor.ToColorSpace*
+  name: ToColorSpace
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_ToColorSpace_
+  commentId: Overload:Egami.Css.CssColor.ToColorSpace
+  isSpec: "True"
+  fullName: Egami.Css.CssColor.ToColorSpace
+  nameWithType: CssColor.ToColorSpace
 - uid: Egami.Css.CssColor.ToRgba8
   name: ToRgba8()
   href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_ToRgba8
@@ -8789,12 +8883,34 @@ references:
   isSpec: "True"
   fullName: Egami.Css.CssColor.ToRgba8
   nameWithType: CssColor.ToRgba8
+- uid: Egami.Css.CssColor.ToSrgbGamutMapped
+  name: ToSrgbGamutMapped()
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_ToSrgbGamutMapped
+  commentId: M:Egami.Css.CssColor.ToSrgbGamutMapped
+  fullName: Egami.Css.CssColor.ToSrgbGamutMapped()
+  nameWithType: CssColor.ToSrgbGamutMapped()
+- uid: Egami.Css.CssColor.ToSrgbGamutMapped*
+  name: ToSrgbGamutMapped
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_ToSrgbGamutMapped_
+  commentId: Overload:Egami.Css.CssColor.ToSrgbGamutMapped
+  isSpec: "True"
+  fullName: Egami.Css.CssColor.ToSrgbGamutMapped
+  nameWithType: CssColor.ToSrgbGamutMapped
 - uid: Egami.Css.CssColor.ToString
   name: ToString()
   href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_ToString
   commentId: M:Egami.Css.CssColor.ToString
   fullName: Egami.Css.CssColor.ToString()
   nameWithType: CssColor.ToString()
+- uid: Egami.Css.CssColor.ToString(System.Boolean)
+  name: ToString(bool)
+  href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_ToString_System_Boolean_
+  commentId: M:Egami.Css.CssColor.ToString(System.Boolean)
+  name.vb: ToString(Boolean)
+  fullName: Egami.Css.CssColor.ToString(bool)
+  fullName.vb: Egami.Css.CssColor.ToString(Boolean)
+  nameWithType: CssColor.ToString(bool)
+  nameWithType.vb: CssColor.ToString(Boolean)
 - uid: Egami.Css.CssColor.ToString*
   name: ToString
   href: api/Egami.Css.CssColor.html#Egami_Css_CssColor_ToString_
@@ -8887,6 +9003,84 @@ references:
   fullName.vb: Egami.Css.CssColor.<>
   nameWithType: CssColor.operator !=
   nameWithType.vb: CssColor.<>
+- uid: Egami.Css.CssColorSpace
+  name: CssColorSpace
+  href: api/Egami.Css.CssColorSpace.html
+  commentId: T:Egami.Css.CssColorSpace
+  fullName: Egami.Css.CssColorSpace
+  nameWithType: CssColorSpace
+- uid: Egami.Css.CssColorSpace.A98Rgb
+  name: A98Rgb
+  href: api/Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_A98Rgb
+  commentId: F:Egami.Css.CssColorSpace.A98Rgb
+  fullName: Egami.Css.CssColorSpace.A98Rgb
+  nameWithType: CssColorSpace.A98Rgb
+- uid: Egami.Css.CssColorSpace.DisplayP3
+  name: DisplayP3
+  href: api/Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_DisplayP3
+  commentId: F:Egami.Css.CssColorSpace.DisplayP3
+  fullName: Egami.Css.CssColorSpace.DisplayP3
+  nameWithType: CssColorSpace.DisplayP3
+- uid: Egami.Css.CssColorSpace.Lab
+  name: Lab
+  href: api/Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_Lab
+  commentId: F:Egami.Css.CssColorSpace.Lab
+  fullName: Egami.Css.CssColorSpace.Lab
+  nameWithType: CssColorSpace.Lab
+- uid: Egami.Css.CssColorSpace.Lch
+  name: Lch
+  href: api/Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_Lch
+  commentId: F:Egami.Css.CssColorSpace.Lch
+  fullName: Egami.Css.CssColorSpace.Lch
+  nameWithType: CssColorSpace.Lch
+- uid: Egami.Css.CssColorSpace.Oklab
+  name: Oklab
+  href: api/Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_Oklab
+  commentId: F:Egami.Css.CssColorSpace.Oklab
+  fullName: Egami.Css.CssColorSpace.Oklab
+  nameWithType: CssColorSpace.Oklab
+- uid: Egami.Css.CssColorSpace.Oklch
+  name: Oklch
+  href: api/Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_Oklch
+  commentId: F:Egami.Css.CssColorSpace.Oklch
+  fullName: Egami.Css.CssColorSpace.Oklch
+  nameWithType: CssColorSpace.Oklch
+- uid: Egami.Css.CssColorSpace.ProPhotoRgb
+  name: ProPhotoRgb
+  href: api/Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_ProPhotoRgb
+  commentId: F:Egami.Css.CssColorSpace.ProPhotoRgb
+  fullName: Egami.Css.CssColorSpace.ProPhotoRgb
+  nameWithType: CssColorSpace.ProPhotoRgb
+- uid: Egami.Css.CssColorSpace.Rec2020
+  name: Rec2020
+  href: api/Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_Rec2020
+  commentId: F:Egami.Css.CssColorSpace.Rec2020
+  fullName: Egami.Css.CssColorSpace.Rec2020
+  nameWithType: CssColorSpace.Rec2020
+- uid: Egami.Css.CssColorSpace.Srgb
+  name: Srgb
+  href: api/Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_Srgb
+  commentId: F:Egami.Css.CssColorSpace.Srgb
+  fullName: Egami.Css.CssColorSpace.Srgb
+  nameWithType: CssColorSpace.Srgb
+- uid: Egami.Css.CssColorSpace.SrgbLinear
+  name: SrgbLinear
+  href: api/Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_SrgbLinear
+  commentId: F:Egami.Css.CssColorSpace.SrgbLinear
+  fullName: Egami.Css.CssColorSpace.SrgbLinear
+  nameWithType: CssColorSpace.SrgbLinear
+- uid: Egami.Css.CssColorSpace.XyzD50
+  name: XyzD50
+  href: api/Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_XyzD50
+  commentId: F:Egami.Css.CssColorSpace.XyzD50
+  fullName: Egami.Css.CssColorSpace.XyzD50
+  nameWithType: CssColorSpace.XyzD50
+- uid: Egami.Css.CssColorSpace.XyzD65
+  name: XyzD65
+  href: api/Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_XyzD65
+  commentId: F:Egami.Css.CssColorSpace.XyzD65
+  fullName: Egami.Css.CssColorSpace.XyzD65
+  nameWithType: CssColorSpace.XyzD65
 - uid: Egami.Css.CssComponentValue
   name: CssComponentValue
   href: api/Egami.Css.CssComponentValue.html

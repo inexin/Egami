@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Struct CssColor | Egami ">
       
-      <meta name="description" content="A CSS color (CSS Color 4) converted to sRGB: red, green, blue and alpha from 0 to 1, gamma-encoded, clipped to the sRGB gamut; or currentcolor.">
+      <meta name="description" content="A CSS color (CSS Color 4), or currentcolor: its components in the color space it was written in (, , , ), and the same color converted to sRGB as red, green, blue and alpha from 0 to 1, gamma-encoded, each channel clipped to the sRGB gamut.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Css_CssColor" data-uid="Egami.Css.CssColor" class="text-break">
-Struct CssColor  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L16"><i class="bi bi-code-slash"></i></a>
+Struct CssColor  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L26"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -97,8 +97,9 @@ Struct CssColor  <a class="header-action link-secondary" title="View source" hre
   <dl><dt>Assembly</dt><dd>Egami.Css.dll</dd></dl>
   </div>
 
-  <div class="markdown summary"><p>A CSS color (CSS Color 4) converted to sRGB: red, green, blue and alpha from 0 to 1, gamma-encoded, clipped to the sRGB gamut;
-or <code>currentcolor</code>.</p>
+  <div class="markdown summary"><p>A CSS color (CSS Color 4), or <code>currentcolor</code>: its components in the color space it was written in
+(<a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_Space">Space</a>, <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_C0">C0</a>, <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_C1">C1</a>, <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_C2">C2</a>), and the same color converted to sRGB as red,
+green, blue and alpha from 0 to 1, gamma-encoded, each channel clipped to the sRGB gamut.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -141,11 +142,33 @@ bool isColor = CssColor.TryParse("oklch(62.8% 0.258 29.2 / 50%)", out CssColor r
 bool newer = red.Level == 4;                             // SVG 1.1 knows only level 3
 
 bool isCurrent = CssColor.TryParse("currentColor", out CssColor current);  // current.IsCurrentColor: use the 'color' property</code></pre>
+<pre><code class="lang-csharp">// The color keeps the space it was written in, unclipped; R, G and B are the clipped sRGB.
+bool isColor = CssColor.TryParse("color(display-p3 1 0.5 0)", out CssColor orange);
+CssColorSpace space = orange.Space;                       // DisplayP3
+double red = orange.C0;                                   // 1
+bool inSrgb = orange.IsInSrgbGamut;                       // false: sRGB cannot show it
+
+// Convert to any CSS Color 4 space, or build one in code.
+(double l, double c, double h) = orange.ToColorSpace(CssColorSpace.Oklch);
+CssColor lab = CssColor.FromColorSpace(CssColorSpace.Lab, 60, 40, 70, alpha: 0.5);
+
+// CSS Color 4 gamut mapping lowers chroma until it fits, instead of clipping each channel.
+CssColor mapped = orange.ToSrgbGamutMapped();
+string text = orange.ToString(keepSpace: true);           // "color(display-p3 1 0.5 0)"
+string legacy = orange.ToString();                        // "rgb(255, 117, 0)": clipped sRGB, as before</code></pre>
 
 
   <h2 id="Egami_Css_CssColor_remarks">Remarks</h2>
-  <div class="markdown level0 remarks"><p><a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_Level">Level</a> says which CSS Color level's syntax the text used, so a consumer that follows an older specification
-(such as SVG 1.1, which knows only CSS Color 3) can refuse the newer forms.</p>
+  <div class="markdown level0 remarks"><p>
+<a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_Level">Level</a> says which CSS Color level's syntax the text used, so a consumer that follows an older specification
+(such as SVG 1.1, which knows only CSS Color 3) can refuse the newer forms.
+</p>
+<p>
+A color outside the sRGB gamut, such as <code>color(display-p3 1 0 0)</code>, keeps its components unclipped;
+<a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_R">R</a>, <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_G">G</a> and <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_B">B</a> clip each channel, and <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_ToSrgbGamutMapped">ToSrgbGamutMapped()</a> maps it into the
+gamut as CSS Color 4 does instead. Two colors are equal when their space, components and alpha are, so
+<code>color(display-p3 1 0 0)</code> is not <code>rgb(255 0 0)</code>.
+</p>
 </div>
 
 
@@ -157,7 +180,7 @@ bool isCurrent = CssColor.TryParse("currentColor", out CssColor current);  // cu
 
   <h3 id="Egami_Css_CssColor__ctor_System_Single_System_Single_System_Single_System_Single_" data-uid="Egami.Css.CssColor.#ctor(System.Single,System.Single,System.Single,System.Single)">
   CssColor(float, float, float, float)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L44"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates an sRGB color.</p>
@@ -191,6 +214,9 @@ bool isCurrent = CssColor.TryParse("currentColor", out CssColor current);  // cu
 
 
 
+  <h4 class="section" id="Egami_Css_CssColor__ctor_System_Single_System_Single_System_Single_System_Single__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The components keep the values given; <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_R">R</a>, <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_G">G</a> and <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_B">B</a> are clipped to 0 to 1.</p>
+</div>
 
 
 
@@ -203,7 +229,7 @@ bool isCurrent = CssColor.TryParse("currentColor", out CssColor current);  // cu
 
   <h3 id="Egami_Css_CssColor_A" data-uid="Egami.Css.CssColor.A">
   A
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L74"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets alpha, 0 (transparent) to 1 (opaque).</p>
@@ -235,10 +261,10 @@ bool isCurrent = CssColor.TryParse("currentColor", out CssColor current);  // cu
 
   <h3 id="Egami_Css_CssColor_B" data-uid="Egami.Css.CssColor.B">
   B
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L71"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets blue, 0 to 1 (gamma-encoded sRGB).</p>
+  <div class="markdown level1 summary"><p>Gets blue, 0 to 1 (gamma-encoded sRGB, clipped).</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -263,11 +289,107 @@ bool isCurrent = CssColor.TryParse("currentColor", out CssColor current);  // cu
 
 
 
+  <a id="Egami_Css_CssColor_C0_" data-uid="Egami.Css.CssColor.C0*"></a>
+
+  <h3 id="Egami_Css_CssColor_C0" data-uid="Egami.Css.CssColor.C0">
+  C0
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L80"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the first component in <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_Space">Space</a>, unclipped: red, X or lightness.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double C0 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_C1_" data-uid="Egami.Css.CssColor.C1*"></a>
+
+  <h3 id="Egami_Css_CssColor_C1" data-uid="Egami.Css.CssColor.C1">
+  C1
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the second component in <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_Space">Space</a>, unclipped: green, Y, a or chroma.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double C1 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Egami_Css_CssColor_C2_" data-uid="Egami.Css.CssColor.C2*"></a>
+
+  <h3 id="Egami_Css_CssColor_C2" data-uid="Egami.Css.CssColor.C2">
+  C2
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the third component in <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_Space">Space</a>, unclipped: blue, Z, b or hue in degrees.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double C2 { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Css_CssColor_CurrentColor_" data-uid="Egami.Css.CssColor.CurrentColor*"></a>
 
   <h3 id="Egami_Css_CssColor_CurrentColor" data-uid="Egami.Css.CssColor.CurrentColor">
   CurrentColor
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L113"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets <code>currentcolor</code>.</p>
@@ -299,10 +421,10 @@ bool isCurrent = CssColor.TryParse("currentColor", out CssColor current);  // cu
 
   <h3 id="Egami_Css_CssColor_G" data-uid="Egami.Css.CssColor.G">
   G
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L68"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets green, 0 to 1 (gamma-encoded sRGB).</p>
+  <div class="markdown level1 summary"><p>Gets green, 0 to 1 (gamma-encoded sRGB, clipped).</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -331,7 +453,7 @@ bool isCurrent = CssColor.TryParse("currentColor", out CssColor current);  // cu
 
   <h3 id="Egami_Css_CssColor_IsCurrentColor" data-uid="Egami.Css.CssColor.IsCurrentColor">
   IsCurrentColor
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L89"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the color is <code>currentcolor</code>: the consumer substitutes the element's <code>color</code>.</p>
@@ -359,11 +481,44 @@ bool isCurrent = CssColor.TryParse("currentColor", out CssColor current);  // cu
 
 
 
+  <a id="Egami_Css_CssColor_IsInSrgbGamut_" data-uid="Egami.Css.CssColor.IsInSrgbGamut*"></a>
+
+  <h3 id="Egami_Css_CssColor_IsInSrgbGamut" data-uid="Egami.Css.CssColor.IsInSrgbGamut">
+  IsInSrgbGamut
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets whether the color is inside the sRGB gamut (within rounding), so <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_R">R</a>, <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_G">G</a> and
+<a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_B">B</a> are the color itself rather than a clipped one. True for <code>currentcolor</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsInSrgbGamut { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Css_CssColor_Level_" data-uid="Egami.Css.CssColor.Level*"></a>
 
   <h3 id="Egami_Css_CssColor_Level" data-uid="Egami.Css.CssColor.Level">
   Level
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L97"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the CSS Color level whose syntax the color was written in: 3 for keywords, <code>#rgb</code> and <code>#rrggbb</code>,
@@ -398,10 +553,10 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
   <h3 id="Egami_Css_CssColor_R" data-uid="Egami.Css.CssColor.R">
   R
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L65"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets red, 0 to 1 (gamma-encoded sRGB).</p>
+  <div class="markdown level1 summary"><p>Gets red, 0 to 1 (gamma-encoded sRGB, clipped).</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -426,11 +581,43 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
 
 
+  <a id="Egami_Css_CssColor_Space_" data-uid="Egami.Css.CssColor.Space*"></a>
+
+  <h3 id="Egami_Css_CssColor_Space" data-uid="Egami.Css.CssColor.Space">
+  Space
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the color space the color was written in: <a class="xref" href="Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_Srgb">Srgb</a> for hex, named colors, <code>rgb()</code>, <code>hsl()</code> and <code>hwb()</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CssColorSpace Space { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssColorSpace.html">CssColorSpace</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Css_CssColor_Transparent_" data-uid="Egami.Css.CssColor.Transparent*"></a>
 
   <h3 id="Egami_Css_CssColor_Transparent" data-uid="Egami.Css.CssColor.Transparent">
   Transparent
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L116"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets <code>transparent</code>: black with zero alpha.</p>
@@ -466,7 +653,7 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
   <h3 id="Egami_Css_CssColor_Equals_Egami_Css_CssColor_" data-uid="Egami.Css.CssColor.Equals(Egami.Css.CssColor)">
   Equals(CssColor)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L144"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L346"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Indicates whether the current object is equal to another object of the same type.</p>
@@ -505,7 +692,7 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
   <h3 id="Egami_Css_CssColor_Equals_System_Object_" data-uid="Egami.Css.CssColor.Equals(System.Object)">
   Equals(object?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L147"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L352"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Indicates whether this instance and a specified object are equal.</p>
@@ -540,11 +727,68 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
 
 
+  <a id="Egami_Css_CssColor_FromColorSpace_" data-uid="Egami.Css.CssColor.FromColorSpace*"></a>
+
+  <h3 id="Egami_Css_CssColor_FromColorSpace_Egami_Css_CssColorSpace_System_Double_System_Double_System_Double_System_Double_" data-uid="Egami.Css.CssColor.FromColorSpace(Egami.Css.CssColorSpace,System.Double,System.Double,System.Double,System.Double)">
+  FromColorSpace(CssColorSpace, double, double, double, double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L126"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a color from its components in a color space, as <code>color()</code>, <code>lab()</code> or <code>oklch()</code> give them.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static CssColor FromColorSpace(CssColorSpace space, double c0, double c1, double c2, double alpha = 1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>space</code> <a class="xref" href="Egami.Css.CssColorSpace.html">CssColorSpace</a></dt>
+    <dd><p>The color space.</p>
+</dd>
+    <dt><code>c0</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The first component: red, X or lightness (0 to 100 for Lab and LCH, 0 to 1 for Oklab and OkLCh).</p>
+</dd>
+    <dt><code>c1</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The second component: green, Y, a or chroma.</p>
+</dd>
+    <dt><code>c2</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>The third component: blue, Z, b or hue in degrees.</p>
+</dd>
+    <dt><code>alpha</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>Alpha, 0 (transparent) to 1 (opaque).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd><p>The color, at CSS Color level 4. The components are kept as given, out of gamut too; NaN becomes 0.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">space</code> is not a defined color space.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Css_CssColor_GetHashCode_" data-uid="Egami.Css.CssColor.GetHashCode*"></a>
 
   <h3 id="Egami_Css_CssColor_GetHashCode" data-uid="Egami.Css.CssColor.GetHashCode">
   GetHashCode()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L150"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L355"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the hash code for this instance.</p>
@@ -573,11 +817,56 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
 
 
+  <a id="Egami_Css_CssColor_ToColorSpace_" data-uid="Egami.Css.CssColor.ToColorSpace*"></a>
+
+  <h3 id="Egami_Css_CssColor_ToColorSpace_Egami_Css_CssColorSpace_" data-uid="Egami.Css.CssColor.ToColorSpace(Egami.Css.CssColorSpace)">
+  ToColorSpace(CssColorSpace)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L140"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Converts the color's components to another color space, unclipped.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public (double C0, double C1, double C2) ToColorSpace(CssColorSpace space)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>space</code> <a class="xref" href="Egami.Css.CssColorSpace.html">CssColorSpace</a></dt>
+    <dd><p>The color space.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt>(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.double,system.double,system.double-.c0">C0</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.double,system.double,system.double-.c1">C1</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.double,system.double,system.double-.c2">C2</a>)</dt>
+    <dd><p>The three components in that space (hues in degrees, 0 to 360).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">space</code> is not a defined color space.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Css_CssColor_ToRgba8_" data-uid="Egami.Css.CssColor.ToRgba8*"></a>
 
   <h3 id="Egami_Css_CssColor_ToRgba8" data-uid="Egami.Css.CssColor.ToRgba8">
   ToRgba8()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L286"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Converts to 8-bit sRGB components, rounded.</p>
@@ -606,11 +895,46 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
 
 
+  <a id="Egami_Css_CssColor_ToSrgbGamutMapped_" data-uid="Egami.Css.CssColor.ToSrgbGamutMapped*"></a>
+
+  <h3 id="Egami_Css_CssColor_ToSrgbGamutMapped" data-uid="Egami.Css.CssColor.ToSrgbGamutMapped">
+  ToSrgbGamutMapped()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Maps the color into the sRGB gamut as CSS Color 4 does (section 13.2, &quot;CSS gamut mapping to an RGB destination&quot;): it
+lowers the chroma in OkLCh, holding lightness and hue, until the color clipped to the gamut is within a just-noticeable
+difference (deltaEOK 0.02) of it. Colors in the gamut, and <code>currentcolor</code>, come back as they are.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CssColor ToSrgbGamutMapped()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Css.CssColor.html">CssColor</a></dt>
+    <dd><p>An sRGB color (<a class="xref" href="Egami.Css.CssColorSpace.html#Egami_Css_CssColorSpace_Srgb">Srgb</a>) whose components are inside the gamut, with the same alpha.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
   <a id="Egami_Css_CssColor_ToString_" data-uid="Egami.Css.CssColor.ToString*"></a>
 
   <h3 id="Egami_Css_CssColor_ToString" data-uid="Egami.Css.CssColor.ToString">
   ToString()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L121"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L291"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Serializes the color as CSS Color 4 does for sRGB: <code>rgb(r, g, b)</code> or <code>rgba(r, g, b, a)</code>, or <code>currentcolor</code>.</p>
@@ -635,6 +959,50 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
 
 
+  <h4 class="section" id="Egami_Css_CssColor_ToString_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>A color outside the sRGB gamut is written clipped; <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_ToString_System_Boolean_">ToString(bool)</a> can keep its color space.</p>
+</div>
+
+
+
+
+  <a id="Egami_Css_CssColor_ToString_" data-uid="Egami.Css.CssColor.ToString*"></a>
+
+  <h3 id="Egami_Css_CssColor_ToString_System_Boolean_" data-uid="Egami.Css.CssColor.ToString(System.Boolean)">
+  ToString(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L320"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Serializes the color, in its own color space when <code class="paramref">keepSpace</code> is set, as CSS Color 4 does:
+<code>color(display-p3 1 0 0)</code>, <code>lab(52.3 40.1 59.9)</code>, <code>oklch(0.628 0.258 29.2 / 0.5)</code>. Hex, named colors,
+<code>rgb()</code>, <code>hsl()</code> and <code>hwb()</code> keep the <code>rgb()</code> form of <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_ToString">ToString()</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string ToString(bool keepSpace)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>keepSpace</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to keep the color space; false gives <a class="xref" href="Egami.Css.CssColor.html#Egami_Css_CssColor_ToString">ToString()</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text. Components are written with up to six decimals.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
 
 
 
@@ -643,7 +1011,7 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
   <h3 id="Egami_Css_CssColor_TryParse_Egami_Css_CssComponentValue_Egami_Css_CssColor__" data-uid="Egami.Css.CssColor.TryParse(Egami.Css.CssComponentValue,Egami.Css.CssColor@)">
   TryParse(CssComponentValue, out CssColor)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L98"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L267"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Parses one component value as a color.</p>
@@ -685,7 +1053,7 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
   <h3 id="Egami_Css_CssColor_TryParse_System_Collections_Generic_IReadOnlyList_Egami_Css_CssComponentValue__Egami_Css_CssColor__" data-uid="Egami.Css.CssColor.TryParse(System.Collections.Generic.IReadOnlyList{Egami.Css.CssComponentValue},Egami.Css.CssColor@)">
   TryParse(IReadOnlyList&lt;CssComponentValue&gt;, out CssColor)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L255"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Parses component values as one color (whitespace around it is ignored).</p>
@@ -727,7 +1095,7 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
   <h3 id="Egami_Css_CssColor_TryParse_System_String_Egami_Css_CssColor__" data-uid="Egami.Css.CssColor.TryParse(System.String,Egami.Css.CssColor@)">
   TryParse(string, out CssColor)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L245"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Parses a color, such as <code>red</code>, <code>#ff000080</code>, <code>rgb(255 0 0 / 50%)</code> or <code>oklch(62.8% 0.26 29)</code>.</p>
@@ -773,10 +1141,10 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
   <h3 id="Egami_Css_CssColor_op_Equality_Egami_Css_CssColor_Egami_Css_CssColor_" data-uid="Egami.Css.CssColor.op_Equality(Egami.Css.CssColor,Egami.Css.CssColor)">
   operator ==(CssColor, CssColor)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L361"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Compares two colors by their components; the syntax level is not compared.</p>
+  <div class="markdown level1 summary"><p>Compares two colors by their color space, components and alpha; the syntax level is not compared.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -815,10 +1183,10 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 
   <h3 id="Egami_Css_CssColor_op_Inequality_Egami_Css_CssColor_Egami_Css_CssColor_" data-uid="Egami.Css.CssColor.op_Inequality(Egami.Css.CssColor,Egami.Css.CssColor)">
   operator !=(CssColor, CssColor)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L367"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Compares two colors by their components; the syntax level is not compared.</p>
+  <div class="markdown level1 summary"><p>Compares two colors by their color space, components and alpha; the syntax level is not compared.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -857,7 +1225,7 @@ comma-separated <code>rgb()</code>, <code>rgba()</code>, <code>hsl()</code> and 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L16" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Css/CssColor.cs/#L26" class="edit-link">Edit this page</a>
         </div>
 
 

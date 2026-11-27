@@ -1467,7 +1467,21 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Css.CssColor",
-      "Summary": "<p sourcefile=\"api/Egami.Css.CssColor.yml\" sourcestartlinenumber=\"1\">A CSS color (CSS Color 4) converted to sRGB: red, green, blue and alpha from 0 to 1, gamma-encoded, clipped to the sRGB gamut;\nor <code>currentcolor</code>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Css.CssColor.yml\" sourcestartlinenumber=\"1\">A CSS color (CSS Color 4), or <code>currentcolor</code>: its components in the color space it was written in\n(<xref href=\"Egami.Css.CssColor.Space\" data-throw-if-not-resolved=\"false\"></xref>, <xref href=\"Egami.Css.CssColor.C0\" data-throw-if-not-resolved=\"false\"></xref>, <xref href=\"Egami.Css.CssColor.C1\" data-throw-if-not-resolved=\"false\"></xref>, <xref href=\"Egami.Css.CssColor.C2\" data-throw-if-not-resolved=\"false\"></xref>), and the same color converted to sRGB as red,\ngreen, blue and alpha from 0 to 1, gamma-encoded, each channel clipped to the sRGB gamut.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Css.CssColorSpace.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Css.CssColorSpace.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Css.CssColorSpace",
+      "Summary": "<p sourcefile=\"api/Egami.Css.CssColorSpace.yml\" sourcestartlinenumber=\"1\">The color spaces of CSS Color 4 that a <xref href=\"Egami.Css.CssColor\" data-throw-if-not-resolved=\"false\"></xref> keeps its components in: the space its text was written in.</p>\n"
     },
     {
       "type": "ManagedReference",
