@@ -112,7 +112,7 @@ internal static class TrueTypeSubsetter
         tables[Tags.Hhea.Value] = hhea;
         if (options.KeepCmap)
         {
-            tables[Tags.Cmap.Value] = SfntWriter.Cmap(SfntWriter.MapCharacters(face, map));
+            tables[Tags.Cmap.Value] = SfntWriter.Cmap(SfntWriter.MapCharacters(face, map), face.Cmap.Variations, map);
         }
 
         // Hinting programs stay unless hinting is dropped, so glyph instructions that call them still work in hinting renderers.

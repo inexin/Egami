@@ -69,7 +69,7 @@ internal static class CffSubsetter
         tables[Tags.Hhea.Value] = hhea;
         if (options.KeepCmap)
         {
-            tables[Tags.Cmap.Value] = SfntWriter.Cmap(SfntWriter.MapCharacters(face, map));
+            tables[Tags.Cmap.Value] = SfntWriter.Cmap(SfntWriter.MapCharacters(face, map), face.Cmap.Variations, map);
         }
 
         SfntWriter.CopyTable(face, Tags.OS2, tables);
@@ -113,7 +113,7 @@ internal static class CffSubsetter
         tables[Tags.Hhea.Value] = hhea;
         if (options.KeepCmap)
         {
-            tables[Tags.Cmap.Value] = SfntWriter.Cmap(SfntWriter.MapCharacters(face, map));
+            tables[Tags.Cmap.Value] = SfntWriter.Cmap(SfntWriter.MapCharacters(face, map), face.Cmap.Variations, map);
         }
 
         SfntWriter.CopyTable(face, Tags.OS2, tables);

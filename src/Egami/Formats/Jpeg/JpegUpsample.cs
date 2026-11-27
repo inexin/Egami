@@ -3,10 +3,13 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
+using Egami.Simd;
+
 namespace Egami.Formats.Jpeg;
 
 /// <summary>
-/// Chroma upsampling kernels, each with a scalar form and, where it pays, an AVX2 or SSE2 form that gives exactly the same bytes.
+/// Chroma upsampling kernels, each with a scalar form and, where it pays, an AVX2 form and a 128-bit form (x86 and Arm64) that
+/// give exactly the same bytes.
 /// The smooth (triangle) filters are libjpeg's: 3/4 of the nearer sample and 1/4 of the next, with its rounding biases.
 /// </summary>
 internal static class JpegUpsample
@@ -22,6 +25,10 @@ internal static class JpegUpsample
         if (Avx2.IsSupported)
         {
             i = DoubleAvx2(sums, n, output, evenBias, oddBias, shift);
+        }
+        else if (Simd128.IsSupported)
+        {
+            i = Double128(sums, n, output, evenBias, oddBias, shift);
         }
 
         DoubleScalar(sums, i, n, output, evenBias, oddBias, shift);
@@ -67,6 +74,31 @@ internal static class JpegUpsample
         return i;
     }
 
+    /// <summary>Doubles 8 samples at a time in 128-bit vectors while whole outputs fit; returns how many samples it did.</summary>
+    internal static int Double128(ReadOnlySpan<short> sums, int n, Span<byte> output, int evenBias, int oddBias, int shift)
+    {
+        ref short s = ref MemoryMarshal.GetReference(sums);
+        ref byte o = ref MemoryMarshal.GetReference(output);
+        Vector128<short> even = Vector128.Create((short)evenBias);
+        Vector128<short> odd = Vector128.Create((short)oddBias);
+        Vector128<byte> interleave = Vector128.Create((byte)0, 8, 1, 9, 2, 10, 3, 11, 4, 12, 5, 13, 6, 14, 7, 15);
+        int i = 0;
+
+        // Loads reach sums[i + 9], which must exist: the sums row has n + 2 entries.
+        for (; i + 8 <= n && (2 * i) + 16 <= output.Length; i += 8)
+        {
+            Vector128<short> left = Vector128.LoadUnsafe(ref s, (nuint)i);
+            Vector128<short> middle = Vector128.LoadUnsafe(ref s, (nuint)(i + 1));
+            Vector128<short> right = Vector128.LoadUnsafe(ref s, (nuint)(i + 2));
+            Vector128<short> m = middle + middle + middle;
+            Vector128<short> e = Vector128.ShiftRightArithmetic(m + left + even, shift);
+            Vector128<short> d = Vector128.ShiftRightArithmetic(m + right + odd, shift);
+            Simd128.Shuffle(Simd128.PackUnsignedSaturate(e, d), interleave).StoreUnsafe(ref o, (nuint)(2 * i));
+        }
+
+        return i;
+    }
+
     /// <summary>Fills <paramref name="sums"/> for <see cref="Double"/> from a row of n samples, padding both ends.</summary>
     internal static void Widen(ReadOnlySpan<byte> row, int n, Span<short> sums)
     {
@@ -92,6 +124,21 @@ internal static class JpegUpsample
                 Vector256<short> x = Avx2.ConvertToVector256Int16(Vector128.LoadUnsafe(ref a, (nuint)i));
                 Vector256<short> y = Avx2.ConvertToVector256Int16(Vector128.LoadUnsafe(ref b, (nuint)i));
                 (x + x + x + y).StoreUnsafe(ref s, (nuint)i);
+            }
+        }
+        else if (Simd128.IsSupported)
+        {
+            ref byte a = ref MemoryMarshal.GetReference(near);
+            ref byte b = ref MemoryMarshal.GetReference(far);
+            ref short s = ref Unsafe.Add(ref MemoryMarshal.GetReference(sums), 1);
+            for (; i + 16 <= n; i += 16)
+            {
+                Vector128<byte> x = Vector128.LoadUnsafe(ref a, (nuint)i);
+                Vector128<byte> y = Vector128.LoadUnsafe(ref b, (nuint)i);
+                Vector128<short> xl = Vector128.WidenLower(x).AsInt16(), yl = Vector128.WidenLower(y).AsInt16();
+                Vector128<short> xh = Vector128.WidenUpper(x).AsInt16(), yh = Vector128.WidenUpper(y).AsInt16();
+                (xl + xl + xl + yl).StoreUnsafe(ref s, (nuint)i);
+                (xh + xh + xh + yh).StoreUnsafe(ref s, (nuint)(i + 8));
             }
         }
 
@@ -127,6 +174,25 @@ internal static class JpegUpsample
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref o, x + 8), bytes.GetElement(2));
             }
         }
+        else if (Simd128.IsSupported)
+        {
+            ref byte a = ref MemoryMarshal.GetReference(near);
+            ref byte b = ref MemoryMarshal.GetReference(far);
+            ref byte o = ref MemoryMarshal.GetReference(output);
+            Vector128<short> round = Vector128.Create((short)bias);
+            for (; x + 16 <= output.Length && x + 16 <= near.Length && x + 16 <= far.Length; x += 16)
+            {
+                Vector128<byte> n = Vector128.LoadUnsafe(ref a, (nuint)x);
+                Vector128<byte> f = Vector128.LoadUnsafe(ref b, (nuint)x);
+                Vector128<short> nl = Vector128.WidenLower(n).AsInt16(), fl = Vector128.WidenLower(f).AsInt16();
+                Vector128<short> nh = Vector128.WidenUpper(n).AsInt16(), fh = Vector128.WidenUpper(f).AsInt16();
+                Vector128<short> low = Vector128.ShiftRightArithmetic(nl + nl + nl + fl + round, 2);
+                Vector128<short> high = Vector128.ShiftRightArithmetic(nh + nh + nh + fh + round, 2);
+
+                // Every value is 0..255, so the narrowing keeps it whole.
+                Vector128.Narrow(low, high).AsByte().StoreUnsafe(ref o, (nuint)x);
+            }
+        }
 
         for (; x < output.Length; x++)
         {
@@ -147,15 +213,15 @@ internal static class JpegUpsample
         int x = 0;
         if (factor == 2)
         {
-            if (Sse2.IsSupported)
+            if (Simd128.IsSupported)
             {
                 ref byte r = ref MemoryMarshal.GetReference(row);
                 ref byte o = ref MemoryMarshal.GetReference(output);
                 for (; x + 32 <= width && (x / 2) + 16 <= row.Length; x += 32)
                 {
                     Vector128<byte> v = Vector128.LoadUnsafe(ref r, (nuint)(x / 2));
-                    Sse2.UnpackLow(v, v).StoreUnsafe(ref o, (nuint)x);
-                    Sse2.UnpackHigh(v, v).StoreUnsafe(ref o, (nuint)(x + 16));
+                    Simd128.ZipLow(v, v).StoreUnsafe(ref o, (nuint)x);
+                    Simd128.ZipHigh(v, v).StoreUnsafe(ref o, (nuint)(x + 16));
                 }
             }
 

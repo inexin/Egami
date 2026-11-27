@@ -5,8 +5,8 @@ or in SVG output, and reads them from rasters. It is fully managed.
 
 It writes and reads QR Code, Micro QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, Code 93,
 Codabar, GS1 DataBar (Omnidirectional, Truncated, Stacked, Stacked Omnidirectional, Limited, Expanded and Expanded Stacked),
-ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. It also writes the Japan Post customer barcode, a 4-state postal code, which
-it does not read. Each has its own factory on `Barcode` with typed options; `Barcode.Create` takes a
+ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. It also writes the 4-state postal codes of Japan Post, USPS (Intelligent Mail), Royal Mail
+(RM4SCC), PostNL (KIX) and Australia Post, which it does not read. Each has its own factory on `Barcode` with typed options; `Barcode.Create` takes a
 format chosen at run time with the default options.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-create)]
@@ -167,8 +167,9 @@ nominal heights.
 ## Postal barcodes
 
 Postal barcodes are 4-state codes: each bar is a tracker, the short middle third, or reaches up, down or both ways from it.
-Egami writes them as grids of 6 rows, two per third, with a light column between bars, so they draw, render and turn into
-paths like any 2D symbol. It does not read them: `BarcodeFormat.Postal` holds them, and `BarcodeFormat.All` leaves them out.
+Egami writes them as grids with one dark column per bar and a light column between bars, the rows sized so that each
+symbology's module gives its spec's bar heights (6 rows for Japan Post and Intelligent Mail, 8 for the others), so they draw,
+render and turn into paths like any 2D symbol. It does not read them: `BarcodeFormat.Postal` holds them, and `BarcodeFormat.All` leaves them out.
 
 ### Japan Post
 
@@ -183,6 +184,44 @@ the whole address number. At the manual's module of 0.6 mm (`moduleSize: 0.6f` i
 and its quiet zone of 4 modules gives the 2 mm the manual asks for around it.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-japan-post)]
+
+### USPS Intelligent Mail
+
+`Barcode.IntelligentMail` writes the USPS Intelligent Mail barcode (USPS-B-3200): the 20-digit tracking code (barcode
+identifier, service type, mailer identifier and serial number; the second digit is 0 to 4) and a routing code of 0, 5, 9 or 11
+digits, the ZIP Code, ZIP+4 or delivery point. The 65 bars carry an 11-bit frame check. The human-readable text is the tracking
+code and, after a space, the routing code. At a module of 1/44 inch the bars are 0.136 inch tall at 22 per inch, mid USPS's
+ranges, and the quiet zone of 6 modules gives the 0.125 inch clear zone at each end. `Barcode.Create` takes the two codes as
+one text, the routing code after the 20th digit, a space or hyphen between them or none.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-intelligent-mail)]
+
+### Royal Mail and KIX
+
+`Barcode.RoyalMail` writes the Royal Mail 4-State Customer Code (RM4SCC, the CBC of Royal Mail's mailing services): digits and
+letters A to Z, usually the postcode without its space and the two-character Delivery Point Suffix. A start bar, a modulo 6
+check character and a stop bar are added. `Barcode.Kix` writes PostNL's KIX code (Klantindex) with the same characters and
+none of the extras, usually the postcode, the house number and, after an X, its addition. Lowercase letters are made
+uppercase, and the human-readable text is the characters without the check character. At a module of 0.6 mm the bars are 4.8
+mm tall at 21.2 per inch, Royal Mail's sizes, and the quiet zone of 4 modules gives the 2 mm clear zone.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-royal-mail)]
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-kix)]
+
+### Australia Post
+
+`Barcode.AustraliaPost` writes the Australia Post 4-State Customer Barcode: the eight-digit Delivery Point Identifier (DPID) and,
+for Customer Barcodes 2 and 3, the customer information after it. The Format Control Code, filler bars and four Reed-Solomon
+check symbols are added. By default the DPID alone makes the Standard Customer Barcode (FCC 11, 37 bars) and customer
+information the shorter of Customer Barcode 2 (FCC 59, 52 bars) and 3 (FCC 62, 67 bars) that holds it, digits in the N table
+(2 bars each) and other text in the C table (letters, digits, space and `#`, 3 bars each). `AustraliaPostOptions.Format`
+chooses the format (an `AustraliaPostFormat`), the internal Reply Paid (45), Routing (87) and Redirection (92) too, and
+`Encoding` the table (`AustraliaPostEncoding.N` or `C`). The
+human-readable text is Australia Post's text representation: the FCC, the DPID, the customer information and the check symbols,
+such as `11 39549554 54 17 53 58`. At a module of 0.55 mm the bars are 4.4 mm tall at 23 per 25.4 mm, and the quiet zone of 11
+modules gives the 6 mm at each end that Australia Post asks for.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-australia-post)]
 
 ## Reading barcodes
 
@@ -232,7 +271,7 @@ font, the text.
 
 A `Barcode` is one symbol: its `BarcodeFormat`, its `Modules`, the `QuietZone` its standard asks for in modules (4 for QR, 2 for
 Micro QR, 1 for Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7
-for EAN-8, 9 for UPC, 1 for GS1 DataBar and DataBar Expanded and 5 for DataBar Limited; 4 around a Japan Post barcode) and the `HumanReadableText` printed under a linear symbol. `Barcode.FromModules` makes one from
+for EAN-8, 9 for UPC, 1 for GS1 DataBar and DataBar Expanded and 5 for DataBar Limited; 4 around a Japan Post, Royal Mail or KIX barcode, 6 around an Intelligent Mail barcode and 11 around an Australia Post one) and the `HumanReadableText` printed under a linear symbol. `Barcode.FromModules` makes one from
 modules you already have, such as from another encoder.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Barcodes.cs#barcode-from-modules)]

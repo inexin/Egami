@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 
 using Egami.Formats.Jxl;
+using Egami.Heic;
 
 namespace Egami.Benchmarks;
 
@@ -37,14 +38,19 @@ internal static class JxlTiming
         // counts the difference of two run counts); EGAMI_JXL_STAGES=1 prints the bytes one decode allocates and, in a build with
         // -p:JxlStageTimers=true, where the time goes at each thread count (the stages' wall-clock time, which on all threads shows
         // the serial share of each stage).
+        // --median reports the median of the runs instead of the fastest, and --warmup=N runs N times untimed first
+        // (tools/time-simd.py). HEIC files load too.
         int[] counts = files.Contains("--one-thread") ? [1] : [1, Environment.ProcessorCount];
         int? runs = Runs(files);
+        bool median = files.Contains("--median");
+        int? warmups = files.FirstOrDefault(a => a.StartsWith("--warmup=", StringComparison.Ordinal)) is { } w
+            ? int.Parse(w["--warmup=".Length..], CultureInfo.InvariantCulture) : null;
         foreach (string file in files.Where(f => !f.StartsWith("--", StringComparison.Ordinal)))
         {
             byte[] data = File.ReadAllBytes(file);
             foreach (int threads in counts)
             {
-                EgamiContext context = EgamiContext.Default with { MaxParallelism = threads };
+                EgamiContext context = (EgamiContext.Default with { MaxParallelism = threads }).WithHeic();
                 void Decode()
                 {
                     using (Raster.Load(data, context))
@@ -52,7 +58,7 @@ internal static class JxlTiming
                     }
                 }
 
-                double best = Timed(runs, Decode);
+                double best = Timed(runs, Decode, median, warmups);
                 Console.WriteLine($"{file}: {best:F2} ms an image on {threads} thread{(threads == 1 ? "" : "s")}");
                 if (Stages)
                 {
@@ -123,26 +129,26 @@ internal static class JxlTiming
     private static int? Runs(string[] args) => args.FirstOrDefault(a => a.StartsWith("--runs=", StringComparison.Ordinal)) is { } r
         ? int.Parse(r["--runs=".Length..], CultureInfo.InvariantCulture) : null;
 
-    /// <summary>Runs <paramref name="action"/> <paramref name="runs"/> times, or ten times after ten warm-up runs, and gives the fastest in milliseconds.</summary>
-    private static double Timed(int? runs, Action action)
+    /// <summary>
+    /// Runs <paramref name="action"/> <paramref name="runs"/> times, or ten times after ten warm-up runs, and gives the fastest in
+    /// milliseconds, or with <paramref name="median"/> the median; <paramref name="warmups"/> sets the number of warm-up runs.
+    /// </summary>
+    private static double Timed(int? runs, Action action, bool median = false, int? warmups = null)
     {
-        if (runs is null)
+        for (int warm = 0; warm < (warmups ?? (runs is null ? 10 : 0)); warm++)
         {
-            for (int warm = 0; warm < 10; warm++)
-            {
-                action();
-            }
+            action();
         }
 
-        double best = double.MaxValue;
-        for (int run = 0; run < (runs ?? 10); run++)
+        double[] times = new double[runs ?? 10];
+        for (int run = 0; run < times.Length; run++)
         {
             long start = Stopwatch.GetTimestamp();
             action();
-            best = Math.Min(best, Stopwatch.GetElapsedTime(start).TotalMilliseconds);
+            times[run] = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
         }
 
-        return best;
+        return median ? ImageTiming.Median(times) : times.Min();
     }
 
     /// <summary>

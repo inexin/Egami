@@ -262,9 +262,10 @@ every command takes many files, globs and folders with `--recursive` as the imag
 - `font subset` keeps the characters of `--text`, `--text-file` (files or globs, read as UTF-8 text, HTML and all) and
   `--unicodes` (CSS unicode-range syntax: `U+0020-007E`, `U+00E5`, `U+4??`), which add up, with the glyphs the shaper draws
   them with: the decomposition of a character the font lacks, and the precomposed form of a base and mark. By default it keeps
-  GSUB, GPOS, GDEF and MATH, every glyph they can substitute for the kept ones and the dotted circle, with the glyph ids, so
-  the text shapes as with the full font (ligatures, kerning, contextual forms, math); `--no-layout` keeps only the mapped
-  glyphs, renumbered, for the smallest file (`--retain-gids` keeps the ids). A variable font becomes a static font at its
+  every glyph GSUB can substitute for the kept ones and the dotted circle, and GSUB, GPOS, GDEF and MATH cut down to the kept
+  glyphs, which are renumbered from 0, so the text shapes as with the full font (ligatures, kerning, contextual forms, math);
+  `--no-layout` keeps only the mapped glyphs, without those tables, for the smallest file. `--retain-gids` keeps every glyph's
+  id, with empty glyphs in the gaps, for a tool that refers to glyphs by id. A variable font becomes a static font at its
   default position, or at `--variation wght=700,wdth=90`. `--no-hinting` leaves out TrueType hinting, `--name-prefix` prefixes
   the PostScript name and `--face` picks a font of a collection. It prints one line per font: the glyphs kept of the total,
   the asked characters the font lacks (characters in `--unicodes` ranges keep whatever the font has) and the sizes, and warns

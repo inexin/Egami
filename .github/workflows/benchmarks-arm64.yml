@@ -1,0 +1,52 @@
+name: Benchmarks (arm64)
+
+# Times Egami's hot paths on GitHub's ARM64 Linux runner with tools/time-simd.py, with SIMD on and off, for roadmap 2.4.13's
+# 128-bit SIMD paths. Started by hand only: it never runs on a push, a pull request or a schedule. Shared runners are noisy,
+# so compare numbers from one run, not across runs.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or commit to time
+        default: main
+      runs:
+        description: Timed runs per scenario (the median counts)
+        default: '5'
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  time-simd:
+    name: Time SIMD (linux-arm64)
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      # The jpeg-decode-* scenarios read cjpeg's files, made in Docker.
+      - name: JPEG inputs
+        run: python3 tools/make-jpeg-bench-files.py
+      - name: Time
+        run: python3 tools/time-simd.py "--runs=$RUNS" --json=artifacts/time-simd.json | tee artifacts-time-simd.txt
+        env:
+          RUNS: ${{ inputs.runs }}
+      - name: Summary
+        run: |
+          {
+            echo '```'
+            cat artifacts-time-simd.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: time-simd-arm64
+          path: artifacts/time-simd.json

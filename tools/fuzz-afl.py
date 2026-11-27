@@ -10,6 +10,7 @@ Usage, from the repo root:
   python tools/fuzz-afl.py 3 jpeg:4 exif      hours, then targets (default: png jpeg exif); ":4" runs four instances
                                               (one main, three secondaries) sharing the target's findings
   docker logs -f egami-afl-jpeg               to follow one
+The DOTNET_Enable* instruction-set settings in KNOBS pass into the containers (DOTNET_EnableAVX2=0, for one).
 """
 import os
 import subprocess
@@ -97,6 +98,9 @@ mkdir -p /seeds && cp {seeds} /seeds/
 afl-fuzz -V {seconds} -i /seeds -o /findings/{target} {role} -t 5000 -m none -- /out/Egami.Fuzz {harness}
 """
 
+KNOBS = ["DOTNET_EnableHWIntrinsic", "DOTNET_EnableAVX512", "DOTNET_EnableAVX512F", "DOTNET_EnableAVX2", "DOTNET_EnableAVX",
+         "DOTNET_EnableSSE41", "DOTNET_EnableSSE42"]
+
 
 def main():
     hours = float(sys.argv[1]) if len(sys.argv) > 1 else 3
@@ -114,7 +118,10 @@ def main():
             script = SCRIPT.format(seeds=" ".join("/src/" + pattern for pattern in SEEDS[target].split()), seconds=int(hours * 3600), target=target, role=role,
                                    harness="raw" if target.startswith("raw-") else "tiff" if target == "tiff-lossless" else "jpeg2000" if target == "htj2k" else target)
             # AFL_AUTORESUME carries on from an earlier run's queue in the same findings directory.
-            subprocess.run(["docker", "run", "-d", "--name", name, "-e", "AFL_AUTORESUME=1", "-v", f"{repo}:/src:ro", "-v", f"{findings}:/findings",
+            # DOTNET_Enable* settings pass through, so DOTNET_EnableAVX2=0 fuzzes the 128-bit SIMD paths ARM64 takes.
+            # Windows hands environment names over in capitals, so they are matched against the runtime's spelling.
+            runtime = [arg for knob in KNOBS if (value := os.environ.get(knob)) is not None for arg in ("-e", f"{knob}={value}")]
+            subprocess.run(["docker", "run", "-d", "--name", name, "-e", "AFL_AUTORESUME=1", *runtime, "-v", f"{repo}:/src:ro", "-v", f"{findings}:/findings",
                             "egami-fuzz", "bash", "-c", script], check=True)
             print(f"Started {name} for {hours} h.")
 

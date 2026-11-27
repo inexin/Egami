@@ -263,6 +263,8 @@ LGPL code is never read.
 | OpenH264 (Cisco), libavc (Android) | BSD-2, Apache-2.0 |
 | libxaac (Android, commit 2fbadd5): a second reading of the AAC LC decoder, and its encoder's Huffman tables to check ours | Apache-2.0 |
 | go-ffv1, rust-av ffv1 (FFV1 decoders) | ISC, MIT |
+| libjpeg-turbo (SIMD kernels for the JPEG DCT, color conversion and upsampling) | IJG, BSD-3, zlib |
+| libjxl and Highway (portable SIMD for the JPEG XL DCT, color and filters) | BSD-3, Apache-2.0 |
 
 ### Translated code (notice in THIRD-PARTY-NOTICES.md)
 

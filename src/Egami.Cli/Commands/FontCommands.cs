@@ -153,8 +153,8 @@ internal static class FontCommands
         Option<string[]> text = new("--text") { Description = "Characters to keep. Repeat it, and combine it with --text-file and --unicodes; together they say what to keep.", HelpName = "text", AllowMultipleArgumentsPerToken = false };
         Option<string[]> textFile = new("--text-file") { Description = "Files or globs whose characters to keep, read as UTF-8 text (HTML and all: tags add only ASCII).", HelpName = "file", AllowMultipleArgumentsPerToken = false };
         Option<string[]> unicodes = new("--unicodes") { Description = "Code points to keep in CSS unicode-range syntax, such as U+0020-007E,U+00E5,U+4??.", HelpName = "ranges", AllowMultipleArgumentsPerToken = false };
-        Option<bool> noLayout = new("--no-layout") { Description = "Keep only the glyphs the characters map to, without GSUB, GPOS, GDEF and MATH, renumbered densely: the smallest file, shaped without ligatures, kerning or contextual forms." };
-        Option<bool> retainGids = new("--retain-gids") { Description = "Keep every glyph's id, with empty glyphs in the gaps (the default unless --no-layout)." };
+        Option<bool> noLayout = new("--no-layout") { Description = "Keep only the glyphs the characters map to, without GSUB, GPOS, GDEF and MATH: the smallest file, shaped without ligatures, kerning or contextual forms." };
+        Option<bool> retainGids = new("--retain-gids") { Description = "Keep every glyph's id, with empty glyphs in the gaps, for a tool that refers to glyphs by id; by default the kept glyphs are renumbered from 0." };
         Option<string?> variation = new("--variation") { Description = "Where a variable font is instanced, such as wght=700,wdth=90; the subset is always a static font, by default at the font's default position.", HelpName = "axis=value,..." };
         Option<bool> noHinting = new("--no-hinting") { Description = "Leave out TrueType hinting (fpgm, prep, cvt and glyph instructions); CFF hints stay." };
         Option<string?> namePrefix = new("--name-prefix") { Description = "Put this before the PostScript and CFF font names, such as ABCDEF+.", HelpName = "prefix" };
@@ -162,9 +162,9 @@ internal static class FontCommands
         BatchFlags batch = new();
         Command command = new(
             "subset",
-            "Subset fonts to the characters a page uses and write WOFF2 (the default), WOFF, TTF or OTF. By default the subset keeps the layout "
-            + "tables and every glyph they can substitute, so it shapes the text as the full font does; prints the glyphs kept, the characters "
-            + "the font lacks and the sizes.");
+            "Subset fonts to the characters a page uses and write WOFF2 (the default), WOFF, TTF or OTF. By default the subset keeps every glyph "
+            + "the layout tables can substitute and those tables cut down to the kept glyphs, renumbered from 0, so it shapes the text as the "
+            + "full font does; prints the glyphs kept, the characters the font lacks and the sizes.");
         command.Arguments.Add(inputs);
         foreach (Option option in (Option[])[output, format, text, textFile, unicodes, noLayout, retainGids, variation, noHinting, namePrefix, face])
         {
@@ -195,7 +195,7 @@ internal static class FontCommands
             SubsetOptions subsetOptions = new()
             {
                 LayoutClosure = layout,
-                RetainGlyphIds = layout || result.GetValue(retainGids),
+                RetainGlyphIds = result.GetValue(retainGids),
                 DropHinting = result.GetValue(noHinting),
                 FontNamePrefix = result.GetValue(namePrefix),
             };

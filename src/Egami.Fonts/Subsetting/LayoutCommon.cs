@@ -1,3 +1,5 @@
+using Egami.Fonts.Shaping;
+
 using static Egami.Fonts.Shaping.OtData;
 
 namespace Egami.Fonts.Subsetting;
@@ -108,6 +110,33 @@ internal sealed class ClassRemap
 
         return old;
     }
+}
+
+/// <summary>
+/// A variable face's position, for a static subset: each variation index device table's delta from GDEF's item variation store,
+/// rounded as the shaper rounds it at the em, and the normalized coordinates that pick feature variations. At the default
+/// instance every delta is 0.
+/// </summary>
+internal sealed class VariationBake
+{
+    private readonly Func<int, int, float>? _delta;
+
+    private VariationBake(Typeface face)
+    {
+        var font = new ShapeFont(face);
+        _delta = font.VariationDelta;
+        Coords = font.NormalizedCoordinates;
+    }
+
+    /// <summary>Gets the normalized coordinates in 2.14 units, one per axis; empty at the default instance.</summary>
+    public int[] Coords { get; }
+
+    /// <summary>The bake for a variable face's static subset, or null for a static face.</summary>
+    public static VariationBake? For(Typeface face) => face.IsVariable ? new VariationBake(face) : null;
+
+    /// <summary>The rounded delta of the device table at <paramref name="device"/>: 0 for none, or for a hinting device.</summary>
+    public int Delta(ReadOnlySpan<byte> d, int device) =>
+        device == 0 || _delta is null || U16(d, device + 4) != 0x8000 ? 0 : ShapeFont.RoundF(_delta(U16(d, device), U16(d, device + 2)));
 }
 
 /// <summary>Reads coverages and class definitions for a subset and writes them back in their smallest format.</summary>

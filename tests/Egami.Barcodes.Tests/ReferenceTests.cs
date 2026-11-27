@@ -16,7 +16,7 @@ public class ReferenceTests
         [.. Load("cases.json").GetProperty("cases").EnumerateArray()]);
 
     /// <summary>The factories the cases may name; cases for others are not run yet.</summary>
-    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Code93", "Codabar", "DataBar", "DataBarLimited", "DataBarExpanded", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "MicroQr", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune", "JapanPost"];
+    private static readonly HashSet<string> s_calls = ["Code128", "Gs1_128", "Code39", "Code93", "Codabar", "DataBar", "DataBarLimited", "DataBarExpanded", "Itf", "Itf14", "Ean13", "Ean8", "UpcA", "UpcE", "Qr", "QrGs1", "MicroQr", "DataMatrix", "DataMatrixGs1", "Pdf417", "Aztec", "AztecRune", "JapanPost", "RoyalMail", "Kix", "IntelligentMail", "AustraliaPost"];
 
     public static TheoryData<string> Cases =>
         [.. s_cases.Value.Where(c => s_calls.Contains(c.GetProperty("call").GetString()!) && ReadBack(c)).Select(c => c.GetProperty("name").GetString()!)];
@@ -65,13 +65,14 @@ public class ReferenceTests
             return;
         }
 
-        if (barcode.Format == BarcodeFormat.JapanPost)
+        if ((barcode.Format & BarcodeFormat.Postal) != 0)
         {
-            // zint's grid has a row per third (ascender, tracker, descender); Egami's has two.
+            // zint's grid has a row per part (ascender, tracker, descender); Egami's has several, as tall as its standard asks.
             string[] egami = Grid(barcode.Modules).TrimEnd('\n').Split('\n');
+            int extender = barcode.Format is BarcodeFormat.RoyalMail or BarcodeFormat.Kix or BarcodeFormat.AustraliaPost ? 3 : 2;
             Assert.Equal(zint.GetProperty("width").GetInt32(), barcode.Modules.Width);
-            Assert.Equal(string.Join('\n', zint.GetProperty("modules").EnumerateArray().Select(r => r.GetString())), string.Join('\n', egami[0], egami[2], egami[4]));
-            Assert.Equal([egami[0], egami[2], egami[4]], [egami[1], egami[3], egami[5]]);
+            Assert.Equal(string.Join('\n', zint.GetProperty("modules").EnumerateArray().Select(r => r.GetString())), string.Join('\n', egami[0], egami[extender], egami[^1]));
+            Assert.All(egami.Index(), r => Assert.Equal(r.Index < extender ? egami[0] : r.Index < egami.Length - extender ? egami[extender] : egami[^1], r.Item));
             Assert.Equal(test.GetProperty("text").GetString(), barcode.HumanReadableText);
             return;
         }
@@ -175,6 +176,14 @@ public class ReferenceTests
                 ErrorCorrectionPercent = Number(options, "percent"),
             }),
             "JapanPost" => Barcode.JapanPost(data),
+            "RoyalMail" => Barcode.RoyalMail(data),
+            "Kix" => Barcode.Kix(data),
+            "AustraliaPost" => Barcode.AustraliaPost(data, new AustraliaPostOptions
+            {
+                Format = options.ValueKind == JsonValueKind.Object && options.TryGetProperty("format", out JsonElement format) ? Enum.Parse<AustraliaPostFormat>(format.GetString()!) : null,
+                Encoding = options.ValueKind == JsonValueKind.Object && options.TryGetProperty("encoding", out JsonElement encoding) ? Enum.Parse<AustraliaPostEncoding>(encoding.GetString()!) : null,
+            }),
+            "IntelligentMail" => Barcode.IntelligentMail(data, options.ValueKind == JsonValueKind.Object && options.TryGetProperty("routing", out JsonElement routing) ? routing.GetString() : null),
             "AztecRune" => Barcode.AztecRune(int.Parse(data, System.Globalization.CultureInfo.InvariantCulture)),
             string call => throw new NotSupportedException(call),
             _ => throw new NotSupportedException(),

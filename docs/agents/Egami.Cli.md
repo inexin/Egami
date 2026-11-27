@@ -117,7 +117,8 @@ each returns one message naming the tools to call.
 - Reading stdout for messages: they go to standard error; stdout carries only results.
 - Calling `run` steps with option names: steps take the step's words (`resize 800x`), or the JSON workflow's properties.
 - Calling `font subset` with no `--text`, `--text-file` or `--unicodes`: it needs to know what to keep (exit code 2). Its
-  default keeps the layout tables whole, so pass `--no-layout` when the smallest file matters more than ligatures and kerning.
+  default keeps the layout tables, cut down and renumbered, so pass `--no-layout` only when the smallest file matters more than
+  ligatures and kerning, and `--retain-gids` only when something refers to the glyphs by id.
 
 ## More
 
