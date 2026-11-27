@@ -150,7 +150,7 @@ public class JapanPostTests
     [Fact]
     public void FormatsAndFactories()
     {
-        Assert.Equal(BarcodeFormat.JapanPost, BarcodeFormat.Postal);
+        Assert.Equal(BarcodeFormat.JapanPost, BarcodeFormat.Postal & BarcodeFormat.JapanPost);
         Assert.Equal(BarcodeFormat.None, BarcodeFormat.All & BarcodeFormat.Postal);
         Barcode barcode = Barcode.Create(BarcodeFormat.JapanPost, "100-0013 1-3-2-503");
         Assert.Equal(Values(Barcode.JapanPost("100-0013 1-3-2-503")), Values(barcode));

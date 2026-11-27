@@ -1,8 +1,8 @@
 # Egami.Barcodes: guide for coding agents
 
 Egami.Barcodes writes and reads barcodes: 1D (Code 128, GS1-128, Code 39, Code 93, Codabar, GS1 DataBar, ITF, EAN and UPC) and 2D (QR, Micro QR, Data
-Matrix, PDF417, Aztec), and writes the Japan Post customer barcode, a 4-state postal code, from a prepared postal code and
-address number. It draws them onto Egami.Drawing's canvas, so they stay vectors in PDF and SVG output, or onto rasters, and
+Matrix, PDF417, Aztec), and writes the 4-state postal codes of Japan Post (from a prepared postal code and address number), USPS (Intelligent
+Mail), Royal Mail (RM4SCC), PostNL (KIX) and Australia Post. It draws them onto Egami.Drawing's canvas, so they stay vectors in PDF and SVG output, or onto rasters, and
 reads the 1D and 2D ones from rasters (`BarcodeFormat.All` leaves out `BarcodeFormat.Postal`).
 
 Namespaces: `Egami.Barcodes`, with `Egami`, `Egami.Pixels` and `Egami.Drawing`.

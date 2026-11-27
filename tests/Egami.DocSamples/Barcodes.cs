@@ -200,6 +200,68 @@ public class Barcodes
     }
 
     [Fact]
+    public void MakeRoyalMail()
+    {
+        #region barcode-royal-mail
+        // A postcode without its space and the Delivery Point Suffix; the check character and start and stop bars are added.
+        Barcode mail = Barcode.RoyalMail("LU178XE2B");
+
+        // Drawn at a 0.6 mm module (here in millimetres): bars 4.8 mm tall at 21.2 per inch, in a 2.4 mm quiet zone.
+        Path bars = mail.ToPath(moduleSize: 0.6f);
+        Console.WriteLine(mail.HumanReadableText); // LU178XE2B
+        #endregion
+        Assert.Equal("LU178XE2B", mail.HumanReadableText);
+        Assert.Equal(4.8f, bars.Bounds.Height, 3);
+    }
+
+    [Fact]
+    public void MakeKix()
+    {
+        #region barcode-kix
+        // The postcode, the house number and, after an X, its addition.
+        Barcode mail = Barcode.Kix("2500GG30X250");
+        Path bars = mail.ToPath(moduleSize: 0.6f);
+        Console.WriteLine(mail.HumanReadableText); // 2500GG30X250
+        #endregion
+        Assert.Equal("2500GG30X250", mail.HumanReadableText);
+        Assert.Equal(((2 * 48) - 1) * 0.6f, bars.Bounds.Width, 3);
+    }
+
+    [Fact]
+    public void MakeIntelligentMail()
+    {
+        #region barcode-intelligent-mail
+        // The 20-digit tracking code and the 11-digit routing code (the ZIP Code and its delivery point).
+        Barcode mail = Barcode.IntelligentMail("01234567094987654321", "01234567891");
+
+        // Drawn at a 1/44 inch module (here in inches): 65 bars at 22 per inch, 0.136 inch tall.
+        Path bars = mail.ToPath(moduleSize: 1f / 44);
+        Console.WriteLine(mail.HumanReadableText); // 01234567094987654321 01234567891
+        #endregion
+        Assert.Equal("01234567094987654321 01234567891", mail.HumanReadableText);
+        Assert.Equal(129f / 44, bars.Bounds.Width, 4);
+    }
+
+    [Fact]
+    public void MakeAustraliaPost()
+    {
+        #region barcode-australia-post
+        // A Standard Customer Barcode holds the eight-digit DPID; customer information after it takes Customer Barcode 2 or 3.
+        Barcode mail = Barcode.AustraliaPost("39549554");
+        Barcode withInformation = Barcode.AustraliaPost("54516251ABC123");
+        Barcode digits = Barcode.AustraliaPost("5451625112345", new AustraliaPostOptions { Format = AustraliaPostFormat.Customer3 });
+
+        // Drawn at a 0.55 mm module (here in millimetres): 37 bars, 40.15 mm long and 4.4 mm tall.
+        Path bars = mail.ToPath(moduleSize: 0.55f);
+        Console.WriteLine(mail.HumanReadableText); // 11 39549554 54 17 53 58, the FCC, the DPID and the check symbols
+        #endregion
+        Assert.Equal("11 39549554 54 17 53 58", mail.HumanReadableText);
+        Assert.StartsWith("62 54516251 ABC123 ", withInformation.HumanReadableText, StringComparison.Ordinal);
+        Assert.StartsWith("62 54516251 12345 ", digits.HumanReadableText, StringComparison.Ordinal);
+        Assert.Equal(40.15f, bars.Bounds.Width, 3);
+    }
+
+    [Fact]
     public void MakeDataBar()
     {
         #region barcode-databar

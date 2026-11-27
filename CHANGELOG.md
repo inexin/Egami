@@ -501,6 +501,23 @@ Japan Post customer barcode (roadmap 2.11.3, stage A).
 - `BarcodeFormat.JapanPost` and the group `BarcodeFormat.Postal` are new. Postal barcodes are written, not read, so
   `Postal` is not in `All` and reads with the default options are unchanged.
 
+Intelligent Mail, Royal Mail, KIX and Australia Post barcodes (roadmap 2.11.3, stage B).
+
+- `Barcode.IntelligentMail` writes the USPS Intelligent Mail barcode (USPS-B-3200) from the 20-digit tracking code and a
+  routing code of 0, 5, 9 or 11 digits: 65 bars with an 11-bit frame check, a grid of 6 rows that gives bars 0.136 inch tall
+  at 22 per inch at a 1/44 inch module, with a quiet zone of 6 modules. The spec's examples pass.
+- `Barcode.RoyalMail` writes RM4SCC, digits and letters A to Z with start and stop bars and a modulo 6 check character, and
+  `Barcode.Kix` PostNL's KIX code, the same characters without them: grids of 8 rows that give Royal Mail's sizes at a 0.6
+  mm module, with a quiet zone of 4 modules.
+- `Barcode.AustraliaPost` and `AustraliaPostOptions` write the Australia Post 4-State Customer Barcode: the eight-digit DPID
+  and, in Customer Barcodes 2 and 3, customer information in the N or C table, with filler bars and four Reed-Solomon check
+  symbols over GF(64). `AustraliaPostFormat` names the formats by their FCC (11, 59, 62 and the internal 45, 87 and 92),
+  `AustraliaPostEncoding` the tables. The human-readable text is the spec's text representation. A grid of 8 rows gives
+  Australia Post's sizes at a 0.55 mm module, with a quiet zone of 11 modules (6 mm). The spec's examples pass.
+- The symbols equal zint's. `Barcode.Create` and `Barcode.FromModules` take the four formats.
+- `BarcodeFormat.IntelligentMail`, `RoyalMail`, `Kix` and `AustraliaPost` are new and in `Postal`, which stays out of `All`,
+  so reads with the default options are unchanged.
+
 ## Egami.Cli 1.6.0 (unreleased)
 
 MCP prompts and resources, a guide for coding agents, animated SVG input and font commands. Additive to 1.5.0.
