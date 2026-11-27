@@ -24,6 +24,9 @@ EPS previews (roadmap 2.3.14).
   `Eps.LeadingWhitespace` warning, as PostScript interpreters do; some old files have them.
 - The EPS format page, a recipe in the formats guide and a fuzz target (`eps`).
 - New diagnostics: `Eps.PreviewLoaded` on every load, and `Eps.*` warnings for damaged headers, sections and previews.
+- Fixed: a WebP file whose EXIF XResolution or YResolution entry holds no values or text threw `ArgumentOutOfRangeException`
+  from `Raster.Probe` and `Raster.Load`; such entries now count as missing. An EXIF ColorSpace tag holding text no longer throws
+  from `RasterMetadata.GetColorProfile`.
 
 ## Egami.Drawing 1.6.0 (unreleased)
 

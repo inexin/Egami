@@ -386,7 +386,8 @@ public sealed class RasterMetadata
     // DCF: EXIF ColorSpace "uncalibrated" (0xFFFF) with interoperability index "R03" is a camera set to Adobe RGB.
     private static bool IsAdobeRgbCamera(ExifData? exif)
     {
-        return exif is not null && exif.TryGet(ExifKey.ColorSpace, out ExifEntry? space) && space.Count > 0 && space.AsDouble() == 0xFFFF
+        return exif is not null && exif.TryGet(ExifKey.ColorSpace, out ExifEntry? space) && space.Count > 0
+            && space.Type is ExifType.Short or ExifType.Long && space.AsInteger() == 0xFFFF
             && exif.TryGet(new ExifKey(0x0001, ExifIfd.Interoperability), out ExifEntry? index) && index.AsString().StartsWith("R03", StringComparison.Ordinal);
     }
 
