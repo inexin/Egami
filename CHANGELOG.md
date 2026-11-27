@@ -31,6 +31,9 @@ EPS previews (roadmap 2.3.14).
   chroma from luma, XYB to sRGB and the 8-bit output have 128-bit SIMD paths for x86 and Arm64. Pixels are identical to the
   scalar path's; the FMA kernels run where the CPU has FMA, as Arm64 does. 1.4 times as fast as before on x64 with AVX turned
   off.
+- Fixed: a WebP file whose EXIF XResolution or YResolution entry holds no values or text threw `ArgumentOutOfRangeException`
+  from `Raster.Probe` and `Raster.Load`; such entries now count as missing. An EXIF ColorSpace tag holding text no longer throws
+  from `RasterMetadata.GetColorProfile`.
 - Lossy WebP decoding and encoding use SIMD on Arm64 (roadmap 2.4.13): the VP8 loop filter, transforms, prediction and
   distortion kernels and the YUV to RGB upsampling, which had SSE paths only, now run on 128-bit vectors on x86 and Arm64,
   giving the same bytes as before.
