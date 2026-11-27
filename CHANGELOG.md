@@ -34,6 +34,9 @@ EPS previews (roadmap 2.3.14).
 - Fixed: a WebP file whose EXIF XResolution or YResolution entry holds no values or text threw `ArgumentOutOfRangeException`
   from `Raster.Probe` and `Raster.Load`; such entries now count as missing. An EXIF ColorSpace tag holding text no longer throws
   from `RasterMetadata.GetColorProfile`.
+- Faster JPEG encoding where AVX2 is missing, Arm64 among them (roadmap 2.4.13): RGB and RGBA to YCbCr, chroma
+  downsampling, CMYK inks, the forward DCT and quantization, and the nonzero-coefficient masks have 128-bit SIMD paths; files
+  are byte-identical to before; baseline encodes 3.7 to 4.8 times as fast as the scalar path on x64 with AVX2 turned off.
 - Lossy WebP decoding and encoding use SIMD on Arm64 (roadmap 2.4.13): the VP8 loop filter, transforms, prediction and
   distortion kernels and the YUV to RGB upsampling, which had SSE paths only, now run on 128-bit vectors on x86 and Arm64,
   giving the same bytes as before.

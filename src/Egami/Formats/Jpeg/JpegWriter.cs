@@ -7,6 +7,7 @@ using System.Text;
 
 using Egami.Metadata;
 using Egami.Pixels;
+using Egami.Simd;
 using Egami.Streaming;
 
 namespace Egami.Formats.Jpeg;
@@ -1374,6 +1375,7 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
             ConvertRows(my * rows, rows, workspace);
             Plane[] planes = workspace.Planes;
             bool vector = Avx2.IsSupported && !_wide;
+            bool vector128 = !vector && !_wide && Simd128.IsSupported;
             int perMcu = 0;
             foreach (Plane p in planes)
             {
@@ -1436,6 +1438,10 @@ internal sealed class JpegWriter : IFormatWriter, IRowFormatWriter
                         else if (vector)
                         {
                             JpegFdct.ForwardAvx2(p.Samples.AsSpan(row + (bx * 8)), p.Stride, reciprocals, block);
+                        }
+                        else if (vector128)
+                        {
+                            JpegFdct.Forward128(p.Samples.AsSpan(row + (bx * 8)), p.Stride, reciprocals, block);
                         }
                         else
                         {

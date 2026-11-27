@@ -110,6 +110,11 @@ internal static class Simd128
         return AdvSimd.Arm64.AddPairwise(low, high);
     }
 
+    /// <summary>Adds adjacent pairs of bytes into 16-bit lanes: lane i is a[2i] + a[2i+1] (<c>pmaddubsw</c> by ones, <c>uaddlp</c>).</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static Vector128<ushort> AddPairwiseWidening(Vector128<byte> a) =>
+        Ssse3.IsSupported ? Ssse3.MultiplyAddAdjacent(a, Vector128<sbyte>.One).AsUInt16() : AdvSimd.AddPairwiseWidening(a);
+
     /// <summary>
     /// The sums of absolute differences of each half's eight bytes, in the low 16 bits of each 64-bit lane (the rest zero):
     /// <c>psadbw</c>.

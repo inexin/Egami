@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
+using Egami.Simd;
+
 namespace Egami.Formats.Jpeg;
 
 /// <summary>
@@ -343,6 +345,177 @@ internal static class JpegFdct
         Vector256<int> l = Avx2.MultiplyAddAdjacent(low1, factors1) + Avx2.MultiplyAddAdjacent(low2, factors2);
         Vector256<int> h = Avx2.MultiplyAddAdjacent(high1, factors1) + Avx2.MultiplyAddAdjacent(high2, factors2);
         return Avx2.PackSignedSaturate((l + round) >> shift, (h + round) >> shift);
+    }
+
+    /// <summary>
+    /// <see cref="Forward"/> in 128-bit vectors for one block (x86 without AVX2, and Arm64): the AVX2 kernel's 16-bit lanes and
+    /// multiply-adds on one block, so the output is identical to the scalar code too.
+    /// </summary>
+    internal static void Forward128(ReadOnlySpan<byte> samples, int stride, ReadOnlySpan<ushort> reciprocals, Span<short> output)
+    {
+        _ = samples.Slice(7 * stride, 8);
+        reciprocals = reciprocals[..192];
+        output = output[..64];
+        ref byte s = ref MemoryMarshal.GetReference(samples);
+        Vector128<short> center = Vector128.Create((short)128);
+        Vector128<short> r0 = Row128(ref s, 0) - center;
+        Vector128<short> r1 = Row128(ref s, stride) - center;
+        Vector128<short> r2 = Row128(ref s, 2 * stride) - center;
+        Vector128<short> r3 = Row128(ref s, 3 * stride) - center;
+        Vector128<short> r4 = Row128(ref s, 4 * stride) - center;
+        Vector128<short> r5 = Row128(ref s, 5 * stride) - center;
+        Vector128<short> r6 = Row128(ref s, 6 * stride) - center;
+        Vector128<short> r7 = Row128(ref s, 7 * stride) - center;
+
+        Transpose(ref r0, ref r1, ref r2, ref r3, ref r4, ref r5, ref r6, ref r7);
+        Butterfly(r0, r1, r2, r3, r4, r5, r6, r7, ConstBits - Pass1Bits, out Vector128<short> e0, out Vector128<short> e4, out r2, out r6, out r1, out r3, out r5, out r7);
+        r0 = e0 << Pass1Bits;
+        r4 = e4 << Pass1Bits;
+
+        Transpose(ref r0, ref r1, ref r2, ref r3, ref r4, ref r5, ref r6, ref r7);
+        Butterfly(r0, r1, r2, r3, r4, r5, r6, r7, ConstBits + Pass1Bits, out e0, out e4, out r2, out r6, out r1, out r3, out r5, out r7);
+        Vector128<short> roundDc = Vector128.Create((short)(1 << (Pass1Bits - 1)));
+        r0 = (e0 + roundDc) >> Pass1Bits;
+        r4 = (e4 + roundDc) >> Pass1Bits;
+
+        ref ushort table = ref MemoryMarshal.GetReference(reciprocals);
+        ref short o = ref MemoryMarshal.GetReference(output);
+        Quantize(r0, ref table, 0).StoreUnsafe(ref o, 0);
+        Quantize(r1, ref table, 8).StoreUnsafe(ref o, 8);
+        Quantize(r2, ref table, 16).StoreUnsafe(ref o, 16);
+        Quantize(r3, ref table, 24).StoreUnsafe(ref o, 24);
+        Quantize(r4, ref table, 32).StoreUnsafe(ref o, 32);
+        Quantize(r5, ref table, 40).StoreUnsafe(ref o, 40);
+        Quantize(r6, ref table, 48).StoreUnsafe(ref o, 48);
+        Quantize(r7, ref table, 56).StoreUnsafe(ref o, 56);
+        o = (short)Quantize(r0.GetElement(0), reciprocals);
+    }
+
+    /// <summary>Runs the 128-bit quantization (AC coefficients, limited to 10 bits) on one value, for tests.</summary>
+    internal static int QuantizeVector128ForTest(int value, int divisor)
+    {
+        ushort[] table = Reciprocals([.. Enumerable.Repeat(divisor, 64)]);
+        return Quantize(Vector128.Create((short)value), ref table[0], 0).ToScalar();
+    }
+
+    /// <summary>Quantizes 8 coefficients with the factors at <paramref name="at"/> of the table, limiting them to 10 bits.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Quantize(Vector128<short> values, ref ushort table, int at)
+    {
+        Vector128<short> sign = values >> 15;
+        Vector128<ushort> magnitude = Vector128.Abs(values).AsUInt16() + Vector128.LoadUnsafe(ref table, (nuint)(64 + at));
+        magnitude = Simd128.MultiplyHigh(magnitude, Vector128.LoadUnsafe(ref table, (nuint)at));
+        magnitude = Simd128.MultiplyHigh(magnitude, Vector128.LoadUnsafe(ref table, (nuint)(128 + at)));
+        Vector128<short> quotient = (magnitude.AsInt16() ^ sign) - sign;
+        return Vector128.Min(Vector128.Max(quotient, Vector128.Create((short)-1023)), Vector128.Create((short)1023));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Row128(ref byte samples, int offset)
+    {
+        return Vector128.WidenLower(Vector128.CreateScalarUnsafe(Unsafe.ReadUnaligned<ulong>(ref Unsafe.Add(ref samples, offset))).AsByte()).AsInt16();
+    }
+
+    /// <summary>Transposes an 8×8 block of 16-bit lanes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Transpose(
+        ref Vector128<short> r0, ref Vector128<short> r1, ref Vector128<short> r2, ref Vector128<short> r3,
+        ref Vector128<short> r4, ref Vector128<short> r5, ref Vector128<short> r6, ref Vector128<short> r7)
+    {
+        Vector128<int> t0 = Simd128.ZipLow(r0, r1).AsInt32();
+        Vector128<int> t1 = Simd128.ZipHigh(r0, r1).AsInt32();
+        Vector128<int> t2 = Simd128.ZipLow(r2, r3).AsInt32();
+        Vector128<int> t3 = Simd128.ZipHigh(r2, r3).AsInt32();
+        Vector128<int> t4 = Simd128.ZipLow(r4, r5).AsInt32();
+        Vector128<int> t5 = Simd128.ZipHigh(r4, r5).AsInt32();
+        Vector128<int> t6 = Simd128.ZipLow(r6, r7).AsInt32();
+        Vector128<int> t7 = Simd128.ZipHigh(r6, r7).AsInt32();
+        Vector128<long> u0 = Simd128.ZipLow(t0, t2).AsInt64();
+        Vector128<long> u1 = Simd128.ZipHigh(t0, t2).AsInt64();
+        Vector128<long> u2 = Simd128.ZipLow(t1, t3).AsInt64();
+        Vector128<long> u3 = Simd128.ZipHigh(t1, t3).AsInt64();
+        Vector128<long> u4 = Simd128.ZipLow(t4, t6).AsInt64();
+        Vector128<long> u5 = Simd128.ZipHigh(t4, t6).AsInt64();
+        Vector128<long> u6 = Simd128.ZipLow(t5, t7).AsInt64();
+        Vector128<long> u7 = Simd128.ZipHigh(t5, t7).AsInt64();
+        r0 = Simd128.ZipLow(u0, u4).AsInt16();
+        r1 = Simd128.ZipHigh(u0, u4).AsInt16();
+        r2 = Simd128.ZipLow(u1, u5).AsInt16();
+        r3 = Simd128.ZipHigh(u1, u5).AsInt16();
+        r4 = Simd128.ZipLow(u2, u6).AsInt16();
+        r5 = Simd128.ZipHigh(u2, u6).AsInt16();
+        r6 = Simd128.ZipLow(u3, u7).AsInt16();
+        r7 = Simd128.ZipHigh(u3, u7).AsInt16();
+    }
+
+    /// <summary>The 16-lane butterfly on eight lanes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Butterfly(
+        Vector128<short> d0, Vector128<short> d1, Vector128<short> d2, Vector128<short> d3, Vector128<short> d4, Vector128<short> d5, Vector128<short> d6, Vector128<short> d7, [ConstantExpected] int shift,
+        out Vector128<short> even0, out Vector128<short> even4, out Vector128<short> o2, out Vector128<short> o6, out Vector128<short> o1, out Vector128<short> o3, out Vector128<short> o5, out Vector128<short> o7)
+    {
+        Vector128<short> tmp0 = d0 + d7;
+        Vector128<short> tmp7 = d0 - d7;
+        Vector128<short> tmp1 = d1 + d6;
+        Vector128<short> tmp6 = d1 - d6;
+        Vector128<short> tmp2 = d2 + d5;
+        Vector128<short> tmp5 = d2 - d5;
+        Vector128<short> tmp3 = d3 + d4;
+        Vector128<short> tmp4 = d3 - d4;
+
+        Vector128<short> tmp10 = tmp0 + tmp3;
+        Vector128<short> tmp13 = tmp0 - tmp3;
+        Vector128<short> tmp11 = tmp1 + tmp2;
+        Vector128<short> tmp12 = tmp1 - tmp2;
+        even0 = tmp10 + tmp11;
+        even4 = tmp10 - tmp11;
+
+        Vector128<int> round = Vector128.Create(1 << (shift - 1));
+        Vector128<short> low = Simd128.ZipLow(tmp13, tmp12);
+        Vector128<short> high = Simd128.ZipHigh(tmp13, tmp12);
+        o2 = Rotate(low, high, Pair128(Fix0_541196100 + Fix0_765366865, Fix0_541196100), round, shift);
+        o6 = Rotate(low, high, Pair128(Fix0_541196100, Fix0_541196100 - Fix1_847759065), round, shift);
+
+        Vector128<short> low45 = Simd128.ZipLow(tmp4, tmp5);
+        Vector128<short> high45 = Simd128.ZipHigh(tmp4, tmp5);
+        Vector128<short> low67 = Simd128.ZipLow(tmp6, tmp7);
+        Vector128<short> high67 = Simd128.ZipHigh(tmp6, tmp7);
+        o7 = Rotate(
+            low45, high45, Pair128(Fix0_298631336 - Fix0_899976223 - Fix1_961570560 + Fix1_175875602, Fix1_175875602),
+            low67, high67, Pair128(Fix1_175875602 - Fix1_961570560, Fix1_175875602 - Fix0_899976223), round, shift);
+        o5 = Rotate(
+            low45, high45, Pair128(Fix1_175875602, Fix2_053119869 - Fix2_562915447 - Fix0_390180644 + Fix1_175875602),
+            low67, high67, Pair128(Fix1_175875602 - Fix2_562915447, Fix1_175875602 - Fix0_390180644), round, shift);
+        o3 = Rotate(
+            low45, high45, Pair128(Fix1_175875602 - Fix1_961570560, Fix1_175875602 - Fix2_562915447),
+            low67, high67, Pair128(Fix3_072711026 - Fix2_562915447 - Fix1_961570560 + Fix1_175875602, Fix1_175875602), round, shift);
+        o1 = Rotate(
+            low45, high45, Pair128(Fix1_175875602 - Fix0_899976223, Fix1_175875602 - Fix0_390180644),
+            low67, high67, Pair128(Fix1_175875602, Fix1_501321110 - Fix0_899976223 - Fix0_390180644 + Fix1_175875602), round, shift);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Pair128(int first, int second)
+    {
+        return Vector128.Create((int)(ushort)first | (second << 16)).AsInt16();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Rotate(Vector128<short> low, Vector128<short> high, Vector128<short> factors, Vector128<int> round, [ConstantExpected] int shift)
+    {
+        Vector128<int> l = Simd128.MultiplyAddAdjacent(low, factors);
+        Vector128<int> h = Simd128.MultiplyAddAdjacent(high, factors);
+        return Simd128.PackSignedSaturate((l + round) >> shift, (h + round) >> shift);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Vector128<short> Rotate(
+        Vector128<short> low1, Vector128<short> high1, Vector128<short> factors1,
+        Vector128<short> low2, Vector128<short> high2, Vector128<short> factors2, Vector128<int> round, [ConstantExpected] int shift)
+    {
+        Vector128<int> l = Simd128.MultiplyAddAdjacent(low1, factors1) + Simd128.MultiplyAddAdjacent(low2, factors2);
+        Vector128<int> h = Simd128.MultiplyAddAdjacent(high1, factors1) + Simd128.MultiplyAddAdjacent(high2, factors2);
+        return Simd128.PackSignedSaturate((l + round) >> shift, (h + round) >> shift);
     }
 
     /// <summary>Divides with rounding to nearest, halves away from zero.</summary>
