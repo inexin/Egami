@@ -216,6 +216,13 @@ public sealed class GlyphRun
 /// </example>
 public readonly record struct GlyphTransform(float ScaleCos, float ScaleSin, float Tx, float Ty)
 {
+    // The glyph's own x scale, before the turn, less 1, so default(GlyphTransform) and every public value keep 1.
+    private readonly float _widthScaleLessOne;
+
+    /// <summary>A horizontal-only scale of the glyph before it turns, as tate-chu-yoko squashes too wide text into one em; 1 for
+    /// none. Internal: drawing and paths follow it through <see cref="ToMatrix"/>.</summary>
+    internal float WidthScale { get => _widthScaleLessOne + 1; init => _widthScaleLessOne = value - 1; }
+
     /// <summary>Creates a placement that scales and turns a glyph about its origin and puts the origin at a position.</summary>
     /// <param name="scale">The scale; 1 for the font's size.</param>
     /// <param name="degrees">The clockwise turn on a y-down canvas.</param>
@@ -228,11 +235,13 @@ public readonly record struct GlyphTransform(float ScaleCos, float ScaleSin, flo
     }
 
     /// <summary>Gets whether the glyph is only moved, not turned or scaled.</summary>
-    public bool IsTranslation => ScaleCos == 1 && ScaleSin == 0;
+    public bool IsTranslation => ScaleCos == 1 && ScaleSin == 0 && _widthScaleLessOne == 0;
 
     /// <summary>Returns the transform as a matrix from the glyph's y-down coordinates to the run's.</summary>
     /// <returns>The matrix.</returns>
-    public Matrix3x2 ToMatrix() => new(ScaleCos, ScaleSin, -ScaleSin, ScaleCos, Tx, Ty);
+    public Matrix3x2 ToMatrix() => _widthScaleLessOne == 0
+        ? new(ScaleCos, ScaleSin, -ScaleSin, ScaleCos, Tx, Ty)
+        : new(ScaleCos * WidthScale, ScaleSin * WidthScale, -ScaleSin, ScaleCos, Tx, Ty);
 }
 
 /// <summary>A box in canvas units with y down, such as the ink of a <see cref="GlyphRun"/> relative to its origin.</summary>

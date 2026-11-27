@@ -220,7 +220,7 @@ public sealed partial class TextLayout
         for (int g = 0; g < run.Count; g++)
         {
             Matrix3x2 m = transforms.Length > 0
-                ? new Matrix3x2(transforms[g].ScaleCos * scale, transforms[g].ScaleSin * scale, transforms[g].ScaleSin * scale, -transforms[g].ScaleCos * scale, transforms[g].Tx, transforms[g].Ty)
+                ? Matrix3x2.CreateScale(scale, -scale) * transforms[g].ToMatrix()
                 : new Matrix3x2(scale, 0, 0, -scale, positions[g].X, positions[g].Y);
             font.Typeface.GetGlyphOutline(run.Glyphs[g], new TransformSink(sink, m));
         }

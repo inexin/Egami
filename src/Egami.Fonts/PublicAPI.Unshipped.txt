@@ -143,3 +143,57 @@ static Egami.Fonts.Layout.RubyAnnotation.operator ==(Egami.Fonts.Layout.RubyAnno
 static Egami.Fonts.Layout.RubyOptions.Default.get -> Egami.Fonts.Layout.RubyOptions!
 static Egami.Fonts.Layout.RubyOptions.operator !=(Egami.Fonts.Layout.RubyOptions? left, Egami.Fonts.Layout.RubyOptions? right) -> bool
 static Egami.Fonts.Layout.RubyOptions.operator ==(Egami.Fonts.Layout.RubyOptions? left, Egami.Fonts.Layout.RubyOptions? right) -> bool
+Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.Circle = 2 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.Custom = 6 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.Dot = 1 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.DoubleCircle = 3 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.None = 0 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.Sesame = 5 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisMark.Triangle = 4 -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.EmphasisPosition
+Egami.Fonts.Layout.EmphasisPosition.Over = 0 -> Egami.Fonts.Layout.EmphasisPosition
+Egami.Fonts.Layout.EmphasisPosition.Under = 1 -> Egami.Fonts.Layout.EmphasisPosition
+Egami.Fonts.Layout.LayoutRunKind.Emphasis = 5 -> Egami.Fonts.Layout.LayoutRunKind
+Egami.Fonts.Layout.TextCombine
+Egami.Fonts.Layout.TextCombine.Equals(Egami.Fonts.Layout.TextCombine other) -> bool
+Egami.Fonts.Layout.TextCombine.Kind.get -> Egami.Fonts.Layout.TextCombineKind
+Egami.Fonts.Layout.TextCombine.MaxDigits.get -> int
+Egami.Fonts.Layout.TextCombine.TextCombine() -> void
+Egami.Fonts.Layout.TextCombineKind
+Egami.Fonts.Layout.TextCombineKind.All = 1 -> Egami.Fonts.Layout.TextCombineKind
+Egami.Fonts.Layout.TextCombineKind.Digits = 2 -> Egami.Fonts.Layout.TextCombineKind
+Egami.Fonts.Layout.TextCombineKind.None = 0 -> Egami.Fonts.Layout.TextCombineKind
+Egami.Fonts.Layout.TextEmphasis
+Egami.Fonts.Layout.TextEmphasis.<Clone>$() -> Egami.Fonts.Layout.TextEmphasis!
+Egami.Fonts.Layout.TextEmphasis.Color.get -> Egami.Pixels.Rgba8?
+Egami.Fonts.Layout.TextEmphasis.Color.init -> void
+Egami.Fonts.Layout.TextEmphasis.Custom.get -> string?
+Egami.Fonts.Layout.TextEmphasis.Custom.init -> void
+Egami.Fonts.Layout.TextEmphasis.Equals(Egami.Fonts.Layout.TextEmphasis? other) -> bool
+Egami.Fonts.Layout.TextEmphasis.Filled.get -> bool
+Egami.Fonts.Layout.TextEmphasis.Filled.init -> void
+Egami.Fonts.Layout.TextEmphasis.Mark.get -> Egami.Fonts.Layout.EmphasisMark
+Egami.Fonts.Layout.TextEmphasis.Mark.init -> void
+Egami.Fonts.Layout.TextEmphasis.Paint.get -> Egami.Fonts.Layout.ITextPaint?
+Egami.Fonts.Layout.TextEmphasis.Paint.init -> void
+Egami.Fonts.Layout.TextEmphasis.Position.get -> Egami.Fonts.Layout.EmphasisPosition
+Egami.Fonts.Layout.TextEmphasis.Position.init -> void
+Egami.Fonts.Layout.TextEmphasis.TextEmphasis() -> void
+Egami.Fonts.Layout.TextStyle.CombineUpright.get -> Egami.Fonts.Layout.TextCombine?
+Egami.Fonts.Layout.TextStyle.CombineUpright.init -> void
+Egami.Fonts.Layout.TextStyle.Emphasis.get -> Egami.Fonts.Layout.TextEmphasis?
+Egami.Fonts.Layout.TextStyle.Emphasis.init -> void
+override Egami.Fonts.Layout.TextCombine.GetHashCode() -> int
+override Egami.Fonts.Layout.TextEmphasis.Equals(object? obj) -> bool
+override Egami.Fonts.Layout.TextEmphasis.GetHashCode() -> int
+override Egami.Fonts.Layout.TextEmphasis.ToString() -> string!
+static Egami.Fonts.Layout.TextCombine.All.get -> Egami.Fonts.Layout.TextCombine
+static Egami.Fonts.Layout.TextCombine.Digits(int maxDigits) -> Egami.Fonts.Layout.TextCombine
+static Egami.Fonts.Layout.TextCombine.None.get -> Egami.Fonts.Layout.TextCombine
+static Egami.Fonts.Layout.TextCombine.operator !=(Egami.Fonts.Layout.TextCombine left, Egami.Fonts.Layout.TextCombine right) -> bool
+static Egami.Fonts.Layout.TextCombine.operator ==(Egami.Fonts.Layout.TextCombine left, Egami.Fonts.Layout.TextCombine right) -> bool
+static Egami.Fonts.Layout.TextEmphasis.operator !=(Egami.Fonts.Layout.TextEmphasis? left, Egami.Fonts.Layout.TextEmphasis? right) -> bool
+static Egami.Fonts.Layout.TextEmphasis.operator ==(Egami.Fonts.Layout.TextEmphasis? left, Egami.Fonts.Layout.TextEmphasis? right) -> bool
+~override Egami.Fonts.Layout.TextCombine.Equals(object obj) -> bool
+~override Egami.Fonts.Layout.TextCombine.ToString() -> string

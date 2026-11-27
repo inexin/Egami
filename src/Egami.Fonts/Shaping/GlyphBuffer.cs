@@ -95,6 +95,9 @@ public sealed class GlyphBuffer
         }
     }
 
+    /// <summary>Replaces a glyph's advance and offset.</summary>
+    internal void SetPosition(int index, GlyphPosition position) => _positions[index] = position;
+
     /// <summary>Empties the buffer, keeping its storage.</summary>
     public void Clear() => Count = 0;
 

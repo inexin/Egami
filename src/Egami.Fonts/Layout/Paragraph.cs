@@ -22,11 +22,14 @@ public sealed class Paragraph
     /// <summary>Egami's default font size, as CSS's.</summary>
     internal const float DefaultSize = 16;
 
-    private Paragraph(RichText text, ParagraphStyle style, ResolvedStyle[] styles, ParagraphRun[] runs, LineBreak[] breaks, BidiData bidi, (Font, GlyphBuffer)[]? ellipses, AdvanceTable measures, RubyTable? ruby)
+    /// <summary>Ruby, tate-chu-yoko and emphasis tables in one object, so a plain paragraph holds one null for all three.</summary>
+    private readonly Annotations? _annotations;
+
+    private Paragraph(RichText text, ParagraphStyle style, ResolvedStyle[] styles, ParagraphRun[] runs, LineBreak[] breaks, BidiData bidi, (Font, GlyphBuffer)[]? ellipses, AdvanceTable measures, Annotations? annotations)
     {
         Ellipses = ellipses;
         Measures = measures;
-        Ruby = ruby;
+        _annotations = annotations;
         RichText = text;
         Style = style;
         Styles = styles;
@@ -60,7 +63,20 @@ public sealed class Paragraph
     internal AdvanceTable Measures { get; }
 
     /// <summary>The ruby annotations' shaping and measures, or null when the text has none.</summary>
-    internal RubyTable? Ruby { get; }
+    internal RubyTable? Ruby => _annotations?.Ruby;
+
+    /// <summary>The tate-chu-yoko units, or null when the paragraph has none.</summary>
+    internal CombineTable? Combine => _annotations?.Combine;
+
+    /// <summary>The emphasis marks of the styles that have them, or null when none has.</summary>
+    internal EmphasisTable? Emphasis => _annotations?.Emphasis;
+
+    /// <summary>The breaks but those inside tate-chu-yoko units; a method of its own so Create's closure captures nothing more.</summary>
+    private static LineBreak[] WithoutUnitSplits(LineBreak[] breaks, CombineTable combine) =>
+        [.. breaks.Where(b => b.IsMandatory || !combine.Splits(b.Index))];
+
+    /// <summary>A paragraph's ruby, tate-chu-yoko and emphasis tables.</summary>
+    private sealed record class Annotations(RubyTable? Ruby, CombineTable? Combine, EmphasisTable? Emphasis);
 
     /// <summary>CSS's min-content and max-content widths, found once.</summary>
     internal (float Min, float Max) IntrinsicWidths => (_intrinsic ??= new Lazy<(float, float)>(() => new LineBuilder(this).IntrinsicWidths())).Value;
@@ -240,13 +256,21 @@ public sealed class Paragraph
         ShapingGroups.Assign(styles);
 
         string s = text.Text;
-        LineBreak[] breaks = [.. Collect(LineBreaks.Enumerate(s, LineBreakOptionsFor(style, styles[0])), style.Hyphens == Hyphens.None)];
+        CombineTable? combine = CombineTable.Create(text, style, styles);
+        LineBreak[] breaks = [.. Collect(LineBreaks.Enumerate(combine is null ? s : combine.BreakText(s), LineBreakOptionsFor(style, styles[0])), style.Hyphens == Hyphens.None)];
+        if (combine is not null)
+        {
+            // A tate-chu-yoko unit breaks as one ideograph.
+            breaks = WithoutUnitSplits(breaks, combine);
+        }
+
         BidiData bidi = BidiData.Resolve(s, style.WritingMode == WritingMode.HorizontalTb ? style.Direction : TextDirection.LeftToRight);
-        ParagraphRun[] runs = Itemizer.Itemize(text, style, styles, bidi, fonts);
+        ParagraphRun[] runs = Itemizer.Itemize(text, style, styles, bidi, fonts, combine);
         (Font, GlyphBuffer)[]? ellipses = !string.IsNullOrEmpty(style.Ellipsis) && (style.MaxLines is not null || style.MaxHeight is not null) && styles.All(st => st.Primary is not null)
             ? [.. styles.Select(st => Itemizer.ShapeAlone(style.Ellipsis, st, style.Fallback, fonts))]
             : null;
-        AdvanceTable measures = new(text, styles, runs);
+        AdvanceTable measures = new(text, styles, runs, combine);
+        EmphasisTable? emphasis = EmphasisTable.Create(style, styles, spanStyles, fonts);
         RubyTable? ruby = null;
         if (text.Ruby.Count > 0)
         {
@@ -256,7 +280,8 @@ public sealed class Paragraph
             breaks = [.. breaks.Where(b => b.IsMandatory || !ruby.SplitsUnit(b.Index))];
         }
 
-        return new Paragraph(text, style, styles, runs, breaks, bidi, ellipses, measures, ruby);
+        Annotations? annotations = ruby is null && combine is null && emphasis is null ? null : new(ruby, combine, emphasis);
+        return new Paragraph(text, style, styles, runs, breaks, bidi, ellipses, measures, annotations);
     }
 
     private static bool CoversOutsideSpans(RichText text)
@@ -520,6 +545,12 @@ internal static class Itemizer
 
     private readonly record struct Pending(int Start, int Length, RunKind Kind, int Level, Script Script, int Style, int Group, Font Font, int Placeholder, bool Upright = false)
     {
+        /// <summary>The <see cref="Placeholder"/> that marks a tate-chu-yoko unit, so the struct grows no field.</summary>
+        public const int CombinedUnit = -2;
+
+        /// <summary>Whether the run is a tate-chu-yoko unit, shaped on its own.</summary>
+        public bool Combined => Placeholder == CombinedUnit;
+
         /// <summary>The style of the run's last cluster so far.</summary>
         public int LastStyle { get; init; } = Style;
 
@@ -539,7 +570,7 @@ internal static class Itemizer
         _ => UnicodeData.GetVerticalOrientation(cp) != VerticalOrientation.Rotated,
     };
 
-    public static ParagraphRun[] Itemize(RichText rich, ParagraphStyle paragraph, ResolvedStyle[] styles, BidiData bidi, FontCache fonts)
+    public static ParagraphRun[] Itemize(RichText rich, ParagraphStyle paragraph, ResolvedStyle[] styles, BidiData bidi, FontCache fonts, CombineTable? combine = null)
     {
         string text = rich.Text;
         List<ScriptRun> scripts = [];
@@ -560,6 +591,17 @@ internal static class Itemizer
             int level = bidi.Levels[cluster.Start];
             int cp = TextSegmenter.CodePointAt(text, cluster.Start, out _);
             ReadOnlySpan<char> clusterText = text.AsSpan(cluster.Start, cluster.Length);
+            if (combine is not null && combine.UnitAt(cluster.Start) is int unit and >= 0)
+            {
+                // A tate-chu-yoko unit is a run of its own, upright, in its first cluster's font.
+                if (combine.Starts[unit] == cluster.Start)
+                {
+                    Font first = ChooseFont(clusterText, style, paragraph.Fallback, script, fonts);
+                    pending.Add(new Pending(cluster.Start, combine.EndOf(unit) - cluster.Start, RunKind.Text, level, script, styleIndex, style.ShapingGroup, first, Pending.CombinedUnit, true));
+                }
+
+                continue;
+            }
 
             RunKind kind = cp == 0xFFFC && placeholder < rich.Placeholders.Count ? RunKind.Placeholder
                 : cp == '\t' ? RunKind.Tab
@@ -575,7 +617,7 @@ internal static class Itemizer
 
             Font font = ChooseFont(clusterText, style, paragraph.Fallback, script, fonts);
             bool upright = IsUpright(paragraph, cp);
-            if (pending.Count > 0 && pending[^1] is { Kind: RunKind.Text } last && last.Level == level && last.Script == script
+            if (pending.Count > 0 && pending[^1] is { Kind: RunKind.Text, Placeholder: not Pending.CombinedUnit } last && last.Level == level && last.Script == script
                 && last.Group == style.ShapingGroup && last.Font == font && last.Upright == upright && last.Start + last.Length == cluster.Start)
             {
                 List<int>? styleBreaks = last.StyleBreaks;
@@ -615,11 +657,18 @@ internal static class Itemizer
                     ProduceSafeToInsertTatweel = paragraph.Justify == TextJustify.Kashida && paragraph.WritingMode == WritingMode.HorizontalTb
                         && Kashida.Joins(p.Script),
                 };
-                glyphs = new GlyphBuffer();
-                TextShaper.ShapeRun(text, p.Start, p.Length, p.Font, properties, glyphs);
+                if (p.Combined)
+                {
+                    glyphs = combine!.Shape(text, p.Start, p.Length, p.Font, properties, style.Size);
+                }
+                else
+                {
+                    glyphs = new GlyphBuffer();
+                    TextShaper.ShapeRun(text, p.Start, p.Length, p.Font, properties, glyphs);
+                }
             }
 
-            runs[i] = new ParagraphRun(p.Start, p.Length, p.Kind, p.Level, p.Script, p.Style, p.Font, glyphs, p.Placeholder, properties)
+            runs[i] = new ParagraphRun(p.Start, p.Length, p.Kind, p.Level, p.Script, p.Style, p.Font, glyphs, p.Combined ? -1 : p.Placeholder, properties)
             {
                 Upright = p.Upright,
                 StyleBreaks = p.StyleBreaks is { } styleBreaks ? [.. styleBreaks] : null,
@@ -632,12 +681,12 @@ internal static class Itemizer
     private static bool IsHardBreak(int cp) => cp is 0x0A or 0x0B or 0x0C or 0x0D or 0x85 or 0x2028 or 0x2029;
 
     /// <summary>Shapes a short string (an ellipsis) on its own in a style, in the font CSS matching picks for its first cluster.</summary>
-    public static (Font, GlyphBuffer) ShapeAlone(string text, ResolvedStyle style, FontFallback fallback, FontCache fonts)
+    public static (Font, GlyphBuffer) ShapeAlone(string text, ResolvedStyle style, FontFallback fallback, FontCache fonts, TextDirection direction = TextDirection.LeftToRight)
     {
         int first = TextSegmenter.NextGraphemeBoundary(text, 0);
         Font font = ChooseFont(text.AsSpan(0, first), style, fallback, Script.Common, fonts);
         GlyphBuffer glyphs = new();
-        TextShaper.ShapeRun(text, 0, text.Length, font, new RunProperties { Language = style.Language, Features = style.Features }, glyphs);
+        TextShaper.ShapeRun(text, 0, text.Length, font, new RunProperties { Language = style.Language, Features = style.Features, Direction = direction }, glyphs);
         return (font, glyphs);
     }
 

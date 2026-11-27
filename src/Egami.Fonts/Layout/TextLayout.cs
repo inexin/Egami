@@ -290,7 +290,8 @@ public sealed class TextLine
     public IReadOnlyList<LayoutRun> Runs { get; }
 
     /// <summary>Gets the runs set beside the line's text, which hold no text of the paragraph: <see cref="LayoutRunKind.Ruby"/>
-    /// runs, in the order of their annotations. Empty for a line without ruby.</summary>
+    /// runs in the order of their annotations, then <see cref="LayoutRunKind.Emphasis"/> runs in visual order. Empty for a line
+    /// without ruby or emphasis marks.</summary>
     /// <example>
     /// <code language="csharp" source="../../../tests/Egami.DocSamples/ParagraphLayout.cs" region="ruby"/>
     /// </example>
@@ -324,6 +325,14 @@ public enum LayoutRunKind
     /// the annotation, and <see cref="LayoutRun.StyleIndex"/> its ruby style; its glyph run's clusters index the ruby text.
     /// </summary>
     Ruby = 4,
+
+    /// <summary>
+    /// Emphasis marks: the marks of a <see cref="TextStyle.Emphasis"/> beside the text of one piece of a line, in
+    /// <see cref="TextLine.AnnotationRuns"/>. Its <see cref="LayoutRun.Start"/> and <see cref="LayoutRun.Length"/> are the
+    /// piece's text and <see cref="LayoutRun.StyleIndex"/> its style; its glyph run holds one mark per marked character and no
+    /// text.
+    /// </summary>
+    Emphasis = 5,
 }
 
 /// <summary>A piece of a line: glyphs of one font, bidi level and style, or a placeholder, tab or break.</summary>

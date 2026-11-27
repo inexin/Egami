@@ -14,7 +14,7 @@ namespace Egami.Fonts.Layout;
 /// </summary>
 internal sealed class AdvanceTable
 {
-    public AdvanceTable(RichText text, ResolvedStyle[] styles, ParagraphRun[] runs)
+    public AdvanceTable(RichText text, ResolvedStyle[] styles, ParagraphRun[] runs, CombineTable? combine = null)
     {
         string s = text.Text;
         int n = s.Length;
@@ -52,8 +52,9 @@ internal sealed class AdvanceTable
         {
             ParagraphRun run = runs[RunOf[cluster.Start]];
             ResolvedStyle style = styles[text.SpanAt(cluster.Start) + 1];
-            if (run.Kind is RunKind.Control)
+            if (run.Kind is RunKind.Control || (combine is not null && combine.Splits(cluster.Start + cluster.Length)))
             {
+                // Inside a tate-chu-yoko unit nothing spaces: only its end does.
                 continue;
             }
 
@@ -354,11 +355,12 @@ internal sealed partial class LineBuilder
         return Build(start, end, hard, hyphen);
     }
 
-    /// <summary>The next grapheme cluster boundary after <paramref name="index"/> that is not inside a ruby base.</summary>
+    /// <summary>The next grapheme cluster boundary after <paramref name="index"/> that is not inside a ruby base or a
+    /// tate-chu-yoko unit.</summary>
     private int NextBreakableGrapheme(int index)
     {
         int g = TextSegmenter.NextGraphemeBoundary(_text, index);
-        while (_ruby is not null && g < _text.Length && _ruby.SplitsUnit(g))
+        while (g < _text.Length && ((_ruby is not null && _ruby.SplitsUnit(g)) || (_paragraph.Combine is { } combine && combine.Splits(g))))
         {
             g = TextSegmenter.NextGraphemeBoundary(_text, g);
         }
@@ -590,7 +592,7 @@ internal sealed partial class LineBuilder
             for (int p = 0; p < count; p++)
             {
                 int point = wordStart + found[p];
-                if (_ruby is not null && _ruby.SplitsUnit(point))
+                if ((_ruby is not null && _ruby.SplitsUnit(point)) || (_paragraph.Combine is { } combine && combine.Splits(point)))
                 {
                     continue;
                 }
@@ -1728,6 +1730,27 @@ internal sealed partial class LineBuilder
             }
         }
 
+        if (_paragraph.Emphasis is { } emphasis)
+        {
+            // And for emphasis marks, outside the ruby on their side.
+            foreach (DraftRun piece in pieces)
+            {
+                if (piece.Kind == RunKind.Text && emphasis.ByStyle[piece.Style] is { } mark)
+                {
+                    int end = piece.Start + piece.Length;
+                    for (int c = piece.Start; c < end; c = NextMarkCluster(c))
+                    {
+                        if (TakesMark(c))
+                        {
+                            float edge = MarkEdge(c, NextMarkCluster(c), mark.Over, piece.Style, rubies);
+                            top = Math.Min(top, mark.Over ? edge - mark.Thickness : top);
+                            bottom = Math.Max(bottom, mark.Over ? bottom : edge + mark.Thickness);
+                        }
+                    }
+                }
+            }
+        }
+
         float ascent = -top, descent = bottom;
         foreach (Placeholder box in stretching)
         {
@@ -1941,7 +1964,9 @@ internal sealed partial class LineBuilder
         // Hanging spaces sit past the content's end: right of it in left-to-right paragraphs, left of it in right-to-left ones.
         float origin = rtl ? left - draft.HangWidth : left;
         float baseline = top + lineAscent;
-        List<LayoutRun> runs = draft.Rubies is null ? new List<LayoutRun>(draft.Runs.Count) : new RubyLineRuns(draft.Runs.Count);
+        EmphasisTable? emphasis = _paragraph.Emphasis;
+        List<(LayoutRun, TextBounds)>? marks = null;
+        List<LayoutRun> runs = draft.Rubies is null && emphasis is null ? new List<LayoutRun>(draft.Runs.Count) : new RubyLineRuns(draft.Runs.Count);
         float stretch = 0;
         foreach (DraftRun piece in draft.Runs)
         {
@@ -2013,6 +2038,12 @@ internal sealed partial class LineBuilder
                 glyphs = VerticalGlyphs(piece, advances, x, ToPhysical(baseline + shift, top, lineAscent + lineDescent, blockSize));
             }
 
+            if (emphasis is not null && piece.Kind == RunKind.Text && emphasis.ByStyle[piece.Style] is { } mark
+                && EmphasisRun(piece, mark, x, advances, clusters, baseline, top, lineAscent + lineDescent, blockSize, draft.Rubies) is { } marked)
+            {
+                (marks ??= []).Add(marked);
+            }
+
             LayoutRunKind kind = piece.Kind switch
             {
                 RunKind.Text => LayoutRunKind.Text,
@@ -2029,6 +2060,16 @@ internal sealed partial class LineBuilder
         if (draft.Rubies is { } rubies)
         {
             RubyRuns((RubyLineRuns)runs, rubies, top, baseline, lineAscent + lineDescent, blockSize);
+        }
+
+        if (marks is not null)
+        {
+            RubyLineRuns annotated = (RubyLineRuns)runs;
+            foreach ((LayoutRun run, TextBounds box) in marks)
+            {
+                annotated.Annotations.Add(run);
+                annotated.Boxes.Add(box);
+            }
         }
 
         if (Vertical)
@@ -2243,6 +2284,166 @@ internal sealed partial class LineBuilder
     /// quarter clockwise with their alphabetic baseline where the em box centres on the central baseline (or on the line's own
     /// baseline with <see cref="TextOrientation.Sideways"/>).
     /// </summary>
+    /// <summary>The end of the grapheme cluster, or tate-chu-yoko unit, an emphasis mark goes beside.</summary>
+    private int NextMarkCluster(int index) => _paragraph.Combine is { } combine && combine.UnitAt(index) is int unit and >= 0
+        ? combine.EndOf(unit)
+        : TextSegmenter.NextGraphemeBoundary(_text, index);
+
+    /// <summary>Whether the cluster at a UTF-16 index takes an emphasis mark.</summary>
+    private bool TakesMark(int index) => EmphasisTable.TakesMark(TextSegmenter.CodePointAt(_text, index, out _));
+
+    /// <summary>
+    /// Where an emphasis mark beside <c>[start, end)</c> starts, as an offset from the line's baseline: the base's edge on the
+    /// mark's side (its ascent or descent, half its height in central vertical lines, with its baseline shift), or the outer edge
+    /// of ruby on that side.
+    /// </summary>
+    private float MarkEdge(int start, int end, bool over, int style, List<DraftRuby>? rubies)
+    {
+        ResolvedStyle resolved = _paragraph.Styles[style];
+        (float ba, float bd, _) = resolved.Primary is Font font ? Rounded(font) : (0, 0, 0);
+        float above = Central ? MathF.Floor((ba + bd) / 2) : ba;
+        float edge = over ? resolved.BaselineShift - above : resolved.BaselineShift + (Central ? ba + bd - above : bd);
+        if (rubies is not null)
+        {
+            foreach (DraftRuby ruby in rubies)
+            {
+                if (ruby.Box.Start >= end || ruby.Box.End <= start)
+                {
+                    continue;
+                }
+
+                for (int a = ruby.Box.First; a <= ruby.Box.Last; a++)
+                {
+                    RubyTable.Entry e = _ruby!.Entries[a];
+                    if (e.Column)
+                    {
+                        continue;
+                    }
+
+                    if (over && e.Position == RubyPosition.Over)
+                    {
+                        edge = Math.Min(edge, e.Top);
+                    }
+                    else if (!over && e.Position == RubyPosition.Under)
+                    {
+                        edge = Math.Max(edge, e.Bottom);
+                    }
+                }
+            }
+        }
+
+        return edge;
+    }
+
+    /// <summary>
+    /// The emphasis marks of a placed piece: one beside each cluster that takes one, centred on its advance (before
+    /// justification), upright in vertical lines; null when no cluster takes one.
+    /// </summary>
+    private (LayoutRun Run, TextBounds Box)? EmphasisRun(DraftRun piece, EmphasisTable.Mark mark, float x, float[] advances, int[] clusters, float baseline, float top, float thickness, float blockSize, List<DraftRuby>? rubies)
+    {
+        CombineTable? combine = _paragraph.Combine;
+        float[] own = piece.Advances.Length == advances.Length ? piece.Advances : advances;
+
+        // Each cluster's pen span, a tate-chu-yoko unit as one, in logical order.
+        List<(int Key, float Pen, float Width)> spans = [];
+        float pen = x;
+        for (int g = 0; g < clusters.Length; g++)
+        {
+            int key = combine is not null && combine.UnitAt(clusters[g]) is int unit and >= 0 ? combine.Starts[unit] : clusters[g];
+            if (spans.Count > 0 && spans[^1].Key == key)
+            {
+                spans[^1] = (key, Math.Min(spans[^1].Pen, pen), spans[^1].Width + own[g]);
+            }
+            else
+            {
+                spans.Add((key, pen, own[g]));
+            }
+
+            pen += advances[g];
+        }
+
+        spans.Sort((a, b) => a.Key.CompareTo(b.Key));
+        GlyphBuffer glyphs = mark.Glyphs;
+        List<ushort> ids = [];
+        List<Vector2> points = [];
+        List<float> markAdvances = [];
+        TextBounds box = TextBounds.Empty;
+        float first = float.PositiveInfinity, last = float.NegativeInfinity;
+        int end = piece.Start + piece.Length;
+        int s = 0;
+        for (int c = piece.Start; c < end; c = NextMarkCluster(c))
+        {
+            if (!TakesMark(c) || spans.Count == 0)
+            {
+                continue;
+            }
+
+            while (s + 1 < spans.Count && spans[s + 1].Key <= c)
+            {
+                s++;
+            }
+
+            // Clusters that share a span (a ligature) share its advance.
+            (int key, float spanPen, float spanWidth) = spans[s];
+            int spanEnd = s + 1 < spans.Count ? spans[s + 1].Key : end;
+            int count = 0, index = 0;
+            for (int k = key; k < spanEnd; k = NextMarkCluster(k))
+            {
+                index = k == c ? count : index;
+                count++;
+            }
+
+            float centre = spanPen + (spanWidth * (index + 0.5f) / Math.Max(1, count));
+            float edge = MarkEdge(c, NextMarkCluster(c), mark.Over, piece.Style, rubies);
+            float h = mark.Thickness;
+            float block = baseline + (mark.Over ? edge - (h / 2) : edge + (h / 2));
+            float left, y;
+            if (!Vertical)
+            {
+                left = centre - (mark.Advance / 2);
+                y = mark.Over ? baseline + edge - mark.Descent : baseline + edge + mark.Ascent;
+                box = box.Union(new TextBounds(left, block - (h / 2), left + mark.Advance, block + (h / 2)));
+            }
+            else
+            {
+                float across = ToPhysical(block, top, thickness, blockSize);
+                left = across;
+                y = centre - (mark.Advance / 2);
+                box = box.Union(new TextBounds(across - (h / 2), centre - (mark.Advance / 2), across + (h / 2), centre + (mark.Advance / 2)));
+            }
+
+            // Horizontal: glyphs along x on the baseline y. Vertical: upright glyphs down from y, their offsets from the shaper
+            // holding the vertical origin.
+            float gx = left;
+            for (int g = 0; g < glyphs.Count; g++)
+            {
+                GlyphPosition p = glyphs.Positions[g];
+                ids.Add(glyphs.GlyphIds[g]);
+                points.Add(new Vector2(gx + p.XOffset, y - p.YOffset));
+                markAdvances.Add(Vertical ? -p.YAdvance : p.XAdvance);
+                if (Vertical)
+                {
+                    y -= p.YAdvance;
+                }
+                else
+                {
+                    gx += p.XAdvance;
+                }
+            }
+
+            first = Math.Min(first, centre - (mark.Advance / 2));
+            last = Math.Max(last, centre + (mark.Advance / 2));
+        }
+
+        if (ids.Count == 0)
+        {
+            return null;
+        }
+
+        GlyphRun run = new(mark.Font, [.. ids], [.. points], null, null, null, [.. markAdvances]);
+        return (new LayoutRun(LayoutRunKind.Emphasis, piece.Start, piece.Length, piece.Level, piece.Style, first, last - first, run, -1), box);
+    }
+
     private GlyphRun VerticalGlyphs(DraftRun piece, float[] advances, float start, float baselineX)
     {
         int n = piece.Glyphs.Length;
@@ -2250,13 +2451,21 @@ internal sealed partial class LineBuilder
         if (piece.Upright)
         {
             Vector2[] points = new Vector2[n];
+            float scale = _paragraph.Combine?.ScaleAt(piece.Start) ?? 1;
+            GlyphTransform[]? scaled = scale < 1 ? new GlyphTransform[n] : null;
             for (int g = 0; g < n; g++)
             {
                 points[g] = new Vector2(baselineX + piece.Offsets[g].X, pen - piece.Offsets[g].Y);
+                if (scaled is not null)
+                {
+                    // A tate-chu-yoko unit too wide for its em, squashed across the line only.
+                    scaled[g] = new GlyphTransform(1, 0, points[g].X, points[g].Y) { WidthScale = scale };
+                }
+
                 pen += advances[g];
             }
 
-            return new GlyphRun(piece.Font, piece.Glyphs, points, _text, piece.Clusters, null, advances)
+            return new GlyphRun(piece.Font, piece.Glyphs, points, _text, piece.Clusters, scaled, advances)
             {
                 BidiLevel = piece.Level,
                 Script = piece.Script,
@@ -2470,7 +2679,8 @@ internal sealed partial class LineBuilder
                 TextJustify.InterCharacter => separator || (!AdvanceTable.IsCursive(clusters[i].Piece.Script) && !AdvanceTable.IsCursive(clusters[i + 1].Piece.Script)),
                 _ => separator || IsCjk(cp) || IsCjk(next),
             };
-            if (opportunity && (cp != 0xA0 || stretchNoBreak) && !InsideRuby(draft, clusters[i].Cluster, clusters[i + 1].Cluster))
+            if (opportunity && (cp != 0xA0 || stretchNoBreak) && !InsideRuby(draft, clusters[i].Cluster, clusters[i + 1].Cluster)
+                && !(_paragraph.Combine is { } combine && combine.Splits(clusters[i + 1].Cluster)))
             {
                 opportunities.Add((clusters[i].Piece, clusters[i].Glyph));
             }

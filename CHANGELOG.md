@@ -58,6 +58,9 @@ EPS previews (roadmap 2.3.14).
   bends text into an arch.
 - Ruby (roadmap 2.8.6): `DrawTextLayout` draws each line's `AnnotationRuns` in their ruby style's paint, after the glyphs
   and before line-throughs, with their shadows; `TextLayout.ToPath`, recorded pictures and SVG output hold them too.
+- Emphasis marks (roadmap 2.8.6, stage B): `DrawTextLayout` draws `LayoutRunKind.Emphasis` runs in their `TextEmphasis`
+  paint or color, else the text's paint; paths, pictures and SVG output hold them. Tate-chu-yoko units draw upright,
+  squashed across the line into their em when they are too wide.
 
 ## Egami.Metafiles 1.1.0 (unreleased)
 
@@ -383,8 +386,8 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
 
 ## Egami.Fonts 1.6.0 (unreleased)
 
-WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, Word-style justified lines and ruby. Additive
-to 1.5.0.
+WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, Word-style justified lines, ruby, emphasis marks
+and tate-chu-yoko. Additive to 1.5.0.
 
 - Ruby annotations (roadmap 2.8.6, stage A), after W3C's JLREQ and CSS Ruby Layout: `RubyAnnotation` sets ruby text over,
   under or (horizontal bopomofo) beside a base range, added with `RichTextBuilder.AddRuby` or a new `RichText` constructor
@@ -395,6 +398,16 @@ to 1.5.0.
   left. Ruby's em box stands on its base's (BASE `ideo`/`idtp` em boxes, else centred). `ParagraphStyle.Ruby` sets the options and the size ratio (half). Each `TextLine.AnnotationRuns` holds the new
   `LayoutRunKind.Ruby` runs with `LayoutRun.Annotation`; `TextLayout.GetRubyBounds` gives an annotation's box; ink bounds
   hold ruby, and hit testing and carets stay on the base. A section in the paragraph layout guide shows it.
+- Emphasis marks (roadmap 2.8.6, stage B), after CSS Text Decoration 3: `TextStyle.Emphasis` takes a `TextEmphasis`
+  (`EmphasisMark` `Dot`, `Circle`, `DoubleCircle`, `Triangle`, `Sesame`, `Custom`, or `None` to switch off inherited
+  marks; filled or open; `EmphasisPosition` `Over` or `Under`; color or paint). One mark at half size goes centred beside
+  each grapheme cluster but spaces, controls and punctuation; marks stand outside ruby on the same side and grow the line;
+  vertical lines put over marks right and under marks left. Lines report them as `LayoutRunKind.Emphasis` runs in
+  `TextLine.AnnotationRuns`.
+- Tate-chu-yoko (roadmap 2.8.6, stage B), after CSS Writing Modes 3: `TextStyle.CombineUpright` takes a `TextCombine`
+  (`None`, `All` or `Digits(2..4)`). In vertical, upright text the combined run is shaped horizontally with `hwid`, `twid`
+  or `qwid` where the font has them, squashed to one em across the line when still wider, and breaks, justifies and takes
+  an emphasis mark as one ideograph.
 
 - Embedded OpenType: `Typeface.FromMemory`, `FromFile`, `FromStream` and `FontLoader.LoadAll` read EOT files (versions
   0x00010000, 0x00020001 and 0x00020002), as old Internet Explorer loads them and PowerPoint embeds fonts (.fntdata), with XOR-ed
