@@ -789,6 +789,62 @@ while (flow.NextLine(second.Count &lt; 2 ? 90 : 150) is TextLine line)
 <p>Line breaks equal headless Chromium's on a corpus of eleven scripts at five widths each, and on the feature cases; the few
 differences are Chromium's own (its older quotation mark rule, no break at U+2028, no break after a slash in URLs, letter
 spacing in Arabic).</p>
+<h3 id="ruby">Ruby</h3>
+<p>Ruby annotations set a small reading beside its base text, as furigana over kanji or bopomofo beside Chinese, following W3C's
+Requirements for Japanese Text Layout and CSS Ruby Layout. A <code>RubyAnnotation</code> names its base by UTF-16 start and length in
+the rich text and gives the ruby text; add it with <code>RichTextBuilder.AddRuby</code> or the <code>RichText</code> constructor. Annotations never
+overlap, and their bases never split a surrogate pair.</p>
+<pre><code class="lang-csharp">// 国際 (kokusai) with its reading as group ruby, and 価値 (kachi) as jukugo ruby: one annotation per character.
+RichText text = new RichTextBuilder()
+    .Append(&quot;国際の価値&quot;)
+    .AddRuby(0, 2, &quot;こくさい&quot;)
+    .AddRuby(3, 1, &quot;か&quot;)
+    .AddRuby(4, 1, &quot;ち&quot;)
+    .ToRichText();
+
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 20, Language = &quot;ja&quot; },
+    Ruby = new RubyOptions { Merge = RubyMerge.Auto },  // jukugo: per character, joined when a reading is too wide
+};
+TextLayout layout = Paragraph.Create(text, style).Layout(300);
+
+// The ruby text: runs beside the line's text, at half the base's size, and the box each annotation took.
+foreach (LayoutRun run in layout.Lines[0].AnnotationRuns)
+{
+    TextBounds box = layout.GetRubyBounds(run.Annotation);
+}
+
+// An annotation of its own: under the base, in red, a little away from it.
+RubyAnnotation under = new(0, 2, &quot;kokusai&quot;)
+{
+    Position = RubyPosition.Under,
+    Offset = 2,
+    Style = new TextStyle { Color = new Rgba8(200, 0, 0, 255) },
+};
+</code></pre>
+<ul>
+<li><strong>Placement.</strong> <code>Position</code> puts ruby <code>Over</code> the base (right of it in vertical lines), <code>Under</code> it (left in vertical lines) or
+<code>InterCharacter</code>, in a column right of a horizontal base as Taiwanese bopomofo stands, and over it in vertical lines.
+The ruby's ideographic em box stands on its base's, as JLREQ and CSS Ruby place it: each font's em box comes from its BASE
+table's <code>ideo</code> and <code>idtp</code> baselines, else it is centred between the ascent and descent, and in vertical lines it is
+centred on the central baseline. <code>Offset</code> moves ruby further from its base. Lines grow to hold ruby unless their line
+height already does.</li>
+<li><strong>Width.</strong> A base never breaks across lines. When ruby is wider than its base, the base spreads (1:2:1 between and around
+its characters, nothing at a line edge) and, with <code>RubyOverhang.Auto</code>, ruby may hang up to half a ruby character over kana
+or punctuation beside it, never over kanji or other ruby. When ruby is narrower, <code>Align</code> (a <code>RubyAlign</code>) spreads it over
+the base: <code>SpaceAround</code> (1:2:1, the default), <code>SpaceBetween</code>, <code>Center</code>, <code>Start</code> or <code>End</code>.</li>
+<li><strong>Jukugo.</strong> Adjacent annotations on the same side form jukugo ruby. <code>RubyMerge.Separate</code> (the default) keeps each over its
+own base; <code>Auto</code> joins them into one group when any reading is wider than its base, and still lets the line break between
+them, each part keeping its own reading; <code>Collapse</code> always joins them and never breaks.</li>
+<li><strong>Style.</strong> Ruby takes its base's style at <code>RubyOptions.SizeRatio</code> (half) of its size; an annotation's <code>Style</code> sets its own
+fields. Backgrounds, decorations, spacing and baseline shifts stay with the base.</li>
+<li><strong>Results.</strong> Each line's <code>AnnotationRuns</code> holds <code>LayoutRunKind.Ruby</code> runs: their glyphs, the base's range, the annotation's
+index and the ruby style's index for <code>Paragraph.GetStyle</code>. <code>TextLayout.GetRubyBounds</code> gives an annotation's box. Hit
+testing, carets and selections work on the base text alone. <code>DrawTextLayout</code>, <code>ToPath</code>, pictures and SVG output draw ruby.</li>
+</ul>
+<p>Ruby text is shaped left to right on its own; a base inside right-to-left text keeps its characters together in one run, at
+the level of its first character.</p>
 <h2 id="recipes">Recipes</h2>
 <p>Short answers to common tasks in this area. Each one compiles and runs in Egami's test run.</p>
 <h3 id="a-caption-in-a-box">A caption in a box</h3>

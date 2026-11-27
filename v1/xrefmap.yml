@@ -30774,6 +30774,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.LayoutRun.Advance
   nameWithType: LayoutRun.Advance
+- uid: Egami.Fonts.Layout.LayoutRun.Annotation
+  name: Annotation
+  href: api/Egami.Fonts.Layout.LayoutRun.html#Egami_Fonts_Layout_LayoutRun_Annotation
+  commentId: P:Egami.Fonts.Layout.LayoutRun.Annotation
+  fullName: Egami.Fonts.Layout.LayoutRun.Annotation
+  nameWithType: LayoutRun.Annotation
+- uid: Egami.Fonts.Layout.LayoutRun.Annotation*
+  name: Annotation
+  href: api/Egami.Fonts.Layout.LayoutRun.html#Egami_Fonts_Layout_LayoutRun_Annotation_
+  commentId: Overload:Egami.Fonts.Layout.LayoutRun.Annotation
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.LayoutRun.Annotation
+  nameWithType: LayoutRun.Annotation
 - uid: Egami.Fonts.Layout.LayoutRun.BidiLevel
   name: BidiLevel
   href: api/Egami.Fonts.Layout.LayoutRun.html#Egami_Fonts_Layout_LayoutRun_BidiLevel
@@ -30896,6 +30909,12 @@ references:
   commentId: F:Egami.Fonts.Layout.LayoutRunKind.Placeholder
   fullName: Egami.Fonts.Layout.LayoutRunKind.Placeholder
   nameWithType: LayoutRunKind.Placeholder
+- uid: Egami.Fonts.Layout.LayoutRunKind.Ruby
+  name: Ruby
+  href: api/Egami.Fonts.Layout.LayoutRunKind.html#Egami_Fonts_Layout_LayoutRunKind_Ruby
+  commentId: F:Egami.Fonts.Layout.LayoutRunKind.Ruby
+  fullName: Egami.Fonts.Layout.LayoutRunKind.Ruby
+  nameWithType: LayoutRunKind.Ruby
 - uid: Egami.Fonts.Layout.LayoutRunKind.Tab
   name: Tab
   href: api/Egami.Fonts.Layout.LayoutRunKind.html#Egami_Fonts_Layout_LayoutRunKind_Tab
@@ -31892,6 +31911,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.ParagraphStyle.OptimalLines
   nameWithType: ParagraphStyle.OptimalLines
+- uid: Egami.Fonts.Layout.ParagraphStyle.Ruby
+  name: Ruby
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Ruby
+  commentId: P:Egami.Fonts.Layout.ParagraphStyle.Ruby
+  fullName: Egami.Fonts.Layout.ParagraphStyle.Ruby
+  nameWithType: ParagraphStyle.Ruby
+- uid: Egami.Fonts.Layout.ParagraphStyle.Ruby*
+  name: Ruby
+  href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Ruby_
+  commentId: Overload:Egami.Fonts.Layout.ParagraphStyle.Ruby
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.ParagraphStyle.Ruby
+  nameWithType: ParagraphStyle.Ruby
 - uid: Egami.Fonts.Layout.ParagraphStyle.SpaceShrink
   name: SpaceShrink
   href: api/Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_SpaceShrink
@@ -32130,6 +32162,15 @@ references:
   fullName.vb: Egami.Fonts.Layout.RichText.New(String, System.Collections.Generic.IEnumerable(Of Egami.Fonts.Layout.StyleSpan), System.Collections.Generic.IEnumerable(Of Egami.Fonts.Layout.Placeholder))
   nameWithType: RichText.RichText(string, IEnumerable<StyleSpan>?, IEnumerable<Placeholder>?)
   nameWithType.vb: RichText.New(String, IEnumerable(Of StyleSpan), IEnumerable(Of Placeholder))
+- uid: Egami.Fonts.Layout.RichText.#ctor(System.String,System.Collections.Generic.IEnumerable{Egami.Fonts.Layout.StyleSpan},System.Collections.Generic.IEnumerable{Egami.Fonts.Layout.Placeholder},System.Collections.Generic.IEnumerable{Egami.Fonts.Layout.RubyAnnotation})
+  name: RichText(string, IEnumerable<StyleSpan>?, IEnumerable<Placeholder>?, IEnumerable<RubyAnnotation>?)
+  href: api/Egami.Fonts.Layout.RichText.html#Egami_Fonts_Layout_RichText__ctor_System_String_System_Collections_Generic_IEnumerable_Egami_Fonts_Layout_StyleSpan__System_Collections_Generic_IEnumerable_Egami_Fonts_Layout_Placeholder__System_Collections_Generic_IEnumerable_Egami_Fonts_Layout_RubyAnnotation__
+  commentId: M:Egami.Fonts.Layout.RichText.#ctor(System.String,System.Collections.Generic.IEnumerable{Egami.Fonts.Layout.StyleSpan},System.Collections.Generic.IEnumerable{Egami.Fonts.Layout.Placeholder},System.Collections.Generic.IEnumerable{Egami.Fonts.Layout.RubyAnnotation})
+  name.vb: New(String, IEnumerable(Of StyleSpan), IEnumerable(Of Placeholder), IEnumerable(Of RubyAnnotation))
+  fullName: Egami.Fonts.Layout.RichText.RichText(string, System.Collections.Generic.IEnumerable<Egami.Fonts.Layout.StyleSpan>?, System.Collections.Generic.IEnumerable<Egami.Fonts.Layout.Placeholder>?, System.Collections.Generic.IEnumerable<Egami.Fonts.Layout.RubyAnnotation>?)
+  fullName.vb: Egami.Fonts.Layout.RichText.New(String, System.Collections.Generic.IEnumerable(Of Egami.Fonts.Layout.StyleSpan), System.Collections.Generic.IEnumerable(Of Egami.Fonts.Layout.Placeholder), System.Collections.Generic.IEnumerable(Of Egami.Fonts.Layout.RubyAnnotation))
+  nameWithType: RichText.RichText(string, IEnumerable<StyleSpan>?, IEnumerable<Placeholder>?, IEnumerable<RubyAnnotation>?)
+  nameWithType.vb: RichText.New(String, IEnumerable(Of StyleSpan), IEnumerable(Of Placeholder), IEnumerable(Of RubyAnnotation))
 - uid: Egami.Fonts.Layout.RichText.#ctor*
   name: RichText
   href: api/Egami.Fonts.Layout.RichText.html#Egami_Fonts_Layout_RichText__ctor_
@@ -32153,6 +32194,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.RichText.Placeholders
   nameWithType: RichText.Placeholders
+- uid: Egami.Fonts.Layout.RichText.Ruby
+  name: Ruby
+  href: api/Egami.Fonts.Layout.RichText.html#Egami_Fonts_Layout_RichText_Ruby
+  commentId: P:Egami.Fonts.Layout.RichText.Ruby
+  fullName: Egami.Fonts.Layout.RichText.Ruby
+  nameWithType: RichText.Ruby
+- uid: Egami.Fonts.Layout.RichText.Ruby*
+  name: Ruby
+  href: api/Egami.Fonts.Layout.RichText.html#Egami_Fonts_Layout_RichText_Ruby_
+  commentId: Overload:Egami.Fonts.Layout.RichText.Ruby
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RichText.Ruby
+  nameWithType: RichText.Ruby
 - uid: Egami.Fonts.Layout.RichText.Spans
   name: Spans
   href: api/Egami.Fonts.Layout.RichText.html#Egami_Fonts_Layout_RichText_Spans
@@ -32198,6 +32252,28 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.RichTextBuilder.AddPlaceholder
   nameWithType: RichTextBuilder.AddPlaceholder
+- uid: Egami.Fonts.Layout.RichTextBuilder.AddRuby(Egami.Fonts.Layout.RubyAnnotation)
+  name: AddRuby(RubyAnnotation)
+  href: api/Egami.Fonts.Layout.RichTextBuilder.html#Egami_Fonts_Layout_RichTextBuilder_AddRuby_Egami_Fonts_Layout_RubyAnnotation_
+  commentId: M:Egami.Fonts.Layout.RichTextBuilder.AddRuby(Egami.Fonts.Layout.RubyAnnotation)
+  fullName: Egami.Fonts.Layout.RichTextBuilder.AddRuby(Egami.Fonts.Layout.RubyAnnotation)
+  nameWithType: RichTextBuilder.AddRuby(RubyAnnotation)
+- uid: Egami.Fonts.Layout.RichTextBuilder.AddRuby(System.Int32,System.Int32,System.String)
+  name: AddRuby(int, int, string)
+  href: api/Egami.Fonts.Layout.RichTextBuilder.html#Egami_Fonts_Layout_RichTextBuilder_AddRuby_System_Int32_System_Int32_System_String_
+  commentId: M:Egami.Fonts.Layout.RichTextBuilder.AddRuby(System.Int32,System.Int32,System.String)
+  name.vb: AddRuby(Integer, Integer, String)
+  fullName: Egami.Fonts.Layout.RichTextBuilder.AddRuby(int, int, string)
+  fullName.vb: Egami.Fonts.Layout.RichTextBuilder.AddRuby(Integer, Integer, String)
+  nameWithType: RichTextBuilder.AddRuby(int, int, string)
+  nameWithType.vb: RichTextBuilder.AddRuby(Integer, Integer, String)
+- uid: Egami.Fonts.Layout.RichTextBuilder.AddRuby*
+  name: AddRuby
+  href: api/Egami.Fonts.Layout.RichTextBuilder.html#Egami_Fonts_Layout_RichTextBuilder_AddRuby_
+  commentId: Overload:Egami.Fonts.Layout.RichTextBuilder.AddRuby
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RichTextBuilder.AddRuby
+  nameWithType: RichTextBuilder.AddRuby
 - uid: Egami.Fonts.Layout.RichTextBuilder.Append(System.ReadOnlySpan{System.Char})
   name: Append(ReadOnlySpan<char>)
   href: api/Egami.Fonts.Layout.RichTextBuilder.html#Egami_Fonts_Layout_RichTextBuilder_Append_System_ReadOnlySpan_System_Char__
@@ -32288,6 +32364,295 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.RichTextBuilder.ToRichText
   nameWithType: RichTextBuilder.ToRichText
+- uid: Egami.Fonts.Layout.RubyAlign
+  name: RubyAlign
+  href: api/Egami.Fonts.Layout.RubyAlign.html
+  commentId: T:Egami.Fonts.Layout.RubyAlign
+  fullName: Egami.Fonts.Layout.RubyAlign
+  nameWithType: RubyAlign
+- uid: Egami.Fonts.Layout.RubyAlign.Center
+  name: Center
+  href: api/Egami.Fonts.Layout.RubyAlign.html#Egami_Fonts_Layout_RubyAlign_Center
+  commentId: F:Egami.Fonts.Layout.RubyAlign.Center
+  fullName: Egami.Fonts.Layout.RubyAlign.Center
+  nameWithType: RubyAlign.Center
+- uid: Egami.Fonts.Layout.RubyAlign.End
+  name: End
+  href: api/Egami.Fonts.Layout.RubyAlign.html#Egami_Fonts_Layout_RubyAlign_End
+  commentId: F:Egami.Fonts.Layout.RubyAlign.End
+  fullName: Egami.Fonts.Layout.RubyAlign.End
+  nameWithType: RubyAlign.End
+- uid: Egami.Fonts.Layout.RubyAlign.SpaceAround
+  name: SpaceAround
+  href: api/Egami.Fonts.Layout.RubyAlign.html#Egami_Fonts_Layout_RubyAlign_SpaceAround
+  commentId: F:Egami.Fonts.Layout.RubyAlign.SpaceAround
+  fullName: Egami.Fonts.Layout.RubyAlign.SpaceAround
+  nameWithType: RubyAlign.SpaceAround
+- uid: Egami.Fonts.Layout.RubyAlign.SpaceBetween
+  name: SpaceBetween
+  href: api/Egami.Fonts.Layout.RubyAlign.html#Egami_Fonts_Layout_RubyAlign_SpaceBetween
+  commentId: F:Egami.Fonts.Layout.RubyAlign.SpaceBetween
+  fullName: Egami.Fonts.Layout.RubyAlign.SpaceBetween
+  nameWithType: RubyAlign.SpaceBetween
+- uid: Egami.Fonts.Layout.RubyAlign.Start
+  name: Start
+  href: api/Egami.Fonts.Layout.RubyAlign.html#Egami_Fonts_Layout_RubyAlign_Start
+  commentId: F:Egami.Fonts.Layout.RubyAlign.Start
+  fullName: Egami.Fonts.Layout.RubyAlign.Start
+  nameWithType: RubyAlign.Start
+- uid: Egami.Fonts.Layout.RubyAnnotation
+  name: RubyAnnotation
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html
+  commentId: T:Egami.Fonts.Layout.RubyAnnotation
+  fullName: Egami.Fonts.Layout.RubyAnnotation
+  nameWithType: RubyAnnotation
+- uid: Egami.Fonts.Layout.RubyAnnotation.#ctor(System.Int32,System.Int32,System.String)
+  name: RubyAnnotation(int, int, string)
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation__ctor_System_Int32_System_Int32_System_String_
+  commentId: M:Egami.Fonts.Layout.RubyAnnotation.#ctor(System.Int32,System.Int32,System.String)
+  name.vb: New(Integer, Integer, String)
+  fullName: Egami.Fonts.Layout.RubyAnnotation.RubyAnnotation(int, int, string)
+  fullName.vb: Egami.Fonts.Layout.RubyAnnotation.New(Integer, Integer, String)
+  nameWithType: RubyAnnotation.RubyAnnotation(int, int, string)
+  nameWithType.vb: RubyAnnotation.New(Integer, Integer, String)
+- uid: Egami.Fonts.Layout.RubyAnnotation.#ctor*
+  name: RubyAnnotation
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation__ctor_
+  commentId: Overload:Egami.Fonts.Layout.RubyAnnotation.#ctor
+  isSpec: "True"
+  name.vb: New
+  fullName: Egami.Fonts.Layout.RubyAnnotation.RubyAnnotation
+  fullName.vb: Egami.Fonts.Layout.RubyAnnotation.New
+  nameWithType: RubyAnnotation.RubyAnnotation
+  nameWithType.vb: RubyAnnotation.New
+- uid: Egami.Fonts.Layout.RubyAnnotation.Align
+  name: Align
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Align
+  commentId: P:Egami.Fonts.Layout.RubyAnnotation.Align
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Align
+  nameWithType: RubyAnnotation.Align
+- uid: Egami.Fonts.Layout.RubyAnnotation.Align*
+  name: Align
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Align_
+  commentId: Overload:Egami.Fonts.Layout.RubyAnnotation.Align
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Align
+  nameWithType: RubyAnnotation.Align
+- uid: Egami.Fonts.Layout.RubyAnnotation.End
+  name: End
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_End
+  commentId: P:Egami.Fonts.Layout.RubyAnnotation.End
+  fullName: Egami.Fonts.Layout.RubyAnnotation.End
+  nameWithType: RubyAnnotation.End
+- uid: Egami.Fonts.Layout.RubyAnnotation.End*
+  name: End
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_End_
+  commentId: Overload:Egami.Fonts.Layout.RubyAnnotation.End
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RubyAnnotation.End
+  nameWithType: RubyAnnotation.End
+- uid: Egami.Fonts.Layout.RubyAnnotation.Length
+  name: Length
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Length
+  commentId: P:Egami.Fonts.Layout.RubyAnnotation.Length
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Length
+  nameWithType: RubyAnnotation.Length
+- uid: Egami.Fonts.Layout.RubyAnnotation.Length*
+  name: Length
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Length_
+  commentId: Overload:Egami.Fonts.Layout.RubyAnnotation.Length
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Length
+  nameWithType: RubyAnnotation.Length
+- uid: Egami.Fonts.Layout.RubyAnnotation.Offset
+  name: Offset
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Offset
+  commentId: P:Egami.Fonts.Layout.RubyAnnotation.Offset
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Offset
+  nameWithType: RubyAnnotation.Offset
+- uid: Egami.Fonts.Layout.RubyAnnotation.Offset*
+  name: Offset
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Offset_
+  commentId: Overload:Egami.Fonts.Layout.RubyAnnotation.Offset
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Offset
+  nameWithType: RubyAnnotation.Offset
+- uid: Egami.Fonts.Layout.RubyAnnotation.Position
+  name: Position
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Position
+  commentId: P:Egami.Fonts.Layout.RubyAnnotation.Position
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Position
+  nameWithType: RubyAnnotation.Position
+- uid: Egami.Fonts.Layout.RubyAnnotation.Position*
+  name: Position
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Position_
+  commentId: Overload:Egami.Fonts.Layout.RubyAnnotation.Position
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Position
+  nameWithType: RubyAnnotation.Position
+- uid: Egami.Fonts.Layout.RubyAnnotation.Start
+  name: Start
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Start
+  commentId: P:Egami.Fonts.Layout.RubyAnnotation.Start
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Start
+  nameWithType: RubyAnnotation.Start
+- uid: Egami.Fonts.Layout.RubyAnnotation.Start*
+  name: Start
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Start_
+  commentId: Overload:Egami.Fonts.Layout.RubyAnnotation.Start
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Start
+  nameWithType: RubyAnnotation.Start
+- uid: Egami.Fonts.Layout.RubyAnnotation.Style
+  name: Style
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Style
+  commentId: P:Egami.Fonts.Layout.RubyAnnotation.Style
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Style
+  nameWithType: RubyAnnotation.Style
+- uid: Egami.Fonts.Layout.RubyAnnotation.Style*
+  name: Style
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Style_
+  commentId: Overload:Egami.Fonts.Layout.RubyAnnotation.Style
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Style
+  nameWithType: RubyAnnotation.Style
+- uid: Egami.Fonts.Layout.RubyAnnotation.Text
+  name: Text
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Text
+  commentId: P:Egami.Fonts.Layout.RubyAnnotation.Text
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Text
+  nameWithType: RubyAnnotation.Text
+- uid: Egami.Fonts.Layout.RubyAnnotation.Text*
+  name: Text
+  href: api/Egami.Fonts.Layout.RubyAnnotation.html#Egami_Fonts_Layout_RubyAnnotation_Text_
+  commentId: Overload:Egami.Fonts.Layout.RubyAnnotation.Text
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RubyAnnotation.Text
+  nameWithType: RubyAnnotation.Text
+- uid: Egami.Fonts.Layout.RubyMerge
+  name: RubyMerge
+  href: api/Egami.Fonts.Layout.RubyMerge.html
+  commentId: T:Egami.Fonts.Layout.RubyMerge
+  fullName: Egami.Fonts.Layout.RubyMerge
+  nameWithType: RubyMerge
+- uid: Egami.Fonts.Layout.RubyMerge.Auto
+  name: Auto
+  href: api/Egami.Fonts.Layout.RubyMerge.html#Egami_Fonts_Layout_RubyMerge_Auto
+  commentId: F:Egami.Fonts.Layout.RubyMerge.Auto
+  fullName: Egami.Fonts.Layout.RubyMerge.Auto
+  nameWithType: RubyMerge.Auto
+- uid: Egami.Fonts.Layout.RubyMerge.Collapse
+  name: Collapse
+  href: api/Egami.Fonts.Layout.RubyMerge.html#Egami_Fonts_Layout_RubyMerge_Collapse
+  commentId: F:Egami.Fonts.Layout.RubyMerge.Collapse
+  fullName: Egami.Fonts.Layout.RubyMerge.Collapse
+  nameWithType: RubyMerge.Collapse
+- uid: Egami.Fonts.Layout.RubyMerge.Separate
+  name: Separate
+  href: api/Egami.Fonts.Layout.RubyMerge.html#Egami_Fonts_Layout_RubyMerge_Separate
+  commentId: F:Egami.Fonts.Layout.RubyMerge.Separate
+  fullName: Egami.Fonts.Layout.RubyMerge.Separate
+  nameWithType: RubyMerge.Separate
+- uid: Egami.Fonts.Layout.RubyOptions
+  name: RubyOptions
+  href: api/Egami.Fonts.Layout.RubyOptions.html
+  commentId: T:Egami.Fonts.Layout.RubyOptions
+  fullName: Egami.Fonts.Layout.RubyOptions
+  nameWithType: RubyOptions
+- uid: Egami.Fonts.Layout.RubyOptions.Default
+  name: Default
+  href: api/Egami.Fonts.Layout.RubyOptions.html#Egami_Fonts_Layout_RubyOptions_Default
+  commentId: P:Egami.Fonts.Layout.RubyOptions.Default
+  fullName: Egami.Fonts.Layout.RubyOptions.Default
+  nameWithType: RubyOptions.Default
+- uid: Egami.Fonts.Layout.RubyOptions.Default*
+  name: Default
+  href: api/Egami.Fonts.Layout.RubyOptions.html#Egami_Fonts_Layout_RubyOptions_Default_
+  commentId: Overload:Egami.Fonts.Layout.RubyOptions.Default
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RubyOptions.Default
+  nameWithType: RubyOptions.Default
+- uid: Egami.Fonts.Layout.RubyOptions.Merge
+  name: Merge
+  href: api/Egami.Fonts.Layout.RubyOptions.html#Egami_Fonts_Layout_RubyOptions_Merge
+  commentId: P:Egami.Fonts.Layout.RubyOptions.Merge
+  fullName: Egami.Fonts.Layout.RubyOptions.Merge
+  nameWithType: RubyOptions.Merge
+- uid: Egami.Fonts.Layout.RubyOptions.Merge*
+  name: Merge
+  href: api/Egami.Fonts.Layout.RubyOptions.html#Egami_Fonts_Layout_RubyOptions_Merge_
+  commentId: Overload:Egami.Fonts.Layout.RubyOptions.Merge
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RubyOptions.Merge
+  nameWithType: RubyOptions.Merge
+- uid: Egami.Fonts.Layout.RubyOptions.Overhang
+  name: Overhang
+  href: api/Egami.Fonts.Layout.RubyOptions.html#Egami_Fonts_Layout_RubyOptions_Overhang
+  commentId: P:Egami.Fonts.Layout.RubyOptions.Overhang
+  fullName: Egami.Fonts.Layout.RubyOptions.Overhang
+  nameWithType: RubyOptions.Overhang
+- uid: Egami.Fonts.Layout.RubyOptions.Overhang*
+  name: Overhang
+  href: api/Egami.Fonts.Layout.RubyOptions.html#Egami_Fonts_Layout_RubyOptions_Overhang_
+  commentId: Overload:Egami.Fonts.Layout.RubyOptions.Overhang
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RubyOptions.Overhang
+  nameWithType: RubyOptions.Overhang
+- uid: Egami.Fonts.Layout.RubyOptions.SizeRatio
+  name: SizeRatio
+  href: api/Egami.Fonts.Layout.RubyOptions.html#Egami_Fonts_Layout_RubyOptions_SizeRatio
+  commentId: P:Egami.Fonts.Layout.RubyOptions.SizeRatio
+  fullName: Egami.Fonts.Layout.RubyOptions.SizeRatio
+  nameWithType: RubyOptions.SizeRatio
+- uid: Egami.Fonts.Layout.RubyOptions.SizeRatio*
+  name: SizeRatio
+  href: api/Egami.Fonts.Layout.RubyOptions.html#Egami_Fonts_Layout_RubyOptions_SizeRatio_
+  commentId: Overload:Egami.Fonts.Layout.RubyOptions.SizeRatio
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.RubyOptions.SizeRatio
+  nameWithType: RubyOptions.SizeRatio
+- uid: Egami.Fonts.Layout.RubyOverhang
+  name: RubyOverhang
+  href: api/Egami.Fonts.Layout.RubyOverhang.html
+  commentId: T:Egami.Fonts.Layout.RubyOverhang
+  fullName: Egami.Fonts.Layout.RubyOverhang
+  nameWithType: RubyOverhang
+- uid: Egami.Fonts.Layout.RubyOverhang.Auto
+  name: Auto
+  href: api/Egami.Fonts.Layout.RubyOverhang.html#Egami_Fonts_Layout_RubyOverhang_Auto
+  commentId: F:Egami.Fonts.Layout.RubyOverhang.Auto
+  fullName: Egami.Fonts.Layout.RubyOverhang.Auto
+  nameWithType: RubyOverhang.Auto
+- uid: Egami.Fonts.Layout.RubyOverhang.None
+  name: None
+  href: api/Egami.Fonts.Layout.RubyOverhang.html#Egami_Fonts_Layout_RubyOverhang_None
+  commentId: F:Egami.Fonts.Layout.RubyOverhang.None
+  fullName: Egami.Fonts.Layout.RubyOverhang.None
+  nameWithType: RubyOverhang.None
+- uid: Egami.Fonts.Layout.RubyPosition
+  name: RubyPosition
+  href: api/Egami.Fonts.Layout.RubyPosition.html
+  commentId: T:Egami.Fonts.Layout.RubyPosition
+  fullName: Egami.Fonts.Layout.RubyPosition
+  nameWithType: RubyPosition
+- uid: Egami.Fonts.Layout.RubyPosition.InterCharacter
+  name: InterCharacter
+  href: api/Egami.Fonts.Layout.RubyPosition.html#Egami_Fonts_Layout_RubyPosition_InterCharacter
+  commentId: F:Egami.Fonts.Layout.RubyPosition.InterCharacter
+  fullName: Egami.Fonts.Layout.RubyPosition.InterCharacter
+  nameWithType: RubyPosition.InterCharacter
+- uid: Egami.Fonts.Layout.RubyPosition.Over
+  name: Over
+  href: api/Egami.Fonts.Layout.RubyPosition.html#Egami_Fonts_Layout_RubyPosition_Over
+  commentId: F:Egami.Fonts.Layout.RubyPosition.Over
+  fullName: Egami.Fonts.Layout.RubyPosition.Over
+  nameWithType: RubyPosition.Over
+- uid: Egami.Fonts.Layout.RubyPosition.Under
+  name: Under
+  href: api/Egami.Fonts.Layout.RubyPosition.html#Egami_Fonts_Layout_RubyPosition_Under
+  commentId: F:Egami.Fonts.Layout.RubyPosition.Under
+  fullName: Egami.Fonts.Layout.RubyPosition.Under
+  nameWithType: RubyPosition.Under
 - uid: Egami.Fonts.Layout.SelectionHeight
   name: SelectionHeight
   href: api/Egami.Fonts.Layout.SelectionHeight.html
@@ -32966,6 +33331,22 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.Layout.TextLayout.GetLineBoundary
   nameWithType: TextLayout.GetLineBoundary
+- uid: Egami.Fonts.Layout.TextLayout.GetRubyBounds(System.Int32)
+  name: GetRubyBounds(int)
+  href: api/Egami.Fonts.Layout.TextLayout.html#Egami_Fonts_Layout_TextLayout_GetRubyBounds_System_Int32_
+  commentId: M:Egami.Fonts.Layout.TextLayout.GetRubyBounds(System.Int32)
+  name.vb: GetRubyBounds(Integer)
+  fullName: Egami.Fonts.Layout.TextLayout.GetRubyBounds(int)
+  fullName.vb: Egami.Fonts.Layout.TextLayout.GetRubyBounds(Integer)
+  nameWithType: TextLayout.GetRubyBounds(int)
+  nameWithType.vb: TextLayout.GetRubyBounds(Integer)
+- uid: Egami.Fonts.Layout.TextLayout.GetRubyBounds*
+  name: GetRubyBounds
+  href: api/Egami.Fonts.Layout.TextLayout.html#Egami_Fonts_Layout_TextLayout_GetRubyBounds_
+  commentId: Overload:Egami.Fonts.Layout.TextLayout.GetRubyBounds
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextLayout.GetRubyBounds
+  nameWithType: TextLayout.GetRubyBounds
 - uid: Egami.Fonts.Layout.TextLayout.GetSelectionRects(System.Int32,System.Int32,Egami.Fonts.Layout.SelectionHeight)
   name: GetSelectionRects(int, int, SelectionHeight)
   href: api/Egami.Fonts.Layout.TextLayout.html#Egami_Fonts_Layout_TextLayout_GetSelectionRects_System_Int32_System_Int32_Egami_Fonts_Layout_SelectionHeight_
@@ -33189,6 +33570,19 @@ references:
   commentId: T:Egami.Fonts.Layout.TextLine
   fullName: Egami.Fonts.Layout.TextLine
   nameWithType: TextLine
+- uid: Egami.Fonts.Layout.TextLine.AnnotationRuns
+  name: AnnotationRuns
+  href: api/Egami.Fonts.Layout.TextLine.html#Egami_Fonts_Layout_TextLine_AnnotationRuns
+  commentId: P:Egami.Fonts.Layout.TextLine.AnnotationRuns
+  fullName: Egami.Fonts.Layout.TextLine.AnnotationRuns
+  nameWithType: TextLine.AnnotationRuns
+- uid: Egami.Fonts.Layout.TextLine.AnnotationRuns*
+  name: AnnotationRuns
+  href: api/Egami.Fonts.Layout.TextLine.html#Egami_Fonts_Layout_TextLine_AnnotationRuns_
+  commentId: Overload:Egami.Fonts.Layout.TextLine.AnnotationRuns
+  isSpec: "True"
+  fullName: Egami.Fonts.Layout.TextLine.AnnotationRuns
+  nameWithType: TextLine.AnnotationRuns
 - uid: Egami.Fonts.Layout.TextLine.Ascent
   name: Ascent
   href: api/Egami.Fonts.Layout.TextLine.html#Egami_Fonts_Layout_TextLine_Ascent

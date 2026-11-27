@@ -5107,7 +5107,7 @@
       "Uid": null,
       "IsMRef": true,
       "Title": "Egami.Fonts.Layout.RichText",
-      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.RichText.yml\" sourcestartlinenumber=\"1\">Text with styles: a string, the <xref href=\"Egami.Fonts.Layout.StyleSpan\" data-throw-if-not-resolved=\"false\"></xref>s over it (sorted, never overlapping) and the\n<xref href=\"Egami.Fonts.Layout.Placeholder\" data-throw-if-not-resolved=\"false\"></xref>s for its object replacement characters, in order. Immutable; build one with\n<xref href=\"Egami.Fonts.Layout.RichTextBuilder\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.RichText.yml\" sourcestartlinenumber=\"1\">Text with styles: a string, the <xref href=\"Egami.Fonts.Layout.StyleSpan\" data-throw-if-not-resolved=\"false\"></xref>s over it (sorted, never overlapping), the\n<xref href=\"Egami.Fonts.Layout.Placeholder\" data-throw-if-not-resolved=\"false\"></xref>s for its object replacement characters, in order, and the <xref href=\"Egami.Fonts.Layout.RubyAnnotation\" data-throw-if-not-resolved=\"false\"></xref>s over it\n(sorted, never overlapping). Immutable; build one with <xref href=\"Egami.Fonts.Layout.RichTextBuilder\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
     },
     {
       "type": "ManagedReference",
@@ -5122,6 +5122,90 @@
       "IsMRef": true,
       "Title": "Egami.Fonts.Layout.RichTextBuilder",
       "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.RichTextBuilder.yml\" sourcestartlinenumber=\"1\">Builds a <xref href=\"Egami.Fonts.Layout.RichText\" data-throw-if-not-resolved=\"false\"></xref>: <xref href=\"Egami.Fonts.Layout.RichTextBuilder.Push(Egami.Fonts.Layout.TextStyle)\" data-throw-if-not-resolved=\"false\"></xref> a style, <xref href=\"Egami.Fonts.Layout.RichTextBuilder.Append(System.String)\" data-throw-if-not-resolved=\"false\"></xref> text, <xref href=\"Egami.Fonts.Layout.RichTextBuilder.Pop\" data-throw-if-not-resolved=\"false\"></xref> back to the\nenclosing style. Styles nest: a pushed style's unset fields come from the one it is pushed on, and the result has one flat\nspan per stretch of equal style.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.RubyAlign.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.RubyAlign.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.RubyAlign",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.RubyAlign.yml\" sourcestartlinenumber=\"1\">How the narrower of a ruby group's base and ruby spreads over the wider (CSS <code>ruby-align</code>).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.RubyAnnotation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.RubyAnnotation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.RubyAnnotation",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.RubyAnnotation.yml\" sourcestartlinenumber=\"1\">A ruby annotation: short text (furigana, pinyin, bopomofo, a gloss) set in small type beside a range of a\n<xref href=\"Egami.Fonts.Layout.RichText\" data-throw-if-not-resolved=\"false\"></xref>, its base. One annotation is one ruby group: over a single character it is mono ruby, over several\ngroup ruby; adjacent annotations make jukugo ruby when <xref href=\"Egami.Fonts.Layout.RubyOptions.Merge\" data-throw-if-not-resolved=\"false\"></xref> joins them.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.RubyMerge.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.RubyMerge.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.RubyMerge",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.RubyMerge.yml\" sourcestartlinenumber=\"1\">How adjacent ruby annotations (one ending where the next starts, on the same side) lay out together.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.RubyOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.RubyOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.RubyOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.RubyOptions.yml\" sourcestartlinenumber=\"1\">How a paragraph lays out ruby (<xref href=\"Egami.Fonts.Layout.ParagraphStyle.Ruby\" data-throw-if-not-resolved=\"false\"></xref>).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.RubyOverhang.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.RubyOverhang.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.RubyOverhang",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.RubyOverhang.yml\" sourcestartlinenumber=\"1\">Whether ruby wider than its base may hang over the characters beside it.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Fonts.Layout.RubyPosition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Fonts.Layout.RubyPosition.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Fonts.Layout.RubyPosition",
+      "Summary": "<p sourcefile=\"api/Egami.Fonts.Layout.RubyPosition.yml\" sourcestartlinenumber=\"1\">Where a <xref href=\"Egami.Fonts.Layout.RubyAnnotation\" data-throw-if-not-resolved=\"false\"></xref> sits (CSS <code>ruby-position</code>).</p>\n"
     },
     {
       "type": "ManagedReference",

@@ -2375,7 +2375,7 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = photo.CreateCanvas())
 
   <div class="markdown level1 summary"><p>Draws a laid-out paragraph with its top-left corner at <code class="paramref">origin</code>, line by line in CSS's order: text shadows
 (glyphs and decorations again, offset and blurred), run backgrounds, underlines and overlines, glyphs and placeholders,
-then line-throughs. Each run uses its style's <a class="xref" href="Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_Paint">Paint</a> or <a class="xref" href="Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_Color">Color</a> (black when
+ruby (<a class="xref" href="Egami.Fonts.Layout.TextLine.html#Egami_Fonts_Layout_TextLine_AnnotationRuns">AnnotationRuns</a>, each in its ruby style's paint), then line-throughs. Each run uses its style's <a class="xref" href="Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_Paint">Paint</a> or <a class="xref" href="Egami.Fonts.Layout.TextStyle.html#Egami_Fonts_Layout_TextStyle_Color">Color</a> (black when
 neither is set), each decoration its own paint or color. Lines outside <code class="paramref">visibleRect</code> and the clip are
 skipped. An ellipsis is drawn as marked content whose ActualText is the text it stands for on its line, and a soft
 hyphen's hyphen as one whose ActualText is the soft hyphen; an automatic hyphen (<a class="xref" href="Egami.Fonts.Layout.Hyphens.html#Egami_Fonts_Layout_Hyphens_Auto">Auto</a>) and the

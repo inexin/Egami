@@ -241,7 +241,7 @@ layout.ToPath(path);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_TextLayout_DidExceed" data-uid="Egami.Fonts.Layout.TextLayout.DidExceed">
   DidExceed
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L178"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L221"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_MaxLines">MaxLines</a> or <a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_MaxHeight">MaxHeight</a> cut text off.</p>
@@ -337,7 +337,7 @@ layout.ToPath(path);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_TextLayout_HiddenRange" data-uid="Egami.Fonts.Layout.TextLayout.HiddenRange">
   HiddenRange
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L181"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L224"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the text a line limit hid, the ellipsis's room included, or null when nothing was cut.</p>
@@ -372,7 +372,7 @@ layout.ToPath(path);</code></pre>
   <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L75"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Gets the union of the glyphs' ink and the placeholders' boxes, which may reach past the layout box.</p>
+  <div class="markdown level1 summary"><p>Gets the union of the glyphs' ink (ruby included) and the placeholders' boxes, which may reach past the layout box.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -855,6 +855,83 @@ Egami.Fonts.Unicode.TextSegment word = layout.GetWordBoundary(position.Index); /
   <dl class="parameters">
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
     <dd><p><code class="paramref">index</code> is negative or past the end of the text.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Fonts_Layout_TextLayout_GetRubyBounds_" data-uid="Egami.Fonts.Layout.TextLayout.GetRubyBounds*"></a>
+
+  <h3 id="Egami_Fonts_Layout_TextLayout_GetRubyBounds_System_Int32_" data-uid="Egami.Fonts.Layout.TextLayout.GetRubyBounds(System.Int32)">
+  GetRubyBounds(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L196"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the box a ruby annotation's text was laid out in: from the line's over (or under) edge of its ruby to the base side,
+along the ruby's advance, in layout coordinates. Annotations whose base a line limit hid, or whose ruby text is empty,
+get an empty box.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TextBounds GetRubyBounds(int annotationIndex)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>annotationIndex</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The annotation's index in <a class="xref" href="Egami.Fonts.Layout.RichText.html#Egami_Fonts_Layout_RichText_Ruby">Ruby</a>.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Fonts.TextBounds.html">TextBounds</a></dt>
+    <dd><p>The box.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Fonts_Layout_TextLayout_GetRubyBounds_System_Int32__examples">Examples</h4>
+  <pre><code class="lang-csharp">// 国際 (kokusai) with its reading as group ruby, and 価値 (kachi) as jukugo ruby: one annotation per character.
+RichText text = new RichTextBuilder()
+    .Append("国際の価値")
+    .AddRuby(0, 2, "こくさい")
+    .AddRuby(3, 1, "か")
+    .AddRuby(4, 1, "ち")
+    .ToRichText();
+
+ParagraphStyle style = new()
+{
+    DefaultStyle = new TextStyle { FontFamilies = [fonts.Families[0]], Size = 20, Language = "ja" },
+    Ruby = new RubyOptions { Merge = RubyMerge.Auto },  // jukugo: per character, joined when a reading is too wide
+};
+TextLayout layout = Paragraph.Create(text, style).Layout(300);
+
+// The ruby text: runs beside the line's text, at half the base's size, and the box each annotation took.
+foreach (LayoutRun run in layout.Lines[0].AnnotationRuns)
+{
+    TextBounds box = layout.GetRubyBounds(run.Annotation);
+}
+
+// An annotation of its own: under the base, in red, a little away from it.
+RubyAnnotation under = new(0, 2, "kokusai")
+{
+    Position = RubyPosition.Under,
+    Offset = 2,
+    Style = new TextStyle { Color = new Rgba8(200, 0, 0, 255) },
+};</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">annotationIndex</code> is not an annotation of the text.</p>
 </dd>
   </dl>
 

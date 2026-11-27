@@ -163,9 +163,9 @@ height, tab stops every 8 spaces, horizontal lines.</p>
     </dl>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Fonts.Layout.RichText.html">RichText</a></dt>
-      <dd><p>Text with styles: a string, the <a class="xref" href="Egami.Fonts.Layout.StyleSpan.html">StyleSpan</a>s over it (sorted, never overlapping) and the
-<a class="xref" href="Egami.Fonts.Layout.Placeholder.html">Placeholder</a>s for its object replacement characters, in order. Immutable; build one with
-<a class="xref" href="Egami.Fonts.Layout.RichTextBuilder.html">RichTextBuilder</a>.</p>
+      <dd><p>Text with styles: a string, the <a class="xref" href="Egami.Fonts.Layout.StyleSpan.html">StyleSpan</a>s over it (sorted, never overlapping), the
+<a class="xref" href="Egami.Fonts.Layout.Placeholder.html">Placeholder</a>s for its object replacement characters, in order, and the <a class="xref" href="Egami.Fonts.Layout.RubyAnnotation.html">RubyAnnotation</a>s over it
+(sorted, never overlapping). Immutable; build one with <a class="xref" href="Egami.Fonts.Layout.RichTextBuilder.html">RichTextBuilder</a>.</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -173,6 +173,18 @@ height, tab stops every 8 spaces, horizontal lines.</p>
       <dd><p>Builds a <a class="xref" href="Egami.Fonts.Layout.RichText.html">RichText</a>: <a class="xref" href="Egami.Fonts.Layout.RichTextBuilder.html#Egami_Fonts_Layout_RichTextBuilder_Push_Egami_Fonts_Layout_TextStyle_">Push(TextStyle)</a> a style, <a class="xref" href="Egami.Fonts.Layout.RichTextBuilder.html#Egami_Fonts_Layout_RichTextBuilder_Append_System_String_">Append(string)</a> text, <a class="xref" href="Egami.Fonts.Layout.RichTextBuilder.html#Egami_Fonts_Layout_RichTextBuilder_Pop">Pop()</a> back to the
 enclosing style. Styles nest: a pushed style's unset fields come from the one it is pushed on, and the result has one flat
 span per stretch of equal style.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.RubyAnnotation.html">RubyAnnotation</a></dt>
+      <dd><p>A ruby annotation: short text (furigana, pinyin, bopomofo, a gloss) set in small type beside a range of a
+<a class="xref" href="Egami.Fonts.Layout.RichText.html">RichText</a>, its base. One annotation is one ruby group: over a single character it is mono ruby, over several
+group ruby; adjacent annotations make jukugo ruby when <a class="xref" href="Egami.Fonts.Layout.RubyOptions.html#Egami_Fonts_Layout_RubyOptions_Merge">Merge</a> joins them.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.RubyOptions.html">RubyOptions</a></dt>
+      <dd><p>How a paragraph lays out ruby (<a class="xref" href="Egami.Fonts.Layout.ParagraphStyle.html#Egami_Fonts_Layout_ParagraphStyle_Ruby">Ruby</a>).</p>
 </dd>
     </dl>
     <dl class="jumplist">
@@ -348,6 +360,26 @@ iteration marks and some punctuation.</p>
     <dl class="jumplist">
       <dt><a class="xref" href="Egami.Fonts.Layout.PlaceholderAlignment.html">PlaceholderAlignment</a></dt>
       <dd><p>How a <a class="xref" href="Egami.Fonts.Layout.Placeholder.html">Placeholder</a> sits on its line.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.RubyAlign.html">RubyAlign</a></dt>
+      <dd><p>How the narrower of a ruby group's base and ruby spreads over the wider (CSS <code>ruby-align</code>).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.RubyMerge.html">RubyMerge</a></dt>
+      <dd><p>How adjacent ruby annotations (one ending where the next starts, on the same side) lay out together.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.RubyOverhang.html">RubyOverhang</a></dt>
+      <dd><p>Whether ruby wider than its base may hang over the characters beside it.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Fonts.Layout.RubyPosition.html">RubyPosition</a></dt>
+      <dd><p>Where a <a class="xref" href="Egami.Fonts.Layout.RubyAnnotation.html">RubyAnnotation</a> sits (CSS <code>ruby-position</code>).</p>
 </dd>
     </dl>
     <dl class="jumplist">

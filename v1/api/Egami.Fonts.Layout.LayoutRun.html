@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Fonts_Layout_LayoutRun" data-uid="Egami.Fonts.Layout.LayoutRun" class="text-break">
-Class LayoutRun  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L276"><i class="bi bi-code-slash"></i></a>
+Class LayoutRun  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L333"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -174,7 +174,7 @@ TextLayout unbounded = paragraph.Layout(float.PositiveInfinity);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_LayoutRun_Advance" data-uid="Egami.Fonts.Layout.LayoutRun.Advance">
   Advance
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L311"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L368"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the run's width.</p>
@@ -202,11 +202,43 @@ TextLayout unbounded = paragraph.Layout(float.PositiveInfinity);</code></pre>
 
 
 
+  <a id="Egami_Fonts_Layout_LayoutRun_Annotation_" data-uid="Egami.Fonts.Layout.LayoutRun.Annotation*"></a>
+
+  <h3 id="Egami_Fonts_Layout_LayoutRun_Annotation" data-uid="Egami.Fonts.Layout.LayoutRun.Annotation">
+  Annotation
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L378"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the index of the rich text's ruby annotation, for <a class="xref" href="Egami.Fonts.Layout.LayoutRunKind.html#Egami_Fonts_Layout_LayoutRunKind_Ruby">Ruby</a> runs; otherwise -1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Annotation { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
   <a id="Egami_Fonts_Layout_LayoutRun_BidiLevel_" data-uid="Egami.Fonts.Layout.LayoutRun.BidiLevel*"></a>
 
   <h3 id="Egami_Fonts_Layout_LayoutRun_BidiLevel" data-uid="Egami.Fonts.Layout.LayoutRun.BidiLevel">
   BidiLevel
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L301"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L358"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the run's bidi level after the line rules; odd levels run right to left.</p>
@@ -238,7 +270,7 @@ TextLayout unbounded = paragraph.Layout(float.PositiveInfinity);</code></pre>
 
   <h3 id="Egami_Fonts_Layout_LayoutRun_Glyphs" data-uid="Egami.Fonts.Layout.LayoutRun.Glyphs">
   Glyphs
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L315"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L372"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the glyphs, positioned in layout coordinates with their clusters, for <a class="xref" href="Egami.Fonts.Layout.LayoutRunKind.html#Egami_Fonts_Layout_LayoutRunKind_Text">Text</a> runs;
@@ -271,7 +303,7 @@ otherwise null.</p>
 
   <h3 id="Egami_Fonts_Layout_LayoutRun_Kind" data-uid="Egami.Fonts.Layout.LayoutRun.Kind">
   Kind
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L292"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L349"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets what the run holds.</p>
@@ -303,7 +335,7 @@ otherwise null.</p>
 
   <h3 id="Egami_Fonts_Layout_LayoutRun_Length" data-uid="Egami.Fonts.Layout.LayoutRun.Length">
   Length
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L298"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L355"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the number of UTF-16 units in the run.</p>
@@ -335,7 +367,7 @@ otherwise null.</p>
 
   <h3 id="Egami_Fonts_Layout_LayoutRun_Placeholder" data-uid="Egami.Fonts.Layout.LayoutRun.Placeholder">
   Placeholder
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L318"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L375"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the index of the rich text's placeholder, for <a class="xref" href="Egami.Fonts.Layout.LayoutRunKind.html#Egami_Fonts_Layout_LayoutRunKind_Placeholder">Placeholder</a> runs; otherwise -1.</p>
@@ -367,7 +399,7 @@ otherwise null.</p>
 
   <h3 id="Egami_Fonts_Layout_LayoutRun_Start" data-uid="Egami.Fonts.Layout.LayoutRun.Start">
   Start
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L295"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L352"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the UTF-16 index of the run's first character.</p>
@@ -399,7 +431,7 @@ otherwise null.</p>
 
   <h3 id="Egami_Fonts_Layout_LayoutRun_StyleIndex" data-uid="Egami.Fonts.Layout.LayoutRun.StyleIndex">
   StyleIndex
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L305"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L362"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the style of the run's text: 0 for the paragraph's default style, else 1 plus the index of the rich text's
@@ -432,7 +464,7 @@ span. A run has one style; where a ligature joins characters of two styles, the 
 
   <h3 id="Egami_Fonts_Layout_LayoutRun_X" data-uid="Egami.Fonts.Layout.LayoutRun.X">
   X
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L308"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L365"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the x of the run's left edge.</p>
@@ -464,7 +496,7 @@ span. A run has one style; where a ligature joins characters of two styles, the 
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L276" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/Layout/TextLayout.cs/#L333" class="edit-link">Edit this page</a>
         </div>
 
 
