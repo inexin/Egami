@@ -528,6 +528,16 @@ Intelligent Mail, Royal Mail, KIX and Australia Post barcodes (roadmap 2.11.3, s
 - `BarcodeFormat.IntelligentMail`, `RoyalMail`, `Kix` and `AustraliaPost` are new and in `Postal`, which stays out of `All`,
   so reads with the default options are unchanged.
 
+Faster linear reading (roadmap 2.11.2 follow-up).
+
+- The scan lines are cut into runs sixteen samples at a time, each decoder tests the quiet zone before its start pattern, and
+  DataBar Limited tests its check character's last two elements before reading its characters: the same reads, faster.
+- A linear read allocates less: no DataBar tables unless DataBar is asked for, and no inverted local threshold without 2D
+  formats.
+- On one thread against zxing-cpp 3.1.1 (egami-compare's speed gate): Codabar 1.06x to 0.89x, Code 93 1.39x to 1.04x,
+  Code 128 0.96x to 0.64x, Code 39 0.68x to 0.50x, ITF 1.57x to 1.15x, EAN and UPC 0.93x to 0.67x, DataBar Limited 2.55x to
+  1.8x; a default read of the blackbox and zint images takes 0.95x of the time before.
+
 ## Egami.Cli 1.6.0 (unreleased)
 
 MCP prompts and resources, a guide for coding agents, animated SVG input and font commands. Additive to 1.5.0.
