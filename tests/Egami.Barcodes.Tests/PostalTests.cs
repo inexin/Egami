@@ -95,4 +95,52 @@ public class PostalTests
         Assert.Equal(83 + 8, raster.Width);
         Assert.Equal(8 + 8, raster.Height);
     }
+
+    [Theory]
+    [InlineData(null, "ATTFATTDTTADTAATTDTDTATTDAFDDFADFDFTFFFFFTATFAAAATDFFTDAADFTFDTDT")]
+    [InlineData("01234", "DTTAFADDTTFTDTFTFDTDDADADAFADFATDDFTAAAFDTTADFAAATDFDTDFADDDTDFFT")]
+    [InlineData("012345678", "ADFTTAFDTTTTFATTADTAAATFTFTATDAAAFDDADATATDTDTTDFDTDATADADTDFFTFA")]
+    [InlineData("01234567891", "AADTFFDFTDADTAADAATFDTDDAAADDTDTTDAFADADDDTFFFDDTTTADFAAADFTDAADA")]
+    public void IntelligentMailMakesTheSpecsExamples(string? routing, string bars)
+    {
+        // USPS-B-3200 Appendix C.
+        Barcode barcode = Barcode.IntelligentMail("01234567094987654321", routing);
+        Assert.Equal(bars, Bars(barcode.Modules, 2, 2));
+        Assert.Equal(routing is null ? "01234567094987654321" : "01234567094987654321 " + routing, barcode.HumanReadableText);
+        Assert.Equal(BarcodeFormat.IntelligentMail, barcode.Format);
+        Assert.Equal(6, barcode.QuietZone);
+        Assert.Equal(bars, Bars(Barcode.Create(BarcodeFormat.IntelligentMail, "01234567094987654321" + (routing is null ? "" : "-" + routing)).Modules, 2, 2));
+    }
+
+    [Fact]
+    public void IntelligentMailFollowsTheSpecsSteps()
+    {
+        // USPS-B-3200 Appendix C, example 4: the binary number, frame check and codewords.
+        UInt128 binary = IntelligentMailEncoder.Binary("01234567094987654321", "01234567891");
+        Assert.Equal(UInt128.Parse("016907B2A24ABC16A2E5C004B1", System.Globalization.NumberStyles.HexNumber, null), binary);
+        int check = IntelligentMailEncoder.FrameCheck(binary);
+        Assert.Equal(0x751, check);
+        Assert.Equal([673, 787, 607, 1022, 861, 19, 816, 1294, 35, 602], IntelligentMailEncoder.Codewords(binary, check));
+    }
+
+    [Theory]
+    [InlineData("0123456709498765432", null, "20 digits, not 19")]
+    [InlineData("0153456709498765432 ", null, "' ' at 19")]
+    [InlineData("05234567094987654321", null, "'5' at 1")]
+    [InlineData("01234567094987654321", "1234", "not 4")]
+    [InlineData("01234567094987654321", "1234x", "'x' at 4")]
+    public void IntelligentMailNamesABadCode(string tracking, string? routing, string message) =>
+        Assert.Contains(message, Assert.Throws<ArgumentException>(() => Barcode.IntelligentMail(tracking, routing)).Message, StringComparison.Ordinal);
+
+    [Fact]
+    public void IntelligentMailDrawnAtItsModuleHasUspssSizes()
+    {
+        // 1/44 inch modules: 65 bars at 22 per inch, 2.909 inches from the first to the last, 0.136 inch tall.
+        Barcode barcode = Barcode.IntelligentMail("01234567094987654321", "01234567891");
+        Drawing.Path path = barcode.ToPath(1f / 44);
+        Assert.Equal(6f / 44, path.Bounds.Height, 4);
+        Assert.Equal(129f / 44, path.Bounds.Width, 4);
+        Assert.InRange(128f / 44, 2.667f, 3.225f);
+        Assert.Equal(6f / 44, path.Bounds.X, 4);
+    }
 }

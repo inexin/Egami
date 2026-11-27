@@ -118,3 +118,4 @@ Egami.Barcodes.BarcodeFormat.Kix = 1048576 -> Egami.Barcodes.BarcodeFormat
 Egami.Barcodes.BarcodeFormat.AustraliaPost = 2097152 -> Egami.Barcodes.BarcodeFormat
 static Egami.Barcodes.Barcode.RoyalMail(string! text) -> Egami.Barcodes.Barcode!
 static Egami.Barcodes.Barcode.Kix(string! text) -> Egami.Barcodes.Barcode!
+static Egami.Barcodes.Barcode.IntelligentMail(string! tracking, string? routing = null) -> Egami.Barcodes.Barcode!

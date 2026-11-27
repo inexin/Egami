@@ -178,6 +178,7 @@ public class ReferenceTests
             "JapanPost" => Barcode.JapanPost(data),
             "RoyalMail" => Barcode.RoyalMail(data),
             "Kix" => Barcode.Kix(data),
+            "IntelligentMail" => Barcode.IntelligentMail(data, options.ValueKind == JsonValueKind.Object && options.TryGetProperty("routing", out JsonElement routing) ? routing.GetString() : null),
             "AztecRune" => Barcode.AztecRune(int.Parse(data, System.Globalization.CultureInfo.InvariantCulture)),
             string call => throw new NotSupportedException(call),
             _ => throw new NotSupportedException(),
