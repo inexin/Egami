@@ -91,8 +91,8 @@
 or in SVG output, and reads them from rasters. It is fully managed.</p>
 <p>It writes and reads QR Code, Micro QR Code, Data Matrix, PDF417 and Aztec Code, and the linear Code 128 (with GS1-128), Code 39, Code 93,
 Codabar, GS1 DataBar (Omnidirectional, Truncated, Stacked, Stacked Omnidirectional, Limited, Expanded and Expanded Stacked),
-ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. It also writes the Japan Post customer barcode, a 4-state postal code, which
-it does not read. Each has its own factory on <code>Barcode</code> with typed options; <code>Barcode.Create</code> takes a
+ITF and ITF-14, EAN-13, EAN-8, UPC-A and UPC-E. It also writes the 4-state postal codes of Japan Post, USPS (Intelligent Mail), Royal Mail
+(RM4SCC), PostNL (KIX) and Australia Post, which it does not read. Each has its own factory on <code>Barcode</code> with typed options; <code>Barcode.Create</code> takes a
 format chosen at run time with the default options.</p>
 <pre><code class="lang-csharp">// Labels from a table that stores each barcode's format with its data.
 (BarcodeFormat Format, string Data)[] rows =
@@ -297,8 +297,9 @@ using (RasterCanvas&lt;Rgba8&gt; canvas = label.CreateCanvas())
 Barcode small = Barcode.UpcE(&quot;042100005264&quot;);
 </code></pre><h2 id="postal-barcodes">Postal barcodes</h2>
 <p>Postal barcodes are 4-state codes: each bar is a tracker, the short middle third, or reaches up, down or both ways from it.
-Egami writes them as grids of 6 rows, two per third, with a light column between bars, so they draw, render and turn into
-paths like any 2D symbol. It does not read them: <code>BarcodeFormat.Postal</code> holds them, and <code>BarcodeFormat.All</code> leaves them out.</p>
+Egami writes them as grids with one dark column per bar and a light column between bars, the rows sized so that each
+symbology's module gives its spec's bar heights (6 rows for Japan Post and Intelligent Mail, 8 for the others), so they draw,
+render and turn into paths like any 2D symbol. It does not read them: <code>BarcodeFormat.Postal</code> holds them, and <code>BarcodeFormat.All</code> leaves them out.</p>
 <h3 id="japan-post">Japan Post</h3>
 <p><code>Barcode.JapanPost</code> writes the Japan Post customer barcode (カスタマバーコード) that mailers print under the address for a
 discount. It takes prepared data, not an address: the 7-digit postal code, with or without its hyphen, then the address number
@@ -315,6 +316,55 @@ Barcode mail = Barcode.JapanPost(&quot;100-0013 1-3-2-503&quot;);
 // Drawn at the manual's 0.6 mm module (here in millimetres): 79.8 by 3.6 mm, in a 2.4 mm quiet zone.
 Path bars = mail.ToPath(moduleSize: 0.6f);
 Console.WriteLine(mail.HumanReadableText); // 100-0013 1-3-2-503
+</code></pre><h3 id="usps-intelligent-mail">USPS Intelligent Mail</h3>
+<p><code>Barcode.IntelligentMail</code> writes the USPS Intelligent Mail barcode (USPS-B-3200): the 20-digit tracking code (barcode
+identifier, service type, mailer identifier and serial number; the second digit is 0 to 4) and a routing code of 0, 5, 9 or 11
+digits, the ZIP Code, ZIP+4 or delivery point. The 65 bars carry an 11-bit frame check. The human-readable text is the tracking
+code and, after a space, the routing code. At a module of 1/44 inch the bars are 0.136 inch tall at 22 per inch, mid USPS's
+ranges, and the quiet zone of 6 modules gives the 0.125 inch clear zone at each end. <code>Barcode.Create</code> takes the two codes as
+one text, the routing code after the 20th digit, a space or hyphen between them or none.</p>
+<pre><code class="lang-csharp">// The 20-digit tracking code and the 11-digit routing code (the ZIP Code and its delivery point).
+Barcode mail = Barcode.IntelligentMail(&quot;01234567094987654321&quot;, &quot;01234567891&quot;);
+
+// Drawn at a 1/44 inch module (here in inches): 65 bars at 22 per inch, 0.136 inch tall.
+Path bars = mail.ToPath(moduleSize: 1f / 44);
+Console.WriteLine(mail.HumanReadableText); // 01234567094987654321 01234567891
+</code></pre><h3 id="royal-mail-and-kix">Royal Mail and KIX</h3>
+<p><code>Barcode.RoyalMail</code> writes the Royal Mail 4-State Customer Code (RM4SCC, the CBC of Royal Mail's mailing services): digits and
+letters A to Z, usually the postcode without its space and the two-character Delivery Point Suffix. A start bar, a modulo 6
+check character and a stop bar are added. <code>Barcode.Kix</code> writes PostNL's KIX code (Klantindex) with the same characters and
+none of the extras, usually the postcode, the house number and, after an X, its addition. Lowercase letters are made
+uppercase, and the human-readable text is the characters without the check character. At a module of 0.6 mm the bars are 4.8
+mm tall at 21.2 per inch, Royal Mail's sizes, and the quiet zone of 4 modules gives the 2 mm clear zone.</p>
+<pre><code class="lang-csharp">// A postcode without its space and the Delivery Point Suffix; the check character and start and stop bars are added.
+Barcode mail = Barcode.RoyalMail(&quot;LU178XE2B&quot;);
+
+// Drawn at a 0.6 mm module (here in millimetres): bars 4.8 mm tall at 21.2 per inch, in a 2.4 mm quiet zone.
+Path bars = mail.ToPath(moduleSize: 0.6f);
+Console.WriteLine(mail.HumanReadableText); // LU178XE2B
+</code></pre><pre><code class="lang-csharp">// The postcode, the house number and, after an X, its addition.
+Barcode mail = Barcode.Kix(&quot;2500GG30X250&quot;);
+Path bars = mail.ToPath(moduleSize: 0.6f);
+Console.WriteLine(mail.HumanReadableText); // 2500GG30X250
+</code></pre><h3 id="australia-post">Australia Post</h3>
+<p><code>Barcode.AustraliaPost</code> writes the Australia Post 4-State Customer Barcode: the eight-digit Delivery Point Identifier (DPID) and,
+for Customer Barcodes 2 and 3, the customer information after it. The Format Control Code, filler bars and four Reed-Solomon
+check symbols are added. By default the DPID alone makes the Standard Customer Barcode (FCC 11, 37 bars) and customer
+information the shorter of Customer Barcode 2 (FCC 59, 52 bars) and 3 (FCC 62, 67 bars) that holds it, digits in the N table
+(2 bars each) and other text in the C table (letters, digits, space and <code>#</code>, 3 bars each). <code>AustraliaPostOptions.Format</code>
+chooses the format (an <code>AustraliaPostFormat</code>), the internal Reply Paid (45), Routing (87) and Redirection (92) too, and
+<code>Encoding</code> the table (<code>AustraliaPostEncoding.N</code> or <code>C</code>). The
+human-readable text is Australia Post's text representation: the FCC, the DPID, the customer information and the check symbols,
+such as <code>11 39549554 54 17 53 58</code>. At a module of 0.55 mm the bars are 4.4 mm tall at 23 per 25.4 mm, and the quiet zone of 11
+modules gives the 6 mm at each end that Australia Post asks for.</p>
+<pre><code class="lang-csharp">// A Standard Customer Barcode holds the eight-digit DPID; customer information after it takes Customer Barcode 2 or 3.
+Barcode mail = Barcode.AustraliaPost(&quot;39549554&quot;);
+Barcode withInformation = Barcode.AustraliaPost(&quot;54516251ABC123&quot;);
+Barcode digits = Barcode.AustraliaPost(&quot;5451625112345&quot;, new AustraliaPostOptions { Format = AustraliaPostFormat.Customer3 });
+
+// Drawn at a 0.55 mm module (here in millimetres): 37 bars, 40.15 mm long and 4.4 mm tall.
+Path bars = mail.ToPath(moduleSize: 0.55f);
+Console.WriteLine(mail.HumanReadableText); // 11 39549554 54 17 53 58, the FCC, the DPID and the check symbols
 </code></pre><h2 id="reading-barcodes">Reading barcodes</h2>
 <p><code>raster.ReadBarcodes()</code> finds every barcode in an image and <code>raster.ReadBarcode()</code> the first. <a href="barcode-reading.html">Reading barcodes</a>
 covers the options, photos, camera frames, GS1 data and speed.</p>
@@ -369,7 +419,7 @@ using Raster&lt;Gray8&gt; image = qr.ToRaster(pixelsPerModule: 4);
 </code></pre><h2 id="barcodes-from-modules">Barcodes from modules</h2>
 <p>A <code>Barcode</code> is one symbol: its <code>BarcodeFormat</code>, its <code>Modules</code>, the <code>QuietZone</code> its standard asks for in modules (4 for QR, 2 for
 Micro QR, 1 for Data Matrix, 2 for PDF417, none for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7
-for EAN-8, 9 for UPC, 1 for GS1 DataBar and DataBar Expanded and 5 for DataBar Limited; 4 around a Japan Post barcode) and the <code>HumanReadableText</code> printed under a linear symbol. <code>Barcode.FromModules</code> makes one from
+for EAN-8, 9 for UPC, 1 for GS1 DataBar and DataBar Expanded and 5 for DataBar Limited; 4 around a Japan Post, Royal Mail or KIX barcode, 6 around an Intelligent Mail barcode and 11 around an Australia Post one) and the <code>HumanReadableText</code> printed under a linear symbol. <code>Barcode.FromModules</code> makes one from
 modules you already have, such as from another encoder.</p>
 <pre><code class="lang-csharp">// Modules from another encoder become a barcode with the quiet zone of their standard: 4 modules for QR.
 Barcode qr = Barcode.FromModules(BarcodeFormat.Qr, modules);

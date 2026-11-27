@@ -123,6 +123,11 @@ public enum BarcodeFormat</code></pre>
   
   <dd><p>Every symbology Egami reads: <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Linear">Linear</a> and <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Matrix">Matrix</a>, without <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Postal">Postal</a>.</p>
 </dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_AustraliaPost"><code>AustraliaPost = 2097152</code></dt>
+  
+  <dd><p>The Australia Post customer barcode, written as a grid of 8 rows; quiet zone 11 modules. Written, not read: in
+<a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Postal">Postal</a> only.</p>
+</dd>
     <dt id="Egami_Barcodes_BarcodeFormat_Aztec"><code>Aztec = 8</code></dt>
   
   <dd><p>Aztec Code (ISO/IEC 24778); no quiet zone, as its finder is in the middle.</p>
@@ -169,6 +174,11 @@ module.</p>
   
   <dd><p>EAN-8 (ISO/IEC 15420), linear; quiet zone 7 modules.</p>
 </dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_IntelligentMail"><code>IntelligentMail = 262144</code></dt>
+  
+  <dd><p>The USPS Intelligent Mail barcode (USPS-B-3200), 65 bars of a 4-state code written as a grid of 6 rows; quiet zone 6
+modules. Written, not read: in <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Postal">Postal</a> only.</p>
+</dd>
     <dt id="Egami_Barcodes_BarcodeFormat_Itf"><code>Itf = 64</code></dt>
   
   <dd><p>Interleaved 2 of 5 and ITF-14 (ISO/IEC 16390), linear; quiet zone 10 modules.</p>
@@ -177,6 +187,11 @@ module.</p>
   
   <dd><p>The Japan Post customer barcode (カスタマバーコード), a 4-state postal code written as a grid of 6 rows; quiet zone 4
 modules. Egami writes it but does not read it, so it is in <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Postal">Postal</a> only, not in <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_All">All</a>.</p>
+</dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_Kix"><code>Kix = 1048576</code></dt>
+  
+  <dd><p>PostNL's KIX code, RM4SCC's characters without start, stop or check, written as a grid of 8 rows; quiet zone 4 modules.
+Written, not read: in <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Postal">Postal</a> only.</p>
 </dd>
     <dt id="Egami_Barcodes_BarcodeFormat_Linear"><code>Linear = Code128 | Code39 | Itf | Ean13 | Ean8 | UpcA | UpcE | Code93 | Codabar | DataBar | DataBarLimited | DataBarExpanded</code></dt>
   
@@ -198,7 +213,7 @@ modules. Egami writes it but does not read it, so it is in <a class="xref" href=
   
   <dd><p>PDF417 (ISO/IEC 15438); quiet zone 2 modules.</p>
 </dd>
-    <dt id="Egami_Barcodes_BarcodeFormat_Postal"><code>Postal = 131072</code></dt>
+    <dt id="Egami_Barcodes_BarcodeFormat_Postal"><code>Postal = JapanPost | IntelligentMail | RoyalMail | Kix | AustraliaPost</code></dt>
   
   <dd><p>The 4-state postal symbologies, which Egami writes but does not read; they are not in <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_All">All</a>, so reads with the
 default options are not slowed or misled by them.</p>
@@ -206,6 +221,11 @@ default options are not slowed or misled by them.</p>
     <dt id="Egami_Barcodes_BarcodeFormat_Qr"><code>Qr = 1</code></dt>
   
   <dd><p>QR Code (ISO/IEC 18004); quiet zone 4 modules.</p>
+</dd>
+    <dt id="Egami_Barcodes_BarcodeFormat_RoyalMail"><code>RoyalMail = 524288</code></dt>
+  
+  <dd><p>The Royal Mail 4-State Customer Code (RM4SCC), written as a grid of 8 rows; quiet zone 4 modules. Written, not read: in
+<a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Postal">Postal</a> only.</p>
 </dd>
     <dt id="Egami_Barcodes_BarcodeFormat_UpcA"><code>UpcA = 512</code></dt>
   

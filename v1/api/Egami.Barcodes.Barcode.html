@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Barcodes_Barcode" data-uid="Egami.Barcodes.Barcode" class="text-break">
-Class Barcode  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Qr.cs/#L7"><i class="bi bi-code-slash"></i></a>
+Class Barcode  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.RoyalMail.cs/#L5"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -193,7 +193,7 @@ Console.WriteLine($"{qr.Format}: {qr.Modules.Width} modules plus {qr.QuietZone} 
 
   <h3 id="Egami_Barcodes_Barcode_HumanReadableText" data-uid="Egami.Barcodes.Barcode.HumanReadableText">
   HumanReadableText
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L44"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the text printed under a linear symbol, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>; it is drawn when <a class="xref" href="Egami.Barcodes.BarcodeDrawOptions.html#Egami_Barcodes_BarcodeDrawOptions_Font">Font</a> is set.</p>
@@ -257,13 +257,14 @@ Console.WriteLine($"{qr.Format}: {qr.Modules.Width} modules plus {qr.QuietZone} 
 
   <h3 id="Egami_Barcodes_Barcode_QuietZone" data-uid="Egami.Barcodes.Barcode.QuietZone">
   QuietZone
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L40"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L41"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the width of the clear margin readers need around the symbol, in modules: 4 for QR, 1 for Data Matrix, 2 for PDF417
 and 0 for Aztec; at each end of a linear symbol, 10 for Code 128, Code 39, Code 93, Codabar and ITF, 11 for EAN-13, 7 for EAN-8, 9 for
 UPC-A and UPC-E, and 1 for GS1 DataBar, whose guard patterns hold their own space (5 for DataBar Limited, the space of its
-right guard); 4 around a Japan Post barcode, the manual's 2 mm at its 0.6 mm module.</p>
+right guard); around a postal barcode, the clear zone of its standard at its module size: 4 for Japan Post, RM4SCC and
+KIX (2 mm at 0.6 mm), 6 for the Intelligent Mail barcode (0.125 inch at 1/44 inch) and 11 for Australia Post (6 mm at 0.55 mm).</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -290,6 +291,70 @@ right guard); 4 around a Japan Post barcode, the manual's 2 mm at its 0.6 mm mod
 
   <h2 class="section" id="methods">Methods
 </h2>
+
+
+  <a id="Egami_Barcodes_Barcode_AustraliaPost_" data-uid="Egami.Barcodes.Barcode.AustraliaPost*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_AustraliaPost_System_String_Egami_Barcodes_AustraliaPostOptions_" data-uid="Egami.Barcodes.Barcode.AustraliaPost(System.String,Egami.Barcodes.AustraliaPostOptions)">
+  AustraliaPost(string, AustraliaPostOptions?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.AustraliaPost.cs/#L29"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes an Australia Post 4-State Customer Barcode: the eight-digit Delivery Point Identifier (DPID), followed for Customer
+Barcodes 2 and 3 by the customer information, such as <code>39549554</code> or <code>54516251ABC123</code>. The Format Control Code,
+filler bars and four Reed-Solomon check symbols are added. The modules are a grid of 8 rows (3 for the ascender, 2 for
+the tracker, 3 for the descender); draw it at a module size of 0.55 mm for bars 4.4 mm tall at 23 bars per 25.4 mm,
+within Australia Post's sizes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode AustraliaPost(string text, AustraliaPostOptions? options = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The DPID and the customer information.</p>
+</dd>
+    <dt><code>options</code> <a class="xref" href="Egami.Barcodes.AustraliaPostOptions.html">AustraliaPostOptions</a></dt>
+    <dd><p>The format and the customer information's encoding table, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for the defaults.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the text representation Australia Post gives as its human-readable text: the Format Control Code, the
+DPID, the customer information and the four check symbols as two-digit numbers, such as <code>11 39549554 54 17 53 58</code>.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_AustraliaPost_System_String_Egami_Barcodes_AustraliaPostOptions__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A Standard Customer Barcode holds the eight-digit DPID; customer information after it takes Customer Barcode 2 or 3.
+Barcode mail = Barcode.AustraliaPost("39549554");
+Barcode withInformation = Barcode.AustraliaPost("54516251ABC123");
+Barcode digits = Barcode.AustraliaPost("5451625112345", new AustraliaPostOptions { Format = AustraliaPostFormat.Customer3 });
+
+// Drawn at a 0.55 mm module (here in millimetres): 37 bars, 40.15 mm long and 4.4 mm tall.
+Path bars = mail.ToPath(moduleSize: 0.55f);
+Console.WriteLine(mail.HumanReadableText); // 11 39549554 54 17 53 58, the FCC, the DPID and the check symbols</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text does not start with eight digits, has customer information for a format without it, has a character the
+encoding table lacks, or holds more customer information than the format does.</p>
+</dd>
+  </dl>
+
 
 
   <a id="Egami_Barcodes_Barcode_Aztec_" data-uid="Egami.Barcodes.Barcode.Aztec*"></a>
@@ -704,7 +769,7 @@ with the data. It calls the format's own factory, such as <a class="xref" href="
     <dd><p>The symbology.</p>
 </dd>
     <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
-    <dd><p>The text or digits; for <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_DataBarExpanded">DataBarExpanded</a>, element strings with each AI in parentheses; for <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_JapanPost">JapanPost</a>, the postal code and address number.</p>
+    <dd><p>The text or digits; for <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_DataBarExpanded">DataBarExpanded</a>, element strings with each AI in parentheses; for <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_JapanPost">JapanPost</a>, the postal code and address number; for <a class="xref" href="Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_IntelligentMail">IntelligentMail</a>, the tracking code and then the routing code, after a space or hyphen or none.</p>
 </dd>
   </dl>
 
@@ -1289,7 +1354,7 @@ Barcode small = Barcode.UpcE("042100005264");</code></pre>
 
   <h3 id="Egami_Barcodes_Barcode_FromModules_Egami_Barcodes_BarcodeFormat_Egami_Barcodes_BarcodeModules_System_String_" data-uid="Egami.Barcodes.Barcode.FromModules(Egami.Barcodes.BarcodeFormat,Egami.Barcodes.BarcodeModules,System.String)">
   FromModules(BarcodeFormat, BarcodeModules, string?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L56"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Makes a barcode from modules you already have, with the quiet zone of its format's standard.</p>
@@ -1306,7 +1371,7 @@ Barcode small = Barcode.UpcE("042100005264");</code></pre>
     <dd><p>The symbology the modules are.</p>
 </dd>
     <dt><code>modules</code> <a class="xref" href="Egami.Barcodes.BarcodeModules.html">BarcodeModules</a></dt>
-    <dd><p>The modules: a linear symbol for the linear formats, a 2D grid for the others (a Japan Post barcode is a grid of 6 rows); GS1 DataBar and DataBar Expanded take either, for their stacked forms.</p>
+    <dd><p>The modules: a linear symbol for the linear formats, a 2D grid for the others (a postal barcode is a grid of its bars' rows); GS1 DataBar and DataBar Expanded take either, for their stacked forms.</p>
 </dd>
     <dt><code>humanReadableText</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
     <dd><p>The text to print under the symbol, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
@@ -1456,6 +1521,66 @@ if (!Gs1.TryParse("(01)09501101530004", out _))
 </dd>
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
     <dd><p>There are more than 1000 characters.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_IntelligentMail_" data-uid="Egami.Barcodes.Barcode.IntelligentMail*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_IntelligentMail_System_String_System_String_" data-uid="Egami.Barcodes.Barcode.IntelligentMail(System.String,System.String)">
+  IntelligentMail(string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.IntelligentMail.cs/#L21"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a USPS Intelligent Mail barcode (USPS-B-3200): a 20-digit tracking code (barcode identifier, service type,
+mailer identifier and serial number) and a routing code of 0, 5, 9 or 11 digits (the ZIP Code, ZIP+4 or delivery point),
+encoded in 65 bars with an 11-bit frame check. The modules are a grid of 6 rows (2 for the ascender, 2 for the tracker,
+2 for the descender); draw it at a module size of 1/44 inch for bars 0.136 inch tall at 22 bars per inch, mid USPS's
+ranges.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode IntelligentMail(string tracking, string? routing = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>tracking</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The 20 digits of the tracking code; the second digit is 0 to 4.</p>
+</dd>
+    <dt><code>routing</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The 0, 5, 9 or 11 digits of the routing code, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the tracking code and, after a space, the routing code as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_IntelligentMail_System_String_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// The 20-digit tracking code and the 11-digit routing code (the ZIP Code and its delivery point).
+Barcode mail = Barcode.IntelligentMail("01234567094987654321", "01234567891");
+
+// Drawn at a 1/44 inch module (here in inches): 65 bars at 22 per inch, 0.136 inch tall.
+Path bars = mail.ToPath(moduleSize: 1f / 44);
+Console.WriteLine(mail.HumanReadableText); // 01234567094987654321 01234567891</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The tracking code is not 20 digits or its second digit is above 4, or the routing code is not 0, 5, 9 or 11 digits.</p>
 </dd>
   </dl>
 
@@ -1634,6 +1759,60 @@ Console.WriteLine(mail.HumanReadableText); // 100-0013 1-3-2-503</code></pre>
     <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
     <dd><p>The data does not start with a 7-digit postal code, the address number has a character other than a digit, a hyphen or a
 letter, or it does not fit and <a class="xref" href="Egami.Barcodes.JapanPostOptions.html#Egami_Barcodes_JapanPostOptions_TruncateAddress">TruncateAddress</a> is off.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Egami_Barcodes_Barcode_Kix_" data-uid="Egami.Barcodes.Barcode.Kix*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_Kix_System_String_" data-uid="Egami.Barcodes.Barcode.Kix(System.String)">
+  Kix(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.RoyalMail.cs/#L42"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a KIX code (Klantindex), PostNL's customer code for Dutch mail: RM4SCC's characters without its start and stop
+bars or check character, usually the postcode, the house number and, after an X, its addition, such as
+<code>2500GG30X250</code>. Lowercase letters are made uppercase. The modules are a grid of 8 rows, as for
+<a class="xref" href="Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_RoyalMail_System_String_">RoyalMail(string)</a>; draw it at a module size of 0.6 mm.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode Kix(string text)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The characters.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the characters, uppercase, as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_Kix_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// The postcode, the house number and, after an X, its addition.
+Barcode mail = Barcode.Kix("2500GG30X250");
+Path bars = mail.ToPath(moduleSize: 0.6f);
+Console.WriteLine(mail.HumanReadableText); // 2500GG30X250</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is empty, longer than 1000 characters, or has a character other than a digit or a letter A to Z.</p>
 </dd>
   </dl>
 
@@ -1997,11 +2176,68 @@ using Raster&lt;Gray8&gt; image = link.ToRaster(pixelsPerModule: 4);</code></pre
 
 
 
+  <a id="Egami_Barcodes_Barcode_RoyalMail_" data-uid="Egami.Barcodes.Barcode.RoyalMail*"></a>
+
+  <h3 id="Egami_Barcodes_Barcode_RoyalMail_System_String_" data-uid="Egami.Barcodes.Barcode.RoyalMail(System.String)">
+  RoyalMail(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.RoyalMail.cs/#L20"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a Royal Mail 4-State Customer Code (RM4SCC, the CBC of Royal Mail's mailing services): digits and letters A to Z,
+usually a postcode without its space and the two-character Delivery Point Suffix, such as <code>LU17 8XE2B</code> written
+<code>LU178XE2B</code>. Lowercase letters are made uppercase. A start bar, the characters, a check character and a stop bar
+make the symbol, four bars to a character. The modules are a grid of 8 rows (3 for the ascender, 2 for the tracker, 3
+for the descender); draw it at a module size of 0.6 mm for bars 4.8 mm tall at 21.2 bars per inch, Royal Mail's sizes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Barcode RoyalMail(string text)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The characters.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Egami.Barcodes.Barcode.html">Barcode</a></dt>
+    <dd><p>The barcode, with the characters, uppercase and without the check character, as its human-readable text.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Egami_Barcodes_Barcode_RoyalMail_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// A postcode without its space and the Delivery Point Suffix; the check character and start and stop bars are added.
+Barcode mail = Barcode.RoyalMail("LU178XE2B");
+
+// Drawn at a 0.6 mm module (here in millimetres): bars 4.8 mm tall at 21.2 per inch, in a 2.4 mm quiet zone.
+Path bars = mail.ToPath(moduleSize: 0.6f);
+Console.WriteLine(mail.HumanReadableText); // LU178XE2B</code></pre>
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentexception">ArgumentException</a></dt>
+    <dd><p>The text is empty, longer than 1000 characters, or has a character other than a digit or a letter A to Z.</p>
+</dd>
+  </dl>
+
+
+
   <a id="Egami_Barcodes_Barcode_ToPath_" data-uid="Egami.Barcodes.Barcode.ToPath*"></a>
 
   <h3 id="Egami_Barcodes_Barcode_ToPath_System_Single_Egami_Barcodes_BarcodeDrawOptions_" data-uid="Egami.Barcodes.Barcode.ToPath(System.Single,Egami.Barcodes.BarcodeDrawOptions)">
   ToPath(float, BarcodeDrawOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L98"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns the symbol as one path: a rectangle per run of dark modules in a row, all filled with the nonzero rule. The quiet
@@ -2056,7 +2292,7 @@ string svg = path.ToSvg();</code></pre>
 
   <h3 id="Egami_Barcodes_Barcode_ToRaster_System_Int32_Egami_Barcodes_BarcodeDrawOptions_" data-uid="Egami.Barcodes.Barcode.ToRaster(System.Int32,Egami.Barcodes.BarcodeDrawOptions)">
   ToRaster(int, BarcodeDrawOptions?)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.cs/#L121"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Renders the symbol black on white, each module a square of whole pixels, with the quiet zone around it and, when
@@ -2239,7 +2475,7 @@ has too few zeros to compress.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.Qr.cs/#L7" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Barcodes/Barcode.RoyalMail.cs/#L5" class="edit-link">Edit this page</a>
         </div>
 
 

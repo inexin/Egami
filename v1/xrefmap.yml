@@ -962,6 +962,111 @@ references:
   commentId: N:Egami.Barcodes
   fullName: Egami.Barcodes
   nameWithType: Egami.Barcodes
+- uid: Egami.Barcodes.AustraliaPostEncoding
+  name: AustraliaPostEncoding
+  href: api/Egami.Barcodes.AustraliaPostEncoding.html
+  commentId: T:Egami.Barcodes.AustraliaPostEncoding
+  fullName: Egami.Barcodes.AustraliaPostEncoding
+  nameWithType: AustraliaPostEncoding
+- uid: Egami.Barcodes.AustraliaPostEncoding.C
+  name: C
+  href: api/Egami.Barcodes.AustraliaPostEncoding.html#Egami_Barcodes_AustraliaPostEncoding_C
+  commentId: F:Egami.Barcodes.AustraliaPostEncoding.C
+  fullName: Egami.Barcodes.AustraliaPostEncoding.C
+  nameWithType: AustraliaPostEncoding.C
+- uid: Egami.Barcodes.AustraliaPostEncoding.N
+  name: N
+  href: api/Egami.Barcodes.AustraliaPostEncoding.html#Egami_Barcodes_AustraliaPostEncoding_N
+  commentId: F:Egami.Barcodes.AustraliaPostEncoding.N
+  fullName: Egami.Barcodes.AustraliaPostEncoding.N
+  nameWithType: AustraliaPostEncoding.N
+- uid: Egami.Barcodes.AustraliaPostFormat
+  name: AustraliaPostFormat
+  href: api/Egami.Barcodes.AustraliaPostFormat.html
+  commentId: T:Egami.Barcodes.AustraliaPostFormat
+  fullName: Egami.Barcodes.AustraliaPostFormat
+  nameWithType: AustraliaPostFormat
+- uid: Egami.Barcodes.AustraliaPostFormat.Customer2
+  name: Customer2
+  href: api/Egami.Barcodes.AustraliaPostFormat.html#Egami_Barcodes_AustraliaPostFormat_Customer2
+  commentId: F:Egami.Barcodes.AustraliaPostFormat.Customer2
+  fullName: Egami.Barcodes.AustraliaPostFormat.Customer2
+  nameWithType: AustraliaPostFormat.Customer2
+- uid: Egami.Barcodes.AustraliaPostFormat.Customer3
+  name: Customer3
+  href: api/Egami.Barcodes.AustraliaPostFormat.html#Egami_Barcodes_AustraliaPostFormat_Customer3
+  commentId: F:Egami.Barcodes.AustraliaPostFormat.Customer3
+  fullName: Egami.Barcodes.AustraliaPostFormat.Customer3
+  nameWithType: AustraliaPostFormat.Customer3
+- uid: Egami.Barcodes.AustraliaPostFormat.Redirection
+  name: Redirection
+  href: api/Egami.Barcodes.AustraliaPostFormat.html#Egami_Barcodes_AustraliaPostFormat_Redirection
+  commentId: F:Egami.Barcodes.AustraliaPostFormat.Redirection
+  fullName: Egami.Barcodes.AustraliaPostFormat.Redirection
+  nameWithType: AustraliaPostFormat.Redirection
+- uid: Egami.Barcodes.AustraliaPostFormat.ReplyPaid
+  name: ReplyPaid
+  href: api/Egami.Barcodes.AustraliaPostFormat.html#Egami_Barcodes_AustraliaPostFormat_ReplyPaid
+  commentId: F:Egami.Barcodes.AustraliaPostFormat.ReplyPaid
+  fullName: Egami.Barcodes.AustraliaPostFormat.ReplyPaid
+  nameWithType: AustraliaPostFormat.ReplyPaid
+- uid: Egami.Barcodes.AustraliaPostFormat.Routing
+  name: Routing
+  href: api/Egami.Barcodes.AustraliaPostFormat.html#Egami_Barcodes_AustraliaPostFormat_Routing
+  commentId: F:Egami.Barcodes.AustraliaPostFormat.Routing
+  fullName: Egami.Barcodes.AustraliaPostFormat.Routing
+  nameWithType: AustraliaPostFormat.Routing
+- uid: Egami.Barcodes.AustraliaPostFormat.Standard
+  name: Standard
+  href: api/Egami.Barcodes.AustraliaPostFormat.html#Egami_Barcodes_AustraliaPostFormat_Standard
+  commentId: F:Egami.Barcodes.AustraliaPostFormat.Standard
+  fullName: Egami.Barcodes.AustraliaPostFormat.Standard
+  nameWithType: AustraliaPostFormat.Standard
+- uid: Egami.Barcodes.AustraliaPostOptions
+  name: AustraliaPostOptions
+  href: api/Egami.Barcodes.AustraliaPostOptions.html
+  commentId: T:Egami.Barcodes.AustraliaPostOptions
+  fullName: Egami.Barcodes.AustraliaPostOptions
+  nameWithType: AustraliaPostOptions
+- uid: Egami.Barcodes.AustraliaPostOptions.Default
+  name: Default
+  href: api/Egami.Barcodes.AustraliaPostOptions.html#Egami_Barcodes_AustraliaPostOptions_Default
+  commentId: P:Egami.Barcodes.AustraliaPostOptions.Default
+  fullName: Egami.Barcodes.AustraliaPostOptions.Default
+  nameWithType: AustraliaPostOptions.Default
+- uid: Egami.Barcodes.AustraliaPostOptions.Default*
+  name: Default
+  href: api/Egami.Barcodes.AustraliaPostOptions.html#Egami_Barcodes_AustraliaPostOptions_Default_
+  commentId: Overload:Egami.Barcodes.AustraliaPostOptions.Default
+  isSpec: "True"
+  fullName: Egami.Barcodes.AustraliaPostOptions.Default
+  nameWithType: AustraliaPostOptions.Default
+- uid: Egami.Barcodes.AustraliaPostOptions.Encoding
+  name: Encoding
+  href: api/Egami.Barcodes.AustraliaPostOptions.html#Egami_Barcodes_AustraliaPostOptions_Encoding
+  commentId: P:Egami.Barcodes.AustraliaPostOptions.Encoding
+  fullName: Egami.Barcodes.AustraliaPostOptions.Encoding
+  nameWithType: AustraliaPostOptions.Encoding
+- uid: Egami.Barcodes.AustraliaPostOptions.Encoding*
+  name: Encoding
+  href: api/Egami.Barcodes.AustraliaPostOptions.html#Egami_Barcodes_AustraliaPostOptions_Encoding_
+  commentId: Overload:Egami.Barcodes.AustraliaPostOptions.Encoding
+  isSpec: "True"
+  fullName: Egami.Barcodes.AustraliaPostOptions.Encoding
+  nameWithType: AustraliaPostOptions.Encoding
+- uid: Egami.Barcodes.AustraliaPostOptions.Format
+  name: Format
+  href: api/Egami.Barcodes.AustraliaPostOptions.html#Egami_Barcodes_AustraliaPostOptions_Format
+  commentId: P:Egami.Barcodes.AustraliaPostOptions.Format
+  fullName: Egami.Barcodes.AustraliaPostOptions.Format
+  nameWithType: AustraliaPostOptions.Format
+- uid: Egami.Barcodes.AustraliaPostOptions.Format*
+  name: Format
+  href: api/Egami.Barcodes.AustraliaPostOptions.html#Egami_Barcodes_AustraliaPostOptions_Format_
+  commentId: Overload:Egami.Barcodes.AustraliaPostOptions.Format
+  isSpec: "True"
+  fullName: Egami.Barcodes.AustraliaPostOptions.Format
+  nameWithType: AustraliaPostOptions.Format
 - uid: Egami.Barcodes.AztecOptions
   name: AztecOptions
   href: api/Egami.Barcodes.AztecOptions.html
@@ -1026,6 +1131,22 @@ references:
   commentId: T:Egami.Barcodes.Barcode
   fullName: Egami.Barcodes.Barcode
   nameWithType: Barcode
+- uid: Egami.Barcodes.Barcode.AustraliaPost(System.String,Egami.Barcodes.AustraliaPostOptions)
+  name: AustraliaPost(string, AustraliaPostOptions?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_AustraliaPost_System_String_Egami_Barcodes_AustraliaPostOptions_
+  commentId: M:Egami.Barcodes.Barcode.AustraliaPost(System.String,Egami.Barcodes.AustraliaPostOptions)
+  name.vb: AustraliaPost(String, AustraliaPostOptions)
+  fullName: Egami.Barcodes.Barcode.AustraliaPost(string, Egami.Barcodes.AustraliaPostOptions?)
+  fullName.vb: Egami.Barcodes.Barcode.AustraliaPost(String, Egami.Barcodes.AustraliaPostOptions)
+  nameWithType: Barcode.AustraliaPost(string, AustraliaPostOptions?)
+  nameWithType.vb: Barcode.AustraliaPost(String, AustraliaPostOptions)
+- uid: Egami.Barcodes.Barcode.AustraliaPost*
+  name: AustraliaPost
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_AustraliaPost_
+  commentId: Overload:Egami.Barcodes.Barcode.AustraliaPost
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.AustraliaPost
+  nameWithType: Barcode.AustraliaPost
 - uid: Egami.Barcodes.Barcode.Aztec(System.ReadOnlySpan{System.Byte},Egami.Barcodes.AztecOptions)
   name: Aztec(ReadOnlySpan<byte>, AztecOptions?)
   href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Aztec_System_ReadOnlySpan_System_Byte__Egami_Barcodes_AztecOptions_
@@ -1337,6 +1458,22 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.Barcode.HumanReadableText
   nameWithType: Barcode.HumanReadableText
+- uid: Egami.Barcodes.Barcode.IntelligentMail(System.String,System.String)
+  name: IntelligentMail(string, string?)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_IntelligentMail_System_String_System_String_
+  commentId: M:Egami.Barcodes.Barcode.IntelligentMail(System.String,System.String)
+  name.vb: IntelligentMail(String, String)
+  fullName: Egami.Barcodes.Barcode.IntelligentMail(string, string?)
+  fullName.vb: Egami.Barcodes.Barcode.IntelligentMail(String, String)
+  nameWithType: Barcode.IntelligentMail(string, string?)
+  nameWithType.vb: Barcode.IntelligentMail(String, String)
+- uid: Egami.Barcodes.Barcode.IntelligentMail*
+  name: IntelligentMail
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_IntelligentMail_
+  commentId: Overload:Egami.Barcodes.Barcode.IntelligentMail
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.IntelligentMail
+  nameWithType: Barcode.IntelligentMail
 - uid: Egami.Barcodes.Barcode.Itf(System.String,Egami.Barcodes.ItfOptions)
   name: Itf(string, ItfOptions?)
   href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Itf_System_String_Egami_Barcodes_ItfOptions_
@@ -1385,6 +1522,22 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.Barcode.JapanPost
   nameWithType: Barcode.JapanPost
+- uid: Egami.Barcodes.Barcode.Kix(System.String)
+  name: Kix(string)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Kix_System_String_
+  commentId: M:Egami.Barcodes.Barcode.Kix(System.String)
+  name.vb: Kix(String)
+  fullName: Egami.Barcodes.Barcode.Kix(string)
+  fullName.vb: Egami.Barcodes.Barcode.Kix(String)
+  nameWithType: Barcode.Kix(string)
+  nameWithType.vb: Barcode.Kix(String)
+- uid: Egami.Barcodes.Barcode.Kix*
+  name: Kix
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_Kix_
+  commentId: Overload:Egami.Barcodes.Barcode.Kix
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.Kix
+  nameWithType: Barcode.Kix
 - uid: Egami.Barcodes.Barcode.MicroQr(System.String,Egami.Barcodes.MicroQrOptions)
   name: MicroQr(string, MicroQrOptions?)
   href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_MicroQr_System_String_Egami_Barcodes_MicroQrOptions_
@@ -1486,6 +1639,22 @@ references:
   isSpec: "True"
   fullName: Egami.Barcodes.Barcode.QuietZone
   nameWithType: Barcode.QuietZone
+- uid: Egami.Barcodes.Barcode.RoyalMail(System.String)
+  name: RoyalMail(string)
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_RoyalMail_System_String_
+  commentId: M:Egami.Barcodes.Barcode.RoyalMail(System.String)
+  name.vb: RoyalMail(String)
+  fullName: Egami.Barcodes.Barcode.RoyalMail(string)
+  fullName.vb: Egami.Barcodes.Barcode.RoyalMail(String)
+  nameWithType: Barcode.RoyalMail(string)
+  nameWithType.vb: Barcode.RoyalMail(String)
+- uid: Egami.Barcodes.Barcode.RoyalMail*
+  name: RoyalMail
+  href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_RoyalMail_
+  commentId: Overload:Egami.Barcodes.Barcode.RoyalMail
+  isSpec: "True"
+  fullName: Egami.Barcodes.Barcode.RoyalMail
+  nameWithType: Barcode.RoyalMail
 - uid: Egami.Barcodes.Barcode.ToPath(System.Single,Egami.Barcodes.BarcodeDrawOptions)
   name: ToPath(float, BarcodeDrawOptions?)
   href: api/Egami.Barcodes.Barcode.html#Egami_Barcodes_Barcode_ToPath_System_Single_Egami_Barcodes_BarcodeDrawOptions_
@@ -1620,6 +1789,12 @@ references:
   commentId: F:Egami.Barcodes.BarcodeFormat.All
   fullName: Egami.Barcodes.BarcodeFormat.All
   nameWithType: BarcodeFormat.All
+- uid: Egami.Barcodes.BarcodeFormat.AustraliaPost
+  name: AustraliaPost
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_AustraliaPost
+  commentId: F:Egami.Barcodes.BarcodeFormat.AustraliaPost
+  fullName: Egami.Barcodes.BarcodeFormat.AustraliaPost
+  nameWithType: BarcodeFormat.AustraliaPost
 - uid: Egami.Barcodes.BarcodeFormat.Aztec
   name: Aztec
   href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Aztec
@@ -1686,6 +1861,12 @@ references:
   commentId: F:Egami.Barcodes.BarcodeFormat.Ean8
   fullName: Egami.Barcodes.BarcodeFormat.Ean8
   nameWithType: BarcodeFormat.Ean8
+- uid: Egami.Barcodes.BarcodeFormat.IntelligentMail
+  name: IntelligentMail
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_IntelligentMail
+  commentId: F:Egami.Barcodes.BarcodeFormat.IntelligentMail
+  fullName: Egami.Barcodes.BarcodeFormat.IntelligentMail
+  nameWithType: BarcodeFormat.IntelligentMail
 - uid: Egami.Barcodes.BarcodeFormat.Itf
   name: Itf
   href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Itf
@@ -1698,6 +1879,12 @@ references:
   commentId: F:Egami.Barcodes.BarcodeFormat.JapanPost
   fullName: Egami.Barcodes.BarcodeFormat.JapanPost
   nameWithType: BarcodeFormat.JapanPost
+- uid: Egami.Barcodes.BarcodeFormat.Kix
+  name: Kix
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Kix
+  commentId: F:Egami.Barcodes.BarcodeFormat.Kix
+  fullName: Egami.Barcodes.BarcodeFormat.Kix
+  nameWithType: BarcodeFormat.Kix
 - uid: Egami.Barcodes.BarcodeFormat.Linear
   name: Linear
   href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_Linear
@@ -1740,6 +1927,12 @@ references:
   commentId: F:Egami.Barcodes.BarcodeFormat.Qr
   fullName: Egami.Barcodes.BarcodeFormat.Qr
   nameWithType: BarcodeFormat.Qr
+- uid: Egami.Barcodes.BarcodeFormat.RoyalMail
+  name: RoyalMail
+  href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_RoyalMail
+  commentId: F:Egami.Barcodes.BarcodeFormat.RoyalMail
+  fullName: Egami.Barcodes.BarcodeFormat.RoyalMail
+  nameWithType: BarcodeFormat.RoyalMail
 - uid: Egami.Barcodes.BarcodeFormat.UpcA
   name: UpcA
   href: api/Egami.Barcodes.BarcodeFormat.html#Egami_Barcodes_BarcodeFormat_UpcA

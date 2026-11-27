@@ -393,6 +393,48 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.AustraliaPostEncoding.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.AustraliaPostEncoding.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.AustraliaPostEncoding",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.AustraliaPostEncoding.yml\" sourcestartlinenumber=\"1\">The encoding table of an Australia Post barcode's customer information.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.AustraliaPostFormat.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.AustraliaPostFormat.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.AustraliaPostFormat",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.AustraliaPostFormat.yml\" sourcestartlinenumber=\"1\">An Australia Post 4-State barcode's format, by its Format Control Code (FCC).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Egami.Barcodes.AustraliaPostOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Egami.Barcodes.AustraliaPostOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Egami.Barcodes.AustraliaPostOptions",
+      "Summary": "<p sourcefile=\"api/Egami.Barcodes.AustraliaPostOptions.yml\" sourcestartlinenumber=\"1\">How <xref href=\"Egami.Barcodes.Barcode.AustraliaPost(System.String%2cEgami.Barcodes.AustraliaPostOptions)\" data-throw-if-not-resolved=\"false\"></xref> makes a symbol.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "api/Egami.Barcodes.AztecOptions.yml",
       "output": {
         ".html": {
