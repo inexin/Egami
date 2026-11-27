@@ -24,7 +24,8 @@ draw.
   `FontSubsetter.GlyphsFor(face, codePoints)` gives the glyphs a text needs as the shaper draws it (decompositions, composed forms).
   `SubsetOptions.LayoutClosure` adds the glyphs GSUB can reach and cuts GDEF, GSUB, GPOS, MATH, kern and the vertical
   metrics down to the kept glyphs, so the subset shapes as the full face (a variable face's at its position, baked in);
-  `SubsetOptions.LayoutFeatures` names the features it keeps (default: the shaper's defaults).
+  `SubsetOptions.LayoutFeatures` names the features it keeps (default: the shaper's defaults); `SubsetOptions.Characters`
+  limits the cmap to the text's characters.
 - Egami.Fonts.Substitutes: bundled metric-compatible stand-ins for Arial, Times New Roman, Courier New, Calibri and Cambria.
 
 ## Samples

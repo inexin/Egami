@@ -37,6 +37,9 @@ EPS previews (roadmap 2.3.14).
 - Faster JPEG encoding where AVX2 is missing, Arm64 among them (roadmap 2.4.13): RGB and RGBA to YCbCr, chroma
   downsampling, CMYK inks, the forward DCT and quantization, and the nonzero-coefficient masks have 128-bit SIMD paths; files
   are byte-identical to before; baseline encodes 3.7 to 4.8 times as fast as the scalar path on x64 with AVX2 turned off.
+- Faster operations where AVX2 is missing, Arm64 among them (roadmap 2.4.13): resizing, rotation and transforms, the median,
+  box and Gaussian blurs, convolution, emboss, lighting and drop shadows have 128-bit SIMD paths where they had only 256-bit
+  ones, giving the same pixels as before; 1.3 to 50 times as fast on x64 with AVX2 turned off.
 - Lossy WebP decoding and encoding use SIMD on Arm64 (roadmap 2.4.13): the VP8 loop filter, transforms, prediction and
   distortion kernels and the YUV to RGB upsampling, which had SSE paths only, now run on 128-bit vectors on x86 and Arm64,
   giving the same bytes as before.
@@ -416,6 +419,14 @@ WOFF and WOFF2 writing (roadmap 2.7.7), Embedded OpenType reading and writing, a
   than before: variable faces, legacy kern, vertical metrics and variation sequences) shape exactly as the full face; one
   variable case is left out, as its HVAR and gvar give different advances and the subset follows gvar as fontTools' instancer
   does. A GDEF, GSUB or GPOS table whose major version is not 1, which the shaper reads as empty, is left out of the subset.
+- Layout-closure subsets, third part (roadmap 2.7.9): smaller GSUB and GPOS, as hb-subset prunes them. A feature left with no
+  lookup is left out, except one with parameters (size, stylistic sets, character variants), one whose feature variations
+  keep a lookup and one a shaper asks for by name (frac, numr, dnom, rtlm, vert, kern, vkrn, mark, the Arabic joining forms,
+  rlig, rclt, stch and pref); a language system the same as its script's default after the cut is left out, as the shaper
+  falls back to the default. The new `SubsetOptions.Characters` names the characters a subset is for: the cmap then holds
+  only them and the shaper's stand-ins for them, not every character of a kept glyph (such as U+FB01 for the fi ligature).
+  `FontSubsetter.GlyphsFor` adds the Arabic presentation forms only when the shaper would use them, as for a face with no
+  isol, fina, medi or init feature (it added them for a face without isol, such as Noto Sans Arabic).
 
 - `ParagraphStyle.SpaceShrink` (0 to 1, 0 by default) lets justified lines fit the next word by shrinking their word spaces,
   as Word fills justified paragraphs: by at most that share of the spaces in all, and each space by at most half of what it
@@ -559,7 +570,8 @@ MCP prompts and resources, a guide for coding agents, animated SVG input and fon
   TTC, by `-o`'s extension or `--format`; collections convert to WOFF2 or TTC only. `--no-transform` and `--metadata`.
 - `egami font subset` keeps the characters of `--text`, `--text-file` and `--unicodes` (CSS unicode-range syntax). By default
   it keeps the glyphs the layout tables reach and those tables cut down to the kept glyphs, renumbered from 0 (roadmap 2.7.9),
-  so the subset shapes as the full font; `--retain-gids` keeps the glyph ids and `--no-layout` gives the smallest file.
+  so the subset shapes as the full font; `--retain-gids` keeps the glyph ids and `--no-layout` gives the smallest file. The
+  cmap maps only the asked characters (and the characters the shaper draws in their place), not every character of a kept glyph.
   Variable fonts become static, at `--variation` or the default position. `--no-hinting`, `--name-prefix`, `--face`. It prints the glyphs kept, the missing characters and the sizes, and warns about
   tables it leaves out.
 - `egami font info` describes fonts: names, container, outlines, glyphs, units per em, axes, embedding rights, tables and Unicode

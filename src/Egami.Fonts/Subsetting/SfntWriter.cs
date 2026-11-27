@@ -477,12 +477,13 @@ internal static class SfntWriter
     }
 
     /// <summary>Maps the kept code points of the face to new glyph ids.</summary>
-    public static SortedDictionary<int, ushort> MapCharacters(Typeface face, Dictionary<ushort, ushort> glyphMap)
+    public static SortedDictionary<int, ushort> MapCharacters(Typeface face, Dictionary<ushort, ushort> glyphMap, SubsetOptions options)
     {
         var map = new SortedDictionary<int, ushort>();
+        HashSet<int>? only = options.Characters is { } characters ? FontSubsetter.CharactersFor(face, characters) : null;
         face.Cmap.Enumerate((cp, glyph) =>
         {
-            if (glyph != 0 && glyphMap.TryGetValue((ushort)glyph, out ushort mapped))
+            if (glyph != 0 && (only is null || only.Contains(cp)) && glyphMap.TryGetValue((ushort)glyph, out ushort mapped))
             {
                 map[cp] = mapped;
             }

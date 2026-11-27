@@ -216,16 +216,73 @@ public sealed class SubsetLayoutShapingTests
     }
 
     [Fact]
+    public void FeaturesAndLanguageSystemsLeftEmptyAreLeftOut()
+    {
+        Typeface face = TestFonts.Load("NotoSans-Regular.ttf");
+        FontSubset subset = Subset(face, "Hello", new SubsetOptions { LayoutClosure = true });
+        Typeface written = subset.ToTypeface();
+
+        // Each feature left keeps a lookup, or is one a shaper asks for by name.
+        string[] presence = ["frac", "numr", "dnom", "rtlm", "vert", "kern", "vkrn", "mark", "isol", "fina", "fin2", "fin3", "medi", "med2", "init", "rlig", "rclt", "stch", "pref"];
+        foreach (FontTag tag in (ReadOnlySpan<FontTag>)[new("GSUB"), new("GPOS")])
+        {
+            Assert.True(written.TryGetTable(tag, out ReadOnlyMemory<byte> data));
+            var table = new LayoutTable(data, tag == new FontTag("GPOS"));
+            for (int i = 0; i < table.FeatureCount; i++)
+            {
+                string feature = new FontTag(table.GetFeatureTag(i)).ToString();
+                Assert.True(table.GetFeatureLookups(i, -1).Length > 0 || presence.Contains(feature), $"{tag} {feature}");
+            }
+        }
+
+        // A language system the same as its script's default after the cut is left out: the shaper falls back to the default.
+        Assert.True(written.Layout.Features.Count < face.Layout.Features.Count);
+        int Languages(OpenTypeLayout layout) => layout.Scripts.Sum(s => layout.GetLanguageSystems(s).Count);
+        Assert.True(Languages(written.Layout) < Languages(face.Layout));
+        AssertSame(Shape(face, "Hello"), Shape(written, "Hello"), subset);
+    }
+
+    [Fact]
+    public void ArabicPresentationFormsAreAddedOnlyForFallbackShaping()
+    {
+        // The face shapes Arabic through GSUB (it has init, medi and fina but no isol), so the shaper never draws a presentation
+        // form in place of lam and alef.
+        Typeface face = TestFonts.Load("shaping/NotoSansArabic-Regular.ttf");
+        Assert.True(face.TryGetGlyph(0xFEFB, out ushort ligature) && ligature != 0);
+        IReadOnlyList<ushort> glyphs = FontSubsetter.GlyphsFor(face, [0x0644, 0x0627]);
+        Assert.Equal([.. new[] { face.GetGlyph(0x0644), face.GetGlyph(0x0627) }.Order()], glyphs);
+    }
+
+    [Fact]
+    public void CharactersLimitTheCharacterMap()
+    {
+        Typeface face = TestFonts.Load("NotoSans-Regular.ttf");
+        int[] text = [.. "(office)".Select(c => (int)c)];
+        var options = new SubsetOptions { LayoutClosure = true, Characters = text };
+        FontSubset subset = FontSubsetter.Subset(face, FontSubsetter.GlyphsFor(face, text), options);
+        Typeface written = subset.ToTypeface();
+        Typeface everything = FontSubsetter.Subset(face, FontSubsetter.GlyphsFor(face, text), options with { Characters = null }).ToTypeface();
+
+        // The fi and ffi ligature characters are left out, though their glyphs are kept; the text's characters stay.
+        Assert.True(everything.TryGetGlyph(0xFB01, out ushort fi) && fi != 0);
+        Assert.False(written.TryGetGlyph(0xFB01, out fi) && fi != 0);
+        Assert.All(text, c => Assert.True(written.TryGetGlyph(c, out ushort g) && g != 0));
+        AssertSame(Shape(face, "(office)"), Shape(written, "(office)"), subset);
+        AssertSame(Shape(face, "(office)", direction: TextDirection.RightToLeft), Shape(written, "(office)", direction: TextDirection.RightToLeft), subset);
+    }
+
+    [Fact]
     public void LayoutFeaturesKeepsMoreFeatures()
     {
         Typeface face = TestFonts.Load("SourceSans3-Regular.otf");
         const string text = "Small 0123";
         FontFeature[] features = [FontFeature.SmallCaps, new FontFeature(new FontTag("onum"))];
 
-        // By default the closure and the tables leave smcp and onum out.
+        // By default the closure and the tables leave smcp and onum out, and liga too, as no ligature of the text is left.
         Typeface plain = Subset(face, text, new SubsetOptions { LayoutClosure = true }).ToTypeface();
         Assert.DoesNotContain(new FontTag("smcp"), plain.Layout.Features);
-        Assert.Contains(new FontTag("liga"), plain.Layout.Features);
+        Assert.DoesNotContain(new FontTag("liga"), plain.Layout.Features);
+        Assert.Contains(new FontTag("kern"), plain.Layout.Features);
 
         var options = new SubsetOptions
         {

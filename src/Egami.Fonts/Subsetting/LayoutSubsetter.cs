@@ -78,6 +78,8 @@ internal sealed class LayoutTableWriter
     private readonly VariationBake? _bake;
     private readonly int _variations = -1;
 
+    private static readonly uint s_dflt = new FontTag("dflt").Value;
+
     private LayoutTableWriter(ReadOnlyMemory<byte> data, bool gpos, GlyphRemap glyphs, IReadOnlySet<uint> filter, VariationBake? bake)
     {
         _data = data;
@@ -102,6 +104,7 @@ internal sealed class LayoutTableWriter
     {
         var writer = new LayoutTableWriter(data, gpos, glyphs, filter, bake);
         writer.KeepLookups();
+        writer.PruneFeatures();
 
         // As hb-repacker: first plainly; then with every lookup an extension lookup, each subtable packed on its own.
         return (extension ? null : OtGraph.Pack(writer.Build(extension: false), breadthFirst: true))
@@ -161,6 +164,71 @@ internal sealed class LayoutTableWriter
         foreach (int index in kept)
         {
             _lookupMap[index] = _lookupMap.Count;
+        }
+    }
+
+    /// <summary>
+    /// Features a shaper asks for by presence, so they stay with no lookups left: the fraction, mirroring, vertical, kerning and
+    /// mark checks of the shape plan, the Arabic joining forms (whose absence switches on the fallback shaping), 'rclt' and
+    /// 'stch', and 'pref' as hb-subset keeps it.
+    /// </summary>
+    private static readonly HashSet<uint> s_presenceFeatures =
+    [
+        .. new[] { "frac", "numr", "dnom", "rtlm", "vert", "kern", "vkrn", "mark", "isol", "fina", "fin2", "fin3", "medi", "med2", "init", "rlig", "rclt", "stch", "pref" }
+            .Select(t => new FontTag(t).Value),
+    ];
+
+    /// <summary>
+    /// Leaves out the features with no kept lookup, as hb-subset's prune_features: not one with parameters ('size', stylistic
+    /// sets, character variants), one whose feature variation substitutes keep a lookup, or one a shaper checks is there.
+    /// </summary>
+    private void PruneFeatures()
+    {
+        ReadOnlySpan<byte> d = D;
+        int list = Off16(d, 0, 6);
+        List<int> empty = [];
+        foreach (int index in _features)
+        {
+            uint tag = _table.GetFeatureTag(index);
+            if (s_presenceFeatures.Contains(tag) || _table.GetFeatureLookups(index, _variations).Any(l => _lookupMap.ContainsKey(l)))
+            {
+                continue;
+            }
+
+            int feature = Off16(d, list, list + 2 + (index * 6) + 4);
+            if (_variations >= 0 && _table.FindFeatureSubstitute(_variations, index) is int substitute and not 0)
+            {
+                feature = substitute;
+            }
+
+            if (feature != 0 && ParamsSize(Off16(d, feature, feature), tag) != 0)
+            {
+                continue;
+            }
+
+            if (_bake is null)
+            {
+                SortedSet<int> alternates = [];
+                _table.CollectFeatureVariationLookups(new HashSet<int> { index }, alternates);
+                if (alternates.Any(_lookupMap.ContainsKey))
+                {
+                    continue;
+                }
+            }
+
+            empty.Add(index);
+        }
+
+        if (empty.Count == 0)
+        {
+            return;
+        }
+
+        _features.ExceptWith(empty);
+        _featureMap.Clear();
+        foreach (int feature in _features)
+        {
+            _featureMap[feature] = _featureMap.Count;
         }
     }
 
@@ -255,7 +323,10 @@ internal sealed class LayoutTableWriter
         return graph.Add(header);
     }
 
-    /// <summary>Every script and language system, each with the kept features it lists.</summary>
+    /// <summary>
+    /// Every script, each with the kept features its language systems list. A language system the same as its script's default
+    /// after the cut is left out, as hb-subset's prune_langsys: the shaper falls back to the default one.
+    /// </summary>
     private OtObject ScriptList(OtGraph graph, int list)
     {
         ReadOnlySpan<byte> d = D;
@@ -269,15 +340,36 @@ internal sealed class LayoutTableWriter
             OtObject? written = null;
             if (script != 0)
             {
+                int defaultOffset = Off16(d, script, script);
+                int[]? defaults = defaultOffset == 0 ? null : MapLangSys(defaultOffset);
                 int languages = U16(d, script + 2);
-                OtWriter sw = OtGraph.Writer();
-                sw.Offset16(LangSys(graph, Off16(d, script, script)));
-                sw.U16(languages);
+
+                // A 'dflt' language record comes before the default language system when a language is missing, so none goes.
+                bool prune = true;
+                for (int j = 0; j < languages; j++)
+                {
+                    prune &= Tag(d, script + 4 + (j * 6)) != s_dflt;
+                }
+
+                List<(uint Tag, int[]? LangSys)> kept = [];
                 for (int j = 0; j < languages; j++)
                 {
                     int langRecord = script + 4 + (j * 6);
-                    sw.U32(Tag(d, langRecord));
-                    sw.Offset16(LangSys(graph, Off16(d, script, langRecord + 4)));
+                    int langSys = Off16(d, script, langRecord + 4);
+                    int[]? mapped = langSys == 0 ? null : MapLangSys(langSys);
+                    if (!prune || !SameLangSys(mapped, defaults))
+                    {
+                        kept.Add((Tag(d, langRecord), mapped));
+                    }
+                }
+
+                OtWriter sw = OtGraph.Writer();
+                sw.Offset16(LangSys(graph, defaults));
+                sw.U16(kept.Count);
+                foreach ((uint tag, int[]? langSys) in kept)
+                {
+                    sw.U32(tag);
+                    sw.Offset16(LangSys(graph, langSys));
                 }
 
                 written = graph.Add(sw);
@@ -290,34 +382,51 @@ internal sealed class LayoutTableWriter
         return graph.Add(w);
     }
 
-    private OtObject? LangSys(OtGraph graph, int langSys)
+    /// <summary>A language system's required feature (0xFFFF for none) and then its features, by their new indexes.</summary>
+    private int[] MapLangSys(int langSys)
     {
-        if (langSys == 0)
-        {
-            return null;
-        }
-
         ReadOnlySpan<byte> d = D;
         int required = U16(d, langSys + 2);
         int count = U16(d, langSys + 4);
-        List<int> features = [];
+        List<int> mapped = [_featureMap.TryGetValue(required, out int requiredNow) ? requiredNow : 0xFFFF];
         for (int i = 0; i < count; i++)
         {
             if (_featureMap.TryGetValue(U16(d, langSys + 6 + (i * 2)), out int now))
             {
-                features.Add(now);
+                mapped.Add(now);
             }
+        }
+
+        return [.. mapped];
+    }
+
+    /// <summary>Whether two language systems select the same features; a missing one selects none.</summary>
+    private static bool SameLangSys(int[]? a, int[]? b)
+    {
+        ReadOnlySpan<int> none = [0xFFFF];
+        return (a ?? none).SequenceEqual(b ?? none);
+    }
+
+    private static OtObject? LangSys(OtGraph graph, int[]? mapped)
+    {
+        if (mapped is null)
+        {
+            return null;
         }
 
         OtWriter w = OtGraph.Writer();
         w.U16(0);
-        w.U16(_featureMap.TryGetValue(required, out int requiredNow) ? requiredNow : 0xFFFF);
-        w.U16(features.Count);
-        features.ForEach(w.U16);
+        w.U16(mapped[0]);
+        w.U16(mapped.Length - 1);
+        for (int i = 1; i < mapped.Length; i++)
+        {
+            w.U16(mapped[i]);
+        }
+
         return graph.Add(w);
     }
 
-    /// <summary>The kept features, each with the kept lookups it lists (kept even when none is left, as the shapers ask whether a feature is there).</summary>
+    /// <summary>The kept features, each with the kept lookups it lists.</summary>
     private OtObject FeatureList(OtGraph graph, int list)
     {
         ReadOnlySpan<byte> d = D;
@@ -369,16 +478,26 @@ internal sealed class LayoutTableWriter
             return null;
         }
 
-        ReadOnlySpan<byte> d = D;
+        int size = ParamsSize(at, tag);
+        return size == 0 ? null : LayoutCommon.Blob(graph, D, at, size);
+    }
+
+    /// <summary>The size of the parameters at <paramref name="at"/> of a feature, or 0 when it has none the subset keeps.</summary>
+    private int ParamsSize(int at, uint tag)
+    {
+        if (at == 0)
+        {
+            return 0;
+        }
+
         string name = new FontTag(tag).ToString();
-        int size = name switch
+        return name switch
         {
             "size" => 10,
             _ when name.StartsWith("ss", StringComparison.Ordinal) && int.TryParse(name.AsSpan(2), out int n) && n is >= 1 and <= 20 => 4,
-            _ when name.StartsWith("cv", StringComparison.Ordinal) && int.TryParse(name.AsSpan(2), out int n) && n is >= 1 and <= 99 => 14 + (3 * U16(d, at + 12)),
+            _ when name.StartsWith("cv", StringComparison.Ordinal) && int.TryParse(name.AsSpan(2), out int n) && n is >= 1 and <= 99 => 14 + (3 * U16(D, at + 12)),
             _ => 0,
         };
-        return size == 0 ? null : LayoutCommon.Blob(graph, d, at, size);
     }
 
     /// <summary>
