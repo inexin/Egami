@@ -452,6 +452,28 @@ public class Text
     }
 
     [Fact]
+    public void SubsetCharacters()
+    {
+        Typeface face = Typeface.FromFile(FontFile);
+
+        #region subset-characters
+        // Name the characters too, and the character map holds only them: not U+FB01, though the "fi" ligature glyph it maps is kept.
+        int[] text = [.. "office".Select(c => (int)c)];
+        FontSubset subset = FontSubsetter.Subset(face, FontSubsetter.GlyphsFor(face, text), new SubsetOptions
+        {
+            LayoutClosure = true,
+            Characters = text,
+        });
+        #endregion
+
+        Typeface small = subset.ToTypeface();
+        Assert.True(face.TryGetGlyph(0xFB01, out ushort ligature) && ligature != 0);
+        Assert.True(subset.GlyphMap.ContainsKey(ligature));
+        Assert.False(small.TryGetGlyph(0xFB01, out ushort mapped) && mapped != 0);
+        Assert.True(small.TryGetGlyph('f', out ushort f) && f != 0);
+    }
+
+    [Fact]
     public void SubsetLayoutFeatures()
     {
         Typeface face = Typeface.FromFile(FontFile);

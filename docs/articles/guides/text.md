@@ -307,9 +307,11 @@ the glyph map.
 A PDF needs only the glyphs it draws. A subset that is to be shaped again, such as a web font for a known set of pages, sets
 `SubsetOptions.LayoutClosure`: the kept glyphs gain every glyph GSUB can substitute for them (`OpenTypeLayout.GetClosure`), the
 dotted circle the shaper puts before a mark that starts a run, and the larger variants and assembly parts MATH gives them. GSUB,
-GPOS and GDEF are written cut down to those glyphs, as hb-subset and fontTools write them: every script and language system stays,
-with the kept features; each feature keeps the lookups that still apply to a kept glyph; each lookup keeps the entries for kept
-glyphs, with glyph ids, glyph classes and lookup indexes renumbered. The subset shapes the text as the full face does, with the
+GPOS and GDEF are written cut down to those glyphs, as hb-subset and fontTools write them: every script stays, with the kept
+features; each feature keeps the lookups that still apply to a kept glyph; each lookup keeps the entries for kept glyphs, with
+glyph ids, glyph classes and lookup indexes renumbered. A feature left with no lookup is left out, unless it has parameters (a
+stylistic set's name, say) or a shaper asks whether it is there (such as `frac`, `vert`, `kern`, `mark` and the Arabic joining
+forms), and so is a language system that is the same as its script's default after the cut. The subset shapes the text as the full face does, with the
 new glyph ids, and its layout tables are a fraction of the full face's. Kerning, mark positioning, ligatures and contextual forms
 are all kept.
 
@@ -321,6 +323,12 @@ sets another list; to keep discretionary features such as small capitals, old-st
 list with their tags.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-layout-features)]
+
+The character map maps every character of a kept glyph, such as U+FB01 for an `fi` ligature the closure reached. To map only the
+characters the subset is for, as hb-subset and fontTools' pyftsubset do, pass them as `SubsetOptions.Characters` too: the map
+then holds them and the characters the shaper draws in their place (those `FontSubsetter.GlyphsFor` adds), and is smaller.
+
+[!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-characters)]
 
 The layout closure also cuts down and renumbers what else the shaper and a math layout read: MATH (constants, italics corrections,
 accent attachments, math kerning, and the variants and assemblies of kept glyphs), the legacy `kern` table (format 0 pairs of kept

@@ -94,6 +94,17 @@ public sealed record SubsetOptions
     /// </example>
     public IReadOnlyList<FontTag>? LayoutFeatures { get; init; }
 
+    /// <summary>
+    /// Gets the characters the subset is for, as passed to <see cref="FontSubsetter.GlyphsFor"/>, or <see langword="null"/> (the
+    /// default). When set, the character map holds only them and the characters the shaper draws in their place, as
+    /// <see cref="FontSubsetter.GlyphsFor"/> finds them; otherwise it maps every character whose glyph the subset keeps, such as the
+    /// presentation forms and ligature characters of glyphs that only a layout closure reached.
+    /// </summary>
+    /// <example>
+    /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset-characters"/>
+    /// </example>
+    public IReadOnlyCollection<int>? Characters { get; init; }
+
     /// <summary>Gets whether every GSUB and GPOS lookup is written as an extension lookup, as when 16-bit offsets overflow (for tests).</summary>
     internal bool ExtensionLookups { get; init; }
 
@@ -176,6 +187,38 @@ public static class FontSubsetter
     {
         ArgumentNullException.ThrowIfNull(face);
         ArgumentNullException.ThrowIfNull(codePoints);
+        HashSet<int> codes = CharactersFor(face, codePoints);
+        var glyphs = new SortedSet<ushort>();
+        foreach (int code in codes)
+        {
+            if (face.TryGetGlyph(code, out ushort glyph) && glyph != 0)
+            {
+                glyphs.Add(glyph);
+            }
+        }
+
+        // The glyphs cmap format 14 gives a character followed by a variation selector the characters hold.
+        if (face.Cmap.Variations is { } variations)
+        {
+            foreach (int selector in variations.Records.Select(r => r.Selector).Where(codes.Contains))
+            {
+                foreach (int code in codes)
+                {
+                    int glyph = face.Cmap.MapVariation(code, selector);
+                    if (glyph > 0 && glyph < face.GlyphCount)
+                    {
+                        glyphs.Add((ushort)glyph);
+                    }
+                }
+            }
+        }
+
+        return [.. glyphs];
+    }
+
+    /// <summary>The characters <see cref="GlyphsFor"/> takes the glyphs of: the given ones with the shaper's stand-ins for them.</summary>
+    internal static HashSet<int> CharactersFor(Typeface face, IEnumerable<int> codePoints)
+    {
         var codes = new HashSet<int>();
         var pending = new Queue<int>(codePoints);
         while (pending.TryDequeue(out int code))
@@ -210,32 +253,7 @@ public static class FontSubsetter
             }
         }
 
-        var glyphs = new SortedSet<ushort>();
-        foreach (int code in codes)
-        {
-            if (face.TryGetGlyph(code, out ushort glyph) && glyph != 0)
-            {
-                glyphs.Add(glyph);
-            }
-        }
-
-        // The glyphs cmap format 14 gives a character followed by a variation selector the characters hold.
-        if (face.Cmap.Variations is { } variations)
-        {
-            foreach (int selector in variations.Records.Select(r => r.Selector).Where(codes.Contains))
-            {
-                foreach (int code in codes)
-                {
-                    int glyph = face.Cmap.MapVariation(code, selector);
-                    if (glyph > 0 && glyph < face.GlyphCount)
-                    {
-                        glyphs.Add((ushort)glyph);
-                    }
-                }
-            }
-        }
-
-        return [.. glyphs];
+        return codes;
     }
 
     // The scripts whose shapers decompose every character they can before shaping (no short circuit for mapped characters).
@@ -297,12 +315,31 @@ public static class FontSubsetter
         }
     }
 
+    // As the Arabic shaper, which shapes with presentation forms only when the script it picks has none of the Arabic joining
+    // features: the script 'arab', or the one the shaper falls back to.
     private static bool HasArabicGsub(Typeface face)
     {
         OpenTypeLayout layout = face.Layout;
-        var arab = new FontTag("arab");
-        return layout.HasGsub && layout.Scripts.Contains(arab) && layout.GetFeatures(arab).Contains(new FontTag("isol"));
+        if (!layout.HasGsub)
+        {
+            return false;
+        }
+
+        foreach (FontTag script in s_arabicScripts)
+        {
+            if (layout.Scripts.Contains(script))
+            {
+                IReadOnlyList<FontTag> features = layout.GetFeatures(script);
+                return s_joiningFeatures.Any(features.Contains);
+            }
+        }
+
+        return false;
     }
+
+    private static readonly FontTag[] s_arabicScripts = [new("arab"), new("DFLT"), new("dflt"), new("latn")];
+
+    private static readonly FontTag[] s_joiningFeatures = [new("isol"), new("fina"), new("medi"), new("init")];
 
     // As the Arabic shaper's fallback shaping: each character's presentation forms, and the ligatures of forms the text holds.
     private static void AddArabicPresentationForms(HashSet<int> codes)
