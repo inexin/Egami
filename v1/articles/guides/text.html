@@ -576,16 +576,34 @@ ushort first = subset.GlyphMap[run.Glyphs[0]];
 bool restricted = face.Embedding.HasFlag(FontEmbedding.Restricted);
 </code></pre>
 <p>A PDF needs only the glyphs it draws. A subset that is to be shaped again, such as a web font for a known set of pages, sets
-<code>SubsetOptions.LayoutClosure</code>: the kept glyphs gain every glyph GSUB can substitute for them (<code>OpenTypeLayout.GetClosure</code> with the
-default features), the dotted circle the shaper puts before a mark that starts a run, and the larger variants and assembly parts
-MATH gives them, and GSUB, GPOS, GDEF and MATH are copied unchanged. The copied tables use the old glyph ids, so it needs
-<code>RetainGlyphIds</code>.</p>
-<pre><code class="lang-csharp">// Keep what the text's characters can become (ligatures, contextual forms) and the layout tables, so the subset shapes
-// the text as the full face does; the copied tables use the old glyph ids, so the ids are kept.
+<code>SubsetOptions.LayoutClosure</code>: the kept glyphs gain every glyph GSUB can substitute for them (<code>OpenTypeLayout.GetClosure</code>), the
+dotted circle the shaper puts before a mark that starts a run, and the larger variants and assembly parts MATH gives them. GSUB,
+GPOS and GDEF are written cut down to those glyphs, as hb-subset and fontTools write them: every script and language system stays,
+with the kept features; each feature keeps the lookups that still apply to a kept glyph; each lookup keeps the entries for kept
+glyphs, with glyph ids, glyph classes and lookup indexes renumbered. The subset shapes the text as the full face does, with the
+new glyph ids, and its layout tables are a fraction of the full face's. Kerning, mark positioning, ligatures and contextual forms
+are all kept.</p>
+<pre><code class="lang-csharp">// Keep what the text's characters can become (ligatures, contextual forms) and GSUB, GPOS and GDEF cut down to those
+// glyphs, so the subset shapes the text as the full face does, with the new glyph ids.
 ushort[] glyphs = [.. &quot;office&quot;.Select(c =&gt; face.GetGlyph(c))];
-FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { LayoutClosure = true });
 GlyphRun shaped = new Font(subset.ToTypeface(), 12).Shape(&quot;office&quot;);
 </code></pre>
+<p>The features kept, and followed by the glyph closure, are <code>OpenTypeLayout.DefaultClosureFeatures</code> (hb-subset's default list: the
+ones the shapers apply, such as <code>ccmp</code>, <code>liga</code>, <code>calt</code>, <code>kern</code>, <code>mark</code> and the Arabic and Indic forms). <code>SubsetOptions.LayoutFeatures</code>
+sets another list; to keep discretionary features such as small capitals, old-style figures or a stylistic set, pass the default
+list with their tags.</p>
+<pre><code class="lang-csharp">// The default features, plus small capitals: the subset keeps the small-cap glyphs and the smcp lookups that make them.
+ushort[] glyphs = [.. &quot;Caps&quot;.Select(c =&gt; face.GetGlyph(c))];
+FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions
+{
+    LayoutClosure = true,
+    LayoutFeatures = [.. OpenTypeLayout.DefaultClosureFeatures, new FontTag(&quot;smcp&quot;)],
+});
+</code></pre>
+<p>With <code>RetainGlyphIds</code> the layout tables are cut down in the same way without renumbering, and MATH is copied unchanged; a subset
+with dense ids has no MATH table. A layout table the shaper would leave out as damaged makes <code>Subset</code> throw
+<code>CorruptDataException</code>. GSUB and GPOS lookups that no longer fit 16-bit offsets are written as extension lookups.</p>
 <p>The shaper draws a character the face lacks from its canonical decomposition, and composes a base and a mark to the precomposed
 character when the face has it, so the glyphs of a text are more than those its characters map to. <code>FontSubsetter.GlyphsFor</code>
 gives them all.</p>
@@ -742,10 +760,10 @@ for (int i = 0; i &lt; run.Count; i++)
 ToUnicode and ActualText.</p>
 <h3 id="a-web-font-for-one-page">A web font for one page</h3>
 <pre><code class="lang-csharp">// A web font with only the characters a page uses, shaped as the full face shapes them: subset with the layout closure,
-// then write WOFF2. The subset keeps the glyph ids, so the layout tables need no rewriting.
+// then write WOFF2.
 string page = &quot;Egami: managed imaging for .NET&quot;;
-ushort[] glyphs = [.. page.EnumerateRunes().Select(r =&gt; face.GetGlyph(r.Value)).Distinct()];
-FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+IReadOnlyList&lt;ushort&gt; glyphs = FontSubsetter.GlyphsFor(face, page.EnumerateRunes().Select(r =&gt; r.Value));
+FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { LayoutClosure = true });
 byte[] woff2 = WebFontWriter.Write(subset);
 </code></pre>
 <p>The layout closure keeps the forms the text can take (ligatures, contextual forms), so the browser shapes it as the full face

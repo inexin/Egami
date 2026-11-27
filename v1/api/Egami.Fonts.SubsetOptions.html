@@ -206,7 +206,7 @@ bool restricted = face.Embedding.HasFlag(FontEmbedding.Restricted);</code></pre>
 
   <h3 id="Egami_Fonts_SubsetOptions_DropHinting" data-uid="Egami.Fonts.SubsetOptions.DropHinting">
   DropHinting
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L106"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether TrueType hinting is left out: the fpgm, prep and cvt tables and every glyph's instructions, with maxp's
@@ -374,15 +374,16 @@ FontSubset unhinted = FontSubsetter.Subset(face, glyphs, new SubsetOptions { Dro
 
   <h3 id="Egami_Fonts_SubsetOptions_LayoutClosure" data-uid="Egami.Fonts.SubsetOptions.LayoutClosure">
   LayoutClosure
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L76"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L83"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether the subset can be shaped again as the full face would be: the kept glyphs gain every glyph GSUB can substitute
-for them (<a class="xref" href="Egami.Fonts.Shaping.OpenTypeLayout.html#Egami_Fonts_Shaping_OpenTypeLayout_GetClosure_System_Collections_Generic_IEnumerable_System_UInt16__System_Collections_Generic_IEnumerable_Egami_Fonts_FontTag__">GetClosure(IEnumerable&lt;ushort&gt;, IEnumerable&lt;FontTag&gt;?)</a> with <a class="xref" href="Egami.Fonts.Shaping.OpenTypeLayout.html#Egami_Fonts_Shaping_OpenTypeLayout_DefaultClosureFeatures">DefaultClosureFeatures</a>), the dotted
-circle (U+25CC) the shaper puts before a mark that starts a run, and the larger variants and assembly parts MATH gives them,
-and GSUB, GPOS, GDEF and MATH are copied unchanged. Copied layout tables hold the old glyph ids, so this needs <a class="xref" href="Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_RetainGlyphIds">RetainGlyphIds</a> and
-sfnt output. Defaults to false, as a PDF needs only the glyphs drawn. To follow other features, pass the glyphs of
-<a class="xref" href="Egami.Fonts.Shaping.OpenTypeLayout.html#Egami_Fonts_Shaping_OpenTypeLayout_GetClosure_System_Collections_Generic_IEnumerable_System_UInt16__System_Collections_Generic_IEnumerable_Egami_Fonts_FontTag__">GetClosure(IEnumerable&lt;ushort&gt;, IEnumerable&lt;FontTag&gt;?)</a> with them, and keep the three tables with <a class="xref" href="Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_KeepTables">KeepTables</a>.</p>
+for them (<a class="xref" href="Egami.Fonts.Shaping.OpenTypeLayout.html#Egami_Fonts_Shaping_OpenTypeLayout_GetClosure_System_Collections_Generic_IEnumerable_System_UInt16__System_Collections_Generic_IEnumerable_Egami_Fonts_FontTag__">GetClosure(IEnumerable&lt;ushort&gt;, IEnumerable&lt;FontTag&gt;?)</a> with <a class="xref" href="Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_LayoutFeatures">LayoutFeatures</a>), the dotted circle (U+25CC) the shaper
+puts before a mark that starts a run, and the larger variants and assembly parts MATH gives them; and GDEF, GSUB and GPOS are
+written cut down to the kept glyphs. They keep every script and language system, the features of
+<a class="xref" href="Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_LayoutFeatures">LayoutFeatures</a>, the lookups those features (and their contextual rules) name that still apply to a kept glyph,
+and in each lookup only the entries for kept glyphs, with glyph ids, classes and lookup indexes renumbered. Defaults to
+false, as a PDF needs only the glyphs drawn. Needs sfnt output.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -403,17 +404,66 @@ sfnt output. Defaults to false, as a PDF needs only the glyphs drawn. To follow 
 
 
   <h4 class="section" id="Egami_Fonts_SubsetOptions_LayoutClosure_examples">Examples</h4>
-  <pre><code class="lang-csharp">// Keep what the text's characters can become (ligatures, contextual forms) and the layout tables, so the subset shapes
-// the text as the full face does; the copied tables use the old glyph ids, so the ids are kept.
+  <pre><code class="lang-csharp">// Keep what the text's characters can become (ligatures, contextual forms) and GSUB, GPOS and GDEF cut down to those
+// glyphs, so the subset shapes the text as the full face does, with the new glyph ids.
 ushort[] glyphs = [.. "office".Select(c =&gt; face.GetGlyph(c))];
-FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { LayoutClosure = true });
 GlyphRun shaped = new Font(subset.ToTypeface(), 12).Shape("office");</code></pre>
 
 
   <h4 class="section" id="Egami_Fonts_SubsetOptions_LayoutClosure_remarks">Remarks</h4>
-  <div class="markdown level1 remarks"><p>The tables of a variable face are copied with their variation data, so in the static subset GPOS positions and feature
-variations are those of the default instance, whatever <a class="xref" href="Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_Variations">Variations</a> says.</p>
+  <div class="markdown level1 remarks"><p>
+With <a class="xref" href="Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_RetainGlyphIds">RetainGlyphIds</a> the tables are cut down in the same way, without renumbering, and MATH is copied unchanged;
+with dense ids the subset has no MATH table.
+</p>
+<p>
+The layout tables of a variable face keep their variation data, so in the static subset GPOS positions and feature
+variations are those of the default instance, whatever <a class="xref" href="Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_Variations">Variations</a> says.
+</p>
 </div>
+
+
+
+
+  <a id="Egami_Fonts_SubsetOptions_LayoutFeatures_" data-uid="Egami.Fonts.SubsetOptions.LayoutFeatures*"></a>
+
+  <h3 id="Egami_Fonts_SubsetOptions_LayoutFeatures" data-uid="Egami.Fonts.SubsetOptions.LayoutFeatures">
+  LayoutFeatures
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Fonts/FontSubsetter.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the layout features a <a class="xref" href="Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_LayoutClosure">LayoutClosure</a> subset keeps, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> (the default) for
+<a class="xref" href="Egami.Fonts.Shaping.OpenTypeLayout.html#Egami_Fonts_Shaping_OpenTypeLayout_DefaultClosureFeatures">DefaultClosureFeatures</a>. The glyph closure follows the same features. To keep more, such as
+stylistic sets or old-style figures, pass the default list with the extra tags.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;FontTag&gt;? LayoutFeatures { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Egami.Fonts.FontTag.html">FontTag</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Egami_Fonts_SubsetOptions_LayoutFeatures_examples">Examples</h4>
+  <pre><code class="lang-csharp">// The default features, plus small capitals: the subset keeps the small-cap glyphs and the smcp lookups that make them.
+ushort[] glyphs = [.. "Caps".Select(c =&gt; face.GetGlyph(c))];
+FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions
+{
+    LayoutClosure = true,
+    LayoutFeatures = [.. OpenTypeLayout.DefaultClosureFeatures, new FontTag("smcp")],
+});</code></pre>
+
+
 
 
 

@@ -36188,6 +36188,19 @@ references:
   isSpec: "True"
   fullName: Egami.Fonts.SubsetOptions.LayoutClosure
   nameWithType: SubsetOptions.LayoutClosure
+- uid: Egami.Fonts.SubsetOptions.LayoutFeatures
+  name: LayoutFeatures
+  href: api/Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_LayoutFeatures
+  commentId: P:Egami.Fonts.SubsetOptions.LayoutFeatures
+  fullName: Egami.Fonts.SubsetOptions.LayoutFeatures
+  nameWithType: SubsetOptions.LayoutFeatures
+- uid: Egami.Fonts.SubsetOptions.LayoutFeatures*
+  name: LayoutFeatures
+  href: api/Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_LayoutFeatures_
+  commentId: Overload:Egami.Fonts.SubsetOptions.LayoutFeatures
+  isSpec: "True"
+  fullName: Egami.Fonts.SubsetOptions.LayoutFeatures
+  nameWithType: SubsetOptions.LayoutFeatures
 - uid: Egami.Fonts.SubsetOptions.RetainGlyphIds
   name: RetainGlyphIds
   href: api/Egami.Fonts.SubsetOptions.html#Egami_Fonts_SubsetOptions_RetainGlyphIds

@@ -211,10 +211,10 @@ window). A table zlib cannot shrink is stored uncompressed in WOFF 1.0. The file
 
   <h4 class="section" id="Egami_Fonts_WebFontWriter_Write_Egami_Fonts_FontSubset_Egami_Fonts_WebFontOptions__examples">Examples</h4>
   <pre><code class="lang-csharp">// A web font with only the characters a page uses, shaped as the full face shapes them: subset with the layout closure,
-// then write WOFF2. The subset keeps the glyph ids, so the layout tables need no rewriting.
+// then write WOFF2.
 string page = "Egami: managed imaging for .NET";
-ushort[] glyphs = [.. page.EnumerateRunes().Select(r =&gt; face.GetGlyph(r.Value)).Distinct()];
-FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { RetainGlyphIds = true, LayoutClosure = true });
+IReadOnlyList&lt;ushort&gt; glyphs = FontSubsetter.GlyphsFor(face, page.EnumerateRunes().Select(r =&gt; r.Value));
+FontSubset subset = FontSubsetter.Subset(face, glyphs, new SubsetOptions { LayoutClosure = true });
 byte[] woff2 = WebFontWriter.Write(subset);</code></pre>
 
 
