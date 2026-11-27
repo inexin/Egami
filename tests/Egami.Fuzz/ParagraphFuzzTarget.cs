@@ -9,7 +9,8 @@ namespace Egami.Fuzz;
 
 /// <summary>
 /// The paragraph fuzz target (Phase 2.8.2): the first eight bytes pick the paragraph's options (alignment, justification, line
-/// breaking, fill, writing mode, line limits, width, spacing, spans), the rest is UTF-16 text, U+FFFC standing for placeholders.
+/// breaking, fill, writing mode, line limits, width, spacing, spans, ruby, emphasis marks and tate-chu-yoko), the rest is UTF-16
+/// text, U+FFFC standing for placeholders.
 /// The paragraph is laid out, flowed line by line at varying widths, hit tested, caret-walked and selected, its decorations and
 /// outlines taken, and its break opportunities enumerated; every result must be in range and finite. Egami.Fonts.Tests compiles
 /// this file too and feeds it its robustness cases and random inputs.
@@ -66,6 +67,7 @@ internal static class ParagraphFuzzTarget
             Ellipsis = (seed & 0x40) != 0 ? "\u2026" : (seed & 0x20) != 0 ? "..." : null,
             Hyphen = (tabs & 1) != 0 ? "-" : "\u2010",
             TabStops = (tabs & 2) != 0 ? [new TabStop(tabs, (TabAlignment)((tabs >> 2) % 4)), new TabStop(tabs * 2.5f, TabAlignment.Decimal)] : null,
+            Ruby = new RubyOptions { Overhang = (RubyOverhang)((seed >> 1) & 1), Merge = (RubyMerge)(tabs % 3), SizeRatio = 0.25f + ((lines & 3) / 4f) },
         };
 
         Paragraph paragraph = Paragraph.Create(Rich(text, seed, families), style);
@@ -89,6 +91,8 @@ internal static class ParagraphFuzzTarget
             new() { BaselineShift = random.Next(-20, 20), Background = new Rgba8(255, 255, 0, 255), LetterSpacing = random.Next(-5, 10) },
             new() { FontFamilies = [families[^1]], Shadows = [new TextShadow(new Vector2(1, 2), random.Next(4), default)], Decoration = new TextDecoration { Lines = TextDecorationLines.LineThrough } },
             new() { LineHeight = LineHeight.Absolute(random.Next(60)), Language = "ja" },
+            new() { Emphasis = new TextEmphasis { Mark = (EmphasisMark)random.Next(6), Filled = random.Next(2) == 0, Position = (EmphasisPosition)random.Next(2) } },
+            new() { CombineUpright = random.Next(3) switch { 0 => TextCombine.All, 1 => TextCombine.Digits(2 + random.Next(3)), _ => TextCombine.None } },
         ];
         int[] cuts = [.. Enumerable.Range(0, random.Next(5)).Select(_ => random.Next(text.Length + 1)).Order()];
         RichTextBuilder builder = new();
@@ -120,6 +124,28 @@ internal static class ParagraphFuzzTarget
             }
 
             start = end;
+        }
+
+        // Ruby over a few seeded bases, in order, never splitting a surrogate pair.
+        string[] readings = ["\u304B\u3093", "\u3068\u3046\u304D\u3087\u3046", "a", "\u0645\u0631\u062D\u0628\u0627", "\uD83D\uDE00x"];
+        int at = 0;
+        for (int i = random.Next(4); i > 0 && at < text.Length; i--)
+        {
+            int first = at + random.Next(Math.Min(8, text.Length - at));
+            int last = Math.Min(text.Length, first + 1 + random.Next(4));
+            first += first > 0 && char.IsLowSurrogate(text[first]) && char.IsHighSurrogate(text[first - 1]) ? 1 : 0;
+            last += last < text.Length && char.IsLowSurrogate(text[last]) && char.IsHighSurrogate(text[last - 1]) ? 1 : 0;
+            if (first >= last || last > text.Length)
+            {
+                break;
+            }
+
+            builder.AddRuby(new RubyAnnotation(first, last - first, readings[random.Next(readings.Length)])
+            {
+                Position = (RubyPosition)random.Next(3),
+                Align = (RubyAlign)random.Next(5),
+            });
+            at = last;
         }
 
         return builder.ToRichText();
