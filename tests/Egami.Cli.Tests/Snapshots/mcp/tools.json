@@ -2318,7 +2318,7 @@
     {
       "name": "font_subset",
       "title": "egami font subset",
-      "description": "Subset fonts to the characters a page uses and write WOFF2 (the default), WOFF, TTF or OTF. By default the subset keeps the layout tables and every glyph they can substitute, so it shapes the text as the full font does; prints the glyphs kept, the characters the font lacks and the sizes.",
+      "description": "Subset fonts to the characters a page uses and write WOFF2 (the default), WOFF, TTF or OTF. By default the subset keeps every glyph the layout tables can substitute and those tables cut down to the kept glyphs, renumbered from 0, so it shapes the text as the full font does; prints the glyphs kept, the characters the font lacks and the sizes.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -2360,11 +2360,11 @@
           },
           "no_layout": {
             "type": "boolean",
-            "description": "Keep only the glyphs the characters map to, without GSUB, GPOS, GDEF and MATH, renumbered densely: the smallest file, shaped without ligatures, kerning or contextual forms."
+            "description": "Keep only the glyphs the characters map to, without GSUB, GPOS, GDEF and MATH: the smallest file, shaped without ligatures, kerning or contextual forms."
           },
           "retain_gids": {
             "type": "boolean",
-            "description": "Keep every glyph's id, with empty glyphs in the gaps (the default unless --no-layout)."
+            "description": "Keep every glyph's id, with empty glyphs in the gaps, for a tool that refers to glyphs by id; by default the kept glyphs are renumbered from 0."
           },
           "variation": {
             "type": "string",
