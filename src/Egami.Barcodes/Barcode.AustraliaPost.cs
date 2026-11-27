@@ -1,4 +1,5 @@
 using System.Globalization;
+
 using Egami.Barcodes.Postal;
 
 namespace Egami.Barcodes;
