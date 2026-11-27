@@ -3,7 +3,7 @@
 All notable changes to Egami are listed here. Egami follows [Semantic Versioning](https://semver.org): from 1.0, public API
 changes that break code come only in a new major version.
 
-## Egami train 1.6.0-preview.1, Egami.Metafiles and Egami.Barcodes 1.1.0-preview.1, Egami.SystemDrawing 1.0.0-preview.4 (unreleased)
+## Egami train 1.6.0-preview.1, Egami.Metafiles and Egami.Barcodes 1.1.0-preview.1, Egami.SystemDrawing 1.0.0-preview.4 (2026-11-27)
 
 A preview of the next release train (Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic,
 Egami.Formats.Extended and Egami.Cli), so the work since 1.5.0 can be tried before 1.6.0, with previews of Egami.Metafiles
@@ -26,7 +26,7 @@ operations on processors without AVX2, Arm64 among them.
 - Egami.Video, its codec packages and Egami.Fonts.Substitutes are not part of this preview. Egami.Css and Egami.Cli.Host
   stay unlisted on NuGet.
 
-## Egami 1.6.0-preview.1 (unreleased)
+## Egami 1.6.0-preview.1 (2026-11-27)
 
 EPS previews, faster JPEG XL, and SIMD paths for processors without AVX2.
 
@@ -72,7 +72,7 @@ EPS previews, faster JPEG XL, and SIMD paths for processors without AVX2.
   from `Raster.Probe` and `Raster.Load`; such entries now count as missing. An EXIF ColorSpace tag holding text no longer throws
   from `RasterMetadata.GetColorProfile`.
 
-## Egami.Drawing 1.6.0-preview.1 (unreleased)
+## Egami.Drawing 1.6.0-preview.1 (2026-11-27)
 
 - `Canvas.DrawBevel` draws a `Bevel` over a filled shape: DrawingML's twelve bevel profiles (`BevelProfile`) with a width and
   height, eleven preset materials (`BevelMaterial`) and a `BevelLight` (angle, elevation, intensity; `FromDirection` takes a
@@ -90,7 +90,7 @@ EPS previews, faster JPEG XL, and SIMD paths for processors without AVX2.
   text's paint; paths, pictures and SVG output hold them. Tate-chu-yoko units draw upright, squashed across the line into
   their em when they are too wide.
 
-## Egami.Metafiles 1.1.0-preview.1 (unreleased)
+## Egami.Metafiles 1.1.0-preview.1 (2026-11-27)
 
 EMF writing: `EmfCanvas` draws Egami's `Canvas` calls into EMF+, EMF or both, checked against GDI, GDI+ and Office.
 
@@ -143,7 +143,7 @@ EMF writing: `EmfCanvas` draws Egami's `Canvas` calls into EMF+, EMF or both, ch
   uses their own colors. It reads GDI+'s winding flag on paths, and draws images as GDI+ does without
   `PixelOffsetModeHalf`: half a pixel back, inside their rectangle.
 
-## Egami.SystemDrawing 1.0.0-preview.4 (unreleased)
+## Egami.SystemDrawing 1.0.0-preview.4 (2026-11-27)
 
 Metafiles are recorded.
 
@@ -165,7 +165,7 @@ Metafiles are recorded.
 - Recorded images sample as GDI+ samples them without `PixelOffsetModeHalf`, with pixel centers on whole coordinates and
   edges fading beyond the image; the GDI copy keeps the image as it is, as GDI+ writes it. GDI+ plays nine recorded test
   scenes within a mean of 0.17 levels of its own recordings of the same calls.
-## Egami.Svg and Egami.Css 1.6.0-preview.1 (unreleased)
+## Egami.Svg and Egami.Css 1.6.0-preview.1 (2026-11-27)
 
 SVG animation: SMIL and CSS animations drawn at any moment, as frames, animated rasters, frozen static copies
 and, through Egami.Video, video. Additive to 1.5.0: without a time every document draws as before.
@@ -276,12 +276,12 @@ Egami.Css:
   declaration and below every important one. A style sheet given the animation origin is refused. Origins are not in
   cascade order as numbers: an important declaration of any origin wins over the animation origin.
 
-## Egami.Heic 1.6.0-preview.1 (unreleased)
+## Egami.Heic 1.6.0-preview.1 (2026-11-27)
 
 - A cancelled HEIC save stops within a CTB row of the image it is coding, also on one thread, where it went on to the end
   of the image. Output is unchanged.
 
-## Egami.Fonts 1.6.0-preview.1 (unreleased)
+## Egami.Fonts 1.6.0-preview.1 (2026-11-27)
 
 WOFF and WOFF2 writing, Embedded OpenType reading and writing, font subsets that keep kerning and ligatures, line breaking
 by dictionary for Thai, Lao, Khmer and Myanmar, Word-style justified lines, ruby, emphasis marks and tate-chu-yoko.
@@ -417,7 +417,7 @@ East Asian annotations:
   font has them, squashed to one em across the line when still wider, and breaks, justifies and takes an emphasis mark as
   one ideograph.
 
-## Egami.Barcodes 1.1.0-preview.1 (unreleased)
+## Egami.Barcodes 1.1.0-preview.1 (2026-11-27)
 
 Code 93, Codabar, GS1 DataBar, Micro QR Code and postal barcodes (Japan Post, Intelligent Mail, Royal Mail, KIX and Australia
 Post), and faster linear reading.
@@ -474,7 +474,7 @@ Post), and faster linear reading.
   0.64 for Code 128, 0.68 to 0.50 for Code 39, 1.57 to 1.15 for ITF and 0.93 to 0.67 for EAN and UPC; a default read of the
   blackbox and zint test images takes 0.95 of the time it did.
 
-## Egami.Cli 1.6.0-preview.1 (unreleased)
+## Egami.Cli 1.6.0-preview.1 (2026-11-27)
 
 MCP prompts and resources, a guide for coding agents, animated SVG input and font commands. Additive to 1.5.0.
 
