@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
+using Egami.Simd;
+
 namespace Egami.Formats.Jpeg;
 
 /// <summary>
@@ -39,6 +41,10 @@ internal static class JpegIdct
         if (Avx2.IsSupported)
         {
             TransformAvx2(coefficients, quant, output, stride);
+        }
+        else if (Simd128.IsSupported)
+        {
+            Transform128(coefficients, quant, output, stride);
         }
         else
         {
@@ -199,6 +205,158 @@ internal static class JpegIdct
         Unsafe.WriteUnaligned(ref Unsafe.Add(ref o, 5 * stride), bottom.GetElement(1));
         Unsafe.WriteUnaligned(ref Unsafe.Add(ref o, 6 * stride), bottom.GetElement(2));
         Unsafe.WriteUnaligned(ref Unsafe.Add(ref o, 7 * stride), bottom.GetElement(3));
+    }
+
+    /// <summary>
+    /// The transform in 128-bit vectors, for CPUs without AVX2 (Arm64 among them): the AVX2 transform's operations on four
+    /// columns or rows at a time, with the block split into a left and a right half, so it too equals the scalar transform for
+    /// every input.
+    /// </summary>
+    [SkipLocalsInit]
+    internal static void Transform128(ReadOnlySpan<short> coefficients, ReadOnlySpan<ushort> quant, Span<byte> output, int stride)
+    {
+        coefficients = coefficients[..64];
+        quant = quant[..64];
+        _ = output.Slice(7 * stride, 8);
+        ref short c = ref MemoryMarshal.GetReference(coefficients);
+        ref ushort q = ref MemoryMarshal.GetReference(quant);
+
+        // Row v of dequantized coefficients: columns 0-3 in lv, 4-7 in hv.
+        Dequantize(ref c, ref q, 0, out Vector128<int> l0, out Vector128<int> h0);
+        Dequantize(ref c, ref q, 8, out Vector128<int> l1, out Vector128<int> h1);
+        Dequantize(ref c, ref q, 16, out Vector128<int> l2, out Vector128<int> h2);
+        Dequantize(ref c, ref q, 24, out Vector128<int> l3, out Vector128<int> h3);
+        Dequantize(ref c, ref q, 32, out Vector128<int> l4, out Vector128<int> h4);
+        Dequantize(ref c, ref q, 40, out Vector128<int> l5, out Vector128<int> h5);
+        Dequantize(ref c, ref q, 48, out Vector128<int> l6, out Vector128<int> h6);
+        Dequantize(ref c, ref q, 56, out Vector128<int> l7, out Vector128<int> h7);
+        Columns(ref l0, ref l1, ref l2, ref l3, ref l4, ref l5, ref l6, ref l7);
+        Columns(ref h0, ref h1, ref h2, ref h3, ref h4, ref h5, ref h6, ref h7);
+
+        // Transposing the four 4×4 quarters leaves frequencies 0-3 of rows 0-3 in l0-l3 and 4-7 in h0-h3 (rows 4-7 in l4-h7),
+        // one row per lane.
+        Simd128.Transpose(ref l0, ref l1, ref l2, ref l3);
+        Simd128.Transpose(ref l4, ref l5, ref l6, ref l7);
+        Simd128.Transpose(ref h0, ref h1, ref h2, ref h3);
+        Simd128.Transpose(ref h4, ref h5, ref h6, ref h7);
+        Rows(ref l0, ref l1, ref l2, ref l3, ref h0, ref h1, ref h2, ref h3);
+        Rows(ref l4, ref l5, ref l6, ref l7, ref h4, ref h5, ref h6, ref h7);
+
+        // Samples 0-3 and 4-7 of each row, by lane; transpose back and pack with saturation, which is the clamp to 0..255.
+        Simd128.Transpose(ref l0, ref l1, ref l2, ref l3);
+        Simd128.Transpose(ref h0, ref h1, ref h2, ref h3);
+        Simd128.Transpose(ref l4, ref l5, ref l6, ref l7);
+        Simd128.Transpose(ref h4, ref h5, ref h6, ref h7);
+        ref byte o = ref MemoryMarshal.GetReference(output);
+        StoreRows(ref o, 0, stride, l0, h0, l1, h1);
+        StoreRows(ref o, 2 * stride, stride, l2, h2, l3, h3);
+        StoreRows(ref o, 4 * stride, stride, l4, h4, l5, h5);
+        StoreRows(ref o, 6 * stride, stride, l6, h6, l7, h7);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Dequantize(ref short coefficients, ref ushort quant, int at, out Vector128<int> low, out Vector128<int> high)
+    {
+        Vector128<short> values = Vector128.LoadUnsafe(ref coefficients, (nuint)at);
+        Vector128<ushort> scale = Vector128.LoadUnsafe(ref quant, (nuint)at);
+        low = Vector128.WidenLower(values) * Vector128.WidenLower(scale).AsInt32();
+        high = Vector128.WidenUpper(values) * Vector128.WidenUpper(scale).AsInt32();
+    }
+
+    /// <summary>Pass 1 on four columns, with the scalar shortcut for a column with only its DC term as a lane select.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Columns(
+        ref Vector128<int> r0, ref Vector128<int> r1, ref Vector128<int> r2, ref Vector128<int> r3,
+        ref Vector128<int> r4, ref Vector128<int> r5, ref Vector128<int> r6, ref Vector128<int> r7)
+    {
+        Vector128<int> flat = Vector128.Equals(r1 | r2 | r3 | r4 | r5 | r6 | r7, Vector128<int>.Zero);
+        Vector128<int> dc = r0 << Pass1Bits;
+        Butterfly(r0, r1, r2, r3, r4, r5, r6, r7, out Vector128<int> o0, out Vector128<int> o1, out Vector128<int> o2, out Vector128<int> o3, out Vector128<int> o4, out Vector128<int> o5, out Vector128<int> o6, out Vector128<int> o7);
+        Vector128<int> round = Vector128.Create(1 << (ConstBits - Pass1Bits - 1));
+        const int Shift1 = ConstBits - Pass1Bits;
+        r0 = Vector128.ConditionalSelect(flat, dc, (o0 + round) >> Shift1);
+        r1 = Vector128.ConditionalSelect(flat, dc, (o1 + round) >> Shift1);
+        r2 = Vector128.ConditionalSelect(flat, dc, (o2 + round) >> Shift1);
+        r3 = Vector128.ConditionalSelect(flat, dc, (o3 + round) >> Shift1);
+        r4 = Vector128.ConditionalSelect(flat, dc, (o4 + round) >> Shift1);
+        r5 = Vector128.ConditionalSelect(flat, dc, (o5 + round) >> Shift1);
+        r6 = Vector128.ConditionalSelect(flat, dc, (o6 + round) >> Shift1);
+        r7 = Vector128.ConditionalSelect(flat, dc, (o7 + round) >> Shift1);
+    }
+
+    /// <summary>Pass 2 on four rows, level-shifted, with the shortcut for a row with only its DC term.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Rows(
+        ref Vector128<int> r0, ref Vector128<int> r1, ref Vector128<int> r2, ref Vector128<int> r3,
+        ref Vector128<int> r4, ref Vector128<int> r5, ref Vector128<int> r6, ref Vector128<int> r7)
+    {
+        Vector128<int> flat = Vector128.Equals(r1 | r2 | r3 | r4 | r5 | r6 | r7, Vector128<int>.Zero);
+        Vector128<int> center = Vector128.Create(128);
+        Vector128<int> rounded = r0 + Vector128.Create(1 << (Pass1Bits + 2));
+        Vector128<int> dc = (rounded >> (Pass1Bits + 3)) + center;
+        Butterfly(rounded, r1, r2, r3, r4, r5, r6, r7, out Vector128<int> o0, out Vector128<int> o1, out Vector128<int> o2, out Vector128<int> o3, out Vector128<int> o4, out Vector128<int> o5, out Vector128<int> o6, out Vector128<int> o7);
+        const int Shift2 = ConstBits + Pass1Bits + 3;
+        r0 = Vector128.ConditionalSelect(flat, dc, (o0 >> Shift2) + center);
+        r1 = Vector128.ConditionalSelect(flat, dc, (o1 >> Shift2) + center);
+        r2 = Vector128.ConditionalSelect(flat, dc, (o2 >> Shift2) + center);
+        r3 = Vector128.ConditionalSelect(flat, dc, (o3 >> Shift2) + center);
+        r4 = Vector128.ConditionalSelect(flat, dc, (o4 >> Shift2) + center);
+        r5 = Vector128.ConditionalSelect(flat, dc, (o5 >> Shift2) + center);
+        r6 = Vector128.ConditionalSelect(flat, dc, (o6 >> Shift2) + center);
+        r7 = Vector128.ConditionalSelect(flat, dc, (o7 >> Shift2) + center);
+    }
+
+    /// <summary>Writes two output rows, each from its samples 0-3 and 4-7, clamped to bytes.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void StoreRows(ref byte output, int at, int stride, Vector128<int> a0, Vector128<int> a1, Vector128<int> b0, Vector128<int> b1)
+    {
+        Vector128<ulong> rows = Simd128.PackUnsignedSaturate(a0, a1, b0, b1).AsUInt64();
+        Unsafe.WriteUnaligned(ref Unsafe.Add(ref output, at), rows.GetElement(0));
+        Unsafe.WriteUnaligned(ref Unsafe.Add(ref output, at + stride), rows.GetElement(1));
+    }
+
+    /// <summary>The scalar 1D pass on four lanes, operation for operation.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void Butterfly(
+        Vector128<int> s0, Vector128<int> s1, Vector128<int> s2, Vector128<int> s3, Vector128<int> s4, Vector128<int> s5, Vector128<int> s6, Vector128<int> s7,
+        out Vector128<int> o0, out Vector128<int> o1, out Vector128<int> o2, out Vector128<int> o3, out Vector128<int> o4, out Vector128<int> o5, out Vector128<int> o6, out Vector128<int> o7)
+    {
+        Vector128<int> z1 = (s2 + s6) * Vector128.Create(Fix0_541196100);
+        Vector128<int> tmp2 = z1 + (s6 * Vector128.Create(-Fix1_847759065));
+        Vector128<int> tmp3 = z1 + (s2 * Vector128.Create(Fix0_765366865));
+        Vector128<int> tmp0 = (s0 + s4) << ConstBits;
+        Vector128<int> tmp1 = (s0 - s4) << ConstBits;
+        Vector128<int> tmp10 = tmp0 + tmp3;
+        Vector128<int> tmp13 = tmp0 - tmp3;
+        Vector128<int> tmp11 = tmp1 + tmp2;
+        Vector128<int> tmp12 = tmp1 - tmp2;
+
+        Vector128<int> b1 = s7 + s1;
+        Vector128<int> b2 = s5 + s3;
+        Vector128<int> b3 = s7 + s3;
+        Vector128<int> b4 = s5 + s1;
+        Vector128<int> b5 = (b3 + b4) * Vector128.Create(Fix1_175875602);
+        Vector128<int> a0 = s7 * Vector128.Create(Fix0_298631336);
+        Vector128<int> a1 = s5 * Vector128.Create(Fix2_053119869);
+        Vector128<int> a2 = s3 * Vector128.Create(Fix3_072711026);
+        Vector128<int> a3 = s1 * Vector128.Create(Fix1_501321110);
+        b1 *= Vector128.Create(-Fix0_899976223);
+        b2 *= Vector128.Create(-Fix2_562915447);
+        b3 = (b3 * Vector128.Create(-Fix1_961570560)) + b5;
+        b4 = (b4 * Vector128.Create(-Fix0_390180644)) + b5;
+        a0 += b1 + b3;
+        a1 += b2 + b4;
+        a2 += b2 + b3;
+        a3 += b1 + b4;
+
+        o0 = tmp10 + a3;
+        o7 = tmp10 - a3;
+        o1 = tmp11 + a2;
+        o6 = tmp11 - a2;
+        o2 = tmp12 + a1;
+        o5 = tmp12 - a1;
+        o3 = tmp13 + a0;
+        o4 = tmp13 - a0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
