@@ -281,6 +281,21 @@ Egami.Css:
 - A cancelled HEIC save stops within a CTB row of the image it is coding, also on one thread, where it went on to the end
   of the image. Output is unchanged.
 
+## Egami.Fonts 1.6.0 (unreleased)
+
+Smaller font subsets (CFF2 instances and unhinted CFF).
+
+- A variable CFF2 face's static subset rewrites each charstring operator by operator instead of drawing it again: the blends
+  resolved at the position and rounded (every point within half a unit), vsindex dropped, the stems and hint masks kept, the
+  width against new nominal and default widths, and the shortest operators (hlineto, vhcurveto and the like). Subroutines
+  stay, renumbered by use, when every call writes the same charstring; the others are inlined. The Private DICTs' blends are
+  resolved too. Source Sans 3 and Source Serif 4 subsets for a Latin page come out at about half their 1.6.0-preview.1 size,
+  within 0.3 % of pyftsubset's subsets of fontTools' instances, and smaller for the full fonts.
+- `SubsetOptions.DropHinting` now drops CFF and CFF2 hints too (stems, hint masks, blue zones, stem widths and snaps), with
+  the outlines unchanged; `egami font subset --no-hinting` follows.
+- A variable face's static subset writes the PairPos format 2 subtables of a GPOS lookup as one where their first glyphs
+  don't overlap and the matrix stays within 16-bit offsets, as fontTools does.
+
 ## Egami.Fonts 1.6.0-preview.1 (2026-11-27)
 
 WOFF and WOFF2 writing, Embedded OpenType reading and writing, font subsets that keep kerning and ligatures, line breaking

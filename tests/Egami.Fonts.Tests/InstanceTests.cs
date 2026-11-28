@@ -71,14 +71,8 @@ public class InstanceTests
             var actual = new TextSink();
             face.GetGlyphOutline((ushort)g, expected);
             instance.GetGlyphOutline(now, actual);
-            Assert.Equal(expected.Verbs, actual.Verbs);
-            for (int k = 0; k < expected.Ops.Count; k++)
-            {
-                for (int c = 0; c < expected.Ops[k].Length; c++)
-                {
-                    Assert.True(Math.Abs(expected.Ops[k][c] - actual.Ops[k][c]) <= 1 / 64.0, $"glyph {g} verb {k}: {actual.Ops[k][c]}, expected {expected.Ops[k][c]}");
-                }
-            }
+            // Blends resolve to whole units: each point rounded where it lies, so within half a unit of the position.
+            CffCharStringWriterTests.AssertSameOutline(expected, actual, 0.5 + 1e-3, $"{file} glyph {g}");
 
             Assert.Equal(MathF.Floor(face.GetAdvance((ushort)g) + 0.5f), instance.GetAdvance(now));
         }

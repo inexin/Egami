@@ -125,9 +125,11 @@ internal sealed class CffDict
     /// <summary>
     /// Reads a DICT. In CFF2 (<paramref name="regionCount"/> given) the operators vsindex (22), blend (23) and vstore (24) exist; a
     /// blend keeps its default values, and <paramref name="regionCount"/> says how many deltas each value has for a vsindex.
-    /// Reserved one-byte operators (22 to 27 in CFF, 25 to 27 in CFF2, 31 and 255) are skipped with their operands.
+    /// Reserved one-byte operators (22 to 27 in CFF, 25 to 27 in CFF2, 31 and 255) are skipped with their operands. With
+    /// <paramref name="weights"/> (each region's scalar for a vsindex, in the order of its deltas) a blend resolves to its values
+    /// at that position instead.
     /// </summary>
-    public static CffDict Read(ReadOnlySpan<byte> data, long offset, Func<int, int>? regionCount = null)
+    public static CffDict Read(ReadOnlySpan<byte> data, long offset, Func<int, int>? regionCount = null, Func<int, float[]>? weights = null)
     {
         var dict = new CffDict();
         var operands = new List<double>();
@@ -170,6 +172,21 @@ internal sealed class CffDict
                     }
 
                     int start = operands.Count - (int)used;
+                    if (weights is not null && k > 0)
+                    {
+                        float[] w = weights(vsindex);
+                        for (int v = 0; v < n; v++)
+                        {
+                            double value = operands[start + v];
+                            for (int j = 0; j < k && j < w.Length; j++)
+                            {
+                                value += operands[start + n + (v * k) + j] * w[j];
+                            }
+
+                            operands[start + v] = value;
+                        }
+                    }
+
                     operands.RemoveRange(start + n, (int)used - n);
                     continue;
                 }

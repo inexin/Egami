@@ -57,7 +57,10 @@ for that position. `Variations` gives a face's position.
   opsz equal to the size in canvas units; `Font.EffectiveTypeface` is the face drawn.
 - `SubsetOptions.Variations` (by default the face's own position) makes the subset a static font at that position, written as an
   instancer would: the varied outlines rounded to whole units, metrics, OS/2 and post at the position, CFF2 written as CFF and the
-  variation tables left out. Its outlines, advances and bearings equal fontTools' instancer's, so a PDF shows the position.
+  variation tables left out. Its advances and bearings equal fontTools' instancer's, and every point lies within half a unit of
+  the position, so a PDF shows it. CFF2 charstrings are rewritten operator by operator: their hints and the subroutines every
+  call shares stay, and the shortest operators write them, so the subset is about as small as pyftsubset's of fontTools'
+  instance.
 - The shaper applies a variable font's feature variations (glyph swaps by position), and a layout-closure subset bakes in those
   that hold at its position, with its GPOS, GDEF and MATH deltas.
 
@@ -338,8 +341,9 @@ tables are cut down in the same way without renumbering. A layout table the shap
 
 A variable face's subset is a static font at the face's position (or `SubsetOptions.Variations`), and its layout tables are
 too: each GPOS value and anchor, each GDEF caret and each MATH value takes its variation delta, rounded, and loses its variation
-device table; the feature variations that hold at the position replace the features they substitute; and GDEF drops its
-variation store. Vertical advances and origins are written varied as well, so the subset shapes as the face did at that position.
+device table; the feature variations that hold at the position replace the features they substitute; GDEF drops its variation store;
+and the PairPos class subtables of a lookup, split in the variable font for their device tables' offsets, are written as one
+where their first glyphs don't overlap. Vertical advances and origins are written varied as well, so the subset shapes as the face did at that position.
 
 The shaper draws a character the face lacks from its canonical decomposition, and composes a base and a mark to the precomposed
 character when the face has it, so the glyphs of a text are more than those its characters map to. `FontSubsetter.GlyphsFor`
@@ -348,9 +352,9 @@ glyphs of the variation sequences the characters make; the subset's cmap keeps t
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-text)]
 
-`SubsetOptions.DropHinting` leaves TrueType hinting out: the fpgm, prep and cvt programs and every glyph's instructions, which
-on a hinted font are a good share of each glyph. Renderers draw such a subset unhinted, as most screens draw web fonts anyway.
-CFF hints are kept.
+`SubsetOptions.DropHinting` leaves hinting out: TrueType's fpgm, prep and cvt programs and every glyph's instructions, which
+on a hinted font are a good share of each glyph, and a CFF or CFF2 font's stems, hint masks, blue zones and stem snaps, with the
+outlines unchanged. Renderers draw such a subset unhinted, as most screens draw web fonts anyway.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Text.cs#subset-unhinted)]
 

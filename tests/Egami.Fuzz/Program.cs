@@ -2596,7 +2596,8 @@ static void SubsetFont(Stream stream)
     ushort[] glyphs = [.. Enumerable.Range(0, Math.Min(face.GlyphCount, 40)).Where(g => ((g + hash) % 3) != 0).Select(g => (ushort)g)];
     // Every other input also writes the layout tables cut down to the kept glyphs (roadmap 2.7.9).
     bool layout = (hash & 4) != 0 && !face.IsBareCff;
-    var options = new Egami.Fonts.SubsetOptions { RetainGlyphIds = (hash & 1) != 0, KeepCmap = (hash & 2) != 0, FontNamePrefix = "FUZZED+", LayoutClosure = layout };
+    // And some drop the hints, CFF ones rewritten charstring by charstring (roadmap 2.7.10).
+    var options = new Egami.Fonts.SubsetOptions { RetainGlyphIds = (hash & 1) != 0, KeepCmap = (hash & 2) != 0, FontNamePrefix = "FUZZED+", LayoutClosure = layout, DropHinting = (hash & 16) != 0 };
     Egami.Fonts.FontSubset subset;
     try
     {
@@ -2829,7 +2830,7 @@ static void InstanceFont(Stream stream)
         Egami.Fonts.FontSubset subset;
         try
         {
-            subset = Egami.Fonts.FontSubsetter.Subset(at, glyphs, new Egami.Fonts.SubsetOptions { RetainGlyphIds = data.Length % 2 == 0 });
+            subset = Egami.Fonts.FontSubsetter.Subset(at, glyphs, new Egami.Fonts.SubsetOptions { RetainGlyphIds = data.Length % 2 == 0, DropHinting = data.Length % 3 == 0 });
         }
         catch (EgamiException)
         {
@@ -2840,6 +2841,20 @@ static void InstanceFont(Stream stream)
         if (again.IsVariable)
         {
             throw new InvalidOperationException("An instance is still variable.");
+        }
+
+        if (at.Cff is { IsCff2: true })
+        {
+            // CFF2 charstrings are rewritten with their blends resolved and rounded: every point within half a unit (2.7.10).
+            foreach ((ushort old, ushort now) in subset.GlyphMap)
+            {
+                var a = new RecordingSink();
+                var b = new RecordingSink();
+                if (at.GetGlyphOutline(old, a) && again.GetGlyphOutline(now, b) && !a.Near(b, 0.501f))
+                {
+                    throw new InvalidOperationException($"Glyph {old} is more than half a unit off in the instance.");
+                }
+            }
         }
 
         ExerciseFace(again);
@@ -3410,7 +3425,10 @@ internal sealed class RecordingSink : Egami.Fonts.IGlyphOutlineSink
 
     public void Close() => _values.Add(5);
 
-    public bool SameAs(RecordingSink other)
+    public bool SameAs(RecordingSink other) => Near(other, 1e-3f);
+
+    // The same verbs, each value within tolerance (NaN matching NaN; values too large for a float to hold half a unit apart).
+    public bool Near(RecordingSink other, float tolerance)
     {
         if (_values.Count != other._values.Count)
         {
@@ -3419,7 +3437,7 @@ internal sealed class RecordingSink : Egami.Fonts.IGlyphOutlineSink
 
         for (int i = 0; i < _values.Count; i++)
         {
-            if (MathF.Abs(_values[i] - other._values[i]) > 1e-3f && !(float.IsNaN(_values[i]) && float.IsNaN(other._values[i])))
+            if (MathF.Abs(_values[i] - other._values[i]) > Math.Max(tolerance, MathF.Abs(_values[i]) * 1e-6f) && !(float.IsNaN(_values[i]) && float.IsNaN(other._values[i])))
             {
                 return false;
             }

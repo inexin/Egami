@@ -234,6 +234,42 @@ internal sealed class LayoutTableWriter
 
     private int MapLookup(int old) => _lookupMap.TryGetValue(old, out int now) ? now : -1;
 
+    /// <summary>
+    /// How many PairPos format 2 subtables from <paramref name="i"/> write as one in a static instance's GPOS, where the variable
+    /// font split them only for its device tables' offsets: 1 when the one at i is written alone.
+    /// </summary>
+    private int PairPos2Run(SubtableWriter subtables, LayoutLookup lookup, int i)
+    {
+        const int MaxMatrix = 0x8000;
+        if (!_gpos || _bake is null || lookup.SubtableTypes[i] != 2)
+        {
+            return 1;
+        }
+
+        var covered = new HashSet<int>();
+        int first = lookup.Subtables[i];
+        int rows = 0, n = 1;
+        while (i + n < lookup.Subtables.Length && lookup.SubtableTypes[i + n] == 2)
+        {
+            int next = lookup.Subtables[i + n];
+            if (rows == 0)
+            {
+                rows = subtables.PairPos2Rows(first, first: true);
+            }
+
+            int more = subtables.PairPos2Rows(next, first: false);
+            if (subtables.PairPos2MatrixSize(first, rows + more) > MaxMatrix || !subtables.CanMergePairPos2(first, next, covered))
+            {
+                break;
+            }
+
+            rows += more;
+            n++;
+        }
+
+        return n;
+    }
+
     private OtObject Build(bool extension)
     {
         var graph = new OtGraph();
@@ -253,7 +289,17 @@ internal sealed class LayoutTableWriter
                 }
 
                 graph.Group = extension ? group++ : 1;
-                if (subtables.Write(lookup.SubtableTypes[i], lookup.Subtables[i]) is { } subtable)
+                int merged = extension ? 1 : PairPos2Run(subtables, lookup, i);
+                if (merged > 1)
+                {
+                    if (subtables.PairPosFormat2Merged(lookup.Subtables[i..(i + merged)]) is { } subtable)
+                    {
+                        written.Add((2, subtable));
+                    }
+
+                    i += merged - 1;
+                }
+                else if (subtables.Write(lookup.SubtableTypes[i], lookup.Subtables[i]) is { } subtable)
                 {
                     written.Add((lookup.SubtableTypes[i], subtable));
                 }

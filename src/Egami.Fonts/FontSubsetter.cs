@@ -109,9 +109,10 @@ public sealed record SubsetOptions
     internal bool ExtensionLookups { get; init; }
 
     /// <summary>
-    /// Gets whether TrueType hinting is left out: the fpgm, prep and cvt tables and every glyph's instructions, with maxp's
-    /// hinting limits set to none, so the subset is smaller and renderers rasterize it unhinted (gasp is kept). Defaults to false.
-    /// TrueType only: the hints of CFF and CFF2 charstrings are kept.
+    /// Gets whether hinting is left out, so the subset is smaller and renderers rasterize it unhinted. Defaults to false. For
+    /// TrueType: the fpgm, prep and cvt tables and every glyph's instructions, with maxp's hinting limits set to none (gasp is
+    /// kept). For CFF and CFF2: the charstrings' stems and hint masks and the Private DICTs' blue zones, stem widths and snaps,
+    /// with the outlines unchanged.
     /// </summary>
     /// <example>
     /// <code language="csharp" source="../../tests/Egami.DocSamples/Text.cs" region="subset-unhinted"/>

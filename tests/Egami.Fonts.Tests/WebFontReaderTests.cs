@@ -167,11 +167,23 @@ public class WebFontReaderTests
     }
 
     [Fact]
-    public void DropHintingKeepsCffAsItIs()
+    public void DropHintingDropsCffHintsOnly()
     {
+        // The outlines and advances stay; only the hints go (CffCharStringWriterTests checks every glyph).
         Typeface face = TestFonts.Load("SourceSans3-Regular.otf");
         ushort[] glyphs = [.. "CFF".Select(c => face.GetGlyph(c))];
-        Assert.Equal(FontSubsetter.Subset(face, glyphs).Data.ToArray(), FontSubsetter.Subset(face, glyphs, new SubsetOptions { DropHinting = true }).Data.ToArray());
+        FontSubset hinted = FontSubsetter.Subset(face, glyphs), plain = FontSubsetter.Subset(face, glyphs, new SubsetOptions { DropHinting = true });
+        Assert.True(plain.Data.Length < hinted.Data.Length);
+        Typeface a = hinted.ToTypeface(), b = plain.ToTypeface();
+        for (int g = 0; g < a.GlyphCount; g++)
+        {
+            var sa = new TextSink();
+            var sb = new TextSink();
+            a.GetGlyphOutline((ushort)g, sa);
+            b.GetGlyphOutline((ushort)g, sb);
+            Assert.Equal(sa.Verbs, sb.Verbs);
+            Assert.Equal(a.GetAdvance((ushort)g), b.GetAdvance((ushort)g));
+        }
     }
 
     private static void AssertNoCompositeInstructions(ReadOnlySpan<byte> data)

@@ -692,6 +692,183 @@ internal sealed class SubtableWriter(ReadOnlyMemory<byte> data, OtGraph graph, G
         return graph.Add(w);
     }
 
+    /// <summary>
+    /// Whether the PairPos format 2 subtables at <paramref name="first"/> and <paramref name="next"/> write as one: the same value
+    /// formats and second-glyph classes over the kept glyphs, no kept first glyph in both, and no kept first glyph out of its
+    /// matrix's range. <paramref name="covered"/> holds the kept first glyphs of the subtables merged so far, and gains next's.
+    /// </summary>
+    public bool CanMergePairPos2(int first, int next, HashSet<int> covered)
+    {
+        ReadOnlySpan<byte> d = D;
+        if (U16(d, first) != 2 || U16(d, next) != 2 || U16(d, first + 4) != U16(d, next + 4) || U16(d, first + 6) != U16(d, next + 6))
+        {
+            return false;
+        }
+
+        if (covered.Count == 0 && !AddCovered(first, covered))
+        {
+            return false;
+        }
+
+        if (!SecondClasses(first).SequenceEqual(SecondClasses(next)))
+        {
+            return false;
+        }
+
+        var mine = new HashSet<int>();
+        if (!AddCovered(next, mine) || mine.Overlaps(covered))
+        {
+            return false;
+        }
+
+        covered.UnionWith(mine);
+        return true;
+    }
+
+    // Adds a PairPos format 2 subtable's kept first glyphs; false when one has a class past its matrix.
+    private bool AddCovered(int t, HashSet<int> covered)
+    {
+        ReadOnlySpan<byte> d = D;
+        int classDef1 = Off16(d, t, t + 8);
+        int class1Count = U16(d, t + 12);
+        foreach ((int old, _) in LayoutCommon.Covered(d, Off16(d, t, t + 2), glyphs))
+        {
+            if (classDef1 != 0 && ClassOf(d, classDef1, (uint)old) >= class1Count)
+            {
+                return false;
+            }
+
+            covered.Add(old);
+        }
+
+        return true;
+    }
+
+    // The kept glyphs' second classes as a PairPos format 2 subtable writes them, and how many there are.
+    private List<(int Glyph, int Class)> SecondClasses(int t)
+    {
+        ReadOnlySpan<byte> d = D;
+        int classDef2 = Off16(d, t, t + 10);
+        var classes2 = new ClassRemap(LayoutCommon.Classes(d, classDef2, glyphs), U16(d, t + 14));
+        List<(int, int)> entries = [(-1, classes2.Count)];
+        if (classDef2 != 0)
+        {
+            foreach ((int old, int klass) in LayoutCommon.Classed(d, classDef2, glyphs))
+            {
+                entries.Add((old, classes2.Map(klass)));
+            }
+        }
+
+        return entries;
+    }
+
+    /// <summary>
+    /// PairPos format 2 subtables that <see cref="CanMergePairPos2"/> allows, written as one: the first glyphs of each with
+    /// their own rows of the matrix, after the rows of those before (a subtable's class 0 listed with its new class).
+    /// </summary>
+    public OtObject? PairPosFormat2Merged(IReadOnlyList<int> ts)
+    {
+        ReadOnlySpan<byte> d = D;
+        int t0 = ts[0];
+        int format1 = U16(d, t0 + 4) & 0xFF;
+        int format2 = U16(d, t0 + 6) & 0xFF;
+        int length1 = ValueLength(format1);
+        int length2 = ValueLength(format2);
+        int classDef2 = Off16(d, t0, t0 + 10);
+        var classes2 = new ClassRemap(LayoutCommon.Classes(d, classDef2, glyphs), U16(d, t0 + 14));
+        int[] oldClasses2 = classes2.OldClasses();
+        var covered = new List<int>();
+        var classes1 = new List<(int Glyph, int Class)>();
+        var rows = new List<(int T, int Class1)>();
+        foreach (int t in ts)
+        {
+            List<(int Old, int Index)> glyphsCovered = LayoutCommon.Covered(d, Off16(d, t, t + 2), glyphs);
+            if (glyphsCovered.Count == 0)
+            {
+                continue;
+            }
+
+            int classDef1 = Off16(d, t, t + 8);
+            List<int> rowClasses = RowClasses(t, rows.Count == 0);
+            int first = rows.Count;
+            foreach ((int old, _) in glyphsCovered)
+            {
+                covered.Add(glyphs.Map(old));
+                int now = first + rowClasses.IndexOf(classDef1 == 0 ? 0 : ClassOf(d, classDef1, (uint)old));
+                if (now > 0)
+                {
+                    classes1.Add((glyphs.Map(old), now));
+                }
+            }
+
+            foreach (int c1 in rowClasses)
+            {
+                rows.Add((t, c1));
+            }
+        }
+
+        if (covered.Count == 0 || oldClasses2.Length == 0)
+        {
+            return null;
+        }
+
+        covered.Sort();
+        classes1.Sort();
+        OtWriter w = OtGraph.Writer();
+        w.U16(2);
+        w.Offset16(LayoutCommon.WriteCoverage(graph, covered));
+        w.U16(Baked(format1));
+        w.U16(Baked(format2));
+        w.Offset16(LayoutCommon.WriteClassDef(graph, classes1));
+        w.Offset16(classDef2 == 0 ? null : LayoutCommon.WriteClassDef(graph, d, classDef2, glyphs, classes2));
+        w.U16(rows.Count);
+        w.U16(classes2.Count);
+        foreach ((int t, int c1) in rows)
+        {
+            int class2Count = U16(d, t + 14);
+            foreach (int c2 in oldClasses2)
+            {
+                int record = t + 16 + ((((c1 * class2Count) + c2) * (length1 + length2)) * 2);
+                WriteValue(w, format1, t, record);
+                WriteValue(w, format2, t, record + (length1 * 2));
+            }
+        }
+
+        return graph.Add(w);
+    }
+
+    /// <summary>The bytes of the matrix a merge of PairPos format 2 subtables writes, to keep it within 16-bit offsets.</summary>
+    public int PairPos2MatrixSize(int t, int rows)
+    {
+        ReadOnlySpan<byte> d = D;
+        int classDef2 = Off16(d, t, t + 10);
+        var classes2 = new ClassRemap(LayoutCommon.Classes(d, classDef2, glyphs), U16(d, t + 14));
+        int values = ValueLength(Baked(U16(d, t + 4) & 0xFF)) + ValueLength(Baked(U16(d, t + 6) & 0xFF));
+        return rows * classes2.Count * values * 2;
+    }
+
+    /// <summary>The rows a PairPos format 2 subtable adds to a merged matrix.</summary>
+    public int PairPos2Rows(int t, bool first) => RowClasses(t, first).Count;
+
+    // The first classes of a subtable's kept first glyphs, in order: those of a merged matrix's first subtable from class 0.
+    private List<int> RowClasses(int t, bool first)
+    {
+        ReadOnlySpan<byte> d = D;
+        int classDef1 = Off16(d, t, t + 8);
+        var used = new SortedSet<int>();
+        if (first)
+        {
+            used.Add(0);
+        }
+
+        foreach ((int old, _) in LayoutCommon.Covered(d, Off16(d, t, t + 2), glyphs))
+        {
+            used.Add(classDef1 == 0 ? 0 : ClassOf(d, classDef1, (uint)old));
+        }
+
+        return [.. used];
+    }
+
     private OtObject? CursivePos(int t)
     {
         ReadOnlySpan<byte> d = D;

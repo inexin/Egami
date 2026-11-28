@@ -326,13 +326,14 @@ internal static class Instancer
     }
 
     /// <summary>
-    /// A CFF2 face's glyphs as a CID-keyed CFF font (identity charset, one font dict per CFF2 font dict used), each charstring the
-    /// glyph's outline at the position, hintless, with its advance as the width.
+    /// A CFF2 face's glyphs as a CID-keyed CFF font (identity charset, one font dict per CFF2 font dict used): each charstring
+    /// rewritten operator by operator with its blends resolved at the position and rounded, its hints kept unless
+    /// <see cref="SubsetOptions.DropHinting"/> is set, the shortest operators, and the subroutines kept when every call of one
+    /// writes the same charstring; the Private DICTs' blends resolved too, and the widths against new nominal and default widths.
     /// </summary>
     public static byte[] CffFromCff2(Typeface face, ushort[] oldIds, Dictionary<ushort, ushort> map, SubsetOptions options, float[]? scalars)
     {
         CffFont cff = face.Cff!;
-        CharStringInterpreter interpreter = CharStringInterpreter.For(cff);
         var fdMap = new SortedDictionary<int, int>();
         foreach (ushort old in map.Keys)
         {
@@ -345,22 +346,43 @@ internal static class Instancer
             fdMap[fds[i]] = i;
         }
 
-        var charStrings = new List<byte[]>(oldIds.Length);
-        for (int g = 0; g < oldIds.Length; g++)
+        // Widths: each font dict's most common as its default, and the nominal width that writes the others shortest.
+        var advances = new Dictionary<ushort, int>();
+        var byDict = new Dictionary<int, List<int>>();
+        foreach (ushort old in map.Keys)
         {
-            ushort old = oldIds[g];
-            if (!map.TryGetValue(old, out ushort now) || now != g)
+            int advance = Round(face.GetAdvance(old));
+            advances[old] = advance;
+            int fd = cff.FontDictOf(old);
+            if (!byDict.TryGetValue(fd, out List<int>? list))
             {
-                charStrings.Add([14]);
-                continue;
+                byDict[fd] = list = [];
             }
 
+            list.Add(advance);
+        }
+
+        var widthDefaults = new Dictionary<int, (int Default, int Nominal)>();
+        foreach (int fd in fds)
+        {
+            widthDefaults[fd] = ChooseWidths(byDict.GetValueOrDefault(fd) ?? []);
+        }
+
+        double? WidthOperand(int old)
+        {
+            (int defaultWidth, int nominal) = widthDefaults[cff.FontDictOf(old)];
+            int advance = advances.TryGetValue((ushort)old, out int a) ? a : Round(face.GetAdvance((ushort)old));
+            return advance == defaultWidth ? null : advance - nominal;
+        }
+
+        byte[] Fallback(int old, double? width)
+        {
+            // A charstring the writer does not model: its outline drawn at the position and encoded again.
             OutlineRecorder recorder = OutlineRecorder.Take();
             try
             {
-                interpreter.Draw(old, recorder, null, scalars);
-                byte[] code = CffEncoding.CharString(recorder, Math.Round(face.GetAdvance(old)));
-                charStrings.Add(code);
+                CharStringInterpreter.For(cff).Draw(old, recorder, null, scalars);
+                return CffEncoding.CharString(recorder, width);
             }
             finally
             {
@@ -368,12 +390,15 @@ internal static class Instancer
             }
         }
 
+        var writer = new CharStringWriter(cff, scalars, round: true, options.DropHinting, allowSeac: false);
+        writer.Write(oldIds, map, WidthOperand, Fallback);
+
         var strings = new List<byte[]> { "Adobe"u8.ToArray(), "Identity"u8.ToArray() };
         int adobe = CffStandard.StandardStringCount, identity = adobe + 1;
         byte[] nameIndex = CffEncoding.Index([System.Text.Encoding.Latin1.GetBytes((options.FontNamePrefix ?? string.Empty) + face.PostScriptName)]);
         byte[] stringIndex = CffEncoding.Index(strings);
-        byte[] globalIndex = CffEncoding.Index([]);
-        byte[] charStringIndex = CffEncoding.Index(charStrings);
+        byte[] globalIndex = CffEncoding.Index(writer.GlobalSubrs);
+        byte[] charStringIndex = CffEncoding.Index(writer.Glyphs);
 
         // Charset: identity, glyph i is CID i.
         var charset = new ByteWriter();
@@ -406,15 +431,36 @@ internal static class Instancer
 
         fdSelect.U16(oldIds.Length);
 
-        // Private DICTs without CFF2's vsindex, blends (already resolved to defaults) or subroutines; nominal and default widths 0.
-        var privates = new List<byte[]>();
+        // Private DICTs with the blends resolved, without vsindex; each followed by its local subroutines.
+        HashSet<int> offsets = [CffFont.OpCharset, CffFont.OpCharStrings, CffFont.OpPrivate, CffFont.OpFdArray, CffFont.OpFdSelect, CffFont.OpSubrs];
+        var privates = new List<(byte[] Dict, byte[] Subrs)>();
         foreach (int fd in fds)
         {
-            var entries = cff.Privates[fd].Dict.Entries.Where(e => e.Key is not (CffFont.OpSubrs or CffFont.OpVsIndex)).Select(e => (e.Key, e.Value)).ToList();
-            privates.Add(CffEncoding.Dict(entries));
+            List<(int, double[])> entries = PrivateAt(cff, fd, scalars, options.DropHinting);
+            (int defaultWidth, int nominal) = widthDefaults[fd];
+            if (defaultWidth != 0)
+            {
+                entries.Add((CffFont.OpDefaultWidthX, [defaultWidth]));
+            }
+
+            if (nominal != 0)
+            {
+                entries.Add((CffFont.OpNominalWidthX, [nominal]));
+            }
+
+            List<byte[]> subrs = writer.LocalSubrs.GetValueOrDefault(fd) ?? [];
+            byte[] dict = CffEncoding.Dict(entries);
+            if (subrs.Count > 0)
+            {
+                entries.Add((CffFont.OpSubrs, [0]));
+                dict = CffEncoding.Dict(entries, offsets);
+                entries[^1] = (CffFont.OpSubrs, [dict.Length]);
+                dict = CffEncoding.Dict(entries, offsets);
+            }
+
+            privates.Add((dict, subrs.Count > 0 ? CffEncoding.Index(subrs) : []));
         }
 
-        HashSet<int> offsets = [CffFont.OpCharset, CffFont.OpCharStrings, CffFont.OpPrivate, CffFont.OpFdArray, CffFont.OpFdSelect];
         List<(int, double[])> TopEntries(int charsetAt, int fdSelectAt, int charStringsAt, int fdArrayAt)
         {
             var entries = new List<(int, double[])> { (CffFont.OpRos, [adobe, identity, 0]) };
@@ -444,10 +490,10 @@ internal static class Instancer
         {
             var dicts = new List<byte[]>();
             int p = privateStart;
-            foreach (byte[] priv in privates)
+            foreach ((byte[] dict, byte[] subrs) in privates)
             {
-                dicts.Add(CffEncoding.Dict([(CffFont.OpPrivate, [priv.Length, p])], offsets));
-                p += priv.Length;
+                dicts.Add(CffEncoding.Dict([(CffFont.OpPrivate, [dict.Length, p])], offsets));
+                p += dict.Length + subrs.Length;
             }
 
             return dicts;
@@ -458,7 +504,7 @@ internal static class Instancer
         at += fdArray.Length;
         fdArray = CffEncoding.Index(FdDicts(at));
         byte[] topIndex = CffEncoding.Index([CffEncoding.Dict(TopEntries(charsetAt, fdSelectAt, charStringsAt, fdArrayAt), offsets)]);
-        var w = new ByteWriter(at + privates.Sum(p => p.Length));
+        var w = new ByteWriter(at + privates.Sum(p => p.Dict.Length + p.Subrs.Length));
         w.Bytes([1, 0, 4, 4]);
         w.Bytes(nameIndex);
         w.Bytes(topIndex);
@@ -468,12 +514,117 @@ internal static class Instancer
         w.Bytes(fdSelect.Written);
         w.Bytes(charStringIndex);
         w.Bytes(fdArray);
-        foreach (byte[] priv in privates)
+        foreach ((byte[] dict, byte[] subrs) in privates)
         {
-            w.Bytes(priv);
+            w.Bytes(dict);
+            w.Bytes(subrs);
         }
 
         return w.ToArray();
+    }
+
+    /// <summary>
+    /// Private DICT entries that only hinting uses, which a subset without hints leaves out: the blue zones, StdHW, StdVW,
+    /// BlueScale, BlueShift, BlueFuzz, the stem snaps and ForceBold.
+    /// </summary>
+    public static readonly HashSet<int> HintingPrivateEntries = [6, 7, 8, 9, 10, 11, 1209, 1210, 1211, 1212, 1213, 1214];
+
+    // Private DICT operators whose values are delta-encoded positions, and those whose values are whole units.
+    private static readonly HashSet<int> s_deltaArrays = [6, 7, 8, 9, 1212, 1213];
+    private static readonly HashSet<int> s_wholeUnits = [10, 11, 1210, 1211];
+
+    // A CFF2 Private DICT at the position: blends resolved, positions and widths rounded, without vsindex, subroutines and widths.
+    private static List<(int, double[])> PrivateAt(CffFont cff, int fd, float[]? scalars, bool dropHinting)
+    {
+        PrivateData priv = cff.Privates[fd];
+        CffDict dict = priv.Dict;
+        if (priv.PrivateOffset >= 0 && cff.VariationStore is ItemVariationStore store)
+        {
+            float[] Weights(int vsindex)
+            {
+                ReadOnlySpan<ushort> regions = store.RegionIndicesOf(vsindex);
+                float[] weights = new float[regions.Length];
+                for (int j = 0; j < regions.Length; j++)
+                {
+                    weights[j] = scalars is not null && regions[j] < scalars.Length ? scalars[regions[j]] : 0;
+                }
+
+                return weights;
+            }
+
+            dict = CffDict.Read(cff.Data.Span.Slice(priv.PrivateOffset, priv.PrivateSize), priv.PrivateOffset, store.RegionCountOf, Weights);
+        }
+
+        var entries = new List<(int, double[])>();
+        foreach ((int op, double[] values) in dict.Entries)
+        {
+            if (op is CffFont.OpSubrs or CffFont.OpVsIndex or CffFont.OpDefaultWidthX or CffFont.OpNominalWidthX || (dropHinting && HintingPrivateEntries.Contains(op)))
+            {
+                continue;
+            }
+
+            double[] written = values;
+            if (s_deltaArrays.Contains(op))
+            {
+                written = new double[values.Length];
+                double position = 0, rounded = 0;
+                for (int i = 0; i < values.Length; i++)
+                {
+                    position += values[i];
+                    double r = Math.Floor(position + 0.5);
+                    written[i] = r - rounded;
+                    rounded = r;
+                }
+            }
+            else if (s_wholeUnits.Contains(op))
+            {
+                written = [.. values.Select(v => Math.Floor(v + 0.5))];
+            }
+
+            entries.Add((op, written));
+        }
+
+        return entries;
+    }
+
+    // The default width (the most common) and the nominal width that writes the other widths in the fewest bytes.
+    private static (int Default, int Nominal) ChooseWidths(List<int> widths)
+    {
+        if (widths.Count == 0)
+        {
+            return (0, 0);
+        }
+
+        var counts = new Dictionary<int, int>();
+        foreach (int width in widths)
+        {
+            counts[width] = counts.GetValueOrDefault(width) + 1;
+        }
+
+        int defaultWidth = counts.OrderByDescending(p => p.Value).ThenBy(p => p.Key).First().Key;
+        var others = counts.Where(p => p.Key != defaultWidth).ToList();
+        if (others.Count == 0)
+        {
+            return (defaultWidth, 0);
+        }
+
+        static int Size(int v) => v is >= -107 and <= 107 ? 1 : v is >= -1131 and <= 1131 ? 2 : 3;
+        int bestNominal = 0, bestCost = int.MaxValue;
+        foreach (int candidate in others.SelectMany(p => (int[])[p.Key, p.Key - 107, p.Key + 107, p.Key - 1131, p.Key + 1131]).Prepend(0).Distinct())
+        {
+            int cost = 0;
+            foreach ((int width, int count) in others)
+            {
+                cost += Size(width - candidate) * count;
+            }
+
+            if (cost < bestCost || (cost == bestCost && Math.Abs(candidate) < Math.Abs(bestNominal)))
+            {
+                (bestCost, bestNominal) = (cost, candidate);
+            }
+        }
+
+        return (defaultWidth, bestNominal);
     }
 
     /// <summary>fontTools' otRound: half up.</summary>

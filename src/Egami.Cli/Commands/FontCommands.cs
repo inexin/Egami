@@ -159,7 +159,7 @@ internal static class FontCommands
         Option<bool> noLayout = new("--no-layout") { Description = "Keep only the glyphs the characters map to, without GSUB, GPOS, GDEF and MATH: the smallest file, shaped without ligatures, kerning or contextual forms." };
         Option<bool> retainGids = new("--retain-gids") { Description = "Keep every glyph's id, with empty glyphs in the gaps, for a tool that refers to glyphs by id; by default the kept glyphs are renumbered from 0." };
         Option<string?> variation = new("--variation") { Description = "Where a variable font is instanced, such as wght=700,wdth=90; the subset is always a static font, by default at the font's default position.", HelpName = "axis=value,..." };
-        Option<bool> noHinting = new("--no-hinting") { Description = "Leave out TrueType hinting (fpgm, prep, cvt and glyph instructions); CFF hints stay." };
+        Option<bool> noHinting = new("--no-hinting") { Description = "Leave out hinting: TrueType's fpgm, prep, cvt and glyph instructions, and CFF's stems, hint masks and blue zones." };
         Option<string?> namePrefix = new("--name-prefix") { Description = "Put this before the PostScript and CFF font names, such as ABCDEF+.", HelpName = "prefix" };
         Option<int> face = new("--face") { Description = "Which font of a collection to subset, from 0.", HelpName = "index" };
         BatchFlags batch = new();

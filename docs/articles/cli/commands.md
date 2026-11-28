@@ -918,7 +918,7 @@ Options:
   --no-layout                          Keep only the glyphs the characters map to, without GSUB, GPOS, GDEF and MATH: the smallest file, shaped without ligatures, kerning or contextual forms.
   --retain-gids                        Keep every glyph's id, with empty glyphs in the gaps, for a tool that refers to glyphs by id; by default the kept glyphs are renumbered from 0.
   --variation <axis=value,...>         Where a variable font is instanced, such as wght=700,wdth=90; the subset is always a static font, by default at the font's default position.
-  --no-hinting                         Leave out TrueType hinting (fpgm, prep, cvt and glyph instructions); CFF hints stay.
+  --no-hinting                         Leave out hinting: TrueType's fpgm, prep, cvt and glyph instructions, and CFF's stems, hint masks and blue zones.
   --name-prefix <prefix>               Put this before the PostScript and CFF font names, such as ABCDEF+.
   --face <index>                       Which font of a collection to subset, from 0.
   -r, --recursive                      Take every font in folders given as inputs, at any depth.

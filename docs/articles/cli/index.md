@@ -266,7 +266,7 @@ every command takes many files, globs and folders with `--recursive` as the imag
   glyphs, which are renumbered from 0, so the text shapes as with the full font (ligatures, kerning, contextual forms, math);
   `--no-layout` keeps only the mapped glyphs, without those tables, for the smallest file. `--retain-gids` keeps every glyph's
   id, with empty glyphs in the gaps, for a tool that refers to glyphs by id. A variable font becomes a static font at its
-  default position, or at `--variation wght=700,wdth=90`. `--no-hinting` leaves out TrueType hinting, `--name-prefix` prefixes
+  default position, or at `--variation wght=700,wdth=90`. `--no-hinting` leaves out TrueType and CFF hinting, `--name-prefix` prefixes
   the PostScript name and `--face` picks a font of a collection. It prints one line per font: the glyphs kept of the total,
   the asked characters the font lacks (characters in `--unicodes` ranges keep whatever the font has) and the sizes, and warns
   when the subset leaves out color or bitmap tables, or (with `--no-layout`) vertical, kern or MATH tables.

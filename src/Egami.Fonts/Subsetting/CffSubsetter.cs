@@ -199,6 +199,35 @@ internal static class CffSubsetter
             localSubrs[fd] = local is null ? [] : Subrs(local.Value, localMaps[fd], i => new CharStringId(CharStringKind.Local, fd, i), usage, globalMap, localMaps[fd], cff, fd, renumber);
         }
 
+        if (options.DropHinting)
+        {
+            // Without hints: every charstring written again without its stems and masks, subroutines kept where they still
+            // serve every call; a glyph using arithmetic, or seac in a CID-keyed font, is drawn as a plain charstring.
+            byte[] Drawn(int old, double? unused)
+            {
+                OutlineRecorder recorder = OutlineRecorder.Take();
+                try
+                {
+                    double width = interpreter.Draw(old, recorder);
+                    PrivateData priv = cff.Privates[cff.FontDictOf(old)];
+                    return CffEncoding.CharString(recorder, width == priv.DefaultWidthX ? null : width - priv.NominalWidthX);
+                }
+                finally
+                {
+                    recorder.Release();
+                }
+            }
+
+            var writer = new CharStringWriter(cff, null, round: false, dropHints: true, allowSeac: !cid);
+            writer.Write(oldIds, map, null, Drawn);
+            charStrings = [.. writer.Glyphs];
+            globalSubrs = writer.GlobalSubrs;
+            foreach (int fd in fds)
+            {
+                localSubrs[fd] = writer.LocalSubrs.GetValueOrDefault(fd) ?? [];
+            }
+        }
+
         // Strings: only those the kept dicts and glyph names use, renumbered (a name-keyed font's String INDEX holds every glyph's
         // name, most of a small subset's CFF), plus Adobe and Identity for a font made CID-keyed.
         var strings = new List<byte[]>();
@@ -276,7 +305,7 @@ internal static class CffSubsetter
         {
             PrivateData priv = cff.Privates[fd];
             List<byte[]> subrs = localSubrs[fd];
-            var entries = priv.Dict.Entries.Where(e => e.Key != CffFont.OpSubrs).Select(e => (e.Key, e.Value)).ToList();
+            var entries = priv.Dict.Entries.Where(e => e.Key != CffFont.OpSubrs && !(options.DropHinting && Instancer.HintingPrivateEntries.Contains(e.Key))).Select(e => (e.Key, e.Value)).ToList();
             byte[] dict = CffEncoding.Dict(entries);
             if (subrs.Count > 0)
             {
