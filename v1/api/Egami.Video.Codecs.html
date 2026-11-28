@@ -201,8 +201,9 @@ come out as the JPEG's own YUV planes, BT.601 full range unless the container sa
       <dt><a class="xref" href="Egami.Video.Codecs.RawVideoCodec.html">RawVideoCodec</a></dt>
       <dd><p>Uncompressed video (<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Uncompressed">Uncompressed</a>): I420, YV12, Y42B, 444P, Y800, NV12, NV21, YUY2, UYVY and v210 by
 FourCC (<a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_FourCC">FourCC</a>), plain planar YUV at 8 to 12 bits with optional alpha as in YUV4MPEG2, and
-AVI's bottom-up 24-bit BI_RGB (as <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_VfwFourCC">VfwFourCC</a>), whose frames come out as G, B and R planes
-(<a class="xref" href="Egami.Pixels.YuvMatrix.html#Egami_Pixels_YuvMatrix_Identity">Identity</a>). Decoding and encoding copy samples, so they are lossless.</p>
+AVI's bottom-up 24-bit BI_RGB (as <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_VfwFourCC">VfwFourCC</a>) and QuickTime's 24-bit raw RGB (FourCC &quot;raw &quot;), whose
+frames come out as G, B and R planes (<a class="xref" href="Egami.Pixels.YuvMatrix.html#Egami_Pixels_YuvMatrix_Identity">Identity</a>). Decoding and encoding copy samples, so they are
+lossless.</p>
 </dd>
     </dl>
     <dl class="jumplist">

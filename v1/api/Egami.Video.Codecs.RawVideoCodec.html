@@ -6,7 +6,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="title" content="Class RawVideoCodec | Egami ">
       
-      <meta name="description" content="Uncompressed video (): I420, YV12, Y42B, 444P, Y800, NV12, NV21, YUY2, UYVY and v210 by FourCC (), plain planar YUV at 8 to 12 bits with optional alpha as in YUV4MPEG2, and AVI&#39;s bottom-up 24-bit BI_RGB (as ), whose frames come out as G, B and R planes (). Decoding and encoding copy samples, so they are lossless.">
+      <meta name="description" content="Uncompressed video (): I420, YV12, Y42B, 444P, Y800, NV12, NV21, YUY2, UYVY and v210 by FourCC (), plain planar YUV at 8 to 12 bits with optional alpha as in YUV4MPEG2, and AVI&#39;s bottom-up 24-bit BI_RGB (as ) and QuickTime&#39;s 24-bit raw RGB (FourCC &amp;quot;raw &amp;quot;), whose frames come out as G, B and R planes (). Decoding and encoding copy samples, so they are lossless.">
       <link rel="icon" href="../images/favicon.ico">
       <link rel="stylesheet" href="../public/docfx.min.css">
       <link rel="stylesheet" href="../public/main.css">
@@ -89,7 +89,7 @@
 
 
   <h1 id="Egami_Video_Codecs_RawVideoCodec" data-uid="Egami.Video.Codecs.RawVideoCodec" class="text-break">
-Class RawVideoCodec  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L22"><i class="bi bi-code-slash"></i></a>
+Class RawVideoCodec  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L23"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
@@ -99,8 +99,9 @@ Class RawVideoCodec  <a class="header-action link-secondary" title="View source"
 
   <div class="markdown summary"><p>Uncompressed video (<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Uncompressed">Uncompressed</a>): I420, YV12, Y42B, 444P, Y800, NV12, NV21, YUY2, UYVY and v210 by
 FourCC (<a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_FourCC">FourCC</a>), plain planar YUV at 8 to 12 bits with optional alpha as in YUV4MPEG2, and
-AVI's bottom-up 24-bit BI_RGB (as <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_VfwFourCC">VfwFourCC</a>), whose frames come out as G, B and R planes
-(<a class="xref" href="Egami.Pixels.YuvMatrix.html#Egami_Pixels_YuvMatrix_Identity">Identity</a>). Decoding and encoding copy samples, so they are lossless.</p>
+AVI's bottom-up 24-bit BI_RGB (as <a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_VfwFourCC">VfwFourCC</a>) and QuickTime's 24-bit raw RGB (FourCC &quot;raw &quot;), whose
+frames come out as G, B and R planes (<a class="xref" href="Egami.Pixels.YuvMatrix.html#Egami_Pixels_YuvMatrix_Identity">Identity</a>). Decoding and encoding copy samples, so they are
+lossless.</p>
 </div>
   <div class="markdown conceptual"></div>
 
@@ -163,7 +164,7 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 
   <h3 id="Egami_Video_Codecs_RawVideoCodec_CanEncode" data-uid="Egami.Video.Codecs.RawVideoCodec.CanEncode">
   CanEncode
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L39"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets whether <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_">CreateEncoder(VideoEncoderOptions, MediaContext)</a> is supported.</p>
@@ -195,7 +196,7 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 
   <h3 id="Egami_Video_Codecs_RawVideoCodec_CodecId" data-uid="Egami.Video.Codecs.RawVideoCodec.CodecId">
   CodecId
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L35"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L36"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the Matroska codec id that encoders write (<a class="xref" href="Egami.Video.CodecIds.html">CodecIds</a>).</p>
@@ -227,7 +228,7 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 
   <h3 id="Egami_Video_Codecs_RawVideoCodec_Instance" data-uid="Egami.Video.Codecs.RawVideoCodec.Instance">
   Instance
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L29"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L30"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the uncompressed video codec.</p>
@@ -259,7 +260,7 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 
   <h3 id="Egami_Video_Codecs_RawVideoCodec_Name" data-uid="Egami.Video.Codecs.RawVideoCodec.Name">
   Name
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L32"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L33"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the codec's name, such as &quot;Motion JPEG&quot;.</p>
@@ -295,7 +296,7 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 
   <h3 id="Egami_Video_Codecs_RawVideoCodec_CanDecode_Egami_Video_TrackInfo_" data-uid="Egami.Video.Codecs.RawVideoCodec.CanDecode(Egami.Video.TrackInfo)">
   CanDecode(TrackInfo)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L42"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns whether this codec decodes the track. By default, whether the track's codec id is <a class="xref" href="Egami.Video.Codecs.VideoCodec.html#Egami_Video_Codecs_VideoCodec_CodecId">CodecId</a>.</p>
@@ -334,7 +335,7 @@ foreach (YuvVideoFrame frame in reader.ReadFrames())
 
   <h3 id="Egami_Video_Codecs_RawVideoCodec_CreateDecoder_Egami_Video_VideoTrackInfo_Egami_Video_Codecs_VideoDecoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Codecs.RawVideoCodec.CreateDecoder(Egami.Video.VideoTrackInfo,Egami.Video.Codecs.VideoDecoderOptions,Egami.Video.MediaContext)">
   CreateDecoder(VideoTrackInfo, VideoDecoderOptions?, MediaContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L47"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L48"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a decoder for a track.</p>
@@ -394,7 +395,7 @@ using IVideoDecoder&lt;Rgba8&gt; rgb = VideoCodecs.CreateDecoder&lt;Rgba8&gt;(tr
 
   <h3 id="Egami_Video_Codecs_RawVideoCodec_CreateEncoder_Egami_Video_Codecs_VideoEncoderOptions_Egami_Video_MediaContext_" data-uid="Egami.Video.Codecs.RawVideoCodec.CreateEncoder(Egami.Video.Codecs.VideoEncoderOptions,Egami.Video.MediaContext)">
   CreateEncoder(VideoEncoderOptions, MediaContext)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L67"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates an encoder for planar frames. The layout is the first frame's chroma format, bit depth and alpha, named by
@@ -457,7 +458,7 @@ using IVideoEncoder rawEncoder = RawVideoCodec.Instance.CreateEncoder(options wi
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L22" class="edit-link">Edit this page</a>
+          <a href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Codecs/RawVideoCodec.cs/#L23" class="edit-link">Edit this page</a>
         </div>
 
 

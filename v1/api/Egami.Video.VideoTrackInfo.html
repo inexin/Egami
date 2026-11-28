@@ -381,11 +381,12 @@ foreach (AttachmentInfo attachment in metadata.Attachments)
 
   <h3 id="Egami_Video_VideoTrackInfo_FourCC" data-uid="Egami.Video.VideoTrackInfo.FourCC">
   FourCC
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L124"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L125"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the pixel layout of an uncompressed track (<a class="xref" href="Egami.Video.CodecIds.html#Egami_Video_CodecIds_Uncompressed">Uncompressed</a>) as a FourCC such as &quot;I420&quot;, &quot;UYVY&quot;
-or &quot;v210&quot; (Matroska ColourSpace, AVI biCompression), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for plain planar YUV described by
+or &quot;v210&quot; (Matroska ColourSpace, AVI biCompression), &quot;raw &quot; for QuickTime's 24-bit R, G, B rows (top down, no padding),
+or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for plain planar YUV described by
 <a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_ChromaFormat">ChromaFormat</a>, <a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_BitDepth">BitDepth</a> and <a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_HasAlpha">HasAlpha</a>, as in YUV4MPEG2.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
@@ -479,7 +480,7 @@ or &quot;v210&quot; (Matroska ColourSpace, AVI biCompression), or <a href="https
 
   <h3 id="Egami_Video_VideoTrackInfo_Hdr" data-uid="Egami.Video.VideoTrackInfo.Hdr">
   Hdr
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L127"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L128"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the HDR mastering display and content light levels (Matroska Colour), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.</p>
@@ -543,7 +544,7 @@ or &quot;v210&quot; (Matroska ColourSpace, AVI biCompression), or <a href="https
 
   <h3 id="Egami_Video_VideoTrackInfo_Orientation" data-uid="Egami.Video.VideoTrackInfo.Orientation">
   Orientation
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L133"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/TrackInfo.cs/#L134"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets how the coded frames must be turned or mirrored to show upright, from an MP4 or QuickTime display matrix, as EXIF

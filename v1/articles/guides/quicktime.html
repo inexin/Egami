@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>QuickTime movies | Egami </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="QuickTime movies | Egami ">
+      
+      
+      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="../toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/inexin/Egami/blob/main/docs/articles/guides/quicktime.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../images/logo.svg" alt="Egami">
+            Egami
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="quicktime-movies">QuickTime movies</h1>
+
+<p><code>MovFormat</code> writes QuickTime movies (Apple's QuickTime File Format), the .mov files that cameras, phones and editing
+applications make and read. A .mov or .qt output is a QuickTime movie; reading a .mov is the same as with <code>Mp4Format</code>, which
+reads both. <code>MediaContext.Default</code> lists <code>MovFormat</code> ahead of <code>Mp4Format</code>, so the extension picks QuickTime, and the name
+&quot;MP4&quot; (or a .mp4, .m4v or .m4a output) still writes ISO MP4.</p>
+<pre><code class="lang-csharp">// A .mov output is a QuickTime movie: H.264, HEVC, Motion JPEG, AAC, ALAC, PCM and uncompressed video, with QuickTime's
+// own sound and video descriptions. Tracks read from a .mov in any other codec, such as a timecode, go back unchanged.
+MediaFile.Remux(&quot;camera.avi&quot;, &quot;camera.mov&quot;);
+MediaFile.Remux(&quot;phone.mov&quot;, &quot;phone-copy.mov&quot;);
+
+// moov after the media, straight to the file; ISO MP4 when named so.
+MediaContext moovLast = MediaContext.Default.WithContainer(new MovFormat { MoovAtEnd = true });
+MediaFile.Remux(&quot;camera.avi&quot;, &quot;camera-end.mov&quot;, context: moovLast);
+using (Stream source = File.OpenRead(&quot;camera.avi&quot;))
+using (Stream mp4 = File.Create(&quot;camera.mp4&quot;))
+{
+    MediaFile.Remux(source, mp4, &quot;MP4&quot;, leaveOpen: true);
+}
+
+// Uncompressed 8-bit 4:2:2 for editing applications, stored as 2vuy (10-bit 4:2:2 frames as v210).
+VideoWriterOptions options = new() { Codec = RawVideoCodec.Instance, ChromaFormat = ChromaFormat.Yuv422, FrameRate = new Rational(25, 1) };
+using (VideoWriter writer = VideoWriter.Create(&quot;duck.mov&quot;, options))
+{
+    writer.WriteFrame(duck);
+}
+
+// A codec QuickTime cannot hold is refused, and the message names the format to use instead.
+try
+{
+    MediaFile.Remux(&quot;movie.webm&quot;, &quot;movie.mov&quot;);
+}
+catch (NotSupportedException e)
+{
+    Console.WriteLine(e.Message);
+}
+</code></pre><h2 id="what-it-holds">What it holds</h2>
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Codecs</th>
+<th>Stored as</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Video</td>
+<td>H.264, HEVC</td>
+<td>avc1 with avcC, hvc1 with hvcC</td>
+</tr>
+<tr>
+<td>Video</td>
+<td>Motion JPEG</td>
+<td>jpeg (Photo JPEG); a track read from QuickTime keeps its type (mjpa, dmb1, AVDJ)</td>
+</tr>
+<tr>
+<td>Video</td>
+<td>Uncompressed 8-bit 4:2:2</td>
+<td>2vuy, from UYVY, YUY2 or planar 4:2:2 packets</td>
+</tr>
+<tr>
+<td>Video</td>
+<td>Uncompressed 10-bit 4:2:2</td>
+<td>v210, from v210 or planar 10-bit 4:2:2 packets</td>
+</tr>
+<tr>
+<td>Video</td>
+<td>Uncompressed RGB</td>
+<td>raw (24-bit, top-down), from raw, AVI's BI_RGB or planar G, B and R</td>
+</tr>
+<tr>
+<td>Audio</td>
+<td>AAC, MP3</td>
+<td>mp4a with the esds in a wave atom</td>
+</tr>
+<tr>
+<td>Audio</td>
+<td>ALAC</td>
+<td>alac with its config in a wave atom</td>
+</tr>
+<tr>
+<td>Audio</td>
+<td>PCM</td>
+<td>sowt and twos (16-bit), raw (8-bit), in24, in32, fl32 and fl64 with their byte order in a wave atom; lpcm above 65,535 Hz</td>
+</tr>
+<tr>
+<td>Subtitles</td>
+<td>mov_text</td>
+<td>tx3g on a subtitle (sbtl) track</td>
+</tr>
+<tr>
+<td>Any</td>
+<td>A track read from MP4 or QuickTime in another codec, such as a timecode</td>
+<td>its sample description and samples unchanged</td>
+</tr>
+</tbody>
+</table>
+<p>AV1, VP9, VP8, FFV1, Opus, FLAC, Vorbis, AC-3 and the other codecs throw <code>NotSupportedException</code>; its message names MP4 or
+Matroska, whichever holds the codec. So does uncompressed video in another layout (4:2:0, say), which Matroska holds.</p>
+<h2 id="what-the-file-looks-like">What the file looks like</h2>
+<ul>
+<li>ftyp with the qt brand, moov, then a wide atom and one mdat. The wide atom becomes the 64-bit size when mdat passes 4 GB.</li>
+<li>Each track has QuickTime's media handler (mhlr) and data handler (dhlr), with counted names, and a data reference to the
+file itself (alis). Tracks that are neither video nor sound have a base media header (gmhd).</li>
+<li>Video descriptions carry colr (nclc; nclx for full range, which nclc cannot say), pasp, fiel for interlaced, Motion JPEG
+and uncompressed tracks, clap for 2vuy and v210, and the HDR boxes. Sound descriptions are version 0, 1 or 2 as QuickTime
+wants for the codec, with the channel layout (chan) when it is known.</li>
+<li>Edit lists, the display matrix for <code>VideoTrackInfo.Orientation</code>, tags and cover art as iTunes items, and chapters as Nero
+chpl and a QuickTime chapter text track, as in MP4. Tags with a QuickTime name (title as ©nam, artist, comment, date and
+the like) are also written as QuickTime user data text, in UTF-8.</li>
+<li>moov comes before the media, so the movie plays while it downloads: on a stream that can seek and read, the media is moved
+forward at the end; on any other stream it waits in a temporary file. <code>new MovFormat { MoovAtEnd = true }</code> writes moov last,
+straight to a seekable stream. QuickTime has no fragmented layout.</li>
+</ul>
+<p>Packets of 2vuy, v210 and raw tracks are written as they come; planar 4:2:2, YUY2 and BGR packets are repacked frame by frame.</p>
+<h2 id="reading-uncompressed-video">Reading uncompressed video</h2>
+<p>A 2vuy, v210 or 24-bit raw track reads as uncompressed video (<code>CodecIds.Uncompressed</code>) with <code>VideoTrackInfo.FourCC</code> &quot;UYVY&quot;,
+&quot;v210&quot; or &quot;raw &quot;, so <code>VideoReader</code> and <code>RawVideoCodec</code> decode it to frames: 8-bit or 10-bit 4:2:2 planes, or G, B and R planes
+(<code>YuvMatrix.Identity</code>) for raw. A MOV to MOV (or MP4) remux writes such a track back with its own sample description and
+samples, byte for byte. Matroska has no name for raw RGB, so a raw track goes there as a QuickTime track
+(<code>CodecIds.QuickTimeVideo</code>). raw with a palette or of 16 or 32 bits still reads as a pass-through track.</p>
+<p>Writers report the same warnings as MP4's (<code>mp4-timestamps</code>, <code>metadata-dropped</code>).</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/inexin/Egami/blob/main/docs/articles/guides/quicktime.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

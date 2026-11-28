@@ -480,14 +480,15 @@ mp4-fragmented warning; <a class="xref" href="Egami.Video.Containers.Mp4NonSeeka
 
   <h3 id="Egami_Video_Containers_Mp4Format_CreateMuxer_System_IO_Stream_System_Collections_Generic_IReadOnlyList_Egami_Video_TrackInfo__Egami_Video_MediaMetadata_Egami_Video_MediaContext_System_Boolean_" data-uid="Egami.Video.Containers.Mp4Format.CreateMuxer(System.IO.Stream,System.Collections.Generic.IReadOnlyList{Egami.Video.TrackInfo},Egami.Video.MediaMetadata,Egami.Video.MediaContext,System.Boolean)">
   CreateMuxer(Stream, IReadOnlyList&lt;TrackInfo&gt;, MediaMetadata, MediaContext, bool)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L135"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/inexin/Egami/blob/main/src/Egami.Video/Containers/Mp4/Mp4Format.cs/#L136"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Creates a muxer that writes ISO MP4: tracks numbered from 1 in the order given, chunks of about half a second interleaved
 by time, edit lists for start offsets and codec delays, the display matrix from <a class="xref" href="Egami.Video.VideoTrackInfo.html#Egami_Video_VideoTrackInfo_Orientation">Orientation</a>,
 tags as iTunes items, cover art, and chapters both as Nero chpl and as a QuickTime chapter track. Holds AV1, VP9, VP8,
 Motion JPEG, H.264, HEVC, MPEG-4 Part 2, Opus, FLAC, AAC, MP3, PCM, mov_text, and tracks read from MP4 or QuickTime with
-any other codec. A file read as QuickTime is written as MP4 (Q11). With <a class="xref" href="Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_Fragments">Fragments</a> set, or on an output that
+any other codec. A file read as QuickTime is written as MP4 (Q11); <a class="xref" href="Egami.Video.Containers.MovFormat.html">MovFormat</a>, which a .mov output picks, writes
+QuickTime. With <a class="xref" href="Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_Fragments">Fragments</a> set, or on an output that
 cannot seek and read back (see <a class="xref" href="Egami.Video.Containers.Mp4Format.html#Egami_Video_Containers_Mp4Format_NonSeekable">NonSeekable</a>), the file is fragmented MP4 instead, with Nero chapters only.</p>
 </div>
   <div class="markdown level1 conceptual"></div>

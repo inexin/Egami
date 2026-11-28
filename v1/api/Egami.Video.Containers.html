@@ -192,6 +192,14 @@ writes: <a class="xref" href="Egami.Video.Containers.MatroskaFormat.html#Egami_V
 </dd>
     </dl>
     <dl class="jumplist">
+      <dt><a class="xref" href="Egami.Video.Containers.MovFormat.html">MovFormat</a></dt>
+      <dd><p>QuickTime movies (Apple's QuickTime File Format): .mov and .qt files. Reading is <a class="xref" href="Egami.Video.Containers.Mp4Format.html">Mp4Format</a>'s, so a .mov reads
+exactly as it does there. Writing makes a QuickTime movie rather than ISO MP4: the qt brand, QuickTime's handler, sound and
+video descriptions, and the uncompressed layouts editing applications use. Registered ahead of <a class="xref" href="Egami.Video.Containers.Mp4Format.html">Mp4Format</a> in
+<a class="xref" href="Egami.Video.MediaContext.html#Egami_Video_MediaContext_Default">Default</a>, so a .mov output is QuickTime; <a class="xref" href="Egami.Video.Containers.Mp4Format.html">Mp4Format</a> chosen by name still writes MP4.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
       <dt><a class="xref" href="Egami.Video.Containers.Mp3Format.html">Mp3Format</a></dt>
       <dd><p>MPEG audio files (.mp3, .mp2, .mp1, .mpa): MP3 and MP2 frames with their tags. The reader takes ID3v2.2, 2.3 and 2.4 tags
 (text frames into <a class="xref" href="Egami.Video.MediaInfo.html#Egami_Video_MediaInfo_Tags">Tags</a>, pictures as attachments with the front cover named cover.*, CHAP frames as
