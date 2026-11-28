@@ -10,7 +10,8 @@ namespace Egami.Video.Containers.Mp4;
 /// interleaved by time. By default moov goes before mdat: on a stream that can seek and read, the media is written in place and
 /// moved forward at the end; otherwise it waits in a temporary file. With moov at the end, the media goes straight to the
 /// output. Edit lists keep start offsets and codec delays; tags, cover art and chapters (Nero chpl and a QuickTime chapter
-/// track) are written.
+/// track) are written. With <c>quickTime</c> set (<see cref="MovFormat"/>) the file is a QuickTime movie instead: the qt brand,
+/// a wide atom before mdat, and QuickTime's handlers and sample descriptions (<see cref="MovSampleEntries"/>).
 /// </summary>
 internal sealed class Mp4Muxer : IMuxer
 {
@@ -22,6 +23,7 @@ internal sealed class Mp4Muxer : IMuxer
     private readonly bool _leaveOpen;
     private readonly bool _moovAtEnd;
     private readonly bool _inPlace;
+    private readonly bool _quickTime;
     private readonly MediaMetadata _metadata;
     private readonly Action<MediaWarning>? _warnings;
     private readonly List<TrackWriter> _tracks = [];
@@ -32,7 +34,7 @@ internal sealed class Mp4Muxer : IMuxer
     private long _mediaLength;
     private bool _finished;
 
-    public Mp4Muxer(Stream stream, IReadOnlyList<TrackInfo> tracks, MediaMetadata metadata, MediaContext context, bool leaveOpen, bool moovAtEnd)
+    public Mp4Muxer(Stream stream, IReadOnlyList<TrackInfo> tracks, MediaMetadata metadata, MediaContext context, bool leaveOpen, bool moovAtEnd, bool quickTime = false)
     {
         if (!stream.CanWrite)
         {
@@ -51,7 +53,7 @@ internal sealed class Mp4Muxer : IMuxer
 
         foreach (TrackInfo track in tracks)
         {
-            if (Mp4SampleEntries.Unsupported(track) is { } reason)
+            if ((quickTime ? MovSampleEntries.Unsupported(track) : Mp4SampleEntries.Unsupported(track)) is { } reason)
             {
                 throw new NotSupportedException(reason + ".");
             }
@@ -61,7 +63,7 @@ internal sealed class Mp4Muxer : IMuxer
                 throw new ArgumentException($"Track number {track.Number} appears twice.", nameof(tracks));
             }
 
-            TrackWriter writer = new(track, _tracks.Count + 1);
+            TrackWriter writer = new(track, _tracks.Count + 1, quickTime);
             _tracks.Add(writer);
             _byInput[track.Number] = writer;
         }
@@ -70,9 +72,10 @@ internal sealed class Mp4Muxer : IMuxer
         _stream = stream;
         _leaveOpen = leaveOpen;
         _moovAtEnd = moovAtEnd;
+        _quickTime = quickTime;
         _metadata = metadata;
         _warnings = context.Warnings;
-        _ftyp = Ftyp(tracks);
+        _ftyp = quickTime ? MovSampleEntries.Ftyp() : Ftyp(tracks);
         _inPlace = moovAtEnd || (stream.CanSeek && stream.CanRead);
         if (_inPlace)
         {
@@ -88,7 +91,7 @@ internal sealed class Mp4Muxer : IMuxer
 
         if (metadata.Attachments.Any(a => !IsCover(a)) || metadata.Chapters.Any(c => c.Language is not null))
         {
-            _warnings?.Invoke(new MediaWarning("metadata-dropped", "MP4 holds cover art but no other attachments, and no chapter languages; they are left out."));
+            _warnings?.Invoke(new MediaWarning("metadata-dropped", (quickTime ? "QuickTime" : "MP4") + " holds cover art but no other attachments, and no chapter languages; they are left out."));
         }
     }
 
@@ -134,7 +137,7 @@ internal sealed class Mp4Muxer : IMuxer
         {
             byte[] moov = Moov(_mediaStart, chapters);
             _stream.Position = headerAt;
-            _stream.Write(MdatHeader(mdatSize));
+            _stream.Write(MdatHeader(mdatSize, _quickTime));
             _stream.Position = _mediaStart + _mediaLength;
             _stream.Write(moov);
         }
@@ -161,13 +164,13 @@ internal sealed class Mp4Muxer : IMuxer
                 ShiftForward(headerAt, mdatSize, moov.Length);
                 _stream.Position = headerAt;
                 _stream.Write(moov);
-                _stream.Write(MdatHeader(mdatSize));
+                _stream.Write(MdatHeader(mdatSize, _quickTime));
             }
             else
             {
                 _stream.Write(_ftyp);
                 _stream.Write(moov);
-                _stream.Write(MdatHeader(mdatSize));
+                _stream.Write(MdatHeader(mdatSize, _quickTime));
                 _media.Position = 0;
                 _media.CopyTo(_stream);
             }
@@ -221,14 +224,14 @@ internal sealed class Mp4Muxer : IMuxer
         }
     }
 
-    private static byte[] MdatHeader(long size)
+    private static byte[] MdatHeader(long size, bool quickTime)
     {
         BoxWriter w = new();
         if (size - 8 <= uint.MaxValue)
         {
-            // An 8-byte free box fills the reserve, then a 32-bit mdat header.
+            // An 8-byte free box (QuickTime's wide, which is there to become a 64-bit size) fills the reserve, then a 32-bit mdat header.
             w.U32(8);
-            w.Type("free");
+            w.Type(quickTime ? "wide" : "free");
             w.U32((uint)(size - 8));
             w.Type("mdat");
         }
@@ -312,8 +315,8 @@ internal sealed class Mp4Muxer : IMuxer
             track.WriteTrak(w, mediaData, MovieTimescale, chapters is not null && track == _tracks[0] ? chapters.Id : null);
         }
 
-        chapters?.WriteTrak(w, mediaData, MovieTimescale, movieDuration);
-        Udta(w, _metadata, _tracks.Select(t => t.GaplessTag()).FirstOrDefault(t => t is not null));
+        chapters?.WriteTrak(w, mediaData, MovieTimescale, movieDuration, _quickTime);
+        Udta(w, _metadata, _tracks.Select(t => t.GaplessTag()).FirstOrDefault(t => t is not null), _quickTime);
         w.End();
         return w.ToArray();
     }
@@ -321,8 +324,10 @@ internal sealed class Mp4Muxer : IMuxer
     /// <summary>
     /// Writes moov's udta: Nero chapters (chpl), and the tags and cover art as iTunes items. A source's iTunSMPB tag is left out,
     /// as it describes the source's packets; <paramref name="gapless"/> is the one for this file's AAC track, if it has priming.
+    /// A QuickTime movie (<paramref name="quickTime"/>) also has the ©-named tags as QuickTime user data text, which QuickTime's
+    /// own readers show.
     /// </summary>
-    internal static void Udta(BoxWriter w, MediaMetadata metadata, string? gapless = null)
+    internal static void Udta(BoxWriter w, MediaMetadata metadata, string? gapless = null, bool quickTime = false)
     {
         const uint Freeform = 0x2D2D2D2D; // "----"
         List<(uint Type, string? Name, string Value)> items = [];
@@ -366,6 +371,25 @@ internal sealed class Mp4Muxer : IMuxer
             }
 
             w.End();
+        }
+
+        if (quickTime)
+        {
+            // QuickTime File Format, User Data Text: a 16-bit length, a language (packed ISO 639-2 "und", so the text is
+            // UTF-8), then the text. The encoder tag is QuickTime's ©swr.
+            foreach ((uint type, string? name, string value) in items)
+            {
+                if (name is null && type >> 24 == 0xA9)
+                {
+                    byte[] text = Encoding.UTF8.GetBytes(value);
+                    int length = Utf8Prefix(text, ushort.MaxValue);
+                    w.Start(type == 0xA9746F6F ? 0xA9737772 : type); // ©too, ©swr
+                    w.U16(length);
+                    w.U16(0x55C4);
+                    w.Bytes(text.AsSpan(0, length));
+                    w.End();
+                }
+            }
         }
 
         if (items.Count > 0 || covers.Count > 0)
@@ -479,13 +503,24 @@ internal sealed class Mp4Muxer : IMuxer
         private readonly List<int> _compositions = [];
         private readonly List<uint> _sync = [];
         private readonly List<bool> _discard = [];
+        private readonly bool _quickTime;
+        private readonly MovRawVideo? _raw;
+        private readonly byte[]? _rawFrame;
         private long? _lastDuration;
         private bool _hasCompositions;
 
-        public TrackWriter(TrackInfo input, int id)
+        public TrackWriter(TrackInfo input, int id, bool quickTime)
         {
             Input = input;
             Id = id;
+            _quickTime = quickTime;
+            if (quickTime && input is VideoTrackInfo video && MovRawVideo.For(video) is { } raw)
+            {
+                // QuickTime's uncompressed layouts: packets in another layout are repacked as they come.
+                _raw = raw;
+                _rawFrame = raw.IsCopy ? null : new byte[raw.FrameSize];
+            }
+
             Output = input with { Number = id };
             Timescale = TimescaleOf(input);
             TimeBase = new Rational(1, Timescale);
@@ -534,9 +569,16 @@ internal sealed class Mp4Muxer : IMuxer
                 Input = audio with { CodecPrivate = config };
             }
 
+            ReadOnlySpan<byte> bytes = packet.Data.Span;
+            if (_rawFrame is not null)
+            {
+                _raw!.Convert(bytes, _rawFrame);
+                bytes = _rawFrame;
+            }
+
             long composition = Math.Clamp(pts - dts, int.MinValue, int.MaxValue);
             _hasCompositions |= composition != 0;
-            _sizes.Add(packet.Data.Length);
+            _sizes.Add(bytes.Length);
             _decodeTimes.Add(dts);
             _compositions.Add((int)composition);
             if (packet.IsKeyframe)
@@ -553,7 +595,7 @@ internal sealed class Mp4Muxer : IMuxer
                 PendingStart = dts;
             }
 
-            Pending.Write(packet.Data.Span);
+            Pending.Write(bytes);
             PendingCount++;
             return dts - PendingStart >= Timescale / 2 || Pending.Length >= ChunkBytes;
         }
@@ -682,14 +724,29 @@ internal sealed class Mp4Muxer : IMuxer
             w.U16(PackLanguage(Input.Language));
             w.U16(0);
             w.End();
-            string handler = TrackHandler(w, Input);
+            string handler = _quickTime ? MovSampleEntries.TrackHandler(w, Input) : TrackHandler(w, Input);
             w.Start("minf");
-            MediaHeader(w, handler);
-            Dinf(w);
+            if (_quickTime)
+            {
+                MovSampleEntries.MediaHeaderAndData(w, handler);
+            }
+            else
+            {
+                MediaHeader(w, handler);
+                Dinf(w);
+            }
+
             w.Start("stbl");
             w.StartFull("stsd", 0, 0);
             w.U32(1);
-            Mp4SampleEntries.Write(w, Input);
+            if (_quickTime)
+            {
+                MovSampleEntries.Write(w, Input);
+            }
+            else
+            {
+                Mp4SampleEntries.Write(w, Input);
+            }
             w.End();
             WriteTables(w, mediaData);
             w.End();
@@ -835,7 +892,7 @@ internal sealed class Mp4Muxer : IMuxer
 
         public List<(int Size, long Duration, long Start)> Samples { get; } = [];
 
-        public void WriteTrak(BoxWriter w, long mediaData, uint movieTimescale, long movieDuration)
+        public void WriteTrak(BoxWriter w, long mediaData, uint movieTimescale, long movieDuration, bool quickTime)
         {
             long first = Samples.Count > 0 ? Samples[0].Start : 0;
             long duration = Samples.Sum(s => s.Duration);
@@ -876,11 +933,21 @@ internal sealed class Mp4Muxer : IMuxer
             w.U16(PackLanguage(null));
             w.U16(0);
             w.End();
-            Hdlr(w, "text", "ChapterHandler");
-            w.Start("minf");
-            w.StartFull("nmhd", 0, 0);
-            w.End();
-            Dinf(w);
+            if (quickTime)
+            {
+                MovSampleEntries.Hdlr(w, "mhlr", "text", "Chapter Text Media Handler");
+                w.Start("minf");
+                MovSampleEntries.MediaHeaderAndData(w, "text");
+            }
+            else
+            {
+                Hdlr(w, "text", "ChapterHandler");
+                w.Start("minf");
+                w.StartFull("nmhd", 0, 0);
+                w.End();
+                Dinf(w);
+            }
+
             w.Start("stbl");
             w.StartFull("stsd", 0, 0);
             w.U32(1);

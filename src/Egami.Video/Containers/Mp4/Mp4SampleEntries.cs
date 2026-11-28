@@ -300,6 +300,12 @@ internal static class Mp4SampleEntries
             w.End();
         }
 
+        HdrBoxes(w, video);
+    }
+
+    /// <summary>Writes the HDR boxes: content light levels (clli) and the mastering display (mdcv).</summary>
+    internal static void HdrBoxes(BoxWriter w, VideoTrackInfo video)
+    {
         if (video.Hdr is { } hdr)
         {
             if (hdr.MaxContentLightLevel is not null || hdr.MaxFrameAverageLightLevel is not null)
@@ -329,7 +335,7 @@ internal static class Mp4SampleEntries
     }
 
     /// <summary>Writes an esds box: an ES descriptor with a decoder config (object type, stream type) and its specific info.</summary>
-    private static void Esds(BoxWriter w, int objectType, int streamType, ReadOnlySpan<byte> specific)
+    internal static void Esds(BoxWriter w, int objectType, int streamType, ReadOnlySpan<byte> specific)
     {
         int decSpecific = specific.Length > 0 ? 1 + LengthSize(specific.Length) + specific.Length : 0;
         int decConfig = 13 + decSpecific;

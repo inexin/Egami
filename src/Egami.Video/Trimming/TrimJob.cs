@@ -1072,7 +1072,7 @@ internal sealed class TrimJob : IDisposable
                     }
 
                     Shift(packet);
-                    if (packet.Timestamp < MediaTime.Zero && _format is not Mp4Format)
+                    if (packet.Timestamp < MediaTime.Zero && _format is not (Mp4Format or MovFormat))
                     {
                         packet.Timestamp = MediaTime.Zero;
                         packet.DecodeTimestamp = packet.DecodeTimestamp is null ? null : MediaTime.Zero;
@@ -1153,7 +1153,7 @@ internal sealed class TrimJob : IDisposable
             return AudioCutKind.Pcm;
         }
 
-        return _format is Mp4Format || (_format is MatroskaFormat && track.CodecId == CodecIds.Opus) ? AudioCutKind.Container : AudioCutKind.Nearest;
+        return _format is Mp4Format or MovFormat || (_format is MatroskaFormat && track.CodecId == CodecIds.Opus) ? AudioCutKind.Container : AudioCutKind.Nearest;
     }
 
     /// <summary>

@@ -122,7 +122,8 @@ public sealed class Mp4Format : ContainerFormat
     /// by time, edit lists for start offsets and codec delays, the display matrix from <see cref="VideoTrackInfo.Orientation"/>,
     /// tags as iTunes items, cover art, and chapters both as Nero chpl and as a QuickTime chapter track. Holds AV1, VP9, VP8,
     /// Motion JPEG, H.264, HEVC, MPEG-4 Part 2, Opus, FLAC, AAC, MP3, PCM, mov_text, and tracks read from MP4 or QuickTime with
-    /// any other codec. A file read as QuickTime is written as MP4 (Q11). With <see cref="Fragments"/> set, or on an output that
+    /// any other codec. A file read as QuickTime is written as MP4 (Q11); <see cref="MovFormat"/>, which a .mov output picks, writes
+    /// QuickTime. With <see cref="Fragments"/> set, or on an output that
     /// cannot seek and read back (see <see cref="NonSeekable"/>), the file is fragmented MP4 instead, with Nero chapters only.
     /// </summary>
     /// <param name="stream">Where to write.</param>

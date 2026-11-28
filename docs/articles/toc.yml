@@ -198,6 +198,8 @@
       href: guides/video.md
     - name: Streaming MP4
       href: guides/streaming-mp4.md
+    - name: QuickTime movies
+      href: guides/quicktime.md
     - name: Encoding video
       href: guides/video-encoding.md
     - name: Video editing

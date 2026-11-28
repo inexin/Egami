@@ -171,7 +171,7 @@ public sealed class AudioWriter : IDisposable
         format == FlacFormat.Instance ? FlacCodec.Instance
         : format == OggFormat.Instance || format == MatroskaFormat.WebM ? OpusCodec.Instance
         : format == AiffFormat.Instance ? PcmCodec.BigEndian
-        : format == AdtsFormat.Instance || format == Mp4Format.Instance ? AacCodec.Instance
+        : format == AdtsFormat.Instance || format is Mp4Format or MovFormat ? AacCodec.Instance
         : PcmCodec.Instance;
 
     /// <summary>Picks the stored bit depth: the option, else the first frame's valid bits where the codec stores them.</summary>

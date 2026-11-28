@@ -8,7 +8,7 @@ namespace Egami.Video.Benchmarks;
 /// The V4.3 speed gate: writing fragmented MP4 takes at most 1.05 times as long as writing flat MP4 (moov first, the media moved
 /// forward at the end), and allocates no more per packet. The packets are read into memory first, so only the writer is timed.
 /// Two inputs: 720p Motion JPEG with PCM audio, 500 frames, about 80 MB; and 40,000 packets of 1 KB of PCM, where per-packet
-/// costs show most. Both write to a file.
+/// costs show most. Both write to a file. QuickTime (V4.4) is the same writer with QuickTime's boxes, timed beside them.
 /// </summary>
 [MemoryDiagnoser]
 public class Mp4WriteBenchmarks
@@ -56,7 +56,10 @@ public class Mp4WriteBenchmarks
     [Benchmark(Description = "Fragmented")]
     public long Fragments() => Write(Fragmented);
 
-    private long Write(Mp4Format format)
+    [Benchmark(Description = "QuickTime, moov first")]
+    public long QuickTime() => Write(MovFormat.Instance);
+
+    private long Write(ContainerFormat format)
     {
         using FileStream file = new(_output, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 1 << 16);
         using (IMuxer muxer = format.CreateMuxer(file, _tracks, MediaContext.Default, leaveOpen: true))
