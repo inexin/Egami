@@ -146,6 +146,13 @@ internal static class MovSampleEntries
 
         if (track is VideoTrackInfo video)
         {
+            if (MovRawVideo.SourceEntry(video) is { Length: > 0 } entry)
+            {
+                // An uncompressed track read from QuickTime in the layout it is written in: its own entry, byte for byte.
+                w.Bytes(entry);
+                return;
+            }
+
             WriteVideo(w, video);
         }
         else
@@ -161,7 +168,7 @@ internal static class MovSampleEntries
         {
             CodecIds.Avc => ("avc1", "H.264"),
             CodecIds.Hevc => ("hvc1", "HEVC"),
-            CodecIds.MotionJpeg => ("jpeg", "Photo - JPEG"),
+            CodecIds.MotionJpeg => MotionJpegType(video),
             _ => raw!.Type switch
             {
                 "2vuy" => ("2vuy", "Component Y'CbCr 8-bit 4:2:2"),
@@ -250,6 +257,24 @@ internal static class MovSampleEntries
 
         Mp4SampleEntries.HdrBoxes(w, video);
         w.End();
+    }
+
+    /// <summary>
+    /// Gets the type and compressor name of a Motion JPEG entry: a track read from QuickTime keeps its own (mjpa, dmb1, AVDJ),
+    /// anything else is Photo JPEG.
+    /// </summary>
+    private static (string Type, string Compressor) MotionJpegType(VideoTrackInfo video)
+    {
+        ReadOnlySpan<byte> entry = video.QuickTimeEntry.Span;
+        string type = entry.Length >= 8 ? Encoding.Latin1.GetString(entry[4..8]) : "";
+        if (type is not ("mjpa" or "dmb1" or "AVDJ"))
+        {
+            return ("jpeg", "Photo - JPEG");
+        }
+
+        // The compressor name: a Pascal string of up to 31 characters at byte 42 of the fields.
+        string name = entry.Length >= 8 + Mp4Codecs.VisualFields ? Encoding.Latin1.GetString(entry.Slice(8 + 43, Math.Min((int)entry[8 + 42], 31))) : "";
+        return (type, name);
     }
 
     private static void WriteAudio(BoxWriter w, AudioTrackInfo audio)
@@ -399,7 +424,7 @@ internal static class MovSampleEntries
 /// <summary>
 /// How a QuickTime movie stores an uncompressed track, and the repacking from Egami.Video's layouts: 2vuy (Cb Y0 Cr Y1, 8-bit
 /// 4:2:2) from UYVY, YUY2 or planar 4:2:2; v210 (10-bit 4:2:2) from v210 or planar 10-bit 4:2:2; raw (24-bit R, G, B, top
-/// down) from AVI's BI_RGB or planar G, B and R (the identity matrix).
+/// down) from raw, AVI's BI_RGB or planar G, B and R (the identity matrix).
 /// </summary>
 internal sealed class MovRawVideo
 {
@@ -423,6 +448,7 @@ internal sealed class MovRawVideo
         BgrBottomUp,
         BgrTopDown,
         PlanarGbr,
+        Rgb,
     }
 
     /// <summary>Gets the sample description type: 2vuy, v210 or "raw ".</summary>
@@ -433,7 +459,7 @@ internal sealed class MovRawVideo
     public int Height { get; }
 
     /// <summary>Gets whether packets are written as they come.</summary>
-    public bool IsCopy => _source is Source.Uyvy or Source.V210;
+    public bool IsCopy => _source is Source.Uyvy or Source.V210 or Source.Rgb;
 
     /// <summary>Gets the bytes a QuickTime frame takes.</summary>
     public int FrameSize => checked(Type switch
@@ -459,6 +485,7 @@ internal sealed class MovRawVideo
                 ("UYVY" or "2vuy", _, _) => Source.Uyvy,
                 ("YUY2" or "YUYV", _, _) => Source.Yuyv,
                 ("v210", _, _) => Source.V210,
+                ("raw ", _, _) => Source.Rgb,
                 ("Y42B", _, _) or (null, ChromaFormat.Yuv422, 8) => Source.Planar422,
                 (null, ChromaFormat.Yuv422, 10) => Source.Planar422Ten,
                 ("444P", _, _) or (null, ChromaFormat.Yuv444, 8) when track.Color is { MatrixCoefficients: 0 } => Source.PlanarGbr,
@@ -483,6 +510,23 @@ internal sealed class MovRawVideo
         };
     }
 
+    /// <summary>
+    /// Gets the QuickTime entry an uncompressed track was read from, when its packets are still in that entry's layout and size
+    /// (a remux), else empty: such a track is written with its own entry.
+    /// </summary>
+    public static ReadOnlySpan<byte> SourceEntry(VideoTrackInfo track)
+    {
+        ReadOnlySpan<byte> entry = track.QuickTimeEntry.Span;
+        if (track.CodecId != CodecIds.Uncompressed || entry.Length < 8 + Mp4Codecs.VisualFields || BinaryPrimitives.ReadUInt32BigEndian(entry) != entry.Length
+            || For(track) is not { IsCopy: true } raw || Encoding.Latin1.GetString(entry[4..8]) != raw.Type
+            || BinaryPrimitives.ReadUInt16BigEndian(entry[(8 + 24)..]) != track.Width || BinaryPrimitives.ReadUInt16BigEndian(entry[(8 + 26)..]) != track.Height)
+        {
+            return [];
+        }
+
+        return entry;
+    }
+
     /// <summary>Repacks one frame into <paramref name="target"/>, <see cref="FrameSize"/> bytes.</summary>
     /// <exception cref="ArgumentException">The packet is smaller than a frame of the track's layout.</exception>
     public void Convert(ReadOnlySpan<byte> frame, Span<byte> target)
@@ -490,7 +534,7 @@ internal sealed class MovRawVideo
         int w = Width, h = Height, half = (w + 1) / 2;
         switch (_source)
         {
-            case Source.Uyvy or Source.V210:
+            case Source.Uyvy or Source.V210 or Source.Rgb:
                 Need(frame, FrameSize);
                 frame[..FrameSize].CopyTo(target);
                 break;

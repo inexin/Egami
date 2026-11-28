@@ -69,8 +69,12 @@ internal sealed class MatroskaMuxer : IMuxer
         _seekable = stream.CanSeek;
         _output = new OutputStream(stream);
         List<TrackInfo> outputs = [];
-        foreach (TrackInfo track in tracks)
+        foreach (TrackInfo given in tracks)
         {
+            // QuickTime's raw RGB has no Matroska layout name; it goes as V_QUICKTIME with its entry, as it did before it decoded.
+            TrackInfo track = given is VideoTrackInfo { CodecId: CodecIds.Uncompressed, FourCC: "raw " } raw && raw.QuickTimeEntry.Length >= 8
+                ? raw with { CodecId = CodecIds.QuickTimeVideo, CodecPrivate = raw.QuickTimeEntry, FourCC = null, QuickTimeEntry = ReadOnlyMemory<byte>.Empty }
+                : given;
             if (_byInputNumber.ContainsKey(track.Number))
             {
                 throw new ArgumentException($"Track number {track.Number} appears twice.", nameof(tracks));

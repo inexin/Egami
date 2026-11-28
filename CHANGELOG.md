@@ -603,6 +603,11 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
   .mov as MP4 for now.
 - The MP4 reader reads AAC and MP3 whose esds sits in a QuickTime wave atom (as QuickTime and FFmpeg write .mov files) as AAC
   and MP3, not as a pass-through track, and takes in24 and in32's byte order from the wave atom's enda.
+- QuickTime's 2vuy, v210 and 24-bit raw video read as uncompressed video (`CodecIds.Uncompressed`, FourCC "UYVY", "v210" or
+  "raw ") and decode to frames; they read as `CodecIds.QuickTimeVideo` pass-through tracks before. A MOV or MP4 remux still
+  writes their sample descriptions and samples back byte for byte. `RawVideoCodec` decodes and encodes the "raw " layout.
+- A Motion JPEG track read from QuickTime as mjpa (or dmb1, AVDJ) keeps that type when written to a QuickTime movie; other
+  Motion JPEG tracks are written as jpeg.
 
 ## Egami.Video.Cli 1.4.0 (unreleased)
 

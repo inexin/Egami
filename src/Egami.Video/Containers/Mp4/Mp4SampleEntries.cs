@@ -34,6 +34,7 @@ internal static class Mp4SampleEntries
         CodecIds.PcmLittleEndian or CodecIds.PcmBigEndian or CodecIds.PcmFloat => null,
         CodecIds.MovText or CodecIds.Mp4WebVtt => null,
         CodecIds.QuickTimeVideo or CodecIds.QuickTimeAudio or CodecIds.QuickTimeOther when track.CodecPrivate.Length >= 8 => null,
+        CodecIds.Uncompressed when track is VideoTrackInfo video && !MovRawVideo.SourceEntry(video).IsEmpty => null,
         _ => $"MP4 cannot hold codec '{track.CodecId}'",
     };
 
@@ -81,6 +82,13 @@ internal static class Mp4SampleEntries
 
         if (track is VideoTrackInfo video)
         {
+            if (video.CodecId == CodecIds.Uncompressed)
+            {
+                // Uncompressed video read from QuickTime (2vuy, v210, raw) goes back with its own entry, as it did as a pass-through track.
+                w.Bytes(MovRawVideo.SourceEntry(video));
+                return;
+            }
+
             string type = video.CodecId switch
             {
                 CodecIds.Av1 => "av01",

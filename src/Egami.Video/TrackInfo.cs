@@ -118,7 +118,8 @@ public sealed record VideoTrackInfo : TrackInfo
 
     /// <summary>
     /// Gets the pixel layout of an uncompressed track (<see cref="CodecIds.Uncompressed"/>) as a FourCC such as "I420", "UYVY"
-    /// or "v210" (Matroska ColourSpace, AVI biCompression), or <see langword="null"/> for plain planar YUV described by
+    /// or "v210" (Matroska ColourSpace, AVI biCompression), "raw " for QuickTime's 24-bit R, G, B rows (top down, no padding),
+    /// or <see langword="null"/> for plain planar YUV described by
     /// <see cref="ChromaFormat"/>, <see cref="BitDepth"/> and <see cref="HasAlpha"/>, as in YUV4MPEG2.
     /// </summary>
     public string? FourCC { get; init; }
@@ -131,6 +132,13 @@ public sealed record VideoTrackInfo : TrackInfo
     /// orientation says it for photos. Frames come out as coded; <see cref="VideoReaderOptions.AutoOrient"/> applies it.
     /// </summary>
     public ImageOrientation Orientation { get; init; } = ImageOrientation.Normal;
+
+    /// <summary>
+    /// Gets the QuickTime sample description (the whole entry box) a track read as <see cref="CodecIds.Uncompressed"/> or
+    /// <see cref="CodecIds.MotionJpeg"/> came from, or empty. The QuickTime and MP4 writers use it to keep the source's entry
+    /// (2vuy, v210, raw) or its Motion JPEG type (mjpa and the like) on a remux.
+    /// </summary>
+    internal ReadOnlyMemory<byte> QuickTimeEntry { get; init; }
 }
 
 /// <summary>An audio track: a <see cref="TrackInfo"/> with the sample format.</summary>

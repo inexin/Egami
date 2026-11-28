@@ -45,9 +45,10 @@ public sealed class MovFormat : ContainerFormat
     /// Creates a muxer that writes a QuickTime movie: ftyp with the qt brand, moov, a wide atom and one mdat; QuickTime media and
     /// data handlers (mhlr and dhlr); sound descriptions of version 0, 1 or 2 (PCM as sowt, twos, raw, in24, in32, fl32, fl64 or
     /// lpcm; AAC, MP3 and ALAC with their setup in a wave atom) with a chan layout; video descriptions with colr (nclc), fiel,
-    /// pasp and, for uncompressed video, clap. Holds H.264, HEVC, Motion JPEG (as jpeg), uncompressed 4:2:2 (2vuy from 8-bit
-    /// and v210 from 10-bit packets) and RGB (raw), AAC, MP3, ALAC, PCM, mov_text (tx3g on a subtitle track), and tracks read
-    /// from MP4 or QuickTime with any other codec, whose sample descriptions are written back byte for byte. Chapters, cover art,
+    /// pasp and, for uncompressed video, clap. Holds H.264, HEVC, Motion JPEG (as jpeg, or as the mjpa, dmb1 or AVDJ a QuickTime
+    /// track was read with), uncompressed 4:2:2 (2vuy from 8-bit and v210 from 10-bit packets) and RGB (raw), AAC, MP3, ALAC,
+    /// PCM, mov_text (tx3g on a subtitle track), and tracks read from MP4 or QuickTime with any other codec, whose sample
+    /// descriptions are written back byte for byte, as are those of uncompressed tracks read from QuickTime. Chapters, cover art,
     /// tags, rotation and edit lists are written as <see cref="Mp4Format"/> writes them. There is no fragmented QuickTime: on an
     /// output that cannot seek and read back, the media waits in a temporary file.
     /// </summary>

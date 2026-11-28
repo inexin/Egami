@@ -12,10 +12,10 @@ reads both. `MediaContext.Default` lists `MovFormat` ahead of `Mp4Format`, so th
 | Kind | Codecs | Stored as |
 | --- | --- | --- |
 | Video | H.264, HEVC | avc1 with avcC, hvc1 with hvcC |
-| Video | Motion JPEG | jpeg (Photo JPEG) |
+| Video | Motion JPEG | jpeg (Photo JPEG); a track read from QuickTime keeps its type (mjpa, dmb1, AVDJ) |
 | Video | Uncompressed 8-bit 4:2:2 | 2vuy, from UYVY, YUY2 or planar 4:2:2 packets |
 | Video | Uncompressed 10-bit 4:2:2 | v210, from v210 or planar 10-bit 4:2:2 packets |
-| Video | Uncompressed RGB | raw (24-bit, top-down), from AVI's BI_RGB or planar G, B and R |
+| Video | Uncompressed RGB | raw (24-bit, top-down), from raw, AVI's BI_RGB or planar G, B and R |
 | Audio | AAC, MP3 | mp4a with the esds in a wave atom |
 | Audio | ALAC | alac with its config in a wave atom |
 | Audio | PCM | sowt and twos (16-bit), raw (8-bit), in24, in32, fl32 and fl64 with their byte order in a wave atom; lpcm above 65,535 Hz |
@@ -40,7 +40,14 @@ Matroska, whichever holds the codec. So does uncompressed video in another layou
   forward at the end; on any other stream it waits in a temporary file. `new MovFormat { MoovAtEnd = true }` writes moov last,
   straight to a seekable stream. QuickTime has no fragmented layout.
 
-Packets of 2vuy and v210 tracks are written as they come; planar 4:2:2, YUY2 and BGR packets are repacked frame by frame. A
-2vuy, v210 or raw track reads back as a pass-through track (`CodecIds.QuickTimeVideo`), which other QuickTime movies keep.
+Packets of 2vuy, v210 and raw tracks are written as they come; planar 4:2:2, YUY2 and BGR packets are repacked frame by frame.
+
+## Reading uncompressed video
+
+A 2vuy, v210 or 24-bit raw track reads as uncompressed video (`CodecIds.Uncompressed`) with `VideoTrackInfo.FourCC` "UYVY",
+"v210" or "raw ", so `VideoReader` and `RawVideoCodec` decode it to frames: 8-bit or 10-bit 4:2:2 planes, or G, B and R planes
+(`YuvMatrix.Identity`) for raw. A MOV to MOV (or MP4) remux writes such a track back with its own sample description and
+samples, byte for byte. Matroska has no name for raw RGB, so a raw track goes there as a QuickTime track
+(`CodecIds.QuickTimeVideo`). raw with a palette or of 16 or 32 bits still reads as a pass-through track.
 
 Writers report the same warnings as MP4's (`mp4-timestamps`, `metadata-dropped`).

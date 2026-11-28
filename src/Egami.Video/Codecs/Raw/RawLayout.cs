@@ -7,7 +7,8 @@ namespace Egami.Video.Codecs.Raw;
 /// <summary>
 /// How uncompressed frames lay out their samples. Named by FourCC where one exists (Matroska ColourSpace, AVI biCompression):
 /// I420, YV12, Y42B, 444P, Y800, NV12, NV21, YUY2, UYVY and v210; plain planar layouts at any bit depth with optional alpha
-/// (the YUV4MPEG2 layout, little-endian 16-bit samples above 8 bits) have none. BGR24 is AVI's bottom-up BI_RGB.
+/// (the YUV4MPEG2 layout, little-endian 16-bit samples above 8 bits) have none. BGR24 is AVI's bottom-up BI_RGB; "raw " is
+/// QuickTime's 24-bit R, G, B.
 /// </summary>
 internal sealed record RawLayout(string? FourCC, ChromaFormat Chroma, int BitDepth, bool Alpha, RawLayout.Kind Shape)
 {
@@ -19,6 +20,7 @@ internal sealed record RawLayout(string? FourCC, ChromaFormat Chroma, int BitDep
         V210,
         BottomUpBgr24,
         TopDownBgr24,
+        Rgb24,
     }
 
     public static RawLayout? FromFourCC(string fourCC) => fourCC switch
@@ -31,6 +33,7 @@ internal sealed record RawLayout(string? FourCC, ChromaFormat Chroma, int BitDep
         "NV12" or "NV21" => new(fourCC, ChromaFormat.Yuv420, 8, false, Kind.Packed),
         "YUY2" or "YUYV" or "UYVY" => new(fourCC, ChromaFormat.Yuv422, 8, false, Kind.Packed),
         "v210" => new(fourCC, ChromaFormat.Yuv422, 10, false, Kind.V210),
+        "raw " => new(fourCC, ChromaFormat.Yuv444, 8, false, Kind.Rgb24),
         _ => null,
     };
 
@@ -85,6 +88,7 @@ internal sealed record RawLayout(string? FourCC, ChromaFormat Chroma, int BitDep
         {
             Kind.V210 => (w + 47) / 48 * 128 * h,
             Kind.BottomUpBgr24 or Kind.TopDownBgr24 => ((w * 3) + 3) / 4 * 4 * h,
+            Kind.Rgb24 => w * 3 * h,
             Kind.Packed => Chroma == ChromaFormat.Yuv420 ? (w * h) + (((w + 1) / 2) * 2 * ((h + 1) / 2)) : ((w + 1) / 2) * 4 * h,
             _ => PlaneSamples(w, h) * BytesPerSample,
         };
@@ -105,7 +109,7 @@ internal sealed record RawLayout(string? FourCC, ChromaFormat Chroma, int BitDep
 
     /// <summary>Makes planes for a frame of this layout.</summary>
     public YuvRaster Create(int width, int height, YuvColor color, EgamiContext context) =>
-        Shape is Kind.BottomUpBgr24 or Kind.TopDownBgr24
+        IsRgb
             ? YuvRaster.Create(width, height, ChromaFormat.Yuv444, new YuvColor(YuvMatrix.Identity, YuvRange.Full, color.Siting), context: context)
             : BitDepth == 8
                 ? YuvRaster.Create(width, height, Chroma, color, Alpha, context)
@@ -124,6 +128,9 @@ internal sealed record RawLayout(string? FourCC, ChromaFormat Chroma, int BitDep
                 break;
             case Kind.BottomUpBgr24 or Kind.TopDownBgr24:
                 ReadBgr24(data, (YuvRaster<byte>)planes, Shape == Kind.TopDownBgr24);
+                break;
+            case Kind.Rgb24:
+                ReadRgb24(data, (YuvRaster<byte>)planes);
                 break;
             default:
                 int position = 0;
@@ -150,6 +157,9 @@ internal sealed record RawLayout(string? FourCC, ChromaFormat Chroma, int BitDep
             case Kind.BottomUpBgr24 or Kind.TopDownBgr24:
                 WriteBgr24((YuvRaster<byte>)planes, data, Shape == Kind.TopDownBgr24);
                 break;
+            case Kind.Rgb24:
+                WriteRgb24((YuvRaster<byte>)planes, data);
+                break;
             default:
                 int position = 0;
                 foreach (int plane in PlaneOrder())
@@ -162,9 +172,12 @@ internal sealed record RawLayout(string? FourCC, ChromaFormat Chroma, int BitDep
     }
 
     /// <summary>Whether planes match this layout's chroma format, depth and alpha, so <see cref="Write"/> can take them.</summary>
-    public bool Matches(YuvRaster planes) => Shape is Kind.BottomUpBgr24 or Kind.TopDownBgr24
+    public bool Matches(YuvRaster planes) => IsRgb
         ? planes.ChromaFormat == ChromaFormat.Yuv444 && planes.BitDepth == 8 && planes.Color.Matrix == YuvMatrix.Identity
         : planes.ChromaFormat == Chroma && planes.BitDepth == BitDepth && planes.HasAlpha == Alpha;
+
+    /// <summary>Whether frames are R, G and B samples, which come out as G, B and R planes (the identity matrix).</summary>
+    private bool IsRgb => Shape is Kind.BottomUpBgr24 or Kind.TopDownBgr24 or Kind.Rgb24;
 
     private YuvPackedFormat PackedFormat() => FourCC switch
     {
@@ -349,6 +362,39 @@ internal sealed record RawLayout(string? FourCC, ChromaFormat Chroma, int BitDep
                 row[x * 3] = b[x];
                 row[(x * 3) + 1] = g[x];
                 row[(x * 3) + 2] = r[x];
+            }
+        }
+    }
+
+    // QuickTime's raw at depth 24: top-down rows of R, G, B with no padding.
+    private static void ReadRgb24(ReadOnlySpan<byte> data, YuvRaster<byte> planes)
+    {
+        int w = planes.Width;
+        for (int y = 0; y < planes.Height; y++)
+        {
+            ReadOnlySpan<byte> row = data.Slice(y * w * 3, w * 3);
+            Span<byte> g = planes.Y.Row(y), b = planes.U!.Row(y), r = planes.V!.Row(y);
+            for (int x = 0; x < w; x++)
+            {
+                r[x] = row[x * 3];
+                g[x] = row[(x * 3) + 1];
+                b[x] = row[(x * 3) + 2];
+            }
+        }
+    }
+
+    private static void WriteRgb24(YuvRaster<byte> planes, Span<byte> data)
+    {
+        int w = planes.Width;
+        for (int y = 0; y < planes.Height; y++)
+        {
+            Span<byte> row = data.Slice(y * w * 3, w * 3);
+            Span<byte> g = planes.Y.Row(y), b = planes.U!.Row(y), r = planes.V!.Row(y);
+            for (int x = 0; x < w; x++)
+            {
+                row[x * 3] = r[x];
+                row[(x * 3) + 1] = g[x];
+                row[(x * 3) + 2] = b[x];
             }
         }
     }

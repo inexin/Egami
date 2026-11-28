@@ -76,6 +76,8 @@ internal static class Mp4Codecs
         int bitDepth = 0;
         ChromaFormat? chroma = null;
         ColorCodePoints? configColor = null;
+        string? fourCC = null;
+        ReadOnlyMemory<byte> quickTimeEntry = ReadOnlyMemory<byte>.Empty;
 
         foreach ((FourCC childType, ReadOnlyMemory<byte> content) in Children(box, VisualFields))
         {
@@ -158,13 +160,23 @@ internal static class Mp4Codecs
 
         if (type is "jpeg" or "mjpa" or "dmb1" or "AVDJ")
         {
+            // The entry is kept so that a QuickTime writer keeps the type (mjpa stays mjpa).
             codecId = CodecIds.MotionJpeg;
             codecPrivate = ReadOnlyMemory<byte>.Empty;
+            quickTimeEntry = box;
         }
         else if (type == "vp08" && codecId == CodecIds.QuickTimeVideo)
         {
             codecId = CodecIds.Vp8;
             codecPrivate = ReadOnlyMemory<byte>.Empty;
+        }
+        else if (codecId == CodecIds.QuickTimeVideo && UncompressedLayout(type, box) is { } layout)
+        {
+            // QuickTime's uncompressed Y'CbCr and RGB decode as uncompressed video; the entry is kept for a remux.
+            codecId = CodecIds.Uncompressed;
+            codecPrivate = ReadOnlyMemory<byte>.Empty;
+            (fourCC, chroma, bitDepth) = layout;
+            quickTimeEntry = box;
         }
 
         color ??= configColor is { } cc && !(cc.Primaries == 2 && cc.TransferCharacteristics == 2 && cc.MatrixCoefficients == 2 && !cc.FullRange) ? cc : null;
@@ -190,8 +202,22 @@ internal static class Mp4Codecs
             ChromaFormat = chroma,
             Hdr = hdr,
             Orientation = OrientationOf(track.Matrix),
+            FourCC = fourCC,
+            QuickTimeEntry = quickTimeEntry,
         };
     }
+
+    /// <summary>
+    /// Gets the uncompressed layout of a QuickTime video entry: 2vuy (8-bit 4:2:2, Cb Y0 Cr Y1, as UYVY), v210 (10-bit 4:2:2) and
+    /// raw at depth 24 (R, G, B), or <see langword="null"/> for another type or depth (raw with a palette, 16 or 32 bits).
+    /// </summary>
+    internal static (string FourCC, ChromaFormat Chroma, int BitDepth)? UncompressedLayout(string type, ReadOnlySpan<byte> entry) => type switch
+    {
+        "2vuy" => ("UYVY", ChromaFormat.Yuv422, 8),
+        "v210" => ("v210", ChromaFormat.Yuv422, 10),
+        "raw " when entry.Length >= 8 + VisualFields && BinaryPrimitives.ReadUInt16BigEndian(entry[(8 + 74)..]) == 24 => ("raw ", ChromaFormat.Yuv444, 8),
+        _ => null,
+    };
 
     private static AudioTrackInfo Audio(Mp4Track track, Mp4SampleEntry entry, int number, Rational timeBase, MediaTime? duration, Dictionary<string, string> tags, bool quickTime)
     {

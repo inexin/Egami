@@ -331,6 +331,27 @@ public class MovWriterTests
     }
 
     [Fact]
+    public void MotionJpegAKeepsItsTypeOnARemux()
+    {
+        // mjpa reads as Motion JPEG; a QuickTime remux keeps the mjpa entry type (and compressor name) and the samples.
+        byte[] source = File.ReadAllBytes(PathOf("mov-mjpa.mov"));
+        byte[] file = Remux(PathOf("mov-mjpa.mov"));
+        List<Box> boxes = Boxes(file);
+        Box entry = Single(boxes, "stsd/mjpa");
+        Assert.DoesNotContain(boxes, b => b.Path.EndsWith("stsd/jpeg", StringComparison.Ordinal));
+        Box was = Single(Boxes(source), "stsd/mjpa");
+        Assert.Equal(source.AsSpan(was.Content + 42, 32).ToArray(), file.AsSpan(entry.Content + 42, 32).ToArray());
+        using IDemuxer a = MediaFile.OpenDemuxer(PathOf("mov-mjpa.mov")), b = MediaFile.OpenDemuxer(new MemoryStream(file));
+        Assert.Equal(CodecIds.MotionJpeg, b.Tracks[0].CodecId);
+        Assert.Equal(Mp4WriterTests.ReadAll(a).Select(p => p.Data), Mp4WriterTests.ReadAll(b).Select(p => p.Data));
+
+        // A Motion JPEG track that did not come from QuickTime (a fresh encode) is Photo JPEG.
+        VideoTrackInfo fresh = (VideoTrackInfo)a.Tracks[0] with { QuickTimeEntry = ReadOnlyMemory<byte>.Empty };
+        byte[] encoded = Write([fresh], MediaMetadata.Empty, [(fresh.Number, new Mp4WriterTests.Packet(fresh.Number, 0, 0, 1, true, false, [0xFF, 0xD8, 0xFF, 0xD9]))]);
+        Single(Boxes(encoded), "stsd/jpeg");
+    }
+
+    [Fact]
     public void MotionJpegIsPhotoJpeg()
     {
         byte[] file = Remux(PathOf("mp4-mjpeg.mp4"));
@@ -376,8 +397,161 @@ public class MovWriterTests
             Box clap = Single(boxes, $"{type}/clap");
             Assert.Equal(50u, BinaryPrimitives.ReadUInt32BigEndian(Content(file, clap)));
             Assert.Equal(frame, stored);
-            Assert.Equal(CodecIds.QuickTimeVideo, MediaFile.Probe(new MemoryStream(file)).VideoTrack!.CodecId);
+            VideoTrackInfo read = MediaFile.Probe(new MemoryStream(file)).VideoTrack!;
+            Assert.Equal((CodecIds.Uncompressed, fourCC, ChromaFormat.Yuv422, depth), (read.CodecId, read.FourCC, read.ChromaFormat, read.BitDepth));
         }
+    }
+
+    /// <summary>Reads a file's one video track and decodes its first frame with the uncompressed codec.</summary>
+    private static YuvVideoFrame DecodeFirst(byte[] file)
+    {
+        using IDemuxer demuxer = MediaFile.OpenDemuxer(new MemoryStream(file));
+        VideoTrackInfo track = Assert.IsType<VideoTrackInfo>(Assert.Single(demuxer.Tracks));
+        Assert.Equal(CodecIds.Uncompressed, track.CodecId);
+        Assert.True(RawVideoCodec.Instance.CanDecode(track));
+        using IVideoDecoder decoder = RawVideoCodec.Instance.CreateDecoder(track, null, MediaContext.Default);
+        using (EncodedPacket packet = demuxer.ReadPacket()!)
+        {
+            decoder.Send(packet);
+        }
+
+        Assert.True(decoder.TryReceive(out YuvVideoFrame? frame));
+        return frame;
+    }
+
+    [Fact]
+    public void TwoVuyV210AndRawDecodeToTheSourceFrames()
+    {
+        // 2vuy from planar 8-bit 4:2:2 (odd width, so the last pair repeats its Y and decodes back to the source).
+        int w = 5, h = 3, half = 3;
+        byte[] planar = [.. Enumerable.Range(0, (w * h) + (2 * half * h)).Select(i => (byte)((i * 11) + 3))];
+        using (YuvVideoFrame frame = DecodeFirst(WriteFrame(Raw("Y42B", ChromaFormat.Yuv422, 8, w, h), planar).File))
+        {
+            YuvRaster<byte> planes = Assert.IsType<YuvRaster<byte>>(frame.Raster);
+            Assert.Equal((ChromaFormat.Yuv422, 8), (planes.ChromaFormat, planes.BitDepth));
+            for (int y = 0; y < h; y++)
+            {
+                Assert.Equal(planar.AsSpan(y * w, w).ToArray(), planes.Y.Row(y).ToArray());
+                Assert.Equal(planar.AsSpan((w * h) + (y * half), half).ToArray(), planes.U!.Row(y).ToArray());
+                Assert.Equal(planar.AsSpan((w * h) + (half * h) + (y * half), half).ToArray(), planes.V!.Row(y).ToArray());
+            }
+        }
+
+        // v210 from planar 10-bit 4:2:2.
+        w = 7;
+        half = 4;
+        ushort[] samples = [.. Enumerable.Range(0, (w * h) + (2 * half * h)).Select(i => (ushort)((i * 53) & 0x3FF))];
+        byte[] ten = new byte[samples.Length * 2];
+        for (int i = 0; i < samples.Length; i++)
+        {
+            BinaryPrimitives.WriteUInt16LittleEndian(ten.AsSpan(i * 2), samples[i]);
+        }
+
+        using (YuvVideoFrame frame = DecodeFirst(WriteFrame(Raw(null, ChromaFormat.Yuv422, 10, w, h), ten).File))
+        {
+            YuvRaster<ushort> planes = Assert.IsType<YuvRaster<ushort>>(frame.Raster);
+            for (int y = 0; y < h; y++)
+            {
+                Assert.Equal(samples.AsSpan(y * w, w).ToArray(), planes.Y.Row(y).ToArray());
+                Assert.Equal(samples.AsSpan((w * h) + (y * half), half).ToArray(), planes.U!.Row(y).ToArray());
+                Assert.Equal(samples.AsSpan((w * h) + (half * h) + (y * half), half).ToArray(), planes.V!.Row(y).ToArray());
+            }
+        }
+
+        // raw (24-bit R, G, B) from planar G, B, R: the frame comes back as the same G, B, R planes.
+        w = 3;
+        h = 2;
+        byte[] gbr = [.. Enumerable.Range(0, 3 * w * h).Select(i => (byte)((i * 29) + 1))];
+        VideoTrackInfo source = Raw("444P", ChromaFormat.Yuv444, 8, w, h) with { Color = new ColorCodePoints(1, 13, 0, true) };
+        using (YuvVideoFrame frame = DecodeFirst(WriteFrame(source, gbr).File))
+        {
+            YuvRaster<byte> planes = Assert.IsType<YuvRaster<byte>>(frame.Raster);
+            Assert.Equal((ChromaFormat.Yuv444, YuvMatrix.Identity), (planes.ChromaFormat, planes.Color.Matrix));
+            for (int y = 0; y < h; y++)
+            {
+                Assert.Equal(gbr.AsSpan(y * w, w).ToArray(), planes.Y.Row(y).ToArray());
+                Assert.Equal(gbr.AsSpan((w * h) + (y * w), w).ToArray(), planes.U!.Row(y).ToArray());
+                Assert.Equal(gbr.AsSpan((2 * w * h) + (y * w), w).ToArray(), planes.V!.Row(y).ToArray());
+            }
+        }
+    }
+
+    private static byte[] Entry(byte[] file, string type)
+    {
+        Box box = Single(Boxes(file), $"stsd/{type}");
+        return file.AsSpan(box.Content - 8, box.Length + 8).ToArray();
+    }
+
+    [Fact]
+    public void UncompressedTracksKeepTheirEntryOnARemux()
+    {
+        foreach ((VideoTrackInfo track, string type, int size) in new[]
+        {
+            (Raw("UYVY", ChromaFormat.Yuv422, 8), "2vuy", 25 * 4 * 4),
+            (Raw("v210", ChromaFormat.Yuv422, 10), "v210", 128 * 2 * 4),
+            (Raw("444P", ChromaFormat.Yuv444, 8) with { Color = new ColorCodePoints(1, 13, 0, true) }, "raw ", 50 * 4 * 3),
+        })
+        {
+            byte[] frame = new byte[size];
+            new Random(size).NextBytes(frame);
+            byte[] source = WriteFrame(track, frame).File;
+
+            // Another compressor name in the source entry shows that a remux copies the entry rather than writing its own.
+            Box entry = Single(Boxes(source), $"stsd/{type}");
+            source.AsSpan(entry.Content + 42, 32).Clear();
+            source[entry.Content + 42] = 4;
+            "Test"u8.CopyTo(source.AsSpan(entry.Content + 43));
+
+            string path = Path.Combine(Path.GetTempPath(), $"egami-mov-entry-{Guid.NewGuid():N}.mov");
+            try
+            {
+                File.WriteAllBytes(path, source);
+                byte[] mov = Remux(path);
+                Assert.Equal(Entry(source, type), Entry(mov, type));
+                using (IDemuxer a = MediaFile.OpenDemuxer(new MemoryStream(source)), b = MediaFile.OpenDemuxer(new MemoryStream(mov)))
+                {
+                    VideoTrackInfo x = (VideoTrackInfo)a.Tracks[0], y = (VideoTrackInfo)b.Tracks[0];
+                    Assert.Equal((x.CodecId, x.FourCC, x.Width, x.Height), (y.CodecId, y.FourCC, y.Width, y.Height));
+                    Assert.Equal(a.ReadPacket()!.Data.ToArray(), b.ReadPacket()!.Data.ToArray());
+                }
+
+                // MP4 keeps the entry too, as it did when these tracks read as pass-through.
+                using IDemuxer demuxer = MediaFile.OpenDemuxer(path);
+                MemoryStream mp4 = new();
+                using (IMuxer muxer = Mp4Format.Instance.CreateMuxer(mp4, demuxer.Tracks, MediaMetadata.Empty, MediaContext.Default, leaveOpen: true))
+                {
+                    using EncodedPacket packet = demuxer.ReadPacket()!;
+                    muxer.WritePacket(packet);
+                }
+
+                Assert.Equal(Entry(source, type), Entry(mp4.ToArray(), type));
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public void RawRgbGoesToMatroskaAsAQuickTimeTrack()
+    {
+        // Matroska has no layout name for QuickTime's raw RGB, so it keeps the entry as V_QUICKTIME, as before raw decoded.
+        VideoTrackInfo gbr = Raw("444P", ChromaFormat.Yuv444, 8, 2, 1) with { Color = new ColorCodePoints(1, 13, 0, true) };
+        byte[] mov = WriteFrame(gbr, [1, 2, 3, 4, 5, 6]).File;
+        using IDemuxer demuxer = MediaFile.OpenDemuxer(new MemoryStream(mov));
+        Assert.Equal("raw ", ((VideoTrackInfo)demuxer.Tracks[0]).FourCC);
+        MemoryStream mkv = new();
+        using (IMuxer muxer = MatroskaFormat.Instance.CreateMuxer(mkv, demuxer.Tracks, MediaMetadata.Empty, MediaContext.Default, leaveOpen: true))
+        {
+            using EncodedPacket packet = demuxer.ReadPacket()!;
+            muxer.WritePacket(packet);
+        }
+
+        mkv.Position = 0;
+        using IDemuxer back = MediaFile.OpenDemuxer(mkv);
+        Assert.Equal(CodecIds.QuickTimeVideo, back.Tracks[0].CodecId);
+        Assert.Equal(Entry(mov, "raw "), back.Tracks[0].CodecPrivate.ToArray());
     }
 
     [Fact]
