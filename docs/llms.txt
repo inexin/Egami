@@ -151,6 +151,7 @@ settings, safety limits and registered formats a call uses.
 - [Encoding Opus](https://inexin.github.io/Egami/v1/articles/guides/opus-encoding.html): Opus (RFC 6716) is the audio codec of WebM and of .opus files, and the best general-purpose lossy codec for both speech and music.
 - [Encoding AAC](https://inexin.github.io/Egami/v1/articles/guides/aac-encoding.html): AAC LC (ISO/IEC 14496-3) is the audio codec of MP4, M4A and most streaming, and the one every phone, browser and player decodes.
 - [Subtitles](https://inexin.github.io/Egami/v1/articles/guides/subtitles.html): Egami.Video reads and writes text subtitle files in the `Egami.Video.Subtitles` namespace.
+- [Burning in subtitles](https://inexin.github.io/Egami/v1/articles/guides/subtitle-burn-in.html): Egami.Video.Drawing draws subtitles into video frames.
 
 ## Egami.Video.Cli
 
@@ -188,6 +189,7 @@ settings, safety limits and registered formats a call uses.
 - [Egami.SystemDrawing agent guide](https://inexin.github.io/Egami/v1/agents/Egami.SystemDrawing.md): the names, entry points, samples and common mistakes of Egami.SystemDrawing, as packed in its NuGet package as AGENTS.md.
 - [Egami.Video agent guide](https://inexin.github.io/Egami/v1/agents/Egami.Video.md): the names, entry points, samples and common mistakes of Egami.Video, as packed in its NuGet package as AGENTS.md.
 - [Egami.Video.Cli agent guide](https://inexin.github.io/Egami/v1/agents/Egami.Video.Cli.md): the names, entry points, samples and common mistakes of Egami.Video.Cli, as packed in its NuGet package as AGENTS.md.
+- [Egami.Video.Drawing agent guide](https://inexin.github.io/Egami/v1/agents/Egami.Video.Drawing.md): the names, entry points, samples and common mistakes of Egami.Video.Drawing, as packed in its NuGet package as AGENTS.md.
 - [Egami.Video.H264 agent guide](https://inexin.github.io/Egami/v1/agents/Egami.Video.H264.md): the names, entry points, samples and common mistakes of Egami.Video.H264, as packed in its NuGet package as AGENTS.md.
 - [Egami.Video.Hardware agent guide](https://inexin.github.io/Egami/v1/agents/Egami.Video.Hardware.md): the names, entry points, samples and common mistakes of Egami.Video.Hardware, as packed in its NuGet package as AGENTS.md.
 - [Egami.Video.Hevc agent guide](https://inexin.github.io/Egami/v1/agents/Egami.Video.Hevc.md): the names, entry points, samples and common mistakes of Egami.Video.Hevc, as packed in its NuGet package as AGENTS.md.

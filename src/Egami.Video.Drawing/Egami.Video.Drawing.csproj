@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Egami.Video.Subtitles.Rendering</RootNamespace>
+    <PackageId>Egami.Video.Drawing</PackageId>
+    <!-- Egami.Video.Drawing ships at Egami.Video's version, like Egami.Video.H264 and Egami.Video.Hevc (Subtitle Burn-in Plan,
+         Q1). It draws with Egami.Fonts and Egami.Drawing, which Egami.Video itself does not reference (V1.2 Q10). -->
+    <Version>$(EgamiVideoVersion)</Version>
+    <Description>Subtitle burn-in for Egami.Video, in managed code: draws SRT, WebVTT and ASS cues into decoded video frames, straight into their Y, U and V planes in the frame's own matrix and bit depth, or onto Rgba8 rasters, with Egami.Fonts' shaping, bidi, line breaking and font fallback.</Description>
+    <PackageTags>$(EgamiPackageTags);video;subtitles;ass;srt;webvtt;burn-in</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <!-- Build-time analyzer only; ships nothing. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Egami.Video\Egami.Video.csproj" />
+    <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
+    <ProjectReference Include="..\Egami.Drawing\Egami.Drawing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Egami.Video.Drawing.Tests" />
+  </ItemGroup>
+
+  <!-- The package ships with exactly the Egami.Video it was built with, [1.4.0] rather than 1.4.0 or later, as
+       Egami.Video.H264 does: both release together at one version. -->
+  <Target Name="PinEgamiVideoVersion" AfterTargets="_GetProjectReferenceVersions">
+    <ItemGroup>
+      <_ProjectReferencesWithVersions Update="@(_ProjectReferencesWithVersions)" Condition="'%(Filename)' == 'Egami.Video'" ProjectVersion="[%(_ProjectReferencesWithVersions.ProjectVersion)]" />
+    </ItemGroup>
+  </Target>
+
+</Project>
