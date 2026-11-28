@@ -222,6 +222,8 @@
       href: guides/aac-encoding.md
     - name: Subtitles
       href: guides/subtitles.md
+    - name: Burning in subtitles
+      href: guides/subtitle-burn-in.md
 - name: Egami.Video.Cli
   items:
     - name: The egami-video command

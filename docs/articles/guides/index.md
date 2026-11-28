@@ -121,6 +121,7 @@ Operations that run on a raster through `Apply` and `Derive`.
 - [Encoding Opus](opus-encoding.md): Opus files, settings and WebM audio.
 - [Encoding AAC](aac-encoding.md): .m4a and .aac files, bitrate, quality and bandwidth, and transcoding to M4A.
 - [Subtitles](subtitles.md): read, edit, retime and convert SRT, WebVTT and ASS subtitle files.
+- [Burning in subtitles](subtitle-burn-in.md): draw SRT, WebVTT and ASS subtitles into video frames with Egami.Video.Drawing.
 - [Hardware video](video-hardware.md): find the GPU's H.264 and HEVC decoders and encoders through Vulkan Video (preview).
 
 ## Egami.Barcodes

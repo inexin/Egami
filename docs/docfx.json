@@ -52,6 +52,10 @@
           "files": [ "Egami.Video.csproj" ]
         },
         {
+          "src": "../src/Egami.Video.Drawing",
+          "files": [ "Egami.Video.Drawing.csproj" ]
+        },
+        {
           "src": "../src/Egami.Video.Hardware",
           "files": [ "Egami.Video.Hardware.csproj" ]
         }

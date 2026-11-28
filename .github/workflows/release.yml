@@ -4,7 +4,8 @@ name: Release
 # packages: Egami, Egami.Drawing, Egami.Fonts, Egami.Svg, Egami.Css, Egami.Heic, Egami.Formats.Extended and Egami.Cli, all at
 # that version. A tag <package>-v<version>, for example Egami.Barcodes-v1.0.1, publishes that one package, which must be at
 # that version; that is how the packages with their own version release: Egami.Barcodes, Egami.Metafiles,
-# Egami.Fonts.Substitutes and Egami.Video, as Egami.Barcodes-v1.0.0 did. The push uses nuget.org trusted publishing:
+# Egami.Fonts.Substitutes, Egami.Video and its packages (Egami.Video.H264, Egami.Video.Hevc, Egami.Video.Drawing), as
+# Egami.Barcodes-v1.0.0 did. The push uses nuget.org trusted publishing:
 # NuGet/login trades the job's OIDC token for a short-lived API key, so the repository keeps no NuGet key. The trusted
 # publishing policy on nuget.org names this repository, this workflow file and the nuget environment, and the nuget
 # environment requires Lars's approval before the job starts.

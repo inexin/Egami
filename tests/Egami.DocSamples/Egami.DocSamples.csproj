@@ -122,6 +122,7 @@
     <ProjectReference Include="..\..\src\Egami.Formats.Extended\Egami.Formats.Extended.csproj" />
     <ProjectReference Include="..\..\src\Egami.Heic\Egami.Heic.csproj" />
     <ProjectReference Include="..\..\src\Egami.Video\Egami.Video.csproj" />
+    <ProjectReference Include="..\..\src\Egami.Video.Drawing\Egami.Video.Drawing.csproj" />
     <ProjectReference Include="..\..\src\Egami.Video.H264\Egami.Video.H264.csproj" />
     <ProjectReference Include="..\..\src\Egami.Video.Hevc\Egami.Video.Hevc.csproj" />
     <ProjectReference Include="..\..\src\Egami.Video.Hardware\Egami.Video.Hardware.csproj" />

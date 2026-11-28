@@ -609,6 +609,22 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
 - A Motion JPEG track read from QuickTime as mjpa (or dmb1, AVDJ) keeps that type when written to a QuickTime movie; other
   Motion JPEG tracks are written as jpeg.
 
+## Egami.Video.Drawing 1.4.0 (unreleased)
+
+A new package: subtitle burn-in for Egami.Video, in preview at Egami.Video's version.
+
+- `SubtitleRenderer` draws the cues of a `SubtitleDocument` into a `YuvVideoFrame`'s planes, in its own matrix, range and bit
+  depth (8 to 16 bits, 4:2:0, 4:2:2 and 4:4:4; PQ and HLG with white at 203 cd/m²), or onto a `Raster<Rgba8>` at a time.
+- Laid out with Egami.Fonts as libass lays it out: ASS styles (font, size, bold, italic, underline, strikeout, colors with
+  alpha, outline and shadow or the opaque box, `ScaleX` and `ScaleY`, spacing, the nine alignments, margins) scaled from
+  `PlayResX` and `PlayResY`, span styles, `\N` breaks and libass's wrapping for each `WrapStyle`. SRT cues look as FFmpeg
+  draws them; WebVTT cues get the W3C default look.
+- Each cue is drawn once and kept while it shows: frames whose cues have not changed allocate nothing.
+- `SubtitleBurnIn` (an `IVideoFilter`) and `SubtitleRenderer.AsEffect` (for `EditEffect.Of`).
+- `SubtitleRenderOptions`: `Fonts`, `FontFolders`, `UseSystemFonts`, `Fallback`, `ForceStyle` and `AuthoredSize`. Missing fonts
+  and features not drawn yet (positioning and animation tags, WebVTT cue settings, regions, collisions, attached fonts) are
+  reported through `MediaContext.Warnings`.
+
 ## Egami.Video.Cli 1.4.0 (unreleased)
 
 - `egami-video encode` takes an animated SVG and draws it frame by frame at `--rate` (25 by default), for `--duration` or the

@@ -1,0 +1,40 @@
+#nullable enable
+Egami.Video.Subtitles.Rendering.SubtitleBurnIn
+Egami.Video.Subtitles.Rendering.SubtitleBurnIn.Dispose() -> void
+Egami.Video.Subtitles.Rendering.SubtitleBurnIn.Flush() -> void
+Egami.Video.Subtitles.Rendering.SubtitleBurnIn.Latency.get -> Egami.Video.MediaTime
+Egami.Video.Subtitles.Rendering.SubtitleBurnIn.Renderer.get -> Egami.Video.Subtitles.Rendering.SubtitleRenderer!
+Egami.Video.Subtitles.Rendering.SubtitleBurnIn.Reset() -> void
+Egami.Video.Subtitles.Rendering.SubtitleBurnIn.Send(Egami.Video.YuvVideoFrame! frame) -> void
+Egami.Video.Subtitles.Rendering.SubtitleBurnIn.SubtitleBurnIn(Egami.Video.Subtitles.Rendering.SubtitleRenderer! renderer) -> void
+Egami.Video.Subtitles.Rendering.SubtitleBurnIn.SubtitleBurnIn(Egami.Video.Subtitles.SubtitleDocument! document, Egami.Video.Subtitles.Rendering.SubtitleRenderOptions? options = null, Egami.Video.MediaContext? context = null) -> void
+Egami.Video.Subtitles.Rendering.SubtitleBurnIn.TryReceive(out Egami.Video.YuvVideoFrame? frame) -> bool
+Egami.Video.Subtitles.Rendering.SubtitleRenderer
+Egami.Video.Subtitles.Rendering.SubtitleRenderer.AsEffect() -> Egami.Video.Editing.IFrameEffect!
+Egami.Video.Subtitles.Rendering.SubtitleRenderer.Dispose() -> void
+Egami.Video.Subtitles.Rendering.SubtitleRenderer.Document.get -> Egami.Video.Subtitles.SubtitleDocument!
+Egami.Video.Subtitles.Rendering.SubtitleRenderer.Draw(Egami.Raster<Egami.Pixels.Rgba8>! raster, Egami.Video.MediaTime time) -> void
+Egami.Video.Subtitles.Rendering.SubtitleRenderer.Draw(Egami.Video.YuvVideoFrame! frame) -> void
+Egami.Video.Subtitles.Rendering.SubtitleRenderer.Options.get -> Egami.Video.Subtitles.Rendering.SubtitleRenderOptions!
+Egami.Video.Subtitles.Rendering.SubtitleRenderer.SubtitleRenderer(Egami.Video.Subtitles.SubtitleDocument! document, Egami.Video.Subtitles.Rendering.SubtitleRenderOptions? options = null, Egami.Video.MediaContext? context = null) -> void
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.<Clone>$() -> Egami.Video.Subtitles.Rendering.SubtitleRenderOptions!
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.AuthoredSize.get -> Egami.Size?
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.AuthoredSize.init -> void
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.Equals(Egami.Video.Subtitles.Rendering.SubtitleRenderOptions? other) -> bool
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.Fallback.get -> Egami.Fonts.FontCollection?
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.Fallback.init -> void
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.FontFolders.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.FontFolders.init -> void
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.Fonts.get -> Egami.Fonts.FontCollection?
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.Fonts.init -> void
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.ForceStyle.get -> System.Func<Egami.Video.Subtitles.SubtitleStyle!, Egami.Video.Subtitles.SubtitleStyle!>?
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.ForceStyle.init -> void
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.SubtitleRenderOptions() -> void
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.UseSystemFonts.get -> bool
+Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.UseSystemFonts.init -> void
+override Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.Equals(object? obj) -> bool
+override Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.GetHashCode() -> int
+override Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.ToString() -> string!
+static Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.operator !=(Egami.Video.Subtitles.Rendering.SubtitleRenderOptions? left, Egami.Video.Subtitles.Rendering.SubtitleRenderOptions? right) -> bool
+static Egami.Video.Subtitles.Rendering.SubtitleRenderOptions.operator ==(Egami.Video.Subtitles.Rendering.SubtitleRenderOptions? left, Egami.Video.Subtitles.Rendering.SubtitleRenderOptions? right) -> bool
