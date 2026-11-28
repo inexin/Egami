@@ -20,8 +20,18 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Egami.Video\Egami.Video.csproj" />
+  </ItemGroup>
+
+  <!-- Packed against the released Egami.Fonts and Egami.Drawing (UseReleasedDependencies=true, which release.yml packs with and
+       ci.yml checks), as Egami.Video.Hevc is against the released Egami.Heic; day to day it builds against the projects. -->
+  <ItemGroup Condition="'$(UseReleasedDependencies)' != 'true'">
     <ProjectReference Include="..\Egami.Fonts\Egami.Fonts.csproj" />
     <ProjectReference Include="..\Egami.Drawing\Egami.Drawing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseReleasedDependencies)' == 'true'">
+    <PackageReference Include="Egami.Fonts" VersionOverride="1.5.0" />
+    <PackageReference Include="Egami.Drawing" VersionOverride="1.5.0" />
   </ItemGroup>
 
   <ItemGroup>

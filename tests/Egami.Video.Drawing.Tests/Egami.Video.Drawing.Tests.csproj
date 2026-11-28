@@ -21,6 +21,8 @@
     <None Include="../fonts/NotoSans-Regular.ttf" Link="fonts/NotoSans-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/NotoSans-Bold.ttf" Link="fonts/NotoSans-Bold.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../fonts/NotoSans-Italic.ttf" Link="fonts/NotoSans-Italic.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../fonts/Roboto-Regular.ttf" Link="fonts/Roboto-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../fonts/shaping/NotoSansHebrew-Regular.ttf" Link="hebrew/NotoSansHebrew-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../video/corpus/subtitles/*.*" LinkBase="subtitles" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

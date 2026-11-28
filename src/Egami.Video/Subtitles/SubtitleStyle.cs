@@ -25,10 +25,10 @@ public sealed record SubtitleStyle(string Name)
     /// <summary>Gets the color karaoke text has before it is sung.</summary>
     public Rgba8 SecondaryColor { get; init; } = new(255, 0, 0, 255);
 
-    /// <summary>Gets the outline color (SSA's tertiary color).</summary>
+    /// <summary>Gets the outline color (SSA's tertiary color); when <see cref="BorderStyle"/> is 3, the color of the opaque box.</summary>
     public Rgba8 OutlineColor { get; init; } = new(0, 0, 0, 255);
 
-    /// <summary>Gets the shadow color, or the box color when <see cref="BorderStyle"/> is 3.</summary>
+    /// <summary>Gets the shadow color; when <see cref="BorderStyle"/> is 3, the color of the box's shadow (the box itself is <see cref="OutlineColor"/>, as libass and VSFilter draw it).</summary>
     public Rgba8 BackColor { get; init; } = new(0, 0, 0, 255);
 
     /// <summary>Gets whether the text is bold.</summary>
@@ -55,7 +55,7 @@ public sealed record SubtitleStyle(string Name)
     /// <summary>Gets the rotation in degrees, counterclockwise. ASS only.</summary>
     public double Angle { get; init; }
 
-    /// <summary>Gets the border style: 1 for an outline and shadow, 3 for an opaque box.</summary>
+    /// <summary>Gets the border style: 1 for an outline and shadow, 3 for an opaque box in <see cref="OutlineColor"/> with its shadow in <see cref="BackColor"/>.</summary>
     public int BorderStyle { get; init; } = 1;
 
     /// <summary>Gets the outline width in script pixels.</summary>

@@ -246,12 +246,13 @@ internal sealed class CueLayout
             {
                 // libass lines each glyph's advance, so a decorated stretch ends without the letter spacing after its last glyph.
                 float spacing = layout.Paragraph.GetStyle(decoration.StyleIndex).LetterSpacing ?? 0;
+                (float lineTop, float thickness) = DecorationLine(layout, decoration);
                 var pieces = new PathBuilder();
                 for (int i = 0; i < decoration.Segments.Count; i++)
                 {
                     DecorationSegment segment = decoration.Segments[i];
                     float end = i == decoration.Segments.Count - 1 ? Math.Max(segment.Left, segment.Right - spacing) : segment.Right;
-                    pieces.AddRect(new RectF(segment.Left + at.X, decoration.Top + at.Y, end - segment.Left, decoration.Thickness));
+                    pieces.AddRect(new RectF(segment.Left + at.X, lineTop + at.Y, end - segment.Left, thickness));
                 }
 
                 Path path = pieces.ToPath().Transform(matrix);
@@ -341,6 +342,27 @@ internal sealed class CueLayout
         {
             raster.Dispose();
         }
+    }
+
+    /// <summary>
+    /// Where libass draws an underline or strikeout: at the decorated text's font's own position and thickness (OS/2 and post), not
+    /// at the lowest and thickest of the line as CSS does.
+    /// </summary>
+    private static (float Top, float Thickness) DecorationLine(TextLayout layout, DecorationShape decoration)
+    {
+        TextLine line = layout.Lines[decoration.LineIndex];
+        foreach (LayoutRun run in line.Runs)
+        {
+            if (run.StyleIndex == decoration.StyleIndex && run.Glyphs is GlyphRun glyphs && glyphs.Count > 0)
+            {
+                FontExtents extents = glyphs.Font.Extents;
+                return decoration.Line == TextDecorationLines.LineThrough
+                    ? (line.Baseline - extents.StrikeoutPosition, Math.Max(extents.StrikeoutSize, 1e-3f))
+                    : (line.Baseline - extents.UnderlinePosition, Math.Max(extents.UnderlineThickness, 1e-3f));
+            }
+        }
+
+        return (decoration.Top, decoration.Thickness);
     }
 
     /// <summary>Fills a path and strokes it with a pen <paramref name="stretch"/> times as wide across as it is tall.</summary>
@@ -464,7 +486,7 @@ internal sealed class CueLayout
         }
 
         string segment = text[start..end];
-        float[] advances = Advances(segment, Slice(runs, start, end), paragraph);
+        (float[] advances, float[] leftBearings, float[] rightBearings) = Advances(segment, Slice(runs, start, end), paragraph);
         var prefix = new float[advances.Length + 1];
         for (int i = 0; i < advances.Length; i++)
         {
@@ -488,38 +510,35 @@ internal sealed class CueLayout
                 return 0;
             }
 
-            // A line fits when its letters do: the spacing after the last one is left out (libass).
-            float spacing = paragraph.DefaultStyle.LetterSpacing ?? 0;
-            foreach ((int runStart, int runLength, TextStyle runStyle) in runs)
-            {
-                if (start + b - 1 >= runStart && start + b - 1 < runStart + runLength)
-                {
-                    spacing = runStyle.LetterSpacing ?? spacing;
-                    break;
-                }
-            }
-
-            return prefix[b] - prefix[a] - spacing;
+            // libass measures a line by its ink: from the first letter's ink to the last one's, without their side bearings or
+            // the spacing after the last.
+            return prefix[b] - prefix[a] - leftBearings[a] - rightBearings[b - 1];
         }
 
         var breaks = new List<int>();
         foreach (LineBreak lineBreak in LineBreaks.Enumerate(segment))
         {
-            if (lineBreak.Index > 0)
+            // libass breaks before the character that a UAX #14 break follows: at a space that changes nothing (the space is
+            // trimmed), but after a hyphen it moves the hyphen down ("self" / "-evident") when it balances lines, as FFmpeg's
+            // subtitles filter shows. Filling a line breaks at spaces only ("well-known" stays whole).
+            int at = lineBreak.Index >= segment.Length ? segment.Length : lineBreak.Index - 1;
+            if (at > 0 && (breaks.Count == 0 || breaks[^1] < at))
             {
-                breaks.Add(lineBreak.Index);
+                breaks.Add(at);
             }
         }
+
+        var spaces = breaks.FindAll(b => b == segment.Length || IsSpace(segment[b]));
 
         // Greedy: as much as fits on each line; a word wider than the line stays whole and overflows.
         var ends = new List<int>();
         int lineStart = 0, k = 0;
-        while (lineStart < segment.Length && k < breaks.Count)
+        while (lineStart < segment.Length && k < spaces.Count)
         {
             int best = -1;
-            for (int j = k; j < breaks.Count; j++)
+            for (int j = k; j < spaces.Count; j++)
             {
-                if (Width(lineStart, breaks[j]) <= maxWidth || best < 0 && j == k)
+                if (Width(lineStart, spaces[j]) <= maxWidth || best < 0 && j == k)
                 {
                     best = j;
                 }
@@ -529,8 +548,8 @@ internal sealed class CueLayout
                 }
             }
 
-            ends.Add(breaks[best]);
-            lineStart = breaks[best];
+            ends.Add(spaces[best]);
+            lineStart = spaces[best];
             k = best + 1;
         }
 
@@ -581,10 +600,15 @@ internal sealed class CueLayout
 
     private static bool IsSpace(char c) => c is ' ' or '\t' or '　' or '​';
 
-    /// <summary>The advance of each character of a text laid out on one line: each glyph's advance goes to its cluster's first character.</summary>
-    private static float[] Advances(string text, List<StyleSpan> spans, ParagraphStyle paragraph)
+    /// <summary>
+    /// Each character's advance on one unwrapped line, and the gaps between its pen box and its ink on the left and right (the
+    /// letter spacing after it in the right one).
+    /// </summary>
+    private static (float[] Advances, float[] LeftBearings, float[] RightBearings) Advances(string text, List<StyleSpan> spans, ParagraphStyle paragraph)
     {
         var advances = new float[text.Length];
+        var leftBearings = new float[text.Length];
+        var rightBearings = new float[text.Length];
         TextLayout layout = Paragraph.Create(new RichText(text, spans), paragraph).Layout(float.PositiveInfinity);
         foreach (TextLine line in layout.Lines)
         {
@@ -597,19 +621,34 @@ internal sealed class CueLayout
 
                 ReadOnlySpan<Vector2> positions = glyphs.Positions;
                 ReadOnlySpan<int> clusters = glyphs.Clusters;
+                TextStyle runStyle = layout.Paragraph.GetStyle(run.StyleIndex);
+                bool decorated = (runStyle.Decoration?.Lines ?? TextDecorationLines.None) != TextDecorationLines.None;
+                float spacing = runStyle.LetterSpacing ?? 0;
                 for (int g = 0; g < glyphs.Count; g++)
                 {
                     float next = g + 1 < glyphs.Count ? positions[g + 1].X : glyphs.Advance;
                     int cluster = clusters.Length > g ? clusters[g] : 0;
                     if ((uint)cluster < (uint)advances.Length)
                     {
-                        advances[cluster] += Math.Abs(next - positions[g].X);
+                        float advance = Math.Abs(next - positions[g].X);
+                        advances[cluster] += advance;
+                        GlyphExtents ink = glyphs.Font.GetGlyphExtents(glyphs.Glyphs[g]);
+                        float left = ink.IsEmpty ? 0 : ink.XMin, right = ink.IsEmpty ? 0 : advance - ink.XMax;
+                        if (decorated)
+                        {
+                            // An underline or strikeout is ink too, from the pen to the advance before the spacing (libass).
+                            left = Math.Min(left, 0);
+                            right = Math.Min(right, spacing);
+                        }
+
+                        leftBearings[cluster] = left;
+                        rightBearings[cluster] = right;
                     }
                 }
             }
         }
 
-        return advances;
+        return (advances, leftBearings, rightBearings);
     }
 
     /// <summary>The style runs that fall in [start, end), moved to start at 0.</summary>

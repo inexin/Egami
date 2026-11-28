@@ -32,7 +32,7 @@ public class SubtitleRendererTests
             """);
     }
 
-    private static YuvVideoFrame Frame(ChromaFormat chroma, int bitDepth, double seconds, ColorCodePoints? color = null, int width = 640, int height = 360)
+    internal static YuvVideoFrame Frame(ChromaFormat chroma, int bitDepth, double seconds, ColorCodePoints? color = null, int width = 640, int height = 360)
     {
         YuvColor yuv = color?.MatrixCoefficients == 9 ? YuvColor.Bt2020Limited : YuvColor.Bt709Limited;
         YuvRaster raster = bitDepth == 8
@@ -73,7 +73,7 @@ public class SubtitleRendererTests
         }
     }
 
-    private static int MaxLuma(YuvRaster raster)
+    internal static int MaxLuma(YuvRaster raster)
     {
         int max = 0;
         for (int y = 0; y < raster.Height; y++)
