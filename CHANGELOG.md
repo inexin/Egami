@@ -592,6 +592,22 @@ An HEVC encoder in Egami.Video.Hevc. Additive to 1.3.
   longer finish the frames the lookahead holds before stopping. A cancelled `VideoWriter` closes the file without finishing it.
 - `MediaFile.Probe` reports the bit depth and chroma subsampling of H.264 and HEVC tracks in MP4, MOV and Matroska, read from
   their avcC and hvcC records; a 10-bit HEVC MP4 said 0.
+- **QuickTime output.** A .mov (or .qt) output is now a QuickTime movie, written by the new `MovFormat`, instead of ISO MP4:
+  the qt brand, a wide atom before mdat, QuickTime's media and data handlers, sound descriptions of version 0, 1 or 2 (PCM as
+  sowt, twos, raw, in24, in32, fl32, fl64 or lpcm, AAC, MP3 and ALAC with a wave atom) with chan layouts, and video
+  descriptions with colr (nclc), fiel, pasp and clap; tags are also QuickTime user data text (©nam and the like). It holds H.264, HEVC, Motion JPEG, uncompressed 4:2:2 as 2vuy and v210
+  and RGB as raw (planar, YUY2 and AVI BGR packets are repacked), AAC, MP3, ALAC, PCM and mov_text, and writes tracks read from
+  a .mov in other codecs (a timecode, say) back byte for byte. Other codecs (AV1, VP9, VP8, FFV1, Opus, FLAC, Vorbis, AC-3)
+  throw `NotSupportedException` naming MP4 or Matroska, where .mov used to take them as MP4. `MovFormat` comes before
+  `Mp4Format` in `MediaContext.Default`; `Mp4Format` chosen by name still writes MP4. The `egami-video` command still writes
+  .mov as MP4 for now.
+- The MP4 reader reads AAC and MP3 whose esds sits in a QuickTime wave atom (as QuickTime and FFmpeg write .mov files) as AAC
+  and MP3, not as a pass-through track, and takes in24 and in32's byte order from the wave atom's enda.
+- QuickTime's 2vuy, v210 and 24-bit raw video read as uncompressed video (`CodecIds.Uncompressed`, FourCC "UYVY", "v210" or
+  "raw ") and decode to frames; they read as `CodecIds.QuickTimeVideo` pass-through tracks before. A MOV or MP4 remux still
+  writes their sample descriptions and samples back byte for byte. `RawVideoCodec` decodes and encodes the "raw " layout.
+- A Motion JPEG track read from QuickTime as mjpa (or dmb1, AVDJ) keeps that type when written to a QuickTime movie; other
+  Motion JPEG tracks are written as jpeg.
 
 ## Egami.Video.Cli 1.4.0 (unreleased)
 

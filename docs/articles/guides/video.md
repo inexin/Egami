@@ -343,7 +343,7 @@ recovered from. VP9 decodes tile columns and loop filter rows on up to `MaxParal
 ## MP4 and QuickTime
 
 `Mp4Format` reads .mp4, .m4v, .m4a and .mov files, flat or fragmented (CMAF and DASH segments, phone recordings), and writes
-ISO MP4. Every track is read: AV1, VP9, VP8, Motion JPEG, Opus, FLAC, PCM and mov_text with their settings, and H.264, HEVC,
+ISO MP4; a .mov output is written as QuickTime by `MovFormat` (see [QuickTime movies](quicktime.md)). Every track is read: AV1, VP9, VP8, Motion JPEG, Opus, FLAC, PCM and mov_text with their settings, and H.264, HEVC,
 AAC or any other codec passed through, so a remux keeps them byte for byte. Opening a long file reads only its index.
 
 - Edit lists are applied, as FFmpeg shows them: a delayed track starts later, and packets before the start are marked
@@ -356,7 +356,7 @@ AAC or any other codec passed through, so a remux keeps them byte for byte. Open
 - Writing puts moov before the media, so the file plays while it downloads. On a stream that can seek and read the media is
   moved forward at the end; on any other stream the file is written fragmented (see [Streaming MP4](streaming-mp4.md), which
   also covers HLS and DASH segments). `new Mp4Format { MoovAtEnd = true }` writes moov last, straight to a seekable stream. A
-  QuickTime file is written as MP4.
+  .mov output is a QuickTime movie; name "MP4" to write a QuickTime file's tracks as MP4.
 
 [!code-csharp[](../../../tests/Egami.DocSamples/Video.cs#video-mp4)]
 
@@ -368,7 +368,7 @@ before the one before it), `metadata-dropped`, and for fragmented files `mp4-fra
 
 ## Containers
 
-Each container is a `ContainerFormat`: `MatroskaFormat` (WebM and Matroska), `Mp4Format` (MP4 and QuickTime), `AviFormat`,
+Each container is a `ContainerFormat`: `MatroskaFormat` (WebM and Matroska), `Mp4Format` (MP4, and reading QuickTime), `MovFormat` (writing QuickTime), `AviFormat`,
 `IvfFormat`, `Y4mFormat`, `Av1ObuFormat` and `Av1AnnexBFormat` for raw AV1, and for audio `WavFormat` and `FlacFormat`.
 `RawVideo` reads and writes headerless frames in a layout you give.
 

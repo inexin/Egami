@@ -25,7 +25,7 @@ public sealed record MediaContext
     private static MediaContext? s_default;
 
     /// <summary>Gets the containers, tried in order when detecting a file's format.</summary>
-    public IReadOnlyList<ContainerFormat> Containers { get; init; } = [AviFormat.Instance, MatroskaFormat.Instance, MatroskaFormat.WebM, Y4mFormat.Instance, IvfFormat.Instance, Mp4Format.Instance, WavFormat.Instance, WavFormat.Wave64, AiffFormat.Instance, CafFormat.Instance, FlacFormat.Instance, OggFormat.Instance, Av1ObuFormat.Instance, Av1AnnexBFormat.Instance, AdtsFormat.Instance, Mp3Format.Instance, Ac3Format.Instance];
+    public IReadOnlyList<ContainerFormat> Containers { get; init; } = [AviFormat.Instance, MatroskaFormat.Instance, MatroskaFormat.WebM, Y4mFormat.Instance, IvfFormat.Instance, MovFormat.Instance, Mp4Format.Instance, WavFormat.Instance, WavFormat.Wave64, AiffFormat.Instance, CafFormat.Instance, FlacFormat.Instance, OggFormat.Instance, Av1ObuFormat.Instance, Av1AnnexBFormat.Instance, AdtsFormat.Instance, Mp3Format.Instance, Ac3Format.Instance];
 
     /// <summary>Gets the video codecs.</summary>
     public IReadOnlyList<VideoCodec> Codecs { get; init; } = [MotionJpegCodec.Instance, Vp8Codec.Instance, Vp9Codec.Instance, Av1Codec.Instance, Ffv1Codec.Instance, RawVideoCodec.Instance];
@@ -49,7 +49,7 @@ public sealed record MediaContext
     public Action<MediaWarning>? Warnings { get; init; }
 
     /// <summary>
-    /// Gets the shared default context, with AVI, Matroska, WebM, YUV4MPEG2, IVF, MP4, raw AV1 (OBU and Annex B), WAV, Wave64,
+    /// Gets the shared default context, with AVI, Matroska, WebM, YUV4MPEG2, IVF, QuickTime (ahead of MP4, so .mov writes QuickTime), MP4, raw AV1 (OBU and Annex B), WAV, Wave64,
     /// AIFF, CAF, FLAC and Ogg, Motion JPEG, VP8, VP9, AV1 and uncompressed video, and PCM, FLAC, Opus, Vorbis and MPEG audio (MP3) registered.
     /// </summary>
     public static MediaContext Default => s_default ??= new MediaContext();

@@ -76,6 +76,8 @@ internal static class Mp4Codecs
         int bitDepth = 0;
         ChromaFormat? chroma = null;
         ColorCodePoints? configColor = null;
+        string? fourCC = null;
+        ReadOnlyMemory<byte> quickTimeEntry = ReadOnlyMemory<byte>.Empty;
 
         foreach ((FourCC childType, ReadOnlyMemory<byte> content) in Children(box, VisualFields))
         {
@@ -158,13 +160,23 @@ internal static class Mp4Codecs
 
         if (type is "jpeg" or "mjpa" or "dmb1" or "AVDJ")
         {
+            // The entry is kept so that a QuickTime writer keeps the type (mjpa stays mjpa).
             codecId = CodecIds.MotionJpeg;
             codecPrivate = ReadOnlyMemory<byte>.Empty;
+            quickTimeEntry = box;
         }
         else if (type == "vp08" && codecId == CodecIds.QuickTimeVideo)
         {
             codecId = CodecIds.Vp8;
             codecPrivate = ReadOnlyMemory<byte>.Empty;
+        }
+        else if (codecId == CodecIds.QuickTimeVideo && UncompressedLayout(type, box) is { } layout)
+        {
+            // QuickTime's uncompressed Y'CbCr and RGB decode as uncompressed video; the entry is kept for a remux.
+            codecId = CodecIds.Uncompressed;
+            codecPrivate = ReadOnlyMemory<byte>.Empty;
+            (fourCC, chroma, bitDepth) = layout;
+            quickTimeEntry = box;
         }
 
         color ??= configColor is { } cc && !(cc.Primaries == 2 && cc.TransferCharacteristics == 2 && cc.MatrixCoefficients == 2 && !cc.FullRange) ? cc : null;
@@ -190,8 +202,22 @@ internal static class Mp4Codecs
             ChromaFormat = chroma,
             Hdr = hdr,
             Orientation = OrientationOf(track.Matrix),
+            FourCC = fourCC,
+            QuickTimeEntry = quickTimeEntry,
         };
     }
+
+    /// <summary>
+    /// Gets the uncompressed layout of a QuickTime video entry: 2vuy (8-bit 4:2:2, Cb Y0 Cr Y1, as UYVY), v210 (10-bit 4:2:2) and
+    /// raw at depth 24 (R, G, B), or <see langword="null"/> for another type or depth (raw with a palette, 16 or 32 bits).
+    /// </summary>
+    internal static (string FourCC, ChromaFormat Chroma, int BitDepth)? UncompressedLayout(string type, ReadOnlySpan<byte> entry) => type switch
+    {
+        "2vuy" => ("UYVY", ChromaFormat.Yuv422, 8),
+        "v210" => ("v210", ChromaFormat.Yuv422, 10),
+        "raw " when entry.Length >= 8 + VisualFields && BinaryPrimitives.ReadUInt16BigEndian(entry[(8 + 74)..]) == 24 => ("raw ", ChromaFormat.Yuv444, 8),
+        _ => null,
+    };
 
     private static AudioTrackInfo Audio(Mp4Track track, Mp4SampleEntry entry, int number, Rational timeBase, MediaTime? duration, Dictionary<string, string> tags, bool quickTime)
     {
@@ -256,14 +282,7 @@ internal static class Mp4Codecs
 
                     break;
                 case "esds" when type == "mp4a":
-                    (int objectType, ReadOnlyMemory<byte> specific) = ReadEsds(c);
-                    (codecId, codecPrivate) = objectType switch
-                    {
-                        0x40 or 0x66 or 0x67 or 0x68 => (CodecIds.Aac, specific),
-                        0x69 or 0x6B => (CodecIds.Mp3, ReadOnlyMemory<byte>.Empty),
-                        0xDD => (CodecIds.Vorbis, specific),
-                        _ => (codecId, codecPrivate),
-                    };
+                    (codecId, codecPrivate) = FromEsds(c, codecId, codecPrivate);
                     break;
                 case "dac3" when type == "ac-3":
                     codecId = CodecIds.Ac3;
@@ -273,6 +292,22 @@ internal static class Mp4Codecs
                     // Kept, so that an E-AC-3 track with dependent substreams goes back into MP4 with its channel locations.
                     codecId = CodecIds.EAc3;
                     codecPrivate = content.ToArray();
+                    break;
+                case "wave" when type != "alac":
+                    // QuickTime's wave atom: the format again (frma), then the codec's setup (esds) or the byte order (enda). Big-endian
+                    // float has no codec id, so fl32 and fl64 are read as before, little-endian.
+                    foreach ((FourCC innerType, ReadOnlyMemory<byte> inner) in Atoms(content))
+                    {
+                        if (innerType.ToString() == "esds" && type == "mp4a")
+                        {
+                            (codecId, codecPrivate) = FromEsds(inner.Span, codecId, codecPrivate);
+                        }
+                        else if (innerType.ToString() == "enda" && inner.Length >= 2 && type is not ("fl32" or "fl64"))
+                        {
+                            bigEndian = BinaryPrimitives.ReadUInt16BigEndian(inner.Span) == 0;
+                        }
+                    }
+
                     break;
                 case "alac" when type == "alac" && c.Length >= 4 + AlacSpecificConfig.Size:
                 case "wave" when type == "alac":
@@ -414,6 +449,39 @@ internal static class Mp4Codecs
             (0, -1, 1, 0) => ImageOrientation.Rotate270,
             _ => ImageOrientation.Normal,
         };
+    }
+
+    /// <summary>Maps an mp4a track's esds to AAC, MP3 or Vorbis with their setup, or keeps what it had for another object type.</summary>
+    private static (string CodecId, ReadOnlyMemory<byte> CodecPrivate) FromEsds(ReadOnlySpan<byte> esds, string codecId, ReadOnlyMemory<byte> codecPrivate)
+    {
+        (int objectType, ReadOnlyMemory<byte> specific) = ReadEsds(esds);
+        return objectType switch
+        {
+            0x40 or 0x66 or 0x67 or 0x68 => (CodecIds.Aac, specific),
+            0x69 or 0x6B => (CodecIds.Mp3, ReadOnlyMemory<byte>.Empty),
+            0xDD => (CodecIds.Vorbis, specific),
+            _ => (codecId, codecPrivate),
+        };
+    }
+
+    /// <summary>Lists the atoms of a QuickTime atom's content, stopping quietly at its terminator or at bytes that are not atoms.</summary>
+    private static List<(FourCC Type, ReadOnlyMemory<byte> Content)> Atoms(ReadOnlyMemory<byte> content)
+    {
+        List<(FourCC, ReadOnlyMemory<byte>)> atoms = [];
+        try
+        {
+            IsoBoxReader reader = new(content.Span, "MP4", 0);
+            while (reader.Next(out IsoBox box))
+            {
+                atoms.Add((box.Type, content.Slice((int)box.ContentStart, (int)box.ContentLength)));
+            }
+        }
+        catch (CorruptDataException)
+        {
+            // A terminator or padding: keep what was read.
+        }
+
+        return atoms;
     }
 
     /// <summary>Lists the boxes after a sample entry's fixed fields, stopping quietly at bytes that are not boxes (QuickTime pads some entries).</summary>

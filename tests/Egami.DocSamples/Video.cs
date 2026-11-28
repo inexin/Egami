@@ -529,6 +529,52 @@ public class Video
     }
 
     [Fact]
+    public void QuickTime()
+    {
+        using SampleFiles files = new();
+        using Raster<Rgb8> duck = Raster.Load<Rgb8>("duck.png");
+
+        #region video-mov
+        // A .mov output is a QuickTime movie: H.264, HEVC, Motion JPEG, AAC, ALAC, PCM and uncompressed video, with QuickTime's
+        // own sound and video descriptions. Tracks read from a .mov in any other codec, such as a timecode, go back unchanged.
+        MediaFile.Remux("camera.avi", "camera.mov");
+        MediaFile.Remux("phone.mov", "phone-copy.mov");
+
+        // moov after the media, straight to the file; ISO MP4 when named so.
+        MediaContext moovLast = MediaContext.Default.WithContainer(new MovFormat { MoovAtEnd = true });
+        MediaFile.Remux("camera.avi", "camera-end.mov", context: moovLast);
+        using (Stream source = File.OpenRead("camera.avi"))
+        using (Stream mp4 = File.Create("camera.mp4"))
+        {
+            MediaFile.Remux(source, mp4, "MP4", leaveOpen: true);
+        }
+
+        // Uncompressed 8-bit 4:2:2 for editing applications, stored as 2vuy (10-bit 4:2:2 frames as v210).
+        VideoWriterOptions options = new() { Codec = RawVideoCodec.Instance, ChromaFormat = ChromaFormat.Yuv422, FrameRate = new Rational(25, 1) };
+        using (VideoWriter writer = VideoWriter.Create("duck.mov", options))
+        {
+            writer.WriteFrame(duck);
+        }
+
+        // A codec QuickTime cannot hold is refused, and the message names the format to use instead.
+        try
+        {
+            MediaFile.Remux("movie.webm", "movie.mov");
+        }
+        catch (NotSupportedException e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        #endregion
+
+        Assert.Equal("QuickTime", MediaFile.Probe("camera.mov").FormatName);
+        Assert.Equal("QuickTime", MediaFile.Probe("camera-end.mov").FormatName);
+        Assert.Equal("MP4", MediaFile.Probe("camera.mp4").FormatName);
+        Assert.Equal(Egami.Metadata.ImageOrientation.Rotate270, MediaFile.Probe("phone-copy.mov").VideoTrack!.Orientation);
+        Assert.False(File.Exists("movie.mov"));
+    }
+
+    [Fact]
     public void Mp4Fragments()
     {
         using SampleFiles files = new();

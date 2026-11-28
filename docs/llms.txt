@@ -140,6 +140,7 @@ settings, safety limits and registered formats a call uses.
 
 - [Video](https://inexin.github.io/Egami/v1/articles/guides/video.html): Egami.Video reads and writes video with Egami rasters as frames, so resizing, color and drawing from Egami work on video with no copying.
 - [Streaming MP4](https://inexin.github.io/Egami/v1/articles/guides/streaming-mp4.html): Flat MP4 needs its index (moov) before or after all of the media, so a writer must either seek back or hold the media somewhere until the end.
+- [QuickTime movies](https://inexin.github.io/Egami/v1/articles/guides/quicktime.html): `MovFormat` writes QuickTime movies (Apple's QuickTime File Format), the .mov files that cameras, phones and editing applications make and read.
 - [Encoding video](https://inexin.github.io/Egami/v1/articles/guides/video-encoding.html): Egami.Video encodes VP8 and VP9 into WebM, Matroska and IVF (VP9 into MP4 too), with alpha in WebM and Matroska, and AV1 into WebM, Matroska, MP4, IVF, raw OBU and Annex B files.
 - [Video editing](https://inexin.github.io/Egami/v1/articles/guides/video-editing.html): Egami.Video's editing library, in `Egami.Video.Editing`, joins clips with transitions, draws clips over clips, keys out green screens, lays clips side by side and runs Egami operations on the result …
 - [Lossless archiving with FFV1](https://inexin.github.io/Egami/v1/articles/guides/lossless-archiving.html): FFV1 (RFC 9043) is the lossless video codec memory institutions archive with.

@@ -309,14 +309,20 @@ public static partial class MediaFile
     }
 
     /// <summary>
-    /// Picks the codec a filtered track is encoded with: in Matroska and MP4 its own when it encodes, else FLAC; in the other
-    /// containers their usual codec, or the track's own when that is the same kind (any PCM in WAV, say).
+    /// Picks the codec a filtered track is encoded with: in Matroska and MP4 its own when it encodes, else FLAC; in QuickTime its
+    /// own when it encodes and QuickTime holds it, else ALAC; in the other containers their usual codec, or the track's own when
+    /// that is the same kind (any PCM in WAV, say).
     /// </summary>
     internal static AudioCodec FilterCodec(AudioCodec own, ContainerFormat format)
     {
         if (format == MatroskaFormat.Instance || format == Mp4Format.Instance)
         {
             return own.CanEncode ? own : FlacCodec.Instance;
+        }
+
+        if (format is MovFormat)
+        {
+            return own.CanEncode && own.CodecId is CodecIds.Aac or CodecIds.Alac or CodecIds.PcmLittleEndian or CodecIds.PcmBigEndian or CodecIds.PcmFloat ? own : AlacCodec.Instance;
         }
 
         AudioCodec usual = AudioWriter.DefaultCodec(format);

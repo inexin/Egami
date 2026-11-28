@@ -9,8 +9,9 @@ namespace Egami.Video.Codecs;
 /// <summary>
 /// Uncompressed video (<see cref="CodecIds.Uncompressed"/>): I420, YV12, Y42B, 444P, Y800, NV12, NV21, YUY2, UYVY and v210 by
 /// FourCC (<see cref="VideoTrackInfo.FourCC"/>), plain planar YUV at 8 to 12 bits with optional alpha as in YUV4MPEG2, and
-/// AVI's bottom-up 24-bit BI_RGB (as <see cref="CodecIds.VfwFourCC"/>), whose frames come out as G, B and R planes
-/// (<see cref="YuvMatrix.Identity"/>). Decoding and encoding copy samples, so they are lossless.
+/// AVI's bottom-up 24-bit BI_RGB (as <see cref="CodecIds.VfwFourCC"/>) and QuickTime's 24-bit raw RGB (FourCC "raw "), whose
+/// frames come out as G, B and R planes (<see cref="YuvMatrix.Identity"/>). Decoding and encoding copy samples, so they are
+/// lossless.
 /// </summary>
 /// <example>
 /// <code language="csharp">
